@@ -1,0 +1,14 @@
+dist: bionic
+
+language: go
+
+go:
+  - 1.15
+
+jobs:
+  include:
+    - stage: init
+      os: linux
+      dist: bionic
+      script:
+        - make build
