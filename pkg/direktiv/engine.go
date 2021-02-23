@@ -1489,15 +1489,15 @@ func jq(input interface{}, command string) ([]interface{}, error) {
 
 }
 
-func jqPreferObject(input interface{}, command string) (interface{}, error) {
+func jqOne(input interface{}, command string) (interface{}, error) {
 
 	output, err := jq(input, command)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(output) == 1 {
-		return output[0], nil
+	if len(output) != 1 {
+		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced multiple outputs")
 	}
 
 	return output, nil
@@ -1506,29 +1506,29 @@ func jqPreferObject(input interface{}, command string) (interface{}, error) {
 
 func jqMustBeObject(input interface{}, command string) (map[string]interface{}, error) {
 
-	output, err := jq(input, command)
+	x, err := jqOne(input, command)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(output) == 1 {
-
-		m, ok := output[0].(map[string]interface{})
-		if !ok {
-			return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced a non-object output")
-		}
-
-		return m, nil
-
+	m, ok := x.(map[string]interface{})
+	if !ok {
+		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced a non-object output")
 	}
 
-	return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced multiple outputs")
+	return m, nil
 
 }
 
-func (wli *workflowLogicInstance) JQ(command string) (interface{}, error) {
+func (wli *workflowLogicInstance) JQ(command string) ([]interface{}, error) {
 
-	return jqPreferObject(wli.data, command)
+	return jq(wli.data, command)
+
+}
+
+func (wli *workflowLogicInstance) JQOne(command string) (interface{}, error) {
+
+	return jqOne(wli.data, command)
 
 }
 
@@ -1884,7 +1884,7 @@ func (we *workflowEngine) listenForEvents(ctx context.Context, wli *workflowLogi
 			if strings.HasPrefix(str, "{{") && strings.HasSuffix(str, "}}") {
 
 				query := str[2 : len(str)-2]
-				x, err := wli.JQ(query)
+				x, err := wli.JQOne(query)
 				if err != nil {
 					return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
 				}
