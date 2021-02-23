@@ -29,6 +29,7 @@ run-postgres:
 	fi
 	vorteil run ${mkfile_dir_main}/postgres
 
+# protoc generation
 .PHONY: protoc
 protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(isolate_generated_files) $(secrets_generated_files)
 
