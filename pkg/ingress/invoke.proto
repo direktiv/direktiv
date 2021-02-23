@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+message InvokeWorkflowRequest {
+	optional string namespace = 1;
+	optional string workflowId = 2;
+	optional bytes input = 3;
+}
+
+message InvokeWorkflowResponse {
+	optional string instanceId = 1;
+}

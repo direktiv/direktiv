@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+message DeleteRegistryRequest {
+	optional string namespace = 1;
+	optional string name = 2;
+}

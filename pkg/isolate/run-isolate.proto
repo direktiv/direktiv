@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package isolate;
+
+option go_package = "github.com/vorteil/direktiv/pkg/isolate";
+
+
+message RunIsolateRequest {
+	optional string namespace = 1;
+	optional string instanceId = 2;
+	optional int32 step = 3;
+	optional int64 timeout = 4;
+	optional string actionId = 5;
+	optional string image = 6;
+	optional string command = 7;
+	optional bytes data = 8;
+	map<string,string> registries = 9;
+	optional int32 size = 10;
+}

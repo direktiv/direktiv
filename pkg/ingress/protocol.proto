@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+import "google/protobuf/empty.proto";
+
+import "pkg/ingress/add-namespace.proto";
+import "pkg/ingress/delete-namespace.proto";
+import "pkg/ingress/get-namespaces.proto";
+import "pkg/ingress/add-workflow.proto";
+import "pkg/ingress/delete-workflow.proto";
+import "pkg/ingress/cancel-instance.proto";
+import "pkg/ingress/get-instance.proto";
+import "pkg/ingress/get-instances.proto";
+import "pkg/ingress/get-instance-logs.proto";
+import "pkg/ingress/get-workflow-id.proto";
+import "pkg/ingress/get-workflow-uid.proto";
+import "pkg/ingress/get-workflows.proto";
+import "pkg/ingress/invoke.proto";
+import "pkg/ingress/update-workflow.proto";
+import "pkg/ingress/broadcast-event.proto";
+import "pkg/ingress/get-secrets.proto";
+import "pkg/ingress/delete-secret.proto";
+import "pkg/ingress/store-secret.proto";
+import "pkg/ingress/get-registries.proto";
+import "pkg/ingress/delete-registry.proto";
+import "pkg/ingress/store-registry.proto";
+
+service DirektivIngress {
+	rpc AddNamespace (AddNamespaceRequest) returns (AddNamespaceResponse) {}
+	rpc DeleteNamespace (DeleteNamespaceRequest) returns (DeleteNamespaceResponse) {}
+	rpc GetNamespaces (GetNamespacesRequest) returns (GetNamespacesResponse) {}
+	rpc AddWorkflow (AddWorkflowRequest) returns (AddWorkflowResponse) {}
+	rpc DeleteWorkflow (DeleteWorkflowRequest) returns (DeleteWorkflowResponse) {}
+	rpc GetWorkflowById (GetWorkflowByIdRequest) returns (GetWorkflowByIdResponse) {}
+	rpc GetWorkflowByUid (GetWorkflowByUidRequest) returns (GetWorkflowByUidResponse) {}
+	rpc GetWorkflowInstance (GetWorkflowInstanceRequest) returns (GetWorkflowInstanceResponse) {}
+	rpc GetWorkflowInstances (GetWorkflowInstancesRequest) returns (GetWorkflowInstancesResponse) {}
+	rpc GetWorkflowInstanceLogs (GetWorkflowInstanceLogsRequest) returns (GetWorkflowInstanceLogsResponse) {}
+	rpc CancelWorkflowInstance (CancelWorkflowInstanceRequest) returns (google.protobuf.Empty) {}
+	rpc GetWorkflows (GetWorkflowsRequest) returns (GetWorkflowsResponse) {}
+	rpc InvokeWorkflow (InvokeWorkflowRequest) returns (InvokeWorkflowResponse) {}
+	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
+	rpc BroadcastEvent (BroadcastEventRequest) returns (google.protobuf.Empty) {}
+	rpc GetSecrets (GetSecretsRequest) returns (GetSecretsResponse) {}
+	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
+	rpc StoreSecret (StoreSecretRequest) returns (google.protobuf.Empty) {}
+	rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
+	rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
+	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
+}

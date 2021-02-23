@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+message DeleteWorkflowRequest {
+	optional string uid = 1;
+}
+
+message DeleteWorkflowResponse {
+	optional string uid = 1;
+}

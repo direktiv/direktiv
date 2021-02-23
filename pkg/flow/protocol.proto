@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package flow;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow";
+
+import "google/protobuf/empty.proto";
+
+import "pkg/flow/resume.proto";
+import "pkg/flow/report-action-results.proto";
+
+service DirektivFlow {
+	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
+	rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
+}

@@ -1,0 +1,27 @@
+[[program]]
+  args = "udevd"
+  env = ["PATH=/sbin:/bin"]
+
+[[program]]
+  args = "minio --config-dir=/tmp --certs-dir=/miniocerts server /data"
+  env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=demo", "MINIO_SECRET_KEY=password"]
+
+[[program]]
+  args = "/bin/direktiv -d -t wf -c /etc/conf.toml"
+  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin"]
+  bootstrap = ["WAIT_PORT if=eth0 9000", "WAIT_PORT if=eth0 5432"]
+
+[[program]]
+  args = "pg_ctl start -D /var/lib/postgresql/data"
+  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/bin"]
+  privilege = "superuser"
+
+[[network]]
+  https = ["8888"]
+
+[vm]
+  ram = "1024 MiB"
+  disk-size = "+2048 MiB"
+
+[system]
+  kernel-args="loglevel=1"

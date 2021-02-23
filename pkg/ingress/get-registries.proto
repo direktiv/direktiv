@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+message GetRegistriesRequest {
+	optional string namespace = 1;
+}
+
+message GetRegistriesResponse {
+	message Registry {
+		optional string name = 1;
+	}
+	repeated Registry registries = 1;
+}

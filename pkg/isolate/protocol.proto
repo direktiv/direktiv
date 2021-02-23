@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package isolate;
+
+option go_package = "github.com/vorteil/direktiv/pkg/isolate";
+
+import "google/protobuf/empty.proto";
+
+import "pkg/isolate/run-isolate.proto";
+
+service DirektivIsolate {
+	rpc RunIsolate (RunIsolateRequest) returns (google.protobuf.Empty) {}
+}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+import "google/protobuf/timestamp.proto";
+
+message UpdateWorkflowRequest {
+	optional string uid = 1;
+	optional int32 revision = 2;
+	optional bool active = 3;
+	optional bytes workflow = 4;
+}
+
+message UpdateWorkflowResponse {
+	optional string uid = 1;
+	optional string id = 2;
+	optional int32 revision = 3;
+	optional bool active = 4;
+	optional google.protobuf.Timestamp createdAt = 5;
+}

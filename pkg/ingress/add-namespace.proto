@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+import "google/protobuf/timestamp.proto";
+
+message AddNamespaceRequest {
+	optional string name = 1;
+}
+
+message AddNamespaceResponse {
+	optional string name = 1;
+	optional google.protobuf.Timestamp createdAt = 2;
+}

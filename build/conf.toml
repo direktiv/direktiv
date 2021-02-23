@@ -1,0 +1,2 @@
+[instanceLogging]
+	driver = "database"
