@@ -212,6 +212,7 @@ func (s *WorkflowServer) isRunnerServer() bool {
 	return false
 }
 
+// SetInstanceLogger set logger for direktiv for firecracker instances
 func (s *WorkflowServer) SetInstanceLogger(l dlog.Log) {
 	s.instanceLogger = l
 }
@@ -223,7 +224,7 @@ func (s *WorkflowServer) Lifeline() chan bool {
 
 func (s *WorkflowServer) cleanup() {
 
-	// closeing db at the end
+	// closing db at the end
 	if s.dbManager != nil {
 		defer s.dbManager.dbEnt.Close()
 	}

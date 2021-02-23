@@ -30,7 +30,7 @@ const (
 	filterPrefix = "filter-"
 )
 
-// DBManager containes all database related information and functions
+// DBManager contains all database related information and functions
 type dbManager struct {
 	dbEnt *ent.Client
 	ctx   context.Context
@@ -185,7 +185,6 @@ func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
 	return err
 
 }
-
 
 func (db *dbManager) getNamespace(name string) (*ent.Namespace, error) {
 
