@@ -244,14 +244,9 @@ func (am *actionManager) start() error {
 		insecure = false
 	}
 
-	ssl := false
-	if am.config.Minio.SSL > 0 {
-		ssl = true
-	}
-
 	minioClient, err := minio.New(am.config.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(am.config.Minio.User, am.config.Minio.Password, ""),
-		Secure: ssl,
+		Secure: true,
 		Transport: &http.Transport{
 			MaxIdleConns:       10,
 			IdleConnTimeout:    30 * time.Second,

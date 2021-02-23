@@ -40,7 +40,6 @@ const (
 	minioUser     = "DIREKTIV_MINIO_USER"
 	minioPassword = "DIREKTIV_MINIO_PASSWORD"
 	minioSecure   = "DIREKTIV_MINIO_INSECURE"
-	minioSSL      = "DIREKTIV_MINIO_SSL"
 	minioEncrypt  = "DIREKTIV_MINIO_ENCRYPT"
 	minioRegion   = "DIREKTIV_MINIO_REGION"
 
@@ -182,8 +181,8 @@ func ReadConfig(file string) (*Config, error) {
 	c.Minio.Encrypt = c.Minio.Password
 	c.Minio.Region = "us-east-1"
 
-	c.Kernel.Runtime = "21.1.1"
-	c.Kernel.Linux = "21.1.1"
+	c.Kernel.Runtime = "21.2.2"
+	c.Kernel.Linux = "21.2.2"
 
 	// read config file if exists
 	if len(file) > 0 {
@@ -208,7 +207,6 @@ func ReadConfig(file string) (*Config, error) {
 		value *int
 	}{
 		{minioSecure, &c.Minio.Secure},
-		{minioSSL, &c.Minio.SSL},
 	}
 
 	for _, i := range ints {

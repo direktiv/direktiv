@@ -157,7 +157,7 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 		// requested and not in cache
 		err = fc.actionManager.storeImageS3(img, cmd, disk)
 		if err != nil {
-			log.Errorf("image build error2: %v", err)
+			log.Errorf("image build error: %v", err)
 		}
 
 	}
