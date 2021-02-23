@@ -1262,6 +1262,10 @@ func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input
 		return nil, NewInternalError(err)
 	}
 
+	if !rec.Active {
+		return nil, NewInternalError(errors.New("workflow inactive"))
+	}
+
 	wf := new(model.Workflow)
 	err = wf.Load(rec.Workflow)
 	if err != nil {
