@@ -119,7 +119,7 @@ The Switch State can make decisions about where to transition to next based on t
   - condition: '.person.age > 18'
     transition: accept
     #transform:
-  - condition: '.person.age != nil'
+  - condition: '.person.age != null'
     transition: reject
     #transform:
   defaultTransition: failure
