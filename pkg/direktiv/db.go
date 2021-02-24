@@ -28,9 +28,12 @@ import (
 
 const (
 	filterPrefix = "filter-"
+
+	maxInstancesPerInterval   = 100
+	maxInstancesLimitInterval = time.Minute
 )
 
-// DBManager containes all database related information and functions
+// DBManager contains all database related information and functions
 type dbManager struct {
 	dbEnt *ent.Client
 	ctx   context.Context
@@ -76,26 +79,6 @@ func rollback(tx *ent.Tx, err error) error {
 	}
 	return err
 }
-
-// func (db *dbManager) messageIDCleaner(data []byte) error {
-//
-// 	old := time.Now().Add(time.Minute * -5)
-//
-// 	i, err := db.dbEnt.MessageID.
-// 		Delete().
-// 		Where(messageid.AddedLT(old)).
-// 		Exec(db.ctx)
-//
-// 	if err != nil {
-// 		log.Errorf("can not delete old messages: %v", err)
-// 		return err
-// 	}
-//
-// 	log.Debugf("old messages deleted %d", i)
-//
-// 	return nil
-//
-// }
 
 func (db *dbManager) tryLockDB(id uint64) (bool, *sql.Conn, error) {
 
@@ -145,33 +128,6 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 }
 
-// func (db *dbManager) lockDB(ltype, id, wait int) (*sql.Conn, error) {
-//
-// 	ctx, cancel := context.WithTimeout(db.ctx, time.Duration(wait)*time.Second)
-// 	defer cancel()
-//
-// 	conn, err := db.dbEnt.DB().Conn(db.ctx)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	_, err = conn.ExecContext(ctx, "SELECT pg_advisory_lock($1, $2)", ltype, id)
-//
-// 	if err, ok := err.(*pq.Error); ok {
-//
-// 		log.Debugf("db lock failed: %v", err)
-// 		if err.Code == "57014" {
-// 			return conn, fmt.Errorf("canceled query")
-// 		}
-//
-// 		return conn, err
-//
-// 	}
-//
-// 	return conn, err
-//
-// }
-
 func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
 
 	_, err := conn.ExecContext(db.ctx,
@@ -185,7 +141,6 @@ func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
 	return err
 
 }
-
 
 func (db *dbManager) getNamespace(name string) (*ent.Namespace, error) {
 
@@ -322,7 +277,6 @@ func (db *dbManager) processWorkflowEvents(ctx context.Context, tx *ent.Tx,
 
 }
 
-// func (db *dbManager) addWorkflow(cmd CmdAddWorkflow) (*ent.Workflow, error) {
 func (db *dbManager) addWorkflow(ctx context.Context, ns, name, description string, active bool,
 	workflow []byte, startDefinition model.StartDefinition) (*ent.Workflow, error) {
 
@@ -393,9 +347,6 @@ func (db *dbManager) addWorkflowEventListener(wfid uuid.UUID,
 		Save(db.ctx)
 
 }
-
-const maxInstancesPerInterval = 100
-const maxInstancesLimitInterval = time.Minute
 
 func (db *dbManager) addWorkflowInstance(ns, workflowId, instanceId, input string) (*ent.WorkflowInstance, error) {
 
@@ -763,7 +714,6 @@ func (db *dbManager) deleteWorkflowEventWait(id int) error {
 
 }
 
-// func (db *dbManager) addWorkflowEventWait(ev map[string]map[string]interface{}, count, id int) (*ent.WorkflowEventsWait, error) {
 func (db *dbManager) addWorkflowEventWait(ev map[string]interface{}, count, id int) (*ent.WorkflowEventsWait, error) {
 
 	ww, err := db.dbEnt.WorkflowEventsWait.

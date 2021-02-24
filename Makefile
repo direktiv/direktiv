@@ -15,6 +15,7 @@ mkfile_dir_main := $(dir $(mkfile_path_main))
 
 include build/build.mk
 
+# run minio on vorteil
 .PHONY: run-minio
 run-minio:
 	if [ ! -f ${mkfile_dir_main}/minio ]; then \
@@ -22,6 +23,7 @@ run-minio:
 	fi
 	vorteil run --vm.disk-size="+256 MiB" ${mkfile_dir_main}/minio
 
+# run postgres on vorteil
 .PHONY: run-postgres
 run-postgres:
 	if [ ! -f ${mkfile_dir_main}/postgres ]; then \

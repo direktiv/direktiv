@@ -84,7 +84,7 @@ func (l *Logger) QueryAllLogs(instance string) (dlog.QueryReponse, error) {
 	var err error
 
 	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
-	WHERE instance=$1;`
+	WHERE instance=$1 ORDER BY time asc;`
 	rows, err := l.db.Query(sqlStatement, instance)
 	if err != nil {
 		return testLOG, err

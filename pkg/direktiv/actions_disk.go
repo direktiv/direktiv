@@ -12,13 +12,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/codeclysm/extract"
 	"github.com/vorteil/vorteil/pkg/elog"
 	"github.com/vorteil/vorteil/pkg/vcfg"
 	"github.com/vorteil/vorteil/pkg/vdisk"
 	"github.com/vorteil/vorteil/pkg/vpkg"
 	"github.com/vorteil/vorteil/pkg/vproj"
 
-	"github.com/codeclysm/extract"
 	"github.com/containers/image/manifest"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -41,50 +41,14 @@ var (
 	name = "default"
 	vcfgs = ["default.vcfg"]
 `
-
-	// logger elog.View
 )
 
-func buildImageDisk(image, cmd, kernel, path string,
-	registries map[string]string) (string, error) {
-
-	if len(image) == 0 {
-		return "", fmt.Errorf("image can not be empty")
-	}
-
-	// we have parsed it already, no error
-
-	var err error
-	var ref name.Reference
-
-	// this function can panic...
-	func() {
-		defer func() {
-			r := recover()
-			if r != nil && err == nil {
-				err = errors.New("unable to parse image reference")
-			}
-		}()
-
-		ref, err = name.ParseReference(image)
-	}()
-	if err != nil {
-		return "", err
-	}
-
-	// authenticate if there are registries for this images
-	opts := findAuthForRegistry(image, registries)
-	img, err := remote.Image(ref, opts...)
-
-	if err != nil {
-		return "", err
-	}
+func extractContainer(image string, img v1.Image) (string, error) {
 
 	f, err := ioutil.TempFile("", "imgdl*.tar")
 	if err != nil {
 		return "", err
 	}
-	defer os.Remove(f.Name())
 
 	log.Debugf("exporting image %v to %s", image, f.Name())
 	fs := mutate.Extract(img)
@@ -104,8 +68,50 @@ func buildImageDisk(image, cmd, kernel, path string,
 	if err != nil {
 		return "", err
 	}
-	// defer os.RemoveAll(d)
 	log.Debugf("untar image %v finished", image)
+
+	return d, nil
+}
+
+func buildImageDisk(image, cmd, kernel, path string,
+	registries map[string]string) (string, error) {
+
+	if len(image) == 0 {
+		return "", fmt.Errorf("image can not be empty")
+	}
+
+	// we have parsed it already, no error
+	var err error
+	var ref name.Reference
+
+	// this function can panic...
+	func() {
+		defer func() {
+			r := recover()
+			if r != nil && err == nil {
+				err = errors.New("unable to parse image reference")
+			}
+		}()
+
+		ref, err = name.ParseReference(image)
+	}()
+
+	if err != nil {
+		return "", err
+	}
+
+	// authenticate if there are registries for this images
+	opts := findAuthForRegistry(image, registries)
+	img, err := remote.Image(ref, opts...)
+	if err != nil {
+		return "", err
+	}
+
+	d, err := extractContainer(image, img)
+	if err != nil {
+		return "", err
+	}
+	defer os.RemoveAll(d)
 
 	config, err := getContainerConfig(img)
 	if err != nil {
@@ -122,11 +128,38 @@ func buildImageDisk(image, cmd, kernel, path string,
 
 }
 
-func writeVCFG(dir, cmd, kernel string, config map[string]interface{}) (*vcfg.VCFG, error) {
+func baseVCFG() *vcfg.VCFG {
 
 	vcfgFile := new(vcfg.VCFG)
 	vcfgFile.Programs = make([]vcfg.Program, 1)
 	vcfgFile.Networks = make([]vcfg.NetworkInterface, 1)
+	vcfgFile.Programs[0].Stdout = logLog
+	vcfgFile.Programs[0].Stderr = errorLog
+
+	vcfgFile.Networks[0].IP = fullMask
+	vcfgFile.Networks[0].Mask = fullMask
+	vcfgFile.Networks[0].Gateway = fullMask
+
+	ram, _ := vcfg.ParseBytes("64 MiB")
+	vcfgFile.VM.RAM = ram
+
+	ds, _ := vcfg.ParseBytes("+64 MiB")
+	vcfgFile.VM.DiskSize = ds
+
+	// just a dummy to start the ntp process in vinitd
+	vcfgFile.System.NTP = []string{"0.au.pool.ntp.org"}
+
+	return vcfgFile
+
+}
+
+func writeVCFG(dir, cmd, kernel string, config map[string]interface{}) (*vcfg.VCFG, error) {
+
+	// vcfgFile := new(vcfg.VCFG)
+	// vcfgFile.Programs = make([]vcfg.Program, 1)
+	// vcfgFile.Networks = make([]vcfg.NetworkInterface, 1)
+
+	vcfgFile := baseVCFG()
 
 	// get configuration
 	var (
@@ -147,9 +180,6 @@ func writeVCFG(dir, cmd, kernel string, config map[string]interface{}) (*vcfg.VC
 
 	vcfgFile.Programs[0].Cwd = ci.WorkingDir
 	vcfgFile.Programs[0].Env = ci.Env
-
-	vcfgFile.Programs[0].Stdout = logLog
-	vcfgFile.Programs[0].Stderr = errorLog
 
 	vcfgFile.Programs[0].Env = append(vcfgFile.Programs[0].Env,
 		"DIREKTIV_DIR=/direktiv_data")
@@ -177,19 +207,6 @@ func writeVCFG(dir, cmd, kernel string, config map[string]interface{}) (*vcfg.VC
 
 	log.Debugf("using %s command", p)
 	vcfgFile.Programs[0].Args = p
-
-	vcfgFile.Networks[0].IP = fullMask
-	vcfgFile.Networks[0].Mask = fullMask
-	vcfgFile.Networks[0].Gateway = fullMask
-
-	ram, _ := vcfg.ParseBytes("64 MiB")
-	vcfgFile.VM.RAM = ram
-
-	ds, _ := vcfg.ParseBytes("+64 MiB")
-	vcfgFile.VM.DiskSize = ds
-
-	// just a dummy to start the ntp process in vinitd
-	vcfgFile.System.NTP = []string{"0.au.pool.ntp.org"}
 
 	// generate vmdk and store it
 	b, err := vcfgFile.Marshal()
@@ -330,30 +347,38 @@ func buildCommand(dir string, ci manifest.Schema2Config) (string, error) {
 
 }
 
+func getBuilder(dir string, vcfg *vcfg.VCFG) (vpkg.Builder, error) {
+
+	proj, err := vproj.LoadProject(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	tgt, _ := proj.Target("")
+
+	builder, err := tgt.NewBuilder()
+	if err != nil {
+		return nil, err
+	}
+
+	err = builder.MergeVCFG(vcfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return builder, nil
+
+}
+
 func buildRaw(dir, target string, vcfg *vcfg.VCFG) (string, error) {
 
 	log.Debugf("building raw from %s to %s", dir, target)
 
-	proj, err := vproj.LoadProject(dir)
-	if err != nil {
-		return "", err
-	}
-
-	tgt, err := proj.Target("")
-	if err != nil {
-		return "", err
-	}
-
-	builder, err := tgt.NewBuilder()
+	builder, err := getBuilder(dir, vcfg)
 	if err != nil {
 		return "", err
 	}
 	defer builder.Close()
-
-	err = builder.MergeVCFG(vcfg)
-	if err != nil {
-		return "", err
-	}
 
 	reader, err := vpkg.ReaderFromBuilder(builder)
 	if err != nil {

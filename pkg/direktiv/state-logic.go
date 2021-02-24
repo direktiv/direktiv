@@ -108,7 +108,7 @@ func (sl *noopStateLogic) Run(ctx context.Context, instance *workflowLogicInstan
 		return
 	}
 
-	object, err := instance.JQObject(".")
+	object, err := jqObject(instance.data, ".")
 	if err != nil {
 		return
 	}
@@ -242,7 +242,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 		var input interface{}
 
-		input, err = instance.JQ(".")
+		input, err = jqObject(instance.data, ".")
 		if err != nil {
 			return
 		}
@@ -272,7 +272,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			m["secrets"] = s
 		}
 
-		input, err = jqPreferObject(m, sl.state.Action.Input)
+		input, err = jqObject(m, sl.state.Action.Input)
 		if err != nil {
 			return
 		}
@@ -761,7 +761,7 @@ func (sl *errorStateLogic) Run(ctx context.Context, instance *workflowLogicInsta
 
 	for i := 0; i < len(a); i++ {
 		var x interface{}
-		x, err = instance.JQObject(sl.state.Args[i])
+		x, err = jqObject(instance.data, sl.state.Args[i])
 		if err != nil {
 			return
 		}
@@ -1158,16 +1158,10 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 			return
 		}
 
-		var x interface{}
-		x, err = instance.JQ(sl.state.Array)
+		var array []interface{}
+		array, err = jq(instance.data, sl.state.Array)
 		if err != nil {
 			return
-		}
-
-		var ok bool
-		var array []interface{}
-		if array, ok = x.([]interface{}); !ok {
-			array = append(array, x)
 		}
 
 		instance.Log("Generated %d objects to loop over.", len(array))
@@ -1183,7 +1177,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 			var input interface{}
 
-			input, err = jqMustBeObject(inputSource, ".")
+			input, err = jqObject(inputSource, ".")
 			if err != nil {
 				return
 			}
@@ -1211,7 +1205,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				m["secrets"] = s
 			}
 
-			input, err = jqPreferObject(m, action.Input)
+			input, err = jqObject(m, action.Input)
 			if err != nil {
 				return
 			}
@@ -1476,7 +1470,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 	event.SetSource(sl.state.Event.Source)
 
 	var x interface{}
-	x, err = instance.JQ(sl.state.Event.Data)
+	x, err = jqOne(instance.data, sl.state.Event.Data)
 	if err != nil {
 		return
 	}
@@ -1641,7 +1635,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 
 			var input interface{}
 
-			input, err = instance.JQ(".")
+			input, err = jqObject(instance.data, ".")
 			if err != nil {
 				return
 			}
@@ -1669,7 +1663,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 				m["secrets"] = s
 			}
 
-			input, err = jq(m, action.Input)
+			input, err = jqObject(m, action.Input)
 			if err != nil {
 				return
 			}
@@ -1972,7 +1966,7 @@ func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	for i, condition := range sl.state.Conditions {
 
 		var x interface{}
-		x, err = instance.JQ(condition.Condition)
+		x, err = jqOne(instance.data, condition.Condition)
 		if err != nil {
 			err = NewInternalError(fmt.Errorf("switch condition %d condition failed to run: %v", i, err))
 			return
@@ -2091,7 +2085,7 @@ func (sl *validateStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	}
 
 	var subject interface{}
-	subject, err = instance.JQ(subjectQuery)
+	subject, err = jqObject(instance.data, subjectQuery)
 	if err != nil {
 		return
 	}
