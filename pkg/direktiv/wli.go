@@ -222,7 +222,7 @@ func jqOne(input interface{}, command string) (interface{}, error) {
 		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced multiple outputs")
 	}
 
-	return output, nil
+	return output[0], nil
 
 }
 
