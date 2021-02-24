@@ -10,17 +10,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"google.golang.org/grpc"
-	grpccred "google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type flowServer struct {
 	flow.UnimplementedDirektivFlowServer
 
-	config   *Config
-	engine   *workflowEngine
-	grpc     *grpc.Server
-	grpcConn *grpc.ClientConn
+	config *Config
+	engine *workflowEngine
+	grpc   *grpc.Server
 }
 
 func newFlowServer(config *Config, engine *workflowEngine) *flowServer {
@@ -42,26 +40,11 @@ func (f *flowServer) name() string {
 	return "flow"
 }
 
-func (f *flowServer) setClient(wfs *WorkflowServer) error {
-
-	conn, err := getEndpointTLS(wfs.config, flowComponent, wfs.config.FlowAPI.Endpoint)
-	if err != nil {
-		return err
-	}
-
-	wfs.componentAPIs.flowClient = flow.NewDirektivFlowClient(conn)
-	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
-
-	return nil
-
-}
-
 func (f *flowServer) start() error {
 
 	log.Infof("flow endpoint starting at %v", f.config.FlowAPI.Bind)
 
-	tls, err := tlsForGRPC(f.config.Certs.Directory, flowComponent,
-		serverType, (f.config.Certs.Secure != 1))
+	options, err := optionsForGRPC(f.config.Certs.Directory, flowComponent, (f.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}
@@ -71,7 +54,7 @@ func (f *flowServer) start() error {
 		return err
 	}
 
-	f.grpc = grpc.NewServer(grpc.Creds(grpccred.NewTLS(tls)))
+	f.grpc = grpc.NewServer(options...)
 
 	flow.RegisterDirektivFlowServer(f.grpc, f)
 

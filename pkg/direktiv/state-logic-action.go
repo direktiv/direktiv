@@ -200,7 +200,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 			// get registries
 			ar.Container.Registries, err = getRegistries(instance.engine.server.config,
-				instance.engine.server.componentAPIs.secretsClient, instance.namespace)
+				instance.engine.secretsClient, instance.namespace)
 			if err != nil {
 				return
 			}
@@ -218,7 +218,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 					// get registries
 					ar.Container.Registries, err = getRegistries(instance.engine.server.config,
-						instance.engine.server.componentAPIs.secretsClient, instance.namespace)
+						instance.engine.secretsClient, instance.namespace)
 					if err != nil {
 						return
 					}

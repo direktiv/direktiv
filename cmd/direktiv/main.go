@@ -115,7 +115,7 @@ var rootCmd = &cobra.Command{
 func main() {
 
 	rootCmd.Flags().BoolVarP(&debug, "debug", "d", false, "enabled debug output")
-	rootCmd.Flags().StringVarP(&serverType, "type", "t", "wf", "can run worfklow engine (wfo), container runner (wfr) or both (wf)")
+	rootCmd.Flags().StringVarP(&serverType, "type", "t", "wis", "components to run: w (workflow), i (isolate), s (secrets), default 'wis'")
 	rootCmd.Flags().StringVarP(&configFile, "config", "c", "", "configuration file to use")
 
 	err := rootCmd.Execute()

@@ -54,10 +54,6 @@ func (h *healthServer) name() string {
 	return "health"
 }
 
-func (h *healthServer) setClient(wfs *WorkflowServer) error {
-	return nil
-}
-
 func (h *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
 
 	var resp health.HealthCheckResponse

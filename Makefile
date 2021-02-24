@@ -45,8 +45,11 @@ build:
 # run as sudo because networking needs root privileges
 .PHONY: run
 run:
-	DIREKTIV_DB="host=192.168.1.10 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
-	DIREKTIV_SECRETS_DB="host=192.168.1.10 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" go run cmd/direktiv/main.go -d -t wf -c ${mkfile_dir_main}/build/conf.toml
+	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
+	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
+	DIREKTIV_CERTS="/tmp/certs" \
+	DIREKTIV_INSECURE=0 \
+	go run cmd/direktiv/main.go -d -t wis -c ${mkfile_dir_main}/build/conf.toml
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<

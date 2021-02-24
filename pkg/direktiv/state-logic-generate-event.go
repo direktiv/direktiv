@@ -99,7 +99,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 
 	instance.Log("Broadcasting event: %s.", event.ID())
 
-	_, err = instance.engine.server.componentAPIs.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
+	_, err = instance.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
 		Namespace:  &instance.namespace,
 		Cloudevent: data,
 	})

@@ -15,7 +15,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/secrets/ent"
 	"github.com/vorteil/direktiv/pkg/secrets/ent/bucketsecret"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -44,20 +43,6 @@ func newSecretsServer(config *Config) (*secretsServer, error) {
 		config: config,
 		db:     db,
 	}, nil
-
-}
-
-func (ss *secretsServer) setClient(wfs *WorkflowServer) error {
-
-	conn, err := getEndpointTLS(wfs.config, secretsComponent, wfs.config.SecretsAPI.Endpoint)
-	if err != nil {
-		return err
-	}
-
-	wfs.componentAPIs.secretsClient = secrets.NewSecretsServiceClient(conn)
-	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
-
-	return nil
 
 }
 
@@ -95,8 +80,7 @@ func (ss *secretsServer) start() error {
 	bind := ss.config.SecretsAPI.Bind
 	log.Debugf("secrets endpoint starting at %s", bind)
 
-	tls, err := tlsForGRPC(ss.config.Certs.Directory, secretsComponent,
-		serverType, (ss.config.Certs.Secure != 1))
+	options, err := optionsForGRPC(ss.config.Certs.Directory, secretsComponent, (ss.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}
@@ -106,7 +90,7 @@ func (ss *secretsServer) start() error {
 		return err
 	}
 
-	ss.grpc = grpc.NewServer(grpc.Creds(credentials.NewTLS(tls)))
+	ss.grpc = grpc.NewServer(options...)
 
 	secrets.RegisterSecretsServiceServer(ss.grpc, ss)
 

@@ -14,7 +14,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/secrets"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -33,6 +32,11 @@ func (is *ingressServer) stop() {
 		is.grpc.GracefulStop()
 	}
 
+	// stop engine client
+	for _, c := range is.wfServer.engine.grpcConns {
+		c.Close()
+	}
+
 }
 
 func (is *ingressServer) name() string {
@@ -47,26 +51,11 @@ func newIngressServer(s *WorkflowServer) *ingressServer {
 
 }
 
-func (is *ingressServer) setClient(wfs *WorkflowServer) error {
-
-	conn, err := getEndpointTLS(wfs.config, ingressComponent, wfs.config.IngressAPI.Endpoint)
-	if err != nil {
-		return err
-	}
-
-	wfs.componentAPIs.ingressClient = ingress.NewDirektivIngressClient(conn)
-	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
-
-	return nil
-
-}
-
 func (is *ingressServer) start() error {
 
 	log.Infof("ingress api starting at %v", is.wfServer.config.IngressAPI.Bind)
 
-	tls, err := tlsForGRPC(is.wfServer.config.Certs.Directory, ingressComponent,
-		serverType, (is.wfServer.config.Certs.Secure != 1))
+	options, err := optionsForGRPC(is.wfServer.config.Certs.Directory, ingressComponent, (is.wfServer.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}
@@ -76,7 +65,7 @@ func (is *ingressServer) start() error {
 		return err
 	}
 
-	is.grpc = grpc.NewServer(grpc.Creds(credentials.NewTLS(tls)))
+	is.grpc = grpc.NewServer(options...)
 
 	ingress.RegisterDirektivIngressServer(is.grpc, is)
 

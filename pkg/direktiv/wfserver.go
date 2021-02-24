@@ -2,12 +2,9 @@ package direktiv
 
 import (
 	"context"
+	"strings"
 
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/isolate"
 	"github.com/vorteil/direktiv/pkg/secrets"
-	"google.golang.org/grpc"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -16,9 +13,9 @@ import (
 )
 
 const (
-	workflowOnly   = "wfo"
-	workflowRunner = "wfr"
-	workflowAll    = "wf"
+	runsWorkflows = "w"
+	runsIsolates  = "i"
+	runsSecrets   = "s"
 )
 
 const (
@@ -30,16 +27,6 @@ type component interface {
 	start() error
 	stop()
 	name() string
-	setClient(*WorkflowServer) error
-}
-
-type componentAPIs struct {
-	flowClient    flow.DirektivFlowClient
-	secretsClient secrets.SecretsServiceClient
-	isolateClient isolate.DirektivIsolateClient
-	ingressClient ingress.DirektivIngressClient
-
-	conns []*grpc.ClientConn
 }
 
 // WorkflowServer is a direktiv server
@@ -58,8 +45,8 @@ type WorkflowServer struct {
 	instanceLogger dlog.Log
 	secrets        secrets.SecretsServiceClient
 
-	components    map[string]component
-	componentAPIs componentAPIs
+	components map[string]component
+	// componentAPIs componentAPIs
 }
 
 func (s *WorkflowServer) initWorkflowServer() error {
@@ -104,6 +91,12 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	addCron(timerCleanOneShot, "*/10 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
+	ingressServer := newIngressServer(s)
+	s.components[ingressComponent] = ingressServer
+
+	flowServer := newFlowServer(s.config, s.engine)
+	s.components[flowComponent] = flowServer
+
 	return nil
 
 }
@@ -132,73 +125,61 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		return nil, err
 	}
 
-	if s.isWorkflowServer() {
+	if s.runsComponent(runsWorkflows) {
 		err = s.initWorkflowServer()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// if s.isRunnerServer() {
-
-	am, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
-	if err != nil {
-		return nil, err
+	if s.runsComponent(runsIsolates) {
+		am, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
+		if err != nil {
+			return nil, err
+		}
+		s.actionManager = am
+		s.components[isolateComponent] = am
 	}
-	s.actionManager = am
-	s.components[isolateComponent] = am
-	// }
 
-	ingressServer := newIngressServer(s)
-	s.components[ingressComponent] = ingressServer
+	if s.runsComponent(runsSecrets) {
+		secretsServer, err := newSecretsServer(config)
+		if err != nil {
+			log.Errorf("can not create secret server: %v", err)
+			return nil, err
+		}
+		s.components[secretsComponent] = secretsServer
+	}
 
 	healthServer := newHealthServer(config)
 	s.components[healthComponent] = healthServer
 
-	flowServer := newFlowServer(config, s.engine)
-	s.components[flowComponent] = flowServer
+	// for _, comp := range s.components {
+	// 	log.Debugf("starting %s component", comp.name())
+	// 	err := comp.start()
+	// 	if err != nil {
+	// 		log.Errorf("can not start: %v", err)
+	// 		return nil, err
+	// 	}
+	// }
 
-	secretsServer, err := newSecretsServer(config)
-	if err != nil {
-		log.Errorf("can not create secret server: %v", err)
-		return nil, err
-	}
-	s.components[secretsComponent] = secretsServer
-
-	for _, comp := range s.components {
-		log.Debugf("starting %s component", comp.name())
-		err := comp.start()
-		if err != nil {
-			log.Errorf("can not start: %v", err)
-			return nil, err
-		}
-	}
-
-	for _, comp := range s.components {
-		log.Debugf("creating client for %s component", comp.name())
-		err = comp.setClient(s)
-		if err != nil {
-			log.Errorf("can not create client: %v", err)
-			return nil, err
-		}
-	}
+	// for _, comp := range s.components {
+	// 	log.Debugf("creating client for %s component", comp.name())
+	// 	err = comp.setClient(s)
+	// 	if err != nil {
+	// 		log.Errorf("can not create client: %v", err)
+	// 		return nil, err
+	// 	}
+	// }
 
 	// TODO: that move in isolate manager
-	am.grpcFlow = s.componentAPIs.flowClient
+	// am.grpcFlow = s.componentAPIs.flowClient
 
 	return s, nil
 
 }
 
-func (s *WorkflowServer) isWorkflowServer() bool {
-	if s.serverType == workflowOnly || s.serverType == workflowAll {
-		return true
-	}
-	return false
-}
-
-func (s *WorkflowServer) isRunnerServer() bool {
-	if s.serverType == workflowRunner || s.serverType == workflowAll {
+func (s *WorkflowServer) runsComponent(c string) bool {
+	if strings.Contains(s.serverType, c) {
 		return true
 	}
 	return false
@@ -228,11 +209,6 @@ func (s *WorkflowServer) cleanup() {
 	// stop components
 	for _, comp := range s.components {
 		comp.stop()
-	}
-
-	// close grpc if client has been used
-	for _, conn := range s.componentAPIs.conns {
-		conn.Close()
 	}
 
 }
@@ -269,7 +245,7 @@ func (s *WorkflowServer) Kill() {
 func (s *WorkflowServer) Run() error {
 
 	// subscribe to cmds
-	if s.isWorkflowServer() {
+	if s.runsComponent(runsWorkflows) {
 
 		log.Debugf("subscribing to sync queue")
 		err := s.startDatabaseListener()
@@ -287,8 +263,9 @@ func (s *WorkflowServer) Run() error {
 
 	}
 
-	if s.actionManager != nil {
-		err := s.actionManager.start()
+	for _, comp := range s.components {
+		log.Debugf("starting %s component", comp.name())
+		err := comp.start()
 		if err != nil {
 			s.Kill()
 			return err

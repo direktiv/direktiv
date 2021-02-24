@@ -20,12 +20,9 @@ const (
 	flowComponent    string = "flow"
 	secretsComponent string = "secrets"
 	healthComponent  string = "health"
-
-	serverType = "server"
-	clientType = "client"
 )
 
-func tlsForGRPC(certDir, component, name string, insecure bool) (*tls.Config, error) {
+func tlsConfig(certDir, component, certType string, insecure bool) (*tls.Config, error) {
 
 	config := &tls.Config{
 		Rand:               rand.Reader,
@@ -39,8 +36,8 @@ func tlsForGRPC(certDir, component, name string, insecure bool) (*tls.Config, er
 
 	log.Debugf("checking certs in %s\n", filepath.Join(certDir, component))
 
-	keyPath := filepath.Join(certDir, component, fmt.Sprintf("%s.key", name))
-	certPath := filepath.Join(certDir, component, fmt.Sprintf("%s.pem", name))
+	keyPath := filepath.Join(certDir, component, fmt.Sprintf("%s.key", certType))
+	certPath := filepath.Join(certDir, component, fmt.Sprintf("%s.pem", certType))
 	caPath := filepath.Join(certDir, component, "ca.pem")
 
 	if _, err := os.Stat(keyPath); err == nil {
@@ -48,7 +45,7 @@ func tlsForGRPC(certDir, component, name string, insecure bool) (*tls.Config, er
 		certs, err := tls.LoadX509KeyPair(certPath, keyPath)
 		if err != nil {
 			log.Errorf("can not create key pair: %v\n", err)
-			return nil, err
+			return config, err
 		}
 		config.Certificates = []tls.Certificate{certs}
 	}
@@ -60,35 +57,64 @@ func tlsForGRPC(certDir, component, name string, insecure bool) (*tls.Config, er
 		pem, err := ioutil.ReadFile(caPath)
 		if err != nil {
 			fmt.Printf("can not create CA: %v\n", err)
-			return nil, err
+			return config, err
 		}
 
 		if !pool.AppendCertsFromPEM(pem) {
 			error := fmt.Errorf("can not append cert to CA")
 			log.Errorf(error.Error())
-			return nil, error
+			return config, error
 		}
 
 		config.ClientAuth = tls.RequireAndVerifyClientCert
 		config.ClientCAs = pool
-
 	}
 
 	return config, nil
 
 }
 
+func optionsForGRPC(certDir, component string, insecure bool) ([]grpc.ServerOption, error) {
+
+	var options []grpc.ServerOption
+
+	tlsConfig, err := tlsConfig(certDir, component, "server", insecure)
+	if err != nil {
+		return options, err
+	}
+
+	// if we have certs it is tls
+	if len(tlsConfig.Certificates) > 0 {
+		options = append(options, grpc.Creds(credentials.NewTLS(tlsConfig)))
+	}
+
+	if len(tlsConfig.Certificates) > 0 {
+		log.Debugf("%s (server) using tls", component)
+	} else {
+		log.Debugf("%s (server) not using tls", component)
+	}
+
+	return options, nil
+
+}
+
 func getEndpointTLS(config *Config, component, endpoint string) (*grpc.ClientConn, error) {
 	var opts []grpc.DialOption
 
-	tlsConfig, err := tlsForGRPC(config.Certs.Directory, component, clientType,
-		(config.Certs.Secure != 1))
+	tlsConfig, err := tlsConfig(config.Certs.Directory, component, "client", (config.Certs.Secure != 1))
 	if err != nil {
 		log.Errorf("can not create tls config: %v", err)
 		return nil, err
 	}
 
-	opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	if len(tlsConfig.Certificates) > 0 {
+		log.Debugf("%s (client) using tls", component)
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+		log.Debugf("%s (client) not using tls", component)
+	}
+
 	return grpc.Dial(endpoint, opts...)
 
 }

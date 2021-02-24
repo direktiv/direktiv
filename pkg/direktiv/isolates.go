@@ -32,7 +32,6 @@ import (
 	"github.com/vorteil/vorteil/pkg/vimg"
 	"github.com/vorteil/vorteil/pkg/vkern"
 	"google.golang.org/grpc"
-	grpccred "google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -73,13 +72,15 @@ type actionManager struct {
 	config         *Config
 	minioClient    *minio.Client
 	grpc           *grpc.Server
-	grpcFlow       flow.DirektivFlowClient
 	fileCache      *fileCache
 	cni            gocni.CNI
 	instanceLogger *dlog.Log
 	dbManager      *dbManager
 
 	actx map[string]*ctxs
+
+	flowClient flow.DirektivFlowClient
+	grpcConn   *grpc.ClientConn
 }
 
 type actionWorkflow struct {
@@ -201,8 +202,7 @@ func (am *actionManager) grpcStart() error {
 	bind := am.config.IsolateAPI.Bind
 	log.Debugf("action endpoint starting at %s", bind)
 
-	tls, err := tlsForGRPC(am.config.Certs.Directory, isolateComponent,
-		serverType, (am.config.Certs.Secure != 1))
+	options, err := optionsForGRPC(am.config.Certs.Directory, isolateComponent, (am.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (am *actionManager) grpcStart() error {
 		return err
 	}
 
-	am.grpc = grpc.NewServer(grpc.Creds(grpccred.NewTLS(tls)))
+	am.grpc = grpc.NewServer(options...)
 	isolate.RegisterDirektivIsolateServer(am.grpc, am)
 
 	go am.grpc.Serve(listener)
@@ -227,23 +227,14 @@ func (am *actionManager) stop() {
 		am.grpc.GracefulStop()
 	}
 
+	if am.grpcConn != nil {
+		am.grpcConn.Close()
+	}
+
 }
 
 func (am *actionManager) name() string {
 	return "isolate"
-}
-
-func (am *actionManager) setClient(wfs *WorkflowServer) error {
-	conn, err := getEndpointTLS(wfs.config, isolateComponent, wfs.config.IsolateAPI.Endpoint)
-	if err != nil {
-		return err
-	}
-
-	wfs.componentAPIs.isolateClient = isolate.NewDirektivIsolateClient(conn)
-	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
-
-	return nil
-
 }
 
 func (am *actionManager) start() error {
@@ -289,6 +280,15 @@ func (am *actionManager) start() error {
 	}
 
 	am.minioClient = minioClient
+
+	// get flow client
+	conn, err := getEndpointTLS(am.config, flowComponent, am.config.FlowAPI.Endpoint)
+	if err != nil {
+		return err
+	}
+
+	am.grpcConn = conn
+	am.flowClient = flow.NewDirektivFlowClient(conn)
 
 	return nil
 }
@@ -539,7 +539,7 @@ func (am *actionManager) respondToAction(ae *ActionError, data []byte, in *isola
 		r.ErrorMessage = &ae.ErrorMessage
 	}
 
-	_, err := am.grpcFlow.ReportActionResults(context.Background(), r)
+	_, err := am.flowClient.ReportActionResults(context.Background(), r)
 
 	if err != nil {
 		log.Errorf("error reporting action results: %v", err)
