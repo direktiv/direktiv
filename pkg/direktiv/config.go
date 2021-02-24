@@ -39,7 +39,7 @@ const (
 	minioEndpoint = "DIREKTIV_MINIO_ENDPOINT"
 	minioUser     = "DIREKTIV_MINIO_USER"
 	minioPassword = "DIREKTIV_MINIO_PASSWORD"
-	minioSecure   = "DIREKTIV_MINIO_INSECURE"
+	minioSecure   = "DIREKTIV_MINIO_SECURE"
 	minioEncrypt  = "DIREKTIV_MINIO_ENCRYPT"
 	minioRegion   = "DIREKTIV_MINIO_REGION"
 
@@ -50,7 +50,7 @@ const (
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
 
 	certDir    = "DIREKTIV_CERTS"
-	certSecure = "DIREKTIV_INSECURE"
+	certSecure = "DIREKTIV_SECURE"
 )
 
 // Config is the configuration for workflow and runner server
