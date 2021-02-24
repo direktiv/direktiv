@@ -2,10 +2,8 @@ package direktiv
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -122,14 +120,9 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, instance *workflowLog
 
 		var x interface{}
 
-		if event.DataContentType() == "application/json" || event.DataContentType() == "" {
-			err = json.Unmarshal(event.Data(), &x)
-			if err != nil {
-				err = NewInternalError(fmt.Errorf("Invalid json payload for event: %v", err))
-				return
-			}
-		} else {
-			x = base64.StdEncoding.EncodeToString(event.Data())
+		x, err = extractEventPayload(event)
+		if err != nil {
+			return
 		}
 
 		err = instance.StoreData(event.Type(), x)

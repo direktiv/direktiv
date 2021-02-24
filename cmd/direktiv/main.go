@@ -97,7 +97,7 @@ var rootCmd = &cobra.Command{
 		}()
 
 		go func() {
-			server.Run()
+			err := server.Run()
 			if err != nil {
 				log.Fatalf("unable to start server: %v", err)
 			}

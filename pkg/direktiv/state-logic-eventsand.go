@@ -2,10 +2,8 @@ package direktiv
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -77,32 +75,32 @@ func (sl *eventsAndStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *workflowLogicInstance, savedata []byte) error {
+
+	if len(savedata) != 0 {
+		return NewInternalError(errors.New("got unexpected savedata"))
+	}
+
+	var events []*model.ConsumeEventDefinition
+	for _, event := range sl.state.Events {
+		events = append(events, &event.Event)
+	}
+
+	err := instance.engine.listenForEvents(ctx, instance, events, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func (sl *eventsAndStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
-
-		// first part
-
-		if len(savedata) != 0 {
-			err = NewInternalError(errors.New("got unexpected savedata"))
-			return
-		}
-
-		var events []*model.ConsumeEventDefinition
-		for _, event := range sl.state.Events {
-			events = append(events, &event.Event)
-		}
-
-		err = instance.engine.listenForEvents(ctx, instance, events, false)
-		if err != nil {
-			return
-		}
-
+		err = sl.listenForEvents(ctx, instance, savedata)
 		return
-
 	}
-
-	// second part
 
 	events := make([]*cloudevents.Event, 0)
 	err = json.Unmarshal(wakedata, &events)
@@ -119,14 +117,9 @@ func (sl *eventsAndStateLogic) Run(ctx context.Context, instance *workflowLogicI
 
 		var x interface{}
 
-		if event.DataContentType() == "application/json" || event.DataContentType() == "" {
-			err = json.Unmarshal(event.Data(), &x)
-			if err != nil {
-				err = NewInternalError(fmt.Errorf("Invalid json payload for event: %v", err))
-				return
-			}
-		} else {
-			x = base64.StdEncoding.EncodeToString(event.Data())
+		x, err = extractEventPayload(event)
+		if err != nil {
+			return
 		}
 
 		err = instance.StoreData(event.Type(), x)
