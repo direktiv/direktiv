@@ -46,6 +46,40 @@ func (sl *switchStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func truth(x interface{}) bool {
+
+	var success bool
+
+	if x != nil {
+		switch x.(type) {
+		case bool:
+			if x.(bool) {
+				success = true
+			}
+		case string:
+			if x.(string) != "" {
+				success = true
+			}
+		case int:
+			if x.(int) != 0 {
+				success = true
+			}
+		case []interface{}:
+			if len(x.([]interface{})) > 0 {
+				success = true
+			}
+		case map[string]interface{}:
+			if len(x.(map[string]interface{})) > 0 {
+				success = true
+			}
+		default:
+		}
+	}
+
+	return success
+
+}
+
 func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {
@@ -58,8 +92,6 @@ func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 		return
 	}
 
-	var success bool
-
 	for i, condition := range sl.state.Conditions {
 
 		var x interface{}
@@ -69,49 +101,21 @@ func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		if x != nil {
-			switch x.(type) {
-			case bool:
-				if x.(bool) {
-					success = true
-				}
-			case string:
-				if x.(string) != "" {
-					success = true
-				}
-			case int:
-				if x.(int) != 0 {
-					success = true
-				}
-			case []interface{}:
-				if len(x.([]interface{})) > 0 {
-					success = true
-				}
-			case map[string]interface{}:
-				if len(x.(map[string]interface{})) > 0 {
-					success = true
-				}
-			default:
-			}
-		}
-
-		if success {
+		if truth(x) {
 			instance.Log("Switch condition %d succeeded", i)
 			transition = &stateTransition{
 				Transform: condition.Transform,
 				NextState: condition.Transition,
 			}
-			break
+			return
 		}
 
 	}
 
-	if !success {
-		instance.Log("No switch conditions succeeded")
-		transition = &stateTransition{
-			Transform: sl.state.DefaultTransform,
-			NextState: sl.state.DefaultTransition,
-		}
+	instance.Log("No switch conditions succeeded")
+	transition = &stateTransition{
+		Transform: sl.state.DefaultTransform,
+		NextState: sl.state.DefaultTransition,
 	}
 
 	return

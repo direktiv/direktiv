@@ -907,14 +907,9 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 
 		var x interface{}
 
-		if event.DataContentType() == "application/json" || event.DataContentType() == "" {
-			err = json.Unmarshal(event.Data(), &x)
-			if err != nil {
-				log.Errorf("Invalid json payload for event: %v", err)
-				return
-			}
-		} else {
-			x = base64.StdEncoding.EncodeToString(event.Data())
+		x, err = extractEventPayload(event)
+		if err != nil {
+			return
 		}
 
 		m[event.Type()] = x
