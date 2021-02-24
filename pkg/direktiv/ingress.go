@@ -553,15 +553,21 @@ func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteR
 
 }
 
-func (is *ingressServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsRequest) (*ingress.GetSecretsResponse, error) {
-
-	stype := secrets.SecretTypes_SECRET
+func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,
+	stype secrets.SecretTypes) (*secrets.GetSecretsResponse, error) {
 
 	output, err := is.wfServer.secrets.GetSecrets(ctx, &secrets.GetSecretsRequest{
-		Namespace: in.Namespace,
+		Namespace: &ns,
 		Stype:     &stype,
 	})
 
+	return output, err
+
+}
+
+func (is *ingressServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsRequest) (*ingress.GetSecretsResponse, error) {
+
+	output, err := is.fetchSecrets(ctx, in.GetNamespace(), secrets.SecretTypes_SECRET)
 	if err != nil {
 		return nil, err
 	}
@@ -579,13 +585,7 @@ func (is *ingressServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsR
 
 func (is *ingressServer) GetRegistries(ctx context.Context, in *ingress.GetRegistriesRequest) (*ingress.GetRegistriesResponse, error) {
 
-	stype := secrets.SecretTypes_REGISTRY
-
-	output, err := is.wfServer.secrets.GetSecrets(ctx, &secrets.GetSecretsRequest{
-		Namespace: in.Namespace,
-		Stype:     &stype,
-	})
-
+	output, err := is.fetchSecrets(ctx, in.GetNamespace(), secrets.SecretTypes_REGISTRY)
 	if err != nil {
 		return nil, err
 	}
