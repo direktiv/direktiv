@@ -199,7 +199,7 @@ func newActionManager(config *Config, dbManager *dbManager, l *dlog.Log) (*actio
 func (am *actionManager) grpcStart() error {
 
 	bind := am.config.IsolateAPI.Bind
-	log.Debugf("!!!!!!!!!!!!!!!!!!!!!!!!!action endpoint starting at %s", bind)
+	log.Debugf("action endpoint starting at %s", bind)
 
 	tls, err := tlsForGRPC(am.config.Certs.Directory, isolateComponent,
 		serverType, (am.config.Certs.Secure != 1))
@@ -234,13 +234,13 @@ func (am *actionManager) name() string {
 }
 
 func (am *actionManager) setClient(wfs *WorkflowServer) error {
-
 	conn, err := getEndpointTLS(wfs.config, isolateComponent, wfs.config.IsolateAPI.Endpoint)
 	if err != nil {
 		return err
 	}
 
 	wfs.componentAPIs.isolateClient = isolate.NewDirektivIsolateClient(conn)
+	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
 
 	return nil
 

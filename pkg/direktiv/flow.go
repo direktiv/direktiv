@@ -17,9 +17,10 @@ import (
 type flowServer struct {
 	flow.UnimplementedDirektivFlowServer
 
-	config *Config
-	engine *workflowEngine
-	grpc   *grpc.Server
+	config   *Config
+	engine   *workflowEngine
+	grpc     *grpc.Server
+	grpcConn *grpc.ClientConn
 }
 
 func newFlowServer(config *Config, engine *workflowEngine) *flowServer {
@@ -49,6 +50,7 @@ func (f *flowServer) setClient(wfs *WorkflowServer) error {
 	}
 
 	wfs.componentAPIs.flowClient = flow.NewDirektivFlowClient(conn)
+	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
 
 	return nil
 

@@ -37,7 +37,7 @@ func tlsForGRPC(certDir, component, name string, insecure bool) (*tls.Config, er
 		return config, nil
 	}
 
-	log.Debugf("!!!!!!!!!!!!!!!!!!!checking certs in %s\n", filepath.Join(certDir, component))
+	log.Debugf("checking certs in %s\n", filepath.Join(certDir, component))
 
 	keyPath := filepath.Join(certDir, component, fmt.Sprintf("%s.key", name))
 	certPath := filepath.Join(certDir, component, fmt.Sprintf("%s.pem", name))

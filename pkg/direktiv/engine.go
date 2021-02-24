@@ -247,7 +247,6 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 		Registries: ar.Container.Registries,
 	})
 	if err != nil {
-		log.Debugf("!!!!!!!!!!!!!!!!!!! %v", err)
 		return NewInternalError(err)
 	}
 

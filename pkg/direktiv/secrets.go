@@ -55,6 +55,7 @@ func (ss *secretsServer) setClient(wfs *WorkflowServer) error {
 	}
 
 	wfs.componentAPIs.secretsClient = secrets.NewSecretsServiceClient(conn)
+	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
 
 	return nil
 
@@ -261,6 +262,10 @@ func (ss *secretsServer) stop() {
 
 	if ss.grpc != nil {
 		ss.grpc.GracefulStop()
+	}
+
+	if ss.db != nil {
+		ss.db.Close()
 	}
 
 }

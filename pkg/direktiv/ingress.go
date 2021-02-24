@@ -55,6 +55,7 @@ func (is *ingressServer) setClient(wfs *WorkflowServer) error {
 	}
 
 	wfs.componentAPIs.ingressClient = ingress.NewDirektivIngressClient(conn)
+	wfs.componentAPIs.conns = append(wfs.componentAPIs.conns, conn)
 
 	return nil
 

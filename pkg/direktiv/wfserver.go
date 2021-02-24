@@ -7,6 +7,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/isolate"
 	"github.com/vorteil/direktiv/pkg/secrets"
+	"google.golang.org/grpc"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -37,6 +38,8 @@ type componentAPIs struct {
 	secretsClient secrets.SecretsServiceClient
 	isolateClient isolate.DirektivIsolateClient
 	ingressClient ingress.DirektivIngressClient
+
+	conns []*grpc.ClientConn
 }
 
 // WorkflowServer is a direktiv server
@@ -46,10 +49,11 @@ type WorkflowServer struct {
 	config     *Config
 	serverType string
 
-	dbManager      *dbManager
-	tmManager      *timerManager
-	engine         *workflowEngine
-	actionManager  *actionManager
+	dbManager     *dbManager
+	tmManager     *timerManager
+	engine        *workflowEngine
+	actionManager *actionManager
+
 	LifeLine       chan bool
 	instanceLogger dlog.Log
 	secrets        secrets.SecretsServiceClient
@@ -146,7 +150,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	// }
 
 	ingressServer := newIngressServer(s)
-	s.components[isolateComponent] = ingressServer
+	s.components[ingressComponent] = ingressServer
 
 	healthServer := newHealthServer(config)
 	s.components[healthComponent] = healthServer
@@ -217,12 +221,18 @@ func (s *WorkflowServer) cleanup() {
 		defer s.dbManager.dbEnt.Close()
 	}
 
-	if s.isWorkflowServer() {
+	if s.tmManager != nil {
 		s.tmManager.stopTimers()
 	}
 
-	if s.actionManager != nil {
-		s.actionManager.stop()
+	// stop components
+	for _, comp := range s.components {
+		comp.stop()
+	}
+
+	// close grpc if client has been used
+	for _, conn := range s.componentAPIs.conns {
+		conn.Close()
 	}
 
 }
