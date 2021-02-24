@@ -14,28 +14,64 @@ import (
 	"github.com/vorteil/direktiv/pkg/secrets"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *WorkflowServer) grpcIngressStart() error {
+type ingressServer struct {
+	ingress.UnimplementedDirektivIngressServer
 
-	// TODO: make port configurable
-	// TODO: save listener somewhere so that it can be shutdown
-	// TODO: save grpc somewhere so that it can be shutdown
-	log.Infof("ingress api starting at %v", s.config.IngressAPI.Bind)
+	dbManager *dbManager
+	tmManager *timerManager
+	config    *Config
 
-	listener, err := net.Listen("tcp", s.config.IngressAPI.Bind)
+	grpc *grpc.Server
+}
+
+func (is *ingressServer) stop() {
+
+	if is.grpc != nil {
+		is.grpc.GracefulStop()
+	}
+
+}
+
+func (is *ingressServer) name() string {
+	return "ingress"
+}
+
+func newIngressServer(s *WorkflowServer) *ingressServer {
+
+	return &ingressServer{
+		dbManager: s.dbManager,
+		tmManager: s.tmManager,
+		config:    s.config,
+	}
+
+}
+
+func (is *ingressServer) start() error {
+
+	log.Infof("ingress api starting at %v", is.config.IngressAPI.Bind)
+
+	tls, err := tlsForGRPC(is.config.Certs.Directory, ingressComponent,
+		serverType, (is.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}
 
-	s.grpcIngress = grpc.NewServer()
+	listener, err := net.Listen("tcp", is.config.IngressAPI.Bind)
+	if err != nil {
+		return err
+	}
 
-	ingress.RegisterDirektivIngressServer(s.grpcIngress, s)
+	is.grpc = grpc.NewServer(grpc.Creds(credentials.NewTLS(tls)))
 
-	go s.grpcIngress.Serve(listener)
+	ingress.RegisterDirektivIngressServer(is.grpc, is)
+
+	go is.grpc.Serve(listener)
 
 	return nil
 

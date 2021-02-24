@@ -21,7 +21,7 @@ run-minio:
 	if [ ! -f ${mkfile_dir_main}/minio ]; then \
 		wget https://apps.vorteil.io/file/vorteil/minio; \
 	fi
-	vorteil run --vm.disk-size="+256 MiB" ${mkfile_dir_main}/minio
+	vorteil run --vm.disk-size="+2048 MiB" ${mkfile_dir_main}/minio
 
 # run postgres on vorteil
 .PHONY: run-postgres

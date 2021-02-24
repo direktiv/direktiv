@@ -13,7 +13,6 @@ import (
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/grpc"
 )
 
@@ -28,7 +27,7 @@ const (
 	lockWait = 10
 )
 
-type subServer interface {
+type component interface {
 	start() error
 	stop()
 	name() string
@@ -38,7 +37,6 @@ type subServer interface {
 type WorkflowServer struct {
 	flow.UnimplementedDirektivFlowServer
 	health.UnimplementedHealthServer
-	ingress.UnimplementedDirektivIngressServer
 
 	id         uuid.UUID
 	ctx        context.Context
@@ -52,9 +50,8 @@ type WorkflowServer struct {
 	LifeLine       chan bool
 	instanceLogger dlog.Log
 
-	grpcFlow    *grpc.Server
-	grpcHealth  *grpc.Server
-	grpcIngress *grpc.Server
+	grpcFlow   *grpc.Server
+	grpcHealth *grpc.Server
 
 	secrets secrets.SecretsServiceClient
 }
@@ -175,7 +172,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	s.grpcIngressStart()
 	s.grpcHealthStart()
 
-	var subs []subServer
+	var components []component
 
 	sec, err := newSecretsServer(config)
 	if err != nil {
@@ -183,11 +180,11 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		return nil, err
 	}
 
-	subs = append(subs, sec)
+	components = append(components, sec)
 
-	for _, sub := range subs {
-		log.Debugf("starting %s", sub.name())
-		err := sub.start()
+	for _, comp := range components {
+		log.Debugf("starting %s", comp.name())
+		err := comp.start()
 		if err != nil {
 			log.Errorf("can not start")
 			return nil, err
