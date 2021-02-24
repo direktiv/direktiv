@@ -258,12 +258,14 @@ func (s *WorkflowServer) Run() error {
 		log.Debugf("subscribing to sync queue")
 		err := s.startDatabaseListener()
 		if err != nil {
+			s.Kill()
 			return err
 		}
 
 		// start timers
 		err = s.tmManager.startTimers()
 		if err != nil {
+			s.Kill()
 			return err
 		}
 
@@ -272,6 +274,7 @@ func (s *WorkflowServer) Run() error {
 	if s.actionManager != nil {
 		err := s.actionManager.start()
 		if err != nil {
+			s.Kill()
 			return err
 		}
 	}
