@@ -7,6 +7,7 @@ require (
 	entgo.io/ent v0.6.0
 	github.com/appc/spec v0.8.11
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
+	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/codeclysm/extract v2.2.0+incompatible
 	github.com/containerd/go-cni v1.0.1
