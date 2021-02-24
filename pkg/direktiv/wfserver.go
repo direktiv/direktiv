@@ -46,7 +46,6 @@ type WorkflowServer struct {
 	secrets        secrets.SecretsServiceClient
 
 	components map[string]component
-	// componentAPIs componentAPIs
 }
 
 func (s *WorkflowServer) initWorkflowServer() error {
@@ -153,27 +152,6 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	healthServer := newHealthServer(config)
 	s.components[healthComponent] = healthServer
 
-	// for _, comp := range s.components {
-	// 	log.Debugf("starting %s component", comp.name())
-	// 	err := comp.start()
-	// 	if err != nil {
-	// 		log.Errorf("can not start: %v", err)
-	// 		return nil, err
-	// 	}
-	// }
-
-	// for _, comp := range s.components {
-	// 	log.Debugf("creating client for %s component", comp.name())
-	// 	err = comp.setClient(s)
-	// 	if err != nil {
-	// 		log.Errorf("can not create client: %v", err)
-	// 		return nil, err
-	// 	}
-	// }
-
-	// TODO: that move in isolate manager
-	// am.grpcFlow = s.componentAPIs.flowClient
-
 	return s, nil
 
 }
@@ -208,6 +186,7 @@ func (s *WorkflowServer) cleanup() {
 
 	// stop components
 	for _, comp := range s.components {
+		log.Debugf("stopping %s", comp.name())
 		comp.stop()
 	}
 
