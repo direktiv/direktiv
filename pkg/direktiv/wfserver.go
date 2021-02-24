@@ -2,8 +2,6 @@ package direktiv
 
 import (
 	"context"
-	"os"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/health"
@@ -59,6 +57,63 @@ type WorkflowServer struct {
 	secrets secrets.SecretsServiceClient
 }
 
+func (s *WorkflowServer) initWorkflowServer() error {
+
+	var err error
+
+	// prep timers
+	s.tmManager, err = newTimerManager(s)
+	if err != nil {
+		return err
+	}
+
+	s.grpcFlowStart()
+
+	s.engine, err = newWorkflowEngine(s)
+	if err != nil {
+		return err
+	}
+
+	// register the timer functions
+	var timerFunctions = map[string]func([]byte) error{
+		timerCleanOneShot:         s.tmManager.cleanOneShot,
+		timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
+	}
+
+	for n, f := range timerFunctions {
+		err := s.tmManager.registerFunction(n, f)
+		if err != nil {
+			return err
+		}
+	}
+
+	addCron := func(name, cron string) {
+		// add clean up timers
+		_, err := s.dbManager.getTimer(name)
+
+		// on error we assuming it is not in the database
+		if err != nil {
+			s.tmManager.addCron(name, name, cron, []byte(""))
+		}
+
+	}
+
+	addCron(timerCleanOneShot, "*/10 * * * *")
+	addCron(timerCleanInstanceRecords, "0 * * * *")
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	conn, err := grpc.Dial(s.config.SecretsAPI.Endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	s.secrets = secrets.NewSecretsServiceClient(conn)
+
+	return nil
+
+}
+
 // NewWorkflowServer creates a new workflow server
 func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, error) {
 
@@ -82,83 +137,10 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	if s.isWorkflowServer() {
-
-		// prep timers
-		s.tmManager, err = newTimerManager(s)
+		err = s.initWorkflowServer()
 		if err != nil {
 			return nil, err
 		}
-
-		s.grpcFlowStart()
-
-		s.engine, err = newWorkflowEngine(s)
-		if err != nil {
-			return nil, err
-		}
-
-		// register the timer functions
-		var (
-			timerFunctions = map[string]func([]byte) error{
-				// timerCleanMessageID: s.dbManager.messageIDCleaner,
-				timerCleanOneShot:         s.tmManager.cleanOneShot,
-				timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
-			}
-		)
-
-		for n, f := range timerFunctions {
-			err := s.tmManager.registerFunction(n, f)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		addCron := func(name, cron string) {
-			// add clean up timers
-			_, err := s.dbManager.getTimer(name)
-
-			// on error we assuming it is not in the database
-			if err != nil {
-				s.tmManager.addCron(name, name, cron, []byte(""))
-			}
-
-		}
-
-		addCron(timerCleanOneShot, "*/10 * * * *")
-		addCron(timerCleanInstanceRecords, "0 * * * *")
-
-		hn, _ := os.Hostname()
-
-		if hn == "server1" {
-			log.Debugf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!HOSTNAME %v", hn)
-			go func() {
-				log.Debugf("START!!!")
-				time.Sleep(3 * time.Second)
-				s.tmManager.addOneShot("this1", timerCleanOneShot, time.Now().Add(30*time.Second), []byte("this1"))
-				// _, _ = s.tmManager.addCron("this1", timerCleanOneShot, "*/1 * * * *", []byte("this1"))
-				time.Sleep(5 * time.Second)
-				s.tmManager.actionTimerByName("this1", disableTimerAction)
-				// time.Sleep(5 * time.Second)
-				// s.tmManager.actionTimerByName("this1", enableTimerAction)
-				time.Sleep(1 * time.Minute)
-				s.tmManager.actionTimerByName("this1", deleteTimerAction)
-			}()
-
-		}
-
-		// s.tmManager.disableTimer(h, false)
-		// s.tmManager.enableTimer(h)
-		// s.tmManager.addOneShot("1234", "cleanOneShot", time.Now().UTC().Add(6*time.Second), []byte("JENS2"))
-		// s.tmManager.addOneShot("12345", "cleanOneShot", time.Now().UTC().Add(7*time.Second), []byte("JENS3"))
-
-		var opts []grpc.DialOption
-		opts = append(opts, grpc.WithInsecure())
-
-		conn, err := grpc.Dial(s.config.SecretsAPI.Endpoint, opts...)
-		if err != nil {
-			return nil, err
-		}
-		s.secrets = secrets.NewSecretsServiceClient(conn)
-
 	}
 
 	if s.isRunnerServer() {
