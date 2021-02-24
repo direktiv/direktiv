@@ -10,10 +10,16 @@ import (
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 const (
 	ingressComponent string = "ingress"
+	isolateComponent string = "isolate"
+	flowComponent    string = "flow"
+	secretsComponent string = "secrets"
+	healthComponent  string = "health"
 
 	serverType = "server"
 	clientType = "client"
@@ -69,5 +75,20 @@ func tlsForGRPC(certDir, component, name string, insecure bool) (*tls.Config, er
 	}
 
 	return config, nil
+
+}
+
+func getEndpointTLS(config *Config, component, endpoint string) (*grpc.ClientConn, error) {
+	var opts []grpc.DialOption
+
+	tlsConfig, err := tlsForGRPC(config.Certs.Directory, component, clientType,
+		(config.Certs.Secure != 1))
+	if err != nil {
+		log.Errorf("can not create tls config: %v", err)
+		return nil, err
+	}
+
+	opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	return grpc.Dial(endpoint, opts...)
 
 }

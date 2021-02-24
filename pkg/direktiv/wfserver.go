@@ -2,18 +2,16 @@ package direktiv
 
 import (
 	"context"
-	"os"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/health"
+	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/isolate"
 	"github.com/vorteil/direktiv/pkg/secrets"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -31,13 +29,18 @@ type component interface {
 	start() error
 	stop()
 	name() string
+	setClient(*WorkflowServer) error
+}
+
+type componentAPIs struct {
+	flowClient    flow.DirektivFlowClient
+	secretsClient secrets.SecretsServiceClient
+	isolateClient isolate.DirektivIsolateClient
+	ingressClient ingress.DirektivIngressClient
 }
 
 // WorkflowServer is a direktiv server
 type WorkflowServer struct {
-	flow.UnimplementedDirektivFlowServer
-	health.UnimplementedHealthServer
-
 	id         uuid.UUID
 	ctx        context.Context
 	config     *Config
@@ -49,29 +52,76 @@ type WorkflowServer struct {
 	actionManager  *actionManager
 	LifeLine       chan bool
 	instanceLogger dlog.Log
+	secrets        secrets.SecretsServiceClient
 
-	grpcFlow   *grpc.Server
-	grpcHealth *grpc.Server
+	components    map[string]component
+	componentAPIs componentAPIs
+}
 
-	secrets secrets.SecretsServiceClient
+func (s *WorkflowServer) initWorkflowServer() error {
+
+	var err error
+
+	// prep timers
+	s.tmManager, err = newTimerManager(s)
+	if err != nil {
+		return err
+	}
+
+	s.engine, err = newWorkflowEngine(s)
+	if err != nil {
+		return err
+	}
+
+	// register the timer functions
+	var timerFunctions = map[string]func([]byte) error{
+		timerCleanOneShot:         s.tmManager.cleanOneShot,
+		timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
+	}
+
+	for n, f := range timerFunctions {
+		err := s.tmManager.registerFunction(n, f)
+		if err != nil {
+			return err
+		}
+	}
+
+	addCron := func(name, cron string) {
+		// add clean up timers
+		_, err := s.dbManager.getTimer(name)
+
+		// on error we assuming it is not in the database
+		if err != nil {
+			s.tmManager.addCron(name, name, cron, []byte(""))
+		}
+
+	}
+
+	addCron(timerCleanOneShot, "*/10 * * * *")
+	addCron(timerCleanInstanceRecords, "0 * * * *")
+
+	return nil
+
 }
 
 // NewWorkflowServer creates a new workflow server
 func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, error) {
 
 	log.Debugf("server type: %s", serverType)
-
-	var err error
 	ctx := context.Background()
+
+	var (
+		err error
+	)
 
 	s := &WorkflowServer{
 		id:         uuid.New(),
 		ctx:        ctx,
 		LifeLine:   make(chan bool),
 		serverType: serverType,
+		config:     config,
+		components: make(map[string]component),
 	}
-
-	s.config = config
 
 	s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
 	if err != nil {
@@ -79,117 +129,58 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	if s.isWorkflowServer() {
-
-		// prep timers
-		s.tmManager, err = newTimerManager(s)
+		err = s.initWorkflowServer()
 		if err != nil {
 			return nil, err
 		}
-
-		s.grpcFlowStart()
-
-		s.engine, err = newWorkflowEngine(s)
-		if err != nil {
-			return nil, err
-		}
-
-		// register the timer functions
-		var (
-			timerFunctions = map[string]func([]byte) error{
-				// timerCleanMessageID: s.dbManager.messageIDCleaner,
-				timerCleanOneShot:         s.tmManager.cleanOneShot,
-				timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
-			}
-		)
-
-		for n, f := range timerFunctions {
-			err := s.tmManager.registerFunction(n, f)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		addCron := func(name, cron string) {
-			// add clean up timers
-			_, err := s.dbManager.getTimer(name)
-
-			// on error we assuming it is not in the database
-			if err != nil {
-				s.tmManager.addCron(name, name, cron, []byte(""))
-			}
-
-		}
-
-		addCron(timerCleanOneShot, "*/10 * * * *")
-		addCron(timerCleanInstanceRecords, "0 * * * *")
-
-		hn, _ := os.Hostname()
-
-		if hn == "server1" {
-			log.Debugf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!HOSTNAME %v", hn)
-			go func() {
-				log.Debugf("START!!!")
-				time.Sleep(3 * time.Second)
-				s.tmManager.addOneShot("this1", timerCleanOneShot, time.Now().Add(30*time.Second), []byte("this1"))
-				// _, _ = s.tmManager.addCron("this1", timerCleanOneShot, "*/1 * * * *", []byte("this1"))
-				time.Sleep(5 * time.Second)
-				s.tmManager.actionTimerByName("this1", disableTimerAction)
-				// time.Sleep(5 * time.Second)
-				// s.tmManager.actionTimerByName("this1", enableTimerAction)
-				time.Sleep(1 * time.Minute)
-				s.tmManager.actionTimerByName("this1", deleteTimerAction)
-			}()
-
-		}
-
-		// s.tmManager.disableTimer(h, false)
-		// s.tmManager.enableTimer(h)
-		// s.tmManager.addOneShot("1234", "cleanOneShot", time.Now().UTC().Add(6*time.Second), []byte("JENS2"))
-		// s.tmManager.addOneShot("12345", "cleanOneShot", time.Now().UTC().Add(7*time.Second), []byte("JENS3"))
-
-		var opts []grpc.DialOption
-		opts = append(opts, grpc.WithInsecure())
-
-		conn, err := grpc.Dial(s.config.SecretsAPI.Endpoint, opts...)
-		if err != nil {
-			return nil, err
-		}
-		s.secrets = secrets.NewSecretsServiceClient(conn)
-
 	}
 
-	if s.isRunnerServer() {
+	// if s.isRunnerServer() {
 
-		am, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
-		if err != nil {
-			return nil, err
-		}
-		s.actionManager = am
-		am.grpcIsolateStart()
-
+	am, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
+	if err != nil {
+		return nil, err
 	}
+	s.actionManager = am
+	s.components[isolateComponent] = am
+	// }
 
-	s.grpcIngressStart()
-	s.grpcHealthStart()
+	ingressServer := newIngressServer(s)
+	s.components[isolateComponent] = ingressServer
 
-	var components []component
+	healthServer := newHealthServer(config)
+	s.components[healthComponent] = healthServer
 
-	sec, err := newSecretsServer(config)
+	flowServer := newFlowServer(config, s.engine)
+	s.components[flowComponent] = flowServer
+
+	secretsServer, err := newSecretsServer(config)
 	if err != nil {
 		log.Errorf("can not create secret server: %v", err)
 		return nil, err
 	}
+	s.components[secretsComponent] = secretsServer
 
-	components = append(components, sec)
-
-	for _, comp := range components {
-		log.Debugf("starting %s", comp.name())
+	for _, comp := range s.components {
+		log.Debugf("starting %s component", comp.name())
 		err := comp.start()
 		if err != nil {
-			log.Errorf("can not start")
+			log.Errorf("can not start: %v", err)
 			return nil, err
 		}
 	}
+
+	for _, comp := range s.components {
+		log.Debugf("creating client for %s component", comp.name())
+		err = comp.setClient(s)
+		if err != nil {
+			log.Errorf("can not create client: %v", err)
+			return nil, err
+		}
+	}
+
+	// TODO: that move in isolate manager
+	am.grpcFlow = s.componentAPIs.flowClient
 
 	return s, nil
 

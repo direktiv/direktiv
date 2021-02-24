@@ -32,18 +32,13 @@ import (
 	"github.com/vorteil/vorteil/pkg/vimg"
 	"github.com/vorteil/vorteil/pkg/vkern"
 	"google.golang.org/grpc"
+	grpccred "google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type contextActionKey string
 
 const (
-	actionSubscription = "direktivaction"
-
-	actionRespSubscription = "direktivactionresp"
-
-	queueActionGroup = "daction"
-
 	direktivBucket = "direktiv"
 
 	kernelFolder = "/home/vorteil"
@@ -77,7 +72,7 @@ type actionManager struct {
 
 	config         *Config
 	minioClient    *minio.Client
-	grpcIsolate    *grpc.Server
+	grpc           *grpc.Server
 	grpcFlow       flow.DirektivFlowClient
 	fileCache      *fileCache
 	cni            gocni.CNI
@@ -85,7 +80,6 @@ type actionManager struct {
 	dbManager      *dbManager
 
 	actx map[string]*ctxs
-	// actionCtxs []*ctxs
 }
 
 type actionWorkflow struct {
@@ -154,20 +148,8 @@ func newActionManager(config *Config, dbManager *dbManager, l *dlog.Log) (*actio
 
 	log.Debugf("action flow endpoint: %v", config.FlowAPI.Endpoint)
 
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	conn, err := grpc.Dial(config.FlowAPI.Endpoint, opts...)
-	if err != nil {
-		return nil, err
-	}
-	grpcFlow := flow.NewDirektivFlowClient(conn)
-
-	if config == nil || grpcFlow == nil {
-		return nil, fmt.Errorf("config, grpc client and dbManager required for action manager")
-	}
-
 	am := &actionManager{
 		config:         config,
-		grpcFlow:       grpcFlow,
 		instanceLogger: l,
 		dbManager:      dbManager,
 		actx:           make(map[string]*ctxs),
@@ -214,23 +196,51 @@ func newActionManager(config *Config, dbManager *dbManager, l *dlog.Log) (*actio
 
 }
 
-func (am *actionManager) grpcIsolateStart() error {
+func (am *actionManager) grpcStart() error {
 
 	bind := am.config.IsolateAPI.Bind
-	log.Debugf("action endpoint starting at %s", bind)
+	log.Debugf("!!!!!!!!!!!!!!!!!!!!!!!!!action endpoint starting at %s", bind)
 
-	// TODO: save listener somewhere so that it can be shutdown
-	// TODO: save grpc somewhere so that it can be shutdown
+	tls, err := tlsForGRPC(am.config.Certs.Directory, isolateComponent,
+		serverType, (am.config.Certs.Secure != 1))
+	if err != nil {
+		return err
+	}
+
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
 		return err
 	}
 
-	am.grpcIsolate = grpc.NewServer()
+	am.grpc = grpc.NewServer(grpc.Creds(grpccred.NewTLS(tls)))
+	isolate.RegisterDirektivIsolateServer(am.grpc, am)
 
-	isolate.RegisterDirektivIsolateServer(am.grpcIsolate, am)
+	go am.grpc.Serve(listener)
 
-	go am.grpcIsolate.Serve(listener)
+	return nil
+
+}
+
+func (am *actionManager) stop() {
+
+	if am.grpc != nil {
+		am.grpc.GracefulStop()
+	}
+
+}
+
+func (am *actionManager) name() string {
+	return "isolate"
+}
+
+func (am *actionManager) setClient(wfs *WorkflowServer) error {
+
+	conn, err := getEndpointTLS(wfs.config, isolateComponent, wfs.config.IsolateAPI.Endpoint)
+	if err != nil {
+		return err
+	}
+
+	wfs.componentAPIs.isolateClient = isolate.NewDirektivIsolateClient(conn)
 
 	return nil
 
@@ -238,6 +248,8 @@ func (am *actionManager) grpcIsolateStart() error {
 
 func (am *actionManager) start() error {
 	log.Infof("starting action runner")
+
+	am.grpcStart()
 
 	insecure := true
 	if am.config.Minio.Secure > 0 {
@@ -279,13 +291,6 @@ func (am *actionManager) start() error {
 	am.minioClient = minioClient
 
 	return nil
-}
-
-func (am *actionManager) stop() {
-
-	log.Infof("stopping action runner")
-	am.grpcIsolate.GracefulStop()
-
 }
 
 func hashImg(img, cmd string) string {
