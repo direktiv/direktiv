@@ -205,6 +205,11 @@ func (o *Workflow) validate() error {
 		return err
 	}
 
+	functions, err := o.getFunctionMap()
+	if err != nil {
+		return err
+	}
+
 	if o.Start != nil && o.Start.GetState() != "" {
 		// Check if state exists
 		if _, ok := states[o.Start.GetState()]; !ok {
@@ -232,6 +237,25 @@ func (o *Workflow) validate() error {
 		for tKey, transition := range state.getTransitions() {
 			if _, ok := states[transition]; !ok {
 				return fmt.Errorf("workflow state[%v] '%v' transition '%s' does not exist", i, tKey, transition)
+			}
+		}
+
+		// Check if function actions are defined
+		fActions := make([]string, 0)
+		switch state.GetType() {
+		case StateTypeAction:
+			fActions = append(fActions, state.(*ActionState).Action.Function)
+		case StateTypeParallel:
+			for _, act := range state.(*ParallelState).Actions {
+				fActions = append(fActions, act.Function)
+			}
+		case StateTypeForEach:
+			fActions = append(fActions, state.(*ForEachState).Action.Function)
+		}
+
+		for j := range fActions {
+			if _, fExists := functions[fActions[j]]; fActions[j] != "" && !fExists {
+				return fmt.Errorf("workflow state[%v] actions function '%s' does not exist", i, fActions[j])
 			}
 		}
 
@@ -277,6 +301,21 @@ func (o *Workflow) getStatesMap() (map[string]State, error) {
 	}
 
 	return statesMap, nil
+}
+
+// getFunctionMap : Get functions as a map, and returns error if the same function id is defined more than once
+func (o *Workflow) getFunctionMap() (map[string]FunctionDefinition, error) {
+	funcMap := make(map[string]FunctionDefinition)
+
+	for _, wfFunc := range o.GetFunctions() {
+		fID := wfFunc.ID
+		if _, ok := funcMap[fID]; ok {
+			return funcMap, fmt.Errorf("function id '%s' is used in more than one function", fID)
+		}
+		funcMap[fID] = wfFunc
+	}
+
+	return funcMap, nil
 }
 
 func (o *Workflow) GetSchemas() []SchemaDefinition {
