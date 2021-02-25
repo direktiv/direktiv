@@ -1,0 +1,11 @@
+version: "2"
+checks:
+  return-statements:
+    enabled: true
+    config:
+      threshold: 6
+exclude_patterns:
+- "ent/"
+- "pkg/secrets/ent/"
+- "examples/"
+- "**/*.pb.go"
