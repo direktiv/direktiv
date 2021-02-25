@@ -39,7 +39,7 @@ const (
 	minioEndpoint = "DIREKTIV_MINIO_ENDPOINT"
 	minioUser     = "DIREKTIV_MINIO_USER"
 	minioPassword = "DIREKTIV_MINIO_PASSWORD"
-	minioSecure   = "DIREKTIV_MINIO_INSECURE"
+	minioSecure   = "DIREKTIV_MINIO_SECURE"
 	minioEncrypt  = "DIREKTIV_MINIO_ENCRYPT"
 	minioRegion   = "DIREKTIV_MINIO_REGION"
 
@@ -48,6 +48,9 @@ const (
 
 	// instance logging
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
+
+	certDir    = "DIREKTIV_CERTS"
+	certSecure = "DIREKTIV_SECURE"
 )
 
 // Config is the configuration for workflow and runner server
@@ -87,6 +90,11 @@ type Config struct {
 
 	Database struct {
 		DB string
+	}
+
+	Certs struct {
+		Directory string
+		Secure    int
 	}
 
 	InstanceLogging struct {
@@ -207,6 +215,7 @@ func ReadConfig(file string) (*Config, error) {
 		value *int
 	}{
 		{minioSecure, &c.Minio.Secure},
+		{certSecure, &c.Certs.Secure},
 	}
 
 	for _, i := range ints {
@@ -243,6 +252,7 @@ func ReadConfig(file string) (*Config, error) {
 		{secretsBind, &c.SecretsAPI.Bind},
 		{secretsEndpoint, &c.SecretsAPI.Endpoint},
 		{secretsConn, &c.SecretsAPI.DB},
+		{certDir, &c.Certs.Directory},
 	}
 
 	for _, i := range strings {

@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
@@ -13,32 +12,44 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (s *WorkflowServer) grpcFlowStart() error {
+type flowServer struct {
+	flow.UnimplementedDirektivFlowServer
 
-	// TODO: make port configurable
-	// TODO: save listener somewhere so that it can be shutdown
-	// TODO: save grpc somewhere so that it can be shutdown
-	log.Infof("flow endpoint starting at %v", s.config.FlowAPI.Bind)
-	listener, err := net.Listen("tcp", s.config.FlowAPI.Bind)
-	if err != nil {
-		return err
+	config *Config
+	engine *workflowEngine
+	grpc   *grpc.Server
+}
+
+func newFlowServer(config *Config, engine *workflowEngine) *flowServer {
+	return &flowServer{
+		config: config,
+		engine: engine,
 	}
+}
 
-	s.grpcFlow = grpc.NewServer()
+func (fs *flowServer) stop() {
 
-	flow.RegisterDirektivFlowServer(s.grpcFlow, s)
-
-	go s.grpcFlow.Serve(listener)
-
-	return nil
+	if fs.grpc != nil {
+		fs.grpc.GracefulStop()
+	}
 
 }
 
-func (s *WorkflowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) name() string {
+	return "flow"
+}
+
+func (fs *flowServer) start(s *WorkflowServer) error {
+	return s.grpcStart(&fs.grpc, "flow", s.config.FlowAPI.Bind, func(srv *grpc.Server) {
+		flow.RegisterDirektivFlowServer(srv, fs)
+	})
+}
+
+func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
-	ctx, wli, err := s.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
+	ctx, wli, err := fs.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
 	if err != nil {
 		return nil, err
 	}
@@ -77,22 +88,22 @@ func (s *WorkflowServer) ReportActionResults(ctx context.Context, in *flow.Repor
 
 	}
 
-	go s.engine.runState(ctx, wli, savedata, wakedata)
+	go fs.engine.runState(ctx, wli, savedata, wakedata)
 
 	return &resp, nil
 
 }
 
-func (s *WorkflowServer) Resume(ctx context.Context, in *flow.ResumeRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) Resume(ctx context.Context, in *flow.ResumeRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
-	ctx, wli, err := s.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
+	ctx, wli, err := fs.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
 	if err != nil {
 		return nil, err
 	}
 
-	go s.engine.runState(ctx, wli, nil, nil)
+	go fs.engine.runState(ctx, wli, nil, nil)
 
 	return &resp, nil
 

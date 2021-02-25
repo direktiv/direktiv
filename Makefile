@@ -21,7 +21,7 @@ run-minio:
 	if [ ! -f ${mkfile_dir_main}/minio ]; then \
 		wget https://apps.vorteil.io/file/vorteil/minio; \
 	fi
-	vorteil run --vm.disk-size="+256 MiB" ${mkfile_dir_main}/minio
+	vorteil run --vm.disk-size="+2048 MiB" ${mkfile_dir_main}/minio
 
 # run postgres on vorteil
 .PHONY: run-postgres
@@ -35,6 +35,12 @@ run-postgres:
 .PHONY: protoc
 protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(isolate_generated_files) $(secrets_generated_files)
 
+.PHONY: docker
+docker:
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/docker/
+	cp ${mkfile_dir_main}/build/conf.toml  ${mkfile_dir_main}/build/docker/
+	docker build -t direktiv ${mkfile_dir_main}/build/docker
+
 .PHONY: build
 build:
 	go get entgo.io/ent
@@ -46,8 +52,9 @@ build-cli:
 # run as sudo because networking needs root privileges
 .PHONY: run
 run:
-	DIREKTIV_DB="host=192.168.1.10 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
-	DIREKTIV_SECRETS_DB="host=192.168.1.10 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" go run cmd/direktiv/main.go -d -t wf -c ${mkfile_dir_main}/build/conf.toml
+	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
+	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
+	go run cmd/direktiv/main.go -d -t wis -c ${mkfile_dir_main}/build/conf.toml
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<

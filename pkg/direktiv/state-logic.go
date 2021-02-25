@@ -9,6 +9,8 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/senseyeio/duration"
+	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -48,6 +50,60 @@ type stateLogic interface {
 	ErrorCatchers() []model.ErrorDefinition
 	Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error)
 	LivingChildren(savedata []byte) []stateChild
+}
+
+// -------------- Helper Functions --------------
+
+func deadlineFromString(s string) time.Time {
+
+	var t time.Time
+	var d time.Duration
+
+	d = time.Minute * 15
+
+	if s != "" {
+		dur, err := duration.ParseISO8601(s)
+		if err != nil {
+			// NOTE: validation should prevent this from ever happening
+			log.Errorf("Got an invalid ISO8601 timeout: %v", err)
+		} else {
+			now := time.Now()
+			later := dur.Shift(now)
+			d = later.Sub(now)
+		}
+	}
+
+	t = time.Now()
+	t.Add(d)
+	t.Add(time.Second * 5)
+
+	return t
+
+}
+
+func addSecrets(ctx context.Context, wli *workflowLogicInstance, m map[string]interface{}, secrets ...string) (map[string]interface{}, error) {
+
+	var err error
+
+	if len(secrets) > 0 {
+		wli.Log("Decrypting secrets.")
+
+		s := make(map[string]string)
+
+		for _, name := range secrets {
+			var dd []byte
+			dd, err = decryptedDataForNS(ctx, wli, wli.namespace, name)
+			if err != nil {
+				return nil, err
+			}
+			s[name] = string(dd)
+		}
+
+		m["secrets"] = s
+	}
+
+	return m, nil
+
 }
 
 // -------------- Noop State --------------

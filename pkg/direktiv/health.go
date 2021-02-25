@@ -2,50 +2,54 @@ package direktiv
 
 import (
 	"context"
-	"net"
 
 	"google.golang.org/grpc"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/health"
 )
 
-func (s *WorkflowServer) grpcHealthStart() error {
+type healthServer struct {
+	health.UnimplementedHealthServer
 
-	// TODO: make port configurable
-	// TODO: save listener somewhere so that it can be shutdown
-	// TODO: save grpc somewhere so that it can be shutdown
+	config *Config
+	grpc   *grpc.Server
+}
 
-	log.Infof("health endpoint starting at %s", s.config.HealthAPI.Bind)
-
-	listener, err := net.Listen("tcp", s.config.HealthAPI.Bind)
-	if err != nil {
-		return err
+func newHealthServer(config *Config) *healthServer {
+	return &healthServer{
+		config: config,
 	}
+}
 
-	s.grpcHealth = grpc.NewServer()
+func (hs *healthServer) start(s *WorkflowServer) error {
+	return s.grpcStart(&hs.grpc, "health", s.config.HealthAPI.Bind, func(srv *grpc.Server) {
+		health.RegisterHealthServer(srv, hs)
+	})
+}
 
-	health.RegisterHealthServer(s.grpcHealth, s)
+func (hs *healthServer) stop() {
 
-	go s.grpcHealth.Serve(listener)
-
-	return nil
+	if hs.grpc != nil {
+		hs.grpc.GracefulStop()
+	}
 
 }
 
-func (s *WorkflowServer) Check(ctx context.Context, in *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+func (hs *healthServer) name() string {
+	return "health"
+}
+
+func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
 
 	var resp health.HealthCheckResponse
 
 	resp.Status = health.HealthCheckResponse_SERVING
 
-	// TODO
-
 	return &resp, nil
 
 }
 
-func (s *WorkflowServer) Watch(in *health.HealthCheckRequest, srv health.Health_WatchServer) error {
+func (hs *healthServer) Watch(in *health.HealthCheckRequest, srv health.Health_WatchServer) error {
 
 	var resp health.HealthCheckResponse
 
@@ -55,8 +59,6 @@ func (s *WorkflowServer) Watch(in *health.HealthCheckRequest, srv health.Health_
 	if err != nil {
 		return err
 	}
-
-	// TODO
 
 	return nil
 

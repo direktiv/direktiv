@@ -2,23 +2,21 @@ package direktiv
 
 import (
 	"context"
+	"net"
+	"strings"
 
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/health"
-	"github.com/vorteil/direktiv/pkg/secrets"
+	"google.golang.org/grpc"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/ingress"
-	"google.golang.org/grpc"
 )
 
 const (
-	workflowOnly   = "wfo"
-	workflowRunner = "wfr"
-	workflowAll    = "wf"
+	runsWorkflows = "w"
+	runsIsolates  = "i"
+	runsSecrets   = "s"
 )
 
 const (
@@ -26,35 +24,28 @@ const (
 	lockWait = 10
 )
 
-type subServer interface {
-	start() error
+type component interface {
+	start(s *WorkflowServer) error
 	stop()
 	name() string
 }
 
 // WorkflowServer is a direktiv server
 type WorkflowServer struct {
-	flow.UnimplementedDirektivFlowServer
-	health.UnimplementedHealthServer
-	ingress.UnimplementedDirektivIngressServer
-
 	id         uuid.UUID
 	ctx        context.Context
 	config     *Config
 	serverType string
 
-	dbManager      *dbManager
-	tmManager      *timerManager
-	engine         *workflowEngine
-	actionManager  *actionManager
+	dbManager     *dbManager
+	tmManager     *timerManager
+	engine        *workflowEngine
+	isolateServer *isolateServer
+
 	LifeLine       chan bool
 	instanceLogger dlog.Log
 
-	grpcFlow    *grpc.Server
-	grpcHealth  *grpc.Server
-	grpcIngress *grpc.Server
-
-	secrets secrets.SecretsServiceClient
+	components map[string]component
 }
 
 func (s *WorkflowServer) initWorkflowServer() error {
@@ -66,8 +57,6 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	if err != nil {
 		return err
 	}
-
-	s.grpcFlowStart()
 
 	s.engine, err = newWorkflowEngine(s)
 	if err != nil {
@@ -101,14 +90,11 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	addCron(timerCleanOneShot, "*/10 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
+	ingressServer := newIngressServer(s)
+	s.components[ingressComponent] = ingressServer
 
-	conn, err := grpc.Dial(s.config.SecretsAPI.Endpoint, opts...)
-	if err != nil {
-		return err
-	}
-	s.secrets = secrets.NewSecretsServiceClient(conn)
+	flowServer := newFlowServer(s.config, s.engine)
+	s.components[flowComponent] = flowServer
 
 	return nil
 
@@ -118,77 +104,60 @@ func (s *WorkflowServer) initWorkflowServer() error {
 func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, error) {
 
 	log.Debugf("server type: %s", serverType)
-
-	var err error
 	ctx := context.Background()
+
+	var (
+		err error
+	)
 
 	s := &WorkflowServer{
 		id:         uuid.New(),
 		ctx:        ctx,
 		LifeLine:   make(chan bool),
 		serverType: serverType,
+		config:     config,
+		components: make(map[string]component),
 	}
-
-	s.config = config
 
 	s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
 	if err != nil {
 		return nil, err
 	}
 
-	if s.isWorkflowServer() {
+	if s.runsComponent(runsWorkflows) {
 		err = s.initWorkflowServer()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if s.isRunnerServer() {
-
-		am, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
+	if s.runsComponent(runsIsolates) {
+		is, err := newIsolateManager(s.config, s.dbManager, &s.instanceLogger)
 		if err != nil {
 			return nil, err
 		}
-		s.actionManager = am
-		am.grpcIsolateStart()
-
+		s.isolateServer = is
+		s.components[isolateComponent] = is
 	}
 
-	s.grpcIngressStart()
-	s.grpcHealthStart()
-
-	var subs []subServer
-
-	sec, err := newSecretsServer(config)
-	if err != nil {
-		log.Errorf("can not create secret server: %v", err)
-		return nil, err
-	}
-
-	subs = append(subs, sec)
-
-	for _, sub := range subs {
-		log.Debugf("starting %s", sub.name())
-		err := sub.start()
+	if s.runsComponent(runsSecrets) {
+		secretsServer, err := newSecretsServer(config)
 		if err != nil {
-			log.Errorf("can not start")
+			log.Errorf("can not create secret server: %v", err)
 			return nil, err
 		}
+		s.components[secretsComponent] = secretsServer
 	}
+
+	healthServer := newHealthServer(config)
+	s.components[healthComponent] = healthServer
 
 	return s, nil
 
 }
 
-func (s *WorkflowServer) isWorkflowServer() bool {
-	if s.serverType == workflowOnly || s.serverType == workflowAll {
-		return true
-	}
-	return false
-}
-
-func (s *WorkflowServer) isRunnerServer() bool {
-	if s.serverType == workflowRunner || s.serverType == workflowAll {
+func (s *WorkflowServer) runsComponent(c string) bool {
+	if strings.Contains(s.serverType, c) {
 		return true
 	}
 	return false
@@ -211,12 +180,14 @@ func (s *WorkflowServer) cleanup() {
 		defer s.dbManager.dbEnt.Close()
 	}
 
-	if s.isWorkflowServer() {
+	if s.tmManager != nil {
 		s.tmManager.stopTimers()
 	}
 
-	if s.actionManager != nil {
-		s.actionManager.stop()
+	// stop components
+	for _, comp := range s.components {
+		log.Debugf("stopping %s", comp.name())
+		comp.stop()
 	}
 
 }
@@ -253,28 +224,56 @@ func (s *WorkflowServer) Kill() {
 func (s *WorkflowServer) Run() error {
 
 	// subscribe to cmds
-	if s.isWorkflowServer() {
+	if s.runsComponent(runsWorkflows) {
 
 		log.Debugf("subscribing to sync queue")
 		err := s.startDatabaseListener()
 		if err != nil {
+			s.Kill()
 			return err
 		}
 
 		// start timers
 		err = s.tmManager.startTimers()
 		if err != nil {
+			s.Kill()
 			return err
 		}
 
 	}
 
-	if s.actionManager != nil {
-		err := s.actionManager.start()
+	for _, comp := range s.components {
+		log.Debugf("starting %s component", comp.name())
+		err := comp.start(s)
 		if err != nil {
+			s.Kill()
 			return err
 		}
 	}
+
+	return nil
+
+}
+
+func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
+
+	log.Debugf("%s endpoint starting at %s", name, bind)
+
+	options, err := optionsForGRPC(s.config.Certs.Directory, secretsComponent, (s.config.Certs.Secure != 1))
+	if err != nil {
+		return err
+	}
+
+	listener, err := net.Listen("tcp", bind)
+	if err != nil {
+		return err
+	}
+
+	(*server) = grpc.NewServer(options...)
+
+	register(*server)
+
+	go (*server).Serve(listener)
 
 	return nil
 

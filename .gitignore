@@ -20,3 +20,8 @@
 /alpine-base
 /postgres
 /minio
+
+/build/docker/*
+!*build/docker/run.sh
+!*build/docker/Dockerfile
+!*build/docker/install.sh

@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"net"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
@@ -46,7 +45,7 @@ func newSecretsServer(config *Config) (*secretsServer, error) {
 
 }
 
-func getRegistries(c *Config, namespace string) (map[string]string, error) {
+func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace string) (map[string]string, error) {
 
 	r := make(map[string]string)
 
@@ -55,12 +54,6 @@ func getRegistries(c *Config, namespace string) (map[string]string, error) {
 
 	if len(reg.Name) > 0 {
 		r[reg.Name] = fmt.Sprintf("%s!%s", reg.User, reg.Token)
-	}
-
-	// overwrite with secrets
-	client, err := secretsClient(c.SecretsAPI.Endpoint)
-	if err != nil {
-		return r, err
 	}
 
 	var d secrets.GetSecretsRequest
@@ -81,38 +74,10 @@ func getRegistries(c *Config, namespace string) (map[string]string, error) {
 
 }
 
-func secretsClient(c string) (secrets.SecretsServiceClient, error) {
-
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
-
-	conn, err := grpc.Dial(c, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return secrets.NewSecretsServiceClient(conn), nil
-
-}
-
-func (ss *secretsServer) start() error {
-
-	bind := ss.config.SecretsAPI.Bind
-	log.Debugf("secrets endpoint starting at %s", bind)
-
-	listener, err := net.Listen("tcp", bind)
-	if err != nil {
-		return err
-	}
-
-	ss.grpc = grpc.NewServer()
-
-	secrets.RegisterSecretsServiceServer(ss.grpc, ss)
-
-	go ss.grpc.Serve(listener)
-
-	return nil
-
+func (ss *secretsServer) start(s *WorkflowServer) error {
+	return s.grpcStart(&ss.grpc, "secrets", s.config.SecretsAPI.Bind, func(srv *grpc.Server) {
+		secrets.RegisterSecretsServiceServer(srv, ss)
+	})
 }
 
 func (ss *secretsServer) StoreSecret(ctx context.Context, in *secrets.SecretsStoreRequest) (*empty.Empty, error) {
@@ -254,13 +219,17 @@ func (ss *secretsServer) GetSecrets(ctx context.Context, in *secrets.GetSecretsR
 }
 
 func (ss *secretsServer) name() string {
-	return "secrets server"
+	return "secrets"
 }
 
 func (ss *secretsServer) stop() {
 
 	if ss.grpc != nil {
 		ss.grpc.GracefulStop()
+	}
+
+	if ss.db != nil {
+		ss.db.Close()
 	}
 
 }
@@ -272,7 +241,7 @@ func decryptedDataForNS(ctx context.Context, instance *workflowLogicInstance, ns
 		resp *secrets.SecretsRetrieveResponse
 	)
 
-	resp, err := instance.engine.server.secrets.RetrieveSecret(ctx, &secrets.SecretsRetrieveRequest{
+	resp, err := instance.engine.secretsClient.RetrieveSecret(ctx, &secrets.SecretsRetrieveRequest{
 		Namespace: &ns,
 		Name:      &name,
 	})

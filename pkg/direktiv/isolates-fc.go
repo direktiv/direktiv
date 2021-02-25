@@ -32,7 +32,7 @@ const (
 	downloadPath = "https://downloads.vorteil.io/firecracker-vmlinux"
 )
 
-func (am *actionManager) buildDataDisk(name string, data []byte, nws networkSetting) (string, error) {
+func (is *isolateServer) buildDataDisk(name string, data []byte, nws networkSetting) (string, error) {
 
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("data%s.raw", name))
 	log.Debugf("building data disk %s", fpath)
@@ -86,8 +86,9 @@ type cowDisk struct {
 func createCOWDisk(name, disk string) (cowDisk, error) {
 
 	var cd cowDisk
-
 	cd.cowDisk = filepath.Join(os.TempDir(), fmt.Sprintf("%s.cow", name))
+
+	log.Debugf("create cow disk: %v, %v", name, disk)
 
 	// create empty file
 	c, err := os.Create(cd.cowDisk)
@@ -153,7 +154,7 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	return cd, err
 }
 
-func (am *actionManager) runFirecracker(ctx context.Context, name, disk, dataDisk string, size int32) error {
+func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDisk string, size int32) error {
 
 	log.Debugf("run firecracker vm with %s, %s", disk, dataDisk)
 
@@ -205,13 +206,13 @@ func (am *actionManager) runFirecracker(ctx context.Context, name, disk, dataDis
 		},
 	}}
 
-	kf := fmt.Sprintf("/tmp/kernel-%s", am.config.Kernel.Linux)
+	kf := fmt.Sprintf("/tmp/kernel-%s", is.config.Kernel.Linux)
 
 	// download kernel
 	if _, err := os.Stat(kf); os.IsNotExist(err) {
 
-		log.Debugf("downloading %s", fmt.Sprintf("%s/firecracker-%s", downloadPath, am.config.Kernel.Linux))
-		resp, err := http.Get(fmt.Sprintf("%s/firecracker-%s", downloadPath, am.config.Kernel.Linux))
+		log.Debugf("downloading %s", fmt.Sprintf("%s/firecracker-%s", downloadPath, is.config.Kernel.Linux))
+		resp, err := http.Get(fmt.Sprintf("%s/firecracker-%s", downloadPath, is.config.Kernel.Linux))
 		if err != nil {
 			return err
 		}
@@ -258,12 +259,10 @@ func (am *actionManager) runFirecracker(ctx context.Context, name, disk, dataDis
 		NetNS:             fmt.Sprintf("/var/run/netns/%s", name),
 		NetworkInterfaces: networkIfaces,
 		JailerCfg: &firecracker.JailerConfig{
-			ChrootBaseDir: jailerDir,
-			ID:            name,
-			UID:           firecracker.Int(0),
-			GID:           firecracker.Int(0),
-			// Stdout:         ioutil.Discard,
-			// Stderr:         ioutil.Discard,
+			ChrootBaseDir:  jailerDir,
+			ID:             name,
+			UID:            firecracker.Int(0),
+			GID:            firecracker.Int(0),
 			Stdout:         os.Stdout,
 			Stderr:         os.Stdout,
 			NumaNode:       firecracker.Int(0),

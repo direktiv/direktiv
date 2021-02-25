@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -35,20 +34,14 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type contextActionKey string
+type contextIsolateKey string
 
 const (
-	actionSubscription = "direktivaction"
-
-	actionRespSubscription = "direktivactionresp"
-
-	queueActionGroup = "daction"
-
 	direktivBucket = "direktiv"
 
 	kernelFolder = "/home/vorteil"
 
-	actionCtxID contextActionKey = "actionCtxID"
+	isolateCtxID contextIsolateKey = "isolateCtxID"
 
 	maxWaitSeconds = 1800
 )
@@ -72,23 +65,24 @@ type ctxs struct {
 	cancel context.CancelFunc
 }
 
-type actionManager struct {
+type isolateServer struct {
 	isolate.UnimplementedDirektivIsolateServer
 
 	config         *Config
 	minioClient    *minio.Client
-	grpcIsolate    *grpc.Server
-	grpcFlow       flow.DirektivFlowClient
+	grpc           *grpc.Server
 	fileCache      *fileCache
 	cni            gocni.CNI
 	instanceLogger *dlog.Log
 	dbManager      *dbManager
 
 	actx map[string]*ctxs
-	// actionCtxs []*ctxs
+
+	flowClient flow.DirektivFlowClient
+	grpcConn   *grpc.ClientConn
 }
 
-type actionWorkflow struct {
+type isolateWorkflow struct {
 	InstanceID string
 	Namespace  string
 	State      string
@@ -96,22 +90,22 @@ type actionWorkflow struct {
 	Timeout    int
 }
 
-type actionContainer struct {
+type isolateContainer struct {
 	Image, Cmd string
 	Size       int32
 	Data       []byte
 	Registries map[string]string
 }
 
-type actionRequest struct {
+type isolateRequest struct {
 	ActionID string
 
-	Workflow  actionWorkflow
-	Container actionContainer
+	Workflow  isolateWorkflow
+	Container isolateContainer
 }
 
-// ActionError is the struct returned from actions if there is an error
-type ActionError struct {
+// IsolateError is the struct returned from isolates if there is an error
+type IsolateError struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorMessage string `json:"errorMessage"`
 }
@@ -150,24 +144,12 @@ func authorizationForRegistry(a string) *ContainerAuth {
 
 }
 
-func newActionManager(config *Config, dbManager *dbManager, l *dlog.Log) (*actionManager, error) {
+func newIsolateManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isolateServer, error) {
 
-	log.Debugf("action flow endpoint: %v", config.FlowAPI.Endpoint)
+	log.Debugf("isolate flow endpoint: %v", config.FlowAPI.Endpoint)
 
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	conn, err := grpc.Dial(config.FlowAPI.Endpoint, opts...)
-	if err != nil {
-		return nil, err
-	}
-	grpcFlow := flow.NewDirektivFlowClient(conn)
-
-	if config == nil || grpcFlow == nil {
-		return nil, fmt.Errorf("config, grpc client and dbManager required for action manager")
-	}
-
-	am := &actionManager{
+	is := &isolateServer{
 		config:         config,
-		grpcFlow:       grpcFlow,
 		instanceLogger: l,
 		dbManager:      dbManager,
 		actx:           make(map[string]*ctxs),
@@ -202,50 +184,55 @@ func newActionManager(config *Config, dbManager *dbManager, l *dlog.Log) (*actio
 	vimg.GetKernel = ksrc.Get
 	vimg.GetLatestKernel = vkern.ConstructGetLastestKernelsFunc(&ksrc)
 
-	am.fileCache, err = newFileCache(am)
+	is.fileCache, err = newFileCache(is)
 	if err != nil {
 		return nil, err
 	}
 
 	// check CNI networking
-	am.cni, err = am.prepareNetwork()
+	is.cni, err = is.prepareNetwork()
 
-	return am, err
+	return is, err
 
 }
 
-func (am *actionManager) grpcIsolateStart() error {
+func (is *isolateServer) grpcStart(s *WorkflowServer) error {
+	return s.grpcStart(&is.grpc, "isolate", s.config.IsolateAPI.Bind, func(srv *grpc.Server) {
+		isolate.RegisterDirektivIsolateServer(srv, is)
+	})
+}
 
-	bind := am.config.IsolateAPI.Bind
-	log.Debugf("action endpoint starting at %s", bind)
+func (is *isolateServer) stop() {
 
-	// TODO: save listener somewhere so that it can be shutdown
-	// TODO: save grpc somewhere so that it can be shutdown
-	listener, err := net.Listen("tcp", bind)
+	if is.grpc != nil {
+		is.grpc.GracefulStop()
+	}
+
+	if is.grpcConn != nil {
+		is.grpcConn.Close()
+	}
+
+}
+
+func (is *isolateServer) name() string {
+	return "isolate"
+}
+
+func (is *isolateServer) start(s *WorkflowServer) error {
+	log.Infof("starting isolate runner")
+
+	err := is.grpcStart(s)
 	if err != nil {
 		return err
 	}
 
-	am.grpcIsolate = grpc.NewServer()
-
-	isolate.RegisterDirektivIsolateServer(am.grpcIsolate, am)
-
-	go am.grpcIsolate.Serve(listener)
-
-	return nil
-
-}
-
-func (am *actionManager) start() error {
-	log.Infof("starting action runner")
-
 	insecure := true
-	if am.config.Minio.Secure > 0 {
+	if is.config.Minio.Secure > 0 {
 		insecure = false
 	}
 
-	minioClient, err := minio.New(am.config.Minio.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(am.config.Minio.User, am.config.Minio.Password, ""),
+	minioClient, err := minio.New(is.config.Minio.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(is.config.Minio.User, is.config.Minio.Password, ""),
 		Secure: true,
 		Transport: &http.Transport{
 			MaxIdleConns:       10,
@@ -264,7 +251,7 @@ func (am *actionManager) start() error {
 	if !found && err == nil {
 		// create default bucket
 		err = minioClient.MakeBucket(context.Background(), direktivBucket,
-			minio.MakeBucketOptions{Region: am.config.Minio.Region})
+			minio.MakeBucketOptions{Region: is.config.Minio.Region})
 		if err != nil {
 			log.Errorf("can not create bucket for direktiv: %v", err)
 			return err
@@ -272,20 +259,22 @@ func (am *actionManager) start() error {
 	}
 
 	if err != nil {
-		log.Errorf("can not connect to minio %v: %v", am.config.Minio.Endpoint, err)
+		log.Errorf("can not connect to minio %v: %v", is.config.Minio.Endpoint, err)
 		return err
 	}
 
-	am.minioClient = minioClient
+	is.minioClient = minioClient
+
+	// get flow client
+	conn, err := getEndpointTLS(is.config, flowComponent, is.config.FlowAPI.Endpoint)
+	if err != nil {
+		return err
+	}
+
+	is.grpcConn = conn
+	is.flowClient = flow.NewDirektivFlowClient(conn)
 
 	return nil
-}
-
-func (am *actionManager) stop() {
-
-	log.Infof("stopping action runner")
-	am.grpcIsolate.GracefulStop()
-
 }
 
 func hashImg(img, cmd string) string {
@@ -296,7 +285,7 @@ func hashImg(img, cmd string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func (am *actionManager) addCtx(timeout *int64, actionID string) *ctxs {
+func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 
 	var to int64
 	if timeout != nil {
@@ -305,7 +294,7 @@ func (am *actionManager) addCtx(timeout *int64, actionID string) *ctxs {
 
 	// create context for firecracker, it is max 15 minutes / 1800 seconds for a VM
 	c := context.Background()
-	ctx := context.WithValue(c, actionCtxID, actionID)
+	ctx := context.WithValue(c, isolateCtxID, isolateID)
 	if to == 0 || to > maxWaitSeconds {
 		to = maxWaitSeconds
 	}
@@ -315,17 +304,17 @@ func (am *actionManager) addCtx(timeout *int64, actionID string) *ctxs {
 		cancel: cancel,
 		ctx:    ctx,
 	}
-	am.actx[actionID] = ctxs
+	is.actx[isolateID] = ctxs
 
 	return ctxs
 
 }
 
-func (am *actionManager) finishCancelIsolate(actionID string) {
+func (is *isolateServer) finishCancelIsolate(isolateID string) {
 
-	if ctx, ok := am.actx[actionID]; ok {
+	if ctx, ok := is.actx[isolateID]; ok {
 		ctx.cancel()
-		delete(am.actx, actionID)
+		delete(is.actx, isolateID)
 	}
 
 }
@@ -345,67 +334,67 @@ func findAuthForRegistry(img string, registries map[string]string) []remote.Opti
 
 }
 
-func (am *actionManager) runAction(in *isolate.RunIsolateRequest) {
+func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 
 	var (
-		ns, instID, actionID string
-		img, cmd             string
+		ns, instID, isolateID string
+		img, cmd              string
 
 		data, din []byte
 	)
 
 	ns = in.GetNamespace()
-	actionID = in.GetActionId()
+	isolateID = in.GetActionId()
 
 	img = in.GetImage()
 	cmd = in.GetCommand()
 	instID = in.GetInstanceId()
 
-	log15log, err := (*am.instanceLogger).LoggerFunc(ns, instID)
+	log15log, err := (*is.instanceLogger).LoggerFunc(ns, instID)
 	if err != nil {
 		log.Errorf("can not create logger for isolate: %v", err)
 		return
 	}
 	defer log15log.Close()
 
-	serr := func(err error, errCode string) *ActionError {
-		ae := ActionError{
+	serr := func(err error, errCode string) *IsolateError {
+		ae := IsolateError{
 			ErrorMessage: err.Error(),
 			ErrorCode:    errCode,
 		}
 		return &ae
 	}
 
-	disk, err := am.fileCache.getImage(img, cmd, in.Registries)
+	disk, err := is.fileCache.getImage(img, cmd, in.Registries)
 	if err != nil {
-		am.respondToAction(serr(err, errorImage), data, in)
+		is.respondToAction(serr(err, errorImage), data, in)
 		return
 	}
 
 	// prepare cni networking
-	nws, err := am.setupNetworkForVM(actionID)
+	nws, err := is.setupNetworkForVM(isolateID)
 	if err != nil {
-		am.respondToAction(serr(err, errorNetwork), data, in)
+		is.respondToAction(serr(err, errorNetwork), data, in)
 		return
 	}
 
-	defer am.deleteNetworkForVM(actionID)
+	defer is.deleteNetworkForVM(isolateID)
 
 	// build data disk to attach
-	dataDisk, err := am.buildDataDisk(actionID, in.Data, nws)
+	dataDisk, err := is.buildDataDisk(isolateID, in.Data, nws)
 	if err != nil {
-		am.respondToAction(serr(err, errorIO), data, in)
+		is.respondToAction(serr(err, errorIO), data, in)
 		return
 	}
 	defer os.Remove(dataDisk)
 
-	ctxs := am.addCtx(in.Timeout, actionID)
+	ctxs := is.addCtx(in.Timeout, isolateID)
 
-	defer am.finishCancelIsolate(actionID)
+	defer is.finishCancelIsolate(isolateID)
 
-	err = am.runFirecracker(ctxs.ctx, actionID, disk, dataDisk, in.GetSize())
+	err = is.runFirecracker(ctxs.ctx, isolateID, disk, dataDisk, in.GetSize())
 	if err != nil {
-		am.respondToAction(serr(err, errorInternal), data, in)
+		is.respondToAction(serr(err, errorInternal), data, in)
 		return
 	}
 
@@ -414,7 +403,7 @@ func (am *actionManager) runAction(in *isolate.RunIsolateRequest) {
 	// successful, so get the logs & results
 	dimg, err := vdecompiler.Open(dataDisk)
 	if err != nil {
-		am.respondToAction(serr(err, errorIO), data, in)
+		is.respondToAction(serr(err, errorIO), data, in)
 		return
 	}
 
@@ -456,22 +445,22 @@ func (am *actionManager) runAction(in *isolate.RunIsolateRequest) {
 
 	err = readFileFromDisk(dimg, "/error.json", &din)
 	if err != nil {
-		am.respondToAction(serr(err, errorIO), data, in)
+		is.respondToAction(serr(err, errorIO), data, in)
 		return
 	}
 
 	if len(din) > 0 {
 
-		var ae ActionError
+		var ae IsolateError
 		err := json.Unmarshal(din, &ae)
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
-			am.respondToAction(serr(fmt.Errorf("%w; %s", err, string(din)), errorIO), data, in)
+			is.respondToAction(serr(fmt.Errorf("%w; %s", err, string(din)), errorIO), data, in)
 			return
 		}
 
 		log15log.Error(ae.ErrorMessage)
-		am.respondToAction(&ae, data, in)
+		is.respondToAction(&ae, data, in)
 		return
 
 	}
@@ -480,21 +469,21 @@ func (am *actionManager) runAction(in *isolate.RunIsolateRequest) {
 	err = readFileFromDisk(dimg, "/data.out", &data)
 	if err != nil {
 		log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
-		am.respondToAction(serr(err, errorIO), data, in)
+		is.respondToAction(serr(err, errorIO), data, in)
 		return
 	}
 
 	go func() {
 
-		log.Debugf("responding to action caller")
-		am.respondToAction(nil, data, in)
+		log.Debugf("responding to isolate caller")
+		is.respondToAction(nil, data, in)
 
 	}()
 
 }
 
 // RunIsolate rus container images in firecracker VMs
-func (am *actionManager) RunIsolate(ctx context.Context, in *isolate.RunIsolateRequest) (*emptypb.Empty, error) {
+func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -504,22 +493,21 @@ func (am *actionManager) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 	}
 
 	if len(in.GetActionId()) == 0 {
-		log.Errorf("actionID not provided")
-		return &resp, fmt.Errorf("actionID empty")
+		log.Errorf("isolateID not provided")
+		return &resp, fmt.Errorf("isolateID empty")
 	}
 
 	log.Debugf("running isolate %s", in.GetNamespace())
 
-	go am.runAction(in)
+	go is.runAction(in)
 
 	return &resp, nil
 
 }
 
-// handleAction is to receive the action to execute. is req/resp
-func (am *actionManager) respondToAction(ae *ActionError, data []byte, in *isolate.RunIsolateRequest) {
+func (is *isolateServer) respondToAction(ae *IsolateError, data []byte, in *isolate.RunIsolateRequest) {
 
-	log.Debugf("action responding")
+	log.Debugf("isolate responding")
 
 	r := &flow.ReportActionResultsRequest{
 		InstanceId: in.InstanceId,
@@ -534,37 +522,37 @@ func (am *actionManager) respondToAction(ae *ActionError, data []byte, in *isola
 		r.ErrorMessage = &ae.ErrorMessage
 	}
 
-	_, err := am.grpcFlow.ReportActionResults(context.Background(), r)
+	_, err := is.flowClient.ReportActionResults(context.Background(), r)
 
 	if err != nil {
-		log.Errorf("error reporting action results: %v", err)
+		log.Errorf("error reporting isolate results: %v", err)
 	}
 
 }
 
-func (am *actionManager) retrieveImageS3(img, cmd, path string) error {
+func (is *isolateServer) retrieveImageS3(img, cmd, path string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(am.config.Minio.Encrypt), []byte(direktivBucket+h))
+	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
 
-	return am.minioClient.FGetObject(context.Background(), direktivBucket, h, path, minio.GetObjectOptions{
+	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, minio.GetObjectOptions{
 		ServerSideEncryption: encryption,
 	})
 
 }
 
-func (am *actionManager) storeImageS3(img, cmd, disk string) error {
+func (is *isolateServer) storeImageS3(img, cmd, disk string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(am.config.Minio.Encrypt), []byte(direktivBucket+h))
-	_, err := am.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, minio.PutObjectOptions{
+	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, minio.PutObjectOptions{
 		ServerSideEncryption: encryption,
 	})
 
 	t := time.Now().Add((7 * 24) * time.Hour)
-	am.minioClient.PutObjectRetention(context.Background(), direktivBucket, h, minio.PutObjectRetentionOptions{
+	is.minioClient.PutObjectRetention(context.Background(), direktivBucket, h, minio.PutObjectRetentionOptions{
 		RetainUntilDate: &t,
 	})
 
@@ -572,10 +560,10 @@ func (am *actionManager) storeImageS3(img, cmd, disk string) error {
 
 }
 
-func (am *actionManager) removeImageS3(img, cmd string) error {
+func (is *isolateServer) removeImageS3(img, cmd string) error {
 
 	h := hashImg(img, cmd)
 
-	return am.minioClient.RemoveObject(context.Background(), direktivBucket, h, minio.RemoveObjectOptions{})
+	return is.minioClient.RemoveObject(context.Background(), direktivBucket, h, minio.RemoveObjectOptions{})
 
 }

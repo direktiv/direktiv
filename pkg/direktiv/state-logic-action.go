@@ -134,23 +134,9 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		if len(sl.state.Action.Secrets) > 0 {
-			instance.Log("Decrypting secrets.")
-
-			s := make(map[string]string)
-
-			for _, name := range sl.state.Action.Secrets {
-
-				var dd []byte
-				dd, err = decryptedDataForNS(ctx, instance, instance.namespace, name)
-				if err != nil {
-					return
-				}
-				s[name] = string(dd)
-
-			}
-
-			m["secrets"] = s
+		m, err = addSecrets(ctx, instance, m, sl.state.Action.Secrets...)
+		if err != nil {
+			return
 		}
 
 		input, err = jqObject(m, sl.state.Action.Input)
@@ -184,7 +170,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 				return
 			}
 
-			ar := new(actionRequest)
+			ar := new(isolateRequest)
 			ar.ActionID = uid.String()
 			ar.Workflow.InstanceID = instance.id
 			ar.Workflow.Namespace = instance.namespace
@@ -199,7 +185,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			ar.Container.Registries = make(map[string]string)
 
 			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.config, instance.namespace)
+			ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+				instance.engine.secretsClient, instance.namespace)
 			if err != nil {
 				return
 			}
@@ -208,7 +195,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 				instance.Log("Running function '%s' in fire-and-forget mode (async).", fn.ID)
 
-				go func(ctx context.Context, instance *workflowLogicInstance, ar *actionRequest) {
+				go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
 
 					ar.Workflow.InstanceID = ""
 					ar.Workflow.Namespace = ""
@@ -216,7 +203,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 					ar.Workflow.Step = 0
 
 					// get registries
-					ar.Container.Registries, err = getRegistries(instance.engine.server.config, instance.namespace)
+					ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+						instance.engine.secretsClient, instance.namespace)
 					if err != nil {
 						return
 					}

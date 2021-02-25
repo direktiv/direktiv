@@ -44,7 +44,7 @@ type networkSetting struct {
 	Gateway string `json:"gw"`
 }
 
-func (am *actionManager) prepareNetwork() (gocni.CNI, error) {
+func (is *isolateServer) prepareNetwork() (gocni.CNI, error) {
 
 	l, err := gocni.New(
 		gocni.WithPluginDir([]string{"/opt/cni/bin"}),
@@ -71,13 +71,13 @@ func (am *actionManager) prepareNetwork() (gocni.CNI, error) {
 }
 
 // DeleteNetwork cleans up netns networks
-func (am *actionManager) deleteNetworkForVM(name string) error {
+func (is *isolateServer) deleteNetworkForVM(name string) error {
 
 	path := fmt.Sprintf("/var/run/netns/%s", name)
 
 	log.Debugf("deleting network: %s", name)
 
-	if err := am.cni.Remove(context.Background(), name, path); err != nil {
+	if err := is.cni.Remove(context.Background(), name, path); err != nil {
 		log.Errorf("failed to delete network: %v", err)
 		return err
 	}
@@ -86,7 +86,7 @@ func (am *actionManager) deleteNetworkForVM(name string) error {
 
 }
 
-func (am *actionManager) setupNetworkForVM(name string) (networkSetting, error) {
+func (is *isolateServer) setupNetworkForVM(name string) (networkSetting, error) {
 
 	var nws networkSetting
 
@@ -98,7 +98,7 @@ func (am *actionManager) setupNetworkForVM(name string) (networkSetting, error) 
 
 	// default netns path
 	path := fmt.Sprintf("/var/run/netns/%s", name)
-	result, err := am.cni.Setup(context.Background(), name, path, gocni.WithArgs("TC_REDIRECT_TAP_GID", "1000"),
+	result, err := is.cni.Setup(context.Background(), name, path, gocni.WithArgs("TC_REDIRECT_TAP_GID", "1000"),
 		gocni.WithArgs("TC_REDIRECT_TAP_UID", "1000"), gocni.WithArgs("TC_REDIRECT_TAP_NAME", "tap0"), gocni.WithArgs("IgnoreUnknown", "true"))
 	if err != nil {
 		log.Errorf("error creating cni: %v", err)

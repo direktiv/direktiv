@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/segmentio/ksuid"
-	"github.com/senseyeio/duration"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -39,30 +38,7 @@ func (sl *foreachStateLogic) Type() string {
 }
 
 func (sl *foreachStateLogic) Deadline() time.Time {
-
-	var t time.Time
-	var d time.Duration
-
-	d = time.Minute * 15
-
-	if sl.state.Timeout != "" {
-		dur, err := duration.ParseISO8601(sl.state.Timeout)
-		if err != nil {
-			// NOTE: validation should prevent this from ever happening
-			log.Errorf("Got an invalid ISO8601 timeout: %v", err)
-		} else {
-			now := time.Now()
-			later := dur.Shift(now)
-			d = later.Sub(now)
-		}
-	}
-
-	t = time.Now()
-	t.Add(d)
-	t.Add(time.Second * 5)
-
-	return t
-
+	return deadlineFromString(sl.state.Timeout)
 }
 
 func (sl *foreachStateLogic) ErrorCatchers() []model.ErrorDefinition {
@@ -142,21 +118,9 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				return
 			}
 
-			if len(sl.state.Action.Secrets) > 0 {
-				instance.Log("Decrypting secrets.")
-
-				s := make(map[string]string)
-
-				for _, name := range sl.state.Action.Secrets {
-					var dd []byte
-					dd, err = decryptedDataForNS(ctx, instance, instance.namespace, name)
-					if err != nil {
-						return
-					}
-					s[name] = string(dd)
-				}
-
-				m["secrets"] = s
+			m, err = addSecrets(ctx, instance, m, sl.state.Action.Secrets...)
+			if err != nil {
+				return
 			}
 
 			input, err = jqObject(m, action.Input)
@@ -190,7 +154,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 					return
 				}
 
-				ar := new(actionRequest)
+				ar := new(isolateRequest)
 				ar.ActionID = uid.String()
 				ar.Workflow.InstanceID = instance.id
 				ar.Workflow.Namespace = instance.namespace
@@ -204,7 +168,8 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				ar.Container.Data = inputData
 
 				// get registries
-				ar.Container.Registries, err = getRegistries(instance.engine.server.config, instance.namespace)
+				ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+					instance.engine.secretsClient, instance.namespace)
 				if err != nil {
 					return
 				}
