@@ -70,64 +70,6 @@ func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 
 }
 
-func (l *Logger) QueryAllLogs(instance string) (dlog.QueryReponse, error) {
-	testLOG := dlog.QueryReponse{
-		Limit:  0,
-		Offset: 0,
-		// Data:   make([]map[string]interface{}, 0),
-	}
-
-	var Msg string
-	var Ctx string
-	var Lvl int
-	var Time int64
-	var err error
-
-	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
-	WHERE instance=$1 ORDER BY time asc;`
-	rows, err := l.db.Query(sqlStatement, instance)
-	if err != nil {
-		return testLOG, err
-	}
-
-	for rows.Next() {
-		ctxMap := make(map[string]string)
-		// dataMap := make(map[string]interface{})
-
-		err = rows.Scan(&Msg, &Ctx, &Time, &Lvl)
-		if err != nil {
-			break
-		}
-
-		err := json.Unmarshal([]byte(Ctx), &ctxMap)
-		if err != nil {
-			break
-		}
-
-		// msg, _ := base64.StdEncoding.DecodeString(Msg)
-		// dataMap["msg"] = Msg
-		// dataMap["lvl"] = Lvl
-		// dataMap["time"] = Time
-		// dataMap["ctx"] = ctxMap
-
-		testLOG.Logs = append(testLOG.Logs, dlog.LogEntry{
-			// TODO: Level: ,
-			Message:   Msg,
-			Timestamp: Time,
-			Context:   ctxMap,
-		})
-
-		// testLOG.Data = append(testLOG.Data, dataMap)
-	}
-
-	if err == nil {
-		err = rows.Err()
-	}
-
-	testLOG.Count = len(testLOG.Logs)
-	return testLOG, err
-}
-
 func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset int) (dlog.QueryReponse, error) {
 	testLOG := dlog.QueryReponse{
 		Limit:  limit,

@@ -7,8 +7,6 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/senseyeio/duration"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -37,30 +35,7 @@ func (sl *consumeEventStateLogic) Type() string {
 }
 
 func (sl *consumeEventStateLogic) Deadline() time.Time {
-
-	var t time.Time
-	var d time.Duration
-
-	d = time.Minute * 15
-
-	if sl.state.Timeout != "" {
-		dur, err := duration.ParseISO8601(sl.state.Timeout)
-		if err != nil {
-			// NOTE: validation should prevent this from ever happening
-			log.Errorf("Got an invalid ISO8601 timeout: %v", err)
-		} else {
-			now := time.Now()
-			later := dur.Shift(now)
-			d = later.Sub(now)
-		}
-	}
-
-	t = time.Now()
-	t.Add(d)
-	t.Add(time.Second * 5)
-
-	return t
-
+	return deadlineFromString(sl.state.Timeout)
 }
 
 func (sl *consumeEventStateLogic) ErrorCatchers() []model.ErrorDefinition {

@@ -32,10 +32,10 @@ type cacheItem struct {
 type fileCache struct {
 	items         map[string]*cacheItem
 	spaceLeft     int64
-	actionManager *actionManager
+	isolateServer *isolateServer
 }
 
-func newFileCache(am *actionManager) (*fileCache, error) {
+func newFileCache(is *isolateServer) (*fileCache, error) {
 
 	var stat unix.Statfs_t
 	err := unix.Statfs(baseDir, &stat)
@@ -62,7 +62,7 @@ func newFileCache(am *actionManager) (*fileCache, error) {
 	fc := &fileCache{
 		spaceLeft:     int64(float64(stat.Bavail*uint64(stat.Bsize)) * 0.7),
 		items:         make(map[string]*cacheItem),
-		actionManager: am,
+		isolateServer: is,
 	}
 
 	log.Infof("cache size: %s", bytefmt.ByteSize(uint64(fc.spaceLeft)))
@@ -121,11 +121,11 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 	// create lock for building, 180 seconds for building it
 	lockHash, _ := hash.Hash(fmt.Sprintf("%s-%s", img, cmd), hash.FormatV2, nil)
 	log.Debugf("building disk for hash: %v", lockHash)
-	conn, err := fc.actionManager.dbManager.lockDB(lockHash, 180)
+	conn, err := fc.isolateServer.dbManager.lockDB(lockHash, 180)
 	if err != nil {
 		return "", err
 	}
-	defer fc.actionManager.dbManager.unlockDB(lockHash, conn)
+	defer fc.isolateServer.dbManager.unlockDB(lockHash, conn)
 
 	log.Debugf("getting img %s (%s)", img, h[:8])
 
@@ -137,17 +137,17 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 		} else {
 			delete(fc.items, h)
 			os.Remove(disk)
-			fc.actionManager.removeImageS3(img, cmd)
+			fc.isolateServer.removeImageS3(img, cmd)
 		}
 	}
 
-	err = fc.actionManager.retrieveImageS3(img, cmd, disk)
+	err = fc.isolateServer.retrieveImageS3(img, cmd, disk)
 	if err != nil {
 		// not local and not remote, we need to build the disk
 		log.Debugf("disk not found on s3: %v", err)
 
 		disk, err = buildImageDisk(img, cmd,
-			fc.actionManager.config.Kernel.Runtime, cacheDir, registries)
+			fc.isolateServer.config.Kernel.Runtime, cacheDir, registries)
 		if err != nil {
 			log.Errorf("image build error: %v", err)
 			return "", err
@@ -155,7 +155,7 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 
 		// we can ignore errors here, worst case we build every time the disk is
 		// requested and not in cache
-		err = fc.actionManager.storeImageS3(img, cmd, disk)
+		err = fc.isolateServer.storeImageS3(img, cmd, disk)
 		if err != nil {
 			log.Errorf("image build error: %v", err)
 		}

@@ -3,7 +3,6 @@ package direktiv
 import (
 	"context"
 	"fmt"
-	"net"
 	"regexp"
 	"time"
 
@@ -51,28 +50,10 @@ func newIngressServer(s *WorkflowServer) *ingressServer {
 
 }
 
-func (is *ingressServer) start() error {
-
-	log.Infof("ingress api starting at %v", is.wfServer.config.IngressAPI.Bind)
-
-	options, err := optionsForGRPC(is.wfServer.config.Certs.Directory, ingressComponent, (is.wfServer.config.Certs.Secure != 1))
-	if err != nil {
-		return err
-	}
-
-	listener, err := net.Listen("tcp", is.wfServer.config.IngressAPI.Bind)
-	if err != nil {
-		return err
-	}
-
-	is.grpc = grpc.NewServer(options...)
-
-	ingress.RegisterDirektivIngressServer(is.grpc, is)
-
-	go is.grpc.Serve(listener)
-
-	return nil
-
+func (is *ingressServer) start(s *WorkflowServer) error {
+	return s.grpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
+		ingress.RegisterDirektivIngressServer(srv, is)
+	})
 }
 
 func (is *ingressServer) AddNamespace(ctx context.Context, in *ingress.AddNamespaceRequest) (*ingress.AddNamespaceResponse, error) {
@@ -514,32 +495,34 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 
 }
 
-func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
+type deleteEncryptedRequest interface {
+	GetNamespace() string
+	GetName() string
+}
 
-	stype := secrets.SecretTypes_SECRET
+func (is *ingressServer) deleteEncrypted(ctx context.Context, in deleteEncryptedRequest, stype secrets.SecretTypes) error {
+
+	namespace := in.GetNamespace()
+	name := in.GetName()
 
 	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
-		Namespace: in.Namespace,
-		Name:      in.Name,
+		Namespace: &namespace,
+		Name:      &name,
 		Stype:     &stype,
 	})
 
-	return &emptypb.Empty{}, err
+	return err
 
 }
 
-func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
-
-	stype := secrets.SecretTypes_REGISTRY
-
-	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
-		Namespace: in.Namespace,
-		Name:      in.Name,
-		Stype:     &stype,
-	})
-
+func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
+	err := is.deleteEncrypted(ctx, in, secrets.SecretTypes_SECRET)
 	return &emptypb.Empty{}, err
+}
 
+func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
+	err := is.deleteEncrypted(ctx, in, secrets.SecretTypes_REGISTRY)
+	return &emptypb.Empty{}, err
 }
 
 func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,
@@ -590,52 +573,44 @@ func (is *ingressServer) GetRegistries(ctx context.Context, in *ingress.GetRegis
 
 }
 
-func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecretRequest) (*emptypb.Empty, error) {
+type storeEncryptedRequest interface {
+	GetNamespace() string
+	GetName() string
+	GetData() []byte
+}
 
-	var resp emptypb.Empty
+func (is *ingressServer) storeEncrypted(ctx context.Context, in storeEncryptedRequest, stype secrets.SecretTypes) error {
 
 	ns, err := is.wfServer.dbManager.getNamespace(in.GetNamespace())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	encryptedBytes, err := encryptData(ns.Key, in.GetData())
 	if err != nil {
-		return &resp, err
+		return err
 	}
 
-	stype := secrets.SecretTypes_SECRET
+	namespace := in.GetNamespace()
+	name := in.GetName()
 
-	return is.wfServer.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
-		Namespace: in.Namespace,
-		Name:      in.Name,
+	_, err = is.wfServer.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
+		Namespace: &namespace,
+		Name:      &name,
 		Data:      encryptedBytes,
 		Stype:     &stype,
 	})
+
+	return err
 
 }
 
-func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {
-
+func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecretRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
+	return &resp, is.storeEncrypted(ctx, in, secrets.SecretTypes_SECRET)
+}
 
-	ns, err := is.wfServer.dbManager.getNamespace(in.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	encryptedBytes, err := encryptData(ns.Key, in.GetData())
-	if err != nil {
-		return &resp, err
-	}
-
-	stype := secrets.SecretTypes_REGISTRY
-
-	return is.wfServer.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
-		Namespace: in.Namespace,
-		Name:      in.Name,
-		Data:      encryptedBytes,
-		Stype:     &stype,
-	})
-
+func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {
+	var resp emptypb.Empty
+	return &resp, is.storeEncrypted(ctx, in, secrets.SecretTypes_REGISTRY)
 }
