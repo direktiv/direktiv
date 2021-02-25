@@ -35,6 +35,12 @@ run-postgres:
 .PHONY: protoc
 protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(isolate_generated_files) $(secrets_generated_files)
 
+.PHONY: docker
+docker:
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/docker/
+	cp ${mkfile_dir_main}/build/conf.toml  ${mkfile_dir_main}/build/docker/
+	docker build -t direktiv ${mkfile_dir_main}/build/docker
+
 .PHONY: build
 build:
 	go get entgo.io/ent
@@ -47,6 +53,9 @@ build:
 run:
 	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
+	DIREKTIV_CERTS="/tmp/certs" \
+	DIREKTIV_SECURE=0 \
+	DIREKTIV_MINIO_SECURE=0 \
 	go run cmd/direktiv/main.go -d -t wis -c ${mkfile_dir_main}/build/conf.toml
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto

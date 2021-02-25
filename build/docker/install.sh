@@ -38,11 +38,6 @@ install_cni()
   apk del go
 }
 
-install_minio()
-{
-  wget -O /bin/minio https://dl.min.io/server/minio/release/linux-amd64/minio
-}
-
 create_certs()
 {
   openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=AU/ST=Varsity/L=GoldCoast/O=direktiv/CN=direktiv.user" -keyout key.pem -out cert.pem >/dev/null 2>&1
@@ -50,21 +45,14 @@ create_certs()
   apk del openssl
 }
 
-apk update
-
-if [ "$1" = "true" ] ; then
-  mkdir -p /run/postgresql/
-  mkdir -p /var/lib/postgresql/data
-  apk add postgresql postgresql-contrib
-fi
+install_minio()
+{
+  wget -O /bin/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+}
 
 apk add ca-certificates iptables ip6tables device-mapper udev make go openssl
 
-create_certs
 install_firecracker
 install_cni
 install_minio
-rm /builder.sh
-
-# start the second script
-touch /done
+create_certs
