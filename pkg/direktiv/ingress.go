@@ -23,12 +23,19 @@ type ingressServer struct {
 
 	wfServer *WorkflowServer
 	grpc     *grpc.Server
+
+	secretsClient secrets.SecretsServiceClient
+	grpcConn      *grpc.ClientConn
 }
 
 func (is *ingressServer) stop() {
 
 	if is.grpc != nil {
 		is.grpc.GracefulStop()
+	}
+
+	if is.grpcConn != nil {
+		is.grpcConn.Close()
 	}
 
 	// stop engine client
@@ -51,9 +58,19 @@ func newIngressServer(s *WorkflowServer) *ingressServer {
 }
 
 func (is *ingressServer) start(s *WorkflowServer) error {
+
+	// get secrets client
+	conn, err := getEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	if err != nil {
+		return err
+	}
+	is.grpcConn = conn
+	is.secretsClient = secrets.NewSecretsServiceClient(conn)
+
 	return s.grpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
 	})
+
 }
 
 func (is *ingressServer) AddNamespace(ctx context.Context, in *ingress.AddNamespaceRequest) (*ingress.AddNamespaceResponse, error) {
@@ -505,7 +522,7 @@ func (is *ingressServer) deleteEncrypted(ctx context.Context, in deleteEncrypted
 	namespace := in.GetNamespace()
 	name := in.GetName()
 
-	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
+	_, err := is.secretsClient.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
 		Namespace: &namespace,
 		Name:      &name,
 		Stype:     &stype,
@@ -528,12 +545,10 @@ func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteR
 func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,
 	stype secrets.SecretTypes) (*secrets.GetSecretsResponse, error) {
 
-	output, err := is.wfServer.secrets.GetSecrets(ctx, &secrets.GetSecretsRequest{
+	return is.secretsClient.GetSecrets(ctx, &secrets.GetSecretsRequest{
 		Namespace: &ns,
 		Stype:     &stype,
 	})
-
-	return output, err
 
 }
 
@@ -594,7 +609,7 @@ func (is *ingressServer) storeEncrypted(ctx context.Context, in storeEncryptedRe
 	namespace := in.GetNamespace()
 	name := in.GetName()
 
-	_, err = is.wfServer.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
+	_, err = is.secretsClient.StoreSecret(ctx, &secrets.SecretsStoreRequest{
 		Namespace: &namespace,
 		Name:      &name,
 		Data:      encryptedBytes,

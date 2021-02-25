@@ -5,7 +5,6 @@ import (
 	"net"
 	"strings"
 
-	"github.com/vorteil/direktiv/pkg/secrets"
 	"google.golang.org/grpc"
 
 	"github.com/google/uuid"
@@ -45,7 +44,6 @@ type WorkflowServer struct {
 
 	LifeLine       chan bool
 	instanceLogger dlog.Log
-	secrets        secrets.SecretsServiceClient
 
 	components map[string]component
 }
