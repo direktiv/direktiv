@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"net"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
@@ -75,29 +74,10 @@ func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace str
 
 }
 
-func (ss *secretsServer) start() error {
-
-	bind := ss.config.SecretsAPI.Bind
-	log.Debugf("secrets endpoint starting at %s", bind)
-
-	options, err := optionsForGRPC(ss.config.Certs.Directory, secretsComponent, (ss.config.Certs.Secure != 1))
-	if err != nil {
-		return err
-	}
-
-	listener, err := net.Listen("tcp", bind)
-	if err != nil {
-		return err
-	}
-
-	ss.grpc = grpc.NewServer(options...)
-
-	secrets.RegisterSecretsServiceServer(ss.grpc, ss)
-
-	go ss.grpc.Serve(listener)
-
-	return nil
-
+func (ss *secretsServer) start(s *WorkflowServer) error {
+	return s.grpcStart(&ss.grpc, "secrets", s.config.SecretsAPI.Bind, func(srv *grpc.Server) {
+		secrets.RegisterSecretsServiceServer(srv, ss)
+	})
 }
 
 func (ss *secretsServer) StoreSecret(ctx context.Context, in *secrets.SecretsStoreRequest) (*empty.Empty, error) {

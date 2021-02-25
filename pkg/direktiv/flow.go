@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
@@ -28,47 +27,29 @@ func newFlowServer(config *Config, engine *workflowEngine) *flowServer {
 	}
 }
 
-func (f *flowServer) stop() {
+func (fs *flowServer) stop() {
 
-	if f.grpc != nil {
-		f.grpc.GracefulStop()
+	if fs.grpc != nil {
+		fs.grpc.GracefulStop()
 	}
 
 }
 
-func (f *flowServer) name() string {
+func (fs *flowServer) name() string {
 	return "flow"
 }
 
-func (f *flowServer) start() error {
-
-	log.Infof("flow endpoint starting at %v", f.config.FlowAPI.Bind)
-
-	options, err := optionsForGRPC(f.config.Certs.Directory, flowComponent, (f.config.Certs.Secure != 1))
-	if err != nil {
-		return err
-	}
-
-	listener, err := net.Listen("tcp", f.config.FlowAPI.Bind)
-	if err != nil {
-		return err
-	}
-
-	f.grpc = grpc.NewServer(options...)
-
-	flow.RegisterDirektivFlowServer(f.grpc, f)
-
-	go f.grpc.Serve(listener)
-
-	return nil
-
+func (fs *flowServer) start(s *WorkflowServer) error {
+	return s.grpcStart(&fs.grpc, "flow", s.config.FlowAPI.Bind, func(srv *grpc.Server) {
+		flow.RegisterDirektivFlowServer(srv, fs)
+	})
 }
 
-func (f *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
-	ctx, wli, err := f.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
+	ctx, wli, err := fs.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
 	if err != nil {
 		return nil, err
 	}
@@ -107,22 +88,22 @@ func (f *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportAct
 
 	}
 
-	go f.engine.runState(ctx, wli, savedata, wakedata)
+	go fs.engine.runState(ctx, wli, savedata, wakedata)
 
 	return &resp, nil
 
 }
 
-func (f *flowServer) Resume(ctx context.Context, in *flow.ResumeRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) Resume(ctx context.Context, in *flow.ResumeRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
-	ctx, wli, err := f.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
+	ctx, wli, err := fs.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
 	if err != nil {
 		return nil, err
 	}
 
-	go f.engine.runState(ctx, wli, nil, nil)
+	go fs.engine.runState(ctx, wli, nil, nil)
 
 	return &resp, nil
 

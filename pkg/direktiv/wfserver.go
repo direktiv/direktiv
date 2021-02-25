@@ -2,9 +2,11 @@ package direktiv
 
 import (
 	"context"
+	"net"
 	"strings"
 
 	"github.com/vorteil/direktiv/pkg/secrets"
+	"google.golang.org/grpc"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -24,7 +26,7 @@ const (
 )
 
 type component interface {
-	start() error
+	start(s *WorkflowServer) error
 	stop()
 	name() string
 }
@@ -39,7 +41,7 @@ type WorkflowServer struct {
 	dbManager     *dbManager
 	tmManager     *timerManager
 	engine        *workflowEngine
-	actionManager *actionManager
+	isolateServer *isolateServer
 
 	LifeLine       chan bool
 	instanceLogger dlog.Log
@@ -132,12 +134,12 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	if s.runsComponent(runsIsolates) {
-		am, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
+		is, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
 		if err != nil {
 			return nil, err
 		}
-		s.actionManager = am
-		s.components[isolateComponent] = am
+		s.isolateServer = is
+		s.components[isolateComponent] = is
 	}
 
 	if s.runsComponent(runsSecrets) {
@@ -244,12 +246,36 @@ func (s *WorkflowServer) Run() error {
 
 	for _, comp := range s.components {
 		log.Debugf("starting %s component", comp.name())
-		err := comp.start()
+		err := comp.start(s)
 		if err != nil {
 			s.Kill()
 			return err
 		}
 	}
+
+	return nil
+
+}
+
+func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
+
+	log.Debugf("%s endpoint starting at %s", name, bind)
+
+	options, err := optionsForGRPC(s.config.Certs.Directory, secretsComponent, (s.config.Certs.Secure != 1))
+	if err != nil {
+		return err
+	}
+
+	listener, err := net.Listen("tcp", bind)
+	if err != nil {
+		return err
+	}
+
+	(*server) = grpc.NewServer(options...)
+
+	register(*server)
+
+	go (*server).Serve(listener)
 
 	return nil
 
