@@ -34,14 +34,14 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type contextActionKey string
+type contextIsolateKey string
 
 const (
 	direktivBucket = "direktiv"
 
 	kernelFolder = "/home/vorteil"
 
-	actionCtxID contextActionKey = "actionCtxID"
+	isolateCtxID contextIsolateKey = "isolateCtxID"
 
 	maxWaitSeconds = 1800
 )
@@ -294,7 +294,7 @@ func (is *isolateServer) addCtx(timeout *int64, actionID string) *ctxs {
 
 	// create context for firecracker, it is max 15 minutes / 1800 seconds for a VM
 	c := context.Background()
-	ctx := context.WithValue(c, actionCtxID, actionID)
+	ctx := context.WithValue(c, isolateCtxID, actionID)
 	if to == 0 || to > maxWaitSeconds {
 		to = maxWaitSeconds
 	}
