@@ -134,7 +134,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	if s.runsComponent(runsIsolates) {
-		is, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
+		is, err := newIsolateManager(s.config, s.dbManager, &s.instanceLogger)
 		if err != nil {
 			return nil, err
 		}

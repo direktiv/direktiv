@@ -82,7 +82,7 @@ type isolateServer struct {
 	grpcConn   *grpc.ClientConn
 }
 
-type actionWorkflow struct {
+type isolateWorkflow struct {
 	InstanceID string
 	Namespace  string
 	State      string
@@ -90,22 +90,22 @@ type actionWorkflow struct {
 	Timeout    int
 }
 
-type actionContainer struct {
+type isolateContainer struct {
 	Image, Cmd string
 	Size       int32
 	Data       []byte
 	Registries map[string]string
 }
 
-type actionRequest struct {
+type isolateRequest struct {
 	ActionID string
 
-	Workflow  actionWorkflow
-	Container actionContainer
+	Workflow  isolateWorkflow
+	Container isolateContainer
 }
 
-// ActionError is the struct returned from actions if there is an error
-type ActionError struct {
+// IsolateError is the struct returned from isolates if there is an error
+type IsolateError struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorMessage string `json:"errorMessage"`
 }
@@ -144,9 +144,9 @@ func authorizationForRegistry(a string) *ContainerAuth {
 
 }
 
-func newActionManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isolateServer, error) {
+func newIsolateManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isolateServer, error) {
 
-	log.Debugf("action flow endpoint: %v", config.FlowAPI.Endpoint)
+	log.Debugf("isolate flow endpoint: %v", config.FlowAPI.Endpoint)
 
 	is := &isolateServer{
 		config:         config,
@@ -219,7 +219,7 @@ func (is *isolateServer) name() string {
 }
 
 func (is *isolateServer) start(s *WorkflowServer) error {
-	log.Infof("starting action runner")
+	log.Infof("starting isolate runner")
 
 	err := is.grpcStart(s)
 	if err != nil {
@@ -285,7 +285,7 @@ func hashImg(img, cmd string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func (is *isolateServer) addCtx(timeout *int64, actionID string) *ctxs {
+func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 
 	var to int64
 	if timeout != nil {
@@ -294,7 +294,7 @@ func (is *isolateServer) addCtx(timeout *int64, actionID string) *ctxs {
 
 	// create context for firecracker, it is max 15 minutes / 1800 seconds for a VM
 	c := context.Background()
-	ctx := context.WithValue(c, isolateCtxID, actionID)
+	ctx := context.WithValue(c, isolateCtxID, isolateID)
 	if to == 0 || to > maxWaitSeconds {
 		to = maxWaitSeconds
 	}
@@ -304,17 +304,17 @@ func (is *isolateServer) addCtx(timeout *int64, actionID string) *ctxs {
 		cancel: cancel,
 		ctx:    ctx,
 	}
-	is.actx[actionID] = ctxs
+	is.actx[isolateID] = ctxs
 
 	return ctxs
 
 }
 
-func (is *isolateServer) finishCancelIsolate(actionID string) {
+func (is *isolateServer) finishCancelIsolate(isolateID string) {
 
-	if ctx, ok := is.actx[actionID]; ok {
+	if ctx, ok := is.actx[isolateID]; ok {
 		ctx.cancel()
-		delete(is.actx, actionID)
+		delete(is.actx, isolateID)
 	}
 
 }
@@ -337,14 +337,14 @@ func findAuthForRegistry(img string, registries map[string]string) []remote.Opti
 func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 
 	var (
-		ns, instID, actionID string
-		img, cmd             string
+		ns, instID, isolateID string
+		img, cmd              string
 
 		data, din []byte
 	)
 
 	ns = in.GetNamespace()
-	actionID = in.GetActionId()
+	isolateID = in.GetActionId()
 
 	img = in.GetImage()
 	cmd = in.GetCommand()
@@ -357,8 +357,8 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 	}
 	defer log15log.Close()
 
-	serr := func(err error, errCode string) *ActionError {
-		ae := ActionError{
+	serr := func(err error, errCode string) *IsolateError {
+		ae := IsolateError{
 			ErrorMessage: err.Error(),
 			ErrorCode:    errCode,
 		}
@@ -372,27 +372,27 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 	}
 
 	// prepare cni networking
-	nws, err := is.setupNetworkForVM(actionID)
+	nws, err := is.setupNetworkForVM(isolateID)
 	if err != nil {
 		is.respondToAction(serr(err, errorNetwork), data, in)
 		return
 	}
 
-	defer is.deleteNetworkForVM(actionID)
+	defer is.deleteNetworkForVM(isolateID)
 
 	// build data disk to attach
-	dataDisk, err := is.buildDataDisk(actionID, in.Data, nws)
+	dataDisk, err := is.buildDataDisk(isolateID, in.Data, nws)
 	if err != nil {
 		is.respondToAction(serr(err, errorIO), data, in)
 		return
 	}
 	defer os.Remove(dataDisk)
 
-	ctxs := is.addCtx(in.Timeout, actionID)
+	ctxs := is.addCtx(in.Timeout, isolateID)
 
-	defer is.finishCancelIsolate(actionID)
+	defer is.finishCancelIsolate(isolateID)
 
-	err = is.runFirecracker(ctxs.ctx, actionID, disk, dataDisk, in.GetSize())
+	err = is.runFirecracker(ctxs.ctx, isolateID, disk, dataDisk, in.GetSize())
 	if err != nil {
 		is.respondToAction(serr(err, errorInternal), data, in)
 		return
@@ -451,7 +451,7 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 
 	if len(din) > 0 {
 
-		var ae ActionError
+		var ae IsolateError
 		err := json.Unmarshal(din, &ae)
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
@@ -475,7 +475,7 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 
 	go func() {
 
-		log.Debugf("responding to action caller")
+		log.Debugf("responding to isolate caller")
 		is.respondToAction(nil, data, in)
 
 	}()
@@ -493,8 +493,8 @@ func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 	}
 
 	if len(in.GetActionId()) == 0 {
-		log.Errorf("actionID not provided")
-		return &resp, fmt.Errorf("actionID empty")
+		log.Errorf("isolateID not provided")
+		return &resp, fmt.Errorf("isolateID empty")
 	}
 
 	log.Debugf("running isolate %s", in.GetNamespace())
@@ -505,10 +505,9 @@ func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 
 }
 
-// handleAction is to receive the action to execute. is req/resp
-func (is *isolateServer) respondToAction(ae *ActionError, data []byte, in *isolate.RunIsolateRequest) {
+func (is *isolateServer) respondToAction(ae *IsolateError, data []byte, in *isolate.RunIsolateRequest) {
 
-	log.Debugf("action responding")
+	log.Debugf("isolate responding")
 
 	r := &flow.ReportActionResultsRequest{
 		InstanceId: in.InstanceId,
@@ -526,7 +525,7 @@ func (is *isolateServer) respondToAction(ae *ActionError, data []byte, in *isola
 	_, err := is.flowClient.ReportActionResults(context.Background(), r)
 
 	if err != nil {
-		log.Errorf("error reporting action results: %v", err)
+		log.Errorf("error reporting isolate results: %v", err)
 	}
 
 }
