@@ -19,29 +19,63 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *WorkflowServer) grpcIngressStart() error {
+type ingressServer struct {
+	ingress.UnimplementedDirektivIngressServer
 
-	// TODO: make port configurable
-	// TODO: save listener somewhere so that it can be shutdown
-	// TODO: save grpc somewhere so that it can be shutdown
-	log.Infof("ingress api starting at %v", s.config.IngressAPI.Bind)
+	wfServer *WorkflowServer
+	grpc     *grpc.Server
+}
 
-	listener, err := net.Listen("tcp", s.config.IngressAPI.Bind)
+func (is *ingressServer) stop() {
+
+	if is.grpc != nil {
+		is.grpc.GracefulStop()
+	}
+
+	// stop engine client
+	for _, c := range is.wfServer.engine.grpcConns {
+		c.Close()
+	}
+
+}
+
+func (is *ingressServer) name() string {
+	return "ingress"
+}
+
+func newIngressServer(s *WorkflowServer) *ingressServer {
+
+	return &ingressServer{
+		wfServer: s,
+	}
+
+}
+
+func (is *ingressServer) start() error {
+
+	log.Infof("ingress api starting at %v", is.wfServer.config.IngressAPI.Bind)
+
+	options, err := optionsForGRPC(is.wfServer.config.Certs.Directory, ingressComponent, (is.wfServer.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}
 
-	s.grpcIngress = grpc.NewServer()
+	listener, err := net.Listen("tcp", is.wfServer.config.IngressAPI.Bind)
+	if err != nil {
+		return err
+	}
 
-	ingress.RegisterDirektivIngressServer(s.grpcIngress, s)
+	is.grpc = grpc.NewServer(options...)
 
-	go s.grpcIngress.Serve(listener)
+	ingress.RegisterDirektivIngressServer(is.grpc, is)
+
+	go is.grpc.Serve(listener)
 
 	return nil
 
 }
 
-func (s *WorkflowServer) AddNamespace(ctx context.Context, in *ingress.AddNamespaceRequest) (*ingress.AddNamespaceResponse, error) {
+func (is *ingressServer) AddNamespace(ctx context.Context, in *ingress.AddNamespaceRequest) (*ingress.AddNamespaceResponse, error) {
 
 	// TODO: can go to ent
 	var resp ingress.AddNamespaceResponse
@@ -59,7 +93,7 @@ func (s *WorkflowServer) AddNamespace(ctx context.Context, in *ingress.AddNamesp
 		return nil, status.Errorf(codes.InvalidArgument, "namespace name must match regex: %s", regex)
 	}
 
-	namespace, err := s.dbManager.addNamespace(ctx, name)
+	namespace, err := is.wfServer.dbManager.addNamespace(ctx, name)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace", name)
 	}
@@ -73,7 +107,7 @@ func (s *WorkflowServer) AddNamespace(ctx context.Context, in *ingress.AddNamesp
 
 }
 
-func (s *WorkflowServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflowRequest) (*ingress.AddWorkflowResponse, error) {
+func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflowRequest) (*ingress.AddWorkflowResponse, error) {
 
 	var resp ingress.AddWorkflowResponse
 
@@ -91,18 +125,18 @@ func (s *WorkflowServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
-	wf, err := s.dbManager.addWorkflow(ctx, namespace, workflow.ID,
+	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
 		workflow.Description, active, document, workflow.GetStartDefinition())
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	s.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
+	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
 	if active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {
 			scheduled := def.(*model.ScheduledStart)
-			s.tmManager.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, scheduled.Cron, []byte(wf.ID.String()))
+			is.wfServer.tmManager.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, scheduled.Cron, []byte(wf.ID.String()))
 		}
 	}
 
@@ -121,7 +155,7 @@ func (s *WorkflowServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 
 }
 
-func (s *WorkflowServer) BroadcastEvent(ctx context.Context, in *ingress.BroadcastEventRequest) (*emptypb.Empty, error) {
+func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.BroadcastEventRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
@@ -136,19 +170,19 @@ func (s *WorkflowServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 
 	log.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
 
-	err = s.handleEvent(event)
+	err = is.wfServer.handleEvent(event)
 
 	return &resp, err
 
 }
 
-func (s *WorkflowServer) DeleteNamespace(ctx context.Context, in *ingress.DeleteNamespaceRequest) (*ingress.DeleteNamespaceResponse, error) {
+func (is *ingressServer) DeleteNamespace(ctx context.Context, in *ingress.DeleteNamespaceRequest) (*ingress.DeleteNamespaceResponse, error) {
 
 	var resp ingress.DeleteNamespaceResponse
 	var name string
 	name = in.GetName()
 
-	err := s.dbManager.deleteNamespace(ctx, name)
+	err := is.wfServer.dbManager.deleteNamespace(ctx, name)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace", name)
 	}
@@ -161,18 +195,18 @@ func (s *WorkflowServer) DeleteNamespace(ctx context.Context, in *ingress.Delete
 
 }
 
-func (s *WorkflowServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteWorkflowRequest) (*ingress.DeleteWorkflowResponse, error) {
+func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteWorkflowRequest) (*ingress.DeleteWorkflowResponse, error) {
 
 	var resp ingress.DeleteWorkflowResponse
 
 	uid := in.GetUid()
 
-	err := s.dbManager.deleteWorkflow(ctx, uid)
+	err := is.wfServer.dbManager.deleteWorkflow(ctx, uid)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
 
-	s.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", uid), deleteTimerAction)
+	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", uid), deleteTimerAction)
 
 	log.Debugf("Deleted workflow: %s", uid)
 
@@ -182,13 +216,13 @@ func (s *WorkflowServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteW
 
 }
 
-func (s *WorkflowServer) GetNamespaces(ctx context.Context, in *ingress.GetNamespacesRequest) (*ingress.GetNamespacesResponse, error) {
+func (is *ingressServer) GetNamespaces(ctx context.Context, in *ingress.GetNamespacesRequest) (*ingress.GetNamespacesResponse, error) {
 
 	var resp ingress.GetNamespacesResponse
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	namespaces, err := s.dbManager.getNamespaces(ctx, int(offset), int(limit))
+	namespaces, err := is.wfServer.dbManager.getNamespaces(ctx, int(offset), int(limit))
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace", "")
 	}
@@ -212,14 +246,14 @@ func (s *WorkflowServer) GetNamespaces(ctx context.Context, in *ingress.GetNames
 
 }
 
-func (s *WorkflowServer) GetWorkflowById(ctx context.Context, in *ingress.GetWorkflowByIdRequest) (*ingress.GetWorkflowByIdResponse, error) {
+func (is *ingressServer) GetWorkflowById(ctx context.Context, in *ingress.GetWorkflowByIdRequest) (*ingress.GetWorkflowByIdResponse, error) {
 
 	var resp ingress.GetWorkflowByIdResponse
 
 	namespace := in.GetNamespace()
 	id := in.GetId()
 
-	wf, err := s.dbManager.getWorkflowById(ctx, namespace, id)
+	wf, err := is.wfServer.dbManager.getWorkflowById(ctx, namespace, id)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", fmt.Sprintf("%s/%s", namespace, id))
 	}
@@ -239,13 +273,13 @@ func (s *WorkflowServer) GetWorkflowById(ctx context.Context, in *ingress.GetWor
 
 }
 
-func (s *WorkflowServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWorkflowByUidRequest) (*ingress.GetWorkflowByUidResponse, error) {
+func (is *ingressServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWorkflowByUidRequest) (*ingress.GetWorkflowByUidResponse, error) {
 
 	var resp ingress.GetWorkflowByUidResponse
 
 	uid := in.GetUid()
 
-	wf, err := s.dbManager.getWorkflowByUid(ctx, uid)
+	wf, err := is.wfServer.dbManager.getWorkflowByUid(ctx, uid)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
@@ -264,21 +298,21 @@ func (s *WorkflowServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWo
 
 }
 
-func (s *WorkflowServer) CancelWorkflowInstance(ctx context.Context, in *ingress.CancelWorkflowInstanceRequest) (*emptypb.Empty, error) {
+func (is *ingressServer) CancelWorkflowInstance(ctx context.Context, in *ingress.CancelWorkflowInstanceRequest) (*emptypb.Empty, error) {
 
-	_ = s.engine.hardCancelInstance(in.GetId(), "direktiv.cancels.api", "cancelled by api request")
+	_ = is.wfServer.engine.hardCancelInstance(in.GetId(), "direktiv.cancels.api", "cancelled by api request")
 
 	return nil, nil
 
 }
 
-func (s *WorkflowServer) GetWorkflowInstance(ctx context.Context, in *ingress.GetWorkflowInstanceRequest) (*ingress.GetWorkflowInstanceResponse, error) {
+func (is *ingressServer) GetWorkflowInstance(ctx context.Context, in *ingress.GetWorkflowInstanceRequest) (*ingress.GetWorkflowInstanceResponse, error) {
 
 	var resp ingress.GetWorkflowInstanceResponse
 
 	id := in.GetId()
 
-	inst, err := s.dbManager.getWorkflowInstance(ctx, id)
+	inst, err := is.wfServer.dbManager.getWorkflowInstance(ctx, id)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", id)
 	}
@@ -304,7 +338,7 @@ func (s *WorkflowServer) GetWorkflowInstance(ctx context.Context, in *ingress.Ge
 
 }
 
-func (s *WorkflowServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingress.GetWorkflowInstanceLogsRequest) (*ingress.GetWorkflowInstanceLogsResponse, error) {
+func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingress.GetWorkflowInstanceLogsRequest) (*ingress.GetWorkflowInstanceLogsResponse, error) {
 
 	var resp ingress.GetWorkflowInstanceLogsResponse
 
@@ -312,7 +346,7 @@ func (s *WorkflowServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	logs, err := s.instanceLogger.QueryLogs(ctx, instance, int(limit), int(offset))
+	logs, err := is.wfServer.instanceLogger.QueryLogs(ctx, instance, int(limit), int(offset))
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", instance)
 	}
@@ -336,7 +370,7 @@ func (s *WorkflowServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 
 }
 
-func (s *WorkflowServer) GetWorkflowInstances(ctx context.Context, in *ingress.GetWorkflowInstancesRequest) (*ingress.GetWorkflowInstancesResponse, error) {
+func (is *ingressServer) GetWorkflowInstances(ctx context.Context, in *ingress.GetWorkflowInstancesRequest) (*ingress.GetWorkflowInstancesResponse, error) {
 
 	var resp ingress.GetWorkflowInstancesResponse
 
@@ -344,7 +378,7 @@ func (s *WorkflowServer) GetWorkflowInstances(ctx context.Context, in *ingress.G
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	instances, err := s.dbManager.getWorkflowInstances(ctx, namespace, int(offset), int(limit))
+	instances, err := is.wfServer.dbManager.getWorkflowInstances(ctx, namespace, int(offset), int(limit))
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace", "")
 	}
@@ -366,7 +400,7 @@ func (s *WorkflowServer) GetWorkflowInstances(ctx context.Context, in *ingress.G
 
 }
 
-func (s *WorkflowServer) GetWorkflows(ctx context.Context, in *ingress.GetWorkflowsRequest) (*ingress.GetWorkflowsResponse, error) {
+func (is *ingressServer) GetWorkflows(ctx context.Context, in *ingress.GetWorkflowsRequest) (*ingress.GetWorkflowsResponse, error) {
 
 	var resp ingress.GetWorkflowsResponse
 
@@ -374,12 +408,12 @@ func (s *WorkflowServer) GetWorkflows(ctx context.Context, in *ingress.GetWorkfl
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	workflows, err := s.dbManager.getWorkflows(ctx, namespace, int(offset), int(limit))
+	workflows, err := is.wfServer.dbManager.getWorkflows(ctx, namespace, int(offset), int(limit))
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace", "")
 	}
 
-	wfC, err := s.dbManager.getWorkflowCount(ctx, namespace, int(offset), int(limit))
+	wfC, err := is.wfServer.dbManager.getWorkflowCount(ctx, namespace, int(offset), int(limit))
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace", "")
 	}
@@ -410,7 +444,7 @@ func (s *WorkflowServer) GetWorkflows(ctx context.Context, in *ingress.GetWorkfl
 
 }
 
-func (s *WorkflowServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeWorkflowRequest) (*ingress.InvokeWorkflowResponse, error) {
+func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeWorkflowRequest) (*ingress.InvokeWorkflowResponse, error) {
 
 	var resp ingress.InvokeWorkflowResponse
 
@@ -418,7 +452,7 @@ func (s *WorkflowServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	workflow := in.GetWorkflowId()
 	input := in.GetInput()
 
-	instID, err := s.engine.DirectInvoke(namespace, workflow, input)
+	instID, err := is.wfServer.engine.DirectInvoke(namespace, workflow, input)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}
@@ -431,7 +465,7 @@ func (s *WorkflowServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 
 }
 
-func (s *WorkflowServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateWorkflowRequest) (*ingress.UpdateWorkflowResponse, error) {
+func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateWorkflowRequest) (*ingress.UpdateWorkflowResponse, error) {
 
 	var resp ingress.UpdateWorkflowResponse
 
@@ -451,18 +485,18 @@ func (s *WorkflowServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		checkRevision = &checkRevisionVal
 	}
 
-	wf, err := s.dbManager.updateWorkflow(ctx, uid, checkRevision, workflow.ID,
+	wf, err := is.wfServer.dbManager.updateWorkflow(ctx, uid, checkRevision, workflow.ID,
 		workflow.Description, in.Active, document, workflow.GetStartDefinition())
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	s.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
+	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
 	if *in.Active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {
 			scheduled := def.(*model.ScheduledStart)
-			s.tmManager.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, scheduled.Cron, []byte(wf.ID.String()))
+			is.wfServer.tmManager.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, scheduled.Cron, []byte(wf.ID.String()))
 		}
 	}
 
@@ -480,11 +514,11 @@ func (s *WorkflowServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 
 }
 
-func (s *WorkflowServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
+func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
 
 	stype := secrets.SecretTypes_SECRET
 
-	_, err := s.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
+	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
 		Namespace: in.Namespace,
 		Name:      in.Name,
 		Stype:     &stype,
@@ -494,11 +528,11 @@ func (s *WorkflowServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSec
 
 }
 
-func (s *WorkflowServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
+func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
 
 	stype := secrets.SecretTypes_REGISTRY
 
-	_, err := s.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
+	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
 		Namespace: in.Namespace,
 		Name:      in.Name,
 		Stype:     &stype,
@@ -508,15 +542,21 @@ func (s *WorkflowServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteR
 
 }
 
-func (s *WorkflowServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsRequest) (*ingress.GetSecretsResponse, error) {
+func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,
+	stype secrets.SecretTypes) (*secrets.GetSecretsResponse, error) {
 
-	stype := secrets.SecretTypes_SECRET
-
-	output, err := s.secrets.GetSecrets(ctx, &secrets.GetSecretsRequest{
-		Namespace: in.Namespace,
+	output, err := is.wfServer.secrets.GetSecrets(ctx, &secrets.GetSecretsRequest{
+		Namespace: &ns,
 		Stype:     &stype,
 	})
 
+	return output, err
+
+}
+
+func (is *ingressServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsRequest) (*ingress.GetSecretsResponse, error) {
+
+	output, err := is.fetchSecrets(ctx, in.GetNamespace(), secrets.SecretTypes_SECRET)
 	if err != nil {
 		return nil, err
 	}
@@ -532,15 +572,9 @@ func (s *WorkflowServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsR
 
 }
 
-func (s *WorkflowServer) GetRegistries(ctx context.Context, in *ingress.GetRegistriesRequest) (*ingress.GetRegistriesResponse, error) {
+func (is *ingressServer) GetRegistries(ctx context.Context, in *ingress.GetRegistriesRequest) (*ingress.GetRegistriesResponse, error) {
 
-	stype := secrets.SecretTypes_REGISTRY
-
-	output, err := s.secrets.GetSecrets(ctx, &secrets.GetSecretsRequest{
-		Namespace: in.Namespace,
-		Stype:     &stype,
-	})
-
+	output, err := is.fetchSecrets(ctx, in.GetNamespace(), secrets.SecretTypes_REGISTRY)
 	if err != nil {
 		return nil, err
 	}
@@ -556,11 +590,11 @@ func (s *WorkflowServer) GetRegistries(ctx context.Context, in *ingress.GetRegis
 
 }
 
-func (s *WorkflowServer) StoreSecret(ctx context.Context, in *ingress.StoreSecretRequest) (*emptypb.Empty, error) {
+func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecretRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
-	ns, err := s.dbManager.getNamespace(in.GetNamespace())
+	ns, err := is.wfServer.dbManager.getNamespace(in.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +606,7 @@ func (s *WorkflowServer) StoreSecret(ctx context.Context, in *ingress.StoreSecre
 
 	stype := secrets.SecretTypes_SECRET
 
-	return s.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
+	return is.wfServer.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
 		Namespace: in.Namespace,
 		Name:      in.Name,
 		Data:      encryptedBytes,
@@ -581,11 +615,11 @@ func (s *WorkflowServer) StoreSecret(ctx context.Context, in *ingress.StoreSecre
 
 }
 
-func (s *WorkflowServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {
+func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {
 
 	var resp emptypb.Empty
 
-	ns, err := s.dbManager.getNamespace(in.GetNamespace())
+	ns, err := is.wfServer.dbManager.getNamespace(in.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -597,7 +631,7 @@ func (s *WorkflowServer) StoreRegistry(ctx context.Context, in *ingress.StoreReg
 
 	stype := secrets.SecretTypes_REGISTRY
 
-	return s.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
+	return is.wfServer.secrets.StoreSecret(ctx, &secrets.SecretsStoreRequest{
 		Namespace: in.Namespace,
 		Name:      in.Name,
 		Data:      encryptedBytes,

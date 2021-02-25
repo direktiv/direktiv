@@ -204,7 +204,8 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				ar.Container.Data = inputData
 
 				// get registries
-				ar.Container.Registries, err = getRegistries(instance.engine.server.config, instance.namespace)
+				ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+					instance.engine.secretsClient, instance.namespace)
 				if err != nil {
 					return
 				}

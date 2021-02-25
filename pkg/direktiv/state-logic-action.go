@@ -199,7 +199,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			ar.Container.Registries = make(map[string]string)
 
 			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.config, instance.namespace)
+			ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+				instance.engine.secretsClient, instance.namespace)
 			if err != nil {
 				return
 			}
@@ -216,7 +217,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 					ar.Workflow.Step = 0
 
 					// get registries
-					ar.Container.Registries, err = getRegistries(instance.engine.server.config, instance.namespace)
+					ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+						instance.engine.secretsClient, instance.namespace)
 					if err != nil {
 						return
 					}

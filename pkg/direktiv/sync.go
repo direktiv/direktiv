@@ -32,8 +32,6 @@ func (s *WorkflowServer) startDatabaseListener() error {
 
 	conninfo := s.config.Database.DB
 
-	log.Debugf("sync db: %s", conninfo)
-
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
 			log.Error(err)

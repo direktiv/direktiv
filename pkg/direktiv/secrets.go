@@ -46,7 +46,7 @@ func newSecretsServer(config *Config) (*secretsServer, error) {
 
 }
 
-func getRegistries(c *Config, namespace string) (map[string]string, error) {
+func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace string) (map[string]string, error) {
 
 	r := make(map[string]string)
 
@@ -55,12 +55,6 @@ func getRegistries(c *Config, namespace string) (map[string]string, error) {
 
 	if len(reg.Name) > 0 {
 		r[reg.Name] = fmt.Sprintf("%s!%s", reg.User, reg.Token)
-	}
-
-	// overwrite with secrets
-	client, err := secretsClient(c.SecretsAPI.Endpoint)
-	if err != nil {
-		return r, err
 	}
 
 	var d secrets.GetSecretsRequest
@@ -81,31 +75,22 @@ func getRegistries(c *Config, namespace string) (map[string]string, error) {
 
 }
 
-func secretsClient(c string) (secrets.SecretsServiceClient, error) {
-
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
-
-	conn, err := grpc.Dial(c, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return secrets.NewSecretsServiceClient(conn), nil
-
-}
-
 func (ss *secretsServer) start() error {
 
 	bind := ss.config.SecretsAPI.Bind
 	log.Debugf("secrets endpoint starting at %s", bind)
+
+	options, err := optionsForGRPC(ss.config.Certs.Directory, secretsComponent, (ss.config.Certs.Secure != 1))
+	if err != nil {
+		return err
+	}
 
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
 		return err
 	}
 
-	ss.grpc = grpc.NewServer()
+	ss.grpc = grpc.NewServer(options...)
 
 	secrets.RegisterSecretsServiceServer(ss.grpc, ss)
 
@@ -254,13 +239,17 @@ func (ss *secretsServer) GetSecrets(ctx context.Context, in *secrets.GetSecretsR
 }
 
 func (ss *secretsServer) name() string {
-	return "secrets server"
+	return "secrets"
 }
 
 func (ss *secretsServer) stop() {
 
 	if ss.grpc != nil {
 		ss.grpc.GracefulStop()
+	}
+
+	if ss.db != nil {
+		ss.db.Close()
 	}
 
 }

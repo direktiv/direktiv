@@ -17,11 +17,12 @@ import (
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 	"github.com/vorteil/direktiv/pkg/dlog/dummy"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/secrets"
+	"google.golang.org/grpc"
 
 	"github.com/jinzhu/copier"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/isolate"
-	"google.golang.org/grpc"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -45,9 +46,6 @@ var (
 
 type workflowEngine struct {
 	db             *dbManager
-	grpcFlow       flow.DirektivFlowClient
-	grpcIngress    ingress.DirektivIngressClient
-	grpcIsolate    isolate.DirektivIsolateClient
 	timer          *timerManager
 	instanceLogger *dlog.Log
 	stateLogics    map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error)
@@ -55,6 +53,12 @@ type workflowEngine struct {
 
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
+
+	flowClient    flow.DirektivFlowClient
+	isolateClient isolate.DirektivIsolateClient
+	secretsClient secrets.SecretsServiceClient
+	ingressClient ingress.DirektivIngressClient
+	grpcConns     []*grpc.ClientConn
 }
 
 func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
@@ -67,35 +71,6 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.timer = s.tmManager
 	we.instanceLogger = &s.instanceLogger
 	we.cancels = make(map[string]func())
-
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-
-	conn, err := grpc.Dial(s.config.IngressAPI.Endpoint, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	we.grpcIngress = ingress.NewDirektivIngressClient(conn)
-
-	conn, err = grpc.Dial(s.config.FlowAPI.Endpoint, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: close conn
-	// TODO: address configuration
-
-	we.grpcFlow = flow.NewDirektivFlowClient(conn)
-
-	conn, err = grpc.Dial(s.config.IsolateAPI.Endpoint, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: close conn
-	// TODO: address configuration
-
-	we.grpcIsolate = isolate.NewDirektivIsolateClient(conn)
 
 	we.stateLogics = map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error){
 		model.StateTypeNoop:          initNoopStateLogic,
@@ -131,6 +106,39 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// get flow client
+	conn, err := getEndpointTLS(s.config, flowComponent, s.config.FlowAPI.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	we.grpcConns = append(we.grpcConns, conn)
+
+	we.flowClient = flow.NewDirektivFlowClient(conn)
+
+	// get isolate client
+	conn, err = getEndpointTLS(s.config, isolateComponent, s.config.IsolateAPI.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	we.grpcConns = append(we.grpcConns, conn)
+	we.isolateClient = isolate.NewDirektivIsolateClient(conn)
+
+	// get secrets client
+	conn, err = getEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	we.grpcConns = append(we.grpcConns, conn)
+	we.secretsClient = secrets.NewSecretsServiceClient(conn)
+
+	// get ingress client
+	conn, err = getEndpointTLS(s.config, ingressComponent, s.config.IngressAPI.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	we.grpcConns = append(we.grpcConns, conn)
+	we.ingressClient = ingress.NewDirektivIngressClient(conn)
 
 	return we, nil
 
@@ -168,7 +176,7 @@ func (we *workflowEngine) dispatchState(id, state string, step int) error {
 	var step32 int32
 	step32 = int32(step)
 
-	_, err := we.grpcFlow.Resume(ctx, &flow.ResumeRequest{
+	_, err := we.flowClient.Resume(ctx, &flow.ResumeRequest{
 		InstanceId: &id,
 		Step:       &step32,
 	})
@@ -268,7 +276,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 	var timeout int64
 	timeout = int64(ar.Workflow.Timeout)
 
-	_, err := we.grpcIsolate.RunIsolate(ctx, &isolate.RunIsolateRequest{
+	_, err := we.isolateClient.RunIsolate(ctx, &isolate.RunIsolateRequest{
 		ActionId:   &ar.ActionID,
 		Namespace:  &ar.Workflow.Namespace,
 		InstanceId: &ar.Workflow.InstanceID,
@@ -299,7 +307,7 @@ func (we *workflowEngine) wakeCaller(msg *actionResultMessage) error {
 	var step int32
 	step = int32(msg.Step)
 
-	_, err := we.grpcFlow.ReportActionResults(ctx, &flow.ReportActionResultsRequest{
+	_, err := we.flowClient.ReportActionResults(ctx, &flow.ReportActionResultsRequest{
 		InstanceId:   &msg.InstanceID,
 		Step:         &step,
 		ActionId:     &msg.Payload.ActionID,
