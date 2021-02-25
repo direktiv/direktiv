@@ -4,3 +4,8 @@ checks:
     enabled: true
     config:
       threshold: 6
+exclude_patterns:
+- "ent/"
+- "pkg/secrets/ent/"
+- "examples/"
+- "**/*.pb.go"
