@@ -103,21 +103,9 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			return NewInternalError(errors.New("invalid state data"))
 		}
 
-		if len(action.Secrets) > 0 {
-			instance.Log("Decrypting secrets.")
-
-			s := make(map[string]string)
-
-			for _, name := range action.Secrets {
-				var dd []byte
-				dd, err = decryptedDataForNS(ctx, instance, instance.namespace, name)
-				if err != nil {
-					return err
-				}
-				s[name] = string(dd)
-			}
-
-			m["secrets"] = s
+		m, err = addSecrets(ctx, instance, m, action.Secrets...)
+		if err != nil {
+			return err
 		}
 
 		input, err = jqObject(m, action.Input)

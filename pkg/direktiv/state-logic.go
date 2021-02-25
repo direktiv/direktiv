@@ -81,6 +81,31 @@ func deadlineFromString(s string) time.Time {
 
 }
 
+func addSecrets(ctx context.Context, wli *workflowLogicInstance, m map[string]interface{}, secrets ...string) (map[string]interface{}, error) {
+
+	var err error
+
+	if len(secrets) > 0 {
+		wli.Log("Decrypting secrets.")
+
+		s := make(map[string]string)
+
+		for _, name := range secrets {
+			var dd []byte
+			dd, err = decryptedDataForNS(ctx, wli, wli.namespace, name)
+			if err != nil {
+				return nil, err
+			}
+			s[name] = string(dd)
+		}
+
+		m["secrets"] = s
+	}
+
+	return m, nil
+
+}
+
 // -------------- Noop State --------------
 
 type noopStateLogic struct {

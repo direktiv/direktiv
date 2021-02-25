@@ -342,16 +342,13 @@ const sleepWakedata = "sleep"
 
 func (we *workflowEngine) sleep(id, state string, step int, t time.Time) error {
 
-	data, err := json.Marshal(&sleepMessage{
+	data, _ := json.Marshal(&sleepMessage{
 		InstanceID: id,
 		State:      state,
 		Step:       step,
 	})
-	if err != nil {
-		return NewInternalError(err)
-	}
 
-	_, err = we.timer.addOneShot(id, sleepWakeupFunction, t, data)
+	_, err := we.timer.addOneShot(id, sleepWakeupFunction, t, data)
 	if err != nil {
 		return NewInternalError(err)
 	}
@@ -566,16 +563,13 @@ const retryWakeupFunction = "retryWakeup"
 
 func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time) error {
 
-	data, err := json.Marshal(&retryMessage{
+	data, _ := json.Marshal(&retryMessage{
 		InstanceID: id,
 		State:      state,
 		Step:       step,
 	})
-	if err != nil {
-		return NewInternalError(err)
-	}
 
-	_, err = we.timer.addOneShot(id, retryWakeupFunction, t, data)
+	_, err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
 	if err != nil {
 		return NewInternalError(err)
 	}

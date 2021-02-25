@@ -134,23 +134,9 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		if len(sl.state.Action.Secrets) > 0 {
-			instance.Log("Decrypting secrets.")
-
-			s := make(map[string]string)
-
-			for _, name := range sl.state.Action.Secrets {
-
-				var dd []byte
-				dd, err = decryptedDataForNS(ctx, instance, instance.namespace, name)
-				if err != nil {
-					return
-				}
-				s[name] = string(dd)
-
-			}
-
-			m["secrets"] = s
+		m, err = addSecrets(ctx, instance, m, sl.state.Action.Secrets...)
+		if err != nil {
+			return
 		}
 
 		input, err = jqObject(m, sl.state.Action.Input)

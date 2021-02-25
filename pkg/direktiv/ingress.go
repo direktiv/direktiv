@@ -495,32 +495,34 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 
 }
 
-func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
+type deleteEncryptedRequest interface {
+	GetNamespace() string
+	GetName() string
+}
 
-	stype := secrets.SecretTypes_SECRET
+func (is *ingressServer) deleteEncrypted(ctx context.Context, in deleteEncryptedRequest, stype secrets.SecretTypes) error {
+
+	namespace := in.GetNamespace()
+	name := in.GetName()
 
 	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
-		Namespace: in.Namespace,
-		Name:      in.Name,
+		Namespace: &namespace,
+		Name:      &name,
 		Stype:     &stype,
 	})
 
-	return &emptypb.Empty{}, err
+	return err
 
 }
 
-func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
-
-	stype := secrets.SecretTypes_REGISTRY
-
-	_, err := is.wfServer.secrets.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
-		Namespace: in.Namespace,
-		Name:      in.Name,
-		Stype:     &stype,
-	})
-
+func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
+	err := is.deleteEncrypted(ctx, in, secrets.SecretTypes_SECRET)
 	return &emptypb.Empty{}, err
+}
 
+func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
+	err := is.deleteEncrypted(ctx, in, secrets.SecretTypes_REGISTRY)
+	return &emptypb.Empty{}, err
 }
 
 func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,

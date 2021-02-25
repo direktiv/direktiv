@@ -15,7 +15,6 @@ type Logger interface {
 type Log interface {
 	LoggerFunc(namespace, instance string) (Logger, error)
 	QueryLogs(ctx context.Context, instance string, limit, offset int) (QueryReponse, error)
-	QueryAllLogs(instance string) (QueryReponse, error)
 	DeleteInstanceLogs(instance string) error
 }
 
