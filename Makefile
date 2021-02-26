@@ -47,8 +47,11 @@ build:
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
+
+.PHONY: build-cli	
 build-cli:
 	go build -o direkcli cmd/direkcli/main.go
+
 # run as sudo because networking needs root privileges
 .PHONY: run
 run:
