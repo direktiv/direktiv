@@ -26,7 +26,6 @@ RUN chmod 755 /bin/direktiv
 
 COPY run.sh /
 RUN chmod 755 /run.sh
-RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir -p /data && chmod 755 /bin/minio
 
