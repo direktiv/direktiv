@@ -36,9 +36,11 @@ jobs:
         tar -xzf vorteil_linux-x86.tar.gz
         ./vorteil projects convert-container vorteil/direktiv:latest d
         cp build/default_docker.vcfg d/default.vcfg
-        cp build/run_pg.sh d/ 
+        cp build/run_pg.sh d/
+        ls -la d
+        cat default.vcfg
         ./vorteil packages package -o direktiv.vorteil d
-    - name: Release-Direktiv
+    - name: release direktiv
       id: create_release
       uses: actions/create-release@v1
       env:
