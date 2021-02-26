@@ -20,8 +20,15 @@ jobs:
         password: ${{ secrets.DOCKER_TOKEN }}
     - name: make build
       run: |
-        echo "building dirketiv"
-        make build docker
+        make build
+    - name: push docker
+      run: |
+        make docker
         docker images | grep direktiv
         docker tag direktiv gerke74/direktiv:delme
         docker push gerke74/direktiv:delme
+    - name: create vorteil image
+      run: |
+        wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
+        tar -xzf vorteil_linux-x86.tar.gz
+        ./vorteil version
