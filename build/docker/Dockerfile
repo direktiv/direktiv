@@ -12,8 +12,6 @@ ENV MINIO_ACCESS_KEY=vorteil
 ENV MINIO_SECRET_KEY=vorteilvorteil
 ENV DIREKTIV_DB="host=127.0.0.1 port=5432 user=direktiv dbname=direktiv password=direktiv sslmode=disable"
 ENV DIREKTIV_SECRETS_DB="host=127.0.0.1 port=5432 user=direktiv dbname=direktiv password=direktiv sslmode=disable"
-#ENV DIREKTIV_DB="host=127.0.0.1 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable"
-#ENV DIREKTIV_SECRETS_DB="host=127.0.0.1 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable"
 
 ENV POSTGRES_USER=direktiv
 ENV POSTGRES_PASSWORD=direktiv
