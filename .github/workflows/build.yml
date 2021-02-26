@@ -1,9 +1,9 @@
 name: Build
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  create:
+    tags:
+      - v*
 jobs:
   build:
     runs-on: ubuntu-latest
