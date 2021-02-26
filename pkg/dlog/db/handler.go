@@ -38,9 +38,9 @@ func NewHandler(args *HandlerArgs) (*Handler, error) {
 	return out.init()
 }
 
-func (h *Handler) initDB() error {
+func (l *Logger) initDB() error {
 
-	tx, err := h.db.BeginTx(context.Background(), nil)
+	tx, err := l.db.BeginTx(context.Background(), nil)
 	if err != nil {
 		return err
 	}
@@ -146,11 +146,6 @@ func (h *Handler) init() (*Handler, error) {
 
 	h.queuedLogs = make([]log15.Record, 0)
 	h.logQueue = make(chan *log15.Record, 10)
-
-	err := h.initDB()
-	if err != nil {
-		return nil, err
-	}
 
 	go h.onboarder()
 	go h.dispatcher()

@@ -26,6 +26,11 @@ func (l *Logger) Connect(database string) error {
 		return fmt.Errorf("Failed to initialize server: %w", err)
 	}
 
+	err = l.initDB()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
