@@ -1,0 +1,31 @@
+[[program]]
+  args = "udevd"
+  env = ["PATH=/sbin:/bin"]
+
+[[program]]
+  args = "minio --config-dir=/tmp --certs-dir=/miniocerts server /data"
+  env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=demo", "MINIO_SECRET_KEY=password"]
+
+[[program]]
+  args = "/bin/direktiv -d -t wis -c /etc/conf.toml"
+  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin", 
+		"DIREKTIV_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
+		"DIREKTIV_SECRETS_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
+		"DIREKTIV_MINIO_USER=demo", 
+		"DIREKTIV_MINIO_PASSWORD=password"]
+  bootstrap = ["WAIT_PORT if=eth0 9000", "WAIT_PORT if=eth0 5432"]
+
+[[program]]
+ args = "/run_pg.sh"
+ privilege = "superuser"
+
+[[network]]
+  https = ["6666", "9000"]
+
+[vm]
+  ram = "1024 MiB"
+  disk-size = "+2048 MiB"
+
+[system]
+  kernel-args="loglevel=1"
+  user = "postgres"

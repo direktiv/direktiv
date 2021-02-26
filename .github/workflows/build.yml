@@ -1,9 +1,9 @@
 name: Build
 on:
   workflow_dispatch:
-  create:
-    tags:
-      - v*
+  push:
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,13 +28,15 @@ jobs:
       run: |
         make docker
         docker images | grep direktiv
-        docker tag direktiv gerke74/direktiv:delme
-        docker push gerke74/direktiv:delme
+        docker tag direktiv vorteil/direktiv:latest
+        docker push vorteil/direktiv:latest
     - name: create vorteil image
       run: |
         wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
         tar -xzf vorteil_linux-x86.tar.gz
-        ./vorteil projects convert-container gerke74/direktiv:delme d
+        ./vorteil projects convert-container vorteil/direktiv:latest d
+        cp build/default_docker.vcfg d/default.vcfg
+        cp build/run_pg.sh d/ 
         ./vorteil packages package -o direktiv.vorteil d
     - name: Release-Direktiv
       id: create_release
@@ -43,7 +45,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Direktiv Release ${{ github.event.release.tag_name }}
+        release_name: Direktiv Release
         draft: true
         prerelease: false
     - name: upload vorteil image
