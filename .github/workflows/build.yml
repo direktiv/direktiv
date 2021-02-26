@@ -31,4 +31,24 @@ jobs:
       run: |
         wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
         tar -xzf vorteil_linux-x86.tar.gz
-        ./vorteil version
+        ./vorteil projects convert-container gerke74/direktiv:delme d
+        ./vorteil packages package -o direktiv.vorteil d
+    - name: Release-Direktiv
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Direktiv Release
+          draft: true
+          prerelease: false
+    - name: Upload-Direktiv
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./direktiv.vorteil
+          asset_name: direktiv.vorteil
+          asset_content_type: application/octet-stream
