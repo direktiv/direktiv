@@ -26,6 +26,13 @@ This repository contains a reference implementation that runs Docker containers 
 
 ### Starting the Server
 
+Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. 
+
+With Vorteil installed, download `direktiv.vorteil` from the releases page, then run `vorteil run direktiv.vorteil` from within your downloads folder.
+
+If you prefer to use Docker, run `docker run --net=host --privileged vorteil/direktiv`. You may need to run this command as an administrator.
+
+Test either of these methods using the `direkcli` command-line tool from the releases page by running `direkcli namespaces create demo`.
 
 ### Creating and Running a Workflow
 
