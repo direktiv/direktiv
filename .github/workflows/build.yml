@@ -21,6 +21,9 @@ jobs:
     - name: make build
       run: |
         make build
+    - name: make build cli
+      run: |
+        make build-cli
     - name: push docker
       run: |
         make docker
@@ -40,7 +43,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Direktiv Release
+        release_name: Direktiv Release ${{ github.ref }}
         draft: true
         prerelease: false
     - name: Upload-Direktiv
@@ -51,4 +54,9 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./direktiv.vorteil
         asset_name: direktiv.vorteil
+        asset_content_type: application/octet-stream
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./direkcli
+        asset_name: direkcli
         asset_content_type: application/octet-stream
