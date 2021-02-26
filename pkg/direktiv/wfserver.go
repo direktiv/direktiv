@@ -5,7 +5,6 @@ import (
 	"net"
 	"strings"
 
-	"github.com/vorteil/direktiv/pkg/secrets"
 	"google.golang.org/grpc"
 
 	"github.com/google/uuid"
@@ -45,7 +44,6 @@ type WorkflowServer struct {
 
 	LifeLine       chan bool
 	instanceLogger dlog.Log
-	secrets        secrets.SecretsServiceClient
 
 	components map[string]component
 }
@@ -134,7 +132,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	if s.runsComponent(runsIsolates) {
-		is, err := newActionManager(s.config, s.dbManager, &s.instanceLogger)
+		is, err := newIsolateManager(s.config, s.dbManager, &s.instanceLogger)
 		if err != nil {
 			return nil, err
 		}

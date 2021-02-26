@@ -34,7 +34,7 @@ func tlsConfig(certDir, component, certType string, insecure bool) (*tls.Config,
 		return config, nil
 	}
 
-	log.Debugf("checking certs in %s\n", filepath.Join(certDir, component))
+	log.Debugf("checking certs in %s", filepath.Join(certDir, component))
 
 	keyPath := filepath.Join(certDir, component, fmt.Sprintf("%s.key", certType))
 	certPath := filepath.Join(certDir, component, fmt.Sprintf("%s.pem", certType))

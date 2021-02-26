@@ -170,7 +170,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 				return
 			}
 
-			ar := new(actionRequest)
+			ar := new(isolateRequest)
 			ar.ActionID = uid.String()
 			ar.Workflow.InstanceID = instance.id
 			ar.Workflow.Namespace = instance.namespace
@@ -195,7 +195,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 				instance.Log("Running function '%s' in fire-and-forget mode (async).", fn.ID)
 
-				go func(ctx context.Context, instance *workflowLogicInstance, ar *actionRequest) {
+				go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
 
 					ar.Workflow.InstanceID = ""
 					ar.Workflow.Namespace = ""

@@ -7,7 +7,7 @@
   env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=demo", "MINIO_SECRET_KEY=password"]
 
 [[program]]
-  args = "/bin/direktiv -d -t wf -c /etc/conf.toml"
+  args = "/bin/direktiv -d -t wis -c /etc/conf.toml"
   env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin"]
   bootstrap = ["WAIT_PORT if=eth0 9000", "WAIT_PORT if=eth0 5432"]
 

@@ -137,7 +137,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 				return NewInternalError(err)
 			}
 
-			ar := new(actionRequest)
+			ar := new(isolateRequest)
 			ar.ActionID = uid.String()
 			ar.Workflow.InstanceID = instance.id
 			ar.Workflow.Namespace = instance.namespace

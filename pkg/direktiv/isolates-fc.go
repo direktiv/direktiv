@@ -86,8 +86,9 @@ type cowDisk struct {
 func createCOWDisk(name, disk string) (cowDisk, error) {
 
 	var cd cowDisk
-
 	cd.cowDisk = filepath.Join(os.TempDir(), fmt.Sprintf("%s.cow", name))
+
+	log.Debugf("create cow disk: %v, %v", name, disk)
 
 	// create empty file
 	c, err := os.Create(cd.cowDisk)
@@ -258,12 +259,10 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 		NetNS:             fmt.Sprintf("/var/run/netns/%s", name),
 		NetworkInterfaces: networkIfaces,
 		JailerCfg: &firecracker.JailerConfig{
-			ChrootBaseDir: jailerDir,
-			ID:            name,
-			UID:           firecracker.Int(0),
-			GID:           firecracker.Int(0),
-			// Stdout:         ioutil.Discard,
-			// Stderr:         ioutil.Discard,
+			ChrootBaseDir:  jailerDir,
+			ID:             name,
+			UID:            firecracker.Int(0),
+			GID:            firecracker.Int(0),
 			Stdout:         os.Stdout,
 			Stderr:         os.Stdout,
 			NumaNode:       firecracker.Int(0),

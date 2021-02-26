@@ -241,7 +241,7 @@ func decryptedDataForNS(ctx context.Context, instance *workflowLogicInstance, ns
 		resp *secrets.SecretsRetrieveResponse
 	)
 
-	resp, err := instance.engine.server.secrets.RetrieveSecret(ctx, &secrets.SecretsRetrieveRequest{
+	resp, err := instance.engine.secretsClient.RetrieveSecret(ctx, &secrets.SecretsRetrieveRequest{
 		Namespace: &ns,
 		Name:      &name,
 	})

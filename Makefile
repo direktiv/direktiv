@@ -35,6 +35,12 @@ run-postgres:
 .PHONY: protoc
 protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(isolate_generated_files) $(secrets_generated_files)
 
+.PHONY: docker
+docker:
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/docker/
+	cp ${mkfile_dir_main}/build/conf.toml  ${mkfile_dir_main}/build/docker/
+	docker build -t direktiv ${mkfile_dir_main}/build/docker
+
 .PHONY: build
 build:
 	go get entgo.io/ent

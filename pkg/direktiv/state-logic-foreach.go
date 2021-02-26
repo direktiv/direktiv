@@ -154,7 +154,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 					return
 				}
 
-				ar := new(actionRequest)
+				ar := new(isolateRequest)
 				ar.ActionID = uid.String()
 				ar.Workflow.InstanceID = instance.id
 				ar.Workflow.Namespace = instance.namespace
