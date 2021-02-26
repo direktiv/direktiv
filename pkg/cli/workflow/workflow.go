@@ -204,10 +204,13 @@ func Add(conn *grpc.ClientConn, namespace string, filepath string) (string, erro
 		return "", err
 	}
 
+	active := true
+
 	// prepare request
 	request := ingress.AddWorkflowRequest{
 		Namespace: &namespace,
 		Workflow:  b,
+		Active:    &active,
 	}
 
 	// send grpc request
