@@ -603,7 +603,7 @@ const maxWorkflowSteps = 10
 
 func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition *stateTransition) error {
 
-	if transition.Transform == "" || transition.Transform == "." {
+	if transition == nil || transition.Transform == "" || transition.Transform == "." {
 		return nil
 	}
 

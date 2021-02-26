@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/hook"
@@ -359,7 +360,8 @@ func (db *dbManager) addWorkflowInstance(ns, workflowId, instanceId, input strin
 		return nil, err
 	}
 
-	if count > maxInstancesPerInterval {
+	// only limit if running in prod mode
+	if log.GetLevel() != logrus.DebugLevel && count > maxInstancesPerInterval {
 		return nil, NewCatchableError("direktiv.limits.instances", "new workflow instance rejected because it would exceed the maximum number of new workflow instances (%d) per time interval (%s) for the namespace", maxInstancesPerInterval, maxInstancesLimitInterval)
 	}
 
