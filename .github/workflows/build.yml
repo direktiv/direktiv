@@ -13,6 +13,9 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.15
+    - name: Get the version tag
+      id: get_version
+      run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
@@ -28,6 +31,8 @@ jobs:
       run: |
         make docker
         docker images | grep direktiv
+        docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
+        docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
         docker tag direktiv vorteil/direktiv:latest
         docker push vorteil/direktiv:latest
     - name: create vorteil image
@@ -45,7 +50,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Direktiv Release
+        release_name: Direktiv Release ${{ steps.get_version.outputs.VERSION }}
         draft: true
         prerelease: false
     - name: upload vorteil image
