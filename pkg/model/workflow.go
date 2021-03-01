@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -161,7 +162,10 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 			return fmt.Errorf("state[%d]: type unimplemented/unrecognized", i)
 		}
 
-		err = json.Unmarshal(sdata, s)
+		dec := json.NewDecoder(bytes.NewReader(sdata))
+		dec.DisallowUnknownFields()
+
+		err = dec.Decode(s)
 		if err != nil {
 			return err
 		}
