@@ -90,6 +90,7 @@ func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset i
 
 	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
 	WHERE instance=$1
+	ORDER BY time ASC
 	LIMIT $2 OFFSET $3;`
 	rows, err := l.db.Query(sqlStatement, instance, limit, offset)
 	if err != nil {
