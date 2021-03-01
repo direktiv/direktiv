@@ -151,7 +151,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			ar.Container.Data = inputData
 
 			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+			ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
 				instance.engine.secretsClient, instance.namespace)
 			if err != nil {
 				return err
