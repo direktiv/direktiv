@@ -1,12 +1,9 @@
 package model
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -39,17 +36,8 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 
 	delete(m, "states")
 
-	// unmarshal top level fields into Workflow
-	data, err := json.Marshal(&m)
-	if err != nil {
-		return fmt.Errorf("marshal workflow error: %w", err) // This error should be impossible
-	}
-
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.DisallowUnknownFields() // Force Unknown fields to throw error
-
-	if err := dec.Decode(&o); err != nil {
-		return fmt.Errorf("failed to decode: %s", strings.TrimPrefix(err.Error(), "json: "))
+	if err := strictMapUnmarshal(m, &o); err != nil {
+		return fmt.Errorf("failed to decode workflow: %w", err)
 	}
 
 	// cast all states
@@ -83,21 +71,13 @@ func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 			return fmt.Errorf("bad start: %w", err)
 		}
 
-		strData, err := json.Marshal(startMap)
-		if err != nil {
-			return fmt.Errorf("marshal start error: %w", err) // This error should be impossible
-		}
-
 		start, err := getStartFromType(startType)
 		if err != nil {
 			return fmt.Errorf("start: %w", err)
 		}
 
-		dec := json.NewDecoder(bytes.NewReader(strData))
-		dec.DisallowUnknownFields() // Force Unknown fields to throw error
-
-		if err := dec.Decode(&start); err != nil {
-			return fmt.Errorf("failed to decode start: %s", strings.TrimPrefix(err.Error(), "json: "))
+		if err := strictMapUnmarshal(startMap, &start); err != nil {
+			return fmt.Errorf("failed to decode start: %w", err)
 		}
 
 		err = start.Validate()
@@ -120,20 +100,13 @@ func (o *Workflow) unmState(state interface{}, sIndex int) error {
 		return fmt.Errorf("state[%d]: %w", sIndex, err)
 	}
 
-	sdata, err := json.Marshal(stateMap)
-	if err != nil {
-		return fmt.Errorf("marshal state error: %w", err) // This error should be impossible
-	}
-
 	s, err := getStateFromType(stateType)
 	if err != nil {
 		err = fmt.Errorf("state[%d]: %w", sIndex, err)
 	}
 
-	dec := json.NewDecoder(bytes.NewReader(sdata))
-	dec.DisallowUnknownFields() // Force Unknown fields to throw error
-	if err := dec.Decode(&s); err != nil {
-		return fmt.Errorf("failed to decode state[%d]: %s", sIndex, strings.TrimPrefix(err.Error(), "json: "))
+	if err := strictMapUnmarshal(stateMap, &s); err != nil {
+		return fmt.Errorf("failed to decode state[%d]: %w", sIndex, err)
 	}
 
 	o.States[sIndex] = s
@@ -228,7 +201,7 @@ func (o *Workflow) regexValidateID() error {
 	}
 
 	if !matched {
-		return fmt.Errorf("workflow ID must match regex: %s", regex)
+		return fmt.Errorf("workflow ID must match regex: %s", WorkflowIDRegex)
 	}
 
 	return nil

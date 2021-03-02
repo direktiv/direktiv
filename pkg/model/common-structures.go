@@ -1,9 +1,11 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/itchyny/gojq"
 	"github.com/qri-io/jsonschema"
@@ -151,4 +153,21 @@ func processInterfaceMap(s interface{}) (map[string]interface{}, string, error) 
 	}
 
 	return iMap, iType, nil
+}
+
+func strictMapUnmarshal(m map[string]interface{}, target interface{}) error {
+	// unmarshal top level fields into Workflow
+	data, err := json.Marshal(&m)
+	if err != nil {
+		return fmt.Errorf("marshal error: %w", err) // This error should be impossible
+	}
+
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields() // Force Unknown fields to throw error
+
+	if err := dec.Decode(&target); err != nil {
+		return errors.New(strings.TrimPrefix(err.Error(), "json: "))
+	}
+
+	return nil
 }
