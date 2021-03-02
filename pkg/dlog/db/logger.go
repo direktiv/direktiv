@@ -26,6 +26,11 @@ func (l *Logger) Connect(database string) error {
 		return fmt.Errorf("Failed to initialize server: %w", err)
 	}
 
+	err = l.initDB()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -85,6 +90,7 @@ func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset i
 
 	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
 	WHERE instance=$1
+	ORDER BY id ASC
 	LIMIT $2 OFFSET $3;`
 	rows, err := l.db.Query(sqlStatement, instance, limit, offset)
 	if err != nil {

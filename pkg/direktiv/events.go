@@ -169,6 +169,7 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 		}
 
 		conn, err = s.dbManager.lockDB(hash, 5)
+
 		if err != nil {
 			log.Errorf("can not lock event row: %d, %v", id, err)
 			continue
@@ -245,20 +246,19 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 
 		}
 
+		unlock()
 		// if single or multiple added events we fire
 		if len(retEvents) > 0 {
 			uid, _ := uuid.Parse(wf)
 			log.Debugf("run workflow %v with %d events", uid, len(retEvents))
-
 			if len(signature) == 0 {
-				s.engine.EventsInvoke(uid, ce)
+				go s.engine.EventsInvoke(uid, ce)
 			} else {
 				log.Debugf("calling with signature %v", signature)
-				s.engine.wakeEventsWaiter(signature, retEvents)
+				go s.engine.wakeEventsWaiter(signature, retEvents)
 			}
 
 		}
-		s.dbManager.unlockDB(hash, conn)
 
 	}
 

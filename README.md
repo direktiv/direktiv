@@ -12,6 +12,8 @@
 
 [![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
+Check out our online demo: [wf.direktiv.io](https://wf.direktiv.io)
+
 Direktiv is a specification for a serverless computing workflow language that aims to be simple and powerful above all else.
 
 Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run Docker containers as part of Direktiv workflows just about any logic can be implemented. Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
@@ -26,6 +28,13 @@ This repository contains a reference implementation that runs Docker containers 
 
 ### Starting the Server
 
+Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. 
+
+With Vorteil installed, download `direktiv.vorteil` from the releases page, then run `vorteil run direktiv.vorteil` from within your downloads folder.
+
+If you prefer to use Docker, run `docker run --net=host --privileged vorteil/direktiv`. You may need to run this command as an administrator.
+
+Test either of these methods using the `direkcli` command-line tool from the releases page by running `direkcli namespaces create demo`.
 
 ### Creating and Running a Workflow
 

@@ -29,7 +29,7 @@ run-postgres:
 	if [ ! -f ${mkfile_dir_main}/postgres ]; then \
 		wget https://apps.vorteil.io/file/vorteil/postgres; \
 	fi
-	vorteil run ${mkfile_dir_main}/postgres
+	vorteil run --vm.ram="2048MiB" --vm.disk-size="+2048MiB" ${mkfile_dir_main}/postgres
 
 # protoc generation
 .PHONY: protoc
@@ -47,8 +47,11 @@ build:
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
+
+.PHONY: build-cli
 build-cli:
 	go build -o direkcli cmd/direkcli/main.go
+
 # run as sudo because networking needs root privileges
 .PHONY: run
 run:

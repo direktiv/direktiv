@@ -246,6 +246,7 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 	log.Debugf("firecracker using %d cpu, %d ram", *cpu, *mem)
 
 	fcConf := firecracker.Config{
+		SocketPath:      fmt.Sprintf("fcsock%v.sock", name),
 		KernelImagePath: kf,
 		KernelArgs:      fmt.Sprintf("init=/vorteil/vinitd rw console=ttyS0 loglevel=2 reboot=k panic=1 pci=off i8042.noaux i8042.nomux i8042.nopnp i8042.dumbkbd vt.color=0x00 random.trust_cpu=on root=PARTUUID=%s direktiv", vimg.Part2UUIDString),
 		Drives:          devices,

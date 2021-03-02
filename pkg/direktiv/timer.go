@@ -3,6 +3,7 @@ package direktiv
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/vorteil/direktiv/ent/workflowinstance"
@@ -29,6 +30,7 @@ type timerManager struct {
 	server *WorkflowServer
 
 	timers map[string]*timerItem
+	mtx    sync.Mutex
 }
 
 type timerItem struct {
@@ -212,6 +214,9 @@ func (tm *timerManager) newTimerItem(name, fn string, data []byte, time *time.Ti
 
 	log.Debugf("adding new timer item %s", name)
 
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
+
 	var (
 		exeFn func([]byte) error
 		ok    bool
@@ -328,15 +333,17 @@ func (tm *timerManager) startTimers() error {
 
 func (tm *timerManager) syncTimerAdd(id int) {
 
-	log.Debugf("Got sync request!!!!!!!")
+	log.Debugf("got sync request")
 	t, err := tm.server.dbManager.getTimerByID(id)
 	if err != nil {
 		return
 	}
 
+	tm.mtx.Lock()
 	if _, ok := tm.timers[t.Name]; ok {
 		log.Debugf("timer already available")
 	}
+	tm.mtx.Unlock()
 
 	tm.newTimerItem(t.Name, t.Fn, t.Data, &t.One, t.Cron, t, skipSyncRequest)
 
@@ -344,6 +351,9 @@ func (tm *timerManager) syncTimerAdd(id int) {
 
 // sync function across cluster
 func (tm *timerManager) syncTimerDelete(name string) {
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
 
 	if ti, ok := tm.timers[name]; ok {
 		err := tm.disableTimer(ti, true, skipSyncRequest)
@@ -357,6 +367,9 @@ func (tm *timerManager) syncTimerDelete(name string) {
 // jens
 func (tm *timerManager) syncTimerEnable(name string) {
 
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
+
 	if ti, ok := tm.timers[name]; ok {
 		err := tm.enableTimer(ti, skipSyncRequest)
 		if err != nil {
@@ -367,6 +380,9 @@ func (tm *timerManager) syncTimerEnable(name string) {
 }
 
 func (tm *timerManager) syncTimerDisable(name string) {
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
 
 	if ti, ok := tm.timers[name]; ok {
 		err := tm.disableTimer(ti, false, skipSyncRequest)
@@ -438,6 +454,9 @@ const (
 
 func (tm *timerManager) actionTimerByName(name string, action int) error {
 
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
+
 	if ti, ok := tm.timers[name]; ok {
 
 		switch action {
@@ -456,36 +475,6 @@ func (tm *timerManager) actionTimerByName(name string, action int) error {
 	return fmt.Errorf("timer %s does not exist", name)
 
 }
-
-// func (tm *timerManager) deleteTimerByName(name string) error {
-//
-// 	if ti, ok := tm.timers[name]; ok {
-// 		return tm.disableTimer(ti, true, needsSyncRequest)
-// 	}
-//
-// 	return fmt.Errorf("timer %s does not exist", name)
-//
-// }
-//
-// func (tm *timerManager) disableTimerByName(name string) error {
-//
-// 	if ti, ok := tm.timers[name]; ok {
-// 		return tm.disableTimer(ti, false, needsSyncRequest)
-// 	}
-//
-// 	return fmt.Errorf("timer %s does not exist", name)
-//
-// }
-//
-// func (tm *timerManager) enableTimerByName(name string) error {
-//
-// 	if ti, ok := tm.timers[name]; ok {
-// 		return tm.enableTimer(ti, needsSyncRequest)
-// 	}
-//
-// 	return fmt.Errorf("timer %s does not exist", name)
-//
-// }
 
 // cron job to delete orphaned one-shot timers
 func (tm *timerManager) cleanOneShot(data []byte) error {

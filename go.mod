@@ -16,7 +16,7 @@ require (
 	github.com/codeclysm/extract v2.2.0+incompatible
 	github.com/containerd/go-cni v1.0.1
 	github.com/containers/image v3.0.2+incompatible
-	github.com/firecracker-microvm/firecracker-go-sdk v0.22.0
+	github.com/firecracker-microvm/firecracker-go-sdk v0.22.1-0.20210128004148-06a30fe6e315
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-containerregistry v0.4.0
 	github.com/google/uuid v1.2.0
@@ -26,6 +26,7 @@ require (
 	github.com/itchyny/gojq v0.12.1
 	github.com/jgautheron/goconst v0.0.0-20201117150253-ccae5bf973f3 // indirect
 	github.com/jinzhu/copier v0.2.4
+	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/lib/pq v1.9.0
 	github.com/mdempsky/maligned v0.0.0-20210215075342-f0178ee82032 // indirect
 	github.com/mdempsky/unconvert v0.0.0-20200228143138-95ecdbfc0b5f // indirect

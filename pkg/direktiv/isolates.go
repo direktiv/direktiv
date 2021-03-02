@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	gocni "github.com/containerd/go-cni"
@@ -80,6 +81,8 @@ type isolateServer struct {
 
 	flowClient flow.DirektivFlowClient
 	grpcConn   *grpc.ClientConn
+
+	mtx sync.Mutex
 }
 
 type isolateWorkflow struct {
@@ -191,6 +194,17 @@ func newIsolateManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isol
 
 	// check CNI networking
 	is.cni, err = is.prepareNetwork()
+
+	// check the timeouts for firecracker sdk. they are very low for high load systems
+	if len(os.Getenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS")) == 0 {
+		log.Debugf("setting firecracker request timeout to 5000ms")
+		os.Setenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS", "5000")
+	}
+
+	if len(os.Getenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS")) == 0 {
+		log.Debugf("setting firecracker sdk init to 5s")
+		os.Setenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS", "5")
+	}
 
 	return is, err
 
@@ -304,6 +318,9 @@ func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 		cancel: cancel,
 		ctx:    ctx,
 	}
+
+	is.mtx.Lock()
+	defer is.mtx.Unlock()
 	is.actx[isolateID] = ctxs
 
 	return ctxs
@@ -312,6 +329,8 @@ func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 
 func (is *isolateServer) finishCancelIsolate(isolateID string) {
 
+	is.mtx.Lock()
+	defer is.mtx.Unlock()
 	if ctx, ok := is.actx[isolateID]; ok {
 		ctx.cancel()
 		delete(is.actx, isolateID)
@@ -345,6 +364,8 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 
 	ns = in.GetNamespace()
 	isolateID = in.GetActionId()
+
+	log.Debugf("isolate action id: %v", isolateID)
 
 	img = in.GetImage()
 	cmd = in.GetCommand()
@@ -496,8 +517,6 @@ func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 		log.Errorf("isolateID not provided")
 		return &resp, fmt.Errorf("isolateID empty")
 	}
-
-	log.Debugf("running isolate %s", in.GetNamespace())
 
 	go is.runAction(in)
 

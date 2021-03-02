@@ -105,7 +105,7 @@ func (is *isolateServer) setupNetworkForVM(name string) (networkSetting, error) 
 		return nws, err
 	}
 
-	log.Debugf("ip for network: %v", result.Interfaces["eth1"].IPConfigs[0].IP)
+	log.Debugf("ip for network (%s): %v", name, result.Interfaces["eth1"].IPConfigs[0].IP)
 
 	nws.IP = result.Interfaces["eth1"].IPConfigs[0].IP.String()
 	nws.Gateway = result.Interfaces["eth1"].IPConfigs[0].Gateway.String()
