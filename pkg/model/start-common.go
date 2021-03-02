@@ -82,6 +82,8 @@ func getStartFromType(startType string) (StartDefinition, error) {
 		s = new(EventsXorStart)
 	case StartTypeEventsAnd.String():
 		s = new(EventsAndStart)
+	case StartTypeDefault.String():
+		s = new(DefaultStart)
 	case "":
 		err = errors.New("type required")
 	default:

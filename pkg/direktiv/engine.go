@@ -437,6 +437,22 @@ func (we *workflowEngine) softCancelInstance(instanceId string, step int, code, 
 	return we.cancelInstance(instanceId, code, message, true)
 }
 
+func (we *workflowEngine) clearEventListeners(id string) {
+	// TODO
+}
+
+func (we *workflowEngine) freeResources(id string) {
+
+	del, err := we.timer.deleteTimersForInstance(id)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Debugf("deleted %d timers for instance %v", del, id)
+
+	we.clearEventListeners(id)
+
+}
+
 func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft bool) error {
 
 	killer := make(chan bool)
@@ -514,6 +530,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	defer logger.Close()
 
 	logger.Info(fmt.Sprintf("Workflow %s.", message))
+
+	we.freeResources(instanceId)
 
 	if rec.InvokedBy != "" {
 
@@ -648,11 +666,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	log.Debugf("Workflow instance completed: %s", wli.id)
 	wli.Log("Workflow completed.")
 
-	del, err := wli.engine.timer.deleteTimersForInstance(wli.id)
-	if err != nil {
-		log.Error(err)
-	}
-	log.Debugf("deleted %d timers for instance %v", del, wli.id)
+	wli.engine.freeResources(wli.id)
 
 	wli.wakeCaller(data)
 
@@ -710,6 +724,8 @@ failure:
 		}
 
 		wli.Log("Workflow failed with uncatchable error: %s", uerr.Message)
+
+		wli.engine.freeResources(wli.id)
 		wli.wakeCaller(nil)
 		return
 
@@ -759,6 +775,7 @@ failure:
 		}
 
 		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
+		wli.engine.freeResources(wli.id)
 		wli.wakeCaller(nil)
 		return
 
@@ -781,6 +798,8 @@ failure:
 		}
 
 		log.Errorf("Workflow failed with internal error and the database couldn't be updated: %s", ierr.Error())
+
+		wli.engine.freeResources(wli.id)
 
 	} else {
 		log.Errorf("Unwrapped error detected: %v", err)
