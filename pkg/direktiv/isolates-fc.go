@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	"github.com/appc/spec/pkg/device"
@@ -31,6 +32,9 @@ const (
 
 	downloadPath = "https://downloads.vorteil.io/firecracker-vmlinux"
 )
+
+// mutex for loop devices
+var loopMtx sync.Mutex
 
 func (is *isolateServer) buildDataDisk(name string, data []byte, nws networkSetting) (string, error) {
 
@@ -108,6 +112,10 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	}
 	os.Chmod(cd.cowDisk, 0777)
 
+	// mutex loop devices
+	loopMtx.Lock()
+	defer loopMtx.Unlock()
+
 	// attach losetup
 	cd.devRoot, err = losetup.Attach(disk, 0, true)
 	if err != nil {
@@ -119,8 +127,10 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 		return cd, err
 	}
 
+	log.Debugf("disks %s: %s, %s", name, cd.devRoot, cd.devCow)
+
 	log.Debugf("create devmapper %s", name)
-	cmd := exec.Command("dmsetup", "create", name, "--table", fmt.Sprintf("0 %d snapshot %s %s p 4", fi.Size()/512, cd.devRoot.Path(), cd.devCow.Path()))
+	cmd := exec.Command("dmsetup", "create", name, "--table", fmt.Sprintf("0 %d snapshot %s %s p 16", fi.Size()/512, cd.devRoot.Path(), cd.devCow.Path()))
 	cmd.Stderr = os.Stdout
 	cmd.Stdout = os.Stdout
 
@@ -128,8 +138,6 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	if err != nil {
 		return cd, err
 	}
-
-	log.Debugf("disks %s, %s", cd.devRoot, cd.devCow)
 
 	cow := fmt.Sprintf("/dev/mapper/%s", name)
 	gg, err := os.Stat(cow)
@@ -165,12 +173,17 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 
 	// cleanup
 	defer func() {
+
+		loopMtx.Lock()
+
 		log.Debugf("detach cow disks")
 		d.devRoot.Detach()
 		d.devCow.Detach()
 
-		cmd := exec.Command("dmsetup", "remove", name)
+		cmd := exec.Command("dmsetup", "remove", "-f", name)
 		cmd.Run()
+		loopMtx.Unlock()
+
 		os.Remove(d.finalDisk)
 		os.Remove(d.cowDisk)
 

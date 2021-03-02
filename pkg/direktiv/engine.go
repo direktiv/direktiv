@@ -720,7 +720,12 @@ failure:
 			var matched bool
 
 			// NOTE: this error should be checked in model validation
-			matched, _ = regexp.MatchString(catch.Error, cerr.Code)
+			pattern := catch.Error
+			if pattern == "*" {
+				pattern = ".*"
+			}
+
+			matched, _ = regexp.MatchString(pattern, cerr.Code)
 
 			if matched {
 

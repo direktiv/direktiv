@@ -29,7 +29,7 @@ run-postgres:
 	if [ ! -f ${mkfile_dir_main}/postgres ]; then \
 		wget https://apps.vorteil.io/file/vorteil/postgres; \
 	fi
-	vorteil run --vm.ram="2048MiB" --vm.disk-size="+2048MiB" ${mkfile_dir_main}/postgres
+	vorteil run --vm.ram="2048MiB" --vm.disk-size="+1024MiB" ${mkfile_dir_main}/postgres
 
 # protoc generation
 .PHONY: protoc
