@@ -61,7 +61,7 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, instance *wo
 		events = append(events, &event.Event)
 	}
 
-	err := instance.engine.listenForEvents(ctx, instance, events, true)
+	err := instance.engine.listenForEvents(ctx, instance, events, false)
 	if err != nil {
 		return err
 	}
