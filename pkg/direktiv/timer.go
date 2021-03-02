@@ -114,7 +114,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 		return err
 	}
 
-	log.Debugf("enabling timer %s", ti.dbItem.Name)
+	log.Debugf("enabling timer %s, %s %v", ti.dbItem.Name, ti.dbItem.One, time.Now().UTC())
 
 	switch ti.timerType {
 	case timerTypeOneShot:
@@ -122,7 +122,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 
 		if duration < 0 {
 			tm.disableTimer(ti, true, needsSyncRequest)
-			return fmt.Errorf("one-shot is in the past")
+			return fmt.Errorf("one-shot %s is in the past", ti.dbItem.Name)
 		}
 
 		err = func(ti *timerItem, duration time.Duration) error {

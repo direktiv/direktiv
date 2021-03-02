@@ -1,9 +1,11 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/itchyny/gojq"
 	"github.com/qri-io/jsonschema"
@@ -127,6 +129,44 @@ func validateTransformJQ(transform string) error {
 
 	if _, err := gojq.Parse(transform); err != nil {
 		return fmt.Errorf("transform is an invalid jq string: %v", err)
+	}
+
+	return nil
+}
+
+func processInterfaceMap(s interface{}) (map[string]interface{}, string, error) {
+	var iType string
+
+	iMap, ok := s.(map[string]interface{})
+	if !ok {
+		return iMap, iType, errors.New("invalid")
+	}
+
+	iT, ok := iMap["type"]
+	if !ok {
+		return iMap, iType, fmt.Errorf("missing 'type' field")
+	}
+
+	iType, ok = iT.(string)
+	if !ok {
+		return iMap, iType, fmt.Errorf("bad data-format for 'type' field")
+	}
+
+	return iMap, iType, nil
+}
+
+func strictMapUnmarshal(m map[string]interface{}, target interface{}) error {
+	// unmarshal top level fields into Workflow
+	data, err := json.Marshal(&m)
+	if err != nil {
+		return fmt.Errorf("marshal error: %w", err) // This error should be impossible
+	}
+
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields() // Force Unknown fields to throw error
+
+	if err := dec.Decode(&target); err != nil {
+		return errors.New(strings.TrimPrefix(err.Error(), "json: "))
 	}
 
 	return nil

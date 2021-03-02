@@ -21,7 +21,6 @@ func initEventsAndStateLogic(wf *model.Workflow, state model.State) (stateLogic,
 	if !ok {
 		return nil, NewInternalError(errors.New("bad state object"))
 	}
-
 	sl := new(eventsAndStateLogic)
 	sl.state = eventsAnd
 	sl.workflow = wf
@@ -57,12 +56,12 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *wo
 	}
 
 	var events []*model.ConsumeEventDefinition
-	for _, event := range sl.state.Events {
-		events = append(events, &event.Event)
+	for i := 0; i < len(sl.state.Events); i++ {
+		events = append(events, &sl.state.Events[i].Event)
 	}
 
 	instance.engine.clearEventListeners(instance.id)
-	err := instance.engine.listenForEvents(ctx, instance, events, false)
+	err := instance.engine.listenForEvents(ctx, instance, events, true)
 	if err != nil {
 		return err
 	}
@@ -79,6 +78,7 @@ func (sl *eventsAndStateLogic) Run(ctx context.Context, instance *workflowLogicI
 	}
 
 	events := make([]*cloudevents.Event, 0)
+
 	err = json.Unmarshal(wakedata, &events)
 	if err != nil {
 		return
