@@ -74,8 +74,8 @@ func deadlineFromString(s string) time.Time {
 	}
 
 	t = time.Now()
-	t.Add(d)
-	t.Add(time.Second * 5)
+	t = t.Add(d)
+	t = t.Add(time.Second * 5)
 
 	return t
 

@@ -56,8 +56,8 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *wo
 	}
 
 	var events []*model.ConsumeEventDefinition
-	for _, event := range sl.state.Events {
-		events = append(events, &event.Event)
+	for i := 0; i < len(sl.state.Events); i++ {
+		events = append(events, &sl.state.Events[i].Event)
 	}
 
 	err := instance.engine.listenForEvents(ctx, instance, events, true)
