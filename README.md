@@ -12,36 +12,110 @@
 
 [![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
-Check out our online demo: [wf.direktiv.io](https://wf.direktiv.io)
+> 
+>
+> **Check out our online demo: [wf.direktiv.io](https://wf.direktiv.io)**
+> 
+>  
+
+## What is Direktiv?
 
 Direktiv is a specification for a serverless computing workflow language that aims to be simple and powerful above all else.
 
-Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run Docker containers as part of Direktiv workflows just about any logic can be implemented. Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
+Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run containers as part of Direktiv workflows just about any logic can be implemented. 
 
+Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
+
+## Why use Direktiv?
+
+Direktiv was created to address 4 problems faced with workflow engines in general:
+
+- *Cloud agnostic*: we wanted Direktiv to run on any platform or cloud, support any code or capability and NOT be dependent on the cloud provider's services for running the workflow or executing the actions (but obviously support it all)
+- *Simplicity*: the configuration of the workflow components should be simple more than anything else. Using only YAML and `jq` you should be able to express all workflow states, transitions, evaluations and actions needed to complete the workflow
+- *Reusable*: if you're going to the effort and trouble of pushing all your microservices, code or application components into a container platform why not have the ability to reuse and standardise this code across all of your workflows. We wanted to ensure that your code always remains reusable and portable and not tied into a specific vendor format or requirement (or vendor specific language) - so we've adopted a **subset** of the [CNCF Serverless Workflow Specification](https://github.com/serverlessworkflow/specification)
+- *Multi-tenanted and secure*: we want to use Direktiv in a multi-tenant service provider space, which means all workflow executions have to be isolated, data access secured and isolated and all workflows and actions are truly ephemeral (or serverless).
+
+## Direktiv internals?
 This repository contains a reference implementation that runs Docker containers as isolated virtual machines on [Firecracker](https://github.com/firecracker-microvm/firecracker) using [Vorteil.io](github.com/vorteil/vorteil).
 
 <p align="center">
-  <img src="assets/images/direktiv-diagram.png" alt="direktiv">
+  <img src="assets/images/direktiv-overview.png" alt="direktiv">
 </p>
+
 
 ## Quickstart
 
 ### Starting the Server
 
-Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. 
+Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker:
 
-With Vorteil installed, download `direktiv.vorteil` from the releases page, then run `vorteil run direktiv.vorteil` from within your downloads folder.
+****
 
-If you prefer to use Docker, run `docker run --net=host --privileged vorteil/direktiv`. You may need to run this command as an administrator.
+***Using Docker:***
 
-Test either of these methods using the `direkcli` command-line tool from the releases page by running `direkcli namespaces create demo`.
+`docker run --net=host --privileged vorteil/direktiv`. 
+
+*Note: *
+
+- *You may need to run this command as an administrator.*
+
+- *In a public cloud instance, nested virualization is needed to support the firecracker micro-VMs. Each public cloud provider has different configuration settings which need to be applied to enable nested virtualization. Examples are shown below for each public cloud provider:*
+  - [Google Cloud Platform](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances)
+  - Amazon Web Services (only supported on bare metal instances)
+  - [Microsoft Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/nested-virtualization)
+  - Alibaba (only supported on bare metal instances)
+  - [Oracle Cloud](https://blogs.oracle.com/cloud-infrastructure/nested-kvm-virtualization-on-oracle-iaas)
+  - [VMware](https://communities.vmware.com/t5/Nested-Virtualization-Documents/Running-Nested-VMs/ta-p/2781466)
+
+
+
+***Using Vorteil:***
+
+With Vorteil installed (full instructions [here](https://github.com/vorteil/vorteil)):
+
+ 1. download `direktiv.vorteil` from the [releases page](https://github.com/vorteil/direktiv/releases), 
+ 2. run `vorteil run direktiv.vorteil` from within your downloads folder.
+
+
+
+***Testing Direktiv***
+
+Download the `direkcli` command-line tool from the [releases page](https://github.com/vorteil/direktiv/releases)  and create your first namespace by running:
+
+`direkcli namespaces create demo`
+
+```bash
+$ direkcli namespaces create demo
+Created namespace: demo
+$ direkcli namespaces list
++------+
+| NAME |
++------+
+| demo |
++------+
+```
+
+
+
+### Workflow specification
+
+The below example is the minimal configuration needed for a workflow, following the [workflow language specification](https://docs.direktiv.io/docs/specification.html): 
+
+```yaml
+id: helloworld
+states:
+- id: hello
+  type: noop
+  transform: '{ msg: ("Hello, " + .name + "!") }'
+```
+
+
 
 ### Creating and Running a Workflow
 
-The following script does everything requireq to run a first workflow. This includes
-creating a namespace & workflow and running the workflow the first time.  
+The following script does everything required to run the first workflow. This includes creating a namespace & workflow and running the workflow the first time.  
 
-```sh
+```bash
 $ direkcli namespaces create demo
 Created namespace: demo
 $ cat > helloworld.yml <<- EOF
@@ -67,6 +141,8 @@ Input: {
 }
 Output: {"msg":"Hello, Alan!"}
 ```
+
+
 
 ### Code of Conduct
 
