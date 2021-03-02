@@ -59,9 +59,11 @@ type WorkflowInstance struct {
 type WorkflowInstanceEdges struct {
 	// Workflow holds the value of the workflow edge.
 	Workflow *Workflow `json:"workflow,omitempty"`
+	// Instance holds the value of the instance edge.
+	Instance []*WorkflowEvents `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // WorkflowOrErr returns the Workflow value or an error if the edge
@@ -76,6 +78,15 @@ func (e WorkflowInstanceEdges) WorkflowOrErr() (*Workflow, error) {
 		return e.Workflow, nil
 	}
 	return nil, &NotLoadedError{edge: "workflow"}
+}
+
+// InstanceOrErr returns the Instance value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowInstanceEdges) InstanceOrErr() ([]*WorkflowEvents, error) {
+	if e.loadedTypes[1] {
+		return e.Instance, nil
+	}
+	return nil, &NotLoadedError{edge: "instance"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -221,6 +232,11 @@ func (wi *WorkflowInstance) assignValues(columns []string, values []interface{})
 // QueryWorkflow queries the "workflow" edge of the WorkflowInstance entity.
 func (wi *WorkflowInstance) QueryWorkflow() *WorkflowQuery {
 	return (&WorkflowInstanceClient{config: wi.config}).QueryWorkflow(wi)
+}
+
+// QueryInstance queries the "instance" edge of the WorkflowInstance entity.
+func (wi *WorkflowInstance) QueryInstance() *WorkflowEventsQuery {
+	return (&WorkflowInstanceClient{config: wi.config}).QueryInstance(wi)
 }
 
 // Update returns a builder for updating this WorkflowInstance.

@@ -40,6 +40,8 @@ const (
 
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
+	// EdgeInstance holds the string denoting the instance edge name in mutations.
+	EdgeInstance = "instance"
 
 	// Table holds the table name of the workflowinstance in the database.
 	Table = "workflow_instances"
@@ -50,6 +52,13 @@ const (
 	WorkflowInverseTable = "workflows"
 	// WorkflowColumn is the table column denoting the workflow relation/edge.
 	WorkflowColumn = "workflow_instances"
+	// InstanceTable is the table the holds the instance relation/edge.
+	InstanceTable = "workflow_events"
+	// InstanceInverseTable is the table name for the WorkflowEvents entity.
+	// It exists in this package in order to avoid circular dependency with the "workflowevents" package.
+	InstanceInverseTable = "workflow_events"
+	// InstanceColumn is the table column denoting the instance relation/edge.
+	InstanceColumn = "workflow_instance_instance"
 )
 
 // Columns holds all SQL columns for workflowinstance fields.

@@ -1110,7 +1110,8 @@ func (we *workflowEngine) listenForEvents(ctx context.Context, wli *workflowLogi
 
 	}
 
-	_, err = we.db.addWorkflowEventListener(wfid, transformedEvents, signature, all)
+	_, err = we.db.addWorkflowEventListener(wfid, wli.rec.ID,
+		transformedEvents, signature, all)
 	if err != nil {
 		return err
 	}

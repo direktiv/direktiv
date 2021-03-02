@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/schema"
-	"github.com/vorteil/direktiv/ent/server"
 	"github.com/vorteil/direktiv/ent/timer"
 	"github.com/vorteil/direktiv/ent/workflow"
 )
@@ -42,20 +41,6 @@ func init() {
 			return nil
 		}
 	}()
-	serverFields := schema.Server{}.Fields()
-	_ = serverFields
-	// serverDescIP is the schema descriptor for ip field.
-	serverDescIP := serverFields[0].Descriptor()
-	// server.IPValidator is a validator for the "ip" field. It is called by the builders before save.
-	server.IPValidator = serverDescIP.Validators[0].(func(string) error)
-	// serverDescExtIP is the schema descriptor for extIP field.
-	serverDescExtIP := serverFields[1].Descriptor()
-	// server.ExtIPValidator is a validator for the "extIP" field. It is called by the builders before save.
-	server.ExtIPValidator = serverDescExtIP.Validators[0].(func(string) error)
-	// serverDescAdded is the schema descriptor for added field.
-	serverDescAdded := serverFields[4].Descriptor()
-	// server.DefaultAdded holds the default value on creation for the added field.
-	server.DefaultAdded = serverDescAdded.Default.(func() time.Time)
 	timerFields := schema.Timer{}.Fields()
 	_ = timerFields
 	// timerDescName is the schema descriptor for name field.

@@ -36,8 +36,6 @@ func (Workflow) Edges() []ent.Edge {
 		edge.From("namespace", Namespace.Type).
 			Ref("workflows").
 			Unique().Required(),
-		// edge.To("eventtypelist", EventTypeList.Type),
-		// edge.To("eventtypeinstance", EventTypeInstance.Type),
 		edge.To("instances", WorkflowInstance.Type),
 		edge.To("wfevents", WorkflowEvents.Type),
 	}

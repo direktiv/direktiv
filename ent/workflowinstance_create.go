@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/workflow"
+	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
@@ -185,6 +186,21 @@ func (wic *WorkflowInstanceCreate) SetWorkflowID(id uuid.UUID) *WorkflowInstance
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (wic *WorkflowInstanceCreate) SetWorkflow(w *Workflow) *WorkflowInstanceCreate {
 	return wic.SetWorkflowID(w.ID)
+}
+
+// AddInstanceIDs adds the "instance" edge to the WorkflowEvents entity by IDs.
+func (wic *WorkflowInstanceCreate) AddInstanceIDs(ids ...int) *WorkflowInstanceCreate {
+	wic.mutation.AddInstanceIDs(ids...)
+	return wic
+}
+
+// AddInstance adds the "instance" edges to the WorkflowEvents entity.
+func (wic *WorkflowInstanceCreate) AddInstance(w ...*WorkflowEvents) *WorkflowInstanceCreate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return wic.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the WorkflowInstanceMutation object of the builder.
@@ -417,6 +433,25 @@ func (wic *WorkflowInstanceCreate) createSpec() (*WorkflowInstance, *sqlgraph.Cr
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: workflow.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := wic.mutation.InstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowinstance.InstanceTable,
+			Columns: []string{workflowinstance.InstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: workflowevents.FieldID,
 				},
 			},
 		}

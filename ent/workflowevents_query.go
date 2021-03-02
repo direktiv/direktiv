@@ -17,6 +17,7 @@ import (
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
 // WorkflowEventsQuery is the builder for querying WorkflowEvents entities.
@@ -28,9 +29,10 @@ type WorkflowEventsQuery struct {
 	fields     []string
 	predicates []predicate.WorkflowEvents
 	// eager-loading edges.
-	withWorkflow     *WorkflowQuery
-	withWfeventswait *WorkflowEventsWaitQuery
-	withFKs          bool
+	withWorkflow         *WorkflowQuery
+	withWfeventswait     *WorkflowEventsWaitQuery
+	withWorkflowinstance *WorkflowInstanceQuery
+	withFKs              bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -97,6 +99,28 @@ func (weq *WorkflowEventsQuery) QueryWfeventswait() *WorkflowEventsWaitQuery {
 			sqlgraph.From(workflowevents.Table, workflowevents.FieldID, selector),
 			sqlgraph.To(workfloweventswait.Table, workfloweventswait.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workflowevents.WfeventswaitTable, workflowevents.WfeventswaitColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(weq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWorkflowinstance chains the current query on the "workflowinstance" edge.
+func (weq *WorkflowEventsQuery) QueryWorkflowinstance() *WorkflowInstanceQuery {
+	query := &WorkflowInstanceQuery{config: weq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := weq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := weq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowevents.Table, workflowevents.FieldID, selector),
+			sqlgraph.To(workflowinstance.Table, workflowinstance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workflowevents.WorkflowinstanceTable, workflowevents.WorkflowinstanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(weq.driver.Dialect(), step)
 		return fromU, nil
@@ -280,13 +304,14 @@ func (weq *WorkflowEventsQuery) Clone() *WorkflowEventsQuery {
 		return nil
 	}
 	return &WorkflowEventsQuery{
-		config:           weq.config,
-		limit:            weq.limit,
-		offset:           weq.offset,
-		order:            append([]OrderFunc{}, weq.order...),
-		predicates:       append([]predicate.WorkflowEvents{}, weq.predicates...),
-		withWorkflow:     weq.withWorkflow.Clone(),
-		withWfeventswait: weq.withWfeventswait.Clone(),
+		config:               weq.config,
+		limit:                weq.limit,
+		offset:               weq.offset,
+		order:                append([]OrderFunc{}, weq.order...),
+		predicates:           append([]predicate.WorkflowEvents{}, weq.predicates...),
+		withWorkflow:         weq.withWorkflow.Clone(),
+		withWfeventswait:     weq.withWfeventswait.Clone(),
+		withWorkflowinstance: weq.withWorkflowinstance.Clone(),
 		// clone intermediate query.
 		sql:  weq.sql.Clone(),
 		path: weq.path,
@@ -312,6 +337,17 @@ func (weq *WorkflowEventsQuery) WithWfeventswait(opts ...func(*WorkflowEventsWai
 		opt(query)
 	}
 	weq.withWfeventswait = query
+	return weq
+}
+
+// WithWorkflowinstance tells the query-builder to eager-load the nodes that are connected to
+// the "workflowinstance" edge. The optional arguments are used to configure the query builder of the edge.
+func (weq *WorkflowEventsQuery) WithWorkflowinstance(opts ...func(*WorkflowInstanceQuery)) *WorkflowEventsQuery {
+	query := &WorkflowInstanceQuery{config: weq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	weq.withWorkflowinstance = query
 	return weq
 }
 
@@ -381,12 +417,13 @@ func (weq *WorkflowEventsQuery) sqlAll(ctx context.Context) ([]*WorkflowEvents, 
 		nodes       = []*WorkflowEvents{}
 		withFKs     = weq.withFKs
 		_spec       = weq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			weq.withWorkflow != nil,
 			weq.withWfeventswait != nil,
+			weq.withWorkflowinstance != nil,
 		}
 	)
-	if weq.withWorkflow != nil {
+	if weq.withWorkflow != nil || weq.withWorkflowinstance != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -463,6 +500,31 @@ func (weq *WorkflowEventsQuery) sqlAll(ctx context.Context) ([]*WorkflowEvents, 
 				return nil, fmt.Errorf(`unexpected foreign-key "workflow_events_wfeventswait" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Wfeventswait = append(node.Edges.Wfeventswait, n)
+		}
+	}
+
+	if query := weq.withWorkflowinstance; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*WorkflowEvents)
+		for i := range nodes {
+			if fk := nodes[i].workflow_instance_instance; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(workflowinstance.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "workflow_instance_instance" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Workflowinstance = n
+			}
 		}
 	}
 

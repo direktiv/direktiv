@@ -11,8 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/predicate"
-	"github.com/vorteil/direktiv/ent/server"
-	"github.com/vorteil/direktiv/ent/subroutine"
 	"github.com/vorteil/direktiv/ent/timer"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
@@ -32,8 +30,6 @@ const (
 
 	// Node types.
 	TypeNamespace          = "Namespace"
-	TypeServer             = "Server"
-	TypeSubroutine         = "Subroutine"
 	TypeTimer              = "Timer"
 	TypeWorkflow           = "Workflow"
 	TypeWorkflowEvents     = "WorkflowEvents"
@@ -478,1139 +474,6 @@ func (m *NamespaceMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Namespace edge %s", name)
-}
-
-// ServerMutation represents an operation that mutates the Server nodes in the graph.
-type ServerMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *int
-	ip            *string
-	extIP         *string
-	natsPort      *int
-	addnatsPort   *int
-	memberPort    *int
-	addmemberPort *int
-	added         *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Server, error)
-	predicates    []predicate.Server
-}
-
-var _ ent.Mutation = (*ServerMutation)(nil)
-
-// serverOption allows management of the mutation configuration using functional options.
-type serverOption func(*ServerMutation)
-
-// newServerMutation creates new mutation for the Server entity.
-func newServerMutation(c config, op Op, opts ...serverOption) *ServerMutation {
-	m := &ServerMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeServer,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withServerID sets the ID field of the mutation.
-func withServerID(id int) serverOption {
-	return func(m *ServerMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Server
-		)
-		m.oldValue = func(ctx context.Context) (*Server, error) {
-			once.Do(func() {
-				if m.done {
-					err = fmt.Errorf("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Server.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withServer sets the old Server of the mutation.
-func withServer(node *Server) serverOption {
-	return func(m *ServerMutation) {
-		m.oldValue = func(context.Context) (*Server, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ServerMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ServerMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
-func (m *ServerMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// SetIP sets the "ip" field.
-func (m *ServerMutation) SetIP(s string) {
-	m.ip = &s
-}
-
-// IP returns the value of the "ip" field in the mutation.
-func (m *ServerMutation) IP() (r string, exists bool) {
-	v := m.ip
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIP returns the old "ip" field's value of the Server entity.
-// If the Server object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMutation) OldIP(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldIP is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldIP requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIP: %w", err)
-	}
-	return oldValue.IP, nil
-}
-
-// ResetIP resets all changes to the "ip" field.
-func (m *ServerMutation) ResetIP() {
-	m.ip = nil
-}
-
-// SetExtIP sets the "extIP" field.
-func (m *ServerMutation) SetExtIP(s string) {
-	m.extIP = &s
-}
-
-// ExtIP returns the value of the "extIP" field in the mutation.
-func (m *ServerMutation) ExtIP() (r string, exists bool) {
-	v := m.extIP
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExtIP returns the old "extIP" field's value of the Server entity.
-// If the Server object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMutation) OldExtIP(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldExtIP is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldExtIP requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExtIP: %w", err)
-	}
-	return oldValue.ExtIP, nil
-}
-
-// ResetExtIP resets all changes to the "extIP" field.
-func (m *ServerMutation) ResetExtIP() {
-	m.extIP = nil
-}
-
-// SetNatsPort sets the "natsPort" field.
-func (m *ServerMutation) SetNatsPort(i int) {
-	m.natsPort = &i
-	m.addnatsPort = nil
-}
-
-// NatsPort returns the value of the "natsPort" field in the mutation.
-func (m *ServerMutation) NatsPort() (r int, exists bool) {
-	v := m.natsPort
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNatsPort returns the old "natsPort" field's value of the Server entity.
-// If the Server object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMutation) OldNatsPort(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldNatsPort is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldNatsPort requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNatsPort: %w", err)
-	}
-	return oldValue.NatsPort, nil
-}
-
-// AddNatsPort adds i to the "natsPort" field.
-func (m *ServerMutation) AddNatsPort(i int) {
-	if m.addnatsPort != nil {
-		*m.addnatsPort += i
-	} else {
-		m.addnatsPort = &i
-	}
-}
-
-// AddedNatsPort returns the value that was added to the "natsPort" field in this mutation.
-func (m *ServerMutation) AddedNatsPort() (r int, exists bool) {
-	v := m.addnatsPort
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetNatsPort resets all changes to the "natsPort" field.
-func (m *ServerMutation) ResetNatsPort() {
-	m.natsPort = nil
-	m.addnatsPort = nil
-}
-
-// SetMemberPort sets the "memberPort" field.
-func (m *ServerMutation) SetMemberPort(i int) {
-	m.memberPort = &i
-	m.addmemberPort = nil
-}
-
-// MemberPort returns the value of the "memberPort" field in the mutation.
-func (m *ServerMutation) MemberPort() (r int, exists bool) {
-	v := m.memberPort
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMemberPort returns the old "memberPort" field's value of the Server entity.
-// If the Server object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMutation) OldMemberPort(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldMemberPort is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldMemberPort requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMemberPort: %w", err)
-	}
-	return oldValue.MemberPort, nil
-}
-
-// AddMemberPort adds i to the "memberPort" field.
-func (m *ServerMutation) AddMemberPort(i int) {
-	if m.addmemberPort != nil {
-		*m.addmemberPort += i
-	} else {
-		m.addmemberPort = &i
-	}
-}
-
-// AddedMemberPort returns the value that was added to the "memberPort" field in this mutation.
-func (m *ServerMutation) AddedMemberPort() (r int, exists bool) {
-	v := m.addmemberPort
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetMemberPort resets all changes to the "memberPort" field.
-func (m *ServerMutation) ResetMemberPort() {
-	m.memberPort = nil
-	m.addmemberPort = nil
-}
-
-// SetAdded sets the "added" field.
-func (m *ServerMutation) SetAdded(t time.Time) {
-	m.added = &t
-}
-
-// Added returns the value of the "added" field in the mutation.
-func (m *ServerMutation) Added() (r time.Time, exists bool) {
-	v := m.added
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAdded returns the old "added" field's value of the Server entity.
-// If the Server object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMutation) OldAdded(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldAdded is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldAdded requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAdded: %w", err)
-	}
-	return oldValue.Added, nil
-}
-
-// ResetAdded resets all changes to the "added" field.
-func (m *ServerMutation) ResetAdded() {
-	m.added = nil
-}
-
-// Op returns the operation name.
-func (m *ServerMutation) Op() Op {
-	return m.op
-}
-
-// Type returns the node type of this mutation (Server).
-func (m *ServerMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ServerMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.ip != nil {
-		fields = append(fields, server.FieldIP)
-	}
-	if m.extIP != nil {
-		fields = append(fields, server.FieldExtIP)
-	}
-	if m.natsPort != nil {
-		fields = append(fields, server.FieldNatsPort)
-	}
-	if m.memberPort != nil {
-		fields = append(fields, server.FieldMemberPort)
-	}
-	if m.added != nil {
-		fields = append(fields, server.FieldAdded)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ServerMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case server.FieldIP:
-		return m.IP()
-	case server.FieldExtIP:
-		return m.ExtIP()
-	case server.FieldNatsPort:
-		return m.NatsPort()
-	case server.FieldMemberPort:
-		return m.MemberPort()
-	case server.FieldAdded:
-		return m.Added()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ServerMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case server.FieldIP:
-		return m.OldIP(ctx)
-	case server.FieldExtIP:
-		return m.OldExtIP(ctx)
-	case server.FieldNatsPort:
-		return m.OldNatsPort(ctx)
-	case server.FieldMemberPort:
-		return m.OldMemberPort(ctx)
-	case server.FieldAdded:
-		return m.OldAdded(ctx)
-	}
-	return nil, fmt.Errorf("unknown Server field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ServerMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case server.FieldIP:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIP(v)
-		return nil
-	case server.FieldExtIP:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExtIP(v)
-		return nil
-	case server.FieldNatsPort:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNatsPort(v)
-		return nil
-	case server.FieldMemberPort:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMemberPort(v)
-		return nil
-	case server.FieldAdded:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAdded(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Server field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ServerMutation) AddedFields() []string {
-	var fields []string
-	if m.addnatsPort != nil {
-		fields = append(fields, server.FieldNatsPort)
-	}
-	if m.addmemberPort != nil {
-		fields = append(fields, server.FieldMemberPort)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ServerMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case server.FieldNatsPort:
-		return m.AddedNatsPort()
-	case server.FieldMemberPort:
-		return m.AddedMemberPort()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ServerMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case server.FieldNatsPort:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddNatsPort(v)
-		return nil
-	case server.FieldMemberPort:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddMemberPort(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Server numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ServerMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ServerMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ServerMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Server nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ServerMutation) ResetField(name string) error {
-	switch name {
-	case server.FieldIP:
-		m.ResetIP()
-		return nil
-	case server.FieldExtIP:
-		m.ResetExtIP()
-		return nil
-	case server.FieldNatsPort:
-		m.ResetNatsPort()
-		return nil
-	case server.FieldMemberPort:
-		m.ResetMemberPort()
-		return nil
-	case server.FieldAdded:
-		m.ResetAdded()
-		return nil
-	}
-	return fmt.Errorf("unknown Server field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ServerMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ServerMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ServerMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ServerMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ServerMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ServerMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ServerMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown Server unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ServerMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown Server edge %s", name)
-}
-
-// SubroutineMutation represents an operation that mutates the Subroutine nodes in the graph.
-type SubroutineMutation struct {
-	config
-	op                  Op
-	typ                 string
-	id                  *int
-	callerID            *string
-	semaphore           *int
-	addsemaphore        *int
-	memory              *string
-	subroutineIDs       *[]string
-	subroutineResponses *[]string
-	clearedFields       map[string]struct{}
-	done                bool
-	oldValue            func(context.Context) (*Subroutine, error)
-	predicates          []predicate.Subroutine
-}
-
-var _ ent.Mutation = (*SubroutineMutation)(nil)
-
-// subroutineOption allows management of the mutation configuration using functional options.
-type subroutineOption func(*SubroutineMutation)
-
-// newSubroutineMutation creates new mutation for the Subroutine entity.
-func newSubroutineMutation(c config, op Op, opts ...subroutineOption) *SubroutineMutation {
-	m := &SubroutineMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeSubroutine,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withSubroutineID sets the ID field of the mutation.
-func withSubroutineID(id int) subroutineOption {
-	return func(m *SubroutineMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Subroutine
-		)
-		m.oldValue = func(ctx context.Context) (*Subroutine, error) {
-			once.Do(func() {
-				if m.done {
-					err = fmt.Errorf("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Subroutine.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withSubroutine sets the old Subroutine of the mutation.
-func withSubroutine(node *Subroutine) subroutineOption {
-	return func(m *SubroutineMutation) {
-		m.oldValue = func(context.Context) (*Subroutine, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m SubroutineMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m SubroutineMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
-func (m *SubroutineMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// SetCallerID sets the "callerID" field.
-func (m *SubroutineMutation) SetCallerID(s string) {
-	m.callerID = &s
-}
-
-// CallerID returns the value of the "callerID" field in the mutation.
-func (m *SubroutineMutation) CallerID() (r string, exists bool) {
-	v := m.callerID
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCallerID returns the old "callerID" field's value of the Subroutine entity.
-// If the Subroutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubroutineMutation) OldCallerID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCallerID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCallerID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCallerID: %w", err)
-	}
-	return oldValue.CallerID, nil
-}
-
-// ResetCallerID resets all changes to the "callerID" field.
-func (m *SubroutineMutation) ResetCallerID() {
-	m.callerID = nil
-}
-
-// SetSemaphore sets the "semaphore" field.
-func (m *SubroutineMutation) SetSemaphore(i int) {
-	m.semaphore = &i
-	m.addsemaphore = nil
-}
-
-// Semaphore returns the value of the "semaphore" field in the mutation.
-func (m *SubroutineMutation) Semaphore() (r int, exists bool) {
-	v := m.semaphore
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSemaphore returns the old "semaphore" field's value of the Subroutine entity.
-// If the Subroutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubroutineMutation) OldSemaphore(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSemaphore is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSemaphore requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSemaphore: %w", err)
-	}
-	return oldValue.Semaphore, nil
-}
-
-// AddSemaphore adds i to the "semaphore" field.
-func (m *SubroutineMutation) AddSemaphore(i int) {
-	if m.addsemaphore != nil {
-		*m.addsemaphore += i
-	} else {
-		m.addsemaphore = &i
-	}
-}
-
-// AddedSemaphore returns the value that was added to the "semaphore" field in this mutation.
-func (m *SubroutineMutation) AddedSemaphore() (r int, exists bool) {
-	v := m.addsemaphore
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetSemaphore resets all changes to the "semaphore" field.
-func (m *SubroutineMutation) ResetSemaphore() {
-	m.semaphore = nil
-	m.addsemaphore = nil
-}
-
-// SetMemory sets the "memory" field.
-func (m *SubroutineMutation) SetMemory(s string) {
-	m.memory = &s
-}
-
-// Memory returns the value of the "memory" field in the mutation.
-func (m *SubroutineMutation) Memory() (r string, exists bool) {
-	v := m.memory
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMemory returns the old "memory" field's value of the Subroutine entity.
-// If the Subroutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubroutineMutation) OldMemory(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldMemory is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldMemory requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMemory: %w", err)
-	}
-	return oldValue.Memory, nil
-}
-
-// ResetMemory resets all changes to the "memory" field.
-func (m *SubroutineMutation) ResetMemory() {
-	m.memory = nil
-}
-
-// SetSubroutineIDs sets the "subroutineIDs" field.
-func (m *SubroutineMutation) SetSubroutineIDs(s []string) {
-	m.subroutineIDs = &s
-}
-
-// SubroutineIDs returns the value of the "subroutineIDs" field in the mutation.
-func (m *SubroutineMutation) SubroutineIDs() (r []string, exists bool) {
-	v := m.subroutineIDs
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubroutineIDs returns the old "subroutineIDs" field's value of the Subroutine entity.
-// If the Subroutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubroutineMutation) OldSubroutineIDs(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSubroutineIDs is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSubroutineIDs requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubroutineIDs: %w", err)
-	}
-	return oldValue.SubroutineIDs, nil
-}
-
-// ResetSubroutineIDs resets all changes to the "subroutineIDs" field.
-func (m *SubroutineMutation) ResetSubroutineIDs() {
-	m.subroutineIDs = nil
-}
-
-// SetSubroutineResponses sets the "subroutineResponses" field.
-func (m *SubroutineMutation) SetSubroutineResponses(s []string) {
-	m.subroutineResponses = &s
-}
-
-// SubroutineResponses returns the value of the "subroutineResponses" field in the mutation.
-func (m *SubroutineMutation) SubroutineResponses() (r []string, exists bool) {
-	v := m.subroutineResponses
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubroutineResponses returns the old "subroutineResponses" field's value of the Subroutine entity.
-// If the Subroutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubroutineMutation) OldSubroutineResponses(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSubroutineResponses is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSubroutineResponses requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubroutineResponses: %w", err)
-	}
-	return oldValue.SubroutineResponses, nil
-}
-
-// ClearSubroutineResponses clears the value of the "subroutineResponses" field.
-func (m *SubroutineMutation) ClearSubroutineResponses() {
-	m.subroutineResponses = nil
-	m.clearedFields[subroutine.FieldSubroutineResponses] = struct{}{}
-}
-
-// SubroutineResponsesCleared returns if the "subroutineResponses" field was cleared in this mutation.
-func (m *SubroutineMutation) SubroutineResponsesCleared() bool {
-	_, ok := m.clearedFields[subroutine.FieldSubroutineResponses]
-	return ok
-}
-
-// ResetSubroutineResponses resets all changes to the "subroutineResponses" field.
-func (m *SubroutineMutation) ResetSubroutineResponses() {
-	m.subroutineResponses = nil
-	delete(m.clearedFields, subroutine.FieldSubroutineResponses)
-}
-
-// Op returns the operation name.
-func (m *SubroutineMutation) Op() Op {
-	return m.op
-}
-
-// Type returns the node type of this mutation (Subroutine).
-func (m *SubroutineMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *SubroutineMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.callerID != nil {
-		fields = append(fields, subroutine.FieldCallerID)
-	}
-	if m.semaphore != nil {
-		fields = append(fields, subroutine.FieldSemaphore)
-	}
-	if m.memory != nil {
-		fields = append(fields, subroutine.FieldMemory)
-	}
-	if m.subroutineIDs != nil {
-		fields = append(fields, subroutine.FieldSubroutineIDs)
-	}
-	if m.subroutineResponses != nil {
-		fields = append(fields, subroutine.FieldSubroutineResponses)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *SubroutineMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case subroutine.FieldCallerID:
-		return m.CallerID()
-	case subroutine.FieldSemaphore:
-		return m.Semaphore()
-	case subroutine.FieldMemory:
-		return m.Memory()
-	case subroutine.FieldSubroutineIDs:
-		return m.SubroutineIDs()
-	case subroutine.FieldSubroutineResponses:
-		return m.SubroutineResponses()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *SubroutineMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case subroutine.FieldCallerID:
-		return m.OldCallerID(ctx)
-	case subroutine.FieldSemaphore:
-		return m.OldSemaphore(ctx)
-	case subroutine.FieldMemory:
-		return m.OldMemory(ctx)
-	case subroutine.FieldSubroutineIDs:
-		return m.OldSubroutineIDs(ctx)
-	case subroutine.FieldSubroutineResponses:
-		return m.OldSubroutineResponses(ctx)
-	}
-	return nil, fmt.Errorf("unknown Subroutine field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SubroutineMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case subroutine.FieldCallerID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCallerID(v)
-		return nil
-	case subroutine.FieldSemaphore:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSemaphore(v)
-		return nil
-	case subroutine.FieldMemory:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMemory(v)
-		return nil
-	case subroutine.FieldSubroutineIDs:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSubroutineIDs(v)
-		return nil
-	case subroutine.FieldSubroutineResponses:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSubroutineResponses(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Subroutine field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *SubroutineMutation) AddedFields() []string {
-	var fields []string
-	if m.addsemaphore != nil {
-		fields = append(fields, subroutine.FieldSemaphore)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *SubroutineMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case subroutine.FieldSemaphore:
-		return m.AddedSemaphore()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SubroutineMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case subroutine.FieldSemaphore:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSemaphore(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Subroutine numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *SubroutineMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(subroutine.FieldSubroutineResponses) {
-		fields = append(fields, subroutine.FieldSubroutineResponses)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *SubroutineMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *SubroutineMutation) ClearField(name string) error {
-	switch name {
-	case subroutine.FieldSubroutineResponses:
-		m.ClearSubroutineResponses()
-		return nil
-	}
-	return fmt.Errorf("unknown Subroutine nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *SubroutineMutation) ResetField(name string) error {
-	switch name {
-	case subroutine.FieldCallerID:
-		m.ResetCallerID()
-		return nil
-	case subroutine.FieldSemaphore:
-		m.ResetSemaphore()
-		return nil
-	case subroutine.FieldMemory:
-		m.ResetMemory()
-		return nil
-	case subroutine.FieldSubroutineIDs:
-		m.ResetSubroutineIDs()
-		return nil
-	case subroutine.FieldSubroutineResponses:
-		m.ResetSubroutineResponses()
-		return nil
-	}
-	return fmt.Errorf("unknown Subroutine field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *SubroutineMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *SubroutineMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *SubroutineMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *SubroutineMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *SubroutineMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *SubroutineMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *SubroutineMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown Subroutine unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *SubroutineMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown Subroutine edge %s", name)
 }
 
 // TimerMutation represents an operation that mutates the Timer nodes in the graph.
@@ -3033,23 +1896,25 @@ func (m *WorkflowMutation) ResetEdge(name string) error {
 // WorkflowEventsMutation represents an operation that mutates the WorkflowEvents nodes in the graph.
 type WorkflowEventsMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *int
-	events              *[]map[string]interface{}
-	correlations        *[]string
-	signature           *[]byte
-	count               *int
-	addcount            *int
-	clearedFields       map[string]struct{}
-	workflow            *uuid.UUID
-	clearedworkflow     bool
-	wfeventswait        map[int]struct{}
-	removedwfeventswait map[int]struct{}
-	clearedwfeventswait bool
-	done                bool
-	oldValue            func(context.Context) (*WorkflowEvents, error)
-	predicates          []predicate.WorkflowEvents
+	op                      Op
+	typ                     string
+	id                      *int
+	events                  *[]map[string]interface{}
+	correlations            *[]string
+	signature               *[]byte
+	count                   *int
+	addcount                *int
+	clearedFields           map[string]struct{}
+	workflow                *uuid.UUID
+	clearedworkflow         bool
+	wfeventswait            map[int]struct{}
+	removedwfeventswait     map[int]struct{}
+	clearedwfeventswait     bool
+	workflowinstance        *int
+	clearedworkflowinstance bool
+	done                    bool
+	oldValue                func(context.Context) (*WorkflowEvents, error)
+	predicates              []predicate.WorkflowEvents
 }
 
 var _ ent.Mutation = (*WorkflowEventsMutation)(nil)
@@ -3400,6 +2265,45 @@ func (m *WorkflowEventsMutation) ResetWfeventswait() {
 	m.removedwfeventswait = nil
 }
 
+// SetWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by id.
+func (m *WorkflowEventsMutation) SetWorkflowinstanceID(id int) {
+	m.workflowinstance = &id
+}
+
+// ClearWorkflowinstance clears the "workflowinstance" edge to the WorkflowInstance entity.
+func (m *WorkflowEventsMutation) ClearWorkflowinstance() {
+	m.clearedworkflowinstance = true
+}
+
+// WorkflowinstanceCleared returns if the "workflowinstance" edge to the WorkflowInstance entity was cleared.
+func (m *WorkflowEventsMutation) WorkflowinstanceCleared() bool {
+	return m.clearedworkflowinstance
+}
+
+// WorkflowinstanceID returns the "workflowinstance" edge ID in the mutation.
+func (m *WorkflowEventsMutation) WorkflowinstanceID() (id int, exists bool) {
+	if m.workflowinstance != nil {
+		return *m.workflowinstance, true
+	}
+	return
+}
+
+// WorkflowinstanceIDs returns the "workflowinstance" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WorkflowinstanceID instead. It exists only for internal usage by the builders.
+func (m *WorkflowEventsMutation) WorkflowinstanceIDs() (ids []int) {
+	if id := m.workflowinstance; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetWorkflowinstance resets all changes to the "workflowinstance" edge.
+func (m *WorkflowEventsMutation) ResetWorkflowinstance() {
+	m.workflowinstance = nil
+	m.clearedworkflowinstance = false
+}
+
 // Op returns the operation name.
 func (m *WorkflowEventsMutation) Op() Op {
 	return m.op
@@ -3588,12 +2492,15 @@ func (m *WorkflowEventsMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WorkflowEventsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.workflow != nil {
 		edges = append(edges, workflowevents.EdgeWorkflow)
 	}
 	if m.wfeventswait != nil {
 		edges = append(edges, workflowevents.EdgeWfeventswait)
+	}
+	if m.workflowinstance != nil {
+		edges = append(edges, workflowevents.EdgeWorkflowinstance)
 	}
 	return edges
 }
@@ -3612,13 +2519,17 @@ func (m *WorkflowEventsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case workflowevents.EdgeWorkflowinstance:
+		if id := m.workflowinstance; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WorkflowEventsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedwfeventswait != nil {
 		edges = append(edges, workflowevents.EdgeWfeventswait)
 	}
@@ -3641,12 +2552,15 @@ func (m *WorkflowEventsMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WorkflowEventsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedworkflow {
 		edges = append(edges, workflowevents.EdgeWorkflow)
 	}
 	if m.clearedwfeventswait {
 		edges = append(edges, workflowevents.EdgeWfeventswait)
+	}
+	if m.clearedworkflowinstance {
+		edges = append(edges, workflowevents.EdgeWorkflowinstance)
 	}
 	return edges
 }
@@ -3659,6 +2573,8 @@ func (m *WorkflowEventsMutation) EdgeCleared(name string) bool {
 		return m.clearedworkflow
 	case workflowevents.EdgeWfeventswait:
 		return m.clearedwfeventswait
+	case workflowevents.EdgeWorkflowinstance:
+		return m.clearedworkflowinstance
 	}
 	return false
 }
@@ -3669,6 +2585,9 @@ func (m *WorkflowEventsMutation) ClearEdge(name string) error {
 	switch name {
 	case workflowevents.EdgeWorkflow:
 		m.ClearWorkflow()
+		return nil
+	case workflowevents.EdgeWorkflowinstance:
+		m.ClearWorkflowinstance()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowEvents unique edge %s", name)
@@ -3683,6 +2602,9 @@ func (m *WorkflowEventsMutation) ResetEdge(name string) error {
 		return nil
 	case workflowevents.EdgeWfeventswait:
 		m.ResetWfeventswait()
+		return nil
+	case workflowevents.EdgeWorkflowinstance:
+		m.ResetWorkflowinstance()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowEvents edge %s", name)
@@ -4070,6 +2992,9 @@ type WorkflowInstanceMutation struct {
 	clearedFields   map[string]struct{}
 	workflow        *uuid.UUID
 	clearedworkflow bool
+	instance        map[int]struct{}
+	removedinstance map[int]struct{}
+	clearedinstance bool
 	done            bool
 	oldValue        func(context.Context) (*WorkflowInstance, error)
 	predicates      []predicate.WorkflowInstance
@@ -4891,6 +3816,59 @@ func (m *WorkflowInstanceMutation) ResetWorkflow() {
 	m.clearedworkflow = false
 }
 
+// AddInstanceIDs adds the "instance" edge to the WorkflowEvents entity by ids.
+func (m *WorkflowInstanceMutation) AddInstanceIDs(ids ...int) {
+	if m.instance == nil {
+		m.instance = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.instance[ids[i]] = struct{}{}
+	}
+}
+
+// ClearInstance clears the "instance" edge to the WorkflowEvents entity.
+func (m *WorkflowInstanceMutation) ClearInstance() {
+	m.clearedinstance = true
+}
+
+// InstanceCleared returns if the "instance" edge to the WorkflowEvents entity was cleared.
+func (m *WorkflowInstanceMutation) InstanceCleared() bool {
+	return m.clearedinstance
+}
+
+// RemoveInstanceIDs removes the "instance" edge to the WorkflowEvents entity by IDs.
+func (m *WorkflowInstanceMutation) RemoveInstanceIDs(ids ...int) {
+	if m.removedinstance == nil {
+		m.removedinstance = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedinstance[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedInstance returns the removed IDs of the "instance" edge to the WorkflowEvents entity.
+func (m *WorkflowInstanceMutation) RemovedInstanceIDs() (ids []int) {
+	for id := range m.removedinstance {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InstanceIDs returns the "instance" edge IDs in the mutation.
+func (m *WorkflowInstanceMutation) InstanceIDs() (ids []int) {
+	for id := range m.instance {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetInstance resets all changes to the "instance" edge.
+func (m *WorkflowInstanceMutation) ResetInstance() {
+	m.instance = nil
+	m.clearedinstance = false
+	m.removedinstance = nil
+}
+
 // Op returns the operation name.
 func (m *WorkflowInstanceMutation) Op() Op {
 	return m.op
@@ -5326,9 +4304,12 @@ func (m *WorkflowInstanceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WorkflowInstanceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.workflow != nil {
 		edges = append(edges, workflowinstance.EdgeWorkflow)
+	}
+	if m.instance != nil {
+		edges = append(edges, workflowinstance.EdgeInstance)
 	}
 	return edges
 }
@@ -5341,13 +4322,22 @@ func (m *WorkflowInstanceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.workflow; id != nil {
 			return []ent.Value{*id}
 		}
+	case workflowinstance.EdgeInstance:
+		ids := make([]ent.Value, 0, len(m.instance))
+		for id := range m.instance {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WorkflowInstanceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedinstance != nil {
+		edges = append(edges, workflowinstance.EdgeInstance)
+	}
 	return edges
 }
 
@@ -5355,15 +4345,24 @@ func (m *WorkflowInstanceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *WorkflowInstanceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case workflowinstance.EdgeInstance:
+		ids := make([]ent.Value, 0, len(m.removedinstance))
+		for id := range m.removedinstance {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WorkflowInstanceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedworkflow {
 		edges = append(edges, workflowinstance.EdgeWorkflow)
+	}
+	if m.clearedinstance {
+		edges = append(edges, workflowinstance.EdgeInstance)
 	}
 	return edges
 }
@@ -5374,6 +4373,8 @@ func (m *WorkflowInstanceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case workflowinstance.EdgeWorkflow:
 		return m.clearedworkflow
+	case workflowinstance.EdgeInstance:
+		return m.clearedinstance
 	}
 	return false
 }
@@ -5395,6 +4396,9 @@ func (m *WorkflowInstanceMutation) ResetEdge(name string) error {
 	switch name {
 	case workflowinstance.EdgeWorkflow:
 		m.ResetWorkflow()
+		return nil
+	case workflowinstance.EdgeInstance:
+		m.ResetInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance edge %s", name)

@@ -15,6 +15,7 @@ import (
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
 // WorkflowEventsUpdate is the builder for updating WorkflowEvents entities.
@@ -93,6 +94,25 @@ func (weu *WorkflowEventsUpdate) AddWfeventswait(w ...*WorkflowEventsWait) *Work
 	return weu.AddWfeventswaitIDs(ids...)
 }
 
+// SetWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by ID.
+func (weu *WorkflowEventsUpdate) SetWorkflowinstanceID(id int) *WorkflowEventsUpdate {
+	weu.mutation.SetWorkflowinstanceID(id)
+	return weu
+}
+
+// SetNillableWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by ID if the given value is not nil.
+func (weu *WorkflowEventsUpdate) SetNillableWorkflowinstanceID(id *int) *WorkflowEventsUpdate {
+	if id != nil {
+		weu = weu.SetWorkflowinstanceID(*id)
+	}
+	return weu
+}
+
+// SetWorkflowinstance sets the "workflowinstance" edge to the WorkflowInstance entity.
+func (weu *WorkflowEventsUpdate) SetWorkflowinstance(w *WorkflowInstance) *WorkflowEventsUpdate {
+	return weu.SetWorkflowinstanceID(w.ID)
+}
+
 // Mutation returns the WorkflowEventsMutation object of the builder.
 func (weu *WorkflowEventsUpdate) Mutation() *WorkflowEventsMutation {
 	return weu.mutation
@@ -123,6 +143,12 @@ func (weu *WorkflowEventsUpdate) RemoveWfeventswait(w ...*WorkflowEventsWait) *W
 		ids[i] = w[i].ID
 	}
 	return weu.RemoveWfeventswaitIDs(ids...)
+}
+
+// ClearWorkflowinstance clears the "workflowinstance" edge to the WorkflowInstance entity.
+func (weu *WorkflowEventsUpdate) ClearWorkflowinstance() *WorkflowEventsUpdate {
+	weu.mutation.ClearWorkflowinstance()
+	return weu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -338,6 +364,41 @@ func (weu *WorkflowEventsUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if weu.mutation.WorkflowinstanceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowevents.WorkflowinstanceTable,
+			Columns: []string{workflowevents.WorkflowinstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: workflowinstance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := weu.mutation.WorkflowinstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowevents.WorkflowinstanceTable,
+			Columns: []string{workflowevents.WorkflowinstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: workflowinstance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, weu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workflowevents.Label}
@@ -419,6 +480,25 @@ func (weuo *WorkflowEventsUpdateOne) AddWfeventswait(w ...*WorkflowEventsWait) *
 	return weuo.AddWfeventswaitIDs(ids...)
 }
 
+// SetWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by ID.
+func (weuo *WorkflowEventsUpdateOne) SetWorkflowinstanceID(id int) *WorkflowEventsUpdateOne {
+	weuo.mutation.SetWorkflowinstanceID(id)
+	return weuo
+}
+
+// SetNillableWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by ID if the given value is not nil.
+func (weuo *WorkflowEventsUpdateOne) SetNillableWorkflowinstanceID(id *int) *WorkflowEventsUpdateOne {
+	if id != nil {
+		weuo = weuo.SetWorkflowinstanceID(*id)
+	}
+	return weuo
+}
+
+// SetWorkflowinstance sets the "workflowinstance" edge to the WorkflowInstance entity.
+func (weuo *WorkflowEventsUpdateOne) SetWorkflowinstance(w *WorkflowInstance) *WorkflowEventsUpdateOne {
+	return weuo.SetWorkflowinstanceID(w.ID)
+}
+
 // Mutation returns the WorkflowEventsMutation object of the builder.
 func (weuo *WorkflowEventsUpdateOne) Mutation() *WorkflowEventsMutation {
 	return weuo.mutation
@@ -449,6 +529,12 @@ func (weuo *WorkflowEventsUpdateOne) RemoveWfeventswait(w ...*WorkflowEventsWait
 		ids[i] = w[i].ID
 	}
 	return weuo.RemoveWfeventswaitIDs(ids...)
+}
+
+// ClearWorkflowinstance clears the "workflowinstance" edge to the WorkflowInstance entity.
+func (weuo *WorkflowEventsUpdateOne) ClearWorkflowinstance() *WorkflowEventsUpdateOne {
+	weuo.mutation.ClearWorkflowinstance()
+	return weuo
 }
 
 // Save executes the query and returns the updated WorkflowEvents entity.
@@ -661,6 +747,41 @@ func (weuo *WorkflowEventsUpdateOne) sqlSave(ctx context.Context) (_node *Workfl
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: workfloweventswait.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if weuo.mutation.WorkflowinstanceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowevents.WorkflowinstanceTable,
+			Columns: []string{workflowevents.WorkflowinstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: workflowinstance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := weuo.mutation.WorkflowinstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowevents.WorkflowinstanceTable,
+			Columns: []string{workflowevents.WorkflowinstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: workflowinstance.FieldID,
 				},
 			},
 		}

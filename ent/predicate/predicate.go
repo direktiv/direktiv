@@ -9,12 +9,6 @@ import (
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)
 
-// Server is the predicate function for server builders.
-type Server func(*sql.Selector)
-
-// Subroutine is the predicate function for subroutine builders.
-type Subroutine func(*sql.Selector)
-
 // Timer is the predicate function for timer builders.
 type Timer func(*sql.Selector)
 

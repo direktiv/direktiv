@@ -22,32 +22,6 @@ func (f NamespaceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return f(ctx, mv)
 }
 
-// The ServerFunc type is an adapter to allow the use of ordinary
-// function as Server mutator.
-type ServerFunc func(context.Context, *ent.ServerMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ServerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.ServerMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServerMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The SubroutineFunc type is an adapter to allow the use of ordinary
-// function as Subroutine mutator.
-type SubroutineFunc func(context.Context, *ent.SubroutineMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SubroutineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.SubroutineMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SubroutineMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The TimerFunc type is an adapter to allow the use of ordinary
 // function as Timer mutator.
 type TimerFunc func(context.Context, *ent.TimerMutation) (ent.Value, error)

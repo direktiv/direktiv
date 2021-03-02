@@ -50,6 +50,7 @@ require (
 	github.com/vorteil/vorteil v0.0.0-20210301220102-762be2cd662d
 	github.com/walle/lll v1.0.1 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.mongodb.org/mongo-driver v1.4.2
 	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
 	google.golang.org/grpc v1.33.2
 	google.golang.org/protobuf v1.25.0

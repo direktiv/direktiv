@@ -38,5 +38,6 @@ func (WorkflowInstance) Edges() []ent.Edge {
 		edge.From("workflow", Workflow.Type).
 			Ref("instances").
 			Unique().Required(),
+		edge.To("instance", WorkflowEvents.Type),
 	}
 }

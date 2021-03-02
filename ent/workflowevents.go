@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
+	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
 // WorkflowEvents is the model entity for the WorkflowEvents schema.
@@ -28,8 +29,9 @@ type WorkflowEvents struct {
 	Count int `json:"count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowEventsQuery when eager-loading is set.
-	Edges             WorkflowEventsEdges `json:"edges"`
-	workflow_wfevents *uuid.UUID
+	Edges                      WorkflowEventsEdges `json:"edges"`
+	workflow_wfevents          *uuid.UUID
+	workflow_instance_instance *int
 }
 
 // WorkflowEventsEdges holds the relations/edges for other nodes in the graph.
@@ -38,9 +40,11 @@ type WorkflowEventsEdges struct {
 	Workflow *Workflow `json:"workflow,omitempty"`
 	// Wfeventswait holds the value of the wfeventswait edge.
 	Wfeventswait []*WorkflowEventsWait `json:"wfeventswait,omitempty"`
+	// Workflowinstance holds the value of the workflowinstance edge.
+	Workflowinstance *WorkflowInstance `json:"workflowinstance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // WorkflowOrErr returns the Workflow value or an error if the edge
@@ -66,6 +70,20 @@ func (e WorkflowEventsEdges) WfeventswaitOrErr() ([]*WorkflowEventsWait, error) 
 	return nil, &NotLoadedError{edge: "wfeventswait"}
 }
 
+// WorkflowinstanceOrErr returns the Workflowinstance value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WorkflowEventsEdges) WorkflowinstanceOrErr() (*WorkflowInstance, error) {
+	if e.loadedTypes[2] {
+		if e.Workflowinstance == nil {
+			// The edge workflowinstance was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: workflowinstance.Label}
+		}
+		return e.Workflowinstance, nil
+	}
+	return nil, &NotLoadedError{edge: "workflowinstance"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*WorkflowEvents) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -77,6 +95,8 @@ func (*WorkflowEvents) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case workflowevents.ForeignKeys[0]: // workflow_wfevents
 			values[i] = &uuid.UUID{}
+		case workflowevents.ForeignKeys[1]: // workflow_instance_instance
+			values[i] = &sql.NullInt64{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type WorkflowEvents", columns[i])
 		}
@@ -134,6 +154,13 @@ func (we *WorkflowEvents) assignValues(columns []string, values []interface{}) e
 			} else if value != nil {
 				we.workflow_wfevents = value
 			}
+		case workflowevents.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field workflow_instance_instance", value)
+			} else if value.Valid {
+				we.workflow_instance_instance = new(int)
+				*we.workflow_instance_instance = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -147,6 +174,11 @@ func (we *WorkflowEvents) QueryWorkflow() *WorkflowQuery {
 // QueryWfeventswait queries the "wfeventswait" edge of the WorkflowEvents entity.
 func (we *WorkflowEvents) QueryWfeventswait() *WorkflowEventsWaitQuery {
 	return (&WorkflowEventsClient{config: we.config}).QueryWfeventswait(we)
+}
+
+// QueryWorkflowinstance queries the "workflowinstance" edge of the WorkflowEvents entity.
+func (we *WorkflowEvents) QueryWorkflowinstance() *WorkflowInstanceQuery {
+	return (&WorkflowEventsClient{config: we.config}).QueryWorkflowinstance(we)
 }
 
 // Update returns a builder for updating this WorkflowEvents.
