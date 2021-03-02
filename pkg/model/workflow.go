@@ -11,6 +11,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// WorkflowIDRegex - Regex used to validate ID
+const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
+
 type Workflow struct {
 	ID          string               `yaml:"id"`
 	Name        string               `yaml:"name,omitempty"`
@@ -144,19 +147,9 @@ func (o *Workflow) unmState(state interface{}, sIndex int) error {
 }
 
 func (o *Workflow) validate() error {
-	if o.ID == "" {
-		return fmt.Errorf("workflow id required")
-	}
 
-	regex := "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
-
-	matched, err := regexp.MatchString(regex, o.ID)
-	if err != nil {
+	if err := o.regexValidateID(); err != nil {
 		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("workflow ID must match regex: %s", regex)
 	}
 
 	states, err := o.getStatesMap()
@@ -222,7 +215,23 @@ func (o *Workflow) validate() error {
 
 	// timeout
 	return o.Timeouts.Validate()
+}
 
+func (o *Workflow) regexValidateID() error {
+	if o.ID == "" {
+		return fmt.Errorf("workflow id required")
+	}
+
+	matched, err := regexp.MatchString(WorkflowIDRegex, o.ID)
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return fmt.Errorf("workflow ID must match regex: %s", regex)
+	}
+
+	return nil
 }
 
 func (o *Workflow) GetStates() []State {
