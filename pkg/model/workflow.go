@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -22,7 +23,6 @@ type Workflow struct {
 }
 
 func (o *Workflow) unmarshal(m map[string]interface{}) error {
-
 	// split start out from the rest
 	y, startFound := m["start"]
 	if startFound {
@@ -92,9 +92,11 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 		panic(err)
 	}
 
-	err = json.Unmarshal(data, &o)
-	if err != nil {
-		return err
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields() // Force Unknown fields to throw error
+
+	if err := dec.Decode(&o); err != nil {
+		return fmt.Errorf("failed to decode: %s", strings.TrimPrefix(err.Error(), "json: "))
 	}
 
 	// cast all states
@@ -162,12 +164,11 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 			return fmt.Errorf("state[%d]: type unimplemented/unrecognized", i)
 		}
 
-		dec := json.NewDecoder(bytes.NewReader(sdata))
-		dec.DisallowUnknownFields()
+		dec = json.NewDecoder(bytes.NewReader(sdata))
+		dec.DisallowUnknownFields() // Force Unknown fields to throw error
 
-		err = dec.Decode(s)
-		if err != nil {
-			return err
+		if err := dec.Decode(&s); err != nil {
+			return fmt.Errorf("failed to decode state[%d]: %s", i, strings.TrimPrefix(err.Error(), "json: "))
 		}
 
 		o.States[i] = s

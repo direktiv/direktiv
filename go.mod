@@ -46,7 +46,7 @@ require (
 	github.com/stripe/safesql v0.2.0 // indirect
 	github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9 // indirect
 	github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f
-	github.com/vorteil/vorteil v0.0.0-20210118015927-442f6212462c
+	github.com/vorteil/vorteil v0.0.0-20210301220102-762be2cd662d
 	github.com/walle/lll v1.0.1 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
