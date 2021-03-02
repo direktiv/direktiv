@@ -22,6 +22,11 @@ const (
 	eventTypeString = "type"
 )
 
+func init() {
+	gob.Register(new(event.EventContextV1))
+	gob.Register(new(event.EventContextV03))
+}
+
 func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 
 	for k, f := range eventMap {
@@ -258,7 +263,7 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 			uid, _ := uuid.Parse(wf)
 			log.Debugf("run workflow %v with %d events", uid, len(retEvents))
 			if len(signature) == 0 {
-				go s.engine.EventsInvoke(uid, ce)
+				go s.engine.EventsInvoke(uid, retEvents...)
 			} else {
 				log.Debugf("calling with signature %v", signature)
 				go s.engine.wakeEventsWaiter(signature, retEvents)
@@ -312,8 +317,6 @@ func (s *WorkflowServer) addEventListenerWait(cevent *cloudevents.Event, id int,
 }
 
 func eventToBytes(cevent cloudevents.Event) []byte {
-
-	gob.Register(new(event.EventContextV1))
 
 	var ev bytes.Buffer
 	enc := gob.NewEncoder(&ev)
