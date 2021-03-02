@@ -39,7 +39,7 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 	// unmarshal top level fields into Workflow
 	data, err := json.Marshal(&m)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("marshal workflow error: %w", err) // This error should be impossible
 	}
 
 	dec := json.NewDecoder(bytes.NewReader(data))
@@ -68,79 +68,61 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 }
 
 // unmStart - unmarshal "start" object to Workflow
-func (o *Workflow) unmStart(m map[string]interface{}) error {
+func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
 	// split start out from the rest
 	y, startFound := m["start"]
 	if startFound {
 		// Start
 
 		delete(m, "start")
-		strMap, ok := y.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid start")
-		}
-
-		strType, ok := strMap["type"]
-		if !ok {
-			return fmt.Errorf("missing 'type' for start")
-		}
-
-		strTypeString, ok := strType.(string)
-		if !ok {
-			return fmt.Errorf("start bad data-format for 'type'")
-		}
-
-		strData, err := json.Marshal(strMap)
+		startMap, startType, err := processInterfaceMap(y)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("bad start: %w", err)
 		}
 
-		start, err := getStartFromType(strTypeString)
+		strData, err := json.Marshal(startMap)
+		if err != nil {
+			return fmt.Errorf("marshal start error: %w", err) // This error should be impossible
+		}
+
+		start, err := getStartFromType(startType)
 		if err != nil {
 			return fmt.Errorf("start: %w", err)
 		}
 
-		err = json.Unmarshal(strData, start)
-		if err != nil {
-			return err
+		dec := json.NewDecoder(bytes.NewReader(strData))
+		dec.DisallowUnknownFields() // Force Unknown fields to throw error
+
+		if err := dec.Decode(&start); err != nil {
+			return fmt.Errorf("failed to decode start: %s", strings.TrimPrefix(err.Error(), "json: "))
 		}
 
 		err = start.Validate()
 		if err != nil {
-			return fmt.Errorf("start invalid: %w", err)
+			err = fmt.Errorf("start invalid: %w", err)
 		}
 
 		o.Start = start
 	}
 
-	return nil
+	return err
 }
 
 // unmState - unmarshal "state" object to Workflow States
 //	the state interface is casted to a supported State 'type'
 //	and then inserted into workflow[sIndex]
 func (o *Workflow) unmState(state interface{}, sIndex int) error {
-	sm, ok := state.(map[string]interface{})
-	if !ok {
-		return fmt.Errorf("invalid state[%d]", sIndex)
-	}
-
-	st, ok := sm["type"]
-	if !ok {
-		return fmt.Errorf("state[%d]: missing 'type' field", sIndex)
-	}
-
-	stype, ok := st.(string)
-	if !ok {
-		return fmt.Errorf("state[%d]: bad data-format for 'type'", sIndex)
-	}
-
-	sdata, err := json.Marshal(sm)
+	stateMap, stateType, err := processInterfaceMap(state)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("state[%d]: %w", sIndex, err)
 	}
 
-	s, err := getStateFromType(stype)
+	sdata, err := json.Marshal(stateMap)
+	if err != nil {
+		return fmt.Errorf("marshal state error: %w", err) // This error should be impossible
+	}
+
+	s, err := getStateFromType(stateType)
 	if err != nil {
 		err = fmt.Errorf("state[%d]: %w", sIndex, err)
 	}

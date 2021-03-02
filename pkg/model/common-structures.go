@@ -131,3 +131,24 @@ func validateTransformJQ(transform string) error {
 
 	return nil
 }
+
+func processInterfaceMap(s interface{}) (map[string]interface{}, string, error) {
+	var iType string
+
+	iMap, ok := s.(map[string]interface{})
+	if !ok {
+		return iMap, iType, errors.New("invalid")
+	}
+
+	iT, ok := iMap["type"]
+	if !ok {
+		return iMap, iType, fmt.Errorf("missing 'type' field")
+	}
+
+	iType, ok = iT.(string)
+	if !ok {
+		return iMap, iType, fmt.Errorf("bad data-format for 'type' field")
+	}
+
+	return iMap, iType, nil
+}
