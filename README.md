@@ -79,7 +79,7 @@ With Vorteil installed (full instructions [here](https://github.com/vorteil/vort
 
 
 
-***Testing Direktiv***
+***Testing Direktiv***:
 
 Download the `direkcli` command-line tool from the [releases page](https://github.com/vorteil/direktiv/releases)  and create your first namespace by running:
 
