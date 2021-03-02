@@ -1132,6 +1132,8 @@ github.com/vorteil/vorteil v0.0.0-20210118015927-442f6212462c h1:/jN0aGYNG56xdl2
 github.com/vorteil/vorteil v0.0.0-20210118015927-442f6212462c/go.mod h1:hCnSQJSsmmV4VOp1/wI3i68+HZHM5Uus68gxE/PlLVg=
 github.com/vorteil/vorteil v0.0.0-20210218050403-7d3e385fabb3 h1:8WnEU2eC2xAWtXbQyL/Iv0T7J1f2vv1za+8gCBTE938=
 github.com/vorteil/vorteil v0.0.0-20210218050403-7d3e385fabb3/go.mod h1:hCnSQJSsmmV4VOp1/wI3i68+HZHM5Uus68gxE/PlLVg=
+github.com/vorteil/vorteil v0.0.0-20210301220102-762be2cd662d h1:aafl3jaTcOwy9lsj9EbSGGXupWQevw7mJRGV7a7MIDY=
+github.com/vorteil/vorteil v0.0.0-20210301220102-762be2cd662d/go.mod h1:K4yl+SJzncz62KXMDVVzjCu8WGdjle7iWJGhBVnChSM=
 github.com/walle/lll v1.0.1 h1:lbK8008fOXbQNYt8daBGUrjvElvlwlE7D7N/9dLP5IQ=
 github.com/walle/lll v1.0.1/go.mod h1:lYxcXzoPhiAHR9eaq+Yv7RYg1nIipLloBCIfPUzfaWQ=
 github.com/willf/bitset v1.1.11-0.20200630133818-d5bec3311243/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
@@ -1152,6 +1154,8 @@ github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
+github.com/zchee/go-qcow2 v0.0.0-20170102190316-9a991fd172f0 h1:dyzM+LWIb64QGUsDUZ2y6e2NkkqejOv8PEv05ajx1co=
+github.com/zchee/go-qcow2 v0.0.0-20170102190316-9a991fd172f0/go.mod h1:XO8ymgJzGFNntEd5L8yc0l1wyz3T5DbQD4lguyldfMA=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738/go.mod h1:dnLIgRNXwCJa5e+c6mIZCrds/GIG4ncV9HhK5PX7jPg=
