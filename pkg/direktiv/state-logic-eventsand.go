@@ -60,7 +60,7 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *wo
 		events = append(events, &sl.state.Events[i].Event)
 	}
 
-	instance.engine.clearEventListeners(instance.id)
+	instance.engine.clearEventListeners(instance.rec)
 	err := instance.engine.listenForEvents(ctx, instance, events, true)
 	if err != nil {
 		return err

@@ -437,19 +437,19 @@ func (we *workflowEngine) softCancelInstance(instanceId string, step int, code, 
 	return we.cancelInstance(instanceId, code, message, true)
 }
 
-func (we *workflowEngine) clearEventListeners(id string) {
-	// TODO
+func (we *workflowEngine) clearEventListeners(rec *ent.WorkflowInstance) {
+	_ = we.db.deleteWorkflowEventListenerByInstanceID(rec.ID)
 }
 
-func (we *workflowEngine) freeResources(id string) {
+func (we *workflowEngine) freeResources(rec *ent.WorkflowInstance) {
 
-	del, err := we.timer.deleteTimersForInstance(id)
+	del, err := we.timer.deleteTimersForInstance(rec.InstanceID)
 	if err != nil {
 		log.Error(err)
 	}
-	log.Debugf("deleted %d timers for instance %v", del, id)
+	log.Debugf("deleted %d timers for instance %v", del, rec.InstanceID)
 
-	we.clearEventListeners(id)
+	we.clearEventListeners(rec)
 
 }
 
@@ -531,7 +531,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 	logger.Info(fmt.Sprintf("Workflow %s.", message))
 
-	we.freeResources(instanceId)
+	we.freeResources(rec)
 
 	if rec.InvokedBy != "" {
 
@@ -666,7 +666,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	log.Debugf("Workflow instance completed: %s", wli.id)
 	wli.Log("Workflow completed.")
 
-	wli.engine.freeResources(wli.id)
+	wli.engine.freeResources(rec)
 
 	wli.wakeCaller(data)
 
@@ -725,7 +725,7 @@ failure:
 
 		wli.Log("Workflow failed with uncatchable error: %s", uerr.Message)
 
-		wli.engine.freeResources(wli.id)
+		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(nil)
 		return
 
@@ -775,7 +775,7 @@ failure:
 		}
 
 		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
-		wli.engine.freeResources(wli.id)
+		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(nil)
 		return
 
@@ -799,7 +799,7 @@ failure:
 
 		log.Errorf("Workflow failed with internal error and the database couldn't be updated: %s", ierr.Error())
 
-		wli.engine.freeResources(wli.id)
+		wli.engine.freeResources(wli.rec)
 
 	} else {
 		log.Errorf("Unwrapped error detected: %v", err)
