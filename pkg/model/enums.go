@@ -291,7 +291,7 @@ const (
 )
 
 var startTypeStrings []string = []string{
-	"",
+	"default",
 	"scheduled",
 	"event",
 	"eventsXor",

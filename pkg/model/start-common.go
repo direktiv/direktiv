@@ -1,6 +1,8 @@
 package model
 
-import "errors"
+import (
+	"errors"
+)
 
 type StartDefinition interface {
 	GetState() string
@@ -63,4 +65,30 @@ func (o *StartCommon) GetState() string {
 
 	return o.State
 
+}
+
+// util
+
+func getStartFromType(startType string) (StartDefinition, error) {
+	var s StartDefinition
+	var err error
+
+	switch startType {
+	case StartTypeScheduled.String():
+		s = new(ScheduledStart)
+	case StartTypeEvent.String():
+		s = new(EventStart)
+	case StartTypeEventsXor.String():
+		s = new(EventsXorStart)
+	case StartTypeEventsAnd.String():
+		s = new(EventsAndStart)
+	case StartTypeDefault.String():
+		s = new(DefaultStart)
+	case "":
+		err = errors.New("type required")
+	default:
+		err = errors.New("type unimplemented/unrecognized")
+	}
+
+	return s, err
 }
