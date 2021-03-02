@@ -45,7 +45,7 @@ func newSecretsServer(config *Config) (*secretsServer, error) {
 
 }
 
-func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace string) (map[string]string, error) {
+func getRegistries(db *dbManager, c *Config, client secrets.SecretsServiceClient, namespace string) (map[string]string, error) {
 
 	r := make(map[string]string)
 
@@ -67,7 +67,11 @@ func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace str
 
 	// add all registries to map
 	for _, s := range ss.Secrets {
-		r[s.GetName()] = string(s.Data)
+		data, err := decryptData(db, namespace, s.GetData())
+		if err != nil {
+			return nil, err
+		}
+		r[s.GetName()] = string(data)
 	}
 
 	return r, nil
@@ -172,7 +176,7 @@ func (ss *secretsServer) GetSecretsWithData(ctx context.Context, in *secrets.Get
 		ls   []*secrets.GetSecretsDataResponse_Secret
 	)
 
-	_, err := ss.db.BucketSecret.
+	res, err := ss.db.BucketSecret.
 		Query().
 		Where(
 			bucketsecret.And(
@@ -183,7 +187,12 @@ func (ss *secretsServer) GetSecretsWithData(ctx context.Context, in *secrets.Get
 	if err != nil {
 		return nil, err
 	}
-
+	for _, bs := range res {
+		ls = append(ls, &secrets.GetSecretsDataResponse_Secret{
+			Name: &bs.Name,
+			Data: bs.Secret,
+		})
+	}
 	resp.Secrets = ls
 
 	return &resp, nil

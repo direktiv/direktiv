@@ -201,7 +201,7 @@ func (wli *workflowLogicInstance) Raise(ctx context.Context, cerr *CatchableErro
 
 	var err error
 
-	if wli.rec.ErrorCode != "" {
+	if wli.rec.ErrorCode == "" {
 		wli.rec, err = wli.rec.Update().
 			SetStatus("failed").
 			SetErrorCode(cerr.Code).

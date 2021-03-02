@@ -233,7 +233,7 @@ var instanceLogsCmd = generateCmd("logs ID", "Grabs all logs for the instance ID
 		os.Exit(1)
 	}
 	for _, log := range logs {
-		fmt.Printf("%s", log.GetMessage())
+		fmt.Println(log.GetMessage())
 	}
 }, cobra.ExactArgs(1))
 
