@@ -265,7 +265,8 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 			if len(signature) == 0 {
 				go s.engine.EventsInvoke(uid, retEvents...)
 			} else {
-				log.Debugf("calling with signature %v", signature)
+				log.Debugf("calling with signature %v", string(signature))
+				s.dbManager.deleteWorkflowEventListener(id)
 				go s.engine.wakeEventsWaiter(signature, retEvents)
 			}
 
