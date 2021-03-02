@@ -506,11 +506,17 @@ func (wli *workflowLogicInstance) scheduleTimeout(t time.Time, soft bool) {
 
 	var err error
 	deadline := t
-	oldId := fmt.Sprintf("timeout:%s:%d", wli.id, wli.step-1)
-	id := fmt.Sprintf("timeout:%s:%d", wli.id, wli.step)
 
+	prefixes := []string{"soft", "hard"}
+	prefix := prefixes[1]
+	if soft {
+		prefix = prefixes[0]
+	}
+
+	oldId := fmt.Sprintf("timeout:%s:%s:%d", wli.id, prefix, wli.step-1)
+	id := fmt.Sprintf("timeout:%s:%s:%d", wli.id, prefix, wli.step)
 	if wli.step == 0 {
-		id = fmt.Sprintf("timeout:%s", wli.id)
+		id = fmt.Sprintf("timeout:%s:%s", wli.id, prefix)
 	}
 
 	// cancel existing timeouts
