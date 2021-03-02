@@ -23,6 +23,52 @@ type Workflow struct {
 }
 
 func (o *Workflow) unmarshal(m map[string]interface{}) error {
+	// split start out from the rest, and umarshal it
+	if err := o.unmStart(m); err != nil {
+		return err
+	}
+
+	// split states out from the rest
+	x, ok := m["states"]
+	if !ok {
+		return errors.New("states required")
+	}
+
+	delete(m, "states")
+
+	// unmarshal top level fields into Workflow
+	data, err := json.Marshal(&m)
+	if err != nil {
+		panic(err)
+	}
+
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields() // Force Unknown fields to throw error
+
+	if err := dec.Decode(&o); err != nil {
+		return fmt.Errorf("failed to decode: %s", strings.TrimPrefix(err.Error(), "json: "))
+	}
+
+	// cast all states
+	list, ok := x.([]interface{})
+	if !ok {
+		return errors.New("invalid type for states")
+	}
+
+	o.States = make([]State, len(list))
+
+	for i := range list {
+		// insert state in workflow.states[i]
+		if err := o.unmState(list[i], i); err != nil {
+			return err
+		}
+	}
+
+	return o.validate()
+}
+
+// unmStart - unmarshal "start" object to Workflow
+func (o *Workflow) unmStart(m map[string]interface{}) error {
 	// split start out from the rest
 	y, startFound := m["start"]
 	if startFound {
@@ -49,21 +95,9 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 			panic(err)
 		}
 
-		var start StartDefinition
-
-		switch strTypeString {
-		case StartTypeScheduled.String():
-			start = new(ScheduledStart)
-		case StartTypeEvent.String():
-			start = new(EventStart)
-		case StartTypeEventsXor.String():
-			start = new(EventsXorStart)
-		case StartTypeEventsAnd.String():
-			start = new(EventsAndStart)
-		case "":
-			return fmt.Errorf("start: type required")
-		default:
-			return fmt.Errorf("start: type unimplemented/unrecognized")
+		start, err := getStartFromType(strTypeString)
+		if err != nil {
+			return fmt.Errorf("start: %w", err)
 		}
 
 		err = json.Unmarshal(strData, start)
@@ -79,114 +113,52 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 		o.Start = start
 	}
 
-	// split states out from the rest
-	x, ok := m["states"]
+	return nil
+}
+
+// unmState - unmarshal "state" object to Workflow States
+//	the state interface is casted to a supported State 'type'
+//	and then inserted into workflow[sIndex]
+func (o *Workflow) unmState(state interface{}, sIndex int) error {
+	sm, ok := state.(map[string]interface{})
 	if !ok {
-		return errors.New("states required")
+		return fmt.Errorf("invalid state[%d]", sIndex)
 	}
 
-	delete(m, "states")
+	st, ok := sm["type"]
+	if !ok {
+		return fmt.Errorf("state[%d]: missing 'type' field", sIndex)
+	}
 
-	data, err := json.Marshal(&m)
+	stype, ok := st.(string)
+	if !ok {
+		return fmt.Errorf("state[%d]: bad data-format for 'type'", sIndex)
+	}
+
+	sdata, err := json.Marshal(sm)
 	if err != nil {
 		panic(err)
 	}
 
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.DisallowUnknownFields() // Force Unknown fields to throw error
-
-	if err := dec.Decode(&o); err != nil {
-		return fmt.Errorf("failed to decode: %s", strings.TrimPrefix(err.Error(), "json: "))
-	}
-
-	// cast all states
-	list, ok := x.([]interface{})
-	if !ok {
-		return errors.New("invalid type for states")
-	}
-
-	o.States = make([]State, len(list))
-
-	for i := range list {
-
-		sm, ok := list[i].(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid state[%d]", i)
-		}
-
-		st, ok := sm["type"]
-		if !ok {
-			return fmt.Errorf("missing 'type' for state[%d]", i)
-		}
-
-		stype, ok := st.(string)
-		if !ok {
-			return fmt.Errorf("state[%d]: bad data-format for 'type'", i)
-		}
-
-		sdata, err := json.Marshal(sm)
-		if err != nil {
-			panic(err)
-		}
-
-		var s State
-
-		switch stype {
-		case StateTypeSwitch.String():
-			s = new(SwitchState)
-		case StateTypeForEach.String():
-			s = new(ForEachState)
-		case StateTypeAction.String():
-			s = new(ActionState)
-		case StateTypeConsume.String():
-			s = new(ConsumeEventState)
-		case StateTypeDelay.String():
-			s = new(DelayState)
-		case StateTypeEventsAnd.String():
-			s = new(EventsAndState)
-		case StateTypeEventsXor.String():
-			s = new(EventsXorState)
-		case StateTypeError.String():
-			s = new(ErrorState)
-		case StateTypeGenerateEvent.String():
-			s = new(GenerateEventState)
-		case StateTypeNoop.String():
-			s = new(NoopState)
-		case StateTypeValidate.String():
-			s = new(ValidateState)
-		case StateTypeCallback.String():
-			s = new(CallbackState)
-		case StateTypeParallel.String():
-			s = new(ParallelState)
-		case "":
-			return fmt.Errorf("state[%d]: type required", i)
-		default:
-			return fmt.Errorf("state[%d]: type unimplemented/unrecognized", i)
-		}
-
-		dec = json.NewDecoder(bytes.NewReader(sdata))
-		dec.DisallowUnknownFields() // Force Unknown fields to throw error
-
-		if err := dec.Decode(&s); err != nil {
-			return fmt.Errorf("failed to decode state[%d]: %s", i, strings.TrimPrefix(err.Error(), "json: "))
-		}
-
-		o.States[i] = s
-
-		err = s.Validate()
-		if err != nil {
-			return fmt.Errorf("state[%d]: %w", i, err)
-		}
-
-	}
-
-	err = o.validate()
+	s, err := getStateFromType(stype)
 	if err != nil {
-		return err
+		err = fmt.Errorf("state[%d]: %w", sIndex, err)
 	}
 
-	return nil
+	dec := json.NewDecoder(bytes.NewReader(sdata))
+	dec.DisallowUnknownFields() // Force Unknown fields to throw error
+	if err := dec.Decode(&s); err != nil {
+		return fmt.Errorf("failed to decode state[%d]: %s", sIndex, strings.TrimPrefix(err.Error(), "json: "))
+	}
 
+	o.States[sIndex] = s
+
+	err = s.Validate()
+	if err != nil {
+		err = fmt.Errorf("state[%d]: %w", sIndex, err)
+	}
+
+	return err
 }
 
 func (o *Workflow) validate() error {
@@ -267,11 +239,7 @@ func (o *Workflow) validate() error {
 	}
 
 	// timeout
-	if sErr := o.Timeouts.Validate(); sErr != nil {
-		return sErr
-	}
-
-	return nil
+	return o.Timeouts.Validate()
 
 }
 
