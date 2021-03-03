@@ -64,7 +64,7 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, instance *workflowLog
 		var events []*model.ConsumeEventDefinition
 		events = append(events, sl.state.Event)
 
-		instance.engine.clearEventListeners(instance.id)
+		instance.engine.clearEventListeners(instance.rec)
 
 		err = instance.engine.listenForEvents(ctx, instance, events, false)
 		if err != nil {
