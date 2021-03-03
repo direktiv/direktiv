@@ -23,6 +23,7 @@ const (
 type dbManager struct {
 	dbEnt *ent.Client
 	ctx   context.Context
+	tm    *timerManager
 }
 
 func newDBManager(ctx context.Context, conn string) (*dbManager, error) {

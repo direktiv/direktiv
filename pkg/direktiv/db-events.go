@@ -12,6 +12,8 @@ import (
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 	"github.com/vorteil/direktiv/pkg/model"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func (db *dbManager) deleteWorkflowEventWait(id int) error {
@@ -27,9 +29,12 @@ func (db *dbManager) deleteWorkflowEventWait(id int) error {
 
 func (db *dbManager) deleteWorkflowEventListener(id int) error {
 
-	db.deleteWorkflowEventWaitByListenerID(id)
+	err := db.deleteWorkflowEventWaitByListenerID(id)
+	if err != nil {
+		log.Errorf("can not delete event listeners wait for event listener: %v", err)
+	}
 
-	_, err := db.dbEnt.WorkflowEvents.
+	_, err = db.dbEnt.WorkflowEvents.
 		Delete().
 		Where(workflowevents.IDEQ(id)).
 		Exec(db.ctx)
@@ -100,7 +105,6 @@ func (db *dbManager) processWorkflowEvents(ctx context.Context, tx *ent.Tx,
 		// delete everything event related
 		wfe, err := db.getWorkflowEventByWorkflowUID(wf.ID)
 		if err == nil {
-			db.deleteWorkflowEventWaitByListenerID(wfe.ID)
 			db.deleteWorkflowEventListener(wfe.ID)
 		}
 
