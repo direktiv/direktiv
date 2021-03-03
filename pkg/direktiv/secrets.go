@@ -255,13 +255,16 @@ func decryptedDataForNS(ctx context.Context, instance *workflowLogicInstance, ns
 		Name:      &name,
 	})
 	if err != nil {
-		return nil, err
+		if ent.IsNotFound(err) {
+			return nil, NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", name)
+		}
+		return nil, NewInternalError(err)
 	}
 
 	// decrypt data with key of namespace
 	dd, err = decryptData(instance.engine.server.dbManager, ns, resp.GetData())
 	if err != nil {
-		return nil, err
+		return nil, NewInternalError(err)
 	}
 
 	return dd, nil
