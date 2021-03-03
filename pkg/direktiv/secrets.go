@@ -14,6 +14,8 @@ import (
 	"github.com/vorteil/direktiv/pkg/secrets/ent"
 	"github.com/vorteil/direktiv/pkg/secrets/ent/bucketsecret"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -136,6 +138,9 @@ func (ss *secretsServer) RetrieveSecret(ctx context.Context, in *secrets.Secrets
 		Only(context.Background())
 
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, status.Errorf(codes.NotFound, "secret '%s' not found", in.GetName())
+		}
 		return nil, err
 	}
 
@@ -255,7 +260,8 @@ func decryptedDataForNS(ctx context.Context, instance *workflowLogicInstance, ns
 		Name:      &name,
 	})
 	if err != nil {
-		if ent.IsNotFound(err) {
+		s := status.Convert(err)
+		if s.Code() == codes.NotFound {
 			return nil, NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", name)
 		}
 		return nil, NewInternalError(err)
