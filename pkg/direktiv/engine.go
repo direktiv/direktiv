@@ -443,11 +443,11 @@ func (we *workflowEngine) clearEventListeners(rec *ent.WorkflowInstance) {
 
 func (we *workflowEngine) freeResources(rec *ent.WorkflowInstance) {
 
-	del, err := we.timer.deleteTimersForInstance(rec.InstanceID)
+	err := we.timer.deleteTimersForInstance(rec.InstanceID)
 	if err != nil {
 		log.Error(err)
 	}
-	log.Debugf("deleted %d timers for instance %v", del, rec.InstanceID)
+	log.Debugf("deleted timers for instance %v", rec.InstanceID)
 
 	we.clearEventListeners(rec)
 

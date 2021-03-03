@@ -12,6 +12,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/model"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 func (db *dbManager) addWorkflow(ctx context.Context, ns, name, description string, active bool,
@@ -108,6 +109,21 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 		return err
 	}
 
+	// delete all event listeners and events
+	uid, _ := uuid.Parse(id)
+	wfe, err := db.getWorkflowEventByWorkflowUID(uid)
+	if err == nil {
+		db.deleteWorkflowEventListener(wfe.ID)
+	}
+
+	// delete all workflow instances
+	err = db.deleteWorkflowInstancesByWorkflow(ctx, u)
+	if err != nil {
+		log.Errorf("can not delete workflow instances: %v", err)
+	}
+
+	// delete cron
+
 	i, err := db.dbEnt.Workflow.Delete().
 		Where(workflow.IDEQ(u)).
 		Exec(ctx)
@@ -118,14 +134,6 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 
 	if i == 0 {
 		return fmt.Errorf("workflow with id %s does not exist", id)
-	}
-
-	// delete all event listeners and events
-	uid, _ := uuid.Parse(id)
-	wfe, err := db.getWorkflowEventByWorkflowUID(uid)
-	if err == nil {
-		db.deleteWorkflowEventWaitByListenerID(wfe.ID)
-		db.deleteWorkflowEventListener(wfe.ID)
 	}
 
 	return nil

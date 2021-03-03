@@ -129,6 +129,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		if err != nil {
 			return nil, err
 		}
+		s.dbManager.tm = s.tmManager
 	}
 
 	if s.runsComponent(runsIsolates) {

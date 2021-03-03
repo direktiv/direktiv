@@ -415,7 +415,7 @@ func (tm *timerManager) addOneShot(name, fn string, time time.Time, data []byte)
 
 }
 
-func (tm *timerManager) deleteTimersForInstance(name string) (int, error) {
+func (tm *timerManager) deleteTimersForInstance(name string) error {
 
 	log.Debugf("deleting timers for instance %s", name)
 
@@ -439,11 +439,11 @@ func (tm *timerManager) deleteTimersForInstance(name string) (int, error) {
 	for _, p := range patterns {
 		err := delT(p, name)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
-	return 0, nil
+	return nil
 }
 
 const (
@@ -507,7 +507,7 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 			return err
 		}
 
-		err = tm.server.dbManager.dbEnt.WorkflowInstance.DeleteOneID(wfi.ID).Exec(ctx)
+		err = tm.server.dbManager.deleteWorkflowInstance(wfi.ID)
 		if err != nil {
 			return err
 		}
