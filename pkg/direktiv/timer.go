@@ -408,9 +408,9 @@ func (tm *timerManager) addCron(name, fn, pattern string, data []byte) (*timerIt
 
 }
 
-func (tm *timerManager) addOneShot(name, fn string, time time.Time, data []byte) (*timerItem, error) {
+func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byte) (*timerItem, error) {
 
-	utc := time.UTC()
+	utc := timeos.UTC()
 	return tm.newTimerItem(name, fn, data, &utc, "", nil, needsSyncRequest)
 
 }
