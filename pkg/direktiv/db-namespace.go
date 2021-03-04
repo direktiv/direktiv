@@ -52,19 +52,6 @@ func (db *dbManager) addNamespace(ctx context.Context, name string) (*ent.Namesp
 
 func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 
-	i, err := db.dbEnt.Namespace.
-		Delete().
-		Where(namespace.IDEQ(name)).
-		Exec(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	if i == 0 {
-		return fmt.Errorf("namespace %s does not exist", name)
-	}
-
 	// delete all workflows
 	wfs, err := db.getWorkflows(ctx, name, 0, 0)
 	if err != nil {
@@ -76,6 +63,19 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 		if err != nil {
 			log.Errorf("can not delete workflow %s from namespace %s", w.Name, name)
 		}
+	}
+
+	i, err := db.dbEnt.Namespace.
+		Delete().
+		Where(namespace.IDEQ(name)).
+		Exec(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if i == 0 {
+		return fmt.Errorf("namespace %s does not exist", name)
 	}
 
 	return nil
