@@ -353,30 +353,9 @@ func findAuthForRegistry(img string, registries map[string]string) []remote.Opti
 
 }
 
-func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
+func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolate.RunIsolateRequest, log15log dlog.Logger) {
 
-	var (
-		ns, instID, isolateID string
-		img, cmd              string
-
-		data, din []byte
-	)
-
-	ns = in.GetNamespace()
-	isolateID = in.GetActionId()
-
-	log.Debugf("isolate action id: %v", isolateID)
-
-	img = in.GetImage()
-	cmd = in.GetCommand()
-	instID = in.GetInstanceId()
-
-	log15log, err := (*is.instanceLogger).LoggerFunc(ns, instID)
-	if err != nil {
-		log.Errorf("can not create logger for isolate: %v", err)
-		return
-	}
-	defer log15log.Close()
+	var data, din []byte
 
 	serr := func(err error, errCode string) *IsolateError {
 		ae := IsolateError{
@@ -500,6 +479,40 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 		is.respondToAction(nil, data, in)
 
 	}()
+
+}
+
+func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
+
+	var (
+		ns, instID, isolateID string
+		img, cmd              string
+
+		// data, din []byte
+	)
+
+	ns = in.GetNamespace()
+	isolateID = in.GetActionId()
+
+	log.Debugf("isolate action id: %v", isolateID)
+
+	img = in.GetImage()
+	cmd = in.GetCommand()
+	instID = in.GetInstanceId()
+
+	log15log, err := (*is.instanceLogger).LoggerFunc(ns, instID)
+	if err != nil {
+		log.Errorf("can not create logger for isolate: %v", err)
+		return
+	}
+	defer log15log.Close()
+
+	log.Debugf("isolation level: %v", is.config.IsolateAPI.Isolation)
+	if is.config.IsolateAPI.Isolation == "container" {
+		is.runAsContainer(img, cmd, isolateID, in, log15log)
+	} else {
+		is.runAsFirecracker(img, cmd, isolateID, in, log15log)
+	}
 
 }
 

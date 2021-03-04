@@ -23,6 +23,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/gordonklaus/ineffassign v0.0.0-20210225214923-2e10b2664254 // indirect
 	github.com/h2non/filetype v1.1.1 // indirect
+	github.com/hashicorp/hcl v1.0.0
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
 	github.com/jgautheron/goconst v0.0.0-20201117150253-ccae5bf973f3 // indirect

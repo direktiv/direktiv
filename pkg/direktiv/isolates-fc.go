@@ -56,7 +56,7 @@ func (is *isolateServer) buildDataDisk(name string, data []byte, nws networkSett
 	defer file.Close()
 
 	// create data.in
-	ioutil.WriteFile(filepath.Join(dir, "data.in"), data, 0755)
+	ioutil.WriteFile(filepath.Join(dir, direktivData), data, 0755)
 
 	b, err := json.Marshal(nws)
 	if err != nil {

@@ -4,19 +4,19 @@
 
 [[program]]
   args = "minio --config-dir=/tmp --certs-dir=/miniocerts server /data"
-  env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=demo", "MINIO_SECRET_KEY=password"]
+  env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=vorteil", "MINIO_SECRET_KEY=vorteilvorteil"]
 
 [[program]]
   args = "/bin/direktiv -d -t wis -c /etc/conf.toml"
-  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin"]
+  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/bin", "DIREKTIV_INGRESS_BIND=0.0.0.0:6666"]
   bootstrap = ["WAIT_PORT if=eth0 9000"]
 
 [[network]]
-  https = ["8888"]
+  https = ["6666"]
 
 [vm]
   ram = "1024 MiB"
   disk-size = "+2048 MiB"
 
 [system]
-  kernel-args="loglevel=1"
+  kernel-args="shm=10M loglevel=1"
