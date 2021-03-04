@@ -22,11 +22,13 @@ COPY conf.toml /etc
 COPY direktiv /bin/direktiv
 RUN chmod 755 /bin/direktiv
 
-COPY run.sh /
-RUN chmod 755 /run.sh
-
 RUN mkdir -p /data && chmod 755 /bin/minio
 
 RUN apk --no-cache add sudo
+
+RUN apk add podman --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+
+COPY run.sh /
+RUN chmod 755 /run.sh
 
 CMD /run.sh

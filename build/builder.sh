@@ -58,7 +58,8 @@ if [ "$1" = "true" ] ; then
   apk add postgresql postgresql-contrib
 fi
 
-apk add ca-certificates iptables ip6tables device-mapper udev make go openssl
+apk add ca-certificates iptables ip6tables device-mapper udev make go openssl util-linux
+apk add podman --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 create_certs
 install_firecracker

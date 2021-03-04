@@ -51,14 +51,12 @@ const (
 
 	certDir    = "DIREKTIV_CERTS"
 	certSecure = "DIREKTIV_SECURE"
+
+	isolation = "DIREKTIV_ISOLATION"
 )
 
 // Config is the configuration for workflow and runner server
 type Config struct {
-	// IP, ActionIP, FlowIP, HealthIP, IngressIP     net.IP
-	// Port, ActionPort, FlowIP, HealthIP, IngressIP int
-	// ActionFlowEndpoint string
-
 	FlowAPI struct {
 		Bind     string
 		Endpoint string
@@ -78,8 +76,9 @@ type Config struct {
 	} `toml:"ingressAPI"`
 
 	IsolateAPI struct {
-		Bind     string
-		Endpoint string
+		Bind      string
+		Endpoint  string
+		Isolation string
 	} `toml:"isolateAPI"`
 
 	SecretsAPI struct {
@@ -179,6 +178,7 @@ func ReadConfig(file string) (*Config, error) {
 
 	c.IsolateAPI.Bind = fmt.Sprintf("%s:8888", localIP)
 	c.IsolateAPI.Endpoint = c.IsolateAPI.Bind
+	c.IsolateAPI.Isolation = "vorteil"
 
 	c.SecretsAPI.Bind = fmt.Sprintf("%s:2610", localIP)
 	c.SecretsAPI.Endpoint = c.SecretsAPI.Bind
@@ -253,6 +253,7 @@ func ReadConfig(file string) (*Config, error) {
 		{secretsEndpoint, &c.SecretsAPI.Endpoint},
 		{secretsConn, &c.SecretsAPI.DB},
 		{certDir, &c.Certs.Directory},
+		{isolation, &c.IsolateAPI.Isolation},
 	}
 
 	for _, i := range strings {
