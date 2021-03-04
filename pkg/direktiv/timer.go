@@ -184,8 +184,11 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 		return
 	}
 
+	log.Debugf("execute timer %s", ti.dbItem.Name)
+
 	// get lock
-	hash, _ := hashstructure.Hash(fmt.Sprintf("%d%s", ti.dbItem.ID, ti.dbItem.Name), hashstructure.FormatV2, nil)
+	hash, _ := hashstructure.Hash(fmt.Sprintf("%d%s", ti.dbItem.ID, ti.dbItem.Name),
+		hashstructure.FormatV2, nil)
 	hasLock, conn, err := tm.server.dbManager.tryLockDB(hash)
 	if err != nil {
 		log.Debugf("can not get lock %d", ti.dbItem.ID)
@@ -194,7 +197,11 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 
 	if hasLock {
 
-		defer tm.server.dbManager.unlockDB(hash, conn)
+		unlock := func(hashin uint64) {
+			time.Sleep(10 * time.Second)
+			tm.server.dbManager.unlockDB(hashin, conn)
+		}
+		defer unlock(hash)
 
 		if ti.timerType == timerTypeOneShot {
 			tm.disableTimer(ti, true, needsSyncRequest)
@@ -205,6 +212,8 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 			log.Errorf("can not run function for %s: %v", ti.dbItem.Name, err)
 		}
 
+	} else {
+		log.Debugf("timer already locked %s", ti.dbItem.Name)
 	}
 
 }
