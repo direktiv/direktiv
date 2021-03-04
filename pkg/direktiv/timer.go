@@ -198,6 +198,8 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 	if hasLock {
 
 		unlock := func(hashin uint64) {
+			// delay the unlock to make sure minimal tiome offsets accross a cluster
+			// does not make that fire a second time if the executin is fast
 			time.Sleep(10 * time.Second)
 			tm.server.dbManager.unlockDB(hashin, conn)
 		}
