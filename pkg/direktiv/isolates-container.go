@@ -144,10 +144,8 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	log.Debugf("run container %v with command %v", img, cmd)
 
 	podman := exec.CommandContext(ctxs.ctx, "podman", args...)
-	// podman.Stdout = stdout
-	// podman.Stderr = stderr
-	podman.Stdout = os.Stdout
-	podman.Stderr = os.Stderr
+	podman.Stdout = stdout
+	podman.Stderr = stderr
 
 	log.Debugf("podman cmd: %v", podman)
 

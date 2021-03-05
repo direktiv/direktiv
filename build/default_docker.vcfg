@@ -8,7 +8,7 @@
 
 [[program]]
   args = "/bin/direktiv -d -t wis -c /etc/conf.toml"
-  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin",
+  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/bin",
 		"DIREKTIV_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
 		"DIREKTIV_SECRETS_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
 		"DIREKTIV_MINIO_USER=demo",
@@ -28,5 +28,5 @@
   disk-size = "+2048 MiB"
 
 [system]
-  kernel-args="loglevel=1"
+  kernel-args="shm=10M loglevel=1"
   user = "postgres"

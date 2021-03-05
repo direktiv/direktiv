@@ -12,17 +12,17 @@
 
 [![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
-> 
+>
 >
 > **Check out our online demo: [wf.direktiv.io](https://wf.direktiv.io)**
-> 
+>
 >  
 
 ## What is Direktiv?
 
 Direktiv is a specification for a serverless computing workflow language that aims to be simple and powerful above all else.
 
-Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run containers as part of Direktiv workflows just about any logic can be implemented. 
+Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run containers as part of Direktiv workflows just about any logic can be implemented.
 
 Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
 
@@ -48,13 +48,22 @@ This repository contains a reference implementation that runs Docker containers 
 
 ### Starting the Server
 
-Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker:
+Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. Direktiv's defaul isolation level is firecracker based on vorteil
+machines. This behaviour can be changed in the configuration file or via environment variable.
 
 ****
 
 ***Using Docker:***
 
-`docker run --net=host --privileged vorteil/direktiv`. 
+_Firecracker Isolation_
+
+
+`docker run --privileged -p6666:6666 -eDIREKTIV_INGRESS_BIND=0.0.0.0:6666 vorteil/direktiv`
+
+
+_Container Isolation:_
+
+`docker run --privileged -p6666:6666 -eDIREKTIV_INGRESS_BIND=0.0.0.0:6666 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
 
 *Note: *
 
@@ -74,8 +83,12 @@ Getting a local playground environment can be easily done with either [Vorteil.i
 
 With Vorteil installed (full instructions [here](https://github.com/vorteil/vorteil)):
 
- 1. download `direktiv.vorteil` from the [releases page](https://github.com/vorteil/direktiv/releases), 
- 2. run `vorteil run direktiv.vorteil` from within your downloads folder.
+ 1. download `direktiv.vorteil` from the [releases page](https://github.com/vorteil/direktiv/releases),
+ 2. run one of the following commands from within your downloads folder:
+
+  `vorteil run direktiv.vorteil` for firecracker/vorteil isolation
+
+   `vorteil run --program[2].env="DIREKTIV_ISOLATION=container" direktiv.vorteil` for container isolation
 
 
 
@@ -100,7 +113,7 @@ $ direkcli namespaces list
 
 ### Workflow specification
 
-The below example is the minimal configuration needed for a workflow, following the [workflow language specification](https://docs.direktiv.io/docs/specification.html): 
+The below example is the minimal configuration needed for a workflow, following the [workflow language specification](https://docs.direktiv.io/docs/specification.html):
 
 ```yaml
 id: helloworld
