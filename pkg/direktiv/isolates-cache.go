@@ -213,6 +213,8 @@ func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 	}
 
 	fc.spaceLeft -= sz
+	log.Debugf("cache space left %v", fc.spaceLeft)
+
 	fc.items[key] = &cacheItem{
 		lastAccessed: time.Now(),
 		lastChanged:  t,
