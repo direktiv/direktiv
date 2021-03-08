@@ -17,6 +17,8 @@ import (
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/model"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 type workflowLogicInstance struct {
@@ -61,7 +63,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input
 	}
 
 	if !rec.Active {
-		return nil, NewInternalError(errors.New("workflow inactive"))
+		return nil, grpc.Errorf(codes.InvalidArgument, "workflow is inactive")
 	}
 
 	wf := new(model.Workflow)
