@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"code.cloudfoundry.org/bytefmt"
@@ -32,6 +33,7 @@ type cacheItem struct {
 type fileCache struct {
 	items         map[string]*cacheItem
 	spaceLeft     int64
+	mtx           sync.Mutex
 	isolateServer *isolateServer
 }
 
@@ -198,7 +200,7 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 func (fc *fileCache) removeItem(key string) {
 
 	if i, ok := fc.items[key]; ok {
-		fc.spaceLeft = +i.size
+		fc.spaceLeft += i.size
 		delete(fc.items, key)
 		os.Remove(filepath.Join(cacheDir, key))
 	}
@@ -206,6 +208,9 @@ func (fc *fileCache) removeItem(key string) {
 }
 
 func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
+
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
 
 	err := fc.checkCacheSize(sz)
 	if err != nil {
