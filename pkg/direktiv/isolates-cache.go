@@ -199,6 +199,8 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 
 func (fc *fileCache) removeItem(key string) {
 
+	log.Debugf("remove %s from cache", key)
+
 	if i, ok := fc.items[key]; ok {
 		fc.spaceLeft += i.size
 		delete(fc.items, key)
@@ -231,6 +233,9 @@ func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 }
 
 func (fc *fileCache) checkCacheSize(sz int64) error {
+
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
 
 	if fc.spaceLeft > sz {
 		fc.spaceLeft -= sz
