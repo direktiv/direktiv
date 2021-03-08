@@ -150,11 +150,15 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 		}
 		if !upd {
 			return disk, nil
-		} else {
-			delete(fc.items, h)
-			os.Remove(disk)
-			fc.isolateServer.removeImageS3(img, cmd)
 		}
+
+		fc.mtx.Lock()
+		delete(fc.items, h)
+		os.Remove(disk)
+		fc.mtx.Unlock()
+
+		fc.isolateServer.removeImageS3(img, cmd)
+
 	}
 
 	err = fc.isolateServer.retrieveImageS3(img, cmd, disk)
@@ -211,13 +215,13 @@ func (fc *fileCache) removeItem(key string) {
 
 func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 
-	fc.mtx.Lock()
-	defer fc.mtx.Unlock()
-
 	err := fc.checkCacheSize(sz)
 	if err != nil {
 		return err
 	}
+
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
 
 	fc.spaceLeft -= sz
 	log.Debugf("cache space left %v", fc.spaceLeft)
