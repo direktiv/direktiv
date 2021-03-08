@@ -57,6 +57,13 @@ func grpcDatabaseError(err error, otype, oval string) error {
 		}
 	}
 
+	// Handle GRPC errors
+	if _, ok := err.(interface {
+		GRPCStatus() *status.Status
+	}); ok {
+		return err
+	}
+
 	log.Errorf("%v", NewInternalErrorWithDepth(err, 2))
 
 	err = grpcErrInternal
