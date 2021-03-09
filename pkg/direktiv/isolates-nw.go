@@ -12,16 +12,27 @@ import (
 
 const (
 	cniConf = `
-  	{
+  {
     "name": "direktiv-net",
     "cniVersion": "0.4.0",
     "plugins": [
       {
-        "type": "ptp",
-  			"ipMasq": true,
-  			"ipam": {
+        "type": "bridge",
+"isDefaultGateway": true,
+"bridge": "cni-direktiv",
+  "ipMasq": true,
+"hairpinMode": false,
+  "ipam": {
           "type": "host-local",
-          "subnet": "10.77.0.0/16"
+"routes": [{ "dst": "0.0.0.0/0" }],
+"ranges": [
+          [
+            {
+              "subnet": "10.88.0.0/16",
+              "gateway": "10.88.0.1"
+            }
+          ]
+        ]
         }
       },
       {
