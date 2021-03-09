@@ -7,6 +7,7 @@ require (
 	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	entgo.io/ent v0.6.0
+	github.com/AdguardTeam/dnsproxy v0.35.4 // indirect
 	github.com/alecthomas/gocyclo v0.0.0-20150208221726-aa8f8b160214 // indirect
 	github.com/alexkohler/nakedret v1.0.0 // indirect
 	github.com/appc/spec v0.8.11

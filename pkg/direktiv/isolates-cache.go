@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"code.cloudfoundry.org/bytefmt"
@@ -32,6 +33,7 @@ type cacheItem struct {
 type fileCache struct {
 	items         map[string]*cacheItem
 	spaceLeft     int64
+	mtx           sync.Mutex
 	isolateServer *isolateServer
 }
 
@@ -148,11 +150,15 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 		}
 		if !upd {
 			return disk, nil
-		} else {
-			delete(fc.items, h)
-			os.Remove(disk)
-			fc.isolateServer.removeImageS3(img, cmd)
 		}
+
+		fc.mtx.Lock()
+		delete(fc.items, h)
+		os.Remove(disk)
+		fc.mtx.Unlock()
+
+		fc.isolateServer.removeImageS3(img, cmd)
+
 	}
 
 	err = fc.isolateServer.retrieveImageS3(img, cmd, disk)
@@ -197,8 +203,10 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 
 func (fc *fileCache) removeItem(key string) {
 
+	log.Debugf("remove %s from cache", key)
+
 	if i, ok := fc.items[key]; ok {
-		fc.spaceLeft = +i.size
+		fc.spaceLeft += i.size
 		delete(fc.items, key)
 		os.Remove(filepath.Join(cacheDir, key))
 	}
@@ -212,7 +220,12 @@ func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 		return err
 	}
 
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
+
 	fc.spaceLeft -= sz
+	log.Debugf("cache space left %v", fc.spaceLeft)
+
 	fc.items[key] = &cacheItem{
 		lastAccessed: time.Now(),
 		lastChanged:  t,
@@ -224,6 +237,9 @@ func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 }
 
 func (fc *fileCache) checkCacheSize(sz int64) error {
+
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
 
 	if fc.spaceLeft > sz {
 		fc.spaceLeft -= sz

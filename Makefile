@@ -16,6 +16,14 @@ mkfile_dir_main := $(dir $(mkfile_path_main))
 include build/build.mk
 
 # run minio on vorteil
+.PHONY: build-tc-redirect-tap
+build-tc-redirect-tap:
+	wget https://github.com/awslabs/tc-redirect-tap/archive/master.zip;
+	unzip -o master.zip;
+	cd tc-redirect-tap-master && GOPATH=/tmp GOCACHE=/tmp make && cp tc-redirect-tap /opt/cni/bin && cd ..
+	rm -Rf master.zip && rm -Rf tc-redirect-tap-master
+
+# run minio on vorteil
 .PHONY: run-minio
 run-minio:
 	if [ ! -f ${mkfile_dir_main}/minio ]; then \

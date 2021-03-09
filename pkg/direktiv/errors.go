@@ -10,6 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
+	"github.com/vorteil/direktiv/ent/schema"
 )
 
 var grpcErrInternal = status.Error(codes.Internal, "internal error")
@@ -48,6 +49,19 @@ func grpcDatabaseError(err error, otype, oval string) error {
 		if strings.Contains(err.Error(), "duplicate key value") {
 			return status.Errorf(codes.AlreadyExists, "%s '%s' already exists", otype, oval)
 		}
+	}
+
+	if ent.IsValidationError(err) {
+		if strings.HasSuffix(err.Error(), `"description": value is greater than the required length`) {
+			return status.Errorf(codes.InvalidArgument, "description is greater than max length of %v bytes", schema.MaxLenDescription)
+		}
+	}
+
+	// Handle GRPC errors
+	if _, ok := err.(interface {
+		GRPCStatus() *status.Status
+	}); ok {
+		return err
 	}
 
 	log.Errorf("%v", NewInternalErrorWithDepth(err, 2))

@@ -156,7 +156,12 @@ Input: {
 Output: {"msg":"Hello, Alan!"}
 ```
 
+### Roadmap
 
+- Installation instructions (Kubernetes, Non-Kubernetes environments, Container/Vorteil setting)
+- Providing individual vorteil / docker containers for individual components (workflow, isolates etc.)
+- HTTP API & Simple UI
+- Service Mesh configuration
 
 ### Code of Conduct
 

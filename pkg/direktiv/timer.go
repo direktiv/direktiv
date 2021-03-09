@@ -206,6 +206,7 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 		defer unlock(hash)
 
 		if ti.timerType == timerTypeOneShot {
+			log.Debugf("%s is one shot, disable (execute)", ti.dbItem.Name)
 			tm.disableTimer(ti, true, needsSyncRequest)
 		}
 
@@ -309,7 +310,8 @@ func (tm *timerManager) stopTimers() {
 	<-ctx.Done()
 
 	for _, ti := range tm.timers {
-		tm.disableTimer(ti, false, needsSyncRequest)
+		log.Debugf("%s is one shot, disable (stopTimers)", ti.dbItem.Name)
+		tm.disableTimer(ti, false, skipSyncRequest)
 	}
 
 	log.Debugf("timers stopped")
