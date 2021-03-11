@@ -494,8 +494,6 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 	var (
 		ns, instID, isolateID string
 		img, cmd              string
-
-		// data, din []byte
 	)
 
 	ns = in.GetNamespace()
@@ -573,11 +571,14 @@ func (is *isolateServer) retrieveImageS3(img, cmd, path string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+	// only encrypt if SSL
+	receiveOptions := minio.GetObjectOptions{}
+	if is.config.Minio.SSL > 0 {
+		encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+		receiveOptions.ServerSideEncryption = encryption
+	}
 
-	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, minio.GetObjectOptions{
-		ServerSideEncryption: encryption,
-	})
+	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, receiveOptions)
 
 }
 
@@ -585,10 +586,14 @@ func (is *isolateServer) storeImageS3(img, cmd, disk string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
-	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, minio.PutObjectOptions{
-		ServerSideEncryption: encryption,
-	})
+	// only encrypt if SSL
+	storeOptions := minio.PutObjectOptions{}
+	if is.config.Minio.SSL > 0 {
+		encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+		storeOptions.ServerSideEncryption = encryption
+	}
+
+	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, storeOptions)
 
 	t := time.Now().Add((7 * 24) * time.Hour)
 	is.minioClient.PutObjectRetention(context.Background(), direktivBucket, h, minio.PutObjectRetentionOptions{

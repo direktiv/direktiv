@@ -84,18 +84,59 @@ type cowDisk struct {
 	cowDisk, finalDisk string
 }
 
+func cleanupCOW(name string, cd cowDisk) {
+
+	cleanFile := func(path string) {
+		if len(path) > 0 {
+			os.Remove(path)
+		}
+	}
+
+	detachFile := func(dev losetup.Device) {
+		if len(dev.Path()) > 0 {
+			dev.Detach()
+		}
+	}
+
+	detachFile(cd.devRoot)
+	detachFile(cd.devCow)
+
+	cmd := exec.Command("dmsetup", "remove", "-f", name)
+	cmd.Run()
+
+	cleanFile(cd.finalDisk)
+	cleanFile(cd.cowDisk)
+
+}
+
 // this takes raw disk and cow disk and does losetup & dmsetup
 // firecracker jailer can not link it so we do a mknod in /tmp and use
 // this in jailer
 func createCOWDisk(name, disk string) (cowDisk, error) {
 
-	var cd cowDisk
+	var (
+		cd  cowDisk
+		err error
+		c   *os.File
+	)
+
+	// mutex loop devices
+	loopMtx.Lock()
+	defer loopMtx.Unlock()
+
+	// we need to cleanup if something fails
+	defer func() {
+		if err != nil {
+			cleanupCOW(name, cd)
+		}
+	}()
+
 	cd.cowDisk = filepath.Join(os.TempDir(), fmt.Sprintf("%s.cow", name))
 
 	log.Debugf("create cow disk: %v, %v", name, disk)
 
 	// create empty file
-	c, err := os.Create(cd.cowDisk)
+	c, err = os.Create(cd.cowDisk)
 	if err != nil {
 		return cd, err
 	}
@@ -112,18 +153,16 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	}
 	os.Chmod(cd.cowDisk, 0777)
 
-	// mutex loop devices
-	loopMtx.Lock()
-	defer loopMtx.Unlock()
-
 	// attach losetup
 	cd.devRoot, err = losetup.Attach(disk, 0, true)
 	if err != nil {
+		log.Errorf("error loop disk: %v", err)
 		return cd, err
 	}
 
 	cd.devCow, err = losetup.Attach(cd.cowDisk, 0, false)
 	if err != nil {
+		log.Errorf("error loop cow: %v", err)
 		return cd, err
 	}
 
@@ -175,17 +214,8 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 	defer func() {
 
 		loopMtx.Lock()
-
-		log.Debugf("detach cow disks")
-		d.devRoot.Detach()
-		d.devCow.Detach()
-
-		cmd := exec.Command("dmsetup", "remove", "-f", name)
-		cmd.Run()
+		cleanupCOW(name, d)
 		loopMtx.Unlock()
-
-		os.Remove(d.finalDisk)
-		os.Remove(d.cowDisk)
 
 		// remove jailer files
 		jailerFiles := filepath.Join("/srv/jailer/firecracker/", name)

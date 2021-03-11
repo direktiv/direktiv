@@ -15,14 +15,12 @@ const (
 	FieldSignature = "signature"
 	// FieldCount holds the string denoting the count field in the database.
 	FieldCount = "count"
-
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
 	// EdgeWfeventswait holds the string denoting the wfeventswait edge name in mutations.
 	EdgeWfeventswait = "wfeventswait"
 	// EdgeWorkflowinstance holds the string denoting the workflowinstance edge name in mutations.
 	EdgeWorkflowinstance = "workflowinstance"
-
 	// Table holds the table name of the workflowevents in the database.
 	Table = "workflow_events"
 	// WorkflowTable is the table the holds the workflow relation/edge.
@@ -57,7 +55,8 @@ var Columns = []string{
 	FieldCount,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the WorkflowEvents type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "workflow_events"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"workflow_wfevents",
 	"workflow_instance_instance",

@@ -260,7 +260,7 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 
 	log.Debugf("%s endpoint starting at %s", name, bind)
 
-	options, err := optionsForGRPC(s.config.Certs.Directory, secretsComponent, (s.config.Certs.Secure != 1))
+	options, err := optionsForGRPC(s.config.Certs.Directory, name, (s.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -114,6 +115,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 
 	args := []string{
 		"run",
+		"-d",
 		"-v",
 		fmt.Sprintf("%s:%s", dir, direktivDir),
 		"--storage-driver=vfs",
@@ -144,14 +146,14 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	log.Debugf("run container %v with command %v", img, cmd)
 
 	podman := exec.CommandContext(ctxs.ctx, "podman", args...)
-	podman.Stdout = stdout
-	podman.Stderr = stderr
+	podman.Stdout = io.MultiWriter(os.Stdout, stdout)
+	podman.Stderr = io.MultiWriter(os.Stdout, stderr)
 
 	log.Debugf("podman cmd: %v", podman)
 
 	err = podman.Run()
 	if err != nil {
-		log.Errorf(">> %v", err)
+		log.Errorf("error executing container: %v", err)
 		is.respondToAction(serr(err, errorInternal), data, in)
 		return
 	}

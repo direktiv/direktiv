@@ -231,6 +231,7 @@ func (wec *WorkflowEventsCreate) createSpec() (*WorkflowEvents, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.workflow_wfevents = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wec.mutation.WfeventswaitIDs(); len(nodes) > 0 {
@@ -269,6 +270,7 @@ func (wec *WorkflowEventsCreate) createSpec() (*WorkflowEvents, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.workflow_instance_instance = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

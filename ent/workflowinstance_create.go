@@ -439,6 +439,7 @@ func (wic *WorkflowInstanceCreate) createSpec() (*WorkflowInstance, *sqlgraph.Cr
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.workflow_instances = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wic.mutation.InstanceIDs(); len(nodes) > 0 {

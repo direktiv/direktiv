@@ -9,10 +9,8 @@ const (
 	FieldID = "id"
 	// FieldEvents holds the string denoting the events field in the database.
 	FieldEvents = "events"
-
 	// EdgeWorkflowevent holds the string denoting the workflowevent edge name in mutations.
 	EdgeWorkflowevent = "workflowevent"
-
 	// Table holds the table name of the workfloweventswait in the database.
 	Table = "workflow_events_waits"
 	// WorkfloweventTable is the table the holds the workflowevent relation/edge.
@@ -30,7 +28,8 @@ var Columns = []string{
 	FieldEvents,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the WorkflowEventsWait type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "workflow_events_waits"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"workflow_events_wfeventswait",
 }

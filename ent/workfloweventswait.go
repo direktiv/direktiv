@@ -86,7 +86,7 @@ func (wew *WorkflowEventsWait) assignValues(columns []string, values []interface
 				return fmt.Errorf("unexpected type %T for field events", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &wew.Events); err != nil {
-					return fmt.Errorf("unmarshal field events: %v", err)
+					return fmt.Errorf("unmarshal field events: %w", err)
 				}
 			}
 		case workfloweventswait.ForeignKeys[0]:
