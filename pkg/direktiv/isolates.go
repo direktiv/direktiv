@@ -245,9 +245,14 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 		insecure = false
 	}
 
+	useSSL := true
+	if is.config.Minio.SSL == 0 {
+		useSSL = false
+	}
+
 	minioClient, err := minio.New(is.config.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(is.config.Minio.User, is.config.Minio.Password, ""),
-		Secure: true,
+		Secure: useSSL,
 		Transport: &http.Transport{
 			MaxIdleConns:       10,
 			IdleConnTimeout:    30 * time.Second,
@@ -287,6 +292,8 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 
 	is.grpcConn = conn
 	is.flowClient = flow.NewDirektivFlowClient(conn)
+
+	log.Infof("isolate runner started")
 
 	return nil
 }

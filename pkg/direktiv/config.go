@@ -42,6 +42,7 @@ const (
 	minioSecure   = "DIREKTIV_MINIO_SECURE"
 	minioEncrypt  = "DIREKTIV_MINIO_ENCRYPT"
 	minioRegion   = "DIREKTIV_MINIO_REGION"
+	minioSSL      = "DIREKTIV_MINIO_SSL"
 
 	kernelLinux   = "DIREKTIV_KERNEL_LINUX"
 	kernelRuntime = "DIREKTIV_KERNEL_RUNTIME"
@@ -215,6 +216,7 @@ func ReadConfig(file string) (*Config, error) {
 		value *int
 	}{
 		{minioSecure, &c.Minio.Secure},
+		{minioSSL, &c.Minio.SSL},
 		{certSecure, &c.Certs.Secure},
 	}
 
