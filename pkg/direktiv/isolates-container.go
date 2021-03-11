@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -87,6 +88,8 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 		return
 	}
 
+	log.Debugf("container data-dir: %v", dir)
+
 	stdout, err := ioutil.TempFile("", "stdout")
 	if err != nil {
 		is.respondToAction(serr(err, errorInternal), data, in)
@@ -108,15 +111,19 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	}()
 
 	// write file to data dir
-	ioutil.WriteFile(filepath.Join(dir, direktivData), in.GetData(), 0755)
+	err = ioutil.WriteFile(filepath.Join(dir, direktivData), in.GetData(), 0755)
+	if err != nil {
+		log.Errorf("can not write direktiv data for container: %v", err)
+		is.respondToAction(serr(err, errorInternal), data, in)
+		return
+	}
 
 	ctxs := is.addCtx(in.Timeout, isolateID)
 	defer is.finishCancelIsolate(isolateID)
 
 	args := []string{
 		"run",
-		"-d",
-		"-v",
+		"--volume",
 		fmt.Sprintf("%s:%s", dir, direktivDir),
 		"--storage-driver=vfs",
 	}
@@ -196,7 +203,8 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	}
 
 	go func() {
-		log.Debugf("responding to isolate caller")
+		maxlen := math.Min(256, float64(len(data)))
+		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
 		is.respondToAction(nil, data, in)
 	}()
 

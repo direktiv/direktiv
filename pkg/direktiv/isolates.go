@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -482,7 +483,8 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 
 	go func() {
 
-		log.Debugf("responding to isolate caller")
+		maxlen := math.Min(256, float64(len(data)))
+		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
 		is.respondToAction(nil, data, in)
 
 	}()

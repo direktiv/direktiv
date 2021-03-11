@@ -82,6 +82,7 @@ run-isolate-docker:
 	-e DIREKTIV_MINIO_ENDPOINT="$(IP):9000" \
 	-e DIREKTIV_DB="host=$(IP) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	--privileged \
+	-e DIREKTIV_ISOLATION=container \
 	direktiv-isolate /bin/direktiv -t i -d
 
 # run as sudo because networking needs root privileges
