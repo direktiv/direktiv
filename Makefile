@@ -63,6 +63,18 @@ docker-isolate: build
 	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 	cd build && docker build -t direktiv-isolate -f docker/isolate/Dockerfile .
 
+.PHONY: docker-secrets
+docker-secrets:
+docker-secrets: build
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
+	cd build && docker build -t direktiv-secrets -f docker/secrets/Dockerfile .
+
+.PHONY: docker-flow
+docker-flow:
+docker-flow: build
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
+	cd build && docker build -t direktiv-flow -f docker/flow/Dockerfile .
+
 .PHONY: build
 build:
 	go get entgo.io/ent

@@ -25,3 +25,5 @@
 /build/docker/*
 !*build/docker/all
 !*build/docker/isolate
+!*build/docker/secrets
+!*build/docker/flow

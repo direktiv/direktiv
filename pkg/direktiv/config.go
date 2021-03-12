@@ -266,7 +266,7 @@ func ReadConfig(file string) (*Config, error) {
 	}
 
 	// test database is set
-	if len(c.Database.DB) == 0 {
+	if len(c.Database.DB) == 0 && len(c.SecretsAPI.DB) == 0 {
 		return nil, fmt.Errorf("no database configured")
 	}
 

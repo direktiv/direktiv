@@ -119,9 +119,12 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		components: make(map[string]component),
 	}
 
-	s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
-	if err != nil {
-		return nil, err
+	// not needed for secrets
+	if s.runsComponent(runsWorkflows) || s.runsComponent(runsIsolates) {
+		s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if s.runsComponent(runsWorkflows) {
@@ -187,7 +190,7 @@ func (s *WorkflowServer) cleanup() {
 
 	// stop components
 	for _, comp := range s.components {
-		log.Debugf("stopping %s", comp.name())
+		log.Infof("stopping %s", comp.name())
 		comp.stop()
 	}
 
@@ -244,7 +247,7 @@ func (s *WorkflowServer) Run() error {
 	}
 
 	for _, comp := range s.components {
-		log.Debugf("starting %s component", comp.name())
+		log.Infof("starting %s component", comp.name())
 		err := comp.start(s)
 		if err != nil {
 			s.Kill()
