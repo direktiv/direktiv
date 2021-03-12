@@ -127,6 +127,7 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	// we need to cleanup if something fails
 	defer func() {
 		if err != nil {
+			log.Errorf("error building COW disk: %v", err)
 			cleanupCOW(name, cd)
 		}
 	}()
@@ -159,12 +160,19 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 		log.Errorf("error loop disk: %v", err)
 		return cd, err
 	}
+	log.Debugf("loop attached %v", cd.devRoot.Path())
+
+	_, err = os.Stat(cd.cowDisk)
+	if err != nil {
+		return cd, err
+	}
 
 	cd.devCow, err = losetup.Attach(cd.cowDisk, 0, false)
 	if err != nil {
 		log.Errorf("error loop cow: %v", err)
 		return cd, err
 	}
+	log.Debugf("cow attached %v", cd.devRoot.Path())
 
 	log.Debugf("disks %s: %s, %s", name, cd.devRoot, cd.devCow)
 
