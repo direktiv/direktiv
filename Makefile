@@ -55,7 +55,7 @@ protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_fi
 docker-all:
 docker-all: build
 	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
-	cd build && sudo docker build -t direktiv -f docker/all/Dockerfile .
+	cd build && docker build -t direktiv -f docker/all/Dockerfile .
 
 .PHONY: docker-isolate
 docker-isolate:

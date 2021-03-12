@@ -17,7 +17,7 @@ ENV POSTGRES_USER=direktiv
 ENV POSTGRES_PASSWORD=direktiv
 ENV POSTGRES_DB=direktiv
 
-COPY docker/all/conf.toml /etc
+COPY conf.toml /etc
 
 COPY direktiv /bin/direktiv
 RUN chmod 755 /bin/direktiv
