@@ -167,7 +167,7 @@ func (wi *WorkflowInstance) assignValues(columns []string, values []interface{})
 				return fmt.Errorf("unexpected type %T for field flow", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &wi.Flow); err != nil {
-					return fmt.Errorf("unmarshal field flow: %v", err)
+					return fmt.Errorf("unmarshal field flow: %w", err)
 				}
 			}
 		case workflowinstance.FieldInput:

@@ -17,7 +17,6 @@ const (
 	FieldOne = "one"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
-
 	// Table holds the table name of the timer in the database.
 	Table = "timers"
 )

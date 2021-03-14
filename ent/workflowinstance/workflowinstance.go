@@ -37,12 +37,10 @@ const (
 	FieldErrorCode = "error_code"
 	// FieldErrorMessage holds the string denoting the errormessage field in the database.
 	FieldErrorMessage = "error_message"
-
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
-
 	// Table holds the table name of the workflowinstance in the database.
 	Table = "workflow_instances"
 	// WorkflowTable is the table the holds the workflow relation/edge.
@@ -81,7 +79,8 @@ var Columns = []string{
 	FieldErrorMessage,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the WorkflowInstance type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "workflow_instances"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"workflow_instances",
 }

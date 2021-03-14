@@ -2,7 +2,7 @@ FROM postgres:13.2-alpine
 
 EXPOSE 6666
 
-COPY install.sh /
+COPY docker/all/install.sh /
 RUN chmod 755 /install.sh
 RUN /install.sh
 
@@ -28,7 +28,7 @@ RUN apk --no-cache add sudo
 
 RUN apk add podman --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
-COPY run.sh /
+COPY docker/all/run.sh /
 RUN chmod 755 /run.sh
 
 CMD /run.sh

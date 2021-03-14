@@ -416,7 +416,8 @@ func (wiq *WorkflowInstanceQuery) sqlAll(ctx context.Context) ([]*WorkflowInstan
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*WorkflowInstance)
 		for i := range nodes {
-			if fk := nodes[i].workflow_instances; fk != nil {
+			fk := nodes[i].workflow_instances
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -477,7 +478,7 @@ func (wiq *WorkflowInstanceQuery) sqlCount(ctx context.Context) (int, error) {
 func (wiq *WorkflowInstanceQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := wiq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }

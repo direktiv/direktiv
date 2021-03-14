@@ -25,14 +25,12 @@ const (
 	FieldRevision = "revision"
 	// FieldWorkflow holds the string denoting the workflow field in the database.
 	FieldWorkflow = "workflow"
-
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
 	// EdgeWfevents holds the string denoting the wfevents edge name in mutations.
 	EdgeWfevents = "wfevents"
-
 	// Table holds the table name of the workflow in the database.
 	Table = "workflows"
 	// NamespaceTable is the table the holds the namespace relation/edge.
@@ -69,7 +67,8 @@ var Columns = []string{
 	FieldWorkflow,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Workflow type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "workflows"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"namespace_workflows",
 }

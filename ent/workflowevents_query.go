@@ -453,7 +453,8 @@ func (weq *WorkflowEventsQuery) sqlAll(ctx context.Context) ([]*WorkflowEvents, 
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*WorkflowEvents)
 		for i := range nodes {
-			if fk := nodes[i].workflow_wfevents; fk != nil {
+			fk := nodes[i].workflow_wfevents
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -507,7 +508,8 @@ func (weq *WorkflowEventsQuery) sqlAll(ctx context.Context) ([]*WorkflowEvents, 
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*WorkflowEvents)
 		for i := range nodes {
-			if fk := nodes[i].workflow_instance_instance; fk != nil {
+			fk := nodes[i].workflow_instance_instance
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -539,7 +541,7 @@ func (weq *WorkflowEventsQuery) sqlCount(ctx context.Context) (int, error) {
 func (weq *WorkflowEventsQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := weq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }

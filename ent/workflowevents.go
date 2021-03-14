@@ -124,7 +124,7 @@ func (we *WorkflowEvents) assignValues(columns []string, values []interface{}) e
 				return fmt.Errorf("unexpected type %T for field events", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &we.Events); err != nil {
-					return fmt.Errorf("unmarshal field events: %v", err)
+					return fmt.Errorf("unmarshal field events: %w", err)
 				}
 			}
 		case workflowevents.FieldCorrelations:
@@ -133,7 +133,7 @@ func (we *WorkflowEvents) assignValues(columns []string, values []interface{}) e
 				return fmt.Errorf("unexpected type %T for field correlations", values[i])
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &we.Correlations); err != nil {
-					return fmt.Errorf("unmarshal field correlations: %v", err)
+					return fmt.Errorf("unmarshal field correlations: %w", err)
 				}
 			}
 		case workflowevents.FieldSignature:

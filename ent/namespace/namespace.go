@@ -15,10 +15,8 @@ const (
 	FieldCreated = "created"
 	// FieldKey holds the string denoting the key field in the database.
 	FieldKey = "key"
-
 	// EdgeWorkflows holds the string denoting the workflows edge name in mutations.
 	EdgeWorkflows = "workflows"
-
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
 	// WorkflowsTable is the table the holds the workflows relation/edge.

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -245,9 +246,14 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 		insecure = false
 	}
 
+	useSSL := true
+	if is.config.Minio.SSL == 0 {
+		useSSL = false
+	}
+
 	minioClient, err := minio.New(is.config.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(is.config.Minio.User, is.config.Minio.Password, ""),
-		Secure: true,
+		Secure: useSSL,
 		Transport: &http.Transport{
 			MaxIdleConns:       10,
 			IdleConnTimeout:    30 * time.Second,
@@ -287,6 +293,8 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 
 	is.grpcConn = conn
 	is.flowClient = flow.NewDirektivFlowClient(conn)
+
+	log.Infof("isolate runner started")
 
 	return nil
 }
@@ -475,7 +483,8 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 
 	go func() {
 
-		log.Debugf("responding to isolate caller")
+		maxlen := math.Min(256, float64(len(data)))
+		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
 		is.respondToAction(nil, data, in)
 
 	}()
@@ -487,8 +496,6 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 	var (
 		ns, instID, isolateID string
 		img, cmd              string
-
-		// data, din []byte
 	)
 
 	ns = in.GetNamespace()
@@ -566,11 +573,14 @@ func (is *isolateServer) retrieveImageS3(img, cmd, path string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+	// only encrypt if SSL
+	receiveOptions := minio.GetObjectOptions{}
+	if is.config.Minio.SSL > 0 {
+		encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+		receiveOptions.ServerSideEncryption = encryption
+	}
 
-	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, minio.GetObjectOptions{
-		ServerSideEncryption: encryption,
-	})
+	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, receiveOptions)
 
 }
 
@@ -578,10 +588,14 @@ func (is *isolateServer) storeImageS3(img, cmd, disk string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
-	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, minio.PutObjectOptions{
-		ServerSideEncryption: encryption,
-	})
+	// only encrypt if SSL
+	storeOptions := minio.PutObjectOptions{}
+	if is.config.Minio.SSL > 0 {
+		encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+		storeOptions.ServerSideEncryption = encryption
+	}
+
+	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, storeOptions)
 
 	t := time.Now().Add((7 * 24) * time.Hour)
 	is.minioClient.PutObjectRetention(context.Background(), direktivBucket, h, minio.PutObjectRetentionOptions{
