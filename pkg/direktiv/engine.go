@@ -731,6 +731,8 @@ failure:
 
 	} else if cerr, ok := err.(*CatchableError); ok {
 
+		_ = wli.StoreData("error", cerr)
+
 		for i, catch := range wli.logic.ErrorCatchers() {
 
 			var matched bool
