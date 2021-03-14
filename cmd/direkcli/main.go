@@ -11,6 +11,7 @@ import (
 	log "github.com/vorteil/direktiv/pkg/cli/log"
 	"github.com/vorteil/direktiv/pkg/cli/namespace"
 	store "github.com/vorteil/direktiv/pkg/cli/store"
+	"github.com/vorteil/direktiv/pkg/cli/util"
 	"github.com/vorteil/direktiv/pkg/cli/workflow"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/vorteil/pkg/elog"
@@ -19,6 +20,7 @@ import (
 
 var flagInputFile string
 var flagGRPC string
+var flagJSON bool
 
 var conn *grpc.ClientConn
 var logger elog.View
@@ -69,31 +71,40 @@ var namespaceSendEventCmd = generateCmd("send NAMESPACE CLOUDEVENTPATH", "Send a
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 // namespaceListCmd
 var namespaceListCmd = generateCmd("list", "Returns a list of namespaces", "", func(cmd *cobra.Command, args []string) {
-
 	list, err := namespace.List(conn)
 	if err != nil {
 		logger.Errorf("%s", err.Error())
 		os.Exit(1)
 	}
-	if len(list) == 0 {
-		logger.Printf("No namespaces exist")
-		return
-	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name"})
 
-	for _, namespace := range list {
-		table.Append([]string{
-			namespace.GetName(),
-		})
+	if flagJSON {
+		util.WriteJsonList(list, logger)
+	} else {
+		if len(list) == 0 {
+			logger.Printf("No namespaces exist")
+			return
+		}
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Name"})
+
+		for _, namespace := range list {
+			table.Append([]string{
+				namespace.GetName(),
+			})
+		}
+
+		table.Render()
 	}
 
-	table.Render()
 }, cobra.ExactArgs(0))
 
 // namespaceCreateCmd
@@ -103,7 +114,11 @@ var namespaceCreateCmd = generateCmd("create NAMESPACE", "Create a new namespace
 		logger.Errorf("%s", err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(1))
 
 // namespaceDeleteCmd
@@ -113,7 +128,11 @@ var namespaceDeleteCmd = generateCmd("delete NAMESPACE", "Deletes a namespace", 
 		logger.Errorf("%s", err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(1))
 
 // workflowCmd
@@ -127,22 +146,25 @@ var workflowListCmd = generateCmd("list NAMESPACE", "List all workflows under a 
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
+	if flagJSON {
+		util.WriteJsonList(list, logger)
+	} else {
+		if len(list) == 0 {
+			logger.Printf("No workflows exist under '%s'", args[0])
+			return
+		}
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID"})
 
-	if len(list) == 0 {
-		logger.Printf("No workflows exist under '%s'", args[0])
-		return
+		// Build string array rows
+		for _, wf := range list {
+			table.Append([]string{
+				wf.GetId(),
+			})
+		}
+		table.Render()
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID"})
-
-	// Build string array rows
-	for _, wf := range list {
-		table.Append([]string{
-			wf.GetId(),
-		})
-	}
-	table.Render()
 }, cobra.ExactArgs(1))
 
 // workflowGetCmd
@@ -152,7 +174,11 @@ var workflowGetCmd = generateCmd("get NAMESPACE ID", "Get YAML of a workflow", "
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 // workflowExecuteCmd
@@ -168,8 +194,11 @@ var workflowExecuteCmd = generateCmd("execute NAMESPACE ID", "Executes workflow 
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 var workflowToggleCmd = generateCmd("toggle NAMESPACE WORKFLOW", "Enables or disables the workflow provided", "", func(cmd *cobra.Command, args []string) {
@@ -178,7 +207,11 @@ var workflowToggleCmd = generateCmd("toggle NAMESPACE WORKFLOW", "Enables or dis
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 // workflowAddCmd
@@ -189,7 +222,11 @@ var workflowAddCmd = generateCmd("create NAMESPACE WORKFLOW", "Creates a new wor
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 // workflowUpdateCmd
@@ -199,7 +236,11 @@ var workflowUpdateCmd = generateCmd("update NAMESPACE ID WORKFLOW", "Updates an 
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(3))
 
 // workflowDeleteCmd
@@ -209,7 +250,11 @@ var workflowDeleteCmd = generateCmd("delete NAMESPACE ID", "Deletes an existing 
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 // instanceCmd
@@ -221,9 +266,13 @@ var instanceGetCmd = generateCmd("get ID", "Get details about a workflow instanc
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf("ID: %s", resp.GetId())
-	logger.Printf("Input: %s", string(resp.GetInput()))
-	logger.Printf("Output: %s", string(resp.GetOutput()))
+	if flagJSON {
+		util.WriteJSON(resp, logger)
+	} else {
+		logger.Printf("ID: %s", resp.GetId())
+		logger.Printf("Input: %s", string(resp.GetInput()))
+		logger.Printf("Output: %s", string(resp.GetOutput()))
+	}
 }, cobra.ExactArgs(1))
 
 var instanceLogsCmd = generateCmd("logs ID", "Grabs all logs for the instance ID provided", "", func(cmd *cobra.Command, args []string) {
@@ -232,9 +281,14 @@ var instanceLogsCmd = generateCmd("logs ID", "Grabs all logs for the instance ID
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	for _, log := range logs {
-		fmt.Println(log.GetMessage())
+	if flagJSON {
+		util.WriteJSON(logs, logger)
+	} else {
+		for _, log := range logs {
+			fmt.Println(log.GetMessage())
+		}
 	}
+
 }, cobra.ExactArgs(1))
 
 var instanceListCmd = generateCmd("list NAMESPACE", "List all workflow instances from the provided namespace", "", func(cmd *cobra.Command, args []string) {
@@ -244,22 +298,27 @@ var instanceListCmd = generateCmd("list NAMESPACE", "List all workflow instances
 		os.Exit(1)
 	}
 
-	if len(list) == 0 {
-		logger.Printf("No instances exist under '%s'", args[0])
-		return
+	if flagJSON {
+		util.WriteJsonList(list, logger)
+	} else {
+		if len(list) == 0 {
+			logger.Printf("No instances exist under '%s'", args[0])
+			return
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "Status"})
+
+		// Build string array rows
+		for _, instance := range list {
+			table.Append([]string{
+				instance.GetId(),
+				instance.GetStatus(),
+			})
+		}
+		table.Render()
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Status"})
-
-	// Build string array rows
-	for _, instance := range list {
-		table.Append([]string{
-			instance.GetId(),
-			instance.GetStatus(),
-		})
-	}
-	table.Render()
 }, cobra.ExactArgs(1))
 
 //registriesCmd
@@ -278,7 +337,11 @@ var createRegistryCmd = generateCmd("create NAMESPACE URL USER:TOKEN", "Creates 
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(3))
 
 var removeRegistryCmd = generateCmd("delete NAMESPACE URL", "Deletes a registry from the provided namespace", "", func(cmd *cobra.Command, args []string) {
@@ -287,7 +350,11 @@ var removeRegistryCmd = generateCmd("delete NAMESPACE URL", "Deletes a registry 
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 var listRegistriesCmd = generateCmd("list NAMESPACE", "Returns a list of registries from the provided namespace", "", func(cmd *cobra.Command, args []string) {
@@ -298,21 +365,26 @@ var listRegistriesCmd = generateCmd("list NAMESPACE", "Returns a list of registr
 	}
 	castRegistries := registries.([]*ingress.GetRegistriesResponse_Registry)
 
-	if len(castRegistries) == 0 {
-		logger.Printf("No registries exist under '%s'", args[0])
-		return
+	if flagJSON {
+		util.WriteJsonList(castRegistries, logger)
+	} else {
+		if len(castRegistries) == 0 {
+			logger.Printf("No registries exist under '%s'", args[0])
+			return
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Registry"})
+
+		// Build string array rows
+		for _, registry := range castRegistries {
+			table.Append([]string{
+				registry.GetName(),
+			})
+		}
+		table.Render()
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Registry"})
-
-	// Build string array rows
-	for _, registry := range castRegistries {
-		table.Append([]string{
-			registry.GetName(),
-		})
-	}
-	table.Render()
 }, cobra.ExactArgs(1))
 
 //secretsCmd
@@ -329,7 +401,11 @@ var createSecretCmd = generateCmd("create NAMESPACE KEY VALUE", "Creates a new s
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(successMsg)
+	if flagJSON {
+		util.WriteRequestJSON(successMsg, true, logger)
+	} else {
+		logger.Printf(successMsg)
+	}
 }, cobra.ExactArgs(3))
 
 var removeSecretCmd = generateCmd("delete NAMESPACE KEY", "Deletes a secret from the provided namespace", "", func(cmd *cobra.Command, args []string) {
@@ -338,7 +414,11 @@ var removeSecretCmd = generateCmd("delete NAMESPACE KEY", "Deletes a secret from
 		logger.Errorf(err.Error())
 		os.Exit(1)
 	}
-	logger.Printf(success)
+	if flagJSON {
+		util.WriteRequestJSON(success, true, logger)
+	} else {
+		logger.Printf(success)
+	}
 }, cobra.ExactArgs(2))
 
 var listSecretsCmd = generateCmd("list NAMESPACE", "Returns a list of secrets for the provided namespace", "", func(cmd *cobra.Command, args []string) {
@@ -349,22 +429,26 @@ var listSecretsCmd = generateCmd("list NAMESPACE", "Returns a list of secrets fo
 	}
 
 	castSecrets := secrets.([]*ingress.GetSecretsResponse_Secret)
+	if flagJSON {
+		util.WriteJsonList(castSecrets, logger)
+	} else {
+		if len(castSecrets) == 0 {
+			logger.Printf("No secrets exist under '%s'", args[0])
+			return
+		}
 
-	if len(castSecrets) == 0 {
-		logger.Printf("No secrets exist under '%s'", args[0])
-		return
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Secret"})
+
+		// Build string array rows
+		for _, secret := range castSecrets {
+			table.Append([]string{
+				secret.GetName(),
+			})
+		}
+		table.Render()
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Secret"})
-
-	// Build string array rows
-	for _, secret := range castSecrets {
-		table.Append([]string{
-			secret.GetName(),
-		})
-	}
-	table.Render()
 }, cobra.ExactArgs(1))
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -416,7 +500,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&flagGRPC, "grpc", "", "", "ip and port for connection GRPC default is 127.0.0.1:6666")
-
+	rootCmd.PersistentFlags().BoolVarP(&flagJSON, "json", "", false, "provides json output")
 	// workflowCmd add flag for the namespace
 	workflowExecuteCmd.PersistentFlags().StringVarP(&flagInputFile, "input", "", "", "filepath to json input")
 }
