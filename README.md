@@ -130,6 +130,12 @@ Input: {
 Output: {"msg":"Hello, Alan!"}
 ```
 
+### Direktiv plugins
+
+Pre-built plugins are available from this Github repo - we're working hard to add more every day!
+
+[https://github.com/vorteil/direktiv-apps](https://github.com/vorteil/direktiv-apps)
+
 ### Roadmap
 
 - Installation instructions (Kubernetes, Non-Kubernetes environments, Container/Vorteil setting)
