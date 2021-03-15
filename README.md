@@ -12,6 +12,15 @@
 
 [![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
+**The Direktiv Beta is available now!**
+
+<p align="center">
+  <a href="https://wf.direktiv.io/">
+    <img src="assets/images/direktiv-workflow.png" alt="direktiv-beta">
+  </a>
+    <h5 align="center">Online Direktiv Beta now Available</h5>
+</p>
+
 ## What is Direktiv?
 
 **Diretiv is a serverless workflow engine.** 
@@ -26,7 +35,7 @@ Workflows can be triggered by CloudEvents for event-based solutions, can use cro
 
 ### Starting the Server
 
-Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. Direktiv's defaul isolation level is firecracker based on vorteil
+Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. Direktiv's default isolation level is firecracker based on vorteil
 machines. This behaviour can be changed in the configuration file or via environment variable.
 
 ****
