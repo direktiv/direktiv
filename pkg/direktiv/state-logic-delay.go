@@ -57,6 +57,10 @@ func (sl *delayStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func (sl *delayStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *delayStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {
