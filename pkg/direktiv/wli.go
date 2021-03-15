@@ -10,6 +10,7 @@ import (
 	"math"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/itchyny/gojq"
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
@@ -29,11 +30,12 @@ type workflowLogicInstance struct {
 	rec       *ent.WorkflowInstance
 	step      int
 
-	namespace string
-	id        string
-	lockConn  *sql.Conn
-	logic     stateLogic
-	logger    dlog.Logger
+	namespace   string
+	id          string
+	logToEvents string
+	lockConn    *sql.Conn
+	logic       stateLogic
+	logger      dlog.Logger
 }
 
 func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input []byte) (*workflowLogicInstance, error) {
@@ -77,6 +79,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input
 	wli.engine = we
 	wli.wf = wf
 	wli.data = stateData
+	wli.logToEvents = rec.LogToEvents
 
 	wli.id = fmt.Sprintf("%s/%s/%s", namespace, name, randSeq(6))
 	wli.startData, err = json.MarshalIndent(wli.data, "", "  ")
@@ -150,6 +153,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		wli.unlock()
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow from database: %v", err))
 	}
+	wli.logToEvents = wfrec.LogToEvents
 
 	err = wli.wf.Load(wfrec.Workflow)
 	if err != nil {
@@ -403,8 +407,31 @@ func jqObject(input interface{}, command string) (map[string]interface{}, error)
 
 }
 
+func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
+
+	s := fmt.Sprintf(msg, a...)
+
+	wli.logger.Info(s)
+
+	// TODO: detect content type and handle base64 data
+
+	if attr := wli.logToEvents; attr != "" {
+		event := cloudevents.NewEvent()
+		event.SetSource(wli.wf.ID)
+		event.SetType("direktiv.instanceLog")
+		event.SetExtension("logger", attr)
+		event.SetData("application/json", s)
+		go wli.engine.server.handleEvent(&event)
+	}
+
+}
+
 func (wli *workflowLogicInstance) Log(msg string, a ...interface{}) {
-	wli.logger.Info(fmt.Sprintf(msg, a...))
+
+	s := fmt.Sprintf(msg, a...)
+
+	wli.logger.Info(s)
+
 }
 
 func (wli *workflowLogicInstance) Save(ctx context.Context, data []byte) error {

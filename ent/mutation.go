@@ -1052,6 +1052,7 @@ type WorkflowMutation struct {
 	revision         *int
 	addrevision      *int
 	workflow         *[]byte
+	logToEvents      *string
 	clearedFields    map[string]struct{}
 	namespace        *string
 	clearednamespace bool
@@ -1400,6 +1401,55 @@ func (m *WorkflowMutation) ResetWorkflow() {
 	m.workflow = nil
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (m *WorkflowMutation) SetLogToEvents(s string) {
+	m.logToEvents = &s
+}
+
+// LogToEvents returns the value of the "logToEvents" field in the mutation.
+func (m *WorkflowMutation) LogToEvents() (r string, exists bool) {
+	v := m.logToEvents
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogToEvents returns the old "logToEvents" field's value of the Workflow entity.
+// If the Workflow object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowMutation) OldLogToEvents(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLogToEvents is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLogToEvents requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogToEvents: %w", err)
+	}
+	return oldValue.LogToEvents, nil
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (m *WorkflowMutation) ClearLogToEvents() {
+	m.logToEvents = nil
+	m.clearedFields[workflow.FieldLogToEvents] = struct{}{}
+}
+
+// LogToEventsCleared returns if the "logToEvents" field was cleared in this mutation.
+func (m *WorkflowMutation) LogToEventsCleared() bool {
+	_, ok := m.clearedFields[workflow.FieldLogToEvents]
+	return ok
+}
+
+// ResetLogToEvents resets all changes to the "logToEvents" field.
+func (m *WorkflowMutation) ResetLogToEvents() {
+	m.logToEvents = nil
+	delete(m.clearedFields, workflow.FieldLogToEvents)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *WorkflowMutation) SetNamespaceID(id string) {
 	m.namespace = &id
@@ -1559,7 +1609,7 @@ func (m *WorkflowMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, workflow.FieldName)
 	}
@@ -1577,6 +1627,9 @@ func (m *WorkflowMutation) Fields() []string {
 	}
 	if m.workflow != nil {
 		fields = append(fields, workflow.FieldWorkflow)
+	}
+	if m.logToEvents != nil {
+		fields = append(fields, workflow.FieldLogToEvents)
 	}
 	return fields
 }
@@ -1598,6 +1651,8 @@ func (m *WorkflowMutation) Field(name string) (ent.Value, bool) {
 		return m.Revision()
 	case workflow.FieldWorkflow:
 		return m.Workflow()
+	case workflow.FieldLogToEvents:
+		return m.LogToEvents()
 	}
 	return nil, false
 }
@@ -1619,6 +1674,8 @@ func (m *WorkflowMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldRevision(ctx)
 	case workflow.FieldWorkflow:
 		return m.OldWorkflow(ctx)
+	case workflow.FieldLogToEvents:
+		return m.OldLogToEvents(ctx)
 	}
 	return nil, fmt.Errorf("unknown Workflow field %s", name)
 }
@@ -1670,6 +1727,13 @@ func (m *WorkflowMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWorkflow(v)
 		return nil
+	case workflow.FieldLogToEvents:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogToEvents(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Workflow field %s", name)
 }
@@ -1718,6 +1782,9 @@ func (m *WorkflowMutation) ClearedFields() []string {
 	if m.FieldCleared(workflow.FieldDescription) {
 		fields = append(fields, workflow.FieldDescription)
 	}
+	if m.FieldCleared(workflow.FieldLogToEvents) {
+		fields = append(fields, workflow.FieldLogToEvents)
+	}
 	return fields
 }
 
@@ -1734,6 +1801,9 @@ func (m *WorkflowMutation) ClearField(name string) error {
 	switch name {
 	case workflow.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case workflow.FieldLogToEvents:
+		m.ClearLogToEvents()
 		return nil
 	}
 	return fmt.Errorf("unknown Workflow nullable field %s", name)
@@ -1760,6 +1830,9 @@ func (m *WorkflowMutation) ResetField(name string) error {
 		return nil
 	case workflow.FieldWorkflow:
 		m.ResetWorkflow()
+		return nil
+	case workflow.FieldLogToEvents:
+		m.ResetLogToEvents()
 		return nil
 	}
 	return fmt.Errorf("unknown Workflow field %s", name)

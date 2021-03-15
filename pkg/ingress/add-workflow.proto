@@ -10,6 +10,7 @@ message AddWorkflowRequest {
 	optional string namespace = 1;
 	optional bool active = 2;
 	optional bytes workflow = 3;
+	optional string logToEvents = 4;
 }
 
 message AddWorkflowResponse {

@@ -30,6 +30,8 @@ type Workflow struct {
 	Revision int `json:"revision,omitempty"`
 	// Workflow holds the value of the "workflow" field.
 	Workflow []byte `json:"workflow,omitempty"`
+	// LogToEvents holds the value of the "logToEvents" field.
+	LogToEvents string `json:"logToEvents,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowQuery when eager-loading is set.
 	Edges               WorkflowEdges `json:"edges"`
@@ -92,7 +94,7 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullBool{}
 		case workflow.FieldRevision:
 			values[i] = &sql.NullInt64{}
-		case workflow.FieldName, workflow.FieldDescription:
+		case workflow.FieldName, workflow.FieldDescription, workflow.FieldLogToEvents:
 			values[i] = &sql.NullString{}
 		case workflow.FieldCreated:
 			values[i] = &sql.NullTime{}
@@ -157,6 +159,12 @@ func (w *Workflow) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil {
 				w.Workflow = *value
 			}
+		case workflow.FieldLogToEvents:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field logToEvents", values[i])
+			} else if value.Valid {
+				w.LogToEvents = value.String
+			}
 		case workflow.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_workflows", values[i])
@@ -219,6 +227,8 @@ func (w *Workflow) String() string {
 	builder.WriteString(fmt.Sprintf("%v", w.Revision))
 	builder.WriteString(", workflow=")
 	builder.WriteString(fmt.Sprintf("%v", w.Workflow))
+	builder.WriteString(", logToEvents=")
+	builder.WriteString(w.LogToEvents)
 	builder.WriteByte(')')
 	return builder.String()
 }
