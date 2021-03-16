@@ -97,6 +97,26 @@ func (wu *WorkflowUpdate) SetWorkflow(b []byte) *WorkflowUpdate {
 	return wu
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (wu *WorkflowUpdate) SetLogToEvents(s string) *WorkflowUpdate {
+	wu.mutation.SetLogToEvents(s)
+	return wu
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (wu *WorkflowUpdate) SetNillableLogToEvents(s *string) *WorkflowUpdate {
+	if s != nil {
+		wu.SetLogToEvents(*s)
+	}
+	return wu
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (wu *WorkflowUpdate) ClearLogToEvents() *WorkflowUpdate {
+	wu.mutation.ClearLogToEvents()
+	return wu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (wu *WorkflowUpdate) SetNamespaceID(id string) *WorkflowUpdate {
 	wu.mutation.SetNamespaceID(id)
@@ -332,6 +352,19 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: workflow.FieldWorkflow,
 		})
 	}
+	if value, ok := wu.mutation.LogToEvents(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflow.FieldLogToEvents,
+		})
+	}
+	if wu.mutation.LogToEventsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: workflow.FieldLogToEvents,
+		})
+	}
 	if wu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -557,6 +590,26 @@ func (wuo *WorkflowUpdateOne) AddRevision(i int) *WorkflowUpdateOne {
 // SetWorkflow sets the "workflow" field.
 func (wuo *WorkflowUpdateOne) SetWorkflow(b []byte) *WorkflowUpdateOne {
 	wuo.mutation.SetWorkflow(b)
+	return wuo
+}
+
+// SetLogToEvents sets the "logToEvents" field.
+func (wuo *WorkflowUpdateOne) SetLogToEvents(s string) *WorkflowUpdateOne {
+	wuo.mutation.SetLogToEvents(s)
+	return wuo
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (wuo *WorkflowUpdateOne) SetNillableLogToEvents(s *string) *WorkflowUpdateOne {
+	if s != nil {
+		wuo.SetLogToEvents(*s)
+	}
+	return wuo
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (wuo *WorkflowUpdateOne) ClearLogToEvents() *WorkflowUpdateOne {
+	wuo.mutation.ClearLogToEvents()
 	return wuo
 }
 
@@ -798,6 +851,19 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 			Type:   field.TypeBytes,
 			Value:  value,
 			Column: workflow.FieldWorkflow,
+		})
+	}
+	if value, ok := wuo.mutation.LogToEvents(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflow.FieldLogToEvents,
+		})
+	}
+	if wuo.mutation.LogToEventsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: workflow.FieldLogToEvents,
 		})
 	}
 	if wuo.mutation.NamespaceCleared() {

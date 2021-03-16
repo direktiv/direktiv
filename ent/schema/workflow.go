@@ -31,6 +31,7 @@ func (Workflow) Fields() []ent.Field {
 		field.Bool("active").Default(true),
 		field.Int("revision").Default(0),
 		field.Bytes("workflow"),
+		field.String("logToEvents").Optional(),
 	}
 
 }

@@ -202,6 +202,10 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 }
 
+func (sl *parallelStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
