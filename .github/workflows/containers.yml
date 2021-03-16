@@ -23,10 +23,13 @@ jobs:
         password: ${{ secrets.DOCKER_TOKEN }}
     - name: build containers
       run: |
+        echo "RV set to $RV"
         if [ "$RV" == "main" ] ; then export RV=latest; fi
+        echo "RV set to $RV"
         make docker-isolate
         make docker-secrets
         make docker-flow
+        echo "containers built"
         docker tag direktiv-flow vorteil/flow:$RV
         docker tag direktiv-isolate vorteil/isolate:$RV
         docker tag direktiv-secrets vorteil/secrets:$RV
