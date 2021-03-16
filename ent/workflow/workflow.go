@@ -25,6 +25,8 @@ const (
 	FieldRevision = "revision"
 	// FieldWorkflow holds the string denoting the workflow field in the database.
 	FieldWorkflow = "workflow"
+	// FieldLogToEvents holds the string denoting the logtoevents field in the database.
+	FieldLogToEvents = "log_to_events"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
@@ -65,6 +67,7 @@ var Columns = []string{
 	FieldActive,
 	FieldRevision,
 	FieldWorkflow,
+	FieldLogToEvents,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "workflows"

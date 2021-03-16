@@ -71,6 +71,10 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, instance *wo
 
 }
 
+func (sl *eventsXorStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *eventsXorStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {

@@ -691,6 +691,23 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 	var err error
 	var transition *stateTransition
 
+	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
+		var object interface{}
+		object, err = jqObject(wli.data, ".")
+		if err != nil {
+			goto failure
+		}
+
+		var data []byte
+		data, err = json.MarshalIndent(object, "", "  ")
+		if err != nil {
+			err = NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
+			goto failure
+		}
+
+		wli.UserLog(string(data))
+	}
+
 	transition, err = wli.logic.Run(ctx, wli, savedata, wakedata)
 	if err != nil {
 		goto failure
@@ -730,6 +747,8 @@ failure:
 		return
 
 	} else if cerr, ok := err.(*CatchableError); ok {
+
+		_ = wli.StoreData("error", cerr)
 
 		for i, catch := range wli.logic.ErrorCatchers() {
 

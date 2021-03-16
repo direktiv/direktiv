@@ -89,8 +89,8 @@ func (err *UncatchableError) Error() string {
 }
 
 type CatchableError struct {
-	Code    string
-	Message string
+	Code    string `json:"code"`
+	Message string `json:"msg"`
 }
 
 func NewCatchableError(code string, msg string, a ...interface{}) *CatchableError {
