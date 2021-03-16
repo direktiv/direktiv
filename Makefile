@@ -86,8 +86,6 @@ build:
 build-cli:
 	go build -o direkcli cmd/direkcli/main.go
 
-<<<<<<< HEAD
-=======
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
 .PHONY: run-isolate-docker
@@ -98,7 +96,6 @@ run-isolate-docker:
 	--privileged \
 	direktiv-isolate /bin/direktiv -t i -d
 
->>>>>>> upstream/main
 # run as sudo because networking needs root privileges
 .PHONY: run
 run:
