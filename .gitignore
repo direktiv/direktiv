@@ -18,6 +18,7 @@
 # vendor/
 
 /build/direktiv
+/build/direkcli
 /build/alpine-*
 /direktiv
 /direkcli
@@ -30,3 +31,4 @@
 !*build/docker/isolate
 !*build/docker/secrets
 !*build/docker/flow
+!*build/docker/cli

@@ -28,11 +28,14 @@ jobs:
         make docker-isolate
         make docker-secrets
         make docker-flow
+        make docker-cli
         echo "containers built"
         docker tag direktiv-flow vorteil/flow:$RV
         docker tag direktiv-isolate vorteil/isolate:$RV
         docker tag direktiv-secrets vorteil/secrets:$RV
+        docker tag direktiv-cli vorteil/direkcli:$RV
         docker image list
         docker push vorteil/flow:$RV
         docker push vorteil/isolate:$RV
         docker push vorteil/secrets:$RV
+        docker push vorteil/direkcli:$RV
