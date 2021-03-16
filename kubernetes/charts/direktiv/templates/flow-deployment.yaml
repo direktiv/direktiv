@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "direktiv.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      containers:
+        - name: ingress
+          image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ["/bin/direktiv"]
+          args: ["-t", "w", "-d"]
+          ports:
+            - name: ingress
+              containerPort: 6666
+              protocol: TCP
+            - name: flow
+              containerPort: 7777
+              protocol: TCP
+          env:
+          - name: DIREKTIV_INGRESS_BIND
+            value: "0.0.0.0:6666"
+          - name: DIREKTIV_FLOW_BIND
+            value: "0.0.0.0:7777"
+          - name: DIREKTIV_GRPC_HEALTH
+            value: "0"
+          - name: DIREKTIV_DB
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: db
+          - name: DIREKTIV_ISOLATE_ENDPOINT
+            {{- if .Values.flow.isolateEndpoint }}
+            value: {{ .Values.flow.isolateEndpoint | quote}}
+            {{- else }}
+            value: "{{ include "direktiv.fullname" . }}-isolate:8888"
+            {{- end}}
+          - name: DIREKTIV_SECRETS_ENDPOINT
+            value:  "localhost:2610"
+        - name: secrets
+          image: "{{ .Values.registry }}/{{ .Values.flow.secretsImage }}:{{ .Values.flow.secretsTag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: secrets
+              containerPort: 2610
+              protocol: TCP
+          env:
+          - name: DIREKTIV_SECRETS_BIND
+            value: "0.0.0.0:2610"
+          - name: DIREKTIV_GRPC_HEALTH
+            value: "0"
+          - name: DIREKTIV_SECRETS_DB
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsDb
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
