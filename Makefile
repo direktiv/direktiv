@@ -16,7 +16,7 @@ mkfile_dir_main := $(dir $(mkfile_path_main))
 include build/build.mk
 
 # run minio on vorteil
-.PHONY: build-tc-redirect-tap
+.PHONY: build-tc-redirect-
 build-tc-redirect-tap:
 	wget https://github.com/awslabs/tc-redirect-tap/archive/master.zip;
 	unzip -o master.zip;
@@ -84,7 +84,7 @@ build:
 
 .PHONY: build-cli
 build-cli:
-	go build -o direkcli cmd/direkcli/main.go
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
 
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
