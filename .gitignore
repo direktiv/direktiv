@@ -1,3 +1,6 @@
+#Mac desktop files
+.DS_Store
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -14,6 +17,7 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+/build/direktiv
 /build/alpine-*
 /direktiv
 /direkcli
@@ -22,6 +26,7 @@
 /minio
 
 /build/docker/*
-!*build/docker/run.sh
-!*build/docker/Dockerfile
-!*build/docker/install.sh
+!*build/docker/all
+!*build/docker/isolate
+!*build/docker/secrets
+!*build/docker/flow

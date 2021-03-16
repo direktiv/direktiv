@@ -50,6 +50,10 @@ func (sl *consumeEventStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func (sl *consumeEventStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *consumeEventStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
@@ -63,6 +67,8 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, instance *workflowLog
 
 		var events []*model.ConsumeEventDefinition
 		events = append(events, sl.state.Event)
+
+		instance.engine.clearEventListeners(instance.rec)
 
 		err = instance.engine.listenForEvents(ctx, instance, events, false)
 		if err != nil {

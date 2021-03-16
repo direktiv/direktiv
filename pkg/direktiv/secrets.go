@@ -14,6 +14,8 @@ import (
 	"github.com/vorteil/direktiv/pkg/secrets/ent"
 	"github.com/vorteil/direktiv/pkg/secrets/ent/bucketsecret"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -45,7 +47,7 @@ func newSecretsServer(config *Config) (*secretsServer, error) {
 
 }
 
-func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace string) (map[string]string, error) {
+func getRegistries(db *dbManager, c *Config, client secrets.SecretsServiceClient, namespace string) (map[string]string, error) {
 
 	r := make(map[string]string)
 
@@ -67,7 +69,11 @@ func getRegistries(c *Config, client secrets.SecretsServiceClient, namespace str
 
 	// add all registries to map
 	for _, s := range ss.Secrets {
-		r[s.GetName()] = string(s.Data)
+		data, err := decryptData(db, namespace, s.GetData())
+		if err != nil {
+			return nil, err
+		}
+		r[s.GetName()] = string(data)
 	}
 
 	return r, nil
@@ -132,6 +138,9 @@ func (ss *secretsServer) RetrieveSecret(ctx context.Context, in *secrets.Secrets
 		Only(context.Background())
 
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, status.Errorf(codes.NotFound, "secret '%s' not found", in.GetName())
+		}
 		return nil, err
 	}
 
@@ -172,7 +181,7 @@ func (ss *secretsServer) GetSecretsWithData(ctx context.Context, in *secrets.Get
 		ls   []*secrets.GetSecretsDataResponse_Secret
 	)
 
-	_, err := ss.db.BucketSecret.
+	res, err := ss.db.BucketSecret.
 		Query().
 		Where(
 			bucketsecret.And(
@@ -183,7 +192,12 @@ func (ss *secretsServer) GetSecretsWithData(ctx context.Context, in *secrets.Get
 	if err != nil {
 		return nil, err
 	}
-
+	for _, bs := range res {
+		ls = append(ls, &secrets.GetSecretsDataResponse_Secret{
+			Name: &bs.Name,
+			Data: bs.Secret,
+		})
+	}
 	resp.Secrets = ls
 
 	return &resp, nil
@@ -246,13 +260,17 @@ func decryptedDataForNS(ctx context.Context, instance *workflowLogicInstance, ns
 		Name:      &name,
 	})
 	if err != nil {
-		return nil, err
+		s := status.Convert(err)
+		if s.Code() == codes.NotFound {
+			return nil, NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", name)
+		}
+		return nil, NewInternalError(err)
 	}
 
 	// decrypt data with key of namespace
 	dd, err = decryptData(instance.engine.server.dbManager, ns, resp.GetData())
 	if err != nil {
-		return nil, err
+		return nil, NewInternalError(err)
 	}
 
 	return dd, nil

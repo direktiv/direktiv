@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"code.cloudfoundry.org/bytefmt"
@@ -32,6 +33,7 @@ type cacheItem struct {
 type fileCache struct {
 	items         map[string]*cacheItem
 	spaceLeft     int64
+	mtx           sync.Mutex
 	isolateServer *isolateServer
 }
 
@@ -70,47 +72,57 @@ func newFileCache(is *isolateServer) (*fileCache, error) {
 	return fc, nil
 }
 
-func getLastChanged(image string, registries map[string]string) time.Time {
+func getLastChanged(image string, registries map[string]string) (time.Time, error) {
 
 	t := time.Now()
 
-	ref, _ := name.ParseReference(image)
+	ref, err := name.ParseReference(image)
+	if err != nil {
+		return time.Time{}, err
+	}
 
 	opts := findAuthForRegistry(image, registries)
 
 	// img, err := remote.Image(ref, remote.WithAuth(&FluxAuth{}))
-	img, _ := remote.Image(ref, opts...)
+	img, err := remote.Image(ref, opts...)
+	if err != nil {
+		return time.Time{}, err
+	}
 
 	config, err := getContainerConfig(img)
 	if err != nil {
-		return t
+		return t, err
 	}
 
 	if c, ok := config["created"]; ok {
 		t, err = time.Parse(time.RFC3339Nano, c.(string))
 		if err != nil {
 			t = time.Now()
+			return t, err
 		}
 	}
 
-	return t
+	return t, err
 
 }
 
-func needsUpdate(item *cacheItem, image string, registries map[string]string) bool {
+func needsUpdate(item *cacheItem, image string, registries map[string]string) (bool, error) {
 
 	ref, err := parser.Parse(image)
 
 	// only check if latest
 	if err == nil && ref.Tag() == "latest" {
-		lc := getLastChanged(image, registries)
+		lc, err := getLastChanged(image, registries)
+		if err != nil {
+			return false, err
+		}
 		log.Debugf("compare last changed %v = %v", lc, item.lastChanged)
 		if !lc.Equal(item.lastChanged) {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (string, error) {
@@ -132,13 +144,21 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 	// get local first
 	if i, ok := fc.items[h]; ok {
 		log.Debugf("item %s in cache", h[:8])
-		if !needsUpdate(i, img, registries) {
-			return disk, nil
-		} else {
-			delete(fc.items, h)
-			os.Remove(disk)
-			fc.isolateServer.removeImageS3(img, cmd)
+		upd, err := needsUpdate(i, img, registries)
+		if err != nil {
+			return "", err
 		}
+		if !upd {
+			return disk, nil
+		}
+
+		fc.mtx.Lock()
+		delete(fc.items, h)
+		os.Remove(disk)
+		fc.mtx.Unlock()
+
+		fc.isolateServer.removeImageS3(img, cmd)
+
 	}
 
 	err = fc.isolateServer.retrieveImageS3(img, cmd, disk)
@@ -168,7 +188,12 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 		return "", err
 	}
 
-	err = fc.addItem(h, fi.Size(), getLastChanged(img, registries))
+	lc, err := getLastChanged(img, registries)
+	if err != nil {
+		return "", err
+	}
+
+	err = fc.addItem(h, fi.Size(), lc)
 	if err != nil {
 		return "", err
 	}
@@ -178,8 +203,10 @@ func (fc *fileCache) getImage(img, cmd string, registries map[string]string) (st
 
 func (fc *fileCache) removeItem(key string) {
 
+	log.Debugf("remove %s from cache", key)
+
 	if i, ok := fc.items[key]; ok {
-		fc.spaceLeft = +i.size
+		fc.spaceLeft += i.size
 		delete(fc.items, key)
 		os.Remove(filepath.Join(cacheDir, key))
 	}
@@ -193,7 +220,12 @@ func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 		return err
 	}
 
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
+
 	fc.spaceLeft -= sz
+	log.Debugf("cache space left %v", fc.spaceLeft)
+
 	fc.items[key] = &cacheItem{
 		lastAccessed: time.Now(),
 		lastChanged:  t,
@@ -205,6 +237,9 @@ func (fc *fileCache) addItem(key string, sz int64, t time.Time) error {
 }
 
 func (fc *fileCache) checkCacheSize(sz int64) error {
+
+	fc.mtx.Lock()
+	defer fc.mtx.Unlock()
 
 	if fc.spaceLeft > sz {
 		fc.spaceLeft -= sz

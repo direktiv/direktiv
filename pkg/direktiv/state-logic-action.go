@@ -61,8 +61,8 @@ func (sl *actionStateLogic) Deadline() time.Time {
 	}
 
 	t = time.Now()
-	t.Add(d)
-	t.Add(time.Second * 5)
+	t = t.Add(d)
+	t = t.Add(time.Second * 5)
 
 	return t
 
@@ -108,6 +108,10 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 	return children
 
+}
+
+func (sl *actionStateLogic) LogJQ() string {
+	return sl.state.Log
 }
 
 func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
@@ -185,7 +189,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			ar.Container.Registries = make(map[string]string)
 
 			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+			ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
 				instance.engine.secretsClient, instance.namespace)
 			if err != nil {
 				return
@@ -203,7 +207,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 					ar.Workflow.Step = 0
 
 					// get registries
-					ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+					ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
 						instance.engine.secretsClient, instance.namespace)
 					if err != nil {
 						return

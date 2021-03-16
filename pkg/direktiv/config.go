@@ -42,6 +42,7 @@ const (
 	minioSecure   = "DIREKTIV_MINIO_SECURE"
 	minioEncrypt  = "DIREKTIV_MINIO_ENCRYPT"
 	minioRegion   = "DIREKTIV_MINIO_REGION"
+	minioSSL      = "DIREKTIV_MINIO_SSL"
 
 	kernelLinux   = "DIREKTIV_KERNEL_LINUX"
 	kernelRuntime = "DIREKTIV_KERNEL_RUNTIME"
@@ -51,14 +52,13 @@ const (
 
 	certDir    = "DIREKTIV_CERTS"
 	certSecure = "DIREKTIV_SECURE"
+
+	isolation  = "DIREKTIV_ISOLATION"
+	grpcHealth = "DIREKTIV_GRPC_HEALTH"
 )
 
 // Config is the configuration for workflow and runner server
 type Config struct {
-	// IP, ActionIP, FlowIP, HealthIP, IngressIP     net.IP
-	// Port, ActionPort, FlowIP, HealthIP, IngressIP int
-	// ActionFlowEndpoint string
-
 	FlowAPI struct {
 		Bind     string
 		Endpoint string
@@ -70,6 +70,7 @@ type Config struct {
 	HealthAPI struct {
 		Bind     string
 		Endpoint string
+		Enabled  int
 	} `toml:"healthAPI"`
 
 	IngressAPI struct {
@@ -78,8 +79,9 @@ type Config struct {
 	} `toml:"ingressAPI"`
 
 	IsolateAPI struct {
-		Bind     string
-		Endpoint string
+		Bind      string
+		Endpoint  string
+		Isolation string
 	} `toml:"isolateAPI"`
 
 	SecretsAPI struct {
@@ -173,12 +175,14 @@ func ReadConfig(file string) (*Config, error) {
 
 	c.HealthAPI.Bind = fmt.Sprintf("%s:9999", localIP)
 	c.HealthAPI.Endpoint = c.HealthAPI.Bind
+	c.HealthAPI.Enabled = 1
 
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
 
 	c.IsolateAPI.Bind = fmt.Sprintf("%s:8888", localIP)
 	c.IsolateAPI.Endpoint = c.IsolateAPI.Bind
+	c.IsolateAPI.Isolation = "vorteil"
 
 	c.SecretsAPI.Bind = fmt.Sprintf("%s:2610", localIP)
 	c.SecretsAPI.Endpoint = c.SecretsAPI.Bind
@@ -189,8 +193,8 @@ func ReadConfig(file string) (*Config, error) {
 	c.Minio.Encrypt = c.Minio.Password
 	c.Minio.Region = "us-east-1"
 
-	c.Kernel.Runtime = "21.2.2"
-	c.Kernel.Linux = "21.2.2"
+	c.Kernel.Runtime = "21.3.2"
+	c.Kernel.Linux = "21.3.2"
 
 	// read config file if exists
 	if len(file) > 0 {
@@ -215,7 +219,9 @@ func ReadConfig(file string) (*Config, error) {
 		value *int
 	}{
 		{minioSecure, &c.Minio.Secure},
+		{minioSSL, &c.Minio.SSL},
 		{certSecure, &c.Certs.Secure},
+		{grpcHealth, &c.HealthAPI.Enabled},
 	}
 
 	for _, i := range ints {
@@ -253,6 +259,7 @@ func ReadConfig(file string) (*Config, error) {
 		{secretsEndpoint, &c.SecretsAPI.Endpoint},
 		{secretsConn, &c.SecretsAPI.DB},
 		{certDir, &c.Certs.Directory},
+		{isolation, &c.IsolateAPI.Isolation},
 	}
 
 	for _, i := range strings {
@@ -263,7 +270,7 @@ func ReadConfig(file string) (*Config, error) {
 	}
 
 	// test database is set
-	if len(c.Database.DB) == 0 {
+	if len(c.Database.DB) == 0 && len(c.SecretsAPI.DB) == 0 {
 		return nil, fmt.Errorf("no database configured")
 	}
 

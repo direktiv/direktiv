@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	gocni "github.com/containerd/go-cni"
@@ -80,6 +82,8 @@ type isolateServer struct {
 
 	flowClient flow.DirektivFlowClient
 	grpcConn   *grpc.ClientConn
+
+	mtx sync.Mutex
 }
 
 type isolateWorkflow struct {
@@ -192,6 +196,17 @@ func newIsolateManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isol
 	// check CNI networking
 	is.cni, err = is.prepareNetwork()
 
+	// check the timeouts for firecracker sdk. they are very low for high load systems
+	if len(os.Getenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS")) == 0 {
+		log.Debugf("setting firecracker request timeout to 5000ms")
+		os.Setenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS", "5000")
+	}
+
+	if len(os.Getenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS")) == 0 {
+		log.Debugf("setting firecracker sdk init to 5s")
+		os.Setenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS", "5")
+	}
+
 	return is, err
 
 }
@@ -231,9 +246,14 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 		insecure = false
 	}
 
+	useSSL := true
+	if is.config.Minio.SSL == 0 {
+		useSSL = false
+	}
+
 	minioClient, err := minio.New(is.config.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(is.config.Minio.User, is.config.Minio.Password, ""),
-		Secure: true,
+		Secure: useSSL,
 		Transport: &http.Transport{
 			MaxIdleConns:       10,
 			IdleConnTimeout:    30 * time.Second,
@@ -274,6 +294,8 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 	is.grpcConn = conn
 	is.flowClient = flow.NewDirektivFlowClient(conn)
 
+	log.Infof("isolate runner started")
+
 	return nil
 }
 
@@ -304,6 +326,9 @@ func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 		cancel: cancel,
 		ctx:    ctx,
 	}
+
+	is.mtx.Lock()
+	defer is.mtx.Unlock()
 	is.actx[isolateID] = ctxs
 
 	return ctxs
@@ -312,6 +337,8 @@ func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 
 func (is *isolateServer) finishCancelIsolate(isolateID string) {
 
+	is.mtx.Lock()
+	defer is.mtx.Unlock()
 	if ctx, ok := is.actx[isolateID]; ok {
 		ctx.cancel()
 		delete(is.actx, isolateID)
@@ -334,28 +361,9 @@ func findAuthForRegistry(img string, registries map[string]string) []remote.Opti
 
 }
 
-func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
+func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolate.RunIsolateRequest, log15log dlog.Logger) {
 
-	var (
-		ns, instID, isolateID string
-		img, cmd              string
-
-		data, din []byte
-	)
-
-	ns = in.GetNamespace()
-	isolateID = in.GetActionId()
-
-	img = in.GetImage()
-	cmd = in.GetCommand()
-	instID = in.GetInstanceId()
-
-	log15log, err := (*is.instanceLogger).LoggerFunc(ns, instID)
-	if err != nil {
-		log.Errorf("can not create logger for isolate: %v", err)
-		return
-	}
-	defer log15log.Close()
+	var data, din []byte
 
 	serr := func(err error, errCode string) *IsolateError {
 		ae := IsolateError{
@@ -475,10 +483,43 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 
 	go func() {
 
-		log.Debugf("responding to isolate caller")
+		maxlen := math.Min(256, float64(len(data)))
+		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
 		is.respondToAction(nil, data, in)
 
 	}()
+
+}
+
+func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
+
+	var (
+		ns, instID, isolateID string
+		img, cmd              string
+	)
+
+	ns = in.GetNamespace()
+	isolateID = in.GetActionId()
+
+	log.Debugf("isolate action id: %v", isolateID)
+
+	img = in.GetImage()
+	cmd = in.GetCommand()
+	instID = in.GetInstanceId()
+
+	log15log, err := (*is.instanceLogger).LoggerFunc(ns, instID)
+	if err != nil {
+		log.Errorf("can not create logger for isolate: %v", err)
+		return
+	}
+	defer log15log.Close()
+
+	log.Debugf("isolation level: %v", is.config.IsolateAPI.Isolation)
+	if is.config.IsolateAPI.Isolation == "container" {
+		is.runAsContainer(img, cmd, isolateID, in, log15log)
+	} else {
+		is.runAsFirecracker(img, cmd, isolateID, in, log15log)
+	}
 
 }
 
@@ -496,8 +537,6 @@ func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 		log.Errorf("isolateID not provided")
 		return &resp, fmt.Errorf("isolateID empty")
 	}
-
-	log.Debugf("running isolate %s", in.GetNamespace())
 
 	go is.runAction(in)
 
@@ -534,11 +573,14 @@ func (is *isolateServer) retrieveImageS3(img, cmd, path string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+	// only encrypt if SSL
+	receiveOptions := minio.GetObjectOptions{}
+	if is.config.Minio.SSL > 0 {
+		encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+		receiveOptions.ServerSideEncryption = encryption
+	}
 
-	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, minio.GetObjectOptions{
-		ServerSideEncryption: encryption,
-	})
+	return is.minioClient.FGetObject(context.Background(), direktivBucket, h, path, receiveOptions)
 
 }
 
@@ -546,10 +588,14 @@ func (is *isolateServer) storeImageS3(img, cmd, disk string) error {
 
 	h := hashImg(img, cmd)
 
-	encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
-	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, minio.PutObjectOptions{
-		ServerSideEncryption: encryption,
-	})
+	// only encrypt if SSL
+	storeOptions := minio.PutObjectOptions{}
+	if is.config.Minio.SSL > 0 {
+		encryption := encrypt.DefaultPBKDF([]byte(is.config.Minio.Encrypt), []byte(direktivBucket+h))
+		storeOptions.ServerSideEncryption = encryption
+	}
+
+	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, storeOptions)
 
 	t := time.Now().Add((7 * 24) * time.Hour)
 	is.minioClient.PutObjectRetention(context.Background(), direktivBucket, h, minio.PutObjectRetentionOptions{

@@ -13,6 +13,7 @@ import (
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
 // WorkflowEventsCreate is the builder for creating a WorkflowEvents entity.
@@ -70,6 +71,25 @@ func (wec *WorkflowEventsCreate) AddWfeventswait(w ...*WorkflowEventsWait) *Work
 		ids[i] = w[i].ID
 	}
 	return wec.AddWfeventswaitIDs(ids...)
+}
+
+// SetWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by ID.
+func (wec *WorkflowEventsCreate) SetWorkflowinstanceID(id int) *WorkflowEventsCreate {
+	wec.mutation.SetWorkflowinstanceID(id)
+	return wec
+}
+
+// SetNillableWorkflowinstanceID sets the "workflowinstance" edge to the WorkflowInstance entity by ID if the given value is not nil.
+func (wec *WorkflowEventsCreate) SetNillableWorkflowinstanceID(id *int) *WorkflowEventsCreate {
+	if id != nil {
+		wec = wec.SetWorkflowinstanceID(*id)
+	}
+	return wec
+}
+
+// SetWorkflowinstance sets the "workflowinstance" edge to the WorkflowInstance entity.
+func (wec *WorkflowEventsCreate) SetWorkflowinstance(w *WorkflowInstance) *WorkflowEventsCreate {
+	return wec.SetWorkflowinstanceID(w.ID)
 }
 
 // Mutation returns the WorkflowEventsMutation object of the builder.
@@ -211,6 +231,7 @@ func (wec *WorkflowEventsCreate) createSpec() (*WorkflowEvents, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.workflow_wfevents = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wec.mutation.WfeventswaitIDs(); len(nodes) > 0 {
@@ -230,6 +251,26 @@ func (wec *WorkflowEventsCreate) createSpec() (*WorkflowEvents, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := wec.mutation.WorkflowinstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowevents.WorkflowinstanceTable,
+			Columns: []string{workflowevents.WorkflowinstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: workflowinstance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.workflow_instance_instance = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -28,8 +28,9 @@ import (
 )
 
 const (
-	fullMask    = "255.255.255.255"
-	direktivDir = "/direktiv-data"
+	fullMask     = "255.255.255.255"
+	direktivDir  = "/direktiv-data"
+	direktivData = "data.in"
 )
 
 var (

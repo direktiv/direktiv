@@ -1,13 +1,15 @@
 package model
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
 
 	"gopkg.in/yaml.v3"
 )
+
+// WorkflowIDRegex - Regex used to validate ID
+const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
 type Workflow struct {
 	ID          string               `yaml:"id"`
@@ -21,61 +23,9 @@ type Workflow struct {
 }
 
 func (o *Workflow) unmarshal(m map[string]interface{}) error {
-
-	// split start out from the rest
-	y, startFound := m["start"]
-	if startFound {
-		// Start
-
-		delete(m, "start")
-		strMap, ok := y.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid start")
-		}
-
-		strType, ok := strMap["type"]
-		if !ok {
-			return fmt.Errorf("missing 'type' for start")
-		}
-
-		strTypeString, ok := strType.(string)
-		if !ok {
-			return fmt.Errorf("start bad data-format for 'type'")
-		}
-
-		strData, err := json.Marshal(strMap)
-		if err != nil {
-			panic(err)
-		}
-
-		var start StartDefinition
-
-		switch strTypeString {
-		case StartTypeScheduled.String():
-			start = new(ScheduledStart)
-		case StartTypeEvent.String():
-			start = new(EventStart)
-		case StartTypeEventsXor.String():
-			start = new(EventsXorStart)
-		case StartTypeEventsAnd.String():
-			start = new(EventsAndStart)
-		case "":
-			return fmt.Errorf("start: type required")
-		default:
-			return fmt.Errorf("start: type unimplemented/unrecognized")
-		}
-
-		err = json.Unmarshal(strData, start)
-		if err != nil {
-			return err
-		}
-
-		err = start.Validate()
-		if err != nil {
-			return fmt.Errorf("start invalid: %w", err)
-		}
-
-		o.Start = start
+	// split start out from the rest, and umarshal it
+	if err := o.unmStart(m); err != nil {
+		return err
 	}
 
 	// split states out from the rest
@@ -86,14 +36,8 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 
 	delete(m, "states")
 
-	data, err := json.Marshal(&m)
-	if err != nil {
-		panic(err)
-	}
-
-	err = json.Unmarshal(data, &o)
-	if err != nil {
-		return err
+	if err := strictMapUnmarshal(m, &o); err != nil {
+		return fmt.Errorf("failed to decode workflow: %w", err)
 	}
 
 	// cast all states
@@ -105,99 +49,80 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 	o.States = make([]State, len(list))
 
 	for i := range list {
-
-		sm, ok := list[i].(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid state[%d]", i)
-		}
-
-		st, ok := sm["type"]
-		if !ok {
-			return fmt.Errorf("missing 'type' for state[%d]", i)
-		}
-
-		stype, ok := st.(string)
-		if !ok {
-			return fmt.Errorf("state[%d]: bad data-format for 'type'", i)
-		}
-
-		sdata, err := json.Marshal(sm)
-		if err != nil {
-			panic(err)
-		}
-
-		var s State
-
-		switch stype {
-		case StateTypeSwitch.String():
-			s = new(SwitchState)
-		case StateTypeForEach.String():
-			s = new(ForEachState)
-		case StateTypeAction.String():
-			s = new(ActionState)
-		case StateTypeConsume.String():
-			s = new(ConsumeEventState)
-		case StateTypeDelay.String():
-			s = new(DelayState)
-		case StateTypeEventsAnd.String():
-			s = new(EventsAndState)
-		case StateTypeEventsXor.String():
-			s = new(EventsXorState)
-		case StateTypeError.String():
-			s = new(ErrorState)
-		case StateTypeGenerateEvent.String():
-			s = new(GenerateEventState)
-		case StateTypeNoop.String():
-			s = new(NoopState)
-		case StateTypeValidate.String():
-			s = new(ValidateState)
-		case StateTypeCallback.String():
-			s = new(CallbackState)
-		case StateTypeParallel.String():
-			s = new(ParallelState)
-		case "":
-			return fmt.Errorf("state[%d]: type required", i)
-		default:
-			return fmt.Errorf("state[%d]: type unimplemented/unrecognized", i)
-		}
-
-		err = json.Unmarshal(sdata, s)
-		if err != nil {
+		// insert state in workflow.states[i]
+		if err := o.unmState(list[i], i); err != nil {
 			return err
 		}
+	}
 
-		o.States[i] = s
+	return o.validate()
+}
 
-		err = s.Validate()
+// unmStart - unmarshal "start" object to Workflow
+func (o *Workflow) unmStart(m map[string]interface{}) (err error) {
+	// split start out from the rest
+	y, startFound := m["start"]
+	if startFound {
+		// Start
+
+		delete(m, "start")
+		startMap, startType, err := processInterfaceMap(y)
 		if err != nil {
-			return fmt.Errorf("state[%d]: %w", i, err)
+			return fmt.Errorf("bad start: %w", err)
 		}
 
+		start, err := getStartFromType(startType)
+		if err != nil {
+			return fmt.Errorf("start: %w", err)
+		}
+
+		if err := strictMapUnmarshal(startMap, &start); err != nil {
+			return fmt.Errorf("failed to decode start: %w", err)
+		}
+
+		err = start.Validate()
+		if err != nil {
+			err = fmt.Errorf("start invalid: %w", err)
+		}
+
+		o.Start = start
 	}
 
-	err = o.validate()
+	return err
+}
+
+// unmState - unmarshal "state" object to Workflow States
+//	the state interface is casted to a supported State 'type'
+//	and then inserted into workflow[sIndex]
+func (o *Workflow) unmState(state interface{}, sIndex int) error {
+	stateMap, stateType, err := processInterfaceMap(state)
 	if err != nil {
-		return err
+		return fmt.Errorf("state[%d]: %w", sIndex, err)
 	}
 
-	return nil
+	s, err := getStateFromType(stateType)
+	if err != nil {
+		err = fmt.Errorf("state[%d]: %w", sIndex, err)
+	}
 
+	if err := strictMapUnmarshal(stateMap, &s); err != nil {
+		return fmt.Errorf("failed to decode state[%d]: %w", sIndex, err)
+	}
+
+	o.States[sIndex] = s
+
+	err = s.Validate()
+	if err != nil {
+		err = fmt.Errorf("state[%d]: %w", sIndex, err)
+	}
+
+	return err
 }
 
 func (o *Workflow) validate() error {
-	if o.ID == "" {
-		return fmt.Errorf("workflow id required")
-	}
 
-	regex := "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
-
-	matched, err := regexp.MatchString(regex, o.ID)
-	if err != nil {
+	if err := o.regexValidateID(); err != nil {
 		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("workflow ID must match regex: %s", regex)
 	}
 
 	states, err := o.getStatesMap()
@@ -262,12 +187,24 @@ func (o *Workflow) validate() error {
 	}
 
 	// timeout
-	if sErr := o.Timeouts.Validate(); sErr != nil {
-		return sErr
+	return o.Timeouts.Validate()
+}
+
+func (o *Workflow) regexValidateID() error {
+	if o.ID == "" {
+		return fmt.Errorf("workflow id required")
+	}
+
+	matched, err := regexp.MatchString(WorkflowIDRegex, o.ID)
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return fmt.Errorf("workflow ID must match regex: %s", WorkflowIDRegex)
 	}
 
 	return nil
-
 }
 
 func (o *Workflow) GetStates() []State {

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	"github.com/appc/spec/pkg/device"
@@ -32,6 +33,9 @@ const (
 	downloadPath = "https://downloads.vorteil.io/firecracker-vmlinux"
 )
 
+// mutex for loop devices
+var loopMtx sync.Mutex
+
 func (is *isolateServer) buildDataDisk(name string, data []byte, nws networkSetting) (string, error) {
 
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("data%s.raw", name))
@@ -52,7 +56,7 @@ func (is *isolateServer) buildDataDisk(name string, data []byte, nws networkSett
 	defer file.Close()
 
 	// create data.in
-	ioutil.WriteFile(filepath.Join(dir, "data.in"), data, 0755)
+	ioutil.WriteFile(filepath.Join(dir, direktivData), data, 0755)
 
 	b, err := json.Marshal(nws)
 	if err != nil {
@@ -80,18 +84,60 @@ type cowDisk struct {
 	cowDisk, finalDisk string
 }
 
+func cleanupCOW(name string, cd cowDisk) {
+
+	cleanFile := func(path string) {
+		if len(path) > 0 {
+			os.Remove(path)
+		}
+	}
+
+	detachFile := func(dev losetup.Device) {
+		if len(dev.Path()) > 0 {
+			dev.Detach()
+		}
+	}
+
+	detachFile(cd.devRoot)
+	detachFile(cd.devCow)
+
+	cmd := exec.Command("dmsetup", "remove", "-f", name)
+	cmd.Run()
+
+	cleanFile(cd.finalDisk)
+	cleanFile(cd.cowDisk)
+
+}
+
 // this takes raw disk and cow disk and does losetup & dmsetup
 // firecracker jailer can not link it so we do a mknod in /tmp and use
 // this in jailer
 func createCOWDisk(name, disk string) (cowDisk, error) {
 
-	var cd cowDisk
+	var (
+		cd  cowDisk
+		err error
+		c   *os.File
+	)
+
+	// mutex loop devices
+	loopMtx.Lock()
+	defer loopMtx.Unlock()
+
+	// we need to cleanup if something fails
+	defer func() {
+		if err != nil {
+			log.Errorf("error building COW disk: %v", err)
+			cleanupCOW(name, cd)
+		}
+	}()
+
 	cd.cowDisk = filepath.Join(os.TempDir(), fmt.Sprintf("%s.cow", name))
 
 	log.Debugf("create cow disk: %v, %v", name, disk)
 
 	// create empty file
-	c, err := os.Create(cd.cowDisk)
+	c, err = os.Create(cd.cowDisk)
 	if err != nil {
 		return cd, err
 	}
@@ -111,16 +157,27 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	// attach losetup
 	cd.devRoot, err = losetup.Attach(disk, 0, true)
 	if err != nil {
+		log.Errorf("error loop disk: %v", err)
+		return cd, err
+	}
+	log.Debugf("loop attached %v", cd.devRoot.Path())
+
+	_, err = os.Stat(cd.cowDisk)
+	if err != nil {
 		return cd, err
 	}
 
 	cd.devCow, err = losetup.Attach(cd.cowDisk, 0, false)
 	if err != nil {
+		log.Errorf("error loop cow: %v", err)
 		return cd, err
 	}
+	log.Debugf("cow attached %v", cd.devRoot.Path())
+
+	log.Debugf("disks %s: %s, %s", name, cd.devRoot, cd.devCow)
 
 	log.Debugf("create devmapper %s", name)
-	cmd := exec.Command("dmsetup", "create", name, "--table", fmt.Sprintf("0 %d snapshot %s %s p 4", fi.Size()/512, cd.devRoot.Path(), cd.devCow.Path()))
+	cmd := exec.Command("dmsetup", "create", name, "--table", fmt.Sprintf("0 %d snapshot %s %s p 16", fi.Size()/512, cd.devRoot.Path(), cd.devCow.Path()))
 	cmd.Stderr = os.Stdout
 	cmd.Stdout = os.Stdout
 
@@ -128,8 +185,6 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	if err != nil {
 		return cd, err
 	}
-
-	log.Debugf("disks %s, %s", cd.devRoot, cd.devCow)
 
 	cow := fmt.Sprintf("/dev/mapper/%s", name)
 	gg, err := os.Stat(cow)
@@ -165,14 +220,10 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 
 	// cleanup
 	defer func() {
-		log.Debugf("detach cow disks")
-		d.devRoot.Detach()
-		d.devCow.Detach()
 
-		cmd := exec.Command("dmsetup", "remove", name)
-		cmd.Run()
-		os.Remove(d.finalDisk)
-		os.Remove(d.cowDisk)
+		loopMtx.Lock()
+		cleanupCOW(name, d)
+		loopMtx.Unlock()
 
 		// remove jailer files
 		jailerFiles := filepath.Join("/srv/jailer/firecracker/", name)
@@ -246,6 +297,7 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 	log.Debugf("firecracker using %d cpu, %d ram", *cpu, *mem)
 
 	fcConf := firecracker.Config{
+		SocketPath:      fmt.Sprintf("fcsock%v.sock", name),
 		KernelImagePath: kf,
 		KernelArgs:      fmt.Sprintf("init=/vorteil/vinitd rw console=ttyS0 loglevel=2 reboot=k panic=1 pci=off i8042.noaux i8042.nomux i8042.nopnp i8042.dumbkbd vt.color=0x00 random.trust_cpu=on root=PARTUUID=%s direktiv", vimg.Part2UUIDString),
 		Drives:          devices,

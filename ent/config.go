@@ -25,8 +25,6 @@ type config struct {
 // hooks per client, for fast access.
 type hooks struct {
 	Namespace          []ent.Hook
-	Server             []ent.Hook
-	Subroutine         []ent.Hook
 	Timer              []ent.Hook
 	Workflow           []ent.Hook
 	WorkflowEvents     []ent.Hook

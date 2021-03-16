@@ -10,6 +10,7 @@ import (
 	"math"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/itchyny/gojq"
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
@@ -17,6 +18,8 @@ import (
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/model"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 type workflowLogicInstance struct {
@@ -27,11 +30,173 @@ type workflowLogicInstance struct {
 	rec       *ent.WorkflowInstance
 	step      int
 
-	namespace string
-	id        string
-	lockConn  *sql.Conn
-	logic     stateLogic
-	logger    dlog.Logger
+	namespace   string
+	id          string
+	logToEvents string
+	lockConn    *sql.Conn
+	logic       stateLogic
+	logger      dlog.Logger
+}
+
+func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input []byte) (*workflowLogicInstance, error) {
+
+	var err error
+	var inputData, stateData interface{}
+
+	err = json.Unmarshal(input, &inputData)
+	if err != nil {
+		inputData = base64.StdEncoding.EncodeToString(input)
+	}
+
+	if _, ok := inputData.(map[string]interface{}); ok {
+		stateData = inputData
+	} else {
+		stateData = map[string]interface{}{
+			"input": inputData,
+		}
+	}
+
+	rec, err := we.db.getNamespaceWorkflow(name, namespace)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, NewUncatchableError("direktiv.subflow.notExist", "workflow '%s' does not exist", name)
+		}
+		return nil, NewInternalError(err)
+	}
+
+	if !rec.Active {
+		return nil, grpc.Errorf(codes.InvalidArgument, "workflow is inactive")
+	}
+
+	wf := new(model.Workflow)
+	err = wf.Load(rec.Workflow)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
+	wli := new(workflowLogicInstance)
+	wli.namespace = namespace
+	wli.engine = we
+	wli.wf = wf
+	wli.data = stateData
+	wli.logToEvents = rec.LogToEvents
+
+	wli.id = fmt.Sprintf("%s/%s/%s", namespace, name, randSeq(6))
+	wli.startData, err = json.MarshalIndent(wli.data, "", "  ")
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
+	wli.logger, err = (*we.instanceLogger).LoggerFunc(namespace, wli.id)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
+	return wli, nil
+
+}
+
+func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (context.Context, *workflowLogicInstance, error) {
+
+	wli := new(workflowLogicInstance)
+	wli.id = id
+	wli.engine = we
+
+	var success bool
+
+	defer func() {
+		if !success {
+			wli.unlock()
+		}
+	}()
+
+	ctx, err := wli.lock(time.Second * 5)
+	if err != nil {
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot assume control of workflow instance lock: %v", err))
+	}
+
+	rec, err := we.db.getWorkflowInstance(context.Background(), id)
+	if err != nil {
+		return nil, nil, NewInternalError(err)
+	}
+	wli.rec = rec
+
+	qwf, err := rec.QueryWorkflow().Only(ctx)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot resolve instance workflow: %v", err))
+	}
+
+	qns, err := qwf.QueryNamespace().Only(ctx)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot resolve instance namespace: %v", err))
+	}
+
+	wli.namespace = qns.ID
+
+	wli.logger, err = (*we.instanceLogger).LoggerFunc(qns.ID, wli.id)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize instance logger: %v", err))
+	}
+
+	err = json.Unmarshal([]byte(rec.StateData), &wli.data)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow state data: %v", err))
+	}
+
+	wli.wf = new(model.Workflow)
+	wfrec, err := rec.QueryWorkflow().Only(ctx)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow from database: %v", err))
+	}
+	wli.logToEvents = wfrec.LogToEvents
+
+	err = wli.wf.Load(wfrec.Workflow)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow definition: %v", err))
+	}
+
+	if rec.Status != "pending" && rec.Status != "running" {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
+	}
+
+	wli.step = step
+	if len(rec.Flow) != wli.step {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: steps out of sync (expect/actual - %d/%d)", step, len(rec.Flow)))
+	}
+
+	state := rec.Flow[step-1]
+	states := wli.wf.GetStatesMap()
+	stateObject, exists := states[state]
+	if !exists {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("workflow cannot resolve state: %s", state))
+	}
+
+	init, exists := wli.engine.stateLogics[stateObject.GetType()]
+	if !exists {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("engine cannot resolve state type: %s", stateObject.GetType().String()))
+	}
+
+	stateLogic, err := init(wli.wf, stateObject)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize state logic: %v", err))
+	}
+	wli.logic = stateLogic
+
+	success = true
+
+	return ctx, wli, nil
+
 }
 
 func (wli *workflowLogicInstance) Close() error {
@@ -42,7 +207,7 @@ func (wli *workflowLogicInstance) Raise(ctx context.Context, cerr *CatchableErro
 
 	var err error
 
-	if wli.rec.ErrorCode != "" {
+	if wli.rec.ErrorCode == "" {
 		wli.rec, err = wli.rec.Update().
 			SetStatus("failed").
 			SetErrorCode(cerr.Code).
@@ -242,8 +407,31 @@ func jqObject(input interface{}, command string) (map[string]interface{}, error)
 
 }
 
+func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
+
+	s := fmt.Sprintf(msg, a...)
+
+	wli.logger.Info(s)
+
+	// TODO: detect content type and handle base64 data
+
+	if attr := wli.logToEvents; attr != "" {
+		event := cloudevents.NewEvent()
+		event.SetSource(wli.wf.ID)
+		event.SetType("direktiv.instanceLog")
+		event.SetExtension("logger", attr)
+		event.SetData("application/json", s)
+		go wli.engine.server.handleEvent(&event)
+	}
+
+}
+
 func (wli *workflowLogicInstance) Log(msg string, a ...interface{}) {
-	wli.logger.Info(fmt.Sprintf(msg, a...))
+
+	s := fmt.Sprintf(msg, a...)
+
+	wli.logger.Info(s)
+
 }
 
 func (wli *workflowLogicInstance) Save(ctx context.Context, data []byte) error {
@@ -347,11 +535,17 @@ func (wli *workflowLogicInstance) scheduleTimeout(t time.Time, soft bool) {
 
 	var err error
 	deadline := t
-	oldId := fmt.Sprintf("timeout:%s:%d", wli.id, wli.step-1)
-	id := fmt.Sprintf("timeout:%s:%d", wli.id, wli.step)
 
+	prefixes := []string{"soft", "hard"}
+	prefix := prefixes[1]
+	if soft {
+		prefix = prefixes[0]
+	}
+
+	oldId := fmt.Sprintf("timeout:%s:%s:%d", wli.id, prefix, wli.step-1)
+	id := fmt.Sprintf("timeout:%s:%s:%d", wli.id, prefix, wli.step)
 	if wli.step == 0 {
-		id = fmt.Sprintf("timeout:%s", wli.id)
+		id = fmt.Sprintf("timeout:%s:%s", wli.id, prefix)
 	}
 
 	// cancel existing timeouts

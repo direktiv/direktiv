@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 
@@ -99,9 +100,8 @@ func Execute(conn *grpc.ClientConn, namespace string, id string, input string) (
 }
 
 // getWorkflowUID returns the UID of a workflow
-func getWorkflowUID(conn *grpc.ClientConn, namespace, id string) (string, error) {
-	client, ctx, cancel := util.CreateClient(conn)
-	defer cancel()
+func getWorkflowUID(ctx context.Context, client ingress.DirektivIngressClient, namespace, id string) (string, error) {
+	// defer cancel()
 	// prepare request
 	request := ingress.GetWorkflowByIdRequest{
 		Namespace: &namespace,
@@ -148,7 +148,7 @@ func Update(conn *grpc.ClientConn, namespace string, id string, filepath string)
 		return "", err
 	}
 
-	uid, err := getWorkflowUID(conn, namespace, id)
+	uid, err := getWorkflowUID(ctx, client, namespace, id)
 	if err != nil {
 		return "", err
 	}
@@ -174,7 +174,7 @@ func Delete(conn *grpc.ClientConn, namespace, id string) (string, error) {
 	client, ctx, cancel := util.CreateClient(conn)
 	defer cancel()
 
-	uid, err := getWorkflowUID(conn, namespace, id)
+	uid, err := getWorkflowUID(ctx, client, namespace, id)
 	if err != nil {
 		return "", err
 	}

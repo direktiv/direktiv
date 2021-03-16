@@ -1,13 +1,16 @@
 package direktiv
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/base64"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/mitchellh/hashstructure/v2"
 	hash "github.com/mitchellh/hashstructure/v2"
@@ -18,6 +21,11 @@ import (
 const (
 	eventTypeString = "type"
 )
+
+func init() {
+	gob.Register(new(event.EventContextV1))
+	gob.Register(new(event.EventContextV03))
+}
 
 func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 
@@ -62,7 +70,7 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 		set events = jsonb_set(events, '{%s}', '"%s"', true)
 		WHERE events::jsonb ? '%s' and workflow_events_wfeventswait = %d
 		returning *`, chash,
-		base64.StdEncoding.EncodeToString([]byte(ce.String())), chash, id)
+		base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
 
 	rows, err := db.Query(sql)
 	if err != nil {
@@ -110,10 +118,13 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 			json.Unmarshal(events, &e)
 
 			for _, g := range e {
-				ev := cloudevents.NewEvent()
-				b, _ := base64.URLEncoding.DecodeString(g)
-				json.Unmarshal(b, &ev)
-				retEvents = append(retEvents, &ev)
+				b, err := base64.StdEncoding.DecodeString(g)
+				if err != nil {
+					log.Errorf("event data corrupt: %v", err)
+					continue
+				}
+				ev := bytesToEvent(b)
+				retEvents = append(retEvents, ev)
 			}
 
 		}
@@ -169,6 +180,7 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 		}
 
 		conn, err = s.dbManager.lockDB(hash, 5)
+
 		if err != nil {
 			log.Errorf("can not lock event row: %d, %v", id, err)
 			continue
@@ -245,20 +257,20 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 
 		}
 
+		unlock()
 		// if single or multiple added events we fire
 		if len(retEvents) > 0 {
 			uid, _ := uuid.Parse(wf)
 			log.Debugf("run workflow %v with %d events", uid, len(retEvents))
-
 			if len(signature) == 0 {
-				s.engine.EventsInvoke(uid, ce)
+				go s.engine.EventsInvoke(uid, retEvents...)
 			} else {
-				log.Debugf("calling with signature %v", signature)
-				s.engine.wakeEventsWaiter(signature, retEvents)
+				log.Debugf("calling with signature %v", string(signature))
+				s.dbManager.deleteWorkflowEventListener(id)
+				go s.engine.wakeEventsWaiter(signature, retEvents)
 			}
 
 		}
-		s.dbManager.unlockDB(hash, conn)
 
 	}
 
@@ -294,7 +306,7 @@ func (s *WorkflowServer) addEventListenerWait(cevent *cloudevents.Event, id int,
 
 	for _, v := range eventTypes {
 		if v == cevent.Type() {
-			events[generateCorrelationHash(cevent, v, correlations)] = base64.StdEncoding.EncodeToString([]byte(cevent.String()))
+			events[generateCorrelationHash(cevent, v, correlations)] = base64.StdEncoding.EncodeToString(eventToBytes(*cevent))
 		} else {
 			events[generateCorrelationHash(cevent, v, correlations)] = nil
 		}
@@ -303,4 +315,28 @@ func (s *WorkflowServer) addEventListenerWait(cevent *cloudevents.Event, id int,
 	_, err := s.dbManager.addWorkflowEventWait(events, 1, id)
 	return err
 
+}
+
+func eventToBytes(cevent cloudevents.Event) []byte {
+
+	var ev bytes.Buffer
+	enc := gob.NewEncoder(&ev)
+	err := enc.Encode(cevent)
+	if err != nil {
+		log.Errorf("can not convert event to bytes: %v", err)
+	}
+	return ev.Bytes()
+}
+
+func bytesToEvent(b []byte) *cloudevents.Event {
+
+	gob.Register(new(event.EventContextV1))
+
+	ev := new(cloudevents.Event)
+	enc := gob.NewDecoder(bytes.NewReader(b))
+	err := enc.Decode(ev)
+	if err != nil {
+		log.Errorf("can not convert bytes to event: %v", err)
+	}
+	return ev
 }

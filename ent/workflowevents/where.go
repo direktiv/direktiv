@@ -327,6 +327,34 @@ func HasWfeventswaitWith(preds ...predicate.WorkflowEventsWait) predicate.Workfl
 	})
 }
 
+// HasWorkflowinstance applies the HasEdge predicate on the "workflowinstance" edge.
+func HasWorkflowinstance() predicate.WorkflowEvents {
+	return predicate.WorkflowEvents(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(WorkflowinstanceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowinstanceTable, WorkflowinstanceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWorkflowinstanceWith applies the HasEdge predicate on the "workflowinstance" edge with a given conditions (other predicates).
+func HasWorkflowinstanceWith(preds ...predicate.WorkflowInstance) predicate.WorkflowEvents {
+	return predicate.WorkflowEvents(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(WorkflowinstanceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowinstanceTable, WorkflowinstanceColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.WorkflowEvents) predicate.WorkflowEvents {
 	return predicate.WorkflowEvents(func(s *sql.Selector) {

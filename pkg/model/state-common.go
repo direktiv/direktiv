@@ -1,6 +1,11 @@
 package model
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/itchyny/gojq"
+)
 
 type RetryDefinition struct {
 	MaxAttempts int     `yaml:"max_attempts"`
@@ -88,6 +93,7 @@ func (o *ProduceEventDefinition) Validate() error {
 type StateCommon struct {
 	ID   string    `yaml:"id"`
 	Type StateType `yaml:"type"`
+	Log  string    `yaml:"log"`
 }
 
 func (o *StateCommon) GetType() StateType {
@@ -99,5 +105,52 @@ func (o *StateCommon) commonValidate() error {
 		return errors.New("id required")
 	}
 
+	if o.Log != "" {
+		if _, err := gojq.Parse(o.Log); err != nil {
+			return fmt.Errorf("log is an invalid jq string: %v", err)
+		}
+	}
+
 	return nil
+}
+
+// util
+func getStateFromType(stype string) (State, error) {
+	var s State
+	var err error
+
+	switch stype {
+	case StateTypeSwitch.String():
+		s = new(SwitchState)
+	case StateTypeForEach.String():
+		s = new(ForEachState)
+	case StateTypeAction.String():
+		s = new(ActionState)
+	case StateTypeConsume.String():
+		s = new(ConsumeEventState)
+	case StateTypeDelay.String():
+		s = new(DelayState)
+	case StateTypeEventsAnd.String():
+		s = new(EventsAndState)
+	case StateTypeEventsXor.String():
+		s = new(EventsXorState)
+	case StateTypeError.String():
+		s = new(ErrorState)
+	case StateTypeGenerateEvent.String():
+		s = new(GenerateEventState)
+	case StateTypeNoop.String():
+		s = new(NoopState)
+	case StateTypeValidate.String():
+		s = new(ValidateState)
+	case StateTypeCallback.String():
+		s = new(CallbackState)
+	case StateTypeParallel.String():
+		s = new(ParallelState)
+	case "":
+		err = errors.New("type required")
+	default:
+		err = errors.New("type unimplemented/unrecognized")
+	}
+
+	return s, err
 }

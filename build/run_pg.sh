@@ -14,7 +14,6 @@ echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf
 
 /usr/local/bin/createuser -s postgres
 /usr/local/bin/psql -l
-#/usr/local/bin/psql --help
 
 /usr/local/bin/createdb direktiv
 /usr/local/bin/psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD 'postgres';"

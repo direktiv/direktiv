@@ -377,7 +377,8 @@ func (wewq *WorkflowEventsWaitQuery) sqlAll(ctx context.Context) ([]*WorkflowEve
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*WorkflowEventsWait)
 		for i := range nodes {
-			if fk := nodes[i].workflow_events_wfeventswait; fk != nil {
+			fk := nodes[i].workflow_events_wfeventswait
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -409,7 +410,7 @@ func (wewq *WorkflowEventsWaitQuery) sqlCount(ctx context.Context) (int, error) 
 func (wewq *WorkflowEventsWaitQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := wewq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }

@@ -11,8 +11,6 @@ import (
 	"github.com/vorteil/direktiv/ent/migrate"
 
 	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/server"
-	"github.com/vorteil/direktiv/ent/subroutine"
 	"github.com/vorteil/direktiv/ent/timer"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
@@ -31,10 +29,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Server is the client for interacting with the Server builders.
-	Server *ServerClient
-	// Subroutine is the client for interacting with the Subroutine builders.
-	Subroutine *SubroutineClient
 	// Timer is the client for interacting with the Timer builders.
 	Timer *TimerClient
 	// Workflow is the client for interacting with the Workflow builders.
@@ -59,8 +53,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Namespace = NewNamespaceClient(c.config)
-	c.Server = NewServerClient(c.config)
-	c.Subroutine = NewSubroutineClient(c.config)
 	c.Timer = NewTimerClient(c.config)
 	c.Workflow = NewWorkflowClient(c.config)
 	c.WorkflowEvents = NewWorkflowEventsClient(c.config)
@@ -92,7 +84,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
 	cfg := c.config
 	cfg.driver = tx
@@ -100,8 +92,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                ctx,
 		config:             cfg,
 		Namespace:          NewNamespaceClient(cfg),
-		Server:             NewServerClient(cfg),
-		Subroutine:         NewSubroutineClient(cfg),
 		Timer:              NewTimerClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
@@ -119,15 +109,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		BeginTx(context.Context, *sql.TxOptions) (dialect.Tx, error)
 	}).BeginTx(ctx, opts)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
 		config:             cfg,
 		Namespace:          NewNamespaceClient(cfg),
-		Server:             NewServerClient(cfg),
-		Subroutine:         NewSubroutineClient(cfg),
 		Timer:              NewTimerClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
@@ -163,8 +151,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Namespace.Use(hooks...)
-	c.Server.Use(hooks...)
-	c.Subroutine.Use(hooks...)
 	c.Timer.Use(hooks...)
 	c.Workflow.Use(hooks...)
 	c.WorkflowEvents.Use(hooks...)
@@ -274,182 +260,6 @@ func (c *NamespaceClient) QueryWorkflows(n *Namespace) *WorkflowQuery {
 // Hooks returns the client hooks.
 func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
-}
-
-// ServerClient is a client for the Server schema.
-type ServerClient struct {
-	config
-}
-
-// NewServerClient returns a client for the Server from the given config.
-func NewServerClient(c config) *ServerClient {
-	return &ServerClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `server.Hooks(f(g(h())))`.
-func (c *ServerClient) Use(hooks ...Hook) {
-	c.hooks.Server = append(c.hooks.Server, hooks...)
-}
-
-// Create returns a create builder for Server.
-func (c *ServerClient) Create() *ServerCreate {
-	mutation := newServerMutation(c.config, OpCreate)
-	return &ServerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Server entities.
-func (c *ServerClient) CreateBulk(builders ...*ServerCreate) *ServerCreateBulk {
-	return &ServerCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Server.
-func (c *ServerClient) Update() *ServerUpdate {
-	mutation := newServerMutation(c.config, OpUpdate)
-	return &ServerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ServerClient) UpdateOne(s *Server) *ServerUpdateOne {
-	mutation := newServerMutation(c.config, OpUpdateOne, withServer(s))
-	return &ServerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ServerClient) UpdateOneID(id int) *ServerUpdateOne {
-	mutation := newServerMutation(c.config, OpUpdateOne, withServerID(id))
-	return &ServerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Server.
-func (c *ServerClient) Delete() *ServerDelete {
-	mutation := newServerMutation(c.config, OpDelete)
-	return &ServerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *ServerClient) DeleteOne(s *Server) *ServerDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *ServerClient) DeleteOneID(id int) *ServerDeleteOne {
-	builder := c.Delete().Where(server.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ServerDeleteOne{builder}
-}
-
-// Query returns a query builder for Server.
-func (c *ServerClient) Query() *ServerQuery {
-	return &ServerQuery{config: c.config}
-}
-
-// Get returns a Server entity by its id.
-func (c *ServerClient) Get(ctx context.Context, id int) (*Server, error) {
-	return c.Query().Where(server.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ServerClient) GetX(ctx context.Context, id int) *Server {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *ServerClient) Hooks() []Hook {
-	return c.hooks.Server
-}
-
-// SubroutineClient is a client for the Subroutine schema.
-type SubroutineClient struct {
-	config
-}
-
-// NewSubroutineClient returns a client for the Subroutine from the given config.
-func NewSubroutineClient(c config) *SubroutineClient {
-	return &SubroutineClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `subroutine.Hooks(f(g(h())))`.
-func (c *SubroutineClient) Use(hooks ...Hook) {
-	c.hooks.Subroutine = append(c.hooks.Subroutine, hooks...)
-}
-
-// Create returns a create builder for Subroutine.
-func (c *SubroutineClient) Create() *SubroutineCreate {
-	mutation := newSubroutineMutation(c.config, OpCreate)
-	return &SubroutineCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Subroutine entities.
-func (c *SubroutineClient) CreateBulk(builders ...*SubroutineCreate) *SubroutineCreateBulk {
-	return &SubroutineCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Subroutine.
-func (c *SubroutineClient) Update() *SubroutineUpdate {
-	mutation := newSubroutineMutation(c.config, OpUpdate)
-	return &SubroutineUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SubroutineClient) UpdateOne(s *Subroutine) *SubroutineUpdateOne {
-	mutation := newSubroutineMutation(c.config, OpUpdateOne, withSubroutine(s))
-	return &SubroutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SubroutineClient) UpdateOneID(id int) *SubroutineUpdateOne {
-	mutation := newSubroutineMutation(c.config, OpUpdateOne, withSubroutineID(id))
-	return &SubroutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Subroutine.
-func (c *SubroutineClient) Delete() *SubroutineDelete {
-	mutation := newSubroutineMutation(c.config, OpDelete)
-	return &SubroutineDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *SubroutineClient) DeleteOne(s *Subroutine) *SubroutineDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *SubroutineClient) DeleteOneID(id int) *SubroutineDeleteOne {
-	builder := c.Delete().Where(subroutine.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SubroutineDeleteOne{builder}
-}
-
-// Query returns a query builder for Subroutine.
-func (c *SubroutineClient) Query() *SubroutineQuery {
-	return &SubroutineQuery{config: c.config}
-}
-
-// Get returns a Subroutine entity by its id.
-func (c *SubroutineClient) Get(ctx context.Context, id int) (*Subroutine, error) {
-	return c.Query().Where(subroutine.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SubroutineClient) GetX(ctx context.Context, id int) *Subroutine {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *SubroutineClient) Hooks() []Hook {
-	return c.hooks.Subroutine
 }
 
 // TimerClient is a client for the Timer schema.
@@ -791,6 +601,22 @@ func (c *WorkflowEventsClient) QueryWfeventswait(we *WorkflowEvents) *WorkflowEv
 	return query
 }
 
+// QueryWorkflowinstance queries the workflowinstance edge of a WorkflowEvents.
+func (c *WorkflowEventsClient) QueryWorkflowinstance(we *WorkflowEvents) *WorkflowInstanceQuery {
+	query := &WorkflowInstanceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := we.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowevents.Table, workflowevents.FieldID, id),
+			sqlgraph.To(workflowinstance.Table, workflowinstance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workflowevents.WorkflowinstanceTable, workflowevents.WorkflowinstanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(we.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *WorkflowEventsClient) Hooks() []Hook {
 	return c.hooks.WorkflowEvents
@@ -992,6 +818,22 @@ func (c *WorkflowInstanceClient) QueryWorkflow(wi *WorkflowInstance) *WorkflowQu
 			sqlgraph.From(workflowinstance.Table, workflowinstance.FieldID, id),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, workflowinstance.WorkflowTable, workflowinstance.WorkflowColumn),
+		)
+		fromV = sqlgraph.Neighbors(wi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInstance queries the instance edge of a WorkflowInstance.
+func (c *WorkflowInstanceClient) QueryInstance(wi *WorkflowInstance) *WorkflowEventsQuery {
+	query := &WorkflowEventsQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := wi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowinstance.Table, workflowinstance.FieldID, id),
+			sqlgraph.To(workflowevents.Table, workflowevents.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowinstance.InstanceTable, workflowinstance.InstanceColumn),
 		)
 		fromV = sqlgraph.Neighbors(wi.driver.Dialect(), step)
 		return fromV, nil

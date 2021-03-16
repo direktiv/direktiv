@@ -21,38 +21,6 @@ var (
 		PrimaryKey:  []*schema.Column{NamespacesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
-	// ServersColumns holds the columns for the "servers" table.
-	ServersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "ip", Type: field.TypeString, Unique: true},
-		{Name: "ext_ip", Type: field.TypeString},
-		{Name: "nats_port", Type: field.TypeInt},
-		{Name: "member_port", Type: field.TypeInt},
-		{Name: "added", Type: field.TypeTime},
-	}
-	// ServersTable holds the schema information for the "servers" table.
-	ServersTable = &schema.Table{
-		Name:        "servers",
-		Columns:     ServersColumns,
-		PrimaryKey:  []*schema.Column{ServersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
-	}
-	// SubroutinesColumns holds the columns for the "subroutines" table.
-	SubroutinesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "caller_id", Type: field.TypeString, Unique: true},
-		{Name: "semaphore", Type: field.TypeInt},
-		{Name: "memory", Type: field.TypeString},
-		{Name: "subroutine_ids", Type: field.TypeJSON},
-		{Name: "subroutine_responses", Type: field.TypeJSON, Nullable: true},
-	}
-	// SubroutinesTable holds the schema information for the "subroutines" table.
-	SubroutinesTable = &schema.Table{
-		Name:        "subroutines",
-		Columns:     SubroutinesColumns,
-		PrimaryKey:  []*schema.Column{SubroutinesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
-	}
 	// TimersColumns holds the columns for the "timers" table.
 	TimersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -76,8 +44,9 @@ var (
 		{Name: "created", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 1024, Default: ""},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "revision", Type: field.TypeInt},
+		{Name: "revision", Type: field.TypeInt, Default: 0},
 		{Name: "workflow", Type: field.TypeBytes},
+		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
 		{Name: "namespace_workflows", Type: field.TypeString, Nullable: true, Size: 64},
 	}
 	// WorkflowsTable holds the schema information for the "workflows" table.
@@ -87,9 +56,8 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflows_namespaces_workflows",
-				Columns: []*schema.Column{WorkflowsColumns[7]},
-
+				Symbol:     "workflows_namespaces_workflows",
+				Columns:    []*schema.Column{WorkflowsColumns[8]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -98,7 +66,7 @@ var (
 			{
 				Name:    "workflow_name_namespace_workflows",
 				Unique:  true,
-				Columns: []*schema.Column{WorkflowsColumns[1], WorkflowsColumns[7]},
+				Columns: []*schema.Column{WorkflowsColumns[1], WorkflowsColumns[8]},
 			},
 		},
 	}
@@ -110,6 +78,7 @@ var (
 		{Name: "signature", Type: field.TypeBytes, Nullable: true},
 		{Name: "count", Type: field.TypeInt},
 		{Name: "workflow_wfevents", Type: field.TypeUUID, Nullable: true},
+		{Name: "workflow_instance_instance", Type: field.TypeInt, Nullable: true},
 	}
 	// WorkflowEventsTable holds the schema information for the "workflow_events" table.
 	WorkflowEventsTable = &schema.Table{
@@ -118,10 +87,15 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowEventsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflow_events_workflows_wfevents",
-				Columns: []*schema.Column{WorkflowEventsColumns[5]},
-
+				Symbol:     "workflow_events_workflows_wfevents",
+				Columns:    []*schema.Column{WorkflowEventsColumns[5]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "workflow_events_workflow_instances_instance",
+				Columns:    []*schema.Column{WorkflowEventsColumns[6]},
+				RefColumns: []*schema.Column{WorkflowInstancesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -139,9 +113,8 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowEventsWaitsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflow_events_waits_workflow_events_wfeventswait",
-				Columns: []*schema.Column{WorkflowEventsWaitsColumns[2]},
-
+				Symbol:     "workflow_events_waits_workflow_events_wfeventswait",
+				Columns:    []*schema.Column{WorkflowEventsWaitsColumns[2]},
 				RefColumns: []*schema.Column{WorkflowEventsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -174,9 +147,8 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowInstancesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflow_instances_workflows_instances",
-				Columns: []*schema.Column{WorkflowInstancesColumns[16]},
-
+				Symbol:     "workflow_instances_workflows_instances",
+				Columns:    []*schema.Column{WorkflowInstancesColumns[16]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -185,8 +157,6 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		NamespacesTable,
-		ServersTable,
-		SubroutinesTable,
 		TimersTable,
 		WorkflowsTable,
 		WorkflowEventsTable,
@@ -198,6 +168,7 @@ var (
 func init() {
 	WorkflowsTable.ForeignKeys[0].RefTable = NamespacesTable
 	WorkflowEventsTable.ForeignKeys[0].RefTable = WorkflowsTable
+	WorkflowEventsTable.ForeignKeys[1].RefTable = WorkflowInstancesTable
 	WorkflowEventsWaitsTable.ForeignKeys[0].RefTable = WorkflowEventsTable
 	WorkflowInstancesTable.ForeignKeys[0].RefTable = WorkflowsTable
 }

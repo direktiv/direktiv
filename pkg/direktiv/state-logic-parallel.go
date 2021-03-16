@@ -151,7 +151,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			ar.Container.Data = inputData
 
 			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.config,
+			ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
 				instance.engine.secretsClient, instance.namespace)
 			if err != nil {
 				return err
@@ -200,6 +200,10 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 	return nil
 
+}
+
+func (sl *parallelStateLogic) LogJQ() string {
+	return sl.state.Log
 }
 
 func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {

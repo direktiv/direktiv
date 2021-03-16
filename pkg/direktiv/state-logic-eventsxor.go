@@ -61,13 +61,18 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, instance *wo
 		events = append(events, &event.Event)
 	}
 
-	err := instance.engine.listenForEvents(ctx, instance, events, true)
+	instance.engine.clearEventListeners(instance.rec)
+	err := instance.engine.listenForEvents(ctx, instance, events, false)
 	if err != nil {
 		return err
 	}
 
 	return nil
 
+}
+
+func (sl *eventsXorStateLogic) LogJQ() string {
+	return sl.state.Log
 }
 
 func (sl *eventsXorStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {

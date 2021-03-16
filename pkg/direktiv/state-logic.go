@@ -50,6 +50,7 @@ type stateLogic interface {
 	ErrorCatchers() []model.ErrorDefinition
 	Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error)
 	LivingChildren(savedata []byte) []stateChild
+	LogJQ() string
 }
 
 // -------------- Helper Functions --------------
@@ -74,8 +75,8 @@ func deadlineFromString(s string) time.Time {
 	}
 
 	t = time.Now()
-	t.Add(d)
-	t.Add(time.Second * 5)
+	t = t.Add(d)
+	t = t.Add(time.Second * 5)
 
 	return t
 
@@ -146,6 +147,10 @@ func (sl *noopStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func (sl *noopStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *noopStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {
@@ -157,19 +162,6 @@ func (sl *noopStateLogic) Run(ctx context.Context, instance *workflowLogicInstan
 		err = NewInternalError(errors.New("got unexpected wakedata"))
 		return
 	}
-
-	object, err := jqObject(instance.data, ".")
-	if err != nil {
-		return
-	}
-
-	data, err := json.MarshalIndent(object, "", "  ")
-	if err != nil {
-		err = NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
-		return
-	}
-
-	instance.Log("State data:\n%s", data)
 
 	transition = &stateTransition{
 		Transform: sl.state.Transform,

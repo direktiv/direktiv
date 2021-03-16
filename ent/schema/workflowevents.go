@@ -28,5 +28,7 @@ func (WorkflowEvents) Edges() []ent.Edge {
 			Ref("wfevents").
 			Unique().Required(),
 		edge.To("wfeventswait", WorkflowEventsWait.Type),
+		edge.From("workflowinstance", WorkflowInstance.Type).
+			Ref("instance").Unique(),
 	}
 }

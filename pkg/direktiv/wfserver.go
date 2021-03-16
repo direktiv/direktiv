@@ -119,9 +119,12 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		components: make(map[string]component),
 	}
 
-	s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
-	if err != nil {
-		return nil, err
+	// not needed for secrets
+	if s.runsComponent(runsWorkflows) || s.runsComponent(runsIsolates) {
+		s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if s.runsComponent(runsWorkflows) {
@@ -129,6 +132,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		if err != nil {
 			return nil, err
 		}
+		s.dbManager.tm = s.tmManager
 	}
 
 	if s.runsComponent(runsIsolates) {
@@ -149,8 +153,11 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		s.components[secretsComponent] = secretsServer
 	}
 
-	healthServer := newHealthServer(config)
-	s.components[healthComponent] = healthServer
+	// only start health checker if enabled (default)
+	if config.HealthAPI.Enabled > 0 {
+		healthServer := newHealthServer(config)
+		s.components[healthComponent] = healthServer
+	}
 
 	return s, nil
 
@@ -186,7 +193,7 @@ func (s *WorkflowServer) cleanup() {
 
 	// stop components
 	for _, comp := range s.components {
-		log.Debugf("stopping %s", comp.name())
+		log.Infof("stopping %s", comp.name())
 		comp.stop()
 	}
 
@@ -243,7 +250,7 @@ func (s *WorkflowServer) Run() error {
 	}
 
 	for _, comp := range s.components {
-		log.Debugf("starting %s component", comp.name())
+		log.Infof("starting %s component", comp.name())
 		err := comp.start(s)
 		if err != nil {
 			s.Kill()
@@ -259,7 +266,7 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 
 	log.Debugf("%s endpoint starting at %s", name, bind)
 
-	options, err := optionsForGRPC(s.config.Certs.Directory, secretsComponent, (s.config.Certs.Secure != 1))
+	options, err := optionsForGRPC(s.config.Certs.Directory, name, (s.config.Certs.Secure != 1))
 	if err != nil {
 		return err
 	}

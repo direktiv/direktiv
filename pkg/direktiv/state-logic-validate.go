@@ -48,6 +48,10 @@ func (sl *validateStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func (sl *validateStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *validateStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {

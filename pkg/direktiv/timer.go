@@ -3,6 +3,7 @@ package direktiv
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/vorteil/direktiv/ent/workflowinstance"
@@ -29,6 +30,7 @@ type timerManager struct {
 	server *WorkflowServer
 
 	timers map[string]*timerItem
+	mtx    sync.Mutex
 }
 
 type timerItem struct {
@@ -112,7 +114,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 		return err
 	}
 
-	log.Debugf("enabling timer %s", ti.dbItem.Name)
+	log.Debugf("enabling timer %s, %s %v", ti.dbItem.Name, ti.dbItem.One, time.Now().UTC())
 
 	switch ti.timerType {
 	case timerTypeOneShot:
@@ -120,7 +122,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 
 		if duration < 0 {
 			tm.disableTimer(ti, true, needsSyncRequest)
-			return fmt.Errorf("one-shot is in the past")
+			return fmt.Errorf("one-shot %s is in the past", ti.dbItem.Name)
 		}
 
 		err = func(ti *timerItem, duration time.Duration) error {
@@ -182,8 +184,11 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 		return
 	}
 
+	log.Debugf("execute timer %s", ti.dbItem.Name)
+
 	// get lock
-	hash, _ := hashstructure.Hash(fmt.Sprintf("%d%s", ti.dbItem.ID, ti.dbItem.Name), hashstructure.FormatV2, nil)
+	hash, _ := hashstructure.Hash(fmt.Sprintf("%d%s", ti.dbItem.ID, ti.dbItem.Name),
+		hashstructure.FormatV2, nil)
 	hasLock, conn, err := tm.server.dbManager.tryLockDB(hash)
 	if err != nil {
 		log.Debugf("can not get lock %d", ti.dbItem.ID)
@@ -192,9 +197,16 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 
 	if hasLock {
 
-		defer tm.server.dbManager.unlockDB(hash, conn)
+		unlock := func(hashin uint64) {
+			// delay the unlock to make sure minimal tiome offsets accross a cluster
+			// does not make that fire a second time if the executin is fast
+			time.Sleep(10 * time.Second)
+			tm.server.dbManager.unlockDB(hashin, conn)
+		}
+		defer unlock(hash)
 
 		if ti.timerType == timerTypeOneShot {
+			log.Debugf("%s is one shot, disable (execute)", ti.dbItem.Name)
 			tm.disableTimer(ti, true, needsSyncRequest)
 		}
 
@@ -203,6 +215,8 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 			log.Errorf("can not run function for %s: %v", ti.dbItem.Name, err)
 		}
 
+	} else {
+		log.Debugf("timer already locked %s", ti.dbItem.Name)
 	}
 
 }
@@ -211,6 +225,9 @@ func (tm *timerManager) newTimerItem(name, fn string, data []byte, time *time.Ti
 	pattern string, dbItem *ent.Timer, needsSync bool) (*timerItem, error) {
 
 	log.Debugf("adding new timer item %s", name)
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
 
 	var (
 		exeFn func([]byte) error
@@ -293,7 +310,8 @@ func (tm *timerManager) stopTimers() {
 	<-ctx.Done()
 
 	for _, ti := range tm.timers {
-		tm.disableTimer(ti, false, needsSyncRequest)
+		log.Debugf("%s is one shot, disable (stopTimers)", ti.dbItem.Name)
+		tm.disableTimer(ti, false, skipSyncRequest)
 	}
 
 	log.Debugf("timers stopped")
@@ -328,15 +346,17 @@ func (tm *timerManager) startTimers() error {
 
 func (tm *timerManager) syncTimerAdd(id int) {
 
-	log.Debugf("Got sync request!!!!!!!")
+	log.Debugf("got sync request")
 	t, err := tm.server.dbManager.getTimerByID(id)
 	if err != nil {
 		return
 	}
 
+	tm.mtx.Lock()
 	if _, ok := tm.timers[t.Name]; ok {
 		log.Debugf("timer already available")
 	}
+	tm.mtx.Unlock()
 
 	tm.newTimerItem(t.Name, t.Fn, t.Data, &t.One, t.Cron, t, skipSyncRequest)
 
@@ -344,6 +364,9 @@ func (tm *timerManager) syncTimerAdd(id int) {
 
 // sync function across cluster
 func (tm *timerManager) syncTimerDelete(name string) {
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
 
 	if ti, ok := tm.timers[name]; ok {
 		err := tm.disableTimer(ti, true, skipSyncRequest)
@@ -357,6 +380,9 @@ func (tm *timerManager) syncTimerDelete(name string) {
 // jens
 func (tm *timerManager) syncTimerEnable(name string) {
 
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
+
 	if ti, ok := tm.timers[name]; ok {
 		err := tm.enableTimer(ti, skipSyncRequest)
 		if err != nil {
@@ -367,6 +393,9 @@ func (tm *timerManager) syncTimerEnable(name string) {
 }
 
 func (tm *timerManager) syncTimerDisable(name string) {
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
 
 	if ti, ok := tm.timers[name]; ok {
 		err := tm.disableTimer(ti, false, skipSyncRequest)
@@ -392,14 +421,14 @@ func (tm *timerManager) addCron(name, fn, pattern string, data []byte) (*timerIt
 
 }
 
-func (tm *timerManager) addOneShot(name, fn string, time time.Time, data []byte) (*timerItem, error) {
+func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byte) (*timerItem, error) {
 
-	utc := time.UTC()
+	utc := timeos.UTC()
 	return tm.newTimerItem(name, fn, data, &utc, "", nil, needsSyncRequest)
 
 }
 
-func (tm *timerManager) deleteTimersForInstance(name string) (int, error) {
+func (tm *timerManager) deleteTimersForInstance(name string) error {
 
 	log.Debugf("deleting timers for instance %s", name)
 
@@ -423,11 +452,11 @@ func (tm *timerManager) deleteTimersForInstance(name string) (int, error) {
 	for _, p := range patterns {
 		err := delT(p, name)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
-	return 0, nil
+	return nil
 }
 
 const (
@@ -437,6 +466,9 @@ const (
 )
 
 func (tm *timerManager) actionTimerByName(name string, action int) error {
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
 
 	if ti, ok := tm.timers[name]; ok {
 
@@ -456,36 +488,6 @@ func (tm *timerManager) actionTimerByName(name string, action int) error {
 	return fmt.Errorf("timer %s does not exist", name)
 
 }
-
-// func (tm *timerManager) deleteTimerByName(name string) error {
-//
-// 	if ti, ok := tm.timers[name]; ok {
-// 		return tm.disableTimer(ti, true, needsSyncRequest)
-// 	}
-//
-// 	return fmt.Errorf("timer %s does not exist", name)
-//
-// }
-//
-// func (tm *timerManager) disableTimerByName(name string) error {
-//
-// 	if ti, ok := tm.timers[name]; ok {
-// 		return tm.disableTimer(ti, false, needsSyncRequest)
-// 	}
-//
-// 	return fmt.Errorf("timer %s does not exist", name)
-//
-// }
-//
-// func (tm *timerManager) enableTimerByName(name string) error {
-//
-// 	if ti, ok := tm.timers[name]; ok {
-// 		return tm.enableTimer(ti, needsSyncRequest)
-// 	}
-//
-// 	return fmt.Errorf("timer %s does not exist", name)
-//
-// }
 
 // cron job to delete orphaned one-shot timers
 func (tm *timerManager) cleanOneShot(data []byte) error {
@@ -518,7 +520,7 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 			return err
 		}
 
-		err = tm.server.dbManager.dbEnt.WorkflowInstance.DeleteOneID(wfi.ID).Exec(ctx)
+		err = tm.server.dbManager.deleteWorkflowInstance(wfi.ID)
 		if err != nil {
 			return err
 		}

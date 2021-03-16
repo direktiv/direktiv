@@ -10,6 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	// MaxLenDescription - Max length of the workflow.description column
+	MaxLenDescription = 1024
+)
+
 // Workflow holds the schema definition for th e Workflow entity.
 type Workflow struct {
 	ent.Schema
@@ -22,10 +27,11 @@ func (Workflow) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name").NotEmpty(),
 		field.Time("created").Immutable().Default(time.Now),
-		field.String("description").Optional().MaxLen(1024).Default(""),
+		field.String("description").Optional().MaxLen(MaxLenDescription).Default(""),
 		field.Bool("active").Default(true),
 		field.Int("revision").Default(0),
 		field.Bytes("workflow"),
+		field.String("logToEvents").Optional(),
 	}
 
 }
@@ -36,8 +42,6 @@ func (Workflow) Edges() []ent.Edge {
 		edge.From("namespace", Namespace.Type).
 			Ref("workflows").
 			Unique().Required(),
-		// edge.To("eventtypelist", EventTypeList.Type),
-		// edge.To("eventtypeinstance", EventTypeInstance.Type),
 		edge.To("instances", WorkflowInstance.Type),
 		edge.To("wfevents", WorkflowEvents.Type),
 	}

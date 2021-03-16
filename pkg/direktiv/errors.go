@@ -10,6 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
+	"github.com/vorteil/direktiv/ent/schema"
 )
 
 var grpcErrInternal = status.Error(codes.Internal, "internal error")
@@ -50,6 +51,19 @@ func grpcDatabaseError(err error, otype, oval string) error {
 		}
 	}
 
+	if ent.IsValidationError(err) {
+		if strings.HasSuffix(err.Error(), `"description": value is greater than the required length`) {
+			return status.Errorf(codes.InvalidArgument, "description is greater than max length of %v bytes", schema.MaxLenDescription)
+		}
+	}
+
+	// Handle GRPC errors
+	if _, ok := err.(interface {
+		GRPCStatus() *status.Status
+	}); ok {
+		return err
+	}
+
 	log.Errorf("%v", NewInternalErrorWithDepth(err, 2))
 
 	err = grpcErrInternal
@@ -75,8 +89,8 @@ func (err *UncatchableError) Error() string {
 }
 
 type CatchableError struct {
-	Code    string
-	Message string
+	Code    string `json:"code"`
+	Message string `json:"msg"`
 }
 
 func NewCatchableError(code string, msg string, a ...interface{}) *CatchableError {

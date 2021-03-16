@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -14,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/predicate"
 	"github.com/vorteil/direktiv/ent/workflow"
+	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
@@ -27,6 +29,7 @@ type WorkflowInstanceQuery struct {
 	predicates []predicate.WorkflowInstance
 	// eager-loading edges.
 	withWorkflow *WorkflowQuery
+	withInstance *WorkflowEventsQuery
 	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -72,6 +75,28 @@ func (wiq *WorkflowInstanceQuery) QueryWorkflow() *WorkflowQuery {
 			sqlgraph.From(workflowinstance.Table, workflowinstance.FieldID, selector),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, workflowinstance.WorkflowTable, workflowinstance.WorkflowColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(wiq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInstance chains the current query on the "instance" edge.
+func (wiq *WorkflowInstanceQuery) QueryInstance() *WorkflowEventsQuery {
+	query := &WorkflowEventsQuery{config: wiq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := wiq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := wiq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowinstance.Table, workflowinstance.FieldID, selector),
+			sqlgraph.To(workflowevents.Table, workflowevents.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowinstance.InstanceTable, workflowinstance.InstanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(wiq.driver.Dialect(), step)
 		return fromU, nil
@@ -261,6 +286,7 @@ func (wiq *WorkflowInstanceQuery) Clone() *WorkflowInstanceQuery {
 		order:        append([]OrderFunc{}, wiq.order...),
 		predicates:   append([]predicate.WorkflowInstance{}, wiq.predicates...),
 		withWorkflow: wiq.withWorkflow.Clone(),
+		withInstance: wiq.withInstance.Clone(),
 		// clone intermediate query.
 		sql:  wiq.sql.Clone(),
 		path: wiq.path,
@@ -275,6 +301,17 @@ func (wiq *WorkflowInstanceQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *Wo
 		opt(query)
 	}
 	wiq.withWorkflow = query
+	return wiq
+}
+
+// WithInstance tells the query-builder to eager-load the nodes that are connected to
+// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
+func (wiq *WorkflowInstanceQuery) WithInstance(opts ...func(*WorkflowEventsQuery)) *WorkflowInstanceQuery {
+	query := &WorkflowEventsQuery{config: wiq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	wiq.withInstance = query
 	return wiq
 }
 
@@ -344,8 +381,9 @@ func (wiq *WorkflowInstanceQuery) sqlAll(ctx context.Context) ([]*WorkflowInstan
 		nodes       = []*WorkflowInstance{}
 		withFKs     = wiq.withFKs
 		_spec       = wiq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			wiq.withWorkflow != nil,
+			wiq.withInstance != nil,
 		}
 	)
 	if wiq.withWorkflow != nil {
@@ -378,7 +416,8 @@ func (wiq *WorkflowInstanceQuery) sqlAll(ctx context.Context) ([]*WorkflowInstan
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*WorkflowInstance)
 		for i := range nodes {
-			if fk := nodes[i].workflow_instances; fk != nil {
+			fk := nodes[i].workflow_instances
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -399,6 +438,35 @@ func (wiq *WorkflowInstanceQuery) sqlAll(ctx context.Context) ([]*WorkflowInstan
 		}
 	}
 
+	if query := wiq.withInstance; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*WorkflowInstance)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Instance = []*WorkflowEvents{}
+		}
+		query.withFKs = true
+		query.Where(predicate.WorkflowEvents(func(s *sql.Selector) {
+			s.Where(sql.InValues(workflowinstance.InstanceColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.workflow_instance_instance
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "workflow_instance_instance" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "workflow_instance_instance" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Instance = append(node.Edges.Instance, n)
+		}
+	}
+
 	return nodes, nil
 }
 
@@ -410,7 +478,7 @@ func (wiq *WorkflowInstanceQuery) sqlCount(ctx context.Context) (int, error) {
 func (wiq *WorkflowInstanceQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := wiq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }

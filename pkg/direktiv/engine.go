@@ -2,12 +2,10 @@ package direktiv
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"reflect"
 	"regexp"
 	"strings"
@@ -237,13 +235,6 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 			return err
 		}
 
-		// TODO: ?
-		// wli.rec, err = wli.rec.Update().SetNillableMemory(nil).Save(ctx)
-		// if err != nil {
-		// 	log.Errorf("cannot update savedata information: %v", err)
-		// 	return
-		// }
-
 	}
 
 	go wli.engine.runState(ctx, wli, savedata, wakedata)
@@ -381,7 +372,7 @@ func (we *workflowEngine) sleepWakeup(data []byte) error {
 
 }
 
-func (we *workflowEngine) cancelChildren(rec *ent.WorkflowInstance) error {
+func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error {
 
 	wfrec, err := rec.QueryWorkflow().Only(context.Background())
 	if err != nil {
@@ -413,7 +404,15 @@ func (we *workflowEngine) cancelChildren(rec *ent.WorkflowInstance) error {
 	}
 	logic := stateLogic
 
-	children := logic.LivingChildren([]byte(rec.Memory))
+	we.cancelChildren(logic, []byte(rec.Memory))
+
+	return nil
+
+}
+
+func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
+
+	children := logic.LivingChildren(savedata)
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
@@ -427,8 +426,6 @@ func (we *workflowEngine) cancelChildren(rec *ent.WorkflowInstance) error {
 		}
 	}
 
-	return nil
-
 }
 
 func (we *workflowEngine) hardCancelInstance(instanceId, code, message string) error {
@@ -438,6 +435,22 @@ func (we *workflowEngine) hardCancelInstance(instanceId, code, message string) e
 func (we *workflowEngine) softCancelInstance(instanceId string, step int, code, message string) error {
 	// TODO: step
 	return we.cancelInstance(instanceId, code, message, true)
+}
+
+func (we *workflowEngine) clearEventListeners(rec *ent.WorkflowInstance) {
+	_ = we.db.deleteWorkflowEventListenerByInstanceID(rec.ID)
+}
+
+func (we *workflowEngine) freeResources(rec *ent.WorkflowInstance) {
+
+	err := we.timer.deleteTimersForInstance(rec.InstanceID)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Debugf("deleted timers for instance %v", rec.InstanceID)
+
+	we.clearEventListeners(rec)
+
 }
 
 func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft bool) error {
@@ -501,7 +514,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		return rollback(tx, err)
 	}
 
-	err = we.cancelChildren(rec)
+	err = we.cancelRecordsChildren(rec)
 	if err != nil {
 		log.Error(err)
 	}
@@ -517,6 +530,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	defer logger.Close()
 
 	logger.Info(fmt.Sprintf("Workflow %s.", message))
+
+	we.freeResources(rec)
 
 	if rec.InvokedBy != "" {
 
@@ -604,12 +619,71 @@ func (we *workflowEngine) retryWakeup(data []byte) error {
 
 const maxWorkflowSteps = 10
 
-func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte) {
+func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition *stateTransition) error {
+
+	if transition == nil || transition.Transform == "" || transition.Transform == "." {
+		return nil
+	}
+
+	wli.Log("Transforming state data.")
+
+	err := wli.Transform(transition.Transform)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition) {
+
+	if transition == nil {
+		return
+	}
+
+	if transition.NextState != "" {
+		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step)
+		go wli.Transition(transition.NextState, 0)
+		return
+	}
+
+	var rec *ent.WorkflowInstance
+	data, err := json.Marshal(wli.data)
+	if err != nil {
+		err = fmt.Errorf("engine cannot marshal state data for storage: %v", err)
+		log.Error(err)
+		return
+	}
+
+	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus("complete").Save(ctx)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	wli.rec = rec
+	log.Debugf("Workflow instance completed: %s", wli.id)
+	wli.Log("Workflow completed.")
+
+	wli.engine.freeResources(rec)
+
+	wli.wakeCaller(data)
+
+}
+
+func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte) {
 
 	log.Debugf("Running state logic -- %s:%v (%s)", wli.id, wli.step, wli.logic.ID())
 	if len(savedata) == 0 && len(wakedata) == 0 {
 		wli.Log("Running state logic -- %s:%v (%s)", wli.logic.ID(), wli.step, wli.logic.Type())
 	}
+
+}
+
+func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte) {
+
+	we.logRunState(wli, savedata, wakedata)
 
 	defer wli.unlock()
 	defer wli.Close()
@@ -617,9 +691,21 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 	var err error
 	var transition *stateTransition
 
-	if wli.step > maxWorkflowSteps {
-		err = NewUncatchableError("direktiv.limits.steps", "instance aborted for exceeding the maximum number of state executions (%d)", maxWorkflowSteps)
-		goto failure
+	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
+		var object interface{}
+		object, err = jqObject(wli.data, ".")
+		if err != nil {
+			goto failure
+		}
+
+		var data []byte
+		data, err = json.MarshalIndent(object, "", "  ")
+		if err != nil {
+			err = NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
+			goto failure
+		}
+
+		wli.UserLog(string(data))
 	}
 
 	transition, err = wli.logic.Run(ctx, wli, savedata, wakedata)
@@ -627,59 +713,13 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 		goto failure
 	}
 
-next:
-	if transition != nil {
-
-		if transition.Transform != "" && transition.Transform != "." {
-			wli.Log("Transforming state data.")
-		}
-
-		err = wli.Transform(transition.Transform)
-		if err != nil {
-			goto failure
-		}
-
-		if transition.NextState == "" {
-
-			var rec *ent.WorkflowInstance
-			data, err := json.Marshal(wli.data)
-			if err != nil {
-				err = fmt.Errorf("engine cannot marshal state data for storage: %v", err)
-				log.Error(err)
-				return
-			}
-
-			rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus("complete").Save(ctx)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-
-			wli.rec = rec
-			log.Debugf("Workflow instance completed: %s", wli.id)
-			wli.Log("Workflow completed.")
-
-			// delete timers for workflow
-			// id := fmt.Sprintf("timeout:%s:%d", wli.id, wli.step)
-			// getTimersForInstance
-			del, err := wli.engine.timer.deleteTimersForInstance(wli.id)
-			if err != nil {
-				log.Error(err)
-			}
-			log.Debugf("deleted %d timers for instance %v", del, wli.id)
-
-			wli.wakeCaller(data)
-
-			return
-
-		}
-
-		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step)
-
-		go wli.Transition(transition.NextState, 0)
-
+	err = we.transformState(wli, transition)
+	if err != nil {
+		goto failure
 	}
 
+next:
+	we.transitionState(ctx, wli, transition)
 	return
 
 failure:
@@ -690,19 +730,7 @@ failure:
 		err = NewInternalError(errors.New("somehow ended up in a catchable error loop"))
 	}
 
-	children := wli.logic.LivingChildren([]byte(wli.rec.Memory))
-	for _, child := range children {
-		switch child.Type {
-		case "isolate":
-			syncServer(context.Background(), wli.engine.db, &wli.engine.server.id, child.Id, cancelIsolate)
-		case "subflow":
-			go func(id string) {
-				wli.engine.hardCancelInstance(id, "direktiv.cancels.parent", "cancelled by parent workflow")
-			}(child.Id)
-		default:
-			log.Errorf("unrecognized child type: %s", child.Type)
-		}
-	}
+	wli.engine.cancelChildren(wli.logic, []byte(wli.rec.Memory))
 
 	if uerr, ok := err.(*UncatchableError); ok {
 
@@ -713,10 +741,14 @@ failure:
 		}
 
 		wli.Log("Workflow failed with uncatchable error: %s", uerr.Message)
+
+		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(nil)
 		return
 
 	} else if cerr, ok := err.(*CatchableError); ok {
+
+		_ = wli.StoreData("error", cerr)
 
 		for i, catch := range wli.logic.ErrorCatchers() {
 
@@ -762,6 +794,7 @@ failure:
 		}
 
 		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
+		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(nil)
 		return
 
@@ -785,26 +818,14 @@ failure:
 
 		log.Errorf("Workflow failed with internal error and the database couldn't be updated: %s", ierr.Error())
 
+		wli.engine.freeResources(wli.rec)
+
 	} else {
 		log.Errorf("Unwrapped error detected: %v", err)
 	}
 
 	return
 
-}
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		rint, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
-		if err != nil {
-			panic(err)
-		}
-		b[i] = letters[int(rint.Int64())]
-	}
-	return string(b)
 }
 
 func (we *workflowEngine) CronInvoke(uid string) error {
@@ -1044,165 +1065,6 @@ func (we *workflowEngine) subflowInvoke(caller *subflowCaller, callersCaller, na
 
 }
 
-func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input []byte) (*workflowLogicInstance, error) {
-
-	var err error
-	var inputData, stateData interface{}
-
-	err = json.Unmarshal(input, &inputData)
-	if err != nil {
-		inputData = base64.StdEncoding.EncodeToString(input)
-	}
-
-	if _, ok := inputData.(map[string]interface{}); ok {
-		stateData = inputData
-	} else {
-		stateData = map[string]interface{}{
-			"input": inputData,
-		}
-	}
-
-	rec, err := we.db.getNamespaceWorkflow(name, namespace)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, NewUncatchableError("direktiv.subflow.notExist", "workflow '%s' does not exist", name)
-		}
-		return nil, NewInternalError(err)
-	}
-
-	if !rec.Active {
-		return nil, NewInternalError(errors.New("workflow inactive"))
-	}
-
-	wf := new(model.Workflow)
-	err = wf.Load(rec.Workflow)
-	if err != nil {
-		return nil, NewInternalError(err)
-	}
-
-	wli := new(workflowLogicInstance)
-	wli.namespace = namespace
-	wli.engine = we
-	wli.wf = wf
-	wli.data = stateData
-
-	wli.id = fmt.Sprintf("%s/%s/%s", namespace, name, randSeq(6))
-	wli.startData, err = json.MarshalIndent(wli.data, "", "  ")
-	if err != nil {
-		return nil, NewInternalError(err)
-	}
-
-	wli.logger, err = (*we.instanceLogger).LoggerFunc(namespace, wli.id)
-	if err != nil {
-		return nil, NewInternalError(err)
-	}
-
-	return wli, nil
-
-}
-
-func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (context.Context, *workflowLogicInstance, error) {
-
-	wli := new(workflowLogicInstance)
-	wli.id = id
-	wli.engine = we
-
-	var success bool
-
-	defer func() {
-		if !success {
-			wli.unlock()
-		}
-	}()
-
-	ctx, err := wli.lock(time.Second * 5)
-	if err != nil {
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot assume control of workflow instance lock: %v", err))
-	}
-
-	rec, err := we.db.getWorkflowInstance(context.Background(), id)
-	if err != nil {
-		return nil, nil, NewInternalError(err)
-	}
-	wli.rec = rec
-
-	qwf, err := rec.QueryWorkflow().Only(ctx)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot resolve instance workflow: %v", err))
-	}
-
-	qns, err := qwf.QueryNamespace().Only(ctx)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot resolve instance namespace: %v", err))
-	}
-
-	wli.namespace = qns.ID
-
-	wli.logger, err = (*we.instanceLogger).LoggerFunc(qns.ID, wli.id)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize instance logger: %v", err))
-	}
-
-	err = json.Unmarshal([]byte(rec.StateData), &wli.data)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow state data: %v", err))
-	}
-
-	wli.wf = new(model.Workflow)
-	wfrec, err := rec.QueryWorkflow().Only(ctx)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow from database: %v", err))
-	}
-
-	err = wli.wf.Load(wfrec.Workflow)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow definition: %v", err))
-	}
-
-	if rec.Status != "pending" && rec.Status != "running" {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
-	}
-
-	wli.step = step
-	if len(rec.Flow) != wli.step {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: steps out of sync (expect/actual - %d/%d)", step, len(rec.Flow)))
-	}
-
-	state := rec.Flow[step-1]
-	states := wli.wf.GetStatesMap()
-	stateObject, exists := states[state]
-	if !exists {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("workflow cannot resolve state: %s", state))
-	}
-
-	init, exists := wli.engine.stateLogics[stateObject.GetType()]
-	if !exists {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("engine cannot resolve state type: %s", stateObject.GetType().String()))
-	}
-
-	stateLogic, err := init(wli.wf, stateObject)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize state logic: %v", err))
-	}
-	wli.logic = stateLogic
-
-	success = true
-
-	return ctx, wli, nil
-
-}
-
 const timeoutFunction = "timeoutFunction"
 
 type timeoutArgs struct {
@@ -1286,7 +1148,8 @@ func (we *workflowEngine) listenForEvents(ctx context.Context, wli *workflowLogi
 
 	}
 
-	_, err = we.db.addWorkflowEventListener(wfid, transformedEvents, signature, all)
+	_, err = we.db.addWorkflowEventListener(wfid, wli.rec.ID,
+		transformedEvents, signature, all)
 	if err != nil {
 		return err
 	}

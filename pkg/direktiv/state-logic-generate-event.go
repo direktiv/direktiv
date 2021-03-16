@@ -7,6 +7,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/segmentio/ksuid"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -51,6 +52,10 @@ func (sl *generateEventStateLogic) LivingChildren(savedata []byte) []stateChild 
 	return nil
 }
 
+func (sl *generateEventStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {
@@ -65,6 +70,8 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 
 	event := cloudevents.NewEvent(cloudevents.VersionV03)
 
+	uid := ksuid.New()
+	event.SetID(uid.String())
 	event.SetType(sl.state.Event.Type)
 	event.SetSource(sl.state.Event.Source)
 
@@ -77,7 +84,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 	var data []byte
 
 	ctype := sl.state.Event.DataContentType
-	if s, ok := x.(string); ok && ctype != "" && ctype != "application/json" || ctype == "" {
+	if s, ok := x.(string); ok && ctype != "" && ctype != "application/json" {
 		data, err = base64.StdEncoding.DecodeString(s)
 		if err != nil {
 			instance.Log("Unable to decode results as a base64 encoded string. Reverting to JSON.")
