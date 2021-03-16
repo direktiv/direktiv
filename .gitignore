@@ -27,3 +27,4 @@
 !*build/docker/isolate
 !*build/docker/secrets
 !*build/docker/flow
+.vscode

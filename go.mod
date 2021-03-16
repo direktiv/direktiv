@@ -16,6 +16,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-containerregistry v0.4.0
 	github.com/google/uuid v1.2.0
+	github.com/gorilla/mux v1.7.3
 	github.com/h2non/filetype v1.1.1 // indirect
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
