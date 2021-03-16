@@ -23,8 +23,9 @@ jobs:
         password: ${{ secrets.DOCKER_TOKEN }}
     - name: build containers
       run: |
+        echo ${{ env.RELEASE_VERSION }}
         echo "RV set to $RV"
-        if [ "$RV" == "main" ] ; then export RV=latest; fi
+        if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
         echo "RV set to $RV"
         make docker-isolate
         make docker-secrets
