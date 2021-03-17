@@ -28,9 +28,5 @@
   disk-size = "+2048 MiB"
 
 [system]
-<<<<<<< HEAD
-  kernel-args="loglevel=1"
-=======
   kernel-args="shm=10M loglevel=1"
->>>>>>> upstream/main
   user = "postgres"

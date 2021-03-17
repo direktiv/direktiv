@@ -16,7 +16,7 @@ mkfile_dir_main := $(dir $(mkfile_path_main))
 include build/build.mk
 
 # run minio on vorteil
-.PHONY: build-tc-redirect-
+.PHONY: build-tc-redirect-tap
 build-tc-redirect-tap:
 	wget https://github.com/awslabs/tc-redirect-tap/archive/master.zip;
 	unzip -o master.zip;
