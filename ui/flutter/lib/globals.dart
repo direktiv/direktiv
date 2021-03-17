@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+var apiSERVER = "http://localhost:8989";
 var workflowList = '''{
    "workflows":[
       {
@@ -65,38 +66,48 @@ var workflowList = '''{
 }
 ''';
 
-var instanceList = '''{
-   "workflowInstances":[
-      {
-         "id":"demo-jcmxg/secrets-example/UzUSOV",
-         "status":"pending",
-         "beginTime":{
-            "seconds":"1615850668",
-            "nanos":200317000
-         }
-      },
-      {
-         "id":"demo-jcmxg/helloworld/xhjNnh",
-         "status":"complete",
-         "beginTime":{
-            "seconds":"1615850657",
-            "nanos":31989000
-         }
-      },
-      {
-         "id":"demo-jcmxg/helloworld/PgliqQ",
-         "status":"complete",
-         "beginTime":{
-            "seconds":"1615850651",
-            "nanos":806744000
-         }
-      }
-   ],
-   "offset":0,
-   "limit":10
+class Workflow {
+  final String uid;
+  final String id;
+  final int revision;
+  final bool active;
+  final String createdAt;
+  final String description;
+
+  Workflow(this.uid, this.id, this.revision, this.active, this.createdAt,
+      this.description);
+
+  factory Workflow.fromJson(Map<String, dynamic> json) {
+    String createdAt = "";
+    return new Workflow(json["uid"], json["id"], json["revision"],
+        json["active"], createdAt, json["description"]);
+  }
 }
-''';
-var apiSERVER = "http://localhost:8989";
+
+Future<List<Workflow>> fetchWorkflow(String namespace) async {
+  final response =
+      await http.get('$apiSERVER/api/namespaces/$namespace/workflows');
+  if (response.statusCode == 200) {
+    return jsonStrToWorkflowList(response.body);
+  } else {
+    throw Exception('Failed to load Instance List');
+  }
+}
+
+List<Workflow> jsonStrToWorkflowList(String jsonString) {
+  Map<String, dynamic> jsonData = jsonDecode(jsonString);
+  List<Map<String, dynamic>> workflows = [];
+
+  if (jsonData.containsKey('workflows')) {
+    workflows = jsonData['workflows'].cast<Map<String, dynamic>>();
+  }
+
+  List<Workflow> workflowList = [];
+  workflows.forEach((element) {
+    workflowList.add(Workflow.fromJson(element));
+  });
+  return workflowList;
+}
 
 Future<List<Instance>> fetchNamespaceInstances(String namespace) async {
   final response = await http.get('$apiSERVER/api/instances/$namespace');
@@ -141,17 +152,6 @@ class Instance {
         'status': status,
       };
 }
-
-var namespaceList = '''{
-	"limit": 10,
-	"offset": 0,
-	"total": 2,
-	"data": [
-		"demo-jcmxg",
-		"komkmk"
-	]
-}
-''';
 
 class Namespace {
   String name;
