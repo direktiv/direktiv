@@ -75,6 +75,13 @@ docker-flow: build
 	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 	cd build && docker build -t direktiv-flow -f docker/flow/Dockerfile .
 
+.PHONY: docker-cli
+docker-cli:
+docker-cli: build-cli
+		cp ${mkfile_dir_main}/direkcli  ${mkfile_dir_main}/build/
+		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
+
+
 .PHONY: build
 build:
 	go get entgo.io/ent
@@ -84,7 +91,7 @@ build:
 
 .PHONY: build-cli
 build-cli:
-	go build -o direkcli cmd/direkcli/main.go
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
 
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
