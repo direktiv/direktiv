@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:readonlyui/globals.dart';
+import 'package:readonlyui/router.dart';
 
 class NamespaceWorkflowList extends StatefulWidget {
   NamespaceWorkflowList({@required this.namespace});
@@ -17,7 +18,7 @@ class _NamespaceWorkflowListState extends State<NamespaceWorkflowList> {
   @override
   void initState() {
     super.initState();
-    workflows = fetchWorkflow(widget.namespace);
+    workflows = fetchWorkflows(widget.namespace);
   }
 
   @override
@@ -55,6 +56,8 @@ class _NamespaceWorkflowListState extends State<NamespaceWorkflowList> {
                                           Text('${snapshot.data[index].id}')),
                                   onPressed: () {
                                     print('Pressed ${snapshot.data[index].id}');
+                                    Application.router.navigateTo(context,
+                                        "/p/${widget.namespace}/w/${snapshot.data[index].id}");
                                   },
                                 ),
                               );

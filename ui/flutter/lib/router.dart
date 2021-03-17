@@ -45,9 +45,14 @@ var workflowHandler =
   final String workflow = params["workflow"][0];
 
   return NavWrapper(
-      path: {"Home": "/", namespace: "/p/$namespace", workflow: "$workflow"},
-      child: Workflow(
-        workflow: workflow,
+      path: {
+        "Home": "/",
+        namespace: "/p/$namespace",
+        workflow: "/p/$namespace/w/$workflow"
+      },
+      child: WorkflowPage(
+        namespace: namespace,
+        workflowID: workflow,
       ));
 });
 

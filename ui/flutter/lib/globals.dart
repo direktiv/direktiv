@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-var apiSERVER = "http://localhost:8989";
+const API_SERVER =
+    String.fromEnvironment('API_SERVER', defaultValue: 'http://127.0.0.1:8080');
 var workflowList = '''{
    "workflows":[
       {
@@ -73,20 +74,37 @@ class Workflow {
   final bool active;
   final String createdAt;
   final String description;
+  final String data;
 
   Workflow(this.uid, this.id, this.revision, this.active, this.createdAt,
-      this.description);
+      this.description, this.data);
 
   factory Workflow.fromJson(Map<String, dynamic> json) {
     String createdAt = "";
+    String data;
+
+    if (json.containsKey("workflow")) {
+      data = utf8.decode(base64.decode(json["workflow"]));
+    }
+
     return new Workflow(json["uid"], json["id"], json["revision"],
-        json["active"], createdAt, json["description"]);
+        json["active"], createdAt, json["description"], data);
   }
 }
 
-Future<List<Workflow>> fetchWorkflow(String namespace) async {
+Future<Workflow> fetchWorkflow(String namespace, String workflow) async {
+  final response = await http
+      .get('$API_SERVER/api/namespaces/$namespace/workflows/$workflow');
+  if (response.statusCode == 200) {
+    return Workflow.fromJson(jsonDecode(response.body));
+  } else {
+    throw Exception('Failed to load Instance List');
+  }
+}
+
+Future<List<Workflow>> fetchWorkflows(String namespace) async {
   final response =
-      await http.get('$apiSERVER/api/namespaces/$namespace/workflows');
+      await http.get('$API_SERVER/api/namespaces/$namespace/workflows');
   if (response.statusCode == 200) {
     return jsonStrToWorkflowList(response.body);
   } else {
@@ -110,7 +128,7 @@ List<Workflow> jsonStrToWorkflowList(String jsonString) {
 }
 
 Future<List<Instance>> fetchNamespaceInstances(String namespace) async {
-  final response = await http.get('$apiSERVER/api/instances/$namespace');
+  final response = await http.get('$API_SERVER/api/instances/$namespace');
   if (response.statusCode == 200) {
     return jsonStrToInstanceList(response.body);
   } else {
@@ -160,7 +178,7 @@ class Namespace {
 }
 
 Future<List<Namespace>> fetchNamespaces() async {
-  final response = await http.get('$apiSERVER/api/namespaces');
+  final response = await http.get('$API_SERVER/api/namespaces');
   List<Namespace> namespaceList = [];
   if (response.statusCode == 200) {
     final nsList = jsonStrToNamespaceList(response.body);
