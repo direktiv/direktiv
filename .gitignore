@@ -23,6 +23,7 @@
 /build/alpine-*
 /direktiv
 /direkcli
+/ui-server
 /alpine-base
 /postgres
 /minio

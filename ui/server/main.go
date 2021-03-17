@@ -64,7 +64,7 @@ func main() {
 
 	// Web Handler
 	// r.Handle("/build/web/", http.StripPrefix("/build/web/", http.FileServer(http.Dir("build/web"))))
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("web")))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(webDir)))
 
 	fmt.Printf(`Starting API Server 
   -bind='%s'

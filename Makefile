@@ -93,6 +93,16 @@ build:
 build-cli:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
 
+.PHONY: build-ui-flutter
+build-ui-flutter: ui/flutter/build/web
+
+ui/flutter/build/web:
+	cd ui/flutter; flutter build web --dart-define=API_SERVER=http://localhost:8080
+
+.PHONY: run-ui
+run-ui: build-ui-flutter 
+	go run ./ui/server -bind=':8080' -web-dir='ui/flutter/build/web'
+
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
 .PHONY: run-isolate-docker

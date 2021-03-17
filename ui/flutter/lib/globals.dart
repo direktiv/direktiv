@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 const API_SERVER =
-    String.fromEnvironment('API_SERVER', defaultValue: 'http://127.0.0.1:8080');
+    String.fromEnvironment('API_SERVER', defaultValue: 'http://localhost:8080');
 var workflowList = '''{
    "workflows":[
       {
