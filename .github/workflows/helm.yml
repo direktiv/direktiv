@@ -1,0 +1,16 @@
+name: Build Container Components
+on:
+  workflow_dispatch:
+  create:
+    tags:
+      - v*
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: build helm chart
+      run: |
+        version=`git describe --abbrev=0 --tags`
+        echo $version
+        echo "direktiv helm version $version"
