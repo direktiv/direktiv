@@ -17,6 +17,8 @@ jobs:
     - name: build helm chart
       run: |
         export version=${{ steps.ptag.outputs.tag }}
-        echo  $version
         v="${version:1}"
-        echo $v
+        echo "packaging helm for $v"
+        helm package --app-version=$v kubernetes/charts/direktiv/
+        helm repo index .
+        ls -la
