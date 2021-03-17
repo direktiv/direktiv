@@ -24,7 +24,8 @@ var instanceDetailHandler =
   return NavWrapper(
       path: {"Home": "/"},
       child: InstanceDetails(
-        instance: params["id"][0],
+        instanceID:
+            '${params["namespace"][0]}/${params["workflow"][0]}/${params["id"][0]}',
       ));
 });
 
