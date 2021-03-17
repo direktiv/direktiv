@@ -1,4 +1,4 @@
-name: Build Container Components
+name: Build Helm
 on:
   workflow_dispatch:
   create:
