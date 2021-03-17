@@ -58,7 +58,7 @@ var workflowHandler =
 
 class Routes {
   static String root = "/";
-  static String instanceDetails = "/instance/:id";
+  static String instanceDetails = "/i/:namespace/:workflow/:id";
   static String namespaceWorkflows = "/p/:namespace";
   static String workflowDetails = "/p/:namespace/w/:workflow";
 

@@ -56,8 +56,8 @@ func main() {
 	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}", gc.getWorkflowHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{namespace}", gc.instancesHandler).Methods(http.MethodGet)
-	r.HandleFunc("/api/instances/{instance}", gc.instanceHandler).Methods(http.MethodGet)
-	r.HandleFunc("/api/instances/{instance}/logs", gc.instanceLogsHandler).Methods(http.MethodGet)
+	r.HandleFunc("/api/instances/{namespace}/{workflowID}/{id}", gc.instanceHandler).Methods(http.MethodGet)
+	r.HandleFunc("/api/instances/{namespace}/{workflowID}/{id}/logs", gc.instanceLogsHandler).Methods(http.MethodGet)
 
 	// Post ...
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/execute", gc.executeWorkflowHandler).Methods(http.MethodPost)
