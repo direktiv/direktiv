@@ -11,6 +11,4 @@ jobs:
     - uses: actions/checkout@v2
     - name: build helm chart
       run: |
-        version=`git describe --abbrev=0 --tags`
-        echo $version
-        echo "direktiv helm version $version"
+        git describe --abbrev=0 --tags
