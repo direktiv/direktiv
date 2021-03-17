@@ -98,7 +98,7 @@ class InstanceList extends StatelessWidget {
                           onPressed: () {
                             print('Pressed ${instances[index].instanceID}');
                             Application.router.navigateTo(context,
-                                "/instance/${instances[index].instanceID}");
+                                "/i/${instances[index].namespace}/${instances[index].workflow}/${instances[index].instanceID}");
                           },
                         ),
                       );

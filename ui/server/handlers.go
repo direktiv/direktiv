@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -80,7 +81,7 @@ func (g *grpcClient) instancesHandler(w http.ResponseWriter, r *http.Request) {
 // instanceHandler
 func (g *grpcClient) instanceHandler(w http.ResponseWriter, r *http.Request) {
 
-	i := mux.Vars(r)["instance"]
+	i := fmt.Sprintf("%s/%s/%s", mux.Vars(r)["namespace"], mux.Vars(r)["workflowID"], mux.Vars(r)["id"])
 
 	resp, err := g.client.GetWorkflowInstance(r.Context(), &ingress.GetWorkflowInstanceRequest{
 		Id: &i,
@@ -96,7 +97,7 @@ func (g *grpcClient) instanceHandler(w http.ResponseWriter, r *http.Request) {
 // instanceLogsHandler
 func (g *grpcClient) instanceLogsHandler(w http.ResponseWriter, r *http.Request) {
 
-	i := mux.Vars(r)["instance"]
+	i := fmt.Sprintf("%s/%s/%s", mux.Vars(r)["namespace"], mux.Vars(r)["workflowID"], mux.Vars(r)["id"])
 
 	resp, err := g.client.GetWorkflowInstanceLogs(r.Context(), &ingress.GetWorkflowInstanceLogsRequest{
 		InstanceId: &i,

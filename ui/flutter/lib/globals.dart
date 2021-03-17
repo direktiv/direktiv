@@ -2,69 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 const API_SERVER = String.fromEnvironment('API_SERVER', defaultValue: '');
-var workflowList = '''{
-   "workflows":[
-      {
-         "uid":"0b94cbbe-8150-4fda-a6f4-688b45b07eca",
-         "id":"get-instances-list",
-         "revision":16,
-         "active":true,
-         "createdAt":{
-            "seconds":"1615418485",
-            "nanos":916110000
-         },
-         "description":"Displays a gcp project instances"
-      },
-      {
-         "uid":"1cb113ed-6428-48f7-ac9c-3330390623e1",
-         "id":"titty-checkerv2",
-         "revision":15,
-         "active":true,
-         "createdAt":{
-            "seconds":"1614917442",
-            "nanos":962088000
-         },
-         "description":"Checks a image and gives it a 🍑 NSFW score"
-      },
-      {
-         "uid":"64b18f2b-a7e9-4177-9dc1-5ee243f99ec0",
-         "id":"helloworld",
-         "revision":8,
-         "active":true,
-         "createdAt":{
-            "seconds":"1615499112",
-            "nanos":781936000
-         },
-         "description":""
-      },
-      {
-         "uid":"8573d6de-1a91-4f2a-9762-4efe668e2071",
-         "id":"scott-dad-jokes",
-         "revision":7,
-         "active":true,
-         "createdAt":{
-            "seconds":"1614828109",
-            "nanos":747572000
-         },
-         "description":"🏴󠁧󠁢󠁳󠁣󠁴󠁿 🏴󠁧󠁢󠁳󠁣󠁴󠁿 🏴󠁧󠁢󠁳󠁣󠁴󠁿"
-      },
-      {
-         "uid":"e654dacf-aff8-45ea-9dd3-41cac824700b",
-         "id":"secrets-example",
-         "revision":19,
-         "active":true,
-         "createdAt":{
-            "seconds":"1614741922",
-            "nanos":519579000
-         },
-         "description":"Example of using secrets in action"
-      }
-   ],
-   "offset":0,
-   "limit":10,
-   "total":5
-}
-''';
 
 class Workflow {
   final String uid;
@@ -91,13 +28,27 @@ class Workflow {
   }
 }
 
+Future<String> executeWorkflow(String namespace, String workflow) async {
+  final response = await http.post(
+      '$API_SERVER/api/namespaces/$namespace/workflows/$workflow/execute');
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> resp = jsonDecode(response.body);
+    if (resp.containsKey("instanceId")) {
+      return resp["instanceId"].toString();
+    }
+    return "No ID";
+  } else {
+    throw Exception('Failed execute workflow');
+  }
+}
+
 Future<Workflow> fetchWorkflow(String namespace, String workflow) async {
   final response = await http
       .get('$API_SERVER/api/namespaces/$namespace/workflows/$workflow');
   if (response.statusCode == 200) {
     return Workflow.fromJson(jsonDecode(response.body));
   } else {
-    throw Exception('Failed to load Instance List');
+    throw Exception('Failed to load workflow');
   }
 }
 
@@ -107,7 +58,7 @@ Future<List<Workflow>> fetchWorkflows(String namespace) async {
   if (response.statusCode == 200) {
     return jsonStrToWorkflowList(response.body);
   } else {
-    throw Exception('Failed to load Instance List');
+    throw Exception('Failed to load Workflow List');
   }
 }
 
@@ -187,7 +138,7 @@ Future<List<Namespace>> fetchNamespaces() async {
     }
     return namespaceList;
   } else {
-    throw Exception('Failed to load Instance List');
+    throw Exception('Failed to load Namespace List');
   }
 }
 
