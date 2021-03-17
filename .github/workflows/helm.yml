@@ -16,8 +16,8 @@ jobs:
       id: ptag  # The step ID to refer to later.
     - name: build helm chart
       with:
-        version: ${{ steps.ptag.outputs.tag }}
       run: |
+        echo  ${{ steps.ptag.outputs.tag }}
         echo $0
         echo $1
         ls -la
