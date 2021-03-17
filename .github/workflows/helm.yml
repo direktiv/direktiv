@@ -16,10 +16,7 @@ jobs:
       id: ptag  # The step ID to refer to later.
     - name: build helm chart
       run: |
-        echo  ${{ steps.ptag.outputs.tag }}
-        echo $0
-        echo $1
-        ls -la
-        env
-        git tag
-        # git describe --tags `git rev-list --tags --max-count=1`
+        export version=${{ steps.ptag.outputs.tag }}
+        echo  $version
+        v="${version:1}"
+        echo $v
