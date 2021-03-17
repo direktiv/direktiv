@@ -9,8 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: oprypin/find-latest-tag@v1
+    with:
+      repository: vorteil/direktiv
+      releases-only: false
+      id: vorteil
     - name: build helm chart
+      with:
+        version: ${{ steps.vorteil.outputs.tag }}
       run: |
         ls -la
+        env
         git tag
         git describe --tags `git rev-list --tags --max-count=1`
