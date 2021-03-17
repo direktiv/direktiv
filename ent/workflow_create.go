@@ -92,6 +92,20 @@ func (wc *WorkflowCreate) SetWorkflow(b []byte) *WorkflowCreate {
 	return wc
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (wc *WorkflowCreate) SetLogToEvents(s string) *WorkflowCreate {
+	wc.mutation.SetLogToEvents(s)
+	return wc
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (wc *WorkflowCreate) SetNillableLogToEvents(s *string) *WorkflowCreate {
+	if s != nil {
+		wc.SetLogToEvents(*s)
+	}
+	return wc
+}
+
 // SetID sets the "id" field.
 func (wc *WorkflowCreate) SetID(u uuid.UUID) *WorkflowCreate {
 	wc.mutation.SetID(u)
@@ -320,6 +334,14 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 		})
 		_node.Workflow = value
 	}
+	if value, ok := wc.mutation.LogToEvents(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflow.FieldLogToEvents,
+		})
+		_node.LogToEvents = value
+	}
 	if nodes := wc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -337,6 +359,7 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.namespace_workflows = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wc.mutation.InstancesIDs(); len(nodes) > 0 {

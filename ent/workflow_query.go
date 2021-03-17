@@ -453,7 +453,8 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 		ids := make([]string, 0, len(nodes))
 		nodeids := make(map[string][]*Workflow)
 		for i := range nodes {
-			if fk := nodes[i].namespace_workflows; fk != nil {
+			fk := nodes[i].namespace_workflows
+			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
 			}
@@ -543,7 +544,7 @@ func (wq *WorkflowQuery) sqlCount(ctx context.Context) (int, error) {
 func (wq *WorkflowQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := wq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }

@@ -75,6 +75,10 @@ func (sl *foreachStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 }
 
+func (sl *foreachStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {

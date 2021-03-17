@@ -44,8 +44,9 @@ var (
 		{Name: "created", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 1024, Default: ""},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "revision", Type: field.TypeInt},
+		{Name: "revision", Type: field.TypeInt, Default: 0},
 		{Name: "workflow", Type: field.TypeBytes},
+		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
 		{Name: "namespace_workflows", Type: field.TypeString, Nullable: true, Size: 64},
 	}
 	// WorkflowsTable holds the schema information for the "workflows" table.
@@ -55,9 +56,8 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflows_namespaces_workflows",
-				Columns: []*schema.Column{WorkflowsColumns[7]},
-
+				Symbol:     "workflows_namespaces_workflows",
+				Columns:    []*schema.Column{WorkflowsColumns[8]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -66,7 +66,7 @@ var (
 			{
 				Name:    "workflow_name_namespace_workflows",
 				Unique:  true,
-				Columns: []*schema.Column{WorkflowsColumns[1], WorkflowsColumns[7]},
+				Columns: []*schema.Column{WorkflowsColumns[1], WorkflowsColumns[8]},
 			},
 		},
 	}
@@ -87,16 +87,14 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowEventsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflow_events_workflows_wfevents",
-				Columns: []*schema.Column{WorkflowEventsColumns[5]},
-
+				Symbol:     "workflow_events_workflows_wfevents",
+				Columns:    []*schema.Column{WorkflowEventsColumns[5]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:  "workflow_events_workflow_instances_instance",
-				Columns: []*schema.Column{WorkflowEventsColumns[6]},
-
+				Symbol:     "workflow_events_workflow_instances_instance",
+				Columns:    []*schema.Column{WorkflowEventsColumns[6]},
 				RefColumns: []*schema.Column{WorkflowInstancesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -115,9 +113,8 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowEventsWaitsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflow_events_waits_workflow_events_wfeventswait",
-				Columns: []*schema.Column{WorkflowEventsWaitsColumns[2]},
-
+				Symbol:     "workflow_events_waits_workflow_events_wfeventswait",
+				Columns:    []*schema.Column{WorkflowEventsWaitsColumns[2]},
 				RefColumns: []*schema.Column{WorkflowEventsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -150,9 +147,8 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowInstancesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "workflow_instances_workflows_instances",
-				Columns: []*schema.Column{WorkflowInstancesColumns[16]},
-
+				Symbol:     "workflow_instances_workflows_instances",
+				Columns:    []*schema.Column{WorkflowInstancesColumns[16]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

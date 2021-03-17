@@ -4,7 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -86,6 +88,8 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 		return
 	}
 
+	log.Debugf("container data-dir: %v", dir)
+
 	stdout, err := ioutil.TempFile("", "stdout")
 	if err != nil {
 		is.respondToAction(serr(err, errorInternal), data, in)
@@ -107,14 +111,19 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	}()
 
 	// write file to data dir
-	ioutil.WriteFile(filepath.Join(dir, direktivData), in.GetData(), 0755)
+	err = ioutil.WriteFile(filepath.Join(dir, direktivData), in.GetData(), 0755)
+	if err != nil {
+		log.Errorf("can not write direktiv data for container: %v", err)
+		is.respondToAction(serr(err, errorInternal), data, in)
+		return
+	}
 
 	ctxs := is.addCtx(in.Timeout, isolateID)
 	defer is.finishCancelIsolate(isolateID)
 
 	args := []string{
 		"run",
-		"-v",
+		"--volume",
 		fmt.Sprintf("%s:%s", dir, direktivDir),
 		"--storage-driver=vfs",
 	}
@@ -144,14 +153,14 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	log.Debugf("run container %v with command %v", img, cmd)
 
 	podman := exec.CommandContext(ctxs.ctx, "podman", args...)
-	podman.Stdout = stdout
-	podman.Stderr = stderr
+	podman.Stdout = io.MultiWriter(os.Stdout, stdout)
+	podman.Stderr = io.MultiWriter(os.Stdout, stderr)
 
 	log.Debugf("podman cmd: %v", podman)
 
 	err = podman.Run()
 	if err != nil {
-		log.Errorf(">> %v", err)
+		log.Errorf("error executing container: %v", err)
 		is.respondToAction(serr(err, errorInternal), data, in)
 		return
 	}
@@ -194,7 +203,8 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	}
 
 	go func() {
-		log.Debugf("responding to isolate caller")
+		maxlen := math.Min(256, float64(len(data)))
+		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
 		is.respondToAction(nil, data, in)
 	}()
 

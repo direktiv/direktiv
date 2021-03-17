@@ -52,6 +52,10 @@ func (sl *generateEventStateLogic) LivingChildren(savedata []byte) []stateChild 
 	return nil
 }
 
+func (sl *generateEventStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {

@@ -116,6 +116,11 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		active = *in.Active
 	}
 
+	var logToEvents string
+	if in.LogToEvents != nil {
+		logToEvents = *in.LogToEvents
+	}
+
 	var workflow model.Workflow
 	document := in.GetWorkflow()
 	err := workflow.Load(document)
@@ -124,7 +129,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 	}
 
 	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
-		workflow.Description, active, document, workflow.GetStartDefinition())
+		workflow.Description, active, logToEvents, document, workflow.GetStartDefinition())
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
@@ -491,7 +496,7 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 	}
 
 	wf, err := is.wfServer.dbManager.updateWorkflow(ctx, uid, checkRevision, workflow.ID,
-		workflow.Description, in.Active, document, workflow.GetStartDefinition())
+		workflow.Description, in.Active, in.LogToEvents, document, workflow.GetStartDefinition())
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
