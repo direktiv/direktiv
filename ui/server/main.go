@@ -43,7 +43,9 @@ func main() {
 
 	// Get ...
 	r.HandleFunc("/api/namespaces", gc.namespacesHandler).Methods(http.MethodGet)
+	r.HandleFunc("/api/namespaces", gc.createNamespaceHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.workflowsHandler).Methods(http.MethodGet)
+	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}", gc.getWorkflowHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{namespace}", gc.instancesHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{instance}", gc.instanceHandler).Methods(http.MethodGet)

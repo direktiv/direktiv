@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -117,6 +118,47 @@ func (g *grpcClient) executeWorkflowHandler(w http.ResponseWriter, r *http.Reque
 	resp, err := g.client.InvokeWorkflow(r.Context(), &ingress.InvokeWorkflowRequest{
 		Namespace:  &n,
 		WorkflowId: &wf,
+	})
+	if err != nil {
+		errResponse(w, err)
+		return
+	}
+
+	respond(w, resp)
+}
+
+// createNamespaceHandler
+func (g *grpcClient) createNamespaceHandler(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["namespace"]
+
+	resp, err := g.client.AddNamespace(r.Context(), &ingress.AddNamespaceRequest{
+		Name: &n,
+	})
+	if err != nil {
+		errResponse(w, err)
+		return
+	}
+
+	respond(w, resp)
+}
+
+// createWorkflowHandler
+func (g *grpcClient) createWorkflowHandler(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["namespace"]
+	active := true
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		errResponse(w, err)
+		return
+	}
+
+	resp, err := g.client.AddWorkflow(r.Context(), &ingress.AddWorkflowRequest{
+		Active:    &active,
+		Namespace: &n,
+		Workflow:  b,
 	})
 	if err != nil {
 		errResponse(w, err)
