@@ -19,7 +19,7 @@ jobs:
         export version=${{ steps.ptag.outputs.tag }}
         v="${version:1}"
         echo "packaging helm for $v"
-        helm package --app-version=$v kubernetes/charts/direktiv/
+        helm package --app-version=$v --version=$v kubernetes/charts/direktiv/
         helm repo index .
         ls -la
     - id: upload-file
@@ -27,4 +27,10 @@ jobs:
       with:
         credentials: ${{ secrets.GCP_BUCKET }}
         path: ./index.yaml
-        destination: direktiv_charts/index.yaml
+        destination: direktiv_charts/
+    - id: upload-file-tar
+      uses: google-github-actions/upload-cloud-storage@main
+      with:
+        credentials: ${{ secrets.GCP_BUCKET }}
+        path: ./direktiv-$v.tgz
+        destination: direktiv_charts/
