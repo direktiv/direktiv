@@ -97,7 +97,7 @@ build-cli:
 build-ui-flutter: ui/flutter/build/web
 
 ui/flutter/build/web:
-	cd ui/flutter; flutter build web --dart-define=API_SERVER=http://localhost:8080
+	cd ui/flutter; flutter build web
 
 .PHONY: run-ui
 run-ui: build-ui-flutter 
