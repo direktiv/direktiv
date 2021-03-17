@@ -13,10 +13,8 @@ jobs:
       id: ptag
       uses: "WyriHaximus/github-action-get-previous-tag@v1"
     - name: build helm chart
-      with:
-        version: ${{ steps.ptag.outputs.tag }}
       run: |
         ls -la
-
+        env
         git tag
         git describe --tags `git rev-list --tags --max-count=1`
