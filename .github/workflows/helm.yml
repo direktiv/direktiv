@@ -15,8 +15,6 @@ jobs:
         releases-only: false  # We know that all relevant tags have a GitHub release for them.
       id: ptag  # The step ID to refer to later.
     - name: build helm chart
-      with:
-        version: ${{ steps.ptag.outputs.tag }}
       run: |
         ls -la
         env
