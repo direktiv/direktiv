@@ -15,7 +15,6 @@ jobs:
         releases-only: false  # We know that all relevant tags have a GitHub release for them.
       id: ptag  # The step ID to refer to later.
     - name: build helm chart
-      with:
       run: |
         echo  ${{ steps.ptag.outputs.tag }}
         echo $0
