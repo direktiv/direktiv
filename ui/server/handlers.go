@@ -42,6 +42,24 @@ func (g *grpcClient) workflowsHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, resp)
 }
 
+// workflowsHandler
+func (g *grpcClient) getWorkflowHandler(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflow"]
+
+	resp, err := g.client.GetWorkflowById(r.Context(), &ingress.GetWorkflowByIdRequest{
+		Namespace: &n,
+		Id:        &wf,
+	})
+	if err != nil {
+		errResponse(w, err)
+		return
+	}
+
+	respond(w, resp)
+}
+
 // instancesHandler
 func (g *grpcClient) instancesHandler(w http.ResponseWriter, r *http.Request) {
 
