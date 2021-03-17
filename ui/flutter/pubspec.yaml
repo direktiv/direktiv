@@ -21,6 +21,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  http: ^0.12.0+1
   flutter:
     sdk: flutter
 
@@ -32,6 +33,7 @@ dependencies:
   flutter_highlight: ^0.7.0
   flutter_breadcrumb: ^1.0.0
   fluro: ^2.0.3
+  
 
 dev_dependencies:
   flutter_test:

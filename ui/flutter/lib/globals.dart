@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 var workflowList = '''{
    "workflows":[
@@ -95,11 +96,25 @@ var instanceList = '''{
    "limit":10
 }
 ''';
+var apiSERVER = "http://localhost:8989";
+
+Future<List<Instance>> fetchNamespaceInstances(String namespace) async {
+  final response = await http.get('$apiSERVER/api/instances/$namespace');
+  if (response.statusCode == 200) {
+    return jsonStrToInstanceList(response.body);
+  } else {
+    throw Exception('Failed to load Instance List');
+  }
+}
 
 List<Instance> jsonStrToInstanceList(String jsonString) {
   Map<String, dynamic> jsonData = jsonDecode(jsonString);
-  final List<Map<String, dynamic>> instances =
-      jsonData['workflowInstances'].cast<Map<String, dynamic>>();
+  List<Map<String, dynamic>> instances = [];
+
+  if (jsonData.containsKey('workflowInstances')) {
+    instances = jsonData['workflowInstances'].cast<Map<String, dynamic>>();
+  }
+
   List<Instance> instanceList = [];
   instances.forEach((element) {
     instanceList.add(Instance.fromJson(element));
@@ -122,7 +137,7 @@ class Instance {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': '${namespace}/${workflow}/${instanceID}',
+        'id': '$namespace/$workflow/$instanceID',
         'status': status,
       };
 }
@@ -138,8 +153,34 @@ var namespaceList = '''{
 }
 ''';
 
+class Namespace {
+  String name;
+  List<Instance> instances;
+  Namespace(this.name, this.instances);
+}
+
+Future<List<Namespace>> fetchNamespaces() async {
+  final response = await http.get('$apiSERVER/api/namespaces');
+  List<Namespace> namespaceList = [];
+  if (response.statusCode == 200) {
+    final nsList = jsonStrToNamespaceList(response.body);
+    for (var ns in nsList) {
+      final nsInstances = await fetchNamespaceInstances(ns);
+      namespaceList.add(Namespace(ns, nsInstances));
+    }
+    return namespaceList;
+  } else {
+    throw Exception('Failed to load Instance List');
+  }
+}
+
 List<String> jsonStrToNamespaceList(String jsonString) {
-  Map<String, dynamic> nsData = jsonDecode(jsonString);
-  final List<String> namespaces = nsData['data'].cast<String>();
-  return namespaces;
+  Map<String, dynamic> jsonData = jsonDecode(jsonString);
+  final List<Map<String, dynamic>> ns =
+      jsonData['namespaces'].cast<Map<String, dynamic>>();
+  List<String> namespaceList = [];
+  ns.forEach((element) {
+    namespaceList.add(element['name']);
+  });
+  return namespaceList;
 }
