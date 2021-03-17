@@ -15,8 +15,12 @@ jobs:
         releases-only: false  # We know that all relevant tags have a GitHub release for them.
       id: ptag  # The step ID to refer to later.
     - name: build helm chart
+      with:
+        version: ${{ steps.ptag.outputs.tag }}
       run: |
+        echo $0
+        echo $1
         ls -la
         env
         git tag
-        git describe --tags `git rev-list --tags --max-count=1`
+        # git describe --tags `git rev-list --tags --max-count=1`
