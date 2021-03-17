@@ -12,4 +12,5 @@ jobs:
     - name: build helm chart
       run: |
         ls -la
+        git tag
         git describe --tags `git rev-list --tags --max-count=1`
