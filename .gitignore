@@ -27,6 +27,7 @@
 /alpine-base
 /postgres
 /minio
+/direktiv-ui
 
 /build/docker/*
 !*build/docker/all
@@ -34,3 +35,4 @@
 !*build/docker/secrets
 !*build/docker/flow
 !*build/docker/cli
+!*build/docker/ui/Dockerfile
