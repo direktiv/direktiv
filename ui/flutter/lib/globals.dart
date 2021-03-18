@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-const API_SERVER = String.fromEnvironment('API_SERVER', defaultValue: '');
+const API_SERVER =
+    String.fromEnvironment('API_SERVER', defaultValue: 'http://localhost:8080');
 
 class Workflow {
   final String uid;
