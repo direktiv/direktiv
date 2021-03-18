@@ -102,3 +102,8 @@ flow:
   secretsDb: ""
   isolateEndpoint: ""
   secretsEndpoint: ""
+
+# ui config
+ui:
+  image: "vorteil/ui"
+  tag: "latest"
