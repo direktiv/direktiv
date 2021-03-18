@@ -29,6 +29,7 @@ jobs:
         make docker-secrets
         make docker-flow
         make docker-cli
+        make docker-ui
         echo "containers built"
         docker tag direktiv-flow vorteil/flow:$RV
         docker tag direktiv-isolate vorteil/isolate:$RV

@@ -98,15 +98,18 @@ build-ui-flutter:
 		cd ${mkfile_dir_main}/ui/flutter; flutter build web; \
 	fi
 
-.PHONY: build-ui-flutter-docker
-build-ui-flutter-docker:
+.PHONY: docker-ui
+docker-ui:
+	echo "building app"
 	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
 		docker run -v ${mkfile_dir_main}/ui/flutter:/ui  cirrusci/flutter /bin/bash -c "cd /ui && flutter pub get && flutter build web"; \
 	fi
+	echo "copying web folder"
 	cp -r ${mkfile_dir_main}/ui/flutter/build/web  ${mkfile_dir_main}/build/docker/ui
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direktiv-ui ./ui/server
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direktiv-ui ${mkfile_dir_main}/ui/server
 	cp ${mkfile_dir_main}/direktiv-ui  ${mkfile_dir_main}/build/docker/ui
-	cd build && docker build -t direktiv-ui -f docker/ui/Dockerfile .
+	echo "building image"
+	cd ${mkfile_dir_main}/build && ls -la && docker build -t direktiv-ui -f docker/ui/Dockerfile .
 
 
 .PHONY: run-ui
