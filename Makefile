@@ -98,8 +98,8 @@ build-ui-flutter:
 		cd ${mkfile_dir_main}/ui/flutter; flutter build web; \
 	fi
 
-.PHONY: build-ui-flutter-docker
-build-ui-flutter-docker:
+.PHONY: docker-ui
+docker-ui:
 	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
 		docker run -v ${mkfile_dir_main}/ui/flutter:/ui  cirrusci/flutter /bin/bash -c "cd /ui && flutter pub get && flutter build web"; \
 	fi
