@@ -24,7 +24,8 @@ var instanceDetailHandler =
   return NavWrapper(
       path: {"Home": "/"},
       child: InstanceDetails(
-        instance: params["id"][0],
+        instanceID:
+            '${params["namespace"][0]}/${params["workflow"][0]}/${params["id"][0]}',
       ));
 });
 
@@ -45,15 +46,20 @@ var workflowHandler =
   final String workflow = params["workflow"][0];
 
   return NavWrapper(
-      path: {"Home": "/", namespace: "/p/$namespace", workflow: "$workflow"},
-      child: Workflow(
-        workflow: workflow,
+      path: {
+        "Home": "/",
+        namespace: "/p/$namespace",
+        workflow: "/p/$namespace/w/$workflow"
+      },
+      child: WorkflowPage(
+        namespace: namespace,
+        workflowID: workflow,
       ));
 });
 
 class Routes {
   static String root = "/";
-  static String instanceDetails = "/instance/:id";
+  static String instanceDetails = "/i/:namespace/:workflow/:id";
   static String namespaceWorkflows = "/p/:namespace";
   static String workflowDetails = "/p/:namespace/w/:workflow";
 

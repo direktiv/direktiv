@@ -241,25 +241,24 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 		return err
 	}
 
-	insecure := true
-	if is.config.Minio.Secure > 0 {
-		insecure = false
+	var transport *http.Transport
+	if is.config.Minio.Secure == 0 {
+		log.Debugf("minio client insecureSkipVerify")
+		transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
 
 	useSSL := true
 	if is.config.Minio.SSL == 0 {
+		log.Debugf("minio client using SSL")
 		useSSL = false
 	}
 
 	minioClient, err := minio.New(is.config.Minio.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(is.config.Minio.User, is.config.Minio.Password, ""),
-		Secure: useSSL,
-		Transport: &http.Transport{
-			MaxIdleConns:       10,
-			IdleConnTimeout:    30 * time.Second,
-			DisableCompression: true,
-			TLSClientConfig:    &tls.Config{InsecureSkipVerify: insecure},
-		},
+		Creds:     credentials.NewStaticV4(is.config.Minio.User, is.config.Minio.Password, ""),
+		Secure:    useSSL,
+		Transport: transport,
 	})
 
 	if err != nil {

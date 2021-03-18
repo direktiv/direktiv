@@ -66,13 +66,16 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 
 	chash := generateCorrelationHash(ce, ce.Type(), correlations)
 
-	sql := fmt.Sprintf(`update workflow_events_waits
-		set events = jsonb_set(events, '{%s}', '"%s"', true)
-		WHERE events::jsonb ? '%s' and workflow_events_wfeventswait = %d
-		returning *`, chash,
-		base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
+	// sql := fmt.Sprintf(`update workflow_events_waits
+	// 	set events = jsonb_set(events, '{%s}', '"%s"', true)
+	// 	WHERE events::jsonb ? '%s' and workflow_events_wfeventswait = %d
+	// 	returning *`, chash,
+	// 	base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
 
-	rows, err := db.Query(sql)
+	rows, err := db.Query(`update workflow_events_waits
+	set events = jsonb_set(events, '{$1}', '"$2"', true)
+	WHERE events::jsonb ? '$3' and workflow_events_wfeventswait = $4
+	returning *`, chash, base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
 	if err != nil {
 		return retEvents, err
 	}
@@ -148,14 +151,17 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 	db := s.dbManager.dbEnt.DB()
 
 	// get candidates for event
-	query := fmt.Sprintf(`select
-		id, signature, count, correlations, events, workflow_wfevents,
-		v from workflow_events etl,
-		jsonb_array_elements(etl.events) as v
-		where v::json->>'type' = '%s'`,
-		ce.Type())
-
-	rows, err := db.Query(query)
+	// query := fmt.Sprintf(`select
+	// 	id, signature, count, correlations, events, workflow_wfevents,
+	// 	v from workflow_events etl,
+	// 	jsonb_array_elements(etl.events) as v
+	// 	where v::json->>'type' = '%s'`,
+	// 	ce.Type())
+	rows, err := db.Query(`select
+	id, signature, count, correlations, events, workflow_wfevents,
+	v from workflow_events etl,
+	jsonb_array_elements(etl.events) as v
+	where v::json->>'type' = '$1'`, ce.Type())
 	if err != nil {
 		return err
 	}

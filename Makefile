@@ -1,12 +1,12 @@
 #
 # Makefile to build direktiv
 #
-
 flow_generated_files := $(shell find pkg/flow/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 health_generated_files := $(shell find pkg/health/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 ingress_generated_files := $(shell find pkg/ingress/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 isolate_generated_files := $(shell find pkg/isolate/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 secrets_generated_files := $(shell find pkg/secrets/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
+hasFlutter := $(shell which flutter)
 
 .SILENT:
 
@@ -81,7 +81,6 @@ docker-cli: build-cli
 		cp ${mkfile_dir_main}/direkcli  ${mkfile_dir_main}/build/
 		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
-
 .PHONY: build
 build:
 	go get entgo.io/ent
@@ -92,6 +91,27 @@ build:
 .PHONY: build-cli
 build-cli:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
+
+.PHONY: build-ui-flutter
+build-ui-flutter:
+	if [ ${hasFlutter} ]; then \
+		cd ${mkfile_dir_main}/ui/flutter; flutter build web; \
+	fi
+
+.PHONY: build-ui-flutter-docker
+build-ui-flutter-docker:
+	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
+		docker run -v ${mkfile_dir_main}/ui/flutter:/ui  cirrusci/flutter /bin/bash -c "cd /ui && flutter pub get && flutter build web"; \
+	fi
+	cp -r ${mkfile_dir_main}/ui/flutter/build/web  ${mkfile_dir_main}/build/docker/ui
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direktiv-ui ./ui/server
+	cp ${mkfile_dir_main}/direktiv-ui  ${mkfile_dir_main}/build/docker/ui
+	cd build && docker build -t direktiv-ui -f docker/ui/Dockerfile .
+
+
+.PHONY: run-ui
+run-ui: build-ui-flutter
+	go run ./ui/server -bind=':8080' -web-dir='ui/flutter/build/web'
 
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
