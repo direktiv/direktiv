@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY docker/ui/web /web
+ADD docker/ui/web /web
 COPY docker/ui/direktiv-ui /
 RUN chmod 755 /direktiv-ui
 
