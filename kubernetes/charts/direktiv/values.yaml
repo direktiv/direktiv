@@ -79,8 +79,8 @@ tolerations: []
 affinity: {}
 
 # support services
-withSupport: false
-withIsolate: false
+withSupport: true
+withIsolate: true
 
 db: ""
 
