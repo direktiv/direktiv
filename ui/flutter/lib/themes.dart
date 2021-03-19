@@ -18,7 +18,8 @@ Color(0xffa1a1a1)
 
 const Map<String, Color> statusColors = {
   "complete": Color(0xFF28a745),
-  "pending": Color(0xffe5b208),
+  "pending":  Color(0xffe5b208),
+  "failed":   Color(0xFFFF4040),
 };
 
 const Color unknownStatus = Colors.grey;
