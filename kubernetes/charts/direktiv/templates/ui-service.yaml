@@ -5,8 +5,10 @@ metadata:
   labels:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
 spec:
+  type: NodePort
   ports:
     - port: 1605
+      targetPort: 1605
       protocol: TCP
       name: ui
   selector:
