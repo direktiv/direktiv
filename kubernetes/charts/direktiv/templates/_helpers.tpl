@@ -85,6 +85,23 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Selector labels ui
+*/}}
+{{- define "direktiv.selectorLabelsUI" -}}
+app.kubernetes.io/name: {{ include "direktiv.name" . }}-ui
+app.kubernetes.io/instance: {{ .Release.Name }}-ui
+{{- end }}
+
+{{- define "direktiv.labelsUI" -}}
+helm.sh/chart: {{ include "direktiv.chart" . }}
+{{ include "direktiv.selectorLabelsUI" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "direktiv.serviceAccountName" -}}

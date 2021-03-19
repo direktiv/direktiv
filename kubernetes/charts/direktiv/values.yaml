@@ -79,8 +79,8 @@ tolerations: []
 affinity: {}
 
 # support services
-withSupport: false
-withIsolate: false
+withSupport: true
+withIsolate: true
 
 db: ""
 
@@ -102,3 +102,8 @@ flow:
   secretsDb: ""
   isolateEndpoint: ""
   secretsEndpoint: ""
+
+# ui config
+ui:
+  image: "vorteil/ui"
+  tag: "latest"

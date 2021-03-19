@@ -1,5 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:readonlyui/router.dart';
+import 'package:readonlyui/themes.dart';
 import 'globals.dart' as globals;
 import 'package:flutter/material.dart';
 import 'globals.dart';
@@ -64,6 +65,7 @@ List<Instance> getAllInstances(List<Namespace> namespaces) {
 
 class InstanceList extends StatelessWidget {
   InstanceList({@required this.instances, @required this.title});
+
   final List<globals.Instance> instances;
   final String title;
   final double margin = 10;
@@ -75,11 +77,18 @@ class InstanceList extends StatelessWidget {
             top: margin, bottom: margin, left: margin, right: margin),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.only(left: 16),
-              height: 50,
-              alignment: Alignment.centerLeft,
-              child: Text(title),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: Container(
+                  padding: const EdgeInsets.only(left: 16),
+                  height: 50,
+                  alignment: Alignment.centerLeft,
+                  child: TextBoldPrefix(title, "", fontSize: 20),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(width: 1, color: colors.background(2))
+                    ),
+                  )),
             ),
             Expanded(
                 child: ListView.builder(
@@ -87,36 +96,95 @@ class InstanceList extends StatelessWidget {
                     itemCount: instances.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Container(
-                        height: 50,
+                        height: 80,
+                        padding:
+                            EdgeInsets.symmetric(vertical: 6, horizontal: 6),
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                              alignment: Alignment.centerLeft,
-                              padding: EdgeInsets.all(0)),
-                          child: Padding(
-                              padding: EdgeInsets.only(left: 16),
-                              child: Text('${instances[index].instanceID}')),
+                            alignment: Alignment.centerLeft,
+                            padding: EdgeInsets.all(0),
+                            side: BorderSide(
+                                width: 1, color: colors.status(instances[index].status)),
+                            backgroundColor: colors.background(0),
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5))),
+                          ),
+                          child: Container(
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                children: [
+                                  Flexible(
+                                      flex: 1,
+                                      fit: FlexFit.tight,
+                                      child: Row(
+                                        children: [
+                                          Flexible(
+                                              flex: 1,
+                                              fit: FlexFit.tight,
+                                              child: Container(
+                                                  child: TextBoldPrefix("Workflow: ", instances[index].workflow))),
+                                          Flexible(
+                                              flex: 1,
+                                              fit: FlexFit.tight,
+                                              child: Container(
+                                                  child: TextBoldPrefix("Namespace: ",instances[index].namespace))),
+                                        ],
+                                      )),
+                                  Flexible(
+                                      flex: 1,
+                                      fit: FlexFit.tight,
+                                      child: Row(
+                                        children: [
+                                          Flexible(
+                                              flex: 1,
+                                              fit: FlexFit.tight,
+                                              child: Container(
+                                                  child: TextBoldPrefix("Instance: ", instances[index].instanceID))),
+                                          Flexible(
+                                              flex: 1,
+                                              fit: FlexFit.tight,
+                                              child: Container(
+                                                  child: Container(
+                                                    child: TextBoldPrefix("Status: ", instances[index].status, color: Colors.black),
+                                                      ),
+                                                      )),
+                                        ],
+                                      ))
+                                ],
+                              )),
                           onPressed: () {
                             print('Pressed ${instances[index].instanceID}');
                             Application.router.navigateTo(context,
-                                "/instance/${instances[index].instanceID}");
+                                "/i/${instances[index].namespace}/${instances[index].workflow}/${instances[index].instanceID}");
                           },
                         ),
                       );
                     }))
           ],
-        ),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.black,
-            width: 3,
-          ),
-          borderRadius: BorderRadius.circular(3),
         ));
   }
+}
+// Text('Workflow: ${instances[index].workflow}')))
+RichText TextBoldPrefix(String prefix, String text, {fontSize = 14.0, color: Colors.black}) {
+  return (
+      new RichText(
+          text: new TextSpan(
+            style: new TextStyle(
+              fontSize: fontSize,
+              color: color,
+            ),
+            children: <TextSpan>[
+              new TextSpan(text: prefix, style: new TextStyle(fontWeight: FontWeight.bold)),
+              new TextSpan(text: text),
+            ],
+          )
+  ));
 }
 
 class NamespaceList extends StatelessWidget {
   NamespaceList({@required this.namespaces, @required this.title});
+
   final List<globals.Namespace> namespaces;
   final String title;
   final double margin = 10;
@@ -133,7 +201,18 @@ class NamespaceList extends StatelessWidget {
               padding: const EdgeInsets.only(left: 16),
               height: 50,
               alignment: Alignment.centerLeft,
-              child: Text(title),
+              child: TextBoldPrefix(title, ""),
+                decoration: BoxDecoration(
+                  color: colors.background(0),
+                  border: Border.all(
+                    color: colors.background(2),
+                    width: 1,
+                  ),
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(5),
+                      topLeft: Radius.circular(5),
+                    )
+                )
             ),
             Expanded(
                 child: ListView.builder(
@@ -145,7 +224,11 @@ class NamespaceList extends StatelessWidget {
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                               alignment: Alignment.centerLeft,
-                              padding: EdgeInsets.all(0)),
+                              padding: EdgeInsets.all(0),
+                            shape: const ContinuousRectangleBorder(
+
+                            ),
+                          ),
                           child: Padding(
                               padding: EdgeInsets.only(left: 16),
                               child: Text('${namespaces[index].name}')),
@@ -158,13 +241,6 @@ class NamespaceList extends StatelessWidget {
                       );
                     }))
           ],
-        ),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.black,
-            width: 3,
-          ),
-          borderRadius: BorderRadius.circular(3),
         ));
   }
 }

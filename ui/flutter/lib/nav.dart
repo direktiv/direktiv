@@ -53,7 +53,7 @@ class NavWrapper extends StatelessWidget {
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(ExampleConst.breadcrumbsIcon[index]),
+                                  Icon(Icons.home),
                                   Text(
                                     key,
                                     style: TextStyle(
@@ -70,17 +70,16 @@ class NavWrapper extends StatelessWidget {
                             bottom: margin,
                             left: margin,
                             right: 4),
-                        splashColor: ExampleColors.accent,
+                        splashColor: Colors.indigo,
                         onTap: index == 0
                             ? () {
-                                Navigator.popUntil(context,
-                                    (Route<dynamic> route) => route.isFirst);
+                                Application.router.navigateTo(context, "/");
                               }
                             : () {
-                                Navigator.pushReplacementNamed(
-                                    context, path[key]);
+                                Application.router
+                                    .navigateTo(context, path[key]);
                               },
-                        textColor: ExampleColors.primary,
+                        textColor: Colors.cyan,
                         disabledTextColor: Colors.grey,
                       );
                     },
@@ -102,92 +101,5 @@ class NavWrapper extends StatelessWidget {
             )
           ],
         )));
-  }
-}
-
-class ExampleConst {
-  static const List<String> breadcrumbs = [
-    'Home',
-    'demo-jcmxg',
-    'UzUSOV',
-  ];
-  static const List<IconData> breadcrumbsIcon = [
-    Icons.home,
-  ];
-}
-
-class ExampleColors {
-  static const Color primary = Colors.cyan;
-  static const Color accent = Colors.indigo;
-  static const Color background = Color(0xffEDEDED);
-
-  static const Color primaryTextColor = Colors.white70;
-  static const Color secondaryTextColor = Colors.black87;
-  static const Color greyTextColor = Colors.black38;
-}
-
-class NavBar extends StatelessWidget {
-  NavBar({@required this.path});
-  final double margin = 10;
-  final Map<String, String> path;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        margin: EdgeInsets.only(
-            top: margin, bottom: margin, left: margin, right: margin),
-        child: BreadCrumb.builder(
-          itemCount: path.length,
-          builder: (index) {
-            String key = path.keys.elementAt(index);
-            String goPath = "/" + path[key];
-            return (BreadCrumbItem(
-              content: index != 0
-                  ? Text(
-                      key,
-                      style: TextStyle(
-                        fontWeight:
-                            index < 3 ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(ExampleConst.breadcrumbsIcon[index]),
-                        Text(
-                          key,
-                          style: TextStyle(
-                            fontWeight:
-                                index < 3 ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(4),
-              padding: EdgeInsets.only(
-                  top: margin, bottom: margin, left: margin, right: 4),
-              splashColor: ExampleColors.accent,
-              onTap: index == 0
-                  ? () {
-                      Navigator.popUntil(
-                          context, (Route<dynamic> route) => route.isFirst);
-                    }
-                  : Navigator.pushReplacementNamed(context, goPath),
-              textColor: ExampleColors.primary,
-              disabledTextColor: Colors.grey,
-            ));
-          },
-          divider: Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-          ),
-        ),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.black,
-            width: 3,
-          ),
-          borderRadius: BorderRadius.circular(3),
-        ));
   }
 }
