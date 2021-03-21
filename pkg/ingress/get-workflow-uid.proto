@@ -18,4 +18,5 @@ message GetWorkflowByUidResponse {
 	optional google.protobuf.Timestamp createdAt = 5;
 	optional string description = 6;
 	optional bytes workflow = 7;
+	optional string logToEvents = 8;
 }

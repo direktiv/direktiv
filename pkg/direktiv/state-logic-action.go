@@ -110,6 +110,10 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 }
 
+func (sl *actionStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {

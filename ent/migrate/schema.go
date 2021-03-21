@@ -46,6 +46,7 @@ var (
 		{Name: "active", Type: field.TypeBool, Default: true},
 		{Name: "revision", Type: field.TypeInt, Default: 0},
 		{Name: "workflow", Type: field.TypeBytes},
+		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
 		{Name: "namespace_workflows", Type: field.TypeString, Nullable: true, Size: 64},
 	}
 	// WorkflowsTable holds the schema information for the "workflows" table.
@@ -56,7 +57,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workflows_namespaces_workflows",
-				Columns:    []*schema.Column{WorkflowsColumns[7]},
+				Columns:    []*schema.Column{WorkflowsColumns[8]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -65,7 +66,7 @@ var (
 			{
 				Name:    "workflow_name_namespace_workflows",
 				Unique:  true,
-				Columns: []*schema.Column{WorkflowsColumns[1], WorkflowsColumns[7]},
+				Columns: []*schema.Column{WorkflowsColumns[1], WorkflowsColumns[8]},
 			},
 		},
 	}

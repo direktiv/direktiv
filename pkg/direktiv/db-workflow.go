@@ -16,7 +16,7 @@ import (
 )
 
 func (db *dbManager) addWorkflow(ctx context.Context, ns, name, description string, active bool,
-	workflow []byte, startDefinition model.StartDefinition) (*ent.Workflow, error) {
+	logToEvents string, workflow []byte, startDefinition model.StartDefinition) (*ent.Workflow, error) {
 
 	tx, err := db.dbEnt.Tx(ctx)
 	if err != nil {
@@ -27,6 +27,7 @@ func (db *dbManager) addWorkflow(ctx context.Context, ns, name, description stri
 		Create().
 		SetName(name).
 		SetActive(active).
+		SetLogToEvents(logToEvents).
 		SetWorkflow(workflow).
 		SetDescription(description).
 		SetNamespaceID(ns).
@@ -46,7 +47,7 @@ func (db *dbManager) addWorkflow(ctx context.Context, ns, name, description stri
 }
 
 func (db *dbManager) updateWorkflow(ctx context.Context, id string, revision *int, name, description string,
-	active *bool, workflow []byte, startDefinition model.StartDefinition) (*ent.Workflow, error) {
+	active *bool, logToEvents *string, workflow []byte, startDefinition model.StartDefinition) (*ent.Workflow, error) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -86,6 +87,10 @@ func (db *dbManager) updateWorkflow(ctx context.Context, id string, revision *in
 
 	if active != nil {
 		updater = updater.SetActive(*active)
+	}
+
+	if logToEvents != nil {
+		updater = updater.SetLogToEvents(*logToEvents)
 	}
 
 	wf, err := updater.Save(ctx)
@@ -209,7 +214,7 @@ func (db *dbManager) getWorkflows(ctx context.Context, ns string, offset, limit 
 		Query().
 		Limit(limit).
 		Offset(offset).
-		Select(workflow.FieldID, workflow.FieldName, workflow.FieldCreated, workflow.FieldDescription, workflow.FieldActive, workflow.FieldRevision).
+		Select(workflow.FieldID, workflow.FieldName, workflow.FieldCreated, workflow.FieldDescription, workflow.FieldActive, workflow.FieldRevision, workflow.FieldLogToEvents).
 		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
 		Order(ent.Asc(namespace.FieldID)).
 		All(ctx)

@@ -1,9 +1,13 @@
+#Mac desktop files
+.DS_Store
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+.vscode
 
 # Test binary, built with `go test -c`
 *.test
@@ -15,15 +19,22 @@
 # vendor/
 
 /build/direktiv
+/build/direkcli
 /build/alpine-*
 /direktiv
 /direkcli
+/ui-server
 /alpine-base
 /postgres
 /minio
+/direktiv-ui
 
 /build/docker/*
 !*build/docker/all
 !*build/docker/isolate
 !*build/docker/secrets
 !*build/docker/flow
+!*build/docker/cli
+!*build/docker/ui
+*build/docker/ui/web
+*build/docker/ui/direktiv-ui

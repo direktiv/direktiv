@@ -1,0 +1,71 @@
+{{- if .Values.withSupport -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-support
+  labels:
+    {{- include "direktiv.labelsSupport" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabelsSupport" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "direktiv.selectorLabelsSupport" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      containers:
+        - name: minio
+          image: minio/minio:RELEASE.2020-10-28T08-16-50Z-25-g987c62525
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 9000
+              protocol: TCP
+          command: ["minio"]
+          args: ["server", "/data"]
+          env:
+          - name: MINIO_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: minioAccessKey
+          - name: MINIO_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: minioSecretKey
+        - name: postgres
+          image: postgres:12.6-alpine
+          env:
+          - name: POSTGRES_USER
+            value: "direktiv"
+          - name: POSTGRES_PASSWORD
+            value: "direktivdirektiv"
+          - name: POSTGRES_DB
+            value: "direktiv"
+          ports:
+            - containerPort: 5432
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

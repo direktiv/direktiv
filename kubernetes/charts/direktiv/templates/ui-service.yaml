@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ui
+  labels:
+    {{- include "direktiv.labelsUI" . | nindent 4 }}
+spec:
+  type: NodePort
+  ports:
+    - port: 1605
+      targetPort: 1605
+      protocol: TCP
+      name: ui
+  selector:
+    {{- include "direktiv.selectorLabelsUI" . | nindent 4 }}

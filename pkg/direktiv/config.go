@@ -53,7 +53,8 @@ const (
 	certDir    = "DIREKTIV_CERTS"
 	certSecure = "DIREKTIV_SECURE"
 
-	isolation = "DIREKTIV_ISOLATION"
+	isolation  = "DIREKTIV_ISOLATION"
+	grpcHealth = "DIREKTIV_GRPC_HEALTH"
 )
 
 // Config is the configuration for workflow and runner server
@@ -69,6 +70,7 @@ type Config struct {
 	HealthAPI struct {
 		Bind     string
 		Endpoint string
+		Enabled  int
 	} `toml:"healthAPI"`
 
 	IngressAPI struct {
@@ -173,6 +175,7 @@ func ReadConfig(file string) (*Config, error) {
 
 	c.HealthAPI.Bind = fmt.Sprintf("%s:9999", localIP)
 	c.HealthAPI.Endpoint = c.HealthAPI.Bind
+	c.HealthAPI.Enabled = 1
 
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
@@ -218,6 +221,7 @@ func ReadConfig(file string) (*Config, error) {
 		{minioSecure, &c.Minio.Secure},
 		{minioSSL, &c.Minio.SSL},
 		{certSecure, &c.Certs.Secure},
+		{grpcHealth, &c.HealthAPI.Enabled},
 	}
 
 	for _, i := range ints {

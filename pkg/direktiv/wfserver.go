@@ -153,8 +153,11 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		s.components[secretsComponent] = secretsServer
 	}
 
-	healthServer := newHealthServer(config)
-	s.components[healthComponent] = healthServer
+	// only start health checker if enabled (default)
+	if config.HealthAPI.Enabled > 0 {
+		healthServer := newHealthServer(config)
+		s.components[healthComponent] = healthServer
+	}
 
 	return s, nil
 

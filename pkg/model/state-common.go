@@ -1,6 +1,11 @@
 package model
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/itchyny/gojq"
+)
 
 type RetryDefinition struct {
 	MaxAttempts int     `yaml:"max_attempts"`
@@ -88,6 +93,7 @@ func (o *ProduceEventDefinition) Validate() error {
 type StateCommon struct {
 	ID   string    `yaml:"id"`
 	Type StateType `yaml:"type"`
+	Log  string    `yaml:"log"`
 }
 
 func (o *StateCommon) GetType() StateType {
@@ -97,6 +103,12 @@ func (o *StateCommon) GetType() StateType {
 func (o *StateCommon) commonValidate() error {
 	if o.ID == "" {
 		return errors.New("id required")
+	}
+
+	if o.Log != "" {
+		if _, err := gojq.Parse(o.Log); err != nil {
+			return fmt.Errorf("log is an invalid jq string: %v", err)
+		}
 	}
 
 	return nil

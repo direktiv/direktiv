@@ -1,0 +1,15 @@
+{{- if .Values.withIsolate -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "direktiv.fullname" . }}-isolate
+  labels:
+    {{- include "direktiv.labelsIsolate" . | nindent 4 }}
+spec:
+  ports:
+    - port: 8888
+      protocol: TCP
+      name: isolate
+  selector:
+    {{- include "direktiv.selectorLabelsIsolate" . | nindent 4 }}
+{{- end }}

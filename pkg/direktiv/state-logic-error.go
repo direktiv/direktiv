@@ -46,6 +46,10 @@ func (sl *errorStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
+func (sl *errorStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *errorStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	a := make([]interface{}, len(sl.state.Args))

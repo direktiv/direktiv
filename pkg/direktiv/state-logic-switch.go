@@ -80,6 +80,10 @@ func truth(x interface{}) bool {
 
 }
 
+func (sl *switchStateLogic) LogJQ() string {
+	return sl.state.Log
+}
+
 func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(savedata) != 0 {
