@@ -6,7 +6,7 @@
 id: math
 functions: 
 - id: solveMathExpressionFunction
-  image: apps.vorteil.io/direktive-demos/solve
+  image: vorteil/solve
 states:
 - id: solve
   type: foreach
