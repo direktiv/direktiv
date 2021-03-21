@@ -253,6 +253,26 @@ func (wiu *WorkflowInstanceUpdate) ClearErrorMessage() *WorkflowInstanceUpdate {
 	return wiu
 }
 
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (wiu *WorkflowInstanceUpdate) SetStateBeginTime(t time.Time) *WorkflowInstanceUpdate {
+	wiu.mutation.SetStateBeginTime(t)
+	return wiu
+}
+
+// SetNillableStateBeginTime sets the "stateBeginTime" field if the given value is not nil.
+func (wiu *WorkflowInstanceUpdate) SetNillableStateBeginTime(t *time.Time) *WorkflowInstanceUpdate {
+	if t != nil {
+		wiu.SetStateBeginTime(*t)
+	}
+	return wiu
+}
+
+// ClearStateBeginTime clears the value of the "stateBeginTime" field.
+func (wiu *WorkflowInstanceUpdate) ClearStateBeginTime() *WorkflowInstanceUpdate {
+	wiu.mutation.ClearStateBeginTime()
+	return wiu
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (wiu *WorkflowInstanceUpdate) SetWorkflowID(id uuid.UUID) *WorkflowInstanceUpdate {
 	wiu.mutation.SetWorkflowID(id)
@@ -565,6 +585,19 @@ func (wiu *WorkflowInstanceUpdate) sqlSave(ctx context.Context) (n int, err erro
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: workflowinstance.FieldErrorMessage,
+		})
+	}
+	if value, ok := wiu.mutation.StateBeginTime(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: workflowinstance.FieldStateBeginTime,
+		})
+	}
+	if wiu.mutation.StateBeginTimeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: workflowinstance.FieldStateBeginTime,
 		})
 	}
 	if wiu.mutation.WorkflowCleared() {
@@ -896,6 +929,26 @@ func (wiuo *WorkflowInstanceUpdateOne) ClearErrorMessage() *WorkflowInstanceUpda
 	return wiuo
 }
 
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (wiuo *WorkflowInstanceUpdateOne) SetStateBeginTime(t time.Time) *WorkflowInstanceUpdateOne {
+	wiuo.mutation.SetStateBeginTime(t)
+	return wiuo
+}
+
+// SetNillableStateBeginTime sets the "stateBeginTime" field if the given value is not nil.
+func (wiuo *WorkflowInstanceUpdateOne) SetNillableStateBeginTime(t *time.Time) *WorkflowInstanceUpdateOne {
+	if t != nil {
+		wiuo.SetStateBeginTime(*t)
+	}
+	return wiuo
+}
+
+// ClearStateBeginTime clears the value of the "stateBeginTime" field.
+func (wiuo *WorkflowInstanceUpdateOne) ClearStateBeginTime() *WorkflowInstanceUpdateOne {
+	wiuo.mutation.ClearStateBeginTime()
+	return wiuo
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (wiuo *WorkflowInstanceUpdateOne) SetWorkflowID(id uuid.UUID) *WorkflowInstanceUpdateOne {
 	wiuo.mutation.SetWorkflowID(id)
@@ -1213,6 +1266,19 @@ func (wiuo *WorkflowInstanceUpdateOne) sqlSave(ctx context.Context) (_node *Work
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: workflowinstance.FieldErrorMessage,
+		})
+	}
+	if value, ok := wiuo.mutation.StateBeginTime(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: workflowinstance.FieldStateBeginTime,
+		})
+	}
+	if wiuo.mutation.StateBeginTimeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: workflowinstance.FieldStateBeginTime,
 		})
 	}
 	if wiuo.mutation.WorkflowCleared() {

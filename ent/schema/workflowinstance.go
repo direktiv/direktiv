@@ -29,6 +29,7 @@ func (WorkflowInstance) Fields() []ent.Field {
 		field.Int("attempts").Optional(),
 		field.String("errorCode").Optional(),
 		field.String("errorMessage").Optional(),
+		field.Time("stateBeginTime").Optional(),
 	}
 }
 

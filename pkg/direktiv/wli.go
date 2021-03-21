@@ -228,6 +228,8 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 	var err error
 
+	wli.engine.completeState(ctx, wli.rec)
+
 	if wli.rec.ErrorCode == "" {
 		wli.rec, err = wli.rec.Update().
 			SetStatus(status).
@@ -238,7 +240,10 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 		return err
 	}
 
-	return nil
+	wli.rec, err = wli.rec.Update().
+		SetEndTime(time.Now()).
+		Save(ctx)
+	return err
 
 }
 
@@ -664,9 +669,12 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	wli.step++
 	deadline := stateLogic.Deadline()
 
+	t := time.Now()
+
 	var rec *ent.WorkflowInstance
 	rec, err = wli.rec.Update().
 		SetDeadline(deadline).
+		SetStateBeginTime(t).
 		SetNillableMemory(nil).
 		SetAttempts(attempt).
 		SetFlow(flow).

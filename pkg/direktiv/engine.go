@@ -494,6 +494,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		return rollback(tx, nil)
 	}
 
+	we.completeState(context.Background(), rec)
+
 	ns, err := rec.QueryWorkflow().QueryNamespace().Only(context.Background())
 	if err != nil {
 		return rollback(tx, err)
@@ -636,11 +638,19 @@ func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition 
 
 }
 
+func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowInstance) {
+
+	// TODO
+
+}
+
 func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition) {
 
 	if transition == nil {
 		return
 	}
+
+	we.completeState(ctx, wli.rec)
 
 	if transition.NextState != "" {
 		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step)
