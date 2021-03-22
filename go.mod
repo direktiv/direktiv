@@ -7,6 +7,7 @@ require (
 	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	entgo.io/ent v0.7.0
+	github.com/alecthomas/gocyclo v0.0.0-20150208221726-aa8f8b160214 // indirect
 	github.com/alexkohler/nakedret v1.0.0 // indirect
 	github.com/appc/spec v0.8.11
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
@@ -19,6 +20,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-containerregistry v0.4.0
 	github.com/google/uuid v1.2.0
+	github.com/gordonklaus/ineffassign v0.0.0-20210225214923-2e10b2664254 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/h2non/filetype v1.1.1 // indirect
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
@@ -27,6 +29,7 @@ require (
 	github.com/jinzhu/copier v0.2.4
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/lib/pq v1.10.0
+	github.com/mdempsky/maligned v0.0.0-20210215075342-f0178ee82032 // indirect
 	github.com/mdempsky/unconvert v0.0.0-20200228143138-95ecdbfc0b5f // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.10
@@ -44,6 +47,8 @@ require (
 	github.com/sisatech/tablewriter v0.0.0-20161130023222-815eceb01ee6
 	github.com/sisatech/toml v0.0.0-20181010232116-ca247dd35773
 	github.com/spf13/cobra v1.1.3
+	github.com/stripe/safesql v0.2.0 // indirect
+	github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9 // indirect
 	github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f
 	github.com/vorteil/vorteil v0.0.0-20210301220102-762be2cd662d
 	github.com/walle/lll v1.0.1 // indirect
