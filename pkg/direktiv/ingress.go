@@ -271,6 +271,7 @@ func (is *ingressServer) GetWorkflowById(ctx context.Context, in *ingress.GetWor
 	resp.CreatedAt = timestamppb.New(wf.Created)
 	resp.Description = &wf.Description
 	resp.Workflow = wf.Workflow
+	resp.LogToEvents = &wf.LogToEvents
 
 	return &resp, nil
 
@@ -296,6 +297,7 @@ func (is *ingressServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWo
 	resp.CreatedAt = timestamppb.New(wf.Created)
 	resp.Description = &wf.Description
 	resp.Workflow = wf.Workflow
+	resp.LogToEvents = &wf.LogToEvents
 
 	return &resp, nil
 
@@ -446,6 +448,7 @@ func (is *ingressServer) GetWorkflows(ctx context.Context, in *ingress.GetWorkfl
 			Description: &wf.Description,
 			Active:      &wf.Active,
 			CreatedAt:   timestamppb.New(wf.Created),
+			LogToEvents: &wf.LogToEvents,
 		})
 
 	}
