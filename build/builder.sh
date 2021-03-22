@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FC="v0.22.4"
+FC="v0.23.3"
 CNI="v0.9.1"
 
 install_firecracker()

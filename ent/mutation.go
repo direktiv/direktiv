@@ -3062,6 +3062,7 @@ type WorkflowInstanceMutation struct {
 	addattempts     *int
 	errorCode       *string
 	errorMessage    *string
+	stateBeginTime  *time.Time
 	clearedFields   map[string]struct{}
 	workflow        *uuid.UUID
 	clearedworkflow bool
@@ -3850,6 +3851,55 @@ func (m *WorkflowInstanceMutation) ResetErrorMessage() {
 	delete(m.clearedFields, workflowinstance.FieldErrorMessage)
 }
 
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (m *WorkflowInstanceMutation) SetStateBeginTime(t time.Time) {
+	m.stateBeginTime = &t
+}
+
+// StateBeginTime returns the value of the "stateBeginTime" field in the mutation.
+func (m *WorkflowInstanceMutation) StateBeginTime() (r time.Time, exists bool) {
+	v := m.stateBeginTime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateBeginTime returns the old "stateBeginTime" field's value of the WorkflowInstance entity.
+// If the WorkflowInstance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowInstanceMutation) OldStateBeginTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStateBeginTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStateBeginTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateBeginTime: %w", err)
+	}
+	return oldValue.StateBeginTime, nil
+}
+
+// ClearStateBeginTime clears the value of the "stateBeginTime" field.
+func (m *WorkflowInstanceMutation) ClearStateBeginTime() {
+	m.stateBeginTime = nil
+	m.clearedFields[workflowinstance.FieldStateBeginTime] = struct{}{}
+}
+
+// StateBeginTimeCleared returns if the "stateBeginTime" field was cleared in this mutation.
+func (m *WorkflowInstanceMutation) StateBeginTimeCleared() bool {
+	_, ok := m.clearedFields[workflowinstance.FieldStateBeginTime]
+	return ok
+}
+
+// ResetStateBeginTime resets all changes to the "stateBeginTime" field.
+func (m *WorkflowInstanceMutation) ResetStateBeginTime() {
+	m.stateBeginTime = nil
+	delete(m.clearedFields, workflowinstance.FieldStateBeginTime)
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by id.
 func (m *WorkflowInstanceMutation) SetWorkflowID(id uuid.UUID) {
 	m.workflow = &id
@@ -3956,7 +4006,7 @@ func (m *WorkflowInstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowInstanceMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 16)
 	if m.instanceID != nil {
 		fields = append(fields, workflowinstance.FieldInstanceID)
 	}
@@ -4002,6 +4052,9 @@ func (m *WorkflowInstanceMutation) Fields() []string {
 	if m.errorMessage != nil {
 		fields = append(fields, workflowinstance.FieldErrorMessage)
 	}
+	if m.stateBeginTime != nil {
+		fields = append(fields, workflowinstance.FieldStateBeginTime)
+	}
 	return fields
 }
 
@@ -4040,6 +4093,8 @@ func (m *WorkflowInstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.ErrorCode()
 	case workflowinstance.FieldErrorMessage:
 		return m.ErrorMessage()
+	case workflowinstance.FieldStateBeginTime:
+		return m.StateBeginTime()
 	}
 	return nil, false
 }
@@ -4079,6 +4134,8 @@ func (m *WorkflowInstanceMutation) OldField(ctx context.Context, name string) (e
 		return m.OldErrorCode(ctx)
 	case workflowinstance.FieldErrorMessage:
 		return m.OldErrorMessage(ctx)
+	case workflowinstance.FieldStateBeginTime:
+		return m.OldStateBeginTime(ctx)
 	}
 	return nil, fmt.Errorf("unknown WorkflowInstance field %s", name)
 }
@@ -4193,6 +4250,13 @@ func (m *WorkflowInstanceMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetErrorMessage(v)
 		return nil
+	case workflowinstance.FieldStateBeginTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateBeginTime(v)
+		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance field %s", name)
 }
@@ -4277,6 +4341,9 @@ func (m *WorkflowInstanceMutation) ClearedFields() []string {
 	if m.FieldCleared(workflowinstance.FieldErrorMessage) {
 		fields = append(fields, workflowinstance.FieldErrorMessage)
 	}
+	if m.FieldCleared(workflowinstance.FieldStateBeginTime) {
+		fields = append(fields, workflowinstance.FieldStateBeginTime)
+	}
 	return fields
 }
 
@@ -4317,6 +4384,9 @@ func (m *WorkflowInstanceMutation) ClearField(name string) error {
 		return nil
 	case workflowinstance.FieldErrorMessage:
 		m.ClearErrorMessage()
+		return nil
+	case workflowinstance.FieldStateBeginTime:
+		m.ClearStateBeginTime()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance nullable field %s", name)
@@ -4370,6 +4440,9 @@ func (m *WorkflowInstanceMutation) ResetField(name string) error {
 		return nil
 	case workflowinstance.FieldErrorMessage:
 		m.ResetErrorMessage()
+		return nil
+	case workflowinstance.FieldStateBeginTime:
+		m.ResetStateBeginTime()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance field %s", name)

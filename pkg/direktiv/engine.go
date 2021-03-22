@@ -494,6 +494,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		return rollback(tx, nil)
 	}
 
+	we.completeState(context.Background(), rec, "", code, false)
+
 	ns, err := rec.QueryWorkflow().QueryNamespace().Only(context.Background())
 	if err != nil {
 		return rollback(tx, err)
@@ -636,11 +638,19 @@ func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition 
 
 }
 
-func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition) {
+func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowInstance, nextState, errCode string, retrying bool) {
+
+	// TODO
+
+}
+
+func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition, errCode string) {
 
 	if transition == nil {
 		return
 	}
+
+	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {
 		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step)
@@ -689,6 +699,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 	defer wli.Close()
 
 	var err error
+	var code string
 	var transition *stateTransition
 
 	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
@@ -719,7 +730,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 	}
 
 next:
-	we.transitionState(ctx, wli, transition)
+	we.transitionState(ctx, wli, transition, code)
 	return
 
 failure:
@@ -764,7 +775,7 @@ failure:
 
 				if catch.Retry != nil {
 					if wli.rec.Attempts < catch.Retry.MaxAttempts {
-						err = wli.Retry(ctx, catch.Retry.Delay, catch.Retry.Multiplier)
+						err = wli.Retry(ctx, catch.Retry.Delay, catch.Retry.Multiplier, cerr.Code)
 						if err != nil {
 							goto failure
 						}
@@ -780,6 +791,8 @@ failure:
 				}
 
 				breaker++
+
+				code = cerr.Code
 
 				goto next
 

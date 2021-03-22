@@ -191,6 +191,13 @@ func ErrorMessage(v string) predicate.WorkflowInstance {
 	})
 }
 
+// StateBeginTime applies equality check predicate on the "stateBeginTime" field. It's identical to StateBeginTimeEQ.
+func StateBeginTime(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStateBeginTime), v))
+	})
+}
+
 // InstanceIDEQ applies the EQ predicate on the "instanceID" field.
 func InstanceIDEQ(v string) predicate.WorkflowInstance {
 	return predicate.WorkflowInstance(func(s *sql.Selector) {
@@ -1693,6 +1700,96 @@ func ErrorMessageEqualFold(v string) predicate.WorkflowInstance {
 func ErrorMessageContainsFold(v string) predicate.WorkflowInstance {
 	return predicate.WorkflowInstance(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldErrorMessage), v))
+	})
+}
+
+// StateBeginTimeEQ applies the EQ predicate on the "stateBeginTime" field.
+func StateBeginTimeEQ(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStateBeginTime), v))
+	})
+}
+
+// StateBeginTimeNEQ applies the NEQ predicate on the "stateBeginTime" field.
+func StateBeginTimeNEQ(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStateBeginTime), v))
+	})
+}
+
+// StateBeginTimeIn applies the In predicate on the "stateBeginTime" field.
+func StateBeginTimeIn(vs ...time.Time) predicate.WorkflowInstance {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldStateBeginTime), v...))
+	})
+}
+
+// StateBeginTimeNotIn applies the NotIn predicate on the "stateBeginTime" field.
+func StateBeginTimeNotIn(vs ...time.Time) predicate.WorkflowInstance {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldStateBeginTime), v...))
+	})
+}
+
+// StateBeginTimeGT applies the GT predicate on the "stateBeginTime" field.
+func StateBeginTimeGT(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStateBeginTime), v))
+	})
+}
+
+// StateBeginTimeGTE applies the GTE predicate on the "stateBeginTime" field.
+func StateBeginTimeGTE(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStateBeginTime), v))
+	})
+}
+
+// StateBeginTimeLT applies the LT predicate on the "stateBeginTime" field.
+func StateBeginTimeLT(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStateBeginTime), v))
+	})
+}
+
+// StateBeginTimeLTE applies the LTE predicate on the "stateBeginTime" field.
+func StateBeginTimeLTE(v time.Time) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStateBeginTime), v))
+	})
+}
+
+// StateBeginTimeIsNil applies the IsNil predicate on the "stateBeginTime" field.
+func StateBeginTimeIsNil() predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStateBeginTime)))
+	})
+}
+
+// StateBeginTimeNotNil applies the NotNil predicate on the "stateBeginTime" field.
+func StateBeginTimeNotNil() predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStateBeginTime)))
 	})
 }
 

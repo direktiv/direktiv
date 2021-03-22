@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/vorteil/direktiv/pkg/health"
+	"google.golang.org/grpc/reflection"
 )
 
 type healthServer struct {
@@ -24,6 +25,7 @@ func newHealthServer(config *Config) *healthServer {
 func (hs *healthServer) start(s *WorkflowServer) error {
 	return s.grpcStart(&hs.grpc, "health", s.config.HealthAPI.Bind, func(srv *grpc.Server) {
 		health.RegisterHealthServer(srv, hs)
+		reflection.Register(srv)
 	})
 }
 
