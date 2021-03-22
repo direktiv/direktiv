@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ui
+  labels:
+    {{- include "direktiv.labelsUI" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabelsUI" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "direktiv.selectorLabelsUI" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      containers:
+        - name: ui
+          image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
+          command: ["/direktiv-ui"]
+          args: ["--direktiv-endpoint={{ include "direktiv.fullname" . }}:6666", "--bind=0.0.0.0:1605"]
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: ui
+              containerPort: 1605
+              protocol: TCP
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

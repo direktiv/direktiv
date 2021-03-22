@@ -1,5 +1,7 @@
 # Hello World
 
+A simple `noop` state that transforms the output to say 'Hello World!'.
+
 ## Workflow
 
 ```yaml

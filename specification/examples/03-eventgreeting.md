@@ -6,7 +6,7 @@
 id: eventgreeting
 functions: 
 - id: greetingFunction
-  image: apps.vorteil.io/direktive-demos/greeting
+  image: vorteil/greeting
 states:
 - id: Begin
   type: consumeEvent
@@ -32,7 +32,7 @@ states:
     "source" : "greetingEventSource",
     "data" : {
       "greet": {
-          "name": "John"
+          "name": "Trent"
         }
     }
 }
@@ -42,6 +42,6 @@ states:
 
 ```json
 { 
-	"greeting": "Welcome to Serverless Workflow, John!"
+	"greeting": "Welcome to Direktiv, Trent!"
 }
 ```
