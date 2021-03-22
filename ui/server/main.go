@@ -3,10 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 var (
@@ -51,9 +53,7 @@ func main() {
 
 	// Get ...
 	r.HandleFunc("/api/namespaces", gc.namespacesHandler).Methods(http.MethodGet)
-	r.HandleFunc("/api/namespaces", gc.createNamespaceHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.workflowsHandler).Methods(http.MethodGet)
-	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}", gc.getWorkflowHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{namespace}", gc.instancesHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{namespace}/{workflowID}/{id}", gc.instanceHandler).Methods(http.MethodGet)
@@ -61,6 +61,8 @@ func main() {
 
 	// Post ...
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/execute", gc.executeWorkflowHandler).Methods(http.MethodPost)
+	r.HandleFunc("/api/namespaces/{namespace}", gc.createNamespaceHandler).Methods(http.MethodPost)
+	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
 
 	// Web Handler
 	// r.Handle("/build/web/", http.StripPrefix("/build/web/", http.FileServer(http.Dir("build/web"))))
@@ -75,7 +77,15 @@ func main() {
   -insecure='%v'
 `, bind, webDir, grpcAddr, direktivCertsDir, tlsCertsDir, insecure)
 
-	err = s.ListenAndServe()
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3001"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(r)
+
+	// err = s.ListenAndServe()
+	log.Fatal(http.ListenAndServe(":8080", handler))
 	if err != nil {
 		panic(err)
 	}

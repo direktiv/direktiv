@@ -16,6 +16,7 @@ require (
 	github.com/containers/image v3.0.2+incompatible
 	github.com/firecracker-microvm/firecracker-go-sdk v0.22.1-0.20210128004148-06a30fe6e315
 	github.com/go-openapi/inflect v0.19.0 // indirect
+	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-containerregistry v0.4.0
 	github.com/google/uuid v1.2.0
@@ -37,6 +38,7 @@ require (
 	github.com/opennota/check v0.0.0-20180911053232-0c771f5545ff // indirect
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/rs/cors v1.7.0
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46

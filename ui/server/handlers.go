@@ -37,7 +37,7 @@ func (g *grpcClient) namespacesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // workflowsHandler
@@ -57,7 +57,7 @@ func (g *grpcClient) workflowsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // workflowsHandler
@@ -79,7 +79,7 @@ func (g *grpcClient) getWorkflowHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // instancesHandler
@@ -99,7 +99,7 @@ func (g *grpcClient) instancesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // instanceHandler
@@ -119,7 +119,7 @@ func (g *grpcClient) instanceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // instanceLogsHandler
@@ -127,12 +127,18 @@ func (g *grpcClient) instanceLogsHandler(w http.ResponseWriter, r *http.Request)
 
 	i := fmt.Sprintf("%s/%s/%s", mux.Vars(r)["namespace"], mux.Vars(r)["workflowID"], mux.Vars(r)["id"])
 
-	var limit int
-	if x, ok := r.URL.Query()["limit"]; ok && len(x) > 0 {
-		limit, _ = strconv.Atoi(x[0])
+	l, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	o, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if l < 1 {
+		l = 10
 	}
 
-	l := int32(limit)
+	if o < 0 {
+		o = 0
+	}
+
+	limit := int32(l)
+	offset := int32(o)
 
 	gCTX := context.Background()
 	gCTX, cancel := context.WithDeadline(gCTX, time.Now().Add(GRPCCommandTimeout))
@@ -140,14 +146,15 @@ func (g *grpcClient) instanceLogsHandler(w http.ResponseWriter, r *http.Request)
 
 	resp, err := g.client.GetWorkflowInstanceLogs(gCTX, &ingress.GetWorkflowInstanceLogsRequest{
 		InstanceId: &i,
-		Limit:      &l,
+		Limit:      &limit,
+		Offset:     &offset,
 	})
 	if err != nil {
 		errResponse(w, err)
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // executeWorkflowHandler
@@ -169,7 +176,7 @@ func (g *grpcClient) executeWorkflowHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // createNamespaceHandler
@@ -189,7 +196,7 @@ func (g *grpcClient) createNamespaceHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
 
 // createWorkflowHandler
@@ -218,5 +225,5 @@ func (g *grpcClient) createWorkflowHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	respond(w, resp)
+	g.json.Marshal(w, resp)
 }
