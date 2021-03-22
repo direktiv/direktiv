@@ -228,7 +228,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 	var err error
 
-	wli.engine.completeState(ctx, wli.rec)
+	wli.engine.completeState(ctx, wli.rec, "", code, false)
 
 	if wli.rec.ErrorCode == "" {
 		wli.rec, err = wli.rec.Update().
@@ -476,7 +476,7 @@ func (wli *workflowLogicInstance) Transform(transform string) error {
 
 }
 
-func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string, multiplier float64) error {
+func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string, multiplier float64, errCode string) error {
 
 	var err error
 	var x interface{}
@@ -489,6 +489,8 @@ func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string,
 	wli.data = x
 
 	nextState := wli.rec.Flow[len(wli.rec.Flow)-1]
+
+	wli.engine.completeState(ctx, wli.rec, nextState, errCode, true)
 
 	attempt := wli.rec.Attempts + 1
 	if multiplier == 0 {
