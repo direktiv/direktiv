@@ -67,7 +67,6 @@ func main() {
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflowUID}", gc.deleteWorkflowHandler).Methods(http.MethodDelete)
 
 	// Web Handler
-	// r.Handle("/build/web/", http.StripPrefix("/build/web/", http.FileServer(http.Dir("build/web"))))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(webDir)))
 
 	fmt.Printf(`Starting API Server 

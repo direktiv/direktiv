@@ -6,7 +6,7 @@ health_generated_files := $(shell find pkg/health/ -type f -name '*.proto' -exec
 ingress_generated_files := $(shell find pkg/ingress/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 isolate_generated_files := $(shell find pkg/isolate/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 secrets_generated_files := $(shell find pkg/secrets/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-hasFlutter := $(shell which flutter)
+hasYarn := $(shell which yarn)
 
 .SILENT:
 
@@ -92,20 +92,20 @@ build:
 build-cli:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
 
-.PHONY: build-ui-flutter
-build-ui-flutter:
-	if [ ${hasFlutter} ]; then \
-		cd ${mkfile_dir_main}/ui/flutter; flutter build web; \
+.PHONY: build-ui-frontend
+build-ui-frontend:
+	if [ ${hasYarn} ]; then \
+		cd ${mkfile_dir_main}/ui/frontend; yarn install; NODE_ENV=production yarn build; \
 	fi
 
 .PHONY: docker-ui
 docker-ui:
 	echo "building app"
 	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
-		docker run -v ${mkfile_dir_main}/ui/flutter:/ui  cirrusci/flutter /bin/bash -c "cd /ui && flutter pub get && flutter build web"; \
+		docker run -v ${mkfile_dir_main}/ui/frontend:/ui  cirrusci/frontend /bin/bash -c "cd /ui && yarn install && NODE_ENV=production yarn build"; \
 	fi
 	echo "copying web folder"
-	cp -r ${mkfile_dir_main}/ui/flutter/build/web  ${mkfile_dir_main}/build/docker/ui
+	cp -r ${mkfile_dir_main}/ui/frontend/build  ${mkfile_dir_main}/build/docker/ui
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direktiv-ui ${mkfile_dir_main}/ui/server
 	cp ${mkfile_dir_main}/direktiv-ui  ${mkfile_dir_main}/build/docker/ui
 	echo "building image"
@@ -113,8 +113,8 @@ docker-ui:
 
 
 .PHONY: run-ui
-run-ui: build-ui-flutter
-	go run ./ui/server -bind=':8080' -web-dir='ui/flutter/build/web'
+run-ui: build-ui-frontend
+	go run ./ui/server -bind=':8080' -web-dir='ui/frontend/build'
 
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
