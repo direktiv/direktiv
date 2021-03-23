@@ -177,6 +177,20 @@ func (wic *WorkflowInstanceCreate) SetNillableErrorMessage(s *string) *WorkflowI
 	return wic
 }
 
+// SetStateBeginTime sets the "stateBeginTime" field.
+func (wic *WorkflowInstanceCreate) SetStateBeginTime(t time.Time) *WorkflowInstanceCreate {
+	wic.mutation.SetStateBeginTime(t)
+	return wic
+}
+
+// SetNillableStateBeginTime sets the "stateBeginTime" field if the given value is not nil.
+func (wic *WorkflowInstanceCreate) SetNillableStateBeginTime(t *time.Time) *WorkflowInstanceCreate {
+	if t != nil {
+		wic.SetStateBeginTime(*t)
+	}
+	return wic
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (wic *WorkflowInstanceCreate) SetWorkflowID(id uuid.UUID) *WorkflowInstanceCreate {
 	wic.mutation.SetWorkflowID(id)
@@ -421,6 +435,14 @@ func (wic *WorkflowInstanceCreate) createSpec() (*WorkflowInstance, *sqlgraph.Cr
 			Column: workflowinstance.FieldErrorMessage,
 		})
 		_node.ErrorMessage = value
+	}
+	if value, ok := wic.mutation.StateBeginTime(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: workflowinstance.FieldStateBeginTime,
+		})
+		_node.StateBeginTime = value
 	}
 	if nodes := wic.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -73,9 +73,9 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 	// 	base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
 
 	rows, err := db.Query(`update workflow_events_waits
-	set events = jsonb_set(events, '{$1}', '"$2"', true)
-	WHERE events::jsonb ? '$3' and workflow_events_wfeventswait = $4
-	returning *`, chash, base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
+	set events = jsonb_set(events, $1, $2, true)
+	WHERE events::jsonb ? $3 and workflow_events_wfeventswait = $4
+	returning *`, fmt.Sprintf("{%s}", chash), fmt.Sprintf(`"%s"`, base64.StdEncoding.EncodeToString(eventToBytes(*ce))), chash, id)
 	if err != nil {
 		return retEvents, err
 	}
@@ -161,7 +161,7 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 	id, signature, count, correlations, events, workflow_wfevents,
 	v from workflow_events etl,
 	jsonb_array_elements(etl.events) as v
-	where v::json->>'type' = '$1'`, ce.Type())
+	where v::json->>'type' = $1`, ce.Type())
 	if err != nil {
 		return err
 	}
@@ -176,8 +176,7 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 			continue
 		}
 
-		hash, _ := hashstructure.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf),
-			hashstructure.FormatV2, nil)
+		hash, _ := hashstructure.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hashstructure.FormatV2, nil)
 
 		unlock := func() {
 			if conn != nil {
