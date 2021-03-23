@@ -3,12 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 var (
@@ -64,6 +62,10 @@ func main() {
 	r.HandleFunc("/api/namespaces/{namespace}", gc.createNamespaceHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
 
+	// Delete ...
+	r.HandleFunc("/api/namespaces/{namespace}", gc.deleteNamespaceHandler).Methods(http.MethodDelete)
+	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflowUID}", gc.deleteWorkflowHandler).Methods(http.MethodDelete)
+
 	// Web Handler
 	// r.Handle("/build/web/", http.StripPrefix("/build/web/", http.FileServer(http.Dir("build/web"))))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(webDir)))
@@ -77,15 +79,7 @@ func main() {
   -insecure='%v'
 `, bind, webDir, grpcAddr, direktivCertsDir, tlsCertsDir, insecure)
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3001"},
-		AllowCredentials: true,
-	})
-
-	handler := c.Handler(r)
-
-	// err = s.ListenAndServe()
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	err = s.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}

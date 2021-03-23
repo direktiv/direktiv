@@ -2,8 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
+
+	"google.golang.org/grpc/status"
 )
 
 func errResponse(w http.ResponseWriter, err error) {
@@ -11,10 +14,13 @@ func errResponse(w http.ResponseWriter, err error) {
 	var code int
 	var msg string
 
-	switch err {
+	s := status.Convert(err)
+
+	msg = fmt.Sprintf("%s Error: %s", s.Code().String(), s.Message())
+
+	switch s.Code() {
 	default:
 		code = http.StatusInternalServerError
-		msg = err.Error()
 	}
 
 	w.WriteHeader(code)

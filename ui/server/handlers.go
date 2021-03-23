@@ -199,6 +199,26 @@ func (g *grpcClient) createNamespaceHandler(w http.ResponseWriter, r *http.Reque
 	g.json.Marshal(w, resp)
 }
 
+// createNamespaceHandler
+func (g *grpcClient) deleteNamespaceHandler(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["namespace"]
+
+	gCTX := context.Background()
+	gCTX, cancel := context.WithDeadline(gCTX, time.Now().Add(GRPCCommandTimeout))
+	defer cancel()
+
+	resp, err := g.client.DeleteNamespace(gCTX, &ingress.DeleteNamespaceRequest{
+		Name: &n,
+	})
+	if err != nil {
+		errResponse(w, err)
+		return
+	}
+
+	g.json.Marshal(w, resp)
+}
+
 // createWorkflowHandler
 func (g *grpcClient) createWorkflowHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -219,6 +239,26 @@ func (g *grpcClient) createWorkflowHandler(w http.ResponseWriter, r *http.Reques
 		Active:    &active,
 		Namespace: &n,
 		Workflow:  b,
+	})
+	if err != nil {
+		errResponse(w, err)
+		return
+	}
+
+	g.json.Marshal(w, resp)
+}
+
+// deleteWorkflowHandler
+func (g *grpcClient) deleteWorkflowHandler(w http.ResponseWriter, r *http.Request) {
+
+	workflowUID := mux.Vars(r)["workflowUID"]
+
+	gCTX := context.Background()
+	gCTX, cancel := context.WithDeadline(gCTX, time.Now().Add(GRPCCommandTimeout))
+	defer cancel()
+
+	resp, err := g.client.DeleteWorkflow(gCTX, &ingress.DeleteWorkflowRequest{
+		Uid: &workflowUID,
 	})
 	if err != nil {
 		errResponse(w, err)
