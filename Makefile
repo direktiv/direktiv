@@ -102,7 +102,7 @@ build-ui-frontend:
 docker-ui:
 	echo "building app"
 	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
-		docker run -v ${mkfile_dir_main}/ui/frontend:/ui  cirrusci/frontend /bin/bash -c "cd /ui && yarn install && NODE_ENV=production yarn build"; \
+		docker run -v ${mkfile_dir_main}/ui/frontend:/ui chekote/node:14.8.0-alpine /bin/sh -c "cd /ui && yarn install && NODE_ENV=production yarn build"; \
 	fi
 	echo "copying web folder"
 	cp -r ${mkfile_dir_main}/ui/frontend/build  ${mkfile_dir_main}/build/docker/ui
