@@ -8,11 +8,13 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	"github.com/vorteil/direktiv/pkg/secrets"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -20,6 +22,7 @@ import (
 
 type ingressServer struct {
 	ingress.UnimplementedDirektivIngressServer
+	health.UnimplementedHealthServer
 
 	wfServer *WorkflowServer
 	grpc     *grpc.Server
@@ -69,6 +72,11 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 
 	return s.grpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
+
+		log.Debugf("append health check to ingress service")
+		healthServer := newHealthServer(s.config)
+		health.RegisterHealthServer(srv, healthServer)
+		reflection.Register(srv)
 	})
 
 }

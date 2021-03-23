@@ -26,6 +26,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/isolate"
 	"github.com/vorteil/vorteil/pkg/elog"
 	"github.com/vorteil/vorteil/pkg/imagetools"
@@ -33,6 +34,7 @@ import (
 	"github.com/vorteil/vorteil/pkg/vimg"
 	"github.com/vorteil/vorteil/pkg/vkern"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -214,6 +216,14 @@ func newIsolateManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isol
 func (is *isolateServer) grpcStart(s *WorkflowServer) error {
 	return s.grpcStart(&is.grpc, "isolate", s.config.IsolateAPI.Bind, func(srv *grpc.Server) {
 		isolate.RegisterDirektivIsolateServer(srv, is)
+
+		// start health if there is no ingressServer
+		if !s.runsComponent(runsWorkflows) {
+			log.Debugf("append health check to isolate service")
+			healthServer := newHealthServer(s.config)
+			health.RegisterHealthServer(srv, healthServer)
+			reflection.Register(srv)
+		}
 	})
 }
 
@@ -251,7 +261,7 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 
 	useSSL := true
 	if is.config.Minio.SSL == 0 {
-		log.Debugf("minio client using SSL")
+		log.Debugf("minio client not using SSL")
 		useSSL = false
 	}
 
