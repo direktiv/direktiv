@@ -13,3 +13,4 @@ exclude_patterns:
 - "pkg/secrets/ent/"
 - "examples/"
 - "**/*.pb.go"
+- "ui/"
