@@ -138,7 +138,7 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 
 }
 
-func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
+func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) error {
 
 	log.Debugf("handle event %s", ce.Type())
 
@@ -157,11 +157,17 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 	// 	jsonb_array_elements(etl.events) as v
 	// 	where v::json->>'type' = '%s'`,
 	// 	ce.Type())
-	rows, err := db.Query(`select
-	id, signature, count, correlations, events, workflow_wfevents,
-	v from workflow_events etl,
-	jsonb_array_elements(etl.events) as v
-	where v::json->>'type' = $1`, ce.Type())
+
+	rows, err := db.Query(`select 
+	we.id, signature, count, correlations, events, workflow_wfevents, v
+	from workflow_events we
+	inner join workflows w
+		on w.id = workflow_wfevents
+	inner join namespaces n
+		on n.id = w.namespace_workflows,
+	jsonb_array_elements(events) as v
+	where v::json->>'type' = $1
+	and n.id = $2`, ce.Type(), namespace)
 	if err != nil {
 		return err
 	}

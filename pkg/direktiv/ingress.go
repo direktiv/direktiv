@@ -173,7 +173,7 @@ func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 
 	log.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
 
-	err = is.wfServer.handleEvent(event)
+	err = is.wfServer.handleEvent(*in.Namespace, event)
 
 	return &resp, err
 

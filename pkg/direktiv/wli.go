@@ -426,7 +426,7 @@ func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetData("application/json", s)
-		go wli.engine.server.handleEvent(&event)
+		go wli.engine.server.handleEvent(wli.namespace, &event)
 	}
 
 }
