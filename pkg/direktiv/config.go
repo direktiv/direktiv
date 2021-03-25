@@ -180,8 +180,8 @@ func ReadConfig(file string) (*Config, error) {
 	c.Minio.Encrypt = c.Minio.Password
 	c.Minio.Region = "us-east-1"
 
-	c.Kernel.Runtime = "21.3.2"
-	c.Kernel.Linux = "21.3.2"
+	c.Kernel.Runtime = "21.3.3"
+	c.Kernel.Linux = "21.3.3"
 
 	// read config file if exists
 	if len(file) > 0 {
