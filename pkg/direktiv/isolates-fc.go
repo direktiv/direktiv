@@ -1,7 +1,6 @@
 package direktiv
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -209,7 +208,7 @@ func createCOWDisk(name, disk string) (cowDisk, error) {
 	return cd, err
 }
 
-func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDisk string, size int32) error {
+func (is *isolateServer) runFirecracker(ctxs *ctxs, name, disk, dataDisk string, size int32) error {
 
 	log.Debugf("run firecracker vm with %s, %s", disk, dataDisk)
 
@@ -326,16 +325,25 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 	fclog := log.New()
 	fclog.SetLevel(log.WarnLevel)
 
-	machine, err := firecracker.NewMachine(ctx, fcConf, firecracker.WithLogger(fclog.WithField("fc", name)))
+	machine, err := firecracker.NewMachine(ctxs.ctx, fcConf, firecracker.WithLogger(fclog.WithField("fc", name)))
 	if err != nil {
 		return err
 	}
 
-	if err := machine.Start(ctx); err != nil {
+	if err := machine.Start(ctxs.ctx); err != nil {
 		log.Errorf("can not start firecracker: %v", err)
 		return err
 	}
 
-	return machine.Wait(ctx)
+	// set machine so it can be shutdown if required
+	ctxs.fcm = machine
+
+	err = machine.Wait(ctxs.ctx)
+
+	if ctxs.retCode != 0 {
+		err = fmt.Errorf("instance stopped")
+	}
+
+	return err
 
 }

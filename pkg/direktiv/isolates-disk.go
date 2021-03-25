@@ -156,10 +156,6 @@ func baseVCFG() *vcfg.VCFG {
 
 func writeVCFG(dir, cmd, kernel string, config map[string]interface{}) (*vcfg.VCFG, error) {
 
-	// vcfgFile := new(vcfg.VCFG)
-	// vcfgFile.Programs = make([]vcfg.Program, 1)
-	// vcfgFile.Networks = make([]vcfg.NetworkInterface, 1)
-
 	vcfgFile := baseVCFG()
 
 	// get configuration

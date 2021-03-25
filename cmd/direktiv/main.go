@@ -89,7 +89,7 @@ var rootCmd = &cobra.Command{
 
 		go func() {
 			sig := make(chan os.Signal, 1)
-			signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+			signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
 			<-sig
 			server.Stop()
 			<-sig

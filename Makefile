@@ -132,7 +132,6 @@ run:
 	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	DIREKTIV_MINIO_SSL=1 \
-	DIREKTIV_ISOLATION=container \
 	go run cmd/direktiv/main.go -d -t wis -c ${mkfile_dir_main}/build/conf.toml
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto

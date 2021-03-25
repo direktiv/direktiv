@@ -17,6 +17,7 @@ import (
 	"time"
 
 	gocni "github.com/containerd/go-cni"
+	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	minio "github.com/minio/minio-go/v7"
@@ -69,6 +70,10 @@ const (
 type ctxs struct {
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	// firecracker machine
+	fcm     *firecracker.Machine
+	retCode int
 }
 
 type isolateServer struct {
@@ -239,6 +244,29 @@ func (is *isolateServer) grpcStart(s *WorkflowServer) error {
 }
 
 func (is *isolateServer) stop() {
+
+	// if the instance stops but actions are running
+	needsWait := len(is.actx)
+
+	// if vorteil we sigint all firecrackers else: podman send isgnal to all containers
+	for id, ctx := range is.actx {
+
+		// shutdown if firecracker
+		if ctx.fcm != nil {
+			log.Infof("shutting down %s", id)
+			ctx.fcm.Shutdown(ctx.ctx)
+		}
+		ctx.retCode = 2
+	}
+
+	if is.config.IsolateAPI.Isolation != "vorteil" {
+		log.Infof("signal all containers")
+		sigintAllContainers()
+	}
+
+	if needsWait > 0 {
+		time.Sleep(10 * time.Second)
+	}
 
 	if is.grpc != nil {
 		is.grpc.GracefulStop()
@@ -441,7 +469,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 
 	defer is.finishCancelIsolate(isolateID)
 
-	err = is.runFirecracker(ctxs.ctx, isolateID, disk, dataDisk, in.GetSize())
+	err = is.runFirecracker(ctxs, isolateID, disk, dataDisk, in.GetSize())
 	if err != nil {
 		return data, serr(err, errorInternal)
 	}

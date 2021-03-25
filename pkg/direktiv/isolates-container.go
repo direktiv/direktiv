@@ -19,6 +19,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func sigintAllContainers() {
+
+	podman := exec.Command("podman", "kill", "--signal=INT", "-a", "--storage-driver=vfs")
+	podman.Run()
+
+}
+
 func loginIfRequired(img string, registries map[string]string) string {
 
 	// login if required
@@ -154,7 +161,18 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 
 	log.Debugf("podman cmd: %v", podman)
 
-	err = podman.Run()
+	err = podman.Start()
+	if err != nil {
+		log.Errorf("error starting container: %v", err)
+		return data, serr(err, errorInternal)
+	}
+
+	err = podman.Wait()
+
+	if ctxs.retCode != 0 {
+		err = fmt.Errorf("instance stopped")
+	}
+
 	if err != nil {
 		log.Errorf("error executing container: %v", err)
 		return data, serr(err, errorInternal)
