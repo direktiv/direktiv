@@ -182,6 +182,14 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	// if error.json, we use this and report error
 	if _, err := os.Stat(filepath.Join(dir, "error.json")); !os.IsNotExist(err) {
 		var ae IsolateError
+		// can not do much if that fails, print to logs, otherwise we return the data
+
+		din, err = ioutil.ReadFile(filepath.Join(dir, "error.json"))
+		if err != nil {
+			is.respondToAction(serr(err, errorIO), data, in)
+			return
+		}
+
 		err := json.Unmarshal(din, &ae)
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
