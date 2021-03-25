@@ -200,7 +200,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 		din, err = ioutil.ReadFile(filepath.Join(dir, "error.json"))
 		if err != nil {
 			is.respondToAction(serr(err, errorIO), data, in)
-			return
+			return data, serr(err, errorIO)
 		}
 
 		err := json.Unmarshal(din, &ae)
