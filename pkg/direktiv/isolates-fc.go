@@ -18,7 +18,7 @@ import (
 	"github.com/firecracker-microvm/firecracker-go-sdk/client/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/vorteil/pkg/vimg"
-	"gopkg.in/freddierice/go-losetup.v1"
+	losetup "gopkg.in/freddierice/go-losetup.v1"
 )
 
 const (
@@ -332,6 +332,7 @@ func (is *isolateServer) runFirecracker(ctx context.Context, name, disk, dataDis
 	}
 
 	if err := machine.Start(ctx); err != nil {
+		log.Errorf("can not start firecracker: %v", err)
 		return err
 	}
 
