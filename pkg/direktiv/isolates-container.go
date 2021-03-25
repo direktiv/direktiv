@@ -19,6 +19,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func sigintAllContainers() {
+
+	podman := exec.Command("podman", "kill", "--signal=INT", "-a", "--storage-driver=vfs")
+	podman.Run()
+
+}
+
 func loginIfRequired(img string, registries map[string]string) string {
 
 	// login if required
@@ -60,7 +67,7 @@ func loginIfRequired(img string, registries map[string]string) string {
 	return ""
 }
 
-func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.RunIsolateRequest, log15log dlog.Logger) {
+func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.RunIsolateRequest, log15log dlog.Logger) ([]byte, *IsolateError) {
 
 	var data, din []byte
 
@@ -84,21 +91,18 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	// create data-dir
 	dir, err := ioutil.TempDir(os.TempDir(), in.GetActionId())
 	if err != nil {
-		is.respondToAction(serr(err, errorImage), data, in)
-		return
+		return data, serr(err, errorImage)
 	}
 
 	log.Debugf("container data-dir: %v", dir)
 
 	stdout, err := ioutil.TempFile("", "stdout")
 	if err != nil {
-		is.respondToAction(serr(err, errorInternal), data, in)
-		return
+		return data, serr(err, errorInternal)
 	}
 	stderr, err := ioutil.TempFile("", "stderr")
 	if err != nil {
-		is.respondToAction(serr(err, errorInternal), data, in)
-		return
+		return data, serr(err, errorInternal)
 	}
 
 	defer func() {
@@ -114,8 +118,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	err = ioutil.WriteFile(filepath.Join(dir, direktivData), in.GetData(), 0755)
 	if err != nil {
 		log.Errorf("can not write direktiv data for container: %v", err)
-		is.respondToAction(serr(err, errorInternal), data, in)
-		return
+		return data, serr(err, errorInternal)
 	}
 
 	ctxs := is.addCtx(in.Timeout, isolateID)
@@ -158,11 +161,21 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 
 	log.Debugf("podman cmd: %v", podman)
 
-	err = podman.Run()
+	err = podman.Start()
+	if err != nil {
+		log.Errorf("error starting container: %v", err)
+		return data, serr(err, errorInternal)
+	}
+
+	err = podman.Wait()
+
+	if ctxs.retCode != 0 {
+		err = fmt.Errorf("instance stopped")
+	}
+
 	if err != nil {
 		log.Errorf("error executing container: %v", err)
-		is.respondToAction(serr(err, errorInternal), data, in)
-		return
+		return data, serr(err, errorInternal)
 	}
 
 	// log output
@@ -185,27 +198,22 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 		err := json.Unmarshal(din, &ae)
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
-			is.respondToAction(serr(fmt.Errorf("%w; %s", err, string(din)), errorIO), data, in)
-			return
+			return data, serr(fmt.Errorf("%w; %s", err, string(din)), errorIO)
 		}
 
 		log15log.Error(ae.ErrorMessage)
-		is.respondToAction(&ae, data, in)
-		return
+		return data, &ae
 	}
 
 	// can not do much if that fails, print to logs, otherwise we return the data
 	data, err = ioutil.ReadFile(filepath.Join(dir, "data.out"))
 	if err != nil {
 		log15log.Error(fmt.Sprintf("error parsing data file: %v", err))
-		is.respondToAction(serr(err, errorIO), data, in)
-		return
+		return data, serr(err, errorIO)
 	}
 
-	go func() {
-		maxlen := math.Min(256, float64(len(data)))
-		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
-		is.respondToAction(nil, data, in)
-	}()
+	maxlen := math.Min(256, float64(len(data)))
+	log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
+	return data, nil
 
 }
