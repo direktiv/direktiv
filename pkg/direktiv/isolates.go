@@ -17,15 +17,19 @@ import (
 	"time"
 
 	gocni "github.com/containerd/go-cni"
+	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/minio/minio-go/v7"
+	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
+	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	parser "github.com/novln/docker-parser"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/dlog/dummy"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/isolate"
 	"github.com/vorteil/vorteil/pkg/elog"
 	"github.com/vorteil/vorteil/pkg/imagetools"
@@ -33,6 +37,7 @@ import (
 	"github.com/vorteil/vorteil/pkg/vimg"
 	"github.com/vorteil/vorteil/pkg/vkern"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -65,6 +70,10 @@ const (
 type ctxs struct {
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	// firecracker machine
+	fcm     *firecracker.Machine
+	retCode int
 }
 
 type isolateServer struct {
@@ -159,65 +168,105 @@ func newIsolateManager(config *Config, dbManager *dbManager, l *dlog.Log) (*isol
 		actx:           make(map[string]*ctxs),
 	}
 
-	if len(config.Minio.User) == 0 || len(config.Minio.Password) == 0 {
-		return nil, fmt.Errorf("minio username or password not set")
+	if config.IsolateAPI.Isolation != "container" {
+		if len(config.Minio.User) == 0 || len(config.Minio.Password) == 0 {
+			return nil, fmt.Errorf("minio username or password not set")
+		}
+
+		if len(config.Minio.Endpoint) == 0 {
+			return nil, fmt.Errorf("minio endpoint not set")
+		}
+
+		vorteild := kernelFolder
+		kernels := filepath.Join(vorteild, "kernels")
+		watch := filepath.Join(kernels, "watch")
+		sources := []string{"https://downloads.vorteil.io/kernels"}
+
+		ksrc, err := vkern.CLI(vkern.CLIArgs{
+			Directory:          kernels,
+			DropPath:           watch,
+			RemoteRepositories: sources,
+		}, &elog.CLI{
+			DisableTTY: true,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		vkern.Global = ksrc
+		vimg.GetKernel = ksrc.Get
+		vimg.GetLatestKernel = vkern.ConstructGetLastestKernelsFunc(&ksrc)
+
+		is.fileCache, err = newFileCache(is)
+		if err != nil {
+			return nil, err
+		}
+
+		// check CNI networking
+		is.cni, err = is.prepareNetwork()
+
+		// check the timeouts for firecracker sdk. they are very low for high load systems
+		if len(os.Getenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS")) == 0 {
+			log.Debugf("setting firecracker request timeout to 5000ms")
+			os.Setenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS", "5000")
+		}
+
+		if len(os.Getenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS")) == 0 {
+			log.Debugf("setting firecracker sdk init to 5s")
+			os.Setenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS", "5")
+		}
+
+		return is, err
+
 	}
 
-	if len(config.Minio.Endpoint) == 0 {
-		return nil, fmt.Errorf("minio endpoint not set")
+	if config.IsolateAPI.Isolation == "container" {
+		os.MkdirAll("/tmp/vfs-storage", 0755)
 	}
 
-	vorteild := kernelFolder
-	kernels := filepath.Join(vorteild, "kernels")
-	watch := filepath.Join(kernels, "watch")
-	sources := []string{"https://downloads.vorteil.io/kernels"}
-
-	ksrc, err := vkern.CLI(vkern.CLIArgs{
-		Directory:          kernels,
-		DropPath:           watch,
-		RemoteRepositories: sources,
-	}, &elog.CLI{
-		DisableTTY: true,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	vkern.Global = ksrc
-	vimg.GetKernel = ksrc.Get
-	vimg.GetLatestKernel = vkern.ConstructGetLastestKernelsFunc(&ksrc)
-
-	is.fileCache, err = newFileCache(is)
-	if err != nil {
-		return nil, err
-	}
-
-	// check CNI networking
-	is.cni, err = is.prepareNetwork()
-
-	// check the timeouts for firecracker sdk. they are very low for high load systems
-	if len(os.Getenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS")) == 0 {
-		log.Debugf("setting firecracker request timeout to 5000ms")
-		os.Setenv("FIRECRACKER_GO_SDK_REQUEST_TIMEOUT_MILLISECONDS", "5000")
-	}
-
-	if len(os.Getenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS")) == 0 {
-		log.Debugf("setting firecracker sdk init to 5s")
-		os.Setenv("FIRECRACKER_GO_SDK_INIT_TIMEOUT_SECONDS", "5")
-	}
-
-	return is, err
+	return is, nil
 
 }
 
 func (is *isolateServer) grpcStart(s *WorkflowServer) error {
 	return s.grpcStart(&is.grpc, "isolate", s.config.IsolateAPI.Bind, func(srv *grpc.Server) {
 		isolate.RegisterDirektivIsolateServer(srv, is)
+
+		// start health if there is no ingressServer
+		if !s.runsComponent(runsWorkflows) {
+			log.Debugf("append health check to isolate service")
+			healthServer := newHealthServer(s.config, s.isolateServer)
+			health.RegisterHealthServer(srv, healthServer)
+			reflection.Register(srv)
+		}
 	})
 }
 
 func (is *isolateServer) stop() {
+
+	// if the instance stops but actions are running
+	needsWait := len(is.actx)
+
+	// if vorteil we sigint all firecrackers else: podman send isgnal to all containers
+	for id, ctx := range is.actx {
+
+		// shutdown if firecracker
+		if ctx.fcm != nil {
+			log.Infof("shutting down %s", id)
+			ctx.fcm.Shutdown(ctx.ctx)
+		}
+		ctx.retCode = 2
+	}
+
+	if is.config.IsolateAPI.Isolation != "vorteil" {
+		log.Infof("signal all containers")
+		sigintAllContainers()
+	}
+
+	if needsWait > 0 {
+		time.Sleep(10 * time.Second)
+	}
 
 	if is.grpc != nil {
 		is.grpc.GracefulStop()
@@ -251,7 +300,7 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 
 	useSSL := true
 	if is.config.Minio.SSL == 0 {
-		log.Debugf("minio client using SSL")
+		log.Debugf("minio client not using SSL")
 		useSSL = false
 	}
 
@@ -275,6 +324,23 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 			log.Errorf("can not create bucket for direktiv: %v", err)
 			return err
 		}
+
+		config := lifecycle.NewConfiguration()
+		config.Rules = []lifecycle.Rule{
+			{
+				ID:     "expire-bucket",
+				Status: "Enabled",
+				Expiration: lifecycle.Expiration{
+					Days: 30,
+				},
+			},
+		}
+
+		err = minioClient.SetBucketLifecycle(context.Background(), direktivBucket, config)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	if err != nil {
@@ -320,6 +386,8 @@ func (is *isolateServer) addCtx(timeout *int64, isolateID string) *ctxs {
 		to = maxWaitSeconds
 	}
 
+	log.Debugf("ctx timeout %v", time.Duration(to)*time.Second)
+
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(to)*time.Second)
 	ctxs := &ctxs{
 		cancel: cancel,
@@ -360,7 +428,8 @@ func findAuthForRegistry(img string, registries map[string]string) []remote.Opti
 
 }
 
-func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolate.RunIsolateRequest, log15log dlog.Logger) {
+func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
+	in *isolate.RunIsolateRequest, log15log dlog.Logger) ([]byte, *IsolateError) {
 
 	var data, din []byte
 
@@ -374,35 +443,35 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 
 	disk, err := is.fileCache.getImage(img, cmd, in.Registries)
 	if err != nil {
-		is.respondToAction(serr(err, errorImage), data, in)
-		return
+		return data, serr(err, errorImage)
 	}
 
 	// prepare cni networking
 	nws, err := is.setupNetworkForVM(isolateID)
 	if err != nil {
-		is.respondToAction(serr(err, errorNetwork), data, in)
-		return
+		return data, serr(err, errorNetwork)
 	}
 
-	defer is.deleteNetworkForVM(isolateID)
+	defer func() {
+		go is.deleteNetworkForVM(isolateID)
+	}()
 
 	// build data disk to attach
 	dataDisk, err := is.buildDataDisk(isolateID, in.Data, nws)
 	if err != nil {
-		is.respondToAction(serr(err, errorIO), data, in)
-		return
+		return data, serr(err, errorIO)
 	}
-	defer os.Remove(dataDisk)
+	defer func() {
+		go os.Remove(dataDisk)
+	}()
 
 	ctxs := is.addCtx(in.Timeout, isolateID)
 
 	defer is.finishCancelIsolate(isolateID)
 
-	err = is.runFirecracker(ctxs.ctx, isolateID, disk, dataDisk, in.GetSize())
+	err = is.runFirecracker(ctxs, isolateID, disk, dataDisk, in.GetSize())
 	if err != nil {
-		is.respondToAction(serr(err, errorInternal), data, in)
-		return
+		return data, serr(err, errorInternal)
 	}
 
 	log.Debugf("firecracker finished")
@@ -410,8 +479,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 	// successful, so get the logs & results
 	dimg, err := vdecompiler.Open(dataDisk)
 	if err != nil {
-		is.respondToAction(serr(err, errorIO), data, in)
-		return
+		return data, serr(err, errorIO)
 	}
 
 	readFileFromDisk := func(disk *vdecompiler.IO, file string, d *[]byte) error {
@@ -452,8 +520,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 
 	err = readFileFromDisk(dimg, "/error.json", &din)
 	if err != nil {
-		is.respondToAction(serr(err, errorIO), data, in)
-		return
+		return data, serr(err, errorIO)
 	}
 
 	if len(din) > 0 {
@@ -463,12 +530,11 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
 			is.respondToAction(serr(fmt.Errorf("%w; %s", err, string(din)), errorIO), data, in)
-			return
+			return data, serr(fmt.Errorf("%w; %s", err, string(din)), errorIO)
 		}
 
 		log15log.Error(ae.ErrorMessage)
-		is.respondToAction(&ae, data, in)
-		return
+		return data, &ae
 
 	}
 
@@ -477,24 +543,22 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string, in *isolat
 	if err != nil {
 		log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
 		is.respondToAction(serr(err, errorIO), data, in)
-		return
+		return data, serr(err, errorIO)
 	}
 
-	go func() {
-
-		maxlen := math.Min(256, float64(len(data)))
-		log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
-		is.respondToAction(nil, data, in)
-
-	}()
+	maxlen := math.Min(256, float64(len(data)))
+	log.Debugf("responding to isolate caller: %v", string(data[0:int(maxlen)]))
+	return data, nil
 
 }
 
-func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
+func (is *isolateServer) runAction(in *isolate.RunIsolateRequest, dryRun bool) error {
 
 	var (
 		ns, instID, isolateID string
 		img, cmd              string
+		err                   error
+		log15log              dlog.Logger
 	)
 
 	ns = in.GetNamespace()
@@ -506,19 +570,41 @@ func (is *isolateServer) runAction(in *isolate.RunIsolateRequest) {
 	cmd = in.GetCommand()
 	instID = in.GetInstanceId()
 
-	log15log, err := (*is.instanceLogger).LoggerFunc(ns, instID)
-	if err != nil {
-		log.Errorf("can not create logger for isolate: %v", err)
-		return
+	// only log to the backend if not a dry run
+	if !dryRun {
+		log15log, err = (*is.instanceLogger).LoggerFunc(ns, instID)
+		if err != nil {
+			log.Errorf("can not create logger for isolate: %v", err)
+			return err
+		}
+		defer log15log.Close()
+	} else {
+		dl, _ := dummy.NewLogger()
+		log15log, _ = dl.LoggerFunc("", "")
 	}
-	defer log15log.Close()
 
 	log.Debugf("isolation level: %v", is.config.IsolateAPI.Isolation)
+	var (
+		data         []byte
+		isolationErr *IsolateError
+	)
+
 	if is.config.IsolateAPI.Isolation == "container" {
-		is.runAsContainer(img, cmd, isolateID, in, log15log)
+		data, isolationErr = is.runAsContainer(img, cmd, isolateID, in, log15log)
 	} else {
-		is.runAsFirecracker(img, cmd, isolateID, in, log15log)
+		data, isolationErr = is.runAsFirecracker(img, cmd, isolateID, in, log15log)
 	}
+
+	// dry-runs are for health checks
+	if !dryRun {
+		is.respondToAction(isolationErr, data, in)
+	}
+
+	if isolationErr != nil && len(isolationErr.ErrorMessage) > 0 {
+		return fmt.Errorf("%s (%s)", isolationErr.ErrorMessage, isolationErr.ErrorCode)
+	}
+
+	return nil
 
 }
 
@@ -537,7 +623,7 @@ func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 		return &resp, fmt.Errorf("isolateID empty")
 	}
 
-	go is.runAction(in)
+	go is.runAction(in, false)
 
 	return &resp, nil
 
@@ -595,12 +681,6 @@ func (is *isolateServer) storeImageS3(img, cmd, disk string) error {
 	}
 
 	_, err := is.minioClient.FPutObject(context.Background(), direktivBucket, h, disk, storeOptions)
-
-	t := time.Now().Add((7 * 24) * time.Hour)
-	is.minioClient.PutObjectRetention(context.Background(), direktivBucket, h, minio.PutObjectRetentionOptions{
-		RetainUntilDate: &t,
-	})
-
 	return err
 
 }
