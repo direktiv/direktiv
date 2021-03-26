@@ -1,16 +1,14 @@
-import React, {useContext} from 'react';
+import React from 'react';
 
 import Navbar from 'react-bootstrap/Navbar'
 import NavbarDropdown from 'react-bootstrap/NavDropdown'
 import {useHistory} from 'react-router-dom'
 
 import BannerLogo from 'img/banner-logo.png'
-import ServerContext from 'components/app/context';
 
 
 export default function TopNavbar(props) {
     const history = useHistory()
-    const server = useContext(ServerContext)
 
     let dropdownTitle = (
         <span>

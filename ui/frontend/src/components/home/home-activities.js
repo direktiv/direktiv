@@ -14,7 +14,6 @@ export default function HomepageActivities(props) {
     const context = useContext(ServerContext);
     const [loader, setLoader] = useState(false)
     const [instances, setInstances] = useState([]);
-    const [show, setShow] = useState(false)
     const [err, setError] = useState("")
 
     const fetchInstances = useCallback(
@@ -70,10 +69,6 @@ export default function HomepageActivities(props) {
         fetchInstances()
     }, [namespaces, fetchInstances])
 
-    function handleHide() {
-        setShow(false)
-    }
-
     if (err !== "") {
         return <ErrorActivitesArea error={err}/>
     } else if (instances.length === 0) {
@@ -110,8 +105,6 @@ export default function HomepageActivities(props) {
                                 Instances
                             </h5>
                             <div style={{flex: 1, textAlign: "right", justifyContent: "center", marginBottom: ".5rem"}}>
-                                {/* <Button variant="primary" onClick={() => setShow(!show)}>Clear All</Button> */}
-                                {/* <ClearInstances err={err} setError={setError} namespace={namespaces[0]} fetchInstances={fetchInstances} handleHide={handleHide} show={show} /> */}
                             </div>
                         </div>
                         {instances.map((obj) => <InstanceListItem key={obj.id} instanceData={obj}/>)}

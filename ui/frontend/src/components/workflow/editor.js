@@ -42,7 +42,7 @@ export default function Editor(props) {
     } = props;
 
     let rOnly = true
-    if (readOnly != undefined) {
+    if (readOnly !== undefined) {
         rOnly = readOnly
     }
 
