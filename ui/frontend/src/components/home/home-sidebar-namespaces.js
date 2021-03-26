@@ -7,7 +7,7 @@ import DeleteNamespace from './delete-namespace';
 
 
 export default function HomeSidebarNamespaces(props) {
-    const {namespace, fetchNamespaces} = props
+    const {fetchNamespaces} = props
 
     const history = useHistory()
     let liClass = "no-border"

@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useState} from "react";
-import {Link, Redirect, useHistory, useParams} from "react-router-dom";
+import {Link, Redirect, useParams} from "react-router-dom";
 import "css/workflow.css";
 // import prettyYAML from "json-to-pretty-yaml"
 import YAML from "js-yaml";
@@ -32,7 +32,6 @@ export async function DeleteWorkflow(context, namespace, workflow) {
 }
 
 export default function Workflow(props) {
-    let history = useHistory();
     let params = useParams();
     let {namespace} = params;
 
@@ -41,8 +40,6 @@ export default function Workflow(props) {
     const [error, setError] = useState({message: "", lang: ""});
     const [rrs, setRRS] = useState(RemoteResourceState.fetching);
     const [active, setActive] = useState();
-    const [editLock, setEditLock] = useState(false);
-
 
     const [showInput, setShowInput] = useState(false);
     const [workflow, setWorkflow] = useState({id: params.workflow, uid: ""});
