@@ -81,6 +81,8 @@ affinity: {}
 # support services
 withSupport: true
 withIsolate: true
+withFlow: true
+withUI: true
 
 db: ""
 
@@ -89,9 +91,13 @@ isolate:
   image: "vorteil/isolate"
   tag: "latest"
   isolation: "container"
-  minioEndpoint: ""
-  minioAccessKey: "direktiv"
-  minioSecretKey: "direktivdirektiv"
+  minio:
+    # if minio local it acts as a gateway to S3 storage (AWS)
+    local: false
+    cloud: ""
+    endpoint: ""
+    accessKey: "direktiv"
+    secretKey: "direktivdirektiv"
 
 # flow config
 flow:

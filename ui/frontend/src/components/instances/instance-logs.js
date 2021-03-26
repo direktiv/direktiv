@@ -66,7 +66,7 @@ export function InstanceLogs(props) {
                         setLogs([...logs, ...json.workflowInstanceLogs])
                     } else if (limit < 300) {
                         setLimit((l) => {
-                            if (l == 10) {
+                            if (l === 10) {
                                 return l
                             }
 
