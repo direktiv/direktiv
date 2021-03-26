@@ -19,7 +19,7 @@ ENV DIREKTIV_SECRETS_DB="host=127.0.0.1 port=5432 user=direktiv dbname=direktiv 
 ENV POSTGRES_USER=direktiv
 ENV POSTGRES_PASSWORD=direktiv
 ENV POSTGRES_DB=direktiv
-ENV DIREKTIV_INGRESS_BIND==0.0.0.0:6666 
+ENV DIREKTIV_INGRESS_BIND=0.0.0.0:6666 
 
 COPY direktiv /bin/direktiv
 RUN chmod 755 /bin/direktiv
