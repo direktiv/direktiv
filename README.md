@@ -64,10 +64,6 @@ _Container Isolation:_
   - [Oracle Cloud](https://blogs.oracle.com/cloud-infrastructure/nested-kvm-virtualization-on-oracle-iaas)
   - [VMware](https://communities.vmware.com/t5/Nested-Virtualization-Documents/Running-Nested-VMs/ta-p/2781466)
 
-***Testing installation:***
-
-To test if the installation was successful go to http://localhost:8080 to access the UI
-
 ***Using Vorteil:***
 
 With Vorteil installed (full instructions [here](https://github.com/vorteil/vorteil)):
@@ -79,6 +75,9 @@ With Vorteil installed (full instructions [here](https://github.com/vorteil/vort
 
    `vorteil run --program[2].env="DIREKTIV_ISOLATION=container" direktiv.vorteil` for container isolation
 
+***Testing Installation:***
+
+To test if the installation was successful go to http://localhost:8080 to access the UI
 
 
 ***Testing Direktiv***:
