@@ -47,7 +47,7 @@ function RunButton(props) {
         );
     }
 
-    if (startType != "default") {
+    if (startType !== "default") {
         return (
             <OverlayTrigger
                 placement="top"
