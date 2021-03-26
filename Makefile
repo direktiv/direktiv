@@ -101,7 +101,7 @@ build-ui-frontend:
 .PHONY: docker-ui
 docker-ui:
 	echo "building app"
-	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
+	if [ ! -d ${mkfile_dir_main}/build/docker/ui/build ]; then \
 		docker run -v ${mkfile_dir_main}/ui/frontend:/ui chekote/node:14.8.0-alpine /bin/sh -c "cd /ui && yarn install && NODE_ENV=production yarn build"; \
 	fi
 	echo "copying web folder"
