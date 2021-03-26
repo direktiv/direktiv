@@ -29,7 +29,7 @@ jobs:
         make build-cli
     - name: push docker
       run: |
-        make docker
+        make docker-all
         docker images | grep direktiv
         docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
         docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}

@@ -53,8 +53,7 @@ protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_fi
 
 .PHONY: docker-all
 docker-all:
-docker-all: build
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
+docker-all: build docker-ui
 	cd build && docker build -t direktiv -f docker/all/Dockerfile .
 
 .PHONY: docker-isolate
@@ -87,6 +86,7 @@ build:
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 
 .PHONY: build-cli
 build-cli:

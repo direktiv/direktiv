@@ -52,12 +52,6 @@ create_certs()
 
 apk update
 
-if [ "$1" = "true" ] ; then
-  mkdir -p /run/postgresql/
-  mkdir -p /var/lib/postgresql/data
-  apk add postgresql postgresql-contrib
-fi
-
 apk add ca-certificates iptables ip6tables device-mapper udev make go openssl util-linux
 apk add podman --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 

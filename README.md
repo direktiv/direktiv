@@ -23,7 +23,7 @@
 
 ## What is Direktiv?
 
-**Diretiv is a serverless workflow engine.** 
+**Diretiv is a serverless workflow engine.**
 
 Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, can run on container platforms and executes containers as "plugins".
 
@@ -45,18 +45,18 @@ machines. This behaviour can be changed in the configuration file or via environ
 _Firecracker Isolation_
 
 
-`docker run --privileged -p6666:6666 -eDIREKTIV_INGRESS_BIND=0.0.0.0:6666 vorteil/direktiv`
+`docker run --privileged -p6666:6666 -p8080:8080 vorteil/direktiv`
 
 
 _Container Isolation:_
 
-`docker run --privileged -p6666:6666 -eDIREKTIV_INGRESS_BIND=0.0.0.0:6666 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
+`docker run --privileged -p6666:6666 -p8080:8080 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
 
 *Note: *
 
 - *You may need to run this command as an administrator.*
 
-- *In a public cloud instance, nested virualization is needed to support the firecracker micro-VMs. Each public cloud provider has different configuration settings which need to be applied to enable nested virtualization. Examples are shown below for each public cloud provider:*
+- ***For VM isolation level only*** In a public cloud instance, nested virualization is needed to support the firecracker micro-VMs . Each public cloud provider has different configuration settings which need to be applied to enable nested virtualization. Examples are shown below for each public cloud provider:
   - [Google Cloud Platform](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances)
   - Amazon Web Services (only supported on bare metal instances)
   - [Microsoft Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/nested-virtualization)
@@ -64,7 +64,9 @@ _Container Isolation:_
   - [Oracle Cloud](https://blogs.oracle.com/cloud-infrastructure/nested-kvm-virtualization-on-oracle-iaas)
   - [VMware](https://communities.vmware.com/t5/Nested-Virtualization-Documents/Running-Nested-VMs/ta-p/2781466)
 
+***Testing installation:***
 
+To test if the installation was successful go to http://localhost:8080 to access the UI
 
 ***Using Vorteil:***
 
@@ -191,7 +193,7 @@ id: check-image-v2
 start:
   type: event
   state: getImageFromAzure
-  event: 
+  event:
     type: Microsoft.Storage.BlobCreated
 functions:
 - id: imageCheck
@@ -203,7 +205,7 @@ functions:
   image: vorteil/lambda:v1
 - id: send-email
   image: vorteil/smtp:latest
-description: "Listen for an azure event upload to bucket" 
+description: "Listen for an azure event upload to bucket"
 states:
 - id: getImageFromAzure
   type: action
@@ -229,7 +231,7 @@ states:
     format: email
   catch:
   - error: direktiv.schema.*
-    transition: EmailNotValid 
+    transition: EmailNotValid
   transition: SendEmail
 - id: EmailNotValid
   type: noop
@@ -263,9 +265,9 @@ states:
     }'
   transition: cleanup
 - id: addWaterMark
-  type: action 
-  action: 
-    function: awslambda 
+  type: action
+  action:
+    function: awslambda
     secrets: [lambdaKey, lambdaSecret]
     input: '{
       key: .secrets.lambdaKey,

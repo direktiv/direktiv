@@ -17,7 +17,7 @@ alpine:
 # make DB=true prep-alpine to install postgresql
 .PHONY: prep-alpine
 prep-alpine: alpine
-prep-alpine:
+prep-alpine: docker-ui
 		cp ${mkfile_dir_build}/builder.sh ${mkfile_dir_build}/alpine-base
 		cp ${mkfile_dir_build}/builder-pg.sh ${mkfile_dir_build}/alpine-base
 		if [ ! -d ${mkfile_dir_build}/alpine-final ]; then \
@@ -26,12 +26,11 @@ prep-alpine:
 		fi
 		cp ${mkfile_dir_build}/conf.toml ${mkfile_dir_build}/alpine-final/etc
 		cp ${mkfile_dir_build}/../direktiv ${mkfile_dir_build}/alpine-final/bin
-ifeq ($(DB),true)
-		cp ${mkfile_dir_build}/default_db.vcfg ${mkfile_dir_build}/alpine-final/default.vcfg
-else
-		cp ${mkfile_dir_build}/default.vcfg ${mkfile_dir_build}/alpine-final
-endif
-		cp ${mkfile_dir_build}/alpine-base/.vorteilproject ${mkfile_dir_build}/alpine-final/
+		cp ${mkfile_dir_build}/docker/ui/direktiv-ui ${mkfile_dir_build}/alpine-final/bin
+
+		cp -f ${mkfile_dir_build}/default.vcfg ${mkfile_dir_build}/alpine-final
+		cp -f ${mkfile_dir_build}/ui.vcfg ${mkfile_dir_build}/alpine-final
+		cp -f ${mkfile_dir_build}/vorteilproject ${mkfile_dir_build}/alpine-final/.vorteilproject
 		rm -f ${mkfile_dir_build}/alpine-final/var/lib/postgresql/data/postmaster.pid
 
 # Run with DB:
