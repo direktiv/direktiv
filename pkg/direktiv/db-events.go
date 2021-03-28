@@ -55,19 +55,22 @@ func (db *dbManager) deleteWorkflowEventWaitByListenerID(id int) error {
 
 func (db *dbManager) deleteWorkflowEventListenerByInstanceID(id int) error {
 
+	var err error
+
 	tx, err := db.dbEnt.Tx(db.ctx)
 	if err != nil {
 		return err
 	}
+	defer rollback(tx, err)
 
-	el, err := db.getWorkflowEventByInstanceID(id)
+	var el *ent.WorkflowEvents
+	el, err = db.getWorkflowEventByInstanceID(id)
 	if err != nil {
 		return err
 	}
 
 	err = db.deleteWorkflowEventListener(el.ID)
 	if err != nil {
-		rollback(tx, err)
 		return err
 	}
 

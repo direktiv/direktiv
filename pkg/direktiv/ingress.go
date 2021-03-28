@@ -8,11 +8,13 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	"github.com/vorteil/direktiv/pkg/secrets"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -20,6 +22,7 @@ import (
 
 type ingressServer struct {
 	ingress.UnimplementedDirektivIngressServer
+	health.UnimplementedHealthServer
 
 	wfServer *WorkflowServer
 	grpc     *grpc.Server
@@ -69,6 +72,11 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 
 	return s.grpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
+
+		log.Debugf("append health check to ingress service")
+		healthServer := newHealthServer(s.config, s.isolateServer)
+		health.RegisterHealthServer(srv, healthServer)
+		reflection.Register(srv)
 	})
 
 }
@@ -173,7 +181,7 @@ func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 
 	log.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
 
-	err = is.wfServer.handleEvent(event)
+	err = is.wfServer.handleEvent(*in.Namespace, event)
 
 	return &resp, err
 
@@ -271,6 +279,7 @@ func (is *ingressServer) GetWorkflowById(ctx context.Context, in *ingress.GetWor
 	resp.CreatedAt = timestamppb.New(wf.Created)
 	resp.Description = &wf.Description
 	resp.Workflow = wf.Workflow
+	resp.LogToEvents = &wf.LogToEvents
 
 	return &resp, nil
 
@@ -296,6 +305,7 @@ func (is *ingressServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWo
 	resp.CreatedAt = timestamppb.New(wf.Created)
 	resp.Description = &wf.Description
 	resp.Workflow = wf.Workflow
+	resp.LogToEvents = &wf.LogToEvents
 
 	return &resp, nil
 
@@ -446,6 +456,7 @@ func (is *ingressServer) GetWorkflows(ctx context.Context, in *ingress.GetWorkfl
 			Description: &wf.Description,
 			Active:      &wf.Active,
 			CreatedAt:   timestamppb.New(wf.Created),
+			LogToEvents: &wf.LogToEvents,
 		})
 
 	}

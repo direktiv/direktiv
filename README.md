@@ -23,7 +23,7 @@
 
 ## What is Direktiv?
 
-**Diretiv is a serverless workflow engine.** 
+**Diretiv is a serverless workflow engine.**
 
 Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, can run on container platforms and executes containers as "plugins".
 
@@ -45,26 +45,24 @@ machines. This behaviour can be changed in the configuration file or via environ
 _Firecracker Isolation_
 
 
-`docker run --privileged -p6666:6666 -eDIREKTIV_INGRESS_BIND=0.0.0.0:6666 vorteil/direktiv`
+`docker run --privileged -ti -p6666:6666 -p8080:8080 vorteil/direktiv`
 
 
 _Container Isolation:_
 
-`docker run --privileged -p6666:6666 -eDIREKTIV_INGRESS_BIND=0.0.0.0:6666 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
+`docker run --privileged -ti -p6666:6666 -p8080:8080 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
 
 *Note: *
 
 - *You may need to run this command as an administrator.*
 
-- *In a public cloud instance, nested virualization is needed to support the firecracker micro-VMs. Each public cloud provider has different configuration settings which need to be applied to enable nested virtualization. Examples are shown below for each public cloud provider:*
+- ***For VM isolation level only*** In a public cloud instance, nested virualization is needed to support the firecracker micro-VMs . Each public cloud provider has different configuration settings which need to be applied to enable nested virtualization. Examples are shown below for each public cloud provider:
   - [Google Cloud Platform](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances)
   - Amazon Web Services (only supported on bare metal instances)
   - [Microsoft Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/nested-virtualization)
   - Alibaba (only supported on bare metal instances)
   - [Oracle Cloud](https://blogs.oracle.com/cloud-infrastructure/nested-kvm-virtualization-on-oracle-iaas)
   - [VMware](https://communities.vmware.com/t5/Nested-Virtualization-Documents/Running-Nested-VMs/ta-p/2781466)
-
-
 
 ***Using Vorteil:***
 
@@ -77,6 +75,9 @@ With Vorteil installed (full instructions [here](https://github.com/vorteil/vort
 
    `vorteil run --program[2].env="DIREKTIV_ISOLATION=container" direktiv.vorteil` for container isolation
 
+***Testing Installation:***
+
+To test if the installation was successful go to http://localhost:8080 to access the UI
 
 
 ***Testing Direktiv***:
@@ -191,7 +192,7 @@ id: check-image-v2
 start:
   type: event
   state: getImageFromAzure
-  event: 
+  event:
     type: Microsoft.Storage.BlobCreated
 functions:
 - id: imageCheck
@@ -203,7 +204,7 @@ functions:
   image: vorteil/lambda:v1
 - id: send-email
   image: vorteil/smtp:latest
-description: "Listen for an azure event upload to bucket" 
+description: "Listen for an azure event upload to bucket"
 states:
 - id: getImageFromAzure
   type: action
@@ -229,7 +230,7 @@ states:
     format: email
   catch:
   - error: direktiv.schema.*
-    transition: EmailNotValid 
+    transition: EmailNotValid
   transition: SendEmail
 - id: EmailNotValid
   type: noop
@@ -263,9 +264,9 @@ states:
     }'
   transition: cleanup
 - id: addWaterMark
-  type: action 
-  action: 
-    function: awslambda 
+  type: action
+  action:
+    function: awslambda
     secrets: [lambdaKey, lambdaSecret]
     input: '{
       key: .secrets.lambdaKey,
@@ -320,7 +321,7 @@ Direktiv was created to address 4 problems faced with workflow engines in genera
 
 - *Cloud agnostic*: we wanted Direktiv to run on any platform or cloud, support any code or capability and NOT be dependent on the cloud provider's services for running the workflow or executing the actions (but obviously support it all)
 - *Simplicity*: the configuration of the workflow components should be simple more than anything else. Using only YAML and `jq` you should be able to express all workflow states, transitions, evaluations and actions needed to complete the workflow
-- *Reusable*: if you're going to the effort and trouble of pushing all your microservices, code or application components into a container platform why not have the ability to reuse and standardise this code across all of your workflows. We wanted to ensure that your code always remains reusable and portable and not tied into a specific vendor format or requirement (or vendor specific language) - so we've modelled Direktiv's specification after the CNCF Serverless Workflow Specification with the ultimate goal to make it feature-complete and easy to implement.
+- *Reusable*: if you're going to the effort and trouble of pushing all your microservices, code or application components into a container platform why not have the ability to reuse and standardise this code across all of your workflows. We wanted to ensure that your code always remains reusable and portable and not tied into a specific vendor format or requirement (or vendor specific language).
 - *Multi-tenanted and secure*: we want to use Direktiv in a multi-tenant service provider space, which means all workflow executions have to be isolated, data access secured and isolated and all workflows and actions are truly ephemeral (or serverless).
 
 ## Direktiv internals?

@@ -73,9 +73,9 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 	// 	base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
 
 	rows, err := db.Query(`update workflow_events_waits
-	set events = jsonb_set(events, '{$1}', '"$2"', true)
-	WHERE events::jsonb ? '$3' and workflow_events_wfeventswait = $4
-	returning *`, chash, base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
+	set events = jsonb_set(events, $1, $2, true)
+	WHERE events::jsonb ? $3 and workflow_events_wfeventswait = $4
+	returning *`, fmt.Sprintf("{%s}", chash), fmt.Sprintf(`"%s"`, base64.StdEncoding.EncodeToString(eventToBytes(*ce))), chash, id)
 	if err != nil {
 		return retEvents, err
 	}
@@ -138,7 +138,7 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 
 }
 
-func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
+func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) error {
 
 	log.Debugf("handle event %s", ce.Type())
 
@@ -157,11 +157,17 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 	// 	jsonb_array_elements(etl.events) as v
 	// 	where v::json->>'type' = '%s'`,
 	// 	ce.Type())
-	rows, err := db.Query(`select
-	id, signature, count, correlations, events, workflow_wfevents,
-	v from workflow_events etl,
-	jsonb_array_elements(etl.events) as v
-	where v::json->>'type' = '$1'`, ce.Type())
+
+	rows, err := db.Query(`select 
+	we.id, signature, count, correlations, events, workflow_wfevents, v
+	from workflow_events we
+	inner join workflows w
+		on w.id = workflow_wfevents
+	inner join namespaces n
+		on n.id = w.namespace_workflows,
+	jsonb_array_elements(events) as v
+	where v::json->>'type' = $1
+	and n.id = $2`, ce.Type(), namespace)
 	if err != nil {
 		return err
 	}
@@ -176,8 +182,7 @@ func (s *WorkflowServer) handleEvent(ce *cloudevents.Event) error {
 			continue
 		}
 
-		hash, _ := hashstructure.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf),
-			hashstructure.FormatV2, nil)
+		hash, _ := hashstructure.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hashstructure.FormatV2, nil)
 
 		unlock := func() {
 			if conn != nil {

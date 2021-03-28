@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/gogo/protobuf/jsonpb"
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
 
@@ -19,6 +20,7 @@ type grpcClient struct {
 	addr   string
 	client ingress.DirektivIngressClient
 	tlsCfg *tls.Config
+	json   jsonpb.Marshaler
 }
 
 func (g *grpcClient) init() error {
@@ -43,6 +45,10 @@ func (g *grpcClient) init() error {
 	}
 
 	g.client = ingress.NewDirektivIngressClient(cc)
+
+	g.json = jsonpb.Marshaler{
+		EmitDefaults: true,
+	}
 	return nil
 }
 

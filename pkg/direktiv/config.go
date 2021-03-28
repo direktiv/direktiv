@@ -20,9 +20,6 @@ const (
 	flowRegistryUser  = "DIREKTIV_FLOW_REGISTRY_USER"
 	flowRegistryToken = "DIREKTIV_FLOW_REGISTRY_TOKEN"
 
-	healthBind     = "DIREKTIV_HEALTH_BIND"
-	healthEndpoint = "DIREKTIV_HEALTH_ENDPOINT"
-
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
 
@@ -66,12 +63,6 @@ type Config struct {
 			Name, User, Token string
 		}
 	} `toml:"flowAPI"`
-
-	HealthAPI struct {
-		Bind     string
-		Endpoint string
-		Enabled  int
-	} `toml:"healthAPI"`
 
 	IngressAPI struct {
 		Bind     string
@@ -173,10 +164,6 @@ func ReadConfig(file string) (*Config, error) {
 	c.FlowAPI.Bind = fmt.Sprintf("%s:7777", localIP)
 	c.FlowAPI.Endpoint = c.FlowAPI.Bind
 
-	c.HealthAPI.Bind = fmt.Sprintf("%s:9999", localIP)
-	c.HealthAPI.Endpoint = c.HealthAPI.Bind
-	c.HealthAPI.Enabled = 1
-
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
 
@@ -193,8 +180,8 @@ func ReadConfig(file string) (*Config, error) {
 	c.Minio.Encrypt = c.Minio.Password
 	c.Minio.Region = "us-east-1"
 
-	c.Kernel.Runtime = "21.3.2"
-	c.Kernel.Linux = "21.3.2"
+	c.Kernel.Runtime = "21.3.5"
+	c.Kernel.Linux = "21.3.5"
 
 	// read config file if exists
 	if len(file) > 0 {
@@ -221,7 +208,6 @@ func ReadConfig(file string) (*Config, error) {
 		{minioSecure, &c.Minio.Secure},
 		{minioSSL, &c.Minio.SSL},
 		{certSecure, &c.Certs.Secure},
-		{grpcHealth, &c.HealthAPI.Enabled},
 	}
 
 	for _, i := range ints {
@@ -249,8 +235,6 @@ func ReadConfig(file string) (*Config, error) {
 		{flowRegistry, &c.FlowAPI.Registry.Name},
 		{flowRegistryUser, &c.FlowAPI.Registry.User},
 		{flowRegistryToken, &c.FlowAPI.Registry.Token},
-		{healthBind, &c.HealthAPI.Bind},
-		{healthEndpoint, &c.HealthAPI.Endpoint},
 		{ingressBind, &c.IngressAPI.Bind},
 		{ingressEndpoint, &c.IngressAPI.Endpoint},
 		{isolateBind, &c.IsolateAPI.Bind},

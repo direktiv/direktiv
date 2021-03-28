@@ -1,0 +1,100 @@
+.namespace-actions {
+    display: flex;
+    width: 100%;
+    min-height: 10px;
+}
+
+.namespace-actions-box {
+    display: flex;
+}
+
+#namespace-header div.padded-border {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border-bottom: solid 1px #e0e0e0;
+}
+
+#namespace-actions-title {
+    align-items: center;
+}
+
+#namespace-actions-title h4 {
+    margin-bottom: 0px !important;
+}
+
+#namespace-actions-options {
+    flex: auto;
+    justify-content: flex-end;
+}
+
+#actions-container {
+    display: flex;
+    align-items: center;
+}
+
+.bordered-button {
+    border-color: #6c757d;
+}
+
+#workflows-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.workflows-list-item-no {
+    flex: auto;
+    padding: 8px;
+    border: solid 1px #e0e0e0;
+    border-radius: 4px;
+    margin-top: 15px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.workflows-list-item {
+    flex: auto;
+    padding: 8px;
+    border: solid 1px #e0e0e0;
+    border-radius: 4px;
+    margin-top: 15px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.workflows-list-item:hover {
+    background: #e0e0e0;
+    cursor: pointer;
+}
+
+/* // Extra small devices (portrait phones, less than 576px)
+// No media query for `xs` since this is the default in Bootstrap */
+
+/* // Small devices (landscape phones, 576px and up) */
+@media (max-width: 576px) {
+    .hide-sm {
+        display: none !important;
+    }
+}
+
+@media (min-width: 576px) {
+    /* .no-left-pad-above-sm {
+            padding-left: 0px !important;
+    }
+    .no-left-margin-above-sm {
+            margin-left: 0px !important;
+    } */
+}
+
+/* // Medium devices (tablets, 768px and up) */
+@media (max-width: 768px) {
+}
+
+/* // Large devices (desktops, 992px and up) */
+@media (max-width: 992px) {
+}
+
+/* // Extra large devices (large desktops, 1200px and up) */
+@media (max-width: 1200px) {
+}

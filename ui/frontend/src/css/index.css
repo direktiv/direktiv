@@ -1,0 +1,83 @@
+html, body, #root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.flowpoint {
+    min-width: 150px;
+    min-height: 50px;
+    width: fit-content !important;
+    height: fit-content !important;
+    text-align: center !important;
+}
+
+.fp-contents {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.diagramwf {
+    height: 100%
+}
+
+.mxTooltip {
+    position: absolute
+}
+
+/* #mxcontainer {
+  background-color: #fff;
+  background-size: 100% 1.2em;
+  background-image: -webkit-linear-gradient(0deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px), -webkit-linear-gradient(#eee .05em, transparent .05em);
+  background-image: -moz-linear-gradient(0deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px), -moz-linear-gradient(#eee .05em, transparent .05em);
+  background-image: -ms-linear-gradient(0deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px), -ms-linear-gradient(#eee .05em, transparent .05em);
+  background-image: -o-linear-gradient(0deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px), -o-linear-gradient(#eee .05em, transparent .05em);
+  background-image: linear-gradient(0deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px), linear-gradient(#eee .05em, transparent .05em);
+  -pie-background: linear-gradient(0deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px) 0 0 / 100% 1.2em, linear-gradient(#eee .05em, transparent .05em) 0 0 / 100% 1.2em #fff;
+} */
+
+#mxcontainer {
+    max-width: 100% !important;
+}
+
+#mxcontainer svg {
+    min-width: 100% !important;
+}
+
+.footer {
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(-9deg, #00a1fc 0%, #005bea 100%)
+}
+
+.footer-link {
+    color: white;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    text-decoration: none;
+    font-weight: 600;
+    color: white;
+}
+
+@font-face {
+    font-family: 'Inconsolata';
+    src: local('Inconsolata'), url(../fonts/Inconsolata.ttf) format('truetype');
+}

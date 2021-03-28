@@ -228,6 +228,8 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 	var err error
 
+	wli.engine.completeState(ctx, wli.rec, "", code, false)
+
 	if wli.rec.ErrorCode == "" {
 		wli.rec, err = wli.rec.Update().
 			SetStatus(status).
@@ -238,7 +240,10 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 		return err
 	}
 
-	return nil
+	wli.rec, err = wli.rec.Update().
+		SetEndTime(time.Now()).
+		Save(ctx)
+	return err
 
 }
 
@@ -421,7 +426,7 @@ func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetData("application/json", s)
-		go wli.engine.server.handleEvent(&event)
+		go wli.engine.server.handleEvent(wli.namespace, &event)
 	}
 
 }
@@ -471,7 +476,7 @@ func (wli *workflowLogicInstance) Transform(transform string) error {
 
 }
 
-func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string, multiplier float64) error {
+func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string, multiplier float64, errCode string) error {
 
 	var err error
 	var x interface{}
@@ -484,6 +489,8 @@ func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string,
 	wli.data = x
 
 	nextState := wli.rec.Flow[len(wli.rec.Flow)-1]
+
+	wli.engine.completeState(ctx, wli.rec, nextState, errCode, true)
 
 	attempt := wli.rec.Attempts + 1
 	if multiplier == 0 {
@@ -664,9 +671,12 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	wli.step++
 	deadline := stateLogic.Deadline()
 
+	t := time.Now()
+
 	var rec *ent.WorkflowInstance
 	rec, err = wli.rec.Update().
 		SetDeadline(deadline).
+		SetStateBeginTime(t).
 		SetNillableMemory(nil).
 		SetAttempts(attempt).
 		SetFlow(flow).

@@ -1,12 +1,14 @@
 # Greeting
 
+A simple action that uses the docker container `vorteil/greeting`. Which takes a person object as input and outputs a greeting message back.
+
 ## Workflow 
 
 ```yaml
 id: greeting
 functions: 
 - id: greetingFunction
-  image: apps.vorteil.io/direktive-demos/greeting
+  image: vorteil/greeting
 states:
 - id: Greet
   type: action
@@ -21,7 +23,7 @@ states:
 ```json
 {
   "person": {
-    "name": "John"
+    "name": "Trent"
   }
 }
 ```
@@ -30,6 +32,6 @@ states:
 
 ```json
 {
-   "greeting":  "Welcome to Serverless Workflow, John!"
+   "greeting":  "Welcome to Direktiv, Trent!"
 }
 ```

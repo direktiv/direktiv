@@ -6,7 +6,7 @@ health_generated_files := $(shell find pkg/health/ -type f -name '*.proto' -exec
 ingress_generated_files := $(shell find pkg/ingress/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 isolate_generated_files := $(shell find pkg/isolate/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 secrets_generated_files := $(shell find pkg/secrets/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-hasFlutter := $(shell which flutter)
+hasYarn := $(shell which yarn)
 
 .SILENT:
 
@@ -53,8 +53,7 @@ protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_fi
 
 .PHONY: docker-all
 docker-all:
-docker-all: build
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
+docker-all: build docker-ui
 	cd build && docker build -t direktiv -f docker/all/Dockerfile .
 
 .PHONY: docker-isolate
@@ -87,25 +86,26 @@ build:
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 
 .PHONY: build-cli
 build-cli:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
 
-.PHONY: build-ui-flutter
-build-ui-flutter:
-	if [ ${hasFlutter} ]; then \
-		cd ${mkfile_dir_main}/ui/flutter; flutter build web; \
+.PHONY: build-ui-frontend
+build-ui-frontend:
+	if [ ${hasYarn} ]; then \
+		cd ${mkfile_dir_main}/ui/frontend; yarn install; NODE_ENV=production yarn build; \
 	fi
 
 .PHONY: docker-ui
 docker-ui:
 	echo "building app"
-	if [ ! -d ${mkfile_dir_main}/build/docker/ui/web ]; then \
-		docker run -v ${mkfile_dir_main}/ui/flutter:/ui  cirrusci/flutter /bin/bash -c "cd /ui && flutter pub get && flutter build web"; \
+	if [ ! -d ${mkfile_dir_main}/build/docker/ui/build ]; then \
+		docker run -v ${mkfile_dir_main}/ui/frontend:/ui chekote/node:14.8.0-alpine /bin/sh -c "cd /ui && yarn install && NODE_ENV=production yarn build"; \
 	fi
 	echo "copying web folder"
-	cp -r ${mkfile_dir_main}/ui/flutter/build/web  ${mkfile_dir_main}/build/docker/ui
+	cp -r ${mkfile_dir_main}/ui/frontend/build  ${mkfile_dir_main}/build/docker/ui
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direktiv-ui ${mkfile_dir_main}/ui/server
 	cp ${mkfile_dir_main}/direktiv-ui  ${mkfile_dir_main}/build/docker/ui
 	echo "building image"
@@ -113,8 +113,8 @@ docker-ui:
 
 
 .PHONY: run-ui
-run-ui: build-ui-flutter
-	go run ./ui/server -bind=':8080' -web-dir='ui/flutter/build/web'
+run-ui: build-ui-frontend
+	go run ./ui/server -bind=':8080' -web-dir='ui/frontend/build'
 
 # run e.g. IP=192.168.0.120 make run-isolate-docker
 # add -e DIREKTIV_ISOLATION=container for container isolation
@@ -131,6 +131,7 @@ run-isolate-docker:
 run:
 	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
+	DIREKTIV_MINIO_SSL=1 \
 	go run cmd/direktiv/main.go -d -t wis -c ${mkfile_dir_main}/build/conf.toml
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto

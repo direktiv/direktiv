@@ -49,6 +49,8 @@ type WorkflowInstance struct {
 	ErrorCode string `json:"errorCode,omitempty"`
 	// ErrorMessage holds the value of the "errorMessage" field.
 	ErrorMessage string `json:"errorMessage,omitempty"`
+	// StateBeginTime holds the value of the "stateBeginTime" field.
+	StateBeginTime time.Time `json:"stateBeginTime,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowInstanceQuery when eager-loading is set.
 	Edges              WorkflowInstanceEdges `json:"edges"`
@@ -100,7 +102,7 @@ func (*WorkflowInstance) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullInt64{}
 		case workflowinstance.FieldInstanceID, workflowinstance.FieldInvokedBy, workflowinstance.FieldStatus, workflowinstance.FieldInput, workflowinstance.FieldOutput, workflowinstance.FieldStateData, workflowinstance.FieldMemory, workflowinstance.FieldErrorCode, workflowinstance.FieldErrorMessage:
 			values[i] = &sql.NullString{}
-		case workflowinstance.FieldBeginTime, workflowinstance.FieldEndTime, workflowinstance.FieldDeadline:
+		case workflowinstance.FieldBeginTime, workflowinstance.FieldEndTime, workflowinstance.FieldDeadline, workflowinstance.FieldStateBeginTime:
 			values[i] = &sql.NullTime{}
 		case workflowinstance.ForeignKeys[0]: // workflow_instances
 			values[i] = &uuid.UUID{}
@@ -218,6 +220,12 @@ func (wi *WorkflowInstance) assignValues(columns []string, values []interface{})
 			} else if value.Valid {
 				wi.ErrorMessage = value.String
 			}
+		case workflowinstance.FieldStateBeginTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field stateBeginTime", values[i])
+			} else if value.Valid {
+				wi.StateBeginTime = value.Time
+			}
 		case workflowinstance.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_instances", values[i])
@@ -292,6 +300,8 @@ func (wi *WorkflowInstance) String() string {
 	builder.WriteString(wi.ErrorCode)
 	builder.WriteString(", errorMessage=")
 	builder.WriteString(wi.ErrorMessage)
+	builder.WriteString(", stateBeginTime=")
+	builder.WriteString(wi.StateBeginTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

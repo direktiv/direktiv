@@ -51,9 +51,7 @@ func main() {
 
 	// Get ...
 	r.HandleFunc("/api/namespaces", gc.namespacesHandler).Methods(http.MethodGet)
-	r.HandleFunc("/api/namespaces", gc.createNamespaceHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.workflowsHandler).Methods(http.MethodGet)
-	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}", gc.getWorkflowHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{namespace}", gc.instancesHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/instances/{namespace}/{workflowID}/{id}", gc.instanceHandler).Methods(http.MethodGet)
@@ -61,9 +59,14 @@ func main() {
 
 	// Post ...
 	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/execute", gc.executeWorkflowHandler).Methods(http.MethodPost)
+	r.HandleFunc("/api/namespaces/{namespace}", gc.createNamespaceHandler).Methods(http.MethodPost)
+	r.HandleFunc("/api/namespaces/{namespace}/workflows", gc.createWorkflowHandler).Methods(http.MethodPost)
+
+	// Delete ...
+	r.HandleFunc("/api/namespaces/{namespace}", gc.deleteNamespaceHandler).Methods(http.MethodDelete)
+	r.HandleFunc("/api/namespaces/{namespace}/workflows/{workflowUID}", gc.deleteWorkflowHandler).Methods(http.MethodDelete)
 
 	// Web Handler
-	// r.Handle("/build/web/", http.StripPrefix("/build/web/", http.FileServer(http.Dir("build/web"))))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(webDir)))
 
 	fmt.Printf(`Starting API Server 

@@ -3,7 +3,7 @@
   env = ["PATH=/sbin:/bin"]
 
 [[program]]
-  args = "minio --config-dir=/tmp --certs-dir=/miniocerts server /data"
+  args = "minio --config-dir=/tmp server /data"
   env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=vorteil", "MINIO_SECRET_KEY=vorteilvorteil"]
 
 [[program]]

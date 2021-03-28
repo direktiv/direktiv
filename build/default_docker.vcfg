@@ -3,16 +3,19 @@
   env = ["PATH=/sbin:/bin"]
 
 [[program]]
-  args = "minio --config-dir=/tmp --certs-dir=/miniocerts server /data"
+  args = "/bin/direktiv-ui"
+
+[[program]]
+  args = "minio --config-dir=/tmp server /data"
   env = ["PATH=/sbin:/bin", "MINIO_ACCESS_KEY=demo", "MINIO_SECRET_KEY=password"]
 
 [[program]]
-  args = "/bin/direktiv -d -t wis -c /etc/conf.toml"
+  args = "/bin/direktiv -d -t wis"
   env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/bin",
-		"DIREKTIV_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
-		"DIREKTIV_SECRETS_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
-		"DIREKTIV_MINIO_USER=demo",
-		"DIREKTIV_MINIO_PASSWORD=password",
+                "DIREKTIV_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
+                "DIREKTIV_SECRETS_DB=host=127.0.0.1 port=5432 user=postgres dbname=direktiv password=postgres sslmode=disable",
+                "DIREKTIV_MINIO_USER=demo",
+                "DIREKTIV_MINIO_PASSWORD=password",
     "DIREKTIV_INGRESS_BIND=0.0.0.0:6666"]
   bootstrap = ["WAIT_PORT if=eth0 9000", "WAIT_PORT if=eth0 5432"]
 
@@ -21,7 +24,7 @@
  privilege = "superuser"
 
 [[network]]
-  https = ["6666", "9000"]
+  https = ["6666", "9000", "8080"]
 
 [vm]
   ram = "1024 MiB"

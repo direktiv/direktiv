@@ -38,21 +38,12 @@ install_cni()
   apk del go
 }
 
-create_certs()
-{
-  openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=AU/ST=Varsity/L=GoldCoast/O=direktiv/CN=direktiv.user" -keyout key.pem -out cert.pem >/dev/null 2>&1
-  mkdir /miniocerts && mv key.pem /miniocerts/private.key && mv cert.pem /miniocerts/public.crt
-  apk del openssl
-}
-
 install_minio()
 {
   wget -O /bin/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+  chmod 755 /bin/minio
 }
-
-apk add ca-certificates iptables ip6tables device-mapper udev make go openssl
 
 install_firecracker
 install_cni
 install_minio
-create_certs

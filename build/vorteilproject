@@ -1,0 +1,8 @@
+ignore = [".vorteilproject"]
+[[target]]
+  name = "default"
+  vcfgs = ["default.vcfg"]
+
+[[target]]
+  name = "ui"
+  vcfgs = ["default.vcfg", "ui.vcfg"]

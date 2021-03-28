@@ -36,5 +36,5 @@
 !*build/docker/flow
 !*build/docker/cli
 !*build/docker/ui
-*build/docker/ui/web
+*build/docker/ui/build
 *build/docker/ui/direktiv-ui
