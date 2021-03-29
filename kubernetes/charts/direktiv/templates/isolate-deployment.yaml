@@ -27,6 +27,20 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
+        {{- if .Values.isolate.minio.local }}
+        - name: minio
+          image: minio/minio
+          args: ["gateway", "s3"]
+          ports:
+            - name: minioui
+              containerPort: 9000
+              protocol: TCP
+          env:
+          - name: MINIO_ROOT_USER
+            value: "AKIATV4J64TTBKYABLML"
+          - name: MINIO_ROOT_PASSWORD
+            value: "kb8oRIL1hhkJwNY2248ncpeDWSpZeGTKCItugUxO"
+        {{- end }}
         - name: isolate
           image: "{{ .Values.registry }}/{{ .Values.isolate.image }}:{{ .Values.isolate.tag | default .Chart.AppVersion }}"
           securityContext:
@@ -53,8 +67,8 @@ spec:
                 key: minioSecretKey
           - name: DIREKTIV_ISOLATION
             value: {{ .Values.isolate.isolation }}
-          - name: DIREKTIV_MINIO_ENDPOINT {{ if .Values.isolate.minioEndpoint }}
-            value: "{{ .Values.isolate.minioEndpoint }}"  {{ else }}
+          - name: DIREKTIV_MINIO_ENDPOINT {{ if .Values.isolate.minio.endpoint }}
+            value: "{{ .Values.isolate.minio.endpoint }}"  {{ else }}
             value: "{{ include "direktiv.fullname" . }}-support:9000" {{ end }}
           - name: DIREKTIV_MINIO_USER
             valueFrom:
