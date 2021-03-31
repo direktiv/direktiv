@@ -50,8 +50,7 @@ const (
 	certDir    = "DIREKTIV_CERTS"
 	certSecure = "DIREKTIV_SECURE"
 
-	isolation  = "DIREKTIV_ISOLATION"
-	grpcHealth = "DIREKTIV_GRPC_HEALTH"
+	isolation = "DIREKTIV_ISOLATION"
 )
 
 // Config is the configuration for workflow and runner server

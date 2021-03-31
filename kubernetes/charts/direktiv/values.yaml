@@ -68,9 +68,9 @@ resources: {}
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -85,23 +85,24 @@ withFlow: true
 withUI: true
 
 db: ""
+debug: "false"
 
 # isolate config
 isolate:
-  image: "vorteil/isolate"
+  image: "gerke74/isolate"
   tag: "latest"
   isolation: "container"
   minio:
     # if minio local it acts as a gateway to S3 storage (AWS)
     local: false
-    cloud: ""
+    cloud: "s3"
     endpoint: ""
     accessKey: "direktiv"
     secretKey: "direktivdirektiv"
 
 # flow config
 flow:
-  image: "vorteil/flow"
+  image: "gerke74/flow"
   tag: "latest"
   secretsImage: "vorteil/secrets"
   secretsTag: "latest"

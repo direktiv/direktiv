@@ -74,7 +74,7 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
 		log.Debugf("append health check to ingress service")
-		healthServer := newHealthServer(s.config, s.isolateServer)
+		healthServer := newHealthServer(s.config, s.isolateServer, s.engine)
 		health.RegisterHealthServer(srv, healthServer)
 		reflection.Register(srv)
 	})
