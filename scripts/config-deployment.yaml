@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-deployment
+  namespace: knative-serving
+
+data:
+    # List of repositories for which tag to digest resolving should be skipped
+    registriesSkippingTagResolving: "kind.local,ko.local,dev.local,localhost:5000"
+
+    # digestResolutionTimeout is the maximum time allowed for an image's
+    # digests to be resolved.
+    digestResolutionTimeout: "10s"
+
+    # ProgressDeadline is the duration we wait for the deployment to
+    # be ready before considering it failed.
+    progressDeadline: "600s"
+
+    # queueSidecarCPURequest is the requests.cpu to set for the queue proxy sidecar container.
+    # If omitted, a default value (currently "25m"), is used.
+    queueSidecarCPURequest: "25m"
+
+    # queueSidecarCPULimit is the limits.cpu to set for the queue proxy sidecar container.
+    # If omitted, no value is specified and the system default is used.
+    queueSidecarCPULimit: "1000m"
+    # queueSidecarMemoryRequest is the requests.memory to set for the queue proxy container.
+    # If omitted, no value is specified and the system default is used.
+    queueSidecarMemoryRequest: "400Mi"
+
+    # queueSidecarMemoryLimit is the limits.memory to set for the queue proxy container.
+    # If omitted, no value is specified and the system default is used.
+    queueSidecarMemoryLimit: "800Mi"
+
+    # queueSidecarEphemeralStorageRequest is the requests.ephemeral-storage to
+    # set for the queue proxy sidecar container.
+    # If omitted, no value is specified and the system default is used.
+    queueSidecarEphemeralStorageRequest: "512Mi"
+
+    # queueSidecarEphemeralStorageLimit is the limits.ephemeral-storage to set
+    # for the queue proxy sidecar container.
+    # If omitted, no value is specified and the system default is used.
+    queueSidecarEphemeralStorageLimit: "1024Mi"
+    queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:5481fae4ac4973bffb0d8c455a05f0e6c514cea7976d3add8f24081ab479e0b5

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/vorteil/direktiv/pkg/isolate"
 	"google.golang.org/grpc"
@@ -13,6 +14,12 @@ func main() {
 
 	var err error
 	connString := "127.0.0.1:8888"
+
+	if len(os.Args) > 1 {
+		connString = os.Args[1]
+	}
+
+	fmt.Printf("connecting to %s", connString)
 
 	conn, err := grpc.Dial(connString, grpc.WithInsecure())
 	if err != nil {

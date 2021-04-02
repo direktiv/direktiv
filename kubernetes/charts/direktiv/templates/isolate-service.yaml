@@ -6,6 +6,7 @@ metadata:
   labels:
     {{- include "direktiv.labelsIsolate" . | nindent 4 }}
 spec:
+  type: {{ .Values.isolate.portType }}
   ports:
     - port: 8888
       protocol: TCP

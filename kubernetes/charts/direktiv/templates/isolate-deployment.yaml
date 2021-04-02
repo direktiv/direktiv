@@ -30,14 +30,12 @@ spec:
         {{- if .Values.isolate.minio.local }}
         - name: minio
           image: minio/minio
-          args: ["gateway", "{{ .Values.isolate.minio.cloud }}"]
+          args: ["{{ .Values.isolate.minio.type }}", "{{ .Values.isolate.minio.arg }}"]
           ports:
             - name: minioui
               containerPort: 9000
               protocol: TCP
           env:
-          - name: DIREKTIV_DEBUG
-            value: "{{.Values.debug }}"
           - name: MINIO_ROOT_USER
             valueFrom:
               secretKeyRef:
@@ -64,8 +62,15 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
           env:
+          - name: DIREKTIV_DEBUG
+            value: "{{.Values.debug }}"
           - name: DIREKTIV_ISOLATE_BIND
             value: "0.0.0.0:8888"
+          - name: DIREKTIV_ISOLATE_ENCRYPT
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: db
           - name: DIREKTIV_DB
             valueFrom:
               secretKeyRef:
@@ -79,14 +84,12 @@ spec:
           - name: DIREKTIV_ISOLATION
             value: {{ .Values.isolate.isolation }}
           - name: DIREKTIV_MINIO_ENDPOINT
-            {{- with .Values.isolate }}
-            {{- if .minio.endpoint }}
-            value: "{{ .minio.endpoint }}"
-            {{- else if .minio.local }}
+            {{- if .Values.isolate.minio.endpoint }}
+            value: "{{ .Values.isolate.minio.endpoint }}"
+            {{- else if .Values.isolate.minio.local }}
             value: "127.0.0.1:9000"
             {{- else }}
             value: "{{ include "direktiv.fullname" . }}-support:9000"
-            {{- end }}
             {{- end }}
           - name: DIREKTIV_MINIO_USER
             valueFrom:

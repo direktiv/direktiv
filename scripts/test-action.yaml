@@ -1,0 +1,20 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: multi-container
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - image: localhost:5000/demo-action
+      - image: localhost:5000/sidecar
+        ports:
+          - containerPort: 8889
+        volumeMounts:
+          - name: exchange
+            mountPath: /var/secret
+      volumes:
+        - name: exchange # needs to be based on env variable!!!
+          secret:
+            secretName: direktiv-isolate

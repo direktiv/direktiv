@@ -80,6 +80,11 @@ docker-cli: build-cli
 		cp ${mkfile_dir_main}/direkcli  ${mkfile_dir_main}/build/
 		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
+.PHONY: docker-sidecar
+docker-sidecar:
+	docker build -t sidecar -f ${mkfile_dir_main}/build/docker/sidecar/Dockerfile ${mkfile_dir_main}
+
+
 .PHONY: build
 build:
 	go get entgo.io/ent

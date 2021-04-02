@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/vorteil/direktiv/pkg/health"
-	"github.com/vorteil/direktiv/pkg/isolate"
 )
 
 type healthServer struct {
@@ -38,38 +37,38 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 
 	if hs.isolateServer != nil {
 
-		log.Debugf("running isolate health check")
-
-		dummy := ""
-		img := "vorteil/debug:v1"
-		var s int32
-
-		actionID := "testAction"
-		instanceID := "testInstance"
-
-		data := `{}`
-		cmd := "/debug"
-
-		ir := &isolate.RunIsolateRequest{
-			ActionId:   &actionID,
-			Namespace:  &dummy,
-			InstanceId: &instanceID,
-			Image:      &img,
-			Size:       &s,
-			Data:       []byte(data),
-			Command:    &cmd,
-		}
-
-		err := hs.isolateServer.runAction(ir, true)
-		if err != nil {
-			log.Errorf("health check failed: %v", err)
-			resp.Status = health.HealthCheckResponse_NOT_SERVING
-		}
+		// log.Debugf("running isolate health check")
+		//
+		// dummy := ""
+		// img := "vorteil/debug:v1"
+		// var s int32
+		//
+		// actionID := "testAction"
+		// instanceID := "testInstance"
+		//
+		// data := `{}`
+		// cmd := "/debug"
+		//
+		// ir := &isolate.RunIsolateRequest{
+		// 	ActionId:   &actionID,
+		// 	Namespace:  &dummy,
+		// 	InstanceId: &instanceID,
+		// 	Image:      &img,
+		// 	Size:       &s,
+		// 	Data:       []byte(data),
+		// 	Command:    &cmd,
+		// }
+		//
+		// err := hs.isolateServer.runAction(ir, true)
+		// if err != nil {
+		// 	log.Errorf("health check failed: %v", err)
+		// 	resp.Status = health.HealthCheckResponse_NOT_SERVING
+		// }
 
 	}
 
 	if hs.engine != nil {
-		log.Debugf("running flow health check")
+		// log.Debugf("running flow health check")
 	}
 
 	log.Debugf("running health check executed")

@@ -5,9 +5,11 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -359,7 +361,7 @@ func (is *isolateServer) start(s *WorkflowServer) error {
 	is.grpcConn = conn
 	is.flowClient = flow.NewDirektivFlowClient(conn)
 
-	log.Infof("isolate runner started")
+	log.Infof("isolate started")
 
 	return nil
 }
@@ -613,17 +615,131 @@ func (is *isolateServer) RunIsolate(ctx context.Context, in *isolate.RunIsolateR
 
 	var resp emptypb.Empty
 
-	if len(in.GetNamespace()) == 0 || len(in.GetImage()) == 0 {
-		log.Errorf("namespace or image not provided")
-		return &resp, fmt.Errorf("no namespace or image")
+	// type ReportActionResultsRequest struct {
+	// 	state         protoimpl.MessageState
+	// 	sizeCache     protoimpl.SizeCache
+	// 	unknownFields protoimpl.UnknownFields
+	//
+	// 	InstanceId   *string `protobuf:"bytes,1,opt,name=instanceId,proto3,oneof" json:"instanceId,omitempty"`
+	// 	Step         *int32  `protobuf:"varint,2,opt,name=step,proto3,oneof" json:"step,omitempty"`
+	// 	ActionId     *string `protobuf:"bytes,3,opt,name=actionId,proto3,oneof" json:"actionId,omitempty"`
+	// 	ErrorCode    *string `protobuf:"bytes,4,opt,name=errorCode,proto3,oneof" json:"errorCode,omitempty"`
+	// 	ErrorMessage *string `protobuf:"bytes,5,opt,name=errorMessage,proto3,oneof" json:"errorMessage,omitempty"`
+	// 	Output       []byte  `protobuf:"bytes,6,opt,name=output,proto3,oneof" json:"output,omitempty"`
+	// }
+
+	// jens
+	// encrypt instanceid, step, actionid
+
+	log.Infof("TRY IT")
+
+	localCertFile := "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+
+	// read token
+	token, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+	if err != nil {
+		log.Errorf("%v", err)
 	}
 
-	if len(in.GetActionId()) == 0 {
-		log.Errorf("isolateID not provided")
-		return &resp, fmt.Errorf("isolateID empty")
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
 	}
 
-	go is.runAction(in, false)
+	certs, err := ioutil.ReadFile(localCertFile)
+	if err != nil {
+		log.Errorf("Failed to append %q to RootCAs: %v", localCertFile, err)
+	}
+
+	if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+		log.Println("No certs appended, using system certs only")
+	}
+
+	// Trust the augmented cert pool in our client
+	config := &tls.Config{
+		// InsecureSkipVerify: flas,
+		RootCAs: rootCAs,
+	}
+	tr := &http.Transport{TLSClientConfig: config}
+	client := &http.Client{Transport: tr}
+
+	data := `{
+  "apiVersion": "serving.knative.dev/v1",
+  "kind": "Service",
+  "metadata": {
+    "name": "helloworld-go",
+    "namespace": "default"
+  },
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "image": "docker.io/gerke74/helloworld-go",
+            "env": [
+              {
+                "name": "TARGET",
+                "value": "Go Sample v1"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}`
+
+	req, err := http.NewRequest(http.MethodPost, "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services", bytes.NewBufferString(data))
+	if err != nil {
+		log.Errorf("%v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	log.Debugf("RR %v", client)
+	// resp1, err := client.Do(req)
+	// if err != nil {
+	// 	log.Errorf("%v", err)
+	// }
+	// log.Infof(">>> %v", resp1)
+
+	// curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" -H "Content-Type: application/json" -H "Accept: application/json" https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services -XPOST -d '{
+	//   "apiVersion": "serving.knative.dev/v1",
+	//   "kind": "Service",
+	//   "metadata": {
+	//     "name": "helloworld-go",
+	//     "namespace": "default"
+	//   },
+	//   "spec": {
+	//     "template": {
+	//       "spec": {
+	//         "containers": [
+	//           {
+	//             "image": "docker.io/gerke74/helloworld-go",
+	//             "env": [
+	//               {
+	//                 "name": "TARGET",
+	//                 "value": "Go Sample v1"
+	//               }
+	//             ]
+	//           }
+	//         ]
+	//       }
+	//     }
+	//   }
+	// }'
+
+	// if len(in.GetNamespace()) == 0 || len(in.GetImage()) == 0 {
+	// 	log.Errorf("namespace or image not provided")
+	// 	return &resp, fmt.Errorf("no namespace or image")
+	// }
+	//
+	// if len(in.GetActionId()) == 0 {
+	// 	log.Errorf("isolateID not provided")
+	// 	return &resp, fmt.Errorf("isolateID empty")
+	// }
+	//
+	// go is.runAction(in, false)
 
 	return &resp, nil
 

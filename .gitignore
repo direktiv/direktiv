@@ -36,6 +36,7 @@
 !*build/docker/flow
 !*build/docker/cli
 !*build/docker/ui
+!*build/docker/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
 debug.yaml

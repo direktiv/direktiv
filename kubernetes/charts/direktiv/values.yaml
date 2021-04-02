@@ -89,8 +89,10 @@ debug: "false"
 
 # isolate config
 isolate:
-  image: "gerke74/isolate"
+  image: "gerke74/jens"
   tag: "latest"
+  portType: "ClusterIP"
+  exchange: "checkMe" # sidecar to check for legit request (simple)
   isolation: "container"
   minio:
     # if minio local it acts as a gateway to S3 storage (AWS)
