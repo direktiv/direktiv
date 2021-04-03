@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: multi-container
+  name: test-10105319230591849704
   namespace: default
 spec:
   template:

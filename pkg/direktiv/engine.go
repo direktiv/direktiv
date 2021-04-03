@@ -1,11 +1,14 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
@@ -20,10 +23,10 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/isolate"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -52,8 +55,8 @@ type workflowEngine struct {
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
 
-	flowClient    flow.DirektivFlowClient
-	isolateClient isolate.DirektivIsolateClient
+	flowClient flow.DirektivFlowClient
+
 	secretsClient secrets.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
 	grpcConns     []*grpc.ClientConn
@@ -113,14 +116,6 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.grpcConns = append(we.grpcConns, conn)
 
 	we.flowClient = flow.NewDirektivFlowClient(conn)
-
-	// get isolate client
-	conn, err = getEndpointTLS(s.config, isolateComponent, s.config.IsolateAPI.Endpoint)
-	if err != nil {
-		return nil, err
-	}
-	we.grpcConns = append(we.grpcConns, conn)
-	we.isolateClient = isolate.NewDirektivIsolateClient(conn)
 
 	// get secrets client
 	conn, err = getEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
@@ -257,31 +252,72 @@ type actionResultMessage struct {
 	Payload    actionResultPayload
 }
 
-func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
+func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest) error {
 
 	// TODO: should this ctx be modified with a shorter deadline?
 
-	var step int32
-	step = int32(ar.Workflow.Step)
+	// generate hash name as "url"
+	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace, ar.Container.Image,
+		ar.Container.Cmd), hash.FormatV2, nil)
+	if err != nil {
+		return err
+	}
 
-	var timeout int64
-	timeout = int64(ar.Workflow.Timeout)
+	// calculate address
+	addr := "http://test-10105319230591849704.default.192.168.0.27.xip.io"
 
-	_, err := we.isolateClient.RunIsolate(ctx, &isolate.RunIsolateRequest{
-		ActionId:   &ar.ActionID,
-		Namespace:  &ar.Workflow.Namespace,
-		InstanceId: &ar.Workflow.InstanceID,
-		Step:       &step,
-		Timeout:    &timeout,
-		Image:      &ar.Container.Image,
-		Command:    &ar.Container.Cmd,
-		Size:       &ar.Container.Size,
-		Data:       ar.Container.Data,
-		Registries: ar.Container.Registries,
-	})
+	// get exchange key
+	exchangeKey := "checkMe"
+	responseAddr := "192.168.0.27:7777"
+
+	log.Infof(">>>>>> jens %d", actionHash)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
+		bytes.NewReader(ar.Container.Data))
+	if err != nil {
+		return err
+	}
+
+	// add headers
+	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+	req.Header.Add(DirektivPingAddrHeader, addr)
+	req.Header.Add(DirektivExchangeKeyHeader, exchangeKey)
+	req.Header.Add(DirektivResponseHeader, responseAddr)
+	req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Timeout)))
+	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Step)))
+	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Step)))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return NewInternalError(err)
 	}
+
+	if resp.StatusCode != 200 {
+		return NewInternalError(fmt.Errorf("action error status: %d",
+			resp.StatusCode))
+	}
+
+	b, _ := ioutil.ReadAll(resp.Body)
+
+	log.Infof(">>> %v", string(b))
+	// _, err := we.isolateClient.RunIsolate(ctx, &isolate.RunIsolateRequest{
+	// 	ActionId:   &ar.ActionID,
+	// 	Namespace:  &ar.Workflow.Namespace,
+	// 	InstanceId: &ar.Workflow.InstanceID,
+	// 	Step:       &step,
+	// 	Timeout:    &timeout,
+	// 	Data:       ar.Data,
+	// })
+	//
+	// if err != nil {
+	// 	return NewInternalError(err)
+	// }
 
 	return nil
 

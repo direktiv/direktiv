@@ -16,7 +16,6 @@ import (
 
 const (
 	ingressComponent string = "ingress"
-	isolateComponent string = "isolate"
 	flowComponent    string = "flow"
 	secretsComponent string = "secrets"
 	healthComponent  string = "health"

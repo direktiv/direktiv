@@ -167,51 +167,35 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			}
 
 			var fn *model.FunctionDefinition
-
 			fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
 			if err != nil {
 				err = NewInternalError(err)
 				return
 			}
 
-			ar := new(isolateRequest)
+			ar := new(actionRequest)
 			ar.ActionID = uid.String()
 			ar.Workflow.InstanceID = instance.id
 			ar.Workflow.Namespace = instance.namespace
 			ar.Workflow.State = sl.state.GetID()
 			ar.Workflow.Step = instance.step
-			ar.Container.Image = fn.Image
-			ar.Container.Cmd = fn.Cmd
-			ar.Container.Size = int32(fn.Size)
+			ar.Workflow.Name = instance.wf.Name
 
 			// TODO: timeout
 			ar.Container.Data = inputData
-			ar.Container.Registries = make(map[string]string)
-
-			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
-				instance.engine.secretsClient, instance.namespace)
-			if err != nil {
-				return
-			}
+			ar.Container.Image = fn.Image
+			ar.Container.Cmd = fn.Cmd
 
 			if sl.state.Async {
 
 				instance.Log("Running function '%s' in fire-and-forget mode (async).", fn.ID)
 
-				go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
+				go func(ctx context.Context, instance *workflowLogicInstance, ar *actionRequest) {
 
 					ar.Workflow.InstanceID = ""
 					ar.Workflow.Namespace = ""
 					ar.Workflow.State = ""
 					ar.Workflow.Step = 0
-
-					// get registries
-					ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
-						instance.engine.secretsClient, instance.namespace)
-					if err != nil {
-						return
-					}
 
 					err = instance.engine.doActionRequest(ctx, ar)
 					if err != nil {

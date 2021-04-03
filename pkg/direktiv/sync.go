@@ -83,7 +83,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 				case disableTimerSync:
 					s.tmManager.syncTimerDisable(req.ID.(string))
 				case cancelIsolate:
-					s.isolateServer.finishCancelIsolate(req.ID.(string))
+					// s.isolateServer.finishCancelIsolate(req.ID.(string))
 				case cancelSubflow:
 					s.engine.finishCancelSubflow(req.ID.(string))
 				}

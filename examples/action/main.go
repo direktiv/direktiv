@@ -8,15 +8,12 @@ import (
 	"strings"
 )
 
-type DirektivResponse struct {
-	ErrorCode    string      `json:"errorCode"`
-	ErrorMessage string      `json:"errorMessage"`
-	Data         interface{} `json:"data"`
-}
-
-type Data struct {
-	Jens string
-}
+// ActionResponse is the structure to return from actions
+// type ActionResponse struct {
+// 	ErrorCode    string      `json:"errorCode"`
+// 	ErrorMessage string      `json:"errorMessage"`
+// 	Data         interface{} `json:"data"`
+// }
 
 func main() {
 
@@ -29,50 +26,68 @@ func main() {
 
 func helloServer(w http.ResponseWriter, r *http.Request) {
 
-	h := r.Header.Get("Direktiv-ActionID")
+	w.Header().Add("Direktiv-ErrorCode", "com.request.error")
 
-	fmt.Printf("METHIOD %v\n", r.Method)
-	fmt.Printf("CL %v\n", r.ContentLength)
-
-	if len(h) > 0 {
-		// file, err := os.OpenFile(fmt.Sprintf("/var/log/%s.log", h), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-		// if err != nil {
-		// 	fmt.Printf("ERR1 %v\n", err)
-		// }
-		// log.SetOutput(file)
+	aid := r.Header.Get("Direktiv-ActionID")
+	if len(aid) == 0 {
+		w.Header().Add("Direktiv-ErrorMessage", "action id missing")
+		return
 	}
 
-	fmt.Printf("AIDF %v\n", h)
-
-	data, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	in, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("ERR2 %v\n", err)
+		txt := fmt.Sprintf("error reading body: %v", err)
+		log(aid, txt)
+		w.Header().Add("Direktiv-ErrorMessage", txt)
 	}
-	fmt.Printf("Data %v\n", string(data))
 
-	var f DirektivResponse
-	var g Data
-	g.Jens = string(data)
-	f.Data = g
-	b, err := json.MarshalIndent(f, "", "\t")
+	m := make(map[string]string)
+	err = json.Unmarshal(in, &m)
 	if err != nil {
-		fmt.Printf("ERR3 %v\n", err)
+		txt := fmt.Sprintf("error reading body: %v", err)
+		log(aid, txt)
+		w.Header().Add("Direktiv-ErrorMessage", txt)
 	}
 
-	logGet(h, "This Is MY GET Log")
-	logPost(h, "This Is MY POST Log")
+	resp, err := http.Get(m["url"])
+	if err != nil {
+		txt := fmt.Sprintf("error get request: %v", err)
+		log(aid, txt)
+		w.Header().Add("Direktiv-ErrorMessage", txt)
+	}
 
-	// time.Sleep(20 * time.Second)
-	fmt.Fprintf(w, string(b))
+	defer resp.Body.Close()
+	in, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		txt := fmt.Sprintf("error get request body: %v", err)
+		log(aid, txt)
+		w.Header().Add("Direktiv-ErrorMessage", txt)
+	}
+
+	if len(w.Header().Get("Direktiv-ErrorMessage")) == 0 {
+
+		if err != nil {
+			txt := fmt.Sprintf("error unmarshal: %v %v, %v", err, m["url"], string(in))
+			log(aid, txt)
+			w.Header().Add("Direktiv-ErrorMessage", txt)
+		} else {
+			w.Write(in)
+			w.Header().Del("Direktiv-ErrorMessage")
+			w.Header().Del("Direktiv-ErrorCode")
+		}
+
+	}
 
 }
 
-func logGet(aid, l string) {
-	_, err := http.Get(fmt.Sprintf("http://localhost:8889/log?log=%s&aid=%s", l, aid))
-	fmt.Printf("DO GET %v", err)
-}
+// const (
+// 	LvlCrit Lvl = iota
+// 	LvlError
+// 	LvlWarn
+// 	LvlInfo
+// 	LvlDebug
 
-func logPost(aid, l string) {
-	_, err := http.Post(fmt.Sprintf("http://localhost:8889/log?aid=%s", aid), "plain/text", strings.NewReader(l))
-	fmt.Printf("DO POST %v", err)
+func log(aid, l string) {
+	http.Post(fmt.Sprintf("http://localhost:8889/log?aid=%s", aid), "plain/text", strings.NewReader(l))
 }

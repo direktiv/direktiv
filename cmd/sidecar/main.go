@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -17,9 +18,12 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
+	"google.golang.org/grpc"
+
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	dlog "github.com/vorteil/direktiv/pkg/dlog"
 	dblog "github.com/vorteil/direktiv/pkg/dlog/db"
+	"github.com/vorteil/direktiv/pkg/flow"
 )
 
 const (
@@ -107,11 +111,6 @@ func setupLogging() (*dblog.Logger, error) {
 
 }
 
-func (d *direktivHTTPHandler) handleLog(aid, data string) {
-	// d.requests[vals[direktiv.DirektivActionIDHeader]].logger
-	log.Infof("%s", data)
-}
-
 func (d *direktivHTTPHandler) postLog(ctx *fasthttp.RequestCtx) {
 
 	aid := ctx.QueryArgs().Peek("aid")
@@ -164,21 +163,15 @@ func checkHeader(ctx *fasthttp.RequestCtx, hdr string) (string, error) {
 // response if required
 func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 
-	// ! Namespace  *string           `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
-	// ! InstanceId *string           `protobuf:"bytes,2,opt,name=instanceId,proto3,oneof" json:"instanceId,omitempty"`
-	// ! Step       *int32            `protobuf:"varint,3,opt,name=step,proto3,oneof" json:"step,omitempty"`
-	// ! Timeout    *int64            `protobuf:"varint,4,opt,name=timeout,proto3,oneof" json:"timeout,omitempty"`
-	// ! ActionId   *string           `protobuf:"bytes,5,opt,name=actionId,proto3,oneof" json:"actionId,omitempty"`
-	// Image      *string           `protobuf:"bytes,6,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	// Command    *string           `protobuf:"bytes,7,opt,name=command,proto3,oneof" json:"command,omitempty"`
-	// ! Data       []byte            `protobuf:"bytes,8,opt,name=data,proto3,oneof" json:"data,omitempty"`
-	// Registries map[string]string `protobuf:"bytes,9,rep,name=registries,proto3" json:"registries,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Size       *int32            `protobuf:"varint,10,opt,name=size,proto3,oneof" json:"size,omitempty"`
-
 	// headers to check for
 	hdrs := []string{direktiv.DirektivExchangeKeyHeader,
 		direktiv.DirektivActionIDHeader,
-		direktiv.DirektivPingAddrHeader}
+		direktiv.DirektivPingAddrHeader,
+		direktiv.DirektivInstanceIDHeader,
+		direktiv.DirektivTimeoutHeader,
+		direktiv.DirektivStepHeader,
+		direktiv.DirektivResponseHeader,
+	}
 
 	// map with values of the headers
 	vals := make(map[string]string)
@@ -199,14 +192,17 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	// setup local ping
-	if len(d.pingAddr) == 0 {
-		d.pingAddr = vals[direktiv.DirektivPingAddrHeader]
+	// step needs to be in right format
+	step, err := strconv.ParseInt(vals[direktiv.DirektivStepHeader], 10, 64)
+	if err != nil {
+		generateError(ctx, direktiv.ServiceErrorInternal,
+			fmt.Sprintf("header incorrect: %s", err.Error()))
+		return
 	}
 
-	// disable ping
-	if d.pingAddr == "noping" {
-		d.pingAddr = ""
+	// disable/enable ping
+	if len(d.pingAddr) == 0 {
+		d.pingAddr = vals[direktiv.DirektivPingAddrHeader]
 	}
 
 	log15log, err := d.dbLog.LoggerFunc("namespace", "instanceId")
@@ -214,6 +210,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		log.Errorf("can not setup logger: %v", err)
 	}
 
+	// add to request manager
 	d.mtx.Lock()
 	d.requests[vals[direktiv.DirektivActionIDHeader]] = &direktivHTTPRequest{
 		ctx:    ctx,
@@ -231,6 +228,8 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 	}()
 
 	log.Infof("handle request %s", vals[direktiv.DirektivActionIDHeader])
+
+	// FROM HERE WE NEED TO RESPOND VIA GRPC
 
 	// forward request
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
@@ -257,16 +256,16 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 	f, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
+		// TODO we need to respond to flow
 		generateError(ctx, direktiv.ServiceErrorIO,
 			fmt.Sprintf("read response body: %s", err.Error()))
 		return
 	}
 
 	// respond to service
-	fmt.Println("RESPOND WITH DATA!!!")
-	fmt.Println(string(f))
-
-	fmt.Fprintf(ctx, string(f))
+	respondToFlow(resp, vals[direktiv.DirektivInstanceIDHeader],
+		vals[direktiv.DirektivActionIDHeader], int32(step), f)
+	fmt.Fprintf(ctx, "ok")
 
 }
 
@@ -279,6 +278,71 @@ func (d *direktivHTTPHandler) pingMe() {
 			_, err := http.Get(fmt.Sprintf("%s/ping", d.pingAddr))
 			log.Debugf("ping %s: %v", fmt.Sprintf("%s/ping", d.pingAddr), err)
 		}
+	}
+
+}
+
+func respondToFlow(resp *http.Response, iid, aid string, step int32, data []byte) {
+
+	ec := direktiv.ServiceErrorImage
+	em := ""
+
+	r := &flow.ReportActionResultsRequest{
+		InstanceId: &iid,
+		Step:       &step,
+		ActionId:   &aid,
+		Output:     data,
+	}
+
+	// do we have error headers
+	if resp.Header.Get(direktiv.DirektivErrorCodeHeader) != "" {
+		ec = resp.Header.Get(direktiv.DirektivErrorCodeHeader)
+		r.ErrorCode = &ec
+
+		em = resp.Header.Get(direktiv.DirektivErrorMessageHeader)
+		r.ErrorMessage = &em
+	}
+
+	// var resp direktiv.ServiceResponse
+	// err := json.Unmarshal(data, &resp)
+	// if err != nil {
+	// 	// if error we can return internal errors
+	// 	// because the container returned rubbish
+	// 	r.ErrorCode = &ec
+	//
+	// 	em := err.Error()
+	// 	r.ErrorMessage = &em
+	// }
+
+	// if the container reports an error we return that too
+	// if len(resp.ErrorMessage) > 0 {
+	// 	r.ErrorCode = &resp.ErrorCode
+	// 	r.ErrorMessage = &resp.ErrorMessage
+	// }
+
+	// b, err := json.Marshal(resp.Data)
+
+	// // we set output in any case
+	// r.Output = b
+	//
+	// // but if it is not json we report an error
+	// if err != nil {
+	// 	r.ErrorCode = &ec
+	// 	em := err.Error()
+	// 	r.ErrorMessage = &em
+	// }
+
+	conn, err := grpc.Dial("localhost:7777", grpc.WithInsecure())
+	if err != nil {
+		log.Errorf("can not connect to flow: %v", err)
+		return
+	}
+	flowClient := flow.NewDirektivFlowClient(conn)
+
+	_, err = flowClient.ReportActionResults(context.Background(), r)
+	if err != nil {
+		log.Errorf("can not respond to flow: %v", err)
+		return
 	}
 
 }

@@ -37,10 +37,9 @@ type WorkflowServer struct {
 	config     *Config
 	serverType string
 
-	dbManager     *dbManager
-	tmManager     *timerManager
-	engine        *workflowEngine
-	isolateServer *isolateServer
+	dbManager *dbManager
+	tmManager *timerManager
+	engine    *workflowEngine
 
 	LifeLine       chan bool
 	instanceLogger dlog.Log
@@ -133,15 +132,6 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 			return nil, err
 		}
 		s.dbManager.tm = s.tmManager
-	}
-
-	if s.runsComponent(runsIsolates) {
-		is, err := newIsolateManager(s.config, s.dbManager, &s.instanceLogger)
-		if err != nil {
-			return nil, err
-		}
-		s.isolateServer = is
-		s.components[isolateComponent] = is
 	}
 
 	if s.runsComponent(runsSecrets) {
