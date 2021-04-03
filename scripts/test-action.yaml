@@ -15,6 +15,6 @@ spec:
           - name: exchange
             mountPath: /var/secret
       volumes:
-        - name: exchange # needs to be based on env variable!!!
+        - name: exchange
           secret:
             secretName: direktiv-isolate

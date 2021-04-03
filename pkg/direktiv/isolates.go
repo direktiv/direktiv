@@ -43,6 +43,30 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// headers used in knative containers
+const (
+	DirektivActionIDHeader    = "Direktiv-ActionID"
+	DirektivExchangeKeyHeader = "Direktiv-ExchangeKey"
+	DirektivPingAddrHeader    = "Direktiv-PingAddr"
+)
+
+// internal error codes for knative services
+const (
+	ServiceResponseNoError = ""
+	ServiceErrorInternal   = "au.com.direktiv.error.internal"
+	ServiceErrorImage      = "au.com.direktiv.error.image"
+	ServiceErrorNetwork    = "au.com.direktiv.error.network"
+	ServiceErrorIO         = "au.com.direktiv.error.io"
+)
+
+// ServiceResponse is the response structure for internal knative services
+type ServiceResponse struct {
+	ErrorCode    string      `json:"errorCode"`
+	ErrorMessage string      `json:"errorMessage"`
+	Data         interface{} `json:"data"`
+}
+
+// ------------------------------------------------------
 type contextIsolateKey string
 
 const (
@@ -53,14 +77,6 @@ const (
 	isolateCtxID contextIsolateKey = "isolateCtxID"
 
 	maxWaitSeconds = 1800
-)
-
-const (
-	noError       = ""
-	errorInternal = "au.com.direktiv.error.internal"
-	errorImage    = "au.com.direktiv.error.image"
-	errorNetwork  = "au.com.direktiv.error.network"
-	errorIO       = "au.com.direktiv.error.io"
 )
 
 const (
@@ -445,13 +461,13 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 
 	disk, err := is.fileCache.getImage(img, cmd, in.Registries)
 	if err != nil {
-		return data, serr(err, errorImage)
+		return data, serr(err, ServiceErrorImage)
 	}
 
 	// prepare cni networking
 	nws, err := is.setupNetworkForVM(isolateID)
 	if err != nil {
-		return data, serr(err, errorNetwork)
+		return data, serr(err, ServiceErrorNetwork)
 	}
 
 	defer func() {
@@ -461,7 +477,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 	// build data disk to attach
 	dataDisk, err := is.buildDataDisk(isolateID, in.Data, nws)
 	if err != nil {
-		return data, serr(err, errorIO)
+		return data, serr(err, ServiceErrorIO)
 	}
 	defer func() {
 		go os.Remove(dataDisk)
@@ -473,7 +489,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 
 	err = is.runFirecracker(ctxs, isolateID, disk, dataDisk, in.GetSize())
 	if err != nil {
-		return data, serr(err, errorInternal)
+		return data, serr(err, ServiceErrorInternal)
 	}
 
 	log.Debugf("firecracker finished")
@@ -481,7 +497,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 	// successful, so get the logs & results
 	dimg, err := vdecompiler.Open(dataDisk)
 	if err != nil {
-		return data, serr(err, errorIO)
+		return data, serr(err, ServiceErrorIO)
 	}
 
 	readFileFromDisk := func(disk *vdecompiler.IO, file string, d *[]byte) error {
@@ -522,7 +538,7 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 
 	err = readFileFromDisk(dimg, "/error.json", &din)
 	if err != nil {
-		return data, serr(err, errorIO)
+		return data, serr(err, ServiceErrorIO)
 	}
 
 	if len(din) > 0 {
@@ -531,8 +547,8 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 		err := json.Unmarshal(din, &ae)
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
-			is.respondToAction(serr(fmt.Errorf("%w; %s", err, string(din)), errorIO), data, in)
-			return data, serr(fmt.Errorf("%w; %s", err, string(din)), errorIO)
+			is.respondToAction(serr(fmt.Errorf("%w; %s", err, string(din)), ServiceErrorIO), data, in)
+			return data, serr(fmt.Errorf("%w; %s", err, string(din)), ServiceErrorIO)
 		}
 
 		log15log.Error(ae.ErrorMessage)
@@ -544,8 +560,8 @@ func (is *isolateServer) runAsFirecracker(img, cmd, isolateID string,
 	err = readFileFromDisk(dimg, "/data.out", &data)
 	if err != nil {
 		log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
-		is.respondToAction(serr(err, errorIO), data, in)
-		return data, serr(err, errorIO)
+		is.respondToAction(serr(err, ServiceErrorIO), data, in)
+		return data, serr(err, ServiceErrorIO)
 	}
 
 	maxlen := math.Min(256, float64(len(data)))

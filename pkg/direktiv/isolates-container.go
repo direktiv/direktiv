@@ -91,18 +91,18 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	// create data-dir
 	dir, err := ioutil.TempDir(os.TempDir(), in.GetActionId())
 	if err != nil {
-		return data, serr(err, errorImage)
+		return data, serr(err, ServiceErrorImage)
 	}
 
 	log.Debugf("container data-dir: %v", dir)
 
 	stdout, err := ioutil.TempFile("", "stdout")
 	if err != nil {
-		return data, serr(err, errorInternal)
+		return data, serr(err, ServiceErrorInternal)
 	}
 	stderr, err := ioutil.TempFile("", "stderr")
 	if err != nil {
-		return data, serr(err, errorInternal)
+		return data, serr(err, ServiceErrorInternal)
 	}
 
 	defer func() {
@@ -118,7 +118,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	err = ioutil.WriteFile(filepath.Join(dir, direktivData), in.GetData(), 0755)
 	if err != nil {
 		log.Errorf("can not write direktiv data for container: %v", err)
-		return data, serr(err, errorInternal)
+		return data, serr(err, ServiceErrorInternal)
 	}
 
 	ctxs := is.addCtx(in.Timeout, isolateID)
@@ -164,7 +164,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	err = podman.Start()
 	if err != nil {
 		log.Errorf("error starting container: %v", err)
-		return data, serr(err, errorInternal)
+		return data, serr(err, ServiceErrorInternal)
 	}
 
 	err = podman.Wait()
@@ -175,7 +175,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 
 	if err != nil {
 		log.Errorf("error executing container: %v", err)
-		return data, serr(err, errorInternal)
+		return data, serr(err, ServiceErrorInternal)
 	}
 
 	// log output
@@ -199,14 +199,14 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 
 		din, err = ioutil.ReadFile(filepath.Join(dir, "error.json"))
 		if err != nil {
-			is.respondToAction(serr(err, errorIO), data, in)
-			return data, serr(err, errorIO)
+			is.respondToAction(serr(err, ServiceErrorIO), data, in)
+			return data, serr(err, ServiceErrorIO)
 		}
 
 		err := json.Unmarshal(din, &ae)
 		if err != nil {
 			log15log.Error(fmt.Sprintf("error parsing error file: %v", err))
-			return data, serr(fmt.Errorf("%w; %s", err, string(din)), errorIO)
+			return data, serr(fmt.Errorf("%w; %s", err, string(din)), ServiceErrorIO)
 		}
 
 		log15log.Error(ae.ErrorMessage)
@@ -217,7 +217,7 @@ func (is *isolateServer) runAsContainer(img, cmd, isolateID string, in *isolate.
 	data, err = ioutil.ReadFile(filepath.Join(dir, "data.out"))
 	if err != nil {
 		log15log.Error(fmt.Sprintf("error parsing data file: %v", err))
-		return data, serr(err, errorIO)
+		return data, serr(err, ServiceErrorIO)
 	}
 
 	maxlen := math.Min(256, float64(len(data)))

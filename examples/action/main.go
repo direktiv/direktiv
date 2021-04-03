@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type DirektivResponse struct {
@@ -28,7 +29,7 @@ func main() {
 
 func helloServer(w http.ResponseWriter, r *http.Request) {
 
-	h := r.Header.Get("aid")
+	h := r.Header.Get("Direktiv-ActionID")
 
 	fmt.Printf("METHIOD %v\n", r.Method)
 	fmt.Printf("CL %v\n", r.ContentLength)
@@ -43,7 +44,7 @@ func helloServer(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("AIDF %v\n", h)
 
-	data, err := io.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("ERR2 %v\n", err)
 	}
@@ -57,6 +58,21 @@ func helloServer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("ERR3 %v\n", err)
 	}
+
+	logGet(h, "This Is MY GET Log")
+	logPost(h, "This Is MY POST Log")
+
+	// time.Sleep(20 * time.Second)
 	fmt.Fprintf(w, string(b))
 
+}
+
+func logGet(aid, l string) {
+	_, err := http.Get(fmt.Sprintf("http://localhost:8889/log?log=%s&aid=%s", l, aid))
+	fmt.Printf("DO GET %v", err)
+}
+
+func logPost(aid, l string) {
+	_, err := http.Post(fmt.Sprintf("http://localhost:8889/log?aid=%s", aid), "plain/text", strings.NewReader(l))
+	fmt.Printf("DO POST %v", err)
 }
