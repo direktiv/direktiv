@@ -1,4 +1,28 @@
-*Pull from insecure registry (k3s dev):*
+**_Ubuntu Development Installation_**
+
+**Install k3s**
+
+```
+curl -sfL https://get.k3s.io | sh -
+```
+
+**Change k3s service**
+
+Change  following line in */etc/systemd/system/k3s.service*
+
+```
+ExecStart=/usr/local/bin/k3s server --disable traefik --write-kubeconfig-mode=644
+```
+
+**Install local registry**
+
+```
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+```
+
+**Enable pulling from insecure registry (k3s dev):**
+
+Add the following to the specified files.
 
 /etc/rancher/k3s/registries.yaml:
 
@@ -16,6 +40,23 @@
 }
 ```
 
+Run following to enable settings:
 
-https://github.com/knative/serving/issues/7881
-https://stackoverflow.com/questions/63671125/how-to-collect-knative-service-logs
+```
+sudo systemctl daemon-reload && sudo service k3s restart & sudo service docker restart
+```
+
+**Change ~/.bashrc**
+
+```
+alias kc="kubectl"
+source <(kubectl completion bash)
+complete -F __start_kubectl kc
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+```
+
+**Disable tag-resolving for knative**
+
+```
+kubectl apply -f scripts/config-deployment.yaml
+```

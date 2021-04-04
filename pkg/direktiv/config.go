@@ -13,7 +13,7 @@ import (
 
 const (
 
-	// direktiv and runner ip and port
+	// flowConfig
 	flowBind          = "DIREKTIV_FLOW_BIND"
 	flowEndpoint      = "DIREKTIV_FLOW_ENDPOINT"
 	flowRegistry      = "DIREKTIV_FLOW_REGISTRY"

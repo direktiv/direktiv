@@ -32,8 +32,16 @@ const (
 	svcAddr = "http://localhost:8080"
 )
 
+type responseInfo struct {
+	iid, aid string
+	ec, em   string
+	step     int32
+	timeout  int
+	data     []byte
+	logger   dlog.Logger
+}
+
 type direktivHTTPRequest struct {
-	ctx    context.Context
 	logger dlog.Logger
 }
 
@@ -45,7 +53,8 @@ type direktivHTTPHandler struct {
 
 	requests map[string]*direktivHTTPRequest
 
-	dbLog *dblog.Logger
+	dbLog      *dblog.Logger
+	flowClient flow.DirektivFlowClient
 }
 
 func main() {
@@ -185,6 +194,18 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		vals[j] = v
 	}
 
+	to, err := strconv.Atoi(vals[direktiv.DirektivTimeoutHeader])
+	if err != nil {
+		generateError(ctx, direktiv.ServiceErrorInternal,
+			fmt.Sprintf("timeout form incorrect: %s", err.Error()))
+		return
+	}
+
+	// reset timeout to 900 secs if 0
+	if to == 0 {
+		to = 900
+	}
+
 	// check that key and provided key are the same
 	if d.key != vals[direktiv.DirektivExchangeKeyHeader] {
 		generateError(ctx, direktiv.ServiceErrorInternal,
@@ -196,7 +217,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 	step, err := strconv.ParseInt(vals[direktiv.DirektivStepHeader], 10, 64)
 	if err != nil {
 		generateError(ctx, direktiv.ServiceErrorInternal,
-			fmt.Sprintf("header incorrect: %s", err.Error()))
+			fmt.Sprintf("step form incorrect: %s", err.Error()))
 		return
 	}
 
@@ -205,67 +226,114 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		d.pingAddr = vals[direktiv.DirektivPingAddrHeader]
 	}
 
+	if d.flowClient == nil {
+		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], grpc.WithInsecure())
+		if err != nil {
+			generateError(ctx, direktiv.ServiceErrorInternal,
+				fmt.Sprintf("can not connect to flow: %s", err.Error()))
+			return
+		}
+		d.flowClient = flow.NewDirektivFlowClient(conn)
+	}
+
 	log15log, err := d.dbLog.LoggerFunc("namespace", "instanceId")
 	if err != nil {
-		log.Errorf("can not setup logger: %v", err)
+		generateError(ctx, direktiv.ServiceErrorInternal,
+			fmt.Sprintf("can not setup logger: %s", err.Error()))
+		return
+	}
+
+	fmt.Fprintf(ctx, "ok")
+
+	info := &responseInfo{
+		iid:     vals[direktiv.DirektivInstanceIDHeader],
+		aid:     vals[direktiv.DirektivActionIDHeader],
+		step:    int32(step),
+		logger:  log15log,
+		data:    ctx.Request.Body(),
+		timeout: to,
+	}
+
+	go d.handleSubRequest(info)
+
+}
+
+func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
+
+	// timeout in context & client
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Duration(info.timeout*2)*time.Second)
+	defer cancel()
+
+	// we are adding some time to the "technical" timeout
+	client := &http.Client{
+		Timeout: time.Duration(info.timeout+10) * time.Second,
 	}
 
 	// add to request manager
 	d.mtx.Lock()
-	d.requests[vals[direktiv.DirektivActionIDHeader]] = &direktivHTTPRequest{
-		ctx:    ctx,
-		logger: log15log,
+	d.requests[info.aid] = &direktivHTTPRequest{
+		logger: info.logger,
 	}
 	d.mtx.Unlock()
 
 	defer func() {
 		log.Debugf("cleanup request map")
 		d.mtx.Lock()
-		if _, ok := d.requests[vals[direktiv.DirektivActionIDHeader]]; ok {
-			delete(d.requests, vals[direktiv.DirektivActionIDHeader])
+		if _, ok := d.requests[info.aid]; ok {
+			delete(d.requests, info.aid)
 		}
 		d.mtx.Unlock()
 	}()
 
-	log.Infof("handle request %s", vals[direktiv.DirektivActionIDHeader])
+	log.Infof("handle request %s", info.aid)
 
-	// FROM HERE WE NEED TO RESPOND VIA GRPC
+	// wipe data field for "real" response
+	body := info.data
+	info.data = []byte{}
 
 	// forward request
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		svcAddr, bytes.NewReader(ctx.Request.Body()))
+		svcAddr, bytes.NewReader(body))
 	if err != nil {
-		generateError(ctx, direktiv.ServiceErrorNetwork,
-			fmt.Sprintf("create request failed: %s", err.Error()))
+		info.ec = direktiv.ServiceErrorNetwork
+		info.em = fmt.Sprintf("create request failed: %s", err.Error())
+		d.respondToFlow(info)
 		return
 	}
 
 	// add header so client can use it ass reference
-	req.Header.Add(direktiv.DirektivActionIDHeader,
-		vals[direktiv.DirektivActionIDHeader])
+	req.Header.Add(direktiv.DirektivActionIDHeader, info.aid)
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		generateError(ctx, direktiv.ServiceErrorNetwork,
-			fmt.Sprintf("execute request failed: %s", err.Error()))
+		info.ec = direktiv.ServiceErrorNetwork
+		info.em = fmt.Sprintf("execute request failed: %s", err.Error())
+		d.respondToFlow(info)
+		return
+	}
+
+	// check if service reports an error
+	if resp.Header.Get(direktiv.DirektivErrorCodeHeader) != "" {
+		info.ec = resp.Header.Get(direktiv.DirektivErrorCodeHeader)
+		info.em = resp.Header.Get(direktiv.DirektivErrorMessageHeader)
+		d.respondToFlow(info)
 		return
 	}
 
 	defer resp.Body.Close()
 	f, err := ioutil.ReadAll(resp.Body)
-
 	if err != nil {
-		// TODO we need to respond to flow
-		generateError(ctx, direktiv.ServiceErrorIO,
-			fmt.Sprintf("read response body: %s", err.Error()))
+		info.ec = direktiv.ServiceErrorNetwork
+		info.em = fmt.Sprintf("reading body failed: %s", err.Error())
+		d.respondToFlow(info)
 		return
 	}
 
+	info.data = f
+
 	// respond to service
-	respondToFlow(resp, vals[direktiv.DirektivInstanceIDHeader],
-		vals[direktiv.DirektivActionIDHeader], int32(step), f)
-	fmt.Fprintf(ctx, "ok")
+	d.respondToFlow(info)
 
 }
 
@@ -276,70 +344,24 @@ func (d *direktivHTTPHandler) pingMe() {
 	for range time.Tick(5 * time.Second) {
 		if len(d.pingAddr) > 0 && d.pingAddr != "noping" && len(d.requests) > 0 {
 			_, err := http.Get(fmt.Sprintf("%s/ping", d.pingAddr))
-			log.Debugf("ping %s: %v", fmt.Sprintf("%s/ping", d.pingAddr), err)
+			log.Infof("ping %s: %v", fmt.Sprintf("%s/ping", d.pingAddr), err)
 		}
 	}
 
 }
 
-func respondToFlow(resp *http.Response, iid, aid string, step int32, data []byte) {
-
-	ec := direktiv.ServiceErrorImage
-	em := ""
+func (d *direktivHTTPHandler) respondToFlow(info *responseInfo) {
 
 	r := &flow.ReportActionResultsRequest{
-		InstanceId: &iid,
-		Step:       &step,
-		ActionId:   &aid,
-		Output:     data,
+		InstanceId:   &info.iid,
+		Step:         &info.step,
+		ActionId:     &info.aid,
+		Output:       info.data,
+		ErrorCode:    &info.ec,
+		ErrorMessage: &info.em,
 	}
 
-	// do we have error headers
-	if resp.Header.Get(direktiv.DirektivErrorCodeHeader) != "" {
-		ec = resp.Header.Get(direktiv.DirektivErrorCodeHeader)
-		r.ErrorCode = &ec
-
-		em = resp.Header.Get(direktiv.DirektivErrorMessageHeader)
-		r.ErrorMessage = &em
-	}
-
-	// var resp direktiv.ServiceResponse
-	// err := json.Unmarshal(data, &resp)
-	// if err != nil {
-	// 	// if error we can return internal errors
-	// 	// because the container returned rubbish
-	// 	r.ErrorCode = &ec
-	//
-	// 	em := err.Error()
-	// 	r.ErrorMessage = &em
-	// }
-
-	// if the container reports an error we return that too
-	// if len(resp.ErrorMessage) > 0 {
-	// 	r.ErrorCode = &resp.ErrorCode
-	// 	r.ErrorMessage = &resp.ErrorMessage
-	// }
-
-	// b, err := json.Marshal(resp.Data)
-
-	// // we set output in any case
-	// r.Output = b
-	//
-	// // but if it is not json we report an error
-	// if err != nil {
-	// 	r.ErrorCode = &ec
-	// 	em := err.Error()
-	// 	r.ErrorMessage = &em
-	// }
-
-	conn, err := grpc.Dial("localhost:7777", grpc.WithInsecure())
-	if err != nil {
-		log.Errorf("can not connect to flow: %v", err)
-		return
-	}
-	flowClient := flow.NewDirektivFlowClient(conn)
-
-	_, err = flowClient.ReportActionResults(context.Background(), r)
+	_, err := d.flowClient.ReportActionResults(context.Background(), r)
 	if err != nil {
 		log.Errorf("can not respond to flow: %v", err)
 		return

@@ -106,6 +106,8 @@ isolate:
 flow:
   image: "gerke74/flow"
   tag: "latest"
+  ingressPortType: "ClusterIP"
+  ingressNodePort: 0
   secretsImage: "vorteil/secrets"
   secretsTag: "latest"
   secretsDb: ""

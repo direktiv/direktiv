@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -260,17 +259,14 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace, ar.Container.Image,
 		ar.Container.Cmd), hash.FormatV2, nil)
 	if err != nil {
-		return err
+		return NewInternalError(err)
 	}
 
 	// calculate address
-	addr := "http://test-10105319230591849704.default.192.168.0.27.xip.io"
+	addr := fmt.Sprintf("http://%s-%d.default", ar.Workflow.Namespace, actionHash)
 
 	// get exchange key
 	exchangeKey := "checkMe"
-	responseAddr := "192.168.0.27:7777"
-
-	log.Infof(">>>>>> jens %d", actionHash)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -283,7 +279,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
 	req.Header.Add(DirektivPingAddrHeader, addr)
 	req.Header.Add(DirektivExchangeKeyHeader, exchangeKey)
-	req.Header.Add(DirektivResponseHeader, responseAddr)
+	req.Header.Add(DirektivResponseHeader, we.server.config.FlowAPI.Endpoint)
 	req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Timeout)))
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
@@ -302,22 +298,6 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 		return NewInternalError(fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
-
-	b, _ := ioutil.ReadAll(resp.Body)
-
-	log.Infof(">>> %v", string(b))
-	// _, err := we.isolateClient.RunIsolate(ctx, &isolate.RunIsolateRequest{
-	// 	ActionId:   &ar.ActionID,
-	// 	Namespace:  &ar.Workflow.Namespace,
-	// 	InstanceId: &ar.Workflow.InstanceID,
-	// 	Step:       &step,
-	// 	Timeout:    &timeout,
-	// 	Data:       ar.Data,
-	// })
-	//
-	// if err != nil {
-	// 	return NewInternalError(err)
-	// }
 
 	return nil
 

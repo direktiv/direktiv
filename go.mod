@@ -29,6 +29,7 @@ require (
 	github.com/jinzhu/copier v0.2.4
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/lib/pq v1.10.0
+	github.com/mdempsky/maligned v0.0.0-20210215075342-f0178ee82032 // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/mitchellh/hashstructure/v2 v2.0.1
@@ -49,6 +50,7 @@ require (
 	github.com/valyala/fasthttp v1.22.0
 	github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f
 	github.com/vorteil/vorteil v0.0.0-20210301220102-762be2cd662d
+	github.com/walle/lll v1.0.1 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
 	golang.org/x/tools v0.1.0 // indirect

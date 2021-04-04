@@ -44,34 +44,15 @@ spec:
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
+          - name: "DIREKTIV_FLOW_ENDPOINT"
+            value: "{{ include "direktiv.fullname" . }}-flow:7777"
           - name: DIREKTIV_DB
             valueFrom:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
-          - name: DIREKTIV_ISOLATE_ENDPOINT
-            {{- if .Values.flow.isolateEndpoint }}
-            value: {{ .Values.flow.isolateEndpoint | quote}}
-            {{- else }}
-            value: "{{ include "direktiv.fullname" . }}-isolate:8888"
-            {{- end}}
           - name: DIREKTIV_SECRETS_ENDPOINT
             value:  "localhost:2610"
-        - name: secrets
-          image: "{{ .Values.registry }}/{{ .Values.flow.secretsImage }}:{{ .Values.flow.secretsTag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.pullPolicy }}
-          ports:
-            - name: secrets
-              containerPort: 2610
-              protocol: TCP
-          env:
-          - name: DIREKTIV_SECRETS_BIND
-            value: "127.0.0.1:2610"
-          - name: DIREKTIV_SECRETS_DB
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsDb
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
