@@ -39,4 +39,4 @@
 !*build/docker/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
-debug.yaml
+deploy*.yaml
