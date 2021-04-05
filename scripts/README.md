@@ -14,6 +14,11 @@ Change  following line in */etc/systemd/system/k3s.service*
 ExecStart=/usr/local/bin/k3s server --disable traefik --write-kubeconfig-mode=644
 ```
 
+**Install knative**
+```
+scripts/knative/install-knative.sh
+```
+
 **Install local registry**
 
 ```
