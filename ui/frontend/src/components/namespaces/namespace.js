@@ -57,14 +57,17 @@ export default function Namespace(props) {
         async function fetchWFs() {
             try {
                 setLoader(true)
-                let resp = await context.Fetch(`/namespaces/${namespace}/workflows?offset=${pagination.offset}`, {})
+                let resp = await fetch(`${context.SERVER_BIND}/namespaces/${namespace}/workflows?offset=${pagination.offset}`, {})
                 if (!resp.ok) {
                     setLoader(false)
                     throw resp
                 } else {
                     let json = await resp.json()
                     updateWorkflows(json.workflows)
-                    setPagination({...pagination, total: json.total})
+                    setPagination(p => {
+                        p.total = json.total
+                        return p
+                    })
                 }
             } catch (e) {
                 setWorkflowError(e.message)
@@ -73,12 +76,12 @@ export default function Namespace(props) {
         }
 
         fetchWFs()
-    }, [context.Fetch, namespace, pagination.offset])
+    }, [context.SERVER_BIND, namespace, pagination.offset])
 
     // Fetch data on mount
     useEffect(() => {
         fetchWorkflows()
-    }, [fetchWorkflows, context.Fetch, namespace])
+    }, [fetchWorkflows, namespace])
 
     useEffect(() => {
         if (params.q === searchInfo.pattern) {
