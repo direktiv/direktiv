@@ -38,3 +38,4 @@
 !*build/docker/ui
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
+debug.yaml

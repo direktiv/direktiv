@@ -236,7 +236,7 @@ func (is *isolateServer) grpcStart(s *WorkflowServer) error {
 		// start health if there is no ingressServer
 		if !s.runsComponent(runsWorkflows) {
 			log.Debugf("append health check to isolate service")
-			healthServer := newHealthServer(s.config, s.isolateServer)
+			healthServer := newHealthServer(s.config, s.isolateServer, s.engine)
 			health.RegisterHealthServer(srv, healthServer)
 			reflection.Register(srv)
 		}

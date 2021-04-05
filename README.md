@@ -42,17 +42,15 @@ machines. This behaviour can be changed in the configuration file or via environ
 
 ***Using Docker:***
 
-_Firecracker Isolation_
-
-
-`docker run --privileged -ti -p6666:6666 -p8080:8080 vorteil/direktiv`
-
-
 _Container Isolation:_
 
 `docker run --privileged -ti -p6666:6666 -p8080:8080 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
 
-*Note: *
+_Firecracker Isolation_
+
+`docker run --privileged -ti -p6666:6666 -p8080:8080 vorteil/direktiv`
+
+_Note:_
 
 - *You may need to run this command as an administrator.*
 

@@ -63,8 +63,6 @@ spec:
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
-          - name: DIREKTIV_GRPC_HEALTH
-            value: "0"
           - name: DIREKTIV_DB
             valueFrom:
               secretKeyRef:
@@ -87,9 +85,7 @@ spec:
               protocol: TCP
           env:
           - name: DIREKTIV_SECRETS_BIND
-            value: "0.0.0.0:2610"
-          - name: DIREKTIV_GRPC_HEALTH
-            value: "0"
+            value: "127.0.0.1:2610"
           - name: DIREKTIV_SECRETS_DB
             valueFrom:
               secretKeyRef:

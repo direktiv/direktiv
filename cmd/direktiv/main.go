@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 	Use:   "direktiv",
 	Short: "direktiv is a serverless, container workflow engine.",
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if debug {
+		if debug || os.Getenv("DIREKTIV_DEBUG") == "true" {
 			logrus.SetLevel(logrus.DebugLevel)
 			formatter := runtime.Formatter{ChildFormatter: &logrus.TextFormatter{
 				FullTimestamp: true,

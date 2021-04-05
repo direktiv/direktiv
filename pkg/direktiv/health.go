@@ -16,12 +16,14 @@ type healthServer struct {
 	config        *Config
 	grpc          *grpc.Server
 	isolateServer *isolateServer
+	engine        *workflowEngine
 }
 
-func newHealthServer(config *Config, isolate *isolateServer) *healthServer {
+func newHealthServer(config *Config, isolate *isolateServer, engine *workflowEngine) *healthServer {
 	return &healthServer{
 		config:        config,
 		isolateServer: isolate,
+		engine:        engine,
 	}
 }
 
@@ -36,6 +38,8 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 
 	if hs.isolateServer != nil {
 
+		log.Debugf("running isolate health check")
+
 		dummy := ""
 		img := "vorteil/debug:v1"
 		var s int32
@@ -44,6 +48,7 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 		instanceID := "testInstance"
 
 		data := `{}`
+		cmd := "/debug"
 
 		ir := &isolate.RunIsolateRequest{
 			ActionId:   &actionID,
@@ -52,6 +57,7 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 			Image:      &img,
 			Size:       &s,
 			Data:       []byte(data),
+			Command:    &cmd,
 		}
 
 		err := hs.isolateServer.runAction(ir, true)
@@ -61,6 +67,12 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 		}
 
 	}
+
+	if hs.engine != nil {
+		log.Debugf("running flow health check")
+	}
+
+	log.Debugf("running health check executed")
 
 	return &resp, nil
 
