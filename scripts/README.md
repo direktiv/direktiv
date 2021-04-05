@@ -14,6 +14,16 @@ Change  following line in */etc/systemd/system/k3s.service*
 ExecStart=/usr/local/bin/k3s server --disable traefik --write-kubeconfig-mode=644
 ```
 
+**Change ~/.bashrc**
+
+```
+alias kc="kubectl"
+source <(kubectl completion bash)
+complete -F __start_kubectl kc
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+```
+
+
 **Install knative**
 ```
 scripts/knative/install-knative.sh
@@ -51,14 +61,6 @@ Run following to enable settings:
 sudo systemctl daemon-reload && sudo service k3s restart & sudo service docker restart
 ```
 
-**Change ~/.bashrc**
-
-```
-alias kc="kubectl"
-source <(kubectl completion bash)
-complete -F __start_kubectl kc
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-```
 
 **Disable tag-resolving for knative**
 
