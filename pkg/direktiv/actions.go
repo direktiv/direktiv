@@ -1,5 +1,7 @@
 package direktiv
 
+import "github.com/vorteil/direktiv/pkg/model"
+
 // headers for flow->container communication
 const (
 	DirektivActionIDHeader    = "Direktiv-ActionID"
@@ -40,6 +42,7 @@ type actionRequest struct {
 type actionContainer struct {
 	Image, Cmd string
 	Data       []byte
+	Size       model.Size
 }
 
 type actionWorkflow struct {

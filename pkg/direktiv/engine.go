@@ -256,11 +256,13 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 	// TODO: should this ctx be modified with a shorter deadline?
 
 	// generate hash name as "url"
-	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace, ar.Container.Image,
-		ar.Container.Cmd), hash.FormatV2, nil)
+	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ar.Workflow.Namespace, ar.Container.Image,
+		ar.Container.Cmd, ar.Container.Size), hash.FormatV2, nil)
 	if err != nil {
 		return NewInternalError(err)
 	}
+
+	log.Debugf("calling isolate: %d", actionHash)
 
 	// calculate address
 	addr := fmt.Sprintf("http://%s-%d.default", ar.Workflow.Namespace, actionHash)

@@ -185,6 +185,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			ar.Container.Data = inputData
 			ar.Container.Image = fn.Image
 			ar.Container.Cmd = fn.Cmd
+			ar.Container.Size = fn.Size
 
 			if sl.state.Async {
 

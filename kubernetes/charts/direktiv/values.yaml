@@ -102,16 +102,17 @@ isolate:
     accessKey: "direktiv"
     secretKey: "direktivdirektiv"
 
+secrets:
+  image: "vorteil/secrets"
+  tag: "latest"
+  db: ""
+
 # flow config
 flow:
   image: "gerke74/flow"
   tag: "latest"
   ingressPortType: "ClusterIP"
   ingressNodePort: 0
-  secretsImage: "vorteil/secrets"
-  secretsTag: "latest"
-  secretsDb: ""
-  isolateEndpoint: ""
   secretsEndpoint: ""
 
 # ui config

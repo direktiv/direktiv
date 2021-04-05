@@ -174,6 +174,7 @@ func (db *dbManager) getWorkflowByUid(ctx context.Context, uid string) (*ent.Wor
 	return db.dbEnt.Workflow.
 		Query().
 		Where(workflow.IDEQ(u)).
+		WithNamespace().
 		Only(ctx)
 
 }

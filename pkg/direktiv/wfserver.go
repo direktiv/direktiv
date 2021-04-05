@@ -89,7 +89,11 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	addCron(timerCleanOneShot, "*/10 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
-	ingressServer := newIngressServer(s)
+	ingressServer, err := newIngressServer(s)
+	if err != nil {
+		return err
+	}
+
 	s.components[ingressComponent] = ingressServer
 
 	flowServer := newFlowServer(s.config, s.engine)

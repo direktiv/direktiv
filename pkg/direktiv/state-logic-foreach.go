@@ -169,6 +169,8 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				ar.Container.Data = inputData
 				ar.Container.Image = fn.Image
 				ar.Container.Cmd = fn.Cmd
+				ar.Container.Size = fn.Size
+
 
 				err = instance.engine.doActionRequest(ctx, ar)
 				if err != nil {
