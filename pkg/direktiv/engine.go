@@ -268,7 +268,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 	addr := fmt.Sprintf("http://%s-%d.default", ar.Workflow.Namespace, actionHash)
 
 	// get exchange key
-	exchangeKey := "checkMe"
+	exchangeKey := we.server.config.FlowAPI.Exchange
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -289,7 +289,9 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
 	resp, err := client.Do(req)
 
 	if err != nil {

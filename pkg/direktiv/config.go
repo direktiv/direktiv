@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	flowExchange = "DIREKTIV_EXCHANGE"
 
 	// flowConfig
 	flowBind          = "DIREKTIV_FLOW_BIND"
@@ -58,6 +59,7 @@ type Config struct {
 	FlowAPI struct {
 		Bind     string
 		Endpoint string
+		Exchange string
 		Registry struct {
 			Name, User, Token string
 		}
@@ -243,6 +245,7 @@ func ReadConfig(file string) (*Config, error) {
 		{secretsConn, &c.SecretsAPI.DB},
 		{certDir, &c.Certs.Directory},
 		{isolation, &c.IsolateAPI.Isolation},
+		{flowExchange, &c.FlowAPI.Exchange},
 	}
 
 	for _, i := range strings {

@@ -62,7 +62,17 @@ var serviceTmpl = `{
       "spec": {
         "containers": [
           {
-            "image": "%s"
+            "image": "%s",
+						"resources": {
+              "requests": {
+                "cpu": %f,
+                "memory": "%s"
+              },
+              "limits": {
+                "cpu": %f,
+                "memory": "%s"
+              }
+            }
           },
           {
             "image": "localhost:5000/sidecar",
@@ -799,7 +809,25 @@ func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.W
 
 		log.Debugf("deleting isolate: %d", ah)
 
-		svc := fmt.Sprintf(serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah), f.Image)
+		var (
+			cpu float64
+			mem int
+		)
+
+		switch f.Size {
+		case 1:
+			cpu = 1
+			mem = 512
+		case 2:
+			cpu = 2
+			mem = 1024
+		default:
+			cpu = 0.5
+			mem = 256
+		}
+
+		svc := fmt.Sprintf(serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
+			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2))
 
 		err = is.sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
 			bytes.NewBufferString(svc))
