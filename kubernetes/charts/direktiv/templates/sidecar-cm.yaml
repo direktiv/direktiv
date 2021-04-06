@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-template
+data:
+  template: |
+    {
+      "apiVersion": "serving.knative.dev/v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "%s",
+        "namespace": "default",
+        "labels": {
+          "networking.knative.dev/visibility": "cluster-local"
+        }
+      },
+      "spec": {
+        "template": {
+          "spec": {
+            "containers": [
+              {
+                "image": "%s",
+    						"resources": {
+                  "requests": {
+                    "cpu": %f,
+                    "memory": "%s"
+                  },
+                  "limits": {
+                    "cpu": %f,
+                    "memory": "%s"
+                  }
+                }
+              },
+              {
+                "image": "%s",
+                "ports": [
+                  {
+                    "containerPort": 8889
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "exchange",
+                    "mountPath": "/var/secret"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "exchange",
+                "secret": {
+                  "secretName": "{{- .Release.Name }}-isolate"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }

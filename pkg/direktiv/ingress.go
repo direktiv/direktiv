@@ -38,6 +38,8 @@ type ingressServer struct {
 	grpcConn      *grpc.ClientConn
 
 	kubeCA, kubeToken []byte
+
+	serviceTmpl string
 }
 
 const (
@@ -46,61 +48,6 @@ const (
 
 	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services"
 )
-
-var serviceTmpl = `{
-  "apiVersion": "serving.knative.dev/v1",
-  "kind": "Service",
-  "metadata": {
-    "name": "%s",
-    "namespace": "default",
-    "labels": {
-      "networking.knative.dev/visibility": "cluster-local"
-    }
-  },
-  "spec": {
-    "template": {
-      "spec": {
-        "containers": [
-          {
-            "image": "%s",
-						"resources": {
-              "requests": {
-                "cpu": %f,
-                "memory": "%s"
-              },
-              "limits": {
-                "cpu": %f,
-                "memory": "%s"
-              }
-            }
-          },
-          {
-            "image": "%s",
-            "ports": [
-              {
-                "containerPort": 8889
-              }
-            ],
-            "volumeMounts": [
-              {
-                "name": "exchange",
-                "mountPath": "/var/secret"
-              }
-            ]
-          }
-        ],
-        "volumes": [
-          {
-            "name": "exchange",
-            "secret": {
-              "secretName": "direktiv-isolate"
-            }
-          }
-        ]
-      }
-    }
-  }
-}`
 
 func (is *ingressServer) stop() {
 
@@ -135,10 +82,16 @@ func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 		return nil, err
 	}
 
+	st, err := ioutil.ReadFile("/etc/config/template")
+	if err != nil {
+		return nil, err
+	}
+
 	return &ingressServer{
-		wfServer:  s,
-		kubeCA:    ca,
-		kubeToken: token,
+		wfServer:    s,
+		kubeCA:      ca,
+		kubeToken:   token,
+		serviceTmpl: string(st),
 	}, nil
 
 }
@@ -826,7 +779,7 @@ func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.W
 			mem = 256
 		}
 
-		svc := fmt.Sprintf(serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
+		svc := fmt.Sprintf(is.serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
 			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
 			is.wfServer.config.FlowAPI.Sidecar)
 

@@ -32,6 +32,9 @@ spec:
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ["/bin/direktiv"]
           args: ["-t", "w", "-d"]
+          volumeMounts:
+          - name: service-template
+            mountPath: /etc/config
           ports:
             - name: ingress
               containerPort: 6666
@@ -73,6 +76,10 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsDb
+      volumes:
+        - name: service-template
+          configMap:
+            name: service-template
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
