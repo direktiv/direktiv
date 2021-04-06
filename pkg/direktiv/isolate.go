@@ -32,20 +32,20 @@ type ServiceResponse struct {
 	Data         interface{} `json:"data"`
 }
 
-type actionRequest struct {
+type isolateRequest struct {
 	ActionID string
 
-	Workflow  actionWorkflow
-	Container actionContainer
+	Workflow  isolateWorkflow
+	Container isolateContainer
 }
 
-type actionContainer struct {
+type isolateContainer struct {
 	Image, Cmd string
 	Data       []byte
 	Size       model.Size
 }
 
-type actionWorkflow struct {
+type isolateWorkflow struct {
 	Name       string
 	InstanceID string
 	Namespace  string

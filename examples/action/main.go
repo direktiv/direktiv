@@ -16,77 +16,8 @@ func main() {
 }
 
 func helloServer(w http.ResponseWriter, r *http.Request) {
-
 	w.Write([]byte("This Is My Data"))
-
-	// w.Header().Add("Direktiv-ErrorCode", "com.request.error")
-	// fmt.Printf("1 %v\n", w.Header())
-	//
-	// aid := r.Header.Get("Direktiv-ActionID")
-	// if len(aid) == 0 {
-	// 	w.Header().Add("Direktiv-ErrorMessage", "action id missing")
-	// 	return
-	// }
-	//
-	// fmt.Printf("2 %v\n", w.Header())
-	// defer r.Body.Close()
-	// in, err := ioutil.ReadAll(r.Body)
-	// if err != nil {
-	// 	txt := fmt.Sprintf("error reading body: %v", err)
-	// 	log(aid, txt)
-	// 	w.Header().Add("Direktiv-ErrorMessage", txt)
-	// }
-	// fmt.Printf("3 %v\n", w.Header())
-	// m := make(map[string]string)
-	// err = json.Unmarshal(in, &m)
-	// if err != nil {
-	// 	txt := fmt.Sprintf("error reading body: %v", err)
-	// 	log(aid, txt)
-	// 	w.Header().Add("Direktiv-ErrorMessage", txt)
-	// }
-	// fmt.Printf("4 %v\n", w.Header())
-	// resp, err := http.Get(m["url"])
-	// if err != nil {
-	// 	txt := fmt.Sprintf("error get request: %v", err)
-	// 	log(aid, txt)
-	// 	w.Header().Add("Direktiv-ErrorMessage", txt)
-	// }
-	// fmt.Printf("5 %v\n", w.Header())
-	//
-	//
-	//
-	// defer resp.Body.Close()
-	// in, err = ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	txt := fmt.Sprintf("error get request body: %v", err)
-	// 	log(aid, txt)
-	// 	w.Header().Add("Direktiv-ErrorMessage", txt)
-	// }
-	//
-	// fmt.Printf("HEADER %v", w.Header().Get("Direktiv-ErrorMessage"))
-	//
-	// if len(w.Header().Get("Direktiv-ErrorMessage")) == 0 {
-	//
-	// 	// if err != nil {
-	// 	// 	txt := fmt.Sprintf("error unmarshal: %v %v, %v", err, m["url"], string(in))
-	// 	// 	log(aid, txt)
-	// 	// 	w.Header().Add("Direktiv-ErrorMessage", txt)
-	// 	// } else {
-	// 	w.Write(in)
-	// 	w.Header().Del("Direktiv-ErrorMessage")
-	// 	w.Header().Del("Direktiv-ErrorCode")
-	// 	// }
-	//
-	// }
-
 }
-
-// const (
-// 	LvlCrit Lvl = iota
-// 	LvlError
-// 	LvlWarn
-// 	LvlInfo
-// 	LvlDebug
 
 func log(aid, l string) {
 	http.Post(fmt.Sprintf("http://localhost:8889/log?aid=%s", aid), "plain/text", strings.NewReader(l))

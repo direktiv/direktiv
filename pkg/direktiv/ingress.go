@@ -75,7 +75,7 @@ var serviceTmpl = `{
             }
           },
           {
-            "image": "localhost:5000/sidecar",
+            "image": "%s",
             "ports": [
               {
                 "containerPort": 8889
@@ -827,7 +827,8 @@ func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.W
 		}
 
 		svc := fmt.Sprintf(serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
-			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2))
+			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
+			is.wfServer.config.FlowAPI.Sidecar)
 
 		err = is.sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
 			bytes.NewBufferString(svc))

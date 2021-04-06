@@ -157,7 +157,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 					return
 				}
 
-				ar := new(actionRequest)
+				ar := new(isolateRequest)
 				ar.ActionID = uid.String()
 				ar.Workflow.InstanceID = instance.id
 				ar.Workflow.Namespace = instance.namespace
@@ -170,7 +170,6 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				ar.Container.Image = fn.Image
 				ar.Container.Cmd = fn.Cmd
 				ar.Container.Size = fn.Size
-
 
 				err = instance.engine.doActionRequest(ctx, ar)
 				if err != nil {

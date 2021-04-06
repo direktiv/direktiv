@@ -13,6 +13,7 @@ import (
 
 const (
 	flowExchange = "DIREKTIV_EXCHANGE"
+	flowSidecar  = "DIREKTIV_SIDECAR"
 
 	// flowConfig
 	flowBind          = "DIREKTIV_FLOW_BIND"
@@ -60,6 +61,7 @@ type Config struct {
 		Bind     string
 		Endpoint string
 		Exchange string
+		Sidecar string
 		Registry struct {
 			Name, User, Token string
 		}
@@ -164,6 +166,7 @@ func ReadConfig(file string) (*Config, error) {
 	// defaults
 	c.FlowAPI.Bind = fmt.Sprintf("%s:7777", localIP)
 	c.FlowAPI.Endpoint = c.FlowAPI.Bind
+	c.FlowAPI.Sidecar = "vorteil/sidecar"
 
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
@@ -246,6 +249,7 @@ func ReadConfig(file string) (*Config, error) {
 		{certDir, &c.Certs.Directory},
 		{isolation, &c.IsolateAPI.Isolation},
 		{flowExchange, &c.FlowAPI.Exchange},
+		{flowSidecar, &c.FlowAPI.Sidecar},
 	}
 
 	for _, i := range strings {

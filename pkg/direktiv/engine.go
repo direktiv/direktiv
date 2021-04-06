@@ -251,7 +251,7 @@ type actionResultMessage struct {
 	Payload    actionResultPayload
 }
 
-func (we *workflowEngine) doActionRequest(ctx context.Context, ar *actionRequest) error {
+func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
 
 	// TODO: should this ctx be modified with a shorter deadline?
 
