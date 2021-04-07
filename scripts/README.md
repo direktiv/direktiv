@@ -23,10 +23,13 @@ complete -F __start_kubectl kc
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 ```
 
+```
+sudo systemctl daemon-reload && sudo service k3s restart
+```
 
 **Install knative**
 ```
-scripts/knative/install-knative.sh
+cd scripts/knative && ./install-knative.sh
 ```
 
 **Install local registry**
@@ -58,7 +61,7 @@ Add the following to the specified files.
 Run following to enable settings:
 
 ```
-sudo systemctl daemon-reload && sudo service k3s restart & sudo service docker restart
+sudo service docker restart
 ```
 
 
@@ -66,4 +69,12 @@ sudo systemctl daemon-reload && sudo service k3s restart & sudo service docker r
 
 ```
 kubectl apply -f scripts/config-deployment.yaml
+```
+
+**Install helm**
+
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 ```
