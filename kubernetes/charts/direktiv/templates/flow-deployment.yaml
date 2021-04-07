@@ -35,9 +35,11 @@ spec:
           volumeMounts:
           - name: service-template
             mountPath: /etc/config
+          {{- if ne (default .Values.certificate "none") "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
             readOnly: true
+          {{- end }}
           ports:
             - name: ingress
               containerPort: 6666
@@ -69,6 +71,12 @@ spec:
         - name: secrets
           image: "{{ .Values.registry }}/{{ .Values.secrets.image }}:{{ .Values.secrets.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if ne (default .Values.certificate "none") "none" }}
+          volumeMounts:
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
+          {{- end }}
           ports:
             - name: secrets
               containerPort: 2610
@@ -85,9 +93,11 @@ spec:
         - name: service-template
           configMap:
             name: service-template
+        {{- if ne (default .Values.certificate "none") "none" }}
         - name: certs
           secret:
             secretName: {{ include "direktiv.fullname" . }}-tls-secret
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

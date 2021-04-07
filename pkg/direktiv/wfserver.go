@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
 	"google.golang.org/grpc"
@@ -250,11 +251,15 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 
 	log.Debugf("%s endpoint starting at %s", name, bind)
 
+	var options []grpc.ServerOption
+
 	// Create the TLS credentials
-	creds, err := credentials.NewServerTLSFromFile("/etc/certs/direktiv/tls.crt",
-		"/etc/certs/direktiv/tls.key")
-	if err != nil {
-		return fmt.Errorf("could not load TLS keys: %s", err)
+	if _, err := os.Stat(TLSKey); !os.IsNotExist(err) {
+		creds, err := credentials.NewServerTLSFromFile(TLSCert, TLSKey)
+		if err != nil {
+			return fmt.Errorf("could not load TLS keys: %s", err)
+		}
+		options = append(options, grpc.Creds(creds))
 	}
 
 	listener, err := net.Listen("tcp", bind)
@@ -262,7 +267,7 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 		return err
 	}
 
-	(*server) = grpc.NewServer(grpc.Creds(creds))
+	(*server) = grpc.NewServer(options...)
 
 	register(*server)
 

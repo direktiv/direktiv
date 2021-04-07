@@ -50,29 +50,33 @@ data:
                   }
                 ],
                 "volumeMounts": [
-                  {
-                    "name": "exchange",
-                    "mountPath": "/var/secret"
-                  },
+                  {{- if ne (default .Values.certificate "none") "none" }}
                   {
                     "name": "certs",
                     "mountPath": "/etc/certs/direktiv",
                     "readOnly": true
+                  },
+                  {{- end }}
+                  {
+                    "name": "exchange",
+                    "mountPath": "/var/secret"
                   }
                 ]
               }
             ],
             "volumes": [
-              {
-                "name": "exchange",
-                "secret": {
-                  "secretName": "{{- .Release.Name }}-isolate"
-                }
-              },
+              {{- if ne (default .Values.certificate "none") "none" }}
               {
                 "name": "certs",
                 "secret": {
                   "secretName": "{{ include "direktiv.fullname" . }}-tls-secret"
+                }
+                },
+              {{- end }}
+              {
+                "name": "exchange",
+                "secret": {
+                  "secretName": "{{- .Release.Name }}-isolate"
                 }
               }
             ]

@@ -106,25 +106,6 @@ ui:
   image: "vorteil/ui"
   tag: "latest"
 
-# cert for service communication
-certificate: |
-  -----BEGIN CERTIFICATE-----
-  MIICKTCCAc+gAwIBAgIRAJQA8RZZeBuzRv086YiFAugwCgYIKoZIzj0EAwIwIzEh
-  MB8GA1UEAwwYazNzLWNsaWVudC1jYUAxNjAzMDYzMzU5MB4XDTIxMDQwNzAzNTEz
-  MVoXDTIyMDQwNzAzNTEzMVowVTEVMBMGA1UEChMMc3lzdGVtOm5vZGVzMTwwOgYD
-  VQQDEzNzeXN0ZW06bm9kZTpkaXJla3Rpdi1mbG93LmRlZmF1bHQuc3ZjLmNsdXN0
-  ZXIubG9jYWwwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQRa5CgSFRtkitHjZmE
-  PQ6+4xgkmKTxaiG9SrqIM5ho3sBMiYY26GqkazgWhx3+vO/jrPl3Cxa+wrEekSGJ
-  thYOo4GxMIGuMA4GA1UdDwEB/wQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcDATAM
-  BgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFK3myrE0brsTJepWiucUdw4Bb4jXMFgG
-  A1UdEQRRME+CJ2RpcmVrdGl2LWZsb3cuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2Nh
-  bIINZGlyZWt0aXYtZmxvd4IVZGlyZWt0aXYtZmxvdy5kZWZhdWx0MAoGCCqGSM49
-  BAMCA0gAMEUCICTEA8au8mxuuY8C1gFa6tAju5iBY6Q2k3WWNwu8Ka8VAiEAvlHF
-  01mzaoKnx+h/WldsLhFGWPvmjyelvAmUVuBFlqY=
-  -----END CERTIFICATE-----
-key: |
-  -----BEGIN EC PRIVATE KEY-----
-  MHcCAQEEIJ7yrRTicCNIHGnt4hj3f77OUZrTmxyG7kQRD2IGOkEzoAoGCCqGSM49
-  AwEHoUQDQgAEEWuQoEhUbZIrR42ZhD0OvuMYJJik8WohvUq6iDOYaN7ATImGNuhq
-  pGs4Focd/rzv46z5dwsWvsKxHpEhibYWDg==
-  -----END EC PRIVATE KEY-----
+# cert for inter service communication
+certificate:
+key:

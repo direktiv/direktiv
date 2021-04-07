@@ -106,10 +106,12 @@ func main() {
 	signal.Notify(sigs, syscall.SIGTERM)
 
 	go func(s *fasthttp.Server) {
+		log.Infof("shutting down")
 		<-sigs
 		if d.dbLog != nil {
 			d.dbLog.CloseConnection()
 		}
+
 		s.Shutdown()
 	}(s)
 
@@ -160,7 +162,7 @@ func setupPubSub() error {
 
 			switch req.Cmd {
 			case direktiv.CancelIsolate:
-				log.Infof("CANCEL!!!!!! %v", req.ID.(string))
+				log.Infof("cancel isolate %v", req.ID.(string))
 			}
 
 		}
@@ -290,14 +292,20 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 
 	if d.flowClient == nil {
 
-		creds, err := credentials.NewClientTLSFromFile("/etc/certs/direktiv/tls.crt", "")
-		if err != nil {
-			generateError(ctx, direktiv.ServiceErrorInternal,
-				fmt.Sprintf("can not get grpc cert: %s", err.Error()))
-			return
+		var options []grpc.DialOption
+		if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
+			creds, err := credentials.NewClientTLSFromFile("/etc/certs/direktiv/tls.crt", "")
+			if err != nil {
+				generateError(ctx, direktiv.ServiceErrorInternal,
+					fmt.Sprintf("can not get grpc cert: %s", err.Error()))
+				return
+			}
+			options = append(options, grpc.WithTransportCredentials(creds))
+		} else {
+			options = append(options, grpc.WithInsecure())
 		}
 
-		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], grpc.WithTransportCredentials(creds))
+		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], options...)
 		if err != nil {
 			generateError(ctx, direktiv.ServiceErrorInternal,
 				fmt.Sprintf("can not connect to flow: %s", err.Error()))
