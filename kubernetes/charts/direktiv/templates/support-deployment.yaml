@@ -25,26 +25,6 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-        - name: minio
-          image: minio/minio:RELEASE.2020-10-28T08-16-50Z-25-g987c62525
-          imagePullPolicy: {{ .Values.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 9000
-              protocol: TCP
-          command: ["minio"]
-          args: ["server", "/data"]
-          env:
-          - name: MINIO_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: minioAccessKey
-          - name: MINIO_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: minioSecretKey
         - name: postgres
           image: postgres:12.6-alpine
           env:

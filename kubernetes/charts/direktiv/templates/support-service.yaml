@@ -7,9 +7,6 @@ metadata:
     {{- include "direktiv.labelsSupport" . | nindent 4 }}
 spec:
   ports:
-    - port: 9000
-      protocol: TCP
-      name: minio
     - port: 5432
       name: postgresql
       protocol: TCP
