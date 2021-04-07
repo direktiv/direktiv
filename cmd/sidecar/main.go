@@ -106,16 +106,15 @@ func main() {
 	signal.Notify(sigs, syscall.SIGTERM)
 
 	go func(s *fasthttp.Server) {
-		log.Infof("shutting down")
 		<-sigs
+		log.Infof("shutting down")
 		if d.dbLog != nil {
 			d.dbLog.CloseConnection()
 		}
-
 		s.Shutdown()
 	}(s)
 
-	log.Infof("starting direktiv sidecar container")
+	log.Debugf("starting direktiv sidecar container")
 	log.Fatal(s.ListenAndServe(":8889"))
 
 }
@@ -422,7 +421,7 @@ func (d *direktivHTTPHandler) pingMe() {
 	for range time.Tick(5 * time.Second) {
 		if len(d.pingAddr) > 0 && d.pingAddr != "noping" && len(d.requests) > 0 {
 			_, err := http.Get(fmt.Sprintf("%s/ping", d.pingAddr))
-			log.Infof("ping %s: %v", fmt.Sprintf("%s/ping", d.pingAddr), err)
+			log.Debugf("ping %s: %v", fmt.Sprintf("%s/ping", d.pingAddr), err)
 		}
 	}
 

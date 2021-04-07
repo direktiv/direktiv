@@ -81,8 +81,8 @@ docker-cli: build-cli
 
 .PHONY: docker-sidecar
 docker-sidecar:
-	docker build -t sidecar -f ${mkfile_dir_main}/build/docker/sidecar/Dockerfile ${mkfile_dir_main}
-
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/main.go
+	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
 
 .PHONY: build
 build:
