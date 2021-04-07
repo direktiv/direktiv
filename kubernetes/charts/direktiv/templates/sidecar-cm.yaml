@@ -33,6 +33,17 @@ data:
               },
               {
                 "image": "%s",
+                "env": [
+                  {
+                    "name": "DIREKTIV_DB",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "{{ include "direktiv.fullname" . }}",
+                        "key": "db"
+                      }
+                    }
+                  }
+                ],
                 "ports": [
                   {
                     "containerPort": 8889
@@ -42,6 +53,11 @@ data:
                   {
                     "name": "exchange",
                     "mountPath": "/var/secret"
+                  },
+                  {
+                    "name": "certs",
+                    "mountPath": "/etc/certs/direktiv",
+                    "readOnly": true
                   }
                 ]
               }
@@ -51,6 +67,12 @@ data:
                 "name": "exchange",
                 "secret": {
                   "secretName": "{{- .Release.Name }}-isolate"
+                }
+              },
+              {
+                "name": "certs",
+                "secret": {
+                  "secretName": "{{ include "direktiv.fullname" . }}-tls-secret"
                 }
               }
             ]

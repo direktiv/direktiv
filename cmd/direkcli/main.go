@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"os"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/vorteil/pkg/elog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var flagInputFile string
@@ -52,7 +54,11 @@ var rootCmd = &cobra.Command{
 			connF = grpcConnection
 		}
 
-		conn, err = grpc.Dial(connF, grpc.WithInsecure())
+		config := &tls.Config{
+			InsecureSkipVerify: true,
+		}
+
+		conn, err = grpc.Dial(connF, grpc.WithTransportCredentials(credentials.NewTLS(config)))
 		if err != nil {
 			return err
 		}

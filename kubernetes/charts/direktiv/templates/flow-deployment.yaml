@@ -35,6 +35,9 @@ spec:
           volumeMounts:
           - name: service-template
             mountPath: /etc/config
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
           ports:
             - name: ingress
               containerPort: 6666
@@ -43,13 +46,15 @@ spec:
               containerPort: 7777
               protocol: TCP
           env:
+          - name: DIREKTIV_FLOW_SIDECAR
+            value: {{ .Values.flow.sidecar }}
           - name: DIREKTIV_INGRESS_BIND
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
           - name: "DIREKTIV_FLOW_ENDPOINT"
             value: "{{ include "direktiv.fullname" . }}-flow:7777"
-          - name: DIREKTIV_EXCHANGE
+          - name: DIREKTIV_FLOW_EXCHANGE
             valueFrom:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}-isolate
@@ -80,6 +85,9 @@ spec:
         - name: service-template
           configMap:
             name: service-template
+        - name: certs
+          secret:
+            secretName: {{ include "direktiv.fullname" . }}-tls-secret
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

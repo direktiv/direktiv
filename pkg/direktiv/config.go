@@ -12,21 +12,20 @@ import (
 )
 
 const (
-	flowExchange = "DIREKTIV_EXCHANGE"
-	flowSidecar  = "DIREKTIV_SIDECAR"
 
 	// flowConfig
-	flowBind          = "DIREKTIV_FLOW_BIND"
-	flowEndpoint      = "DIREKTIV_FLOW_ENDPOINT"
+	flowBind     = "DIREKTIV_FLOW_BIND"
+	flowEndpoint = "DIREKTIV_FLOW_ENDPOINT"
+	flowProtocol = "DIREKTIV_FLOW_PROTOCOL"
+	flowExchange = "DIREKTIV_FLOW_EXCHANGE"
+	flowSidecar  = "DIREKTIV_FLOW_SIDECAR"
+
 	flowRegistry      = "DIREKTIV_FLOW_REGISTRY"
 	flowRegistryUser  = "DIREKTIV_FLOW_REGISTRY_USER"
 	flowRegistryToken = "DIREKTIV_FLOW_REGISTRY_TOKEN"
 
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
-
-	isolateBind     = "DIREKTIV_ISOLATE_BIND"
-	isolateEndpoint = "DIREKTIV_ISOLATE_ENDPOINT"
 
 	secretsBind     = "DIREKTIV_SECRETS_BIND"
 	secretsEndpoint = "DIREKTIV_SECRETS_ENDPOINT"
@@ -35,24 +34,13 @@ const (
 	// database connection
 	dbConn = "DIREKTIV_DB"
 
-	minioEndpoint = "DIREKTIV_MINIO_ENDPOINT"
-	minioUser     = "DIREKTIV_MINIO_USER"
-	minioPassword = "DIREKTIV_MINIO_PASSWORD"
-	minioSecure   = "DIREKTIV_MINIO_SECURE"
-	minioEncrypt  = "DIREKTIV_MINIO_ENCRYPT"
-	minioRegion   = "DIREKTIV_MINIO_REGION"
-	minioSSL      = "DIREKTIV_MINIO_SSL"
-
-	kernelLinux   = "DIREKTIV_KERNEL_LINUX"
-	kernelRuntime = "DIREKTIV_KERNEL_RUNTIME"
-
 	// instance logging
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
 
 	certDir    = "DIREKTIV_CERTS"
 	certSecure = "DIREKTIV_SECURE"
 
-	isolation = "DIREKTIV_ISOLATION"
+	// isolation = "DIREKTIV_ISOLATION"
 )
 
 // Config is the configuration for workflow and runner server
@@ -61,7 +49,8 @@ type Config struct {
 		Bind     string
 		Endpoint string
 		Exchange string
-		Sidecar string
+		Sidecar  string
+		Protocol string
 		Registry struct {
 			Name, User, Token string
 		}
@@ -88,25 +77,8 @@ type Config struct {
 		DB string
 	}
 
-	Certs struct {
-		Directory string
-		Secure    int
-	}
-
 	InstanceLogging struct {
 		Driver string
-	}
-
-	Minio struct {
-		Secure, SSL    int
-		User, Password string
-		Endpoint       string
-		Encrypt        string
-		Region         string
-	}
-
-	Kernel struct {
-		Linux, Runtime string
 	}
 
 	Registries map[string]string
@@ -167,6 +139,7 @@ func ReadConfig(file string) (*Config, error) {
 	c.FlowAPI.Bind = fmt.Sprintf("%s:7777", localIP)
 	c.FlowAPI.Endpoint = c.FlowAPI.Bind
 	c.FlowAPI.Sidecar = "vorteil/sidecar"
+	c.FlowAPI.Protocol = "http"
 
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
@@ -177,15 +150,6 @@ func ReadConfig(file string) (*Config, error) {
 
 	c.SecretsAPI.Bind = fmt.Sprintf("%s:2610", localIP)
 	c.SecretsAPI.Endpoint = c.SecretsAPI.Bind
-
-	c.Minio.Endpoint = "127.0.0.1:9000"
-	c.Minio.User = "vorteil"
-	c.Minio.Password = "vorteilvorteil"
-	c.Minio.Encrypt = c.Minio.Password
-	c.Minio.Region = "us-east-1"
-
-	c.Kernel.Runtime = "21.3.5"
-	c.Kernel.Linux = "21.3.5"
 
 	// read config file if exists
 	if len(file) > 0 {
@@ -208,11 +172,7 @@ func ReadConfig(file string) (*Config, error) {
 	ints := []struct {
 		name  string
 		value *int
-	}{
-		{minioSecure, &c.Minio.Secure},
-		{minioSSL, &c.Minio.SSL},
-		{certSecure, &c.Certs.Secure},
-	}
+	}{}
 
 	for _, i := range ints {
 		err := setInt(c, i.name, i.value)
@@ -226,14 +186,7 @@ func ReadConfig(file string) (*Config, error) {
 		value *string
 	}{
 		{dbConn, &c.Database.DB},
-		{minioEndpoint, &c.Minio.Endpoint},
-		{minioUser, &c.Minio.User},
-		{minioPassword, &c.Minio.Password},
-		{minioEncrypt, &c.Minio.Encrypt},
 		{instanceLoggingDriver, &c.InstanceLogging.Driver},
-		{minioRegion, &c.Minio.Region},
-		{kernelLinux, &c.Kernel.Linux},
-		{kernelRuntime, &c.Kernel.Runtime},
 		{flowBind, &c.FlowAPI.Bind},
 		{flowEndpoint, &c.FlowAPI.Endpoint},
 		{flowRegistry, &c.FlowAPI.Registry.Name},
@@ -241,15 +194,12 @@ func ReadConfig(file string) (*Config, error) {
 		{flowRegistryToken, &c.FlowAPI.Registry.Token},
 		{ingressBind, &c.IngressAPI.Bind},
 		{ingressEndpoint, &c.IngressAPI.Endpoint},
-		{isolateBind, &c.IsolateAPI.Bind},
-		{isolateEndpoint, &c.IsolateAPI.Endpoint},
 		{secretsBind, &c.SecretsAPI.Bind},
 		{secretsEndpoint, &c.SecretsAPI.Endpoint},
 		{secretsConn, &c.SecretsAPI.DB},
-		{certDir, &c.Certs.Directory},
-		{isolation, &c.IsolateAPI.Isolation},
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},
+		{flowProtocol, &c.FlowAPI.Protocol},
 	}
 
 	for _, i := range strings {

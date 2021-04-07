@@ -3,10 +3,13 @@ package direktiv
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -264,8 +267,39 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 	log.Debugf("calling isolate: %d", actionHash)
 
+	tr := &http.Transport{}
+
+	// on https we add the cert to ca
+	if we.server.config.FlowAPI.Protocol == "https" {
+
+		rootCAs, _ := x509.SystemCertPool()
+		if rootCAs == nil {
+			rootCAs = x509.NewCertPool()
+		}
+
+		// Read in the cert file
+		certs, err := ioutil.ReadFile("/etc/ssl/isolate/tls.crt")
+		if err != nil {
+			return NewInternalError(err)
+		}
+
+		// Append our cert to the system pool
+		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+			log.Println("No certs appended, using system certs only")
+		}
+
+		// Trust the augmented cert pool in our client
+		config := &tls.Config{
+			InsecureSkipVerify: true,
+			RootCAs:            rootCAs,
+		}
+		tr.TLSClientConfig = config
+
+	}
+
 	// calculate address
-	addr := fmt.Sprintf("http://%s-%d.default", ar.Workflow.Namespace, actionHash)
+	addr := fmt.Sprintf("%s://%s-%d.default",
+		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, actionHash)
 
 	// get exchange key
 	exchangeKey := we.server.config.FlowAPI.Exchange
@@ -290,7 +324,8 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		int64(ar.Workflow.Step)))
 
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Transport: tr,
+		Timeout:   10 * time.Second,
 	}
 	resp, err := client.Do(req)
 
@@ -436,7 +471,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			syncServer(context.Background(), we.db, &we.server.id, child.Id, cancelIsolate)
+			syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
 		case "subflow":
 			go func(id string) {
 				we.hardCancelInstance(id, "direktiv.cancels.parent", "cancelled by parent workflow")
@@ -486,7 +521,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 			select {
 			case <-timer:
 				// broadcast cancel across cluster
-				syncServer(context.Background(), we.db, &we.server.id, instanceId, cancelSubflow)
+				syncServer(context.Background(), we.db, &we.server.id, instanceId, CancelSubflow)
 				// TODO: mark cancelled instances even if not scheduled in
 			case <-killer:
 				return

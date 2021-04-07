@@ -15,10 +15,12 @@ import (
 	"time"
 
 	"github.com/fasthttp/router"
+	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	dlog "github.com/vorteil/direktiv/pkg/dlog"
@@ -67,6 +69,8 @@ func main() {
 		log.SetLevel(logrus.DebugLevel)
 	}
 
+	// setup pub/sub
+
 	k, err := ioutil.ReadFile(exKey)
 	if err != nil {
 		log.Errorf("can not read exchange key: %v", err)
@@ -93,19 +97,77 @@ func main() {
 		log.Errorf("can not setup logging: %v", err)
 	}
 
+	s := &fasthttp.Server{
+		Handler: r.Handler,
+	}
+
 	// listen for sigterm
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGTERM)
 
-	go func() {
+	go func(s *fasthttp.Server) {
 		<-sigs
 		if d.dbLog != nil {
 			d.dbLog.CloseConnection()
 		}
-	}()
+		s.Shutdown()
+	}(s)
 
-	log.Infof("starting direktiv sidecar")
-	log.Fatal(fasthttp.ListenAndServe(":8889", r.Handler))
+	log.Infof("starting direktiv sidecar container")
+	log.Fatal(s.ListenAndServe(":8889"))
+
+}
+
+func setupPubSub() error {
+
+	conninfo := os.Getenv("key")
+
+	reportProblem := func(ev pq.ListenerEventType, err error) {
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	listener := pq.NewListener(conninfo, 10*time.Second,
+		time.Minute, reportProblem)
+	err := listener.Listen(direktiv.FlowSync)
+	if err != nil {
+		return err
+	}
+
+	go func(l *pq.Listener) {
+
+		defer l.UnlistenAll()
+
+		for {
+
+			notification, more := <-l.Notify
+			if !more {
+				log.Info("Database listener closed.")
+				return
+			}
+
+			if notification == nil {
+				continue
+			}
+
+			req := new(direktiv.SyncRequest)
+			err = json.Unmarshal([]byte(notification.Extra), req)
+			if err != nil {
+				log.Errorf("Unexpected notification on database listener: %v", err)
+				continue
+			}
+
+			switch req.Cmd {
+			case direktiv.CancelIsolate:
+				log.Infof("CANCEL!!!!!! %v", req.ID.(string))
+			}
+
+		}
+
+	}(listener)
+
+	return nil
 
 }
 
@@ -227,7 +289,15 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 	}
 
 	if d.flowClient == nil {
-		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], grpc.WithInsecure())
+
+		creds, err := credentials.NewClientTLSFromFile("/etc/certs/direktiv/tls.crt", "")
+		if err != nil {
+			generateError(ctx, direktiv.ServiceErrorInternal,
+				fmt.Sprintf("can not get grpc cert: %s", err.Error()))
+			return
+		}
+
+		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], grpc.WithTransportCredentials(creds))
 		if err != nil {
 			generateError(ctx, direktiv.ServiceErrorInternal,
 				fmt.Sprintf("can not connect to flow: %s", err.Error()))
@@ -286,7 +356,7 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 		d.mtx.Unlock()
 	}()
 
-	log.Infof("handle request %s", info.aid)
+	log.Infof("handle request aid: %s", info.aid)
 
 	// wipe data field for "real" response
 	body := info.data

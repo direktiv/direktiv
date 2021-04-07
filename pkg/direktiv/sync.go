@@ -11,18 +11,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const flowSync = "flowsync"
+// FlowSync is the name of postgres pubsub channel
+const FlowSync = "flowsync"
 
 const (
-	addTimerSync = iota
-	deleteTimerSync
-	enableTimerSync
-	disableTimerSync
-	cancelIsolate
-	cancelSubflow
+	AddTimerSync = iota
+	DeleteTimerSync
+	EnableTimerSync
+	DisableTimerSync
+	CancelIsolate
+	CancelSubflow
 )
 
-type syncRequest struct {
+// SyncRequest sync maintenance requests between instances subscribed to FlowSync
+type SyncRequest struct {
 	Cmd    int
 	Sender uuid.UUID
 	ID     interface{}
@@ -41,7 +43,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 	minReconn := 10 * time.Second
 	maxReconn := time.Minute
 	listener := pq.NewListener(conninfo, minReconn, maxReconn, reportProblem)
-	err := listener.Listen(flowSync)
+	err := listener.Listen(FlowSync)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 				continue
 			}
 
-			req := new(syncRequest)
+			req := new(SyncRequest)
 			err = json.Unmarshal([]byte(notification.Extra), req)
 			if err != nil {
 				log.Errorf("Unexpected notification on database listener: %v", err)
@@ -74,17 +76,15 @@ func (s *WorkflowServer) startDatabaseListener() error {
 				log.Debugf("sync received: %v", req)
 
 				switch req.Cmd {
-				case addTimerSync:
+				case AddTimerSync:
 					s.tmManager.syncTimerAdd(int(req.ID.(float64)))
-				case deleteTimerSync:
+				case DeleteTimerSync:
 					s.tmManager.syncTimerDelete(req.ID.(string))
-				case enableTimerSync:
+				case EnableTimerSync:
 					s.tmManager.syncTimerEnable(req.ID.(string))
-				case disableTimerSync:
+				case DisableTimerSync:
 					s.tmManager.syncTimerDisable(req.ID.(string))
-				case cancelIsolate:
-					// s.isolateServer.finishCancelIsolate(req.ID.(string))
-				case cancelSubflow:
+				case CancelSubflow:
 					s.engine.finishCancelSubflow(req.ID.(string))
 				}
 
@@ -100,7 +100,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 
 func syncServer(ctx context.Context, db *dbManager, sid *uuid.UUID, id interface{}, cmd int) error {
 
-	var sr syncRequest
+	var sr SyncRequest
 	sr.Cmd = cmd
 
 	if sid != nil {
@@ -120,7 +120,7 @@ func syncServer(ctx context.Context, db *dbManager, sid *uuid.UUID, id interface
 	}
 	defer conn.Close()
 
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, string(b))
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", FlowSync, string(b))
 	if err, ok := err.(*pq.Error); ok {
 
 		log.Debugf("db notification failed: %v", err)

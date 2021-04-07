@@ -2,10 +2,12 @@ package direktiv
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"strings"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -15,13 +17,7 @@ import (
 
 const (
 	runsWorkflows = "w"
-	runsIsolates  = "i"
 	runsSecrets   = "s"
-)
-
-const (
-	lockID   = 2610
-	lockWait = 10
 )
 
 type component interface {
@@ -123,7 +119,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	// not needed for secrets
-	if s.runsComponent(runsWorkflows) || s.runsComponent(runsIsolates) {
+	if s.runsComponent(runsWorkflows) {
 		s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
 		if err != nil {
 			return nil, err
@@ -254,9 +250,11 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 
 	log.Debugf("%s endpoint starting at %s", name, bind)
 
-	options, err := optionsForGRPC(s.config.Certs.Directory, name, (s.config.Certs.Secure != 1))
+	// Create the TLS credentials
+	creds, err := credentials.NewServerTLSFromFile("/etc/certs/direktiv/tls.crt",
+		"/etc/certs/direktiv/tls.key")
 	if err != nil {
-		return err
+		return fmt.Errorf("could not load TLS keys: %s", err)
 	}
 
 	listener, err := net.Listen("tcp", bind)
@@ -264,7 +262,7 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 		return err
 	}
 
-	(*server) = grpc.NewServer(options...)
+	(*server) = grpc.NewServer(grpc.Creds(creds))
 
 	register(*server)
 
