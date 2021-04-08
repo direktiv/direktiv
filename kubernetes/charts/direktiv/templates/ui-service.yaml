@@ -12,6 +12,9 @@ spec:
       targetPort: 1605
       protocol: TCP
       name: ui
+      {{- if (eq .Values.ui.portType "NodePort") }}
+      nodePort: {{ int .Values.ui.nodePort }}
+      {{- end }}
   selector:
     {{- include "direktiv.selectorLabelsUI" . | nindent 4 }}
 {{- end }}

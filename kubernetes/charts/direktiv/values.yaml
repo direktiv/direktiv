@@ -105,6 +105,8 @@ flow:
 ui:
   image: "vorteil/ui"
   tag: "latest"
+  portType: "ClusterIP"
+  nodePort: 0
 
 # cert for inter service communication
 certificate:
