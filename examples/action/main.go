@@ -9,6 +9,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/vorteil/direktiv/pkg/direktiv"
 )
 
 func main() {
@@ -47,6 +49,9 @@ func shutDown(srv *http.Server) {
 
 func helloServer(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("This Is My Data"))
+
+	aid := r.Header.Get(direktiv.DirektivActionIDHeader)
+	log(aid, "Hello")
 }
 
 func log(aid, l string) {
