@@ -1,33 +1,21 @@
-FROM postgres:13.2-alpine
+FROM alpine/git as build-env
 
-EXPOSE 6666
+RUN git clone https://github.com/vorteil/direktiv.git /direktiv
 
-RUN apk --no-cache add podman --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-RUN apk --no-cache add sudo ca-certificates iptables ip6tables device-mapper udev make go openssl git
+RUN apk add curl
 
-COPY docker/ui/direktiv-ui /bin
-ADD docker/ui/build /web
+RUN curl -fsSL -o /helm.tar.gz https://get.helm.sh/helm-v3.5.3-linux-amd64.tar.gz && tar -C / -xvzf /helm.tar.gz
 
-COPY docker/all/install.sh /
-RUN chmod 755 /install.sh && /install.sh
+FROM rancher/k3s
+COPY --from=build-env /direktiv /direktiv
 
-ENV MINIO_ACCESS_KEY=vorteil
-ENV MINIO_SECRET_KEY=vorteilvorteil
-ENV DIREKTIV_DB="host=127.0.0.1 port=5432 user=direktiv dbname=direktiv password=direktiv sslmode=disable"
-ENV DIREKTIV_SECRETS_DB="host=127.0.0.1 port=5432 user=direktiv dbname=direktiv password=direktiv sslmode=disable"
+COPY --from=build-env /linux-amd64/helm /helm
 
-ENV POSTGRES_USER=direktiv
-ENV POSTGRES_PASSWORD=direktiv
-ENV POSTGRES_DB=direktiv
-ENV DIREKTIV_INGRESS_BIND=0.0.0.0:6666 
+RUN chmod -R 755 direktiv
 
-COPY direktiv /bin/direktiv
-RUN chmod 755 /bin/direktiv
-
-RUN mkdir -p /data && chmod 755 /bin/minio
-
-COPY docker/all/run.sh /
+ADD run.sh /
 RUN chmod 755 /run.sh
 
-#ENTRYPOINT ["/run.sh"]
-CMD ["/run.sh"]
+ADD debug.yaml /
+
+ENTRYPOINT ["/run.sh"]

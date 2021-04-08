@@ -1,53 +1,39 @@
 #!/bin/sh
 
-trap 'pkill -P $$; exit 1;' TERM INT
+echo "starting k3s"
 
-echo "starting ui"
+/bin/k3s server --disable traefik --write-kubeconfig-mode=644 > /var/log/k3s.log 2>&1 &
 
-/bin/direktiv-ui &
-
-echo "starting minio"
-./bin/minio --config-dir=/tmp server /data &
-status=$?
-if [ $status -ne 0 ]; then
-  echo "Failed to start minio: $status"
-  exit $status
-fi
-
-./usr/local/bin/docker-entrypoint.sh postgres &
-status=$?
-if [ $status -ne 0 ]; then
-  echo "Failed to start postgres: $status"
-  exit $status
-fi
-
-echo "waiting for minio"
-
-while ! echo exit | nc localhost 9000; do sleep 3; done
-
-echo "starting direktiv"
-
-/bin/direktiv -d -t wis &
-status=$?
-if [ $status -ne 0 ]; then
-  echo "Failed to start direktiv: $status"
-  exit $status
-fi
-
-
-echo "ready to go"
-while sleep 60; do
-  ps aux |grep direktiv-ui |grep -q -v grep
-  PROCESS_1_STATUS=$?
-  ps aux |grep minio |grep -q -v grep
-  PROCESS_2_STATUS=$?
-  ps aux |grep direktiv |grep -q -v grep
-  PROCESS_3_STATUS=$?
-  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 -o $PROCESS_3_STATUS -ne 0 ]; then
-    echo "One of the processes has already exited."
-    echo  $PROCESS_1_STATUS
-    echo  $PROCESS_2_STATUS
-    echo  $PROCESS_3_STATUS
-    exit 1
-  fi
+until [ -f /etc/rancher/k3s/k3s.yaml ]
+do
+    echo "waiting..."
+    sleep 1
 done
+
+echo "k3s running, waiting for 10 secs"
+
+sleep 10
+
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+cd direktiv/scripts/knative &&  ./install-knative.sh && cd ../../..
+
+kubectl get pods -A
+
+cd direktiv/kubernetes/charts/direktiv && /helm install -f /debug.yaml direktiv .
+
+echo "direktiv installed, pulling containers can take several minutes"
+sleep 5
+
+a=0
+until [ $a -gt 20 ]
+do
+  kubectl get pods -A
+  sleep 10
+  a=`expr $a + 1`
+done
+
+echo "UI: localhost:32221"
+echo "API: localhost:32222"
+
+sleep infinity

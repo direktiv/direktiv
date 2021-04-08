@@ -38,7 +38,6 @@ jobs:
         echo "RV set to $RV"
         if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
         echo "RV set to $RV"
-        make docker-isolate
         make docker-secrets
         make docker-flow
         make docker-cli
@@ -47,15 +46,19 @@ jobs:
         make docker-ui
         echo "containers built"
         docker tag direktiv-flow vorteil/flow:$RV
-        docker tag direktiv-isolate vorteil/isolate:$RV
+        docker tag direktiv-flow vorteil/flow
         docker tag direktiv-secrets vorteil/secrets:$RV
+        docker tag direktiv-secrets vorteil/secrets
         docker tag direktiv-cli vorteil/direkcli:$RV
+        docker tag direktiv-cli vorteil/direkcli
         docker tag direktiv-ui vorteil/ui:$RV
         docker tag direktiv-ui vorteil/ui
         docker image list
         docker push vorteil/flow:$RV
-        docker push vorteil/isolate:$RV
+        docker push vorteil/flow
         docker push vorteil/secrets:$RV
+        docker push vorteil/secrets
         docker push vorteil/direkcli:$RV
+        docker push vorteil/direkcli
         docker push vorteil/ui:$RV
         docker push vorteil/ui
