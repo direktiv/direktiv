@@ -40,24 +40,24 @@ jobs:
           cd /work/ui/frontend
           yarn install
           NODE_ENV=production yarn build
-    - name: push docker
-      run: |
-        echo "Copying Built UI Files over"
-        cp -r ui/frontend/build  build/docker/ui
-        make docker-all
-        docker images | grep direktiv
-        docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
-        docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
-        docker tag direktiv vorteil/direktiv:latest
-        docker push vorteil/direktiv:latest
-    - name: create vorteil image
-      run: |
-        wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
-        tar -xzf vorteil_linux-x86.tar.gz
-        ./vorteil projects convert-container vorteil/direktiv:latest d
-        cp build/default_docker.vcfg d/default.vcfg
-        cp build/run_pg.sh d/
-        ./vorteil packages package -o direktiv.vorteil d
+    # - name: push docker
+    #   run: |
+    #     echo "Copying Built UI Files over"
+    #     cp -r ui/frontend/build  build/docker/ui
+    #     make docker-all
+    #     docker images | grep direktiv
+    #     docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
+    #     docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
+    #     docker tag direktiv vorteil/direktiv:latest
+    #     docker push vorteil/direktiv:latest
+    # - name: create vorteil image
+    #   run: |
+    #     wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
+    #     tar -xzf vorteil_linux-x86.tar.gz
+    #     ./vorteil projects convert-container vorteil/direktiv:latest d
+    #     cp build/default_docker.vcfg d/default.vcfg
+    #     cp build/run_pg.sh d/
+    #     ./vorteil packages package -o direktiv.vorteil d
     - name: release direktiv
       id: create_release
       uses: actions/create-release@v1
@@ -68,15 +68,15 @@ jobs:
         release_name: Direktiv Release ${{ steps.get_version.outputs.VERSION }}
         draft: true
         prerelease: false
-    - name: upload vorteil image
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./direktiv.vorteil
-        asset_name: direktiv.vorteil
-        asset_content_type: application/octet-stream
+    # - name: upload vorteil image
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: ./direktiv.vorteil
+    #     asset_name: direktiv.vorteil
+    #     asset_content_type: application/octet-stream
     - name: upload vorteil cli
       uses: actions/upload-release-asset@v1
       env:
