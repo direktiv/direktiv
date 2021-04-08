@@ -48,6 +48,8 @@ spec:
               containerPort: 7777
               protocol: TCP
           env:
+          - name: DIREKTIV_INSTANCE_LOGGING_DRIVER
+            value: {{ .Values.logDriver}}
           - name: DIREKTIV_FLOW_SIDECAR
             value: {{ .Values.flow.sidecar }}
           - name: DIREKTIV_INGRESS_BIND
