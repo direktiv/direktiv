@@ -1,3 +1,22 @@
-Run the following command to access the UI  and API:
+
+API access:
+
+kubectl port-forward service/{{ include "direktiv.fullname" . }}-ingress 6666:6666
+
+{{- if (eq .Values.flow.ingressPortType "NodePort") }}
+
+or via NodePort
+
+localhost:{{- .Values.flow.ingressNodePort }}
+{{- end}}
+
+UI Access:
 
 kubectl port-forward service/{{ include "direktiv.fullname" . }}-ui 1605:1605
+
+{{- if (eq .Values.ui.portType "NodePort") }}
+
+or via NodePort
+
+localhost:{{- .Values.ui.nodePort }}
+{{- end}}

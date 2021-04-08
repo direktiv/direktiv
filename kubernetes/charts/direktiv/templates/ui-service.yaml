@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
 spec:
-  type: NodePort
+  type: {{ .Values.ui.portType }}
   ports:
     - port: 1605
       targetPort: 1605
