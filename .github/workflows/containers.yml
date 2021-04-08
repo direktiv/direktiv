@@ -41,6 +41,7 @@ jobs:
         make docker-secrets
         make docker-flow
         make docker-cli
+        make docker-all
         echo "Copying Built UI Files over"
         cp -r ui/frontend/build  build/docker/ui
         make docker-ui
@@ -53,6 +54,7 @@ jobs:
         docker tag direktiv-cli vorteil/direkcli
         docker tag direktiv-ui vorteil/ui:$RV
         docker tag direktiv-ui vorteil/ui
+        docker tag direktiv-kube vorteil/direktiv-kube
         docker image list
         docker push vorteil/flow:$RV
         docker push vorteil/flow
@@ -62,3 +64,4 @@ jobs:
         docker push vorteil/direkcli
         docker push vorteil/ui:$RV
         docker push vorteil/ui
+        docker push vorteil/direktiv-kube
