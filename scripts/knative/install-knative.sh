@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 kubectl apply -f serving-crds.yaml
 kubectl apply -f serving-core.yaml
