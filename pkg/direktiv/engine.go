@@ -311,6 +311,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	}
 
 	// add headers
+	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
 	req.Header.Add(DirektivPingAddrHeader, addr)
