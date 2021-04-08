@@ -244,6 +244,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		direktiv.DirektivTimeoutHeader,
 		direktiv.DirektivStepHeader,
 		direktiv.DirektivResponseHeader,
+		direktiv.DirektivNamespaceHeader,
 	}
 
 	// map with values of the headers
@@ -314,7 +315,8 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		d.flowClient = flow.NewDirektivFlowClient(conn)
 	}
 
-	log15log, err := d.dbLog.LoggerFunc("namespace", "instanceId")
+	log15log, err := d.dbLog.LoggerFunc(vals[direktiv.DirektivNamespaceHeader],
+		vals[direktiv.DirektivInstanceIDHeader])
 	if err != nil {
 		generateError(ctx, direktiv.ServiceErrorInternal,
 			fmt.Sprintf("can not setup logger: %s", err.Error()))

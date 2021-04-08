@@ -11,6 +11,7 @@ const (
 	DirektivTimeoutHeader     = "Direktiv-Timeout"
 	DirektivStepHeader        = "Direktiv-Step"
 	DirektivResponseHeader    = "Direktiv-Response"
+	DirektivNamespaceHeader   = "Direktiv-Namespace"
 
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
