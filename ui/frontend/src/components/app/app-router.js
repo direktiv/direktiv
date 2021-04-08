@@ -35,13 +35,6 @@ export default function AppRouter(props) {
         }
     }
 
-    const Fetch = useCallback(
-        (path, opts) => {
-            return fetch(`${context.SERVER_BIND}${path}`, opts);
-        },
-        []
-    );
-
     function toastCount() {
         if (toasts) {
             return toasts.length;
@@ -101,7 +94,6 @@ export default function AppRouter(props) {
             <ServerContext.Provider
                 value={{
                     ...context,
-                    Fetch: Fetch,
                     AddToast: addToast,
                     showToasts: showToasts,
                     ToggleToast: toggleToasts,

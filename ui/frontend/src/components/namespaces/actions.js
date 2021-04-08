@@ -33,7 +33,7 @@ function CreateWorkflowButton(props) {
                 setMyFiles([...acceptedFiles]);
             }
         },
-        [myFiles]
+        []
     );
 
     const {getRootProps, getInputProps} = useDropzone({
@@ -114,8 +114,7 @@ function CreateWorkflowButton(props) {
         }
 
 
-        context
-            .Fetch(`/namespaces/${props.namespace}/workflows`, {
+        fetch(`${context.SERVER_BIND}/namespaces/${props.namespace}/workflows`, {
                 method: "POST",
                 body: workflowBody,
             })

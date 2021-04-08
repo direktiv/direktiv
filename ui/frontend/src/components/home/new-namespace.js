@@ -60,10 +60,12 @@ export function NewNamespace(props) {
                 // Go style errors lol
                 let err = validationName(namespace);
                 if (err != null) {
-                    throw {message: err};
+                    let error = new Error();
+                    error = { ...error, message: err};
+                    throw error;
                 }
 
-                let resp = await context.Fetch(`/namespaces/${namespace}`, {
+                let resp = await fetch(`${context.SERVER_BIND}/namespaces/${namespace}`, {
                     method: "POST",
                 });
                 let text = await resp.text();

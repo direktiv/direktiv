@@ -69,7 +69,7 @@ export default function InstanceDetails(props) {
             </Col>
             <Col xs={12} style={{marginTop: "20px"}}>
                 <div>
-                    <h4 style={{marginBottom: "0px", fontWeight: 300}}>Input!:</h4> <br/>
+                    <h4 style={{marginBottom: "0px", fontWeight: 300}}>Input:</h4> <br/>
                     <InputComponent/>
                 </div>
                 {!basicValue.output ?

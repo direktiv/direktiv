@@ -45,7 +45,7 @@ export function InstanceLogs(props) {
     let fetchLogs = useCallback(() => {
         async function fetchLogs() {
             try {
-                let resp = await context.Fetch(`/instances/${params.namespace}/${params.workflow}/${params.id}/logs?offset=${logsOffset}&limit=${limit}`, {
+                let resp = await fetch(`${context.SERVER_BIND}/instances/${params.namespace}/${params.workflow}/${params.id}/logs?offset=${logsOffset}&limit=${limit}`, {
                     method: "GET",
                 })
                 if (!resp.ok) {
@@ -93,7 +93,7 @@ export function InstanceLogs(props) {
 
         return fetchLogs()
 
-    }, [params, context.Fetch, scrolled, logs, logsOffset, limit])
+    }, [params, context.SERVER_BIND, scrolled, logs, logsOffset, limit])
 
     useEffect(() => {
         if (!init) {

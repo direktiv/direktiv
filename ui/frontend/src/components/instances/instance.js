@@ -35,7 +35,7 @@ export default function Instance() {
     const fetchWorkflow = useCallback(() => {
         async function fetchWF() {
             try {
-                let resp = await context.Fetch(`/instances/${namespace}/${workflow}/${id}`, {})
+                let resp = await fetch(`${context.SERVER_BIND}/instances/${namespace}/${workflow}/${id}`, {})
                 if (!resp.ok) {
                     let text = await resp.text()
                     throw (new Error(`Error fetching instance workflow: ${text}`))
@@ -49,7 +49,7 @@ export default function Instance() {
         }
 
         fetchWF()
-    }, [context.Fetch, id, namespace, workflow])
+    }, [context.SERVER_BIND, id, namespace, workflow])
 
     const fetchWorkflowInstanceBasic = useCallback(() => {
         async function fetchWorkflowInstanceBasic() {
