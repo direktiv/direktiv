@@ -27,25 +27,6 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-        - name: minio
-          image: minio/minio
-          args: ["gateway", {{ .Values.isolate.minio.cloud }}]
-          imagePullPolicy: {{ .Values.pullPolicy }}
-          ports:
-            - name: minio
-              containerPort: 9000
-              protocol: TCP
-          env:
-            - name: MINIO_ROOT_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "direktiv.fullname" . }}
-                  key: minioAccessKey
-            - name: MINIO_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "direktiv.fullname" . }}
-                  key: minioSecretKey
         - name: ingress
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
