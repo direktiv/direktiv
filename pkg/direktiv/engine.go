@@ -1,11 +1,16 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
@@ -20,10 +25,10 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/isolate"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -52,8 +57,8 @@ type workflowEngine struct {
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
 
-	flowClient    flow.DirektivFlowClient
-	isolateClient isolate.DirektivIsolateClient
+	flowClient flow.DirektivFlowClient
+
 	secretsClient secrets.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
 	grpcConns     []*grpc.ClientConn
@@ -113,14 +118,6 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.grpcConns = append(we.grpcConns, conn)
 
 	we.flowClient = flow.NewDirektivFlowClient(conn)
-
-	// get isolate client
-	conn, err = getEndpointTLS(s.config, isolateComponent, s.config.IsolateAPI.Endpoint)
-	if err != nil {
-		return nil, err
-	}
-	we.grpcConns = append(we.grpcConns, conn)
-	we.isolateClient = isolate.NewDirektivIsolateClient(conn)
 
 	// get secrets client
 	conn, err = getEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
@@ -261,26 +258,84 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 	// TODO: should this ctx be modified with a shorter deadline?
 
-	var step int32
-	step = int32(ar.Workflow.Step)
-
-	var timeout int64
-	timeout = int64(ar.Workflow.Timeout)
-
-	_, err := we.isolateClient.RunIsolate(ctx, &isolate.RunIsolateRequest{
-		ActionId:   &ar.ActionID,
-		Namespace:  &ar.Workflow.Namespace,
-		InstanceId: &ar.Workflow.InstanceID,
-		Step:       &step,
-		Timeout:    &timeout,
-		Image:      &ar.Container.Image,
-		Command:    &ar.Container.Cmd,
-		Size:       &ar.Container.Size,
-		Data:       ar.Container.Data,
-		Registries: ar.Container.Registries,
-	})
+	// generate hash name as "url"
+	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ar.Workflow.Namespace, ar.Container.Image,
+		ar.Container.Cmd, ar.Container.Size), hash.FormatV2, nil)
 	if err != nil {
 		return NewInternalError(err)
+	}
+
+	log.Debugf("calling isolate: %d", actionHash)
+
+	tr := &http.Transport{}
+
+	// on https we add the cert to ca
+	if we.server.config.FlowAPI.Protocol == "https" {
+
+		rootCAs, _ := x509.SystemCertPool()
+		if rootCAs == nil {
+			rootCAs = x509.NewCertPool()
+		}
+
+		// Read in the cert file
+		certs, err := ioutil.ReadFile("/etc/ssl/isolate/tls.crt")
+		if err != nil {
+			return NewInternalError(err)
+		}
+
+		// Append our cert to the system pool
+		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+			log.Println("No certs appended, using system certs only")
+		}
+
+		// Trust the augmented cert pool in our client
+		config := &tls.Config{
+			InsecureSkipVerify: true,
+			RootCAs:            rootCAs,
+		}
+		tr.TLSClientConfig = config
+
+	}
+
+	// calculate address
+	addr := fmt.Sprintf("%s://%s-%d.default",
+		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, actionHash)
+
+	// get exchange key
+	exchangeKey := we.server.config.FlowAPI.Exchange
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
+		bytes.NewReader(ar.Container.Data))
+	if err != nil {
+		return err
+	}
+
+	// add headers
+	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+	req.Header.Add(DirektivPingAddrHeader, addr)
+	req.Header.Add(DirektivExchangeKeyHeader, exchangeKey)
+	req.Header.Add(DirektivResponseHeader, we.server.config.FlowAPI.Endpoint)
+	req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Timeout)))
+	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Step)))
+	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Step)))
+
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   10 * time.Second,
+	}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	if resp.StatusCode != 200 {
+		return NewInternalError(fmt.Errorf("action error status: %d",
+			resp.StatusCode))
 	}
 
 	return nil
@@ -416,7 +471,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			syncServer(context.Background(), we.db, &we.server.id, child.Id, cancelIsolate)
+			syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
 		case "subflow":
 			go func(id string) {
 				we.hardCancelInstance(id, "direktiv.cancels.parent", "cancelled by parent workflow")
@@ -466,7 +521,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 			select {
 			case <-timer:
 				// broadcast cancel across cluster
-				syncServer(context.Background(), we.db, &we.server.id, instanceId, cancelSubflow)
+				syncServer(context.Background(), we.db, &we.server.id, instanceId, CancelSubflow)
 				// TODO: mark cancelled instances even if not scheduled in
 			case <-killer:
 				return

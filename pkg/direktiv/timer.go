@@ -8,8 +8,8 @@ import (
 
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 
-	"github.com/mitchellh/hashstructure/v2"
-	"github.com/robfig/cron/v3"
+	hashstructure "github.com/mitchellh/hashstructure/v2"
+	cron "github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 )
@@ -83,9 +83,9 @@ func (tm *timerManager) disableTimer(ti *timerItem, remove, needsSync bool) erro
 	// send delete or disable request across cluster
 	if needsSync {
 
-		action := disableTimerSync
+		action := DisableTimerSync
 		if remove {
-			action = deleteTimerSync
+			action = DeleteTimerSync
 		}
 
 		err := syncServer(context.Background(), tm.server.dbManager,
@@ -168,7 +168,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 	// sync
 	if needsSync {
 		err = syncServer(context.Background(), tm.server.dbManager,
-			&tm.server.id, ti.dbItem.Name, enableTimerSync)
+			&tm.server.id, ti.dbItem.Name, EnableTimerSync)
 		if err != nil {
 			log.Errorf("can not send time enable sync request: %v", err)
 		}
@@ -263,7 +263,7 @@ func (tm *timerManager) newTimerItem(name, fn string, data []byte, time *time.Ti
 
 	if needsSync {
 		err = syncServer(context.Background(), tm.server.dbManager,
-			&tm.server.id, ti.dbItem.ID, addTimerSync)
+			&tm.server.id, ti.dbItem.ID, AddTimerSync)
 		if err != nil {
 			log.Errorf("can not send time add sync request: %v", err)
 		}

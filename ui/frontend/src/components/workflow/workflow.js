@@ -20,8 +20,7 @@ import JSONInputModal from "./json-input-modal";
 
 // Delete a workflow
 export async function DeleteWorkflow(context, namespace, workflow) {
-    let resp = await context.Fetch(
-        `/namespaces/${namespace}/workflows/${workflow}`,
+    let resp = await fetch(`${context.SERVER_BIND}/namespaces/${namespace}/workflows/${workflow}`,
         {
             method: "delete",
         }
@@ -50,8 +49,7 @@ export default function Workflow(props) {
 
     // Start a workflow pipepline
     async function runWorkflow(inputJSON, args) {
-        let resp = await args.context.Fetch(
-            `/namespaces/${args.namespace}/workflows/${args.workflow}/execute`,
+        let resp = await fetch(`${context.SERVER_BIND}/namespaces/${args.namespace}/workflows/${args.workflow}/execute`,
             {
                 method: "post",
                 body: inputJSON,
@@ -62,7 +60,11 @@ export default function Workflow(props) {
             if (text === "workflow is inactive") {
                 setActive(false)
             }
-            throw {message: text, type: "invalidArg"};
+            let error = new Error();
+
+            error = { ...error, message: text, type: "invalidArg"};
+          
+            throw error;
         } else {
             let json = await resp.json();
             args.context.AddToast(
@@ -82,10 +84,7 @@ export default function Workflow(props) {
 
     const fetchWorkflow = useCallback(() => {
         async function fetchWorkflow() {
-            let resp = await context.Fetch(
-                `/namespaces/${namespace}/workflows/${workflow.id}?name`,
-                {}
-            );
+            let resp = await fetch(`${context.SERVER_BIND}/namespaces/${namespace}/workflows/${workflow.id}?name`);
             if (!resp.ok) {
                 setRRS(RemoteResourceState.failed);
                 try {
@@ -124,11 +123,11 @@ export default function Workflow(props) {
         }
 
         fetchWorkflow();
-    }, []);
+    }, [context.SERVER_BIND, namespace, workflow.id]);
     // Fetch data on mount
     React.useEffect(() => {
         fetchWorkflow();
-    }, [context.Fetch, workflow, namespace]);
+    }, [fetchWorkflow, context.SERVER_BIND, workflow, namespace]);
 
     function renderSwitch(state) {
         switch (state) {

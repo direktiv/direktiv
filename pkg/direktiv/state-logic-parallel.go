@@ -131,7 +131,6 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			})
 
 			var fn *model.FunctionDefinition
-
 			fn, err = sl.workflow.GetFunction(action.Function)
 			if err != nil {
 				return NewInternalError(err)
@@ -143,19 +142,13 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			ar.Workflow.Namespace = instance.namespace
 			ar.Workflow.State = sl.state.GetID()
 			ar.Workflow.Step = instance.step
-			ar.Container.Image = fn.Image
-			ar.Container.Cmd = fn.Cmd
-			ar.Container.Size = int32(fn.Size)
+			ar.Workflow.Name = instance.wf.Name
 
 			// TODO: timeout
 			ar.Container.Data = inputData
-
-			// get registries
-			ar.Container.Registries, err = getRegistries(instance.engine.server.dbManager, instance.engine.server.config,
-				instance.engine.secretsClient, instance.namespace)
-			if err != nil {
-				return err
-			}
+			ar.Container.Image = fn.Image
+			ar.Container.Cmd = fn.Cmd
+			ar.Container.Size = fn.Size
 
 			err = instance.engine.doActionRequest(ctx, ar)
 			if err != nil {

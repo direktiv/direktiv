@@ -1,0 +1,22 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: test-10105319230591849704
+  namespace: default
+  labels:
+    networking.knative.dev/visibility: cluster-local
+spec:
+  template:
+    spec:
+      containers:
+      - image: localhost:5000/demo-action
+      - image: localhost:5000/sidecar
+        ports:
+          - containerPort: 8889
+        volumeMounts:
+          - name: exchange
+            mountPath: /var/secret
+      volumes:
+        - name: exchange
+          secret:
+            secretName: direktiv-isolate

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"os"
 	"strings"
@@ -16,11 +17,13 @@ import (
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/vorteil/pkg/elog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var flagInputFile string
 var flagGRPC string
 var flagJSON bool
+var flagSecure bool
 
 var conn *grpc.ClientConn
 var logger elog.View
@@ -52,7 +55,17 @@ var rootCmd = &cobra.Command{
 			connF = grpcConnection
 		}
 
-		conn, err = grpc.Dial(connF, grpc.WithInsecure())
+		var options []grpc.DialOption
+		if flagSecure {
+			config := &tls.Config{
+				InsecureSkipVerify: true, // TODO
+			}
+			options = append(options, grpc.WithTransportCredentials(credentials.NewTLS(config)))
+		} else {
+			options = append(options, grpc.WithInsecure())
+		}
+
+		conn, err = grpc.Dial(connF, options...)
 		if err != nil {
 			return err
 		}
@@ -501,6 +514,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&flagGRPC, "grpc", "", "", "ip and port for connection GRPC default is 127.0.0.1:6666")
 	rootCmd.PersistentFlags().BoolVarP(&flagJSON, "json", "", false, "provides json output")
+	rootCmd.PersistentFlags().BoolVarP(&flagSecure, "secure", "", false, "enable tls")
 	// workflowCmd add flag for the namespace
 	workflowExecuteCmd.PersistentFlags().StringVarP(&flagInputFile, "input", "", "", "filepath to json input")
 }

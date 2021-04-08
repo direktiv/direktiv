@@ -25,7 +25,7 @@ export function DeleteNamespace(props) {
     }
     const handleSubmit = async () => {
         try {
-            let resp = await context.Fetch(`/namespaces/${namespace}`, {method: "DELETE"})
+            let resp = await fetch(`${context.SERVER_BIND}/namespaces/${namespace}`, {method: "DELETE"})
             if (resp.ok) {
                 fetchNamespaces()
                 handleClose()

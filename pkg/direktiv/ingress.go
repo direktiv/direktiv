@@ -1,12 +1,19 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"regexp"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -29,7 +36,18 @@ type ingressServer struct {
 
 	secretsClient secrets.SecretsServiceClient
 	grpcConn      *grpc.ClientConn
+
+	kubeCA, kubeToken []byte
+
+	serviceTmpl string
 }
+
+const (
+	kubeAPICA    = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+	kubeAPIToken = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services"
+)
 
 func (is *ingressServer) stop() {
 
@@ -52,11 +70,29 @@ func (is *ingressServer) name() string {
 	return "ingress"
 }
 
-func newIngressServer(s *WorkflowServer) *ingressServer {
+func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
+
+	ca, err := ioutil.ReadFile(kubeAPICA)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := ioutil.ReadFile(kubeAPIToken)
+	if err != nil {
+		return nil, err
+	}
+
+	st, err := ioutil.ReadFile("/etc/config/template")
+	if err != nil {
+		return nil, err
+	}
 
 	return &ingressServer{
-		wfServer: s,
-	}
+		wfServer:    s,
+		kubeCA:      ca,
+		kubeToken:   token,
+		serviceTmpl: string(st),
+	}, nil
 
 }
 
@@ -74,7 +110,7 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
 		log.Debugf("append health check to ingress service")
-		healthServer := newHealthServer(s.config, s.isolateServer)
+		healthServer := newHealthServer(s.config, s.engine)
 		health.RegisterHealthServer(srv, healthServer)
 		reflection.Register(srv)
 	})
@@ -134,6 +170,12 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 	err := workflow.Load(document)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
+	}
+
+	// get actions
+	err = is.addKnativeFunctions(namespace, &workflow)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid container images: %v", err)
 	}
 
 	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
@@ -208,11 +250,17 @@ func (is *ingressServer) DeleteNamespace(ctx context.Context, in *ingress.Delete
 
 func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteWorkflowRequest) (*ingress.DeleteWorkflowResponse, error) {
 
-	var resp ingress.DeleteWorkflowResponse
-
+	var (
+		resp ingress.DeleteWorkflowResponse
+	)
 	uid := in.GetUid()
 
-	err := is.wfServer.dbManager.deleteWorkflow(ctx, uid)
+	err := is.deleteKnativeFunctions(uid)
+	if err != nil {
+		return nil, fmt.Errorf("can not delete knative services: %v", err)
+	}
+
+	err = is.wfServer.dbManager.deleteWorkflow(ctx, uid)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
@@ -499,6 +547,22 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
+	// delete and recreate all knative functions
+	err = is.deleteKnativeFunctions(uid)
+	if err != nil {
+		return nil, fmt.Errorf("can not delete knative services: %v", err)
+	}
+
+	// to add knative functions we need the namespace
+	wfdb, err := is.wfServer.dbManager.getWorkflowByUid(context.Background(), uid)
+	if err != nil {
+		return nil, err
+	}
+	err = is.addKnativeFunctions(wfdb.Edges.Namespace.ID, &workflow)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid container images: %v", err)
+	}
+
 	var checkRevisionVal int
 	var checkRevision *int
 	if in.Revision != nil {
@@ -651,4 +715,113 @@ func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecre
 func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 	return &resp, is.storeEncrypted(ctx, in, secrets.SecretTypes_REGISTRY)
+}
+
+func (is *ingressServer) deleteKnativeFunctions(uid string) error {
+
+	var wf model.Workflow
+
+	wfdb, err := is.wfServer.dbManager.getWorkflowByUid(context.Background(), uid)
+	if err != nil {
+		return err
+	}
+
+	// no need to error check, it passed the save check
+	wf.Load(wfdb.Workflow)
+	namespace := wfdb.Edges.Namespace.ID
+
+	for _, f := range wf.GetFunctions() {
+
+		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
+		if err != nil {
+			return err
+		}
+
+		svcName := fmt.Sprintf("%s-%d", namespace, ah)
+		url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svcName)
+
+		err = is.sendKuberequest(http.MethodDelete, url, nil)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+
+}
+
+func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.Workflow) error {
+
+	for _, f := range workflow.GetFunctions() {
+
+		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
+		if err != nil {
+			return err
+		}
+
+		log.Debugf("deleting isolate: %d", ah)
+
+		var (
+			cpu float64
+			mem int
+		)
+
+		switch f.Size {
+		case 1:
+			cpu = 1
+			mem = 512
+		case 2:
+			cpu = 2
+			mem = 1024
+		default:
+			cpu = 0.5
+			mem = 256
+		}
+
+		svc := fmt.Sprintf(is.serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
+			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
+			is.wfServer.config.FlowAPI.Sidecar)
+
+		err = is.sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
+			bytes.NewBufferString(svc))
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+
+}
+
+func (is *ingressServer) sendKuberequest(method, url string, data io.Reader) error {
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(is.kubeCA)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		},
+	}
+
+	req, _ := http.NewRequestWithContext(context.Background(), method, url, data)
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(is.kubeToken)))
+
+	_, err := client.Do(req)
+	return err
+
+}
+
+func serviceToHash(ns, img, cmd string, size model.Size) (uint64, error) {
+
+	return hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ns, img,
+		cmd, size), hash.FormatV2, nil)
+
 }

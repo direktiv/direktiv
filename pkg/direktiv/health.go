@@ -7,21 +7,20 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/vorteil/direktiv/pkg/health"
-	"github.com/vorteil/direktiv/pkg/isolate"
 )
 
 type healthServer struct {
 	health.UnimplementedHealthServer
 
-	config        *Config
-	grpc          *grpc.Server
-	isolateServer *isolateServer
+	config *Config
+	grpc   *grpc.Server
+	engine *workflowEngine
 }
 
-func newHealthServer(config *Config, isolate *isolateServer) *healthServer {
+func newHealthServer(config *Config, engine *workflowEngine) *healthServer {
 	return &healthServer{
-		config:        config,
-		isolateServer: isolate,
+		config: config,
+		engine: engine,
 	}
 }
 
@@ -34,33 +33,7 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 	var resp health.HealthCheckResponse
 	resp.Status = health.HealthCheckResponse_SERVING
 
-	if hs.isolateServer != nil {
-
-		dummy := ""
-		img := "vorteil/debug:v1"
-		var s int32
-
-		actionID := "testAction"
-		instanceID := "testInstance"
-
-		data := `{}`
-
-		ir := &isolate.RunIsolateRequest{
-			ActionId:   &actionID,
-			Namespace:  &dummy,
-			InstanceId: &instanceID,
-			Image:      &img,
-			Size:       &s,
-			Data:       []byte(data),
-		}
-
-		err := hs.isolateServer.runAction(ir, true)
-		if err != nil {
-			log.Errorf("health check failed: %v", err)
-			resp.Status = health.HealthCheckResponse_NOT_SERVING
-		}
-
-	}
+	log.Debugf("running health check executed")
 
 	return &resp, nil
 

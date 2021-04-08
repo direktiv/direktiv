@@ -26,7 +26,7 @@ export default function Home(props) {
             async function fetchNamespaces() {
                 try {
                     setLoading(true)
-                    let resp = await context.Fetch(`/namespaces`, {
+                    let resp = await fetch(`${context.SERVER_BIND}/namespaces`, {
                         method: `GET`
                     })
                     if (resp.ok) {
@@ -43,7 +43,7 @@ export default function Home(props) {
 
             fetchNamespaces()
         },
-        [context.Fetch],
+        [context.SERVER_BIND],
     )
 
     useEffect(() => {

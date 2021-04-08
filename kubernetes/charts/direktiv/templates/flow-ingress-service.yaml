@@ -1,0 +1,19 @@
+{{- if .Values.withFlow -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ingress
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.flow.ingressPortType }}
+  ports:
+    - port: 6666
+      name: ingress
+      protocol: TCP
+      {{- if (eq .Values.flow.ingressPortType "NodePort") }}
+      nodePort: {{ int .Values.flow.ingressNodePort }}
+      {{- end }}
+  selector:
+    {{- include "direktiv.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -20,7 +20,7 @@ export default function HomepageActivities(props) {
         () => {
             async function fetchInstances(name) {
                 try {
-                    let resp = await context.Fetch(`/instances/${name}`, {
+                    let resp = await fetch(`${context.SERVER_BIND}/instances/${name}`, {
                         method: `GET`
                     })
                     if (resp.ok) {
@@ -62,7 +62,7 @@ export default function HomepageActivities(props) {
 
             fetchAllInstances()
         },
-        [namespaces, context.Fetch],
+        [namespaces, context.SERVER_BIND],
     )
 
     useEffect(() => {

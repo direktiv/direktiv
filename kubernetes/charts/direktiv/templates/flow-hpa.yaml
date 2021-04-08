@@ -1,4 +1,4 @@
-{{- if .Values.autoscaling.enabled }}
+{{- if and (eq .Values.autoscaling.enabled true) (eq .Values.withFlow true) }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:

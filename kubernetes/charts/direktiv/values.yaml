@@ -68,9 +68,9 @@ resources: {}
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -80,36 +80,34 @@ affinity: {}
 
 # support services
 withSupport: true
-withIsolate: true
 withFlow: true
 withUI: true
 
 db: ""
+debug: "false"
 
-# isolate config
-isolate:
-  image: "vorteil/isolate"
+secrets:
+  image: "vorteil/secrets"
   tag: "latest"
-  isolation: "container"
-  minio:
-    # if minio local it acts as a gateway to S3 storage (AWS)
-    local: false
-    cloud: ""
-    endpoint: ""
-    accessKey: "direktiv"
-    secretKey: "direktivdirektiv"
+  db: ""
 
 # flow config
 flow:
-  image: "vorteil/flow"
+  image: "gerke74/flow"
   tag: "latest"
-  secretsImage: "vorteil/secrets"
-  secretsTag: "latest"
-  secretsDb: ""
-  isolateEndpoint: ""
+  ingressPortType: "ClusterIP"
+  ingressNodePort: 0
   secretsEndpoint: ""
+  exchange: "checkMe"
+  sidecar: "vorteil/sidecar"
 
 # ui config
 ui:
   image: "vorteil/ui"
   tag: "latest"
+  portType: "ClusterIP"
+  nodePort: 0
+
+# cert for inter service communication
+certificate:
+key:
