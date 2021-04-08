@@ -70,5 +70,5 @@ jobs:
         docker push vorteil/ui
         docker push vorteil/direktiv-kube:$RV
         docker push vorteil/direktiv-kube
-        docker push sidecar vorteil/sidecar:$RV
-        docker push sidecar vorteil/sidecar
+        docker push vorteil/sidecar:$RV
+        docker push vorteil/sidecar
