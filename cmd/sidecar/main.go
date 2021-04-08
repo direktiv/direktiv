@@ -107,11 +107,12 @@ func main() {
 
 	go func(s *fasthttp.Server) {
 		<-sigs
-		log.Infof("shutting down")
+		log.Debugf("shutting down")
 		if d.dbLog != nil {
 			d.dbLog.CloseConnection()
 		}
 		s.Shutdown()
+		log.Debugf("shutting down completed")
 	}(s)
 
 	log.Debugf("starting direktiv sidecar container")
