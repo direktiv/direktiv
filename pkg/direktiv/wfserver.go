@@ -2,10 +2,13 @@ package direktiv
 
 import (
 	"context"
+	"fmt"
 	"net"
+	"os"
 	"strings"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -15,13 +18,7 @@ import (
 
 const (
 	runsWorkflows = "w"
-	runsIsolates  = "i"
 	runsSecrets   = "s"
-)
-
-const (
-	lockID   = 2610
-	lockWait = 10
 )
 
 type component interface {
@@ -37,10 +34,9 @@ type WorkflowServer struct {
 	config     *Config
 	serverType string
 
-	dbManager     *dbManager
-	tmManager     *timerManager
-	engine        *workflowEngine
-	isolateServer *isolateServer
+	dbManager *dbManager
+	tmManager *timerManager
+	engine    *workflowEngine
 
 	LifeLine       chan bool
 	instanceLogger dlog.Log
@@ -90,7 +86,11 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	addCron(timerCleanOneShot, "*/10 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
-	ingressServer := newIngressServer(s)
+	ingressServer, err := newIngressServer(s)
+	if err != nil {
+		return err
+	}
+
 	s.components[ingressComponent] = ingressServer
 
 	flowServer := newFlowServer(s.config, s.engine)
@@ -120,7 +120,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	// not needed for secrets
-	if s.runsComponent(runsWorkflows) || s.runsComponent(runsIsolates) {
+	if s.runsComponent(runsWorkflows) {
 		s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
 		if err != nil {
 			return nil, err
@@ -133,15 +133,6 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 			return nil, err
 		}
 		s.dbManager.tm = s.tmManager
-	}
-
-	if s.runsComponent(runsIsolates) {
-		is, err := newIsolateManager(s.config, s.dbManager, &s.instanceLogger)
-		if err != nil {
-			return nil, err
-		}
-		s.isolateServer = is
-		s.components[isolateComponent] = is
 	}
 
 	if s.runsComponent(runsSecrets) {
@@ -260,9 +251,15 @@ func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, regi
 
 	log.Debugf("%s endpoint starting at %s", name, bind)
 
-	options, err := optionsForGRPC(s.config.Certs.Directory, name, (s.config.Certs.Secure != 1))
-	if err != nil {
-		return err
+	var options []grpc.ServerOption
+
+	// Create the TLS credentials
+	if _, err := os.Stat(TLSKey); !os.IsNotExist(err) {
+		creds, err := credentials.NewServerTLSFromFile(TLSCert, TLSKey)
+		if err != nil {
+			return fmt.Errorf("could not load TLS keys: %s", err)
+		}
+		options = append(options, grpc.Creds(creds))
 	}
 
 	listener, err := net.Listen("tcp", bind)

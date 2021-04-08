@@ -80,37 +80,32 @@ affinity: {}
 
 # support services
 withSupport: true
-withIsolate: true
 withFlow: true
 withUI: true
 
 db: ""
 debug: "false"
 
-# isolate config
-isolate:
-  image: "gerke74/isolate"
+secrets:
+  image: "vorteil/secrets"
   tag: "latest"
-  isolation: "container"
-  minio:
-    # if minio local it acts as a gateway to S3 storage (AWS)
-    local: false
-    cloud: "s3"
-    endpoint: ""
-    accessKey: "direktiv"
-    secretKey: "direktivdirektiv"
+  db: ""
 
 # flow config
 flow:
   image: "gerke74/flow"
   tag: "latest"
-  secretsImage: "vorteil/secrets"
-  secretsTag: "latest"
-  secretsDb: ""
-  isolateEndpoint: ""
+  ingressPortType: "ClusterIP"
+  ingressNodePort: 0
   secretsEndpoint: ""
+  exchange: "checkMe"
+  sidecar: "vorteil/sidecar"
 
 # ui config
 ui:
   image: "vorteil/ui"
   tag: "latest"
+
+# cert for inter service communication
+certificate:
+key:

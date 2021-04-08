@@ -4,7 +4,6 @@
 flow_generated_files := $(shell find pkg/flow/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 health_generated_files := $(shell find pkg/health/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 ingress_generated_files := $(shell find pkg/ingress/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-isolate_generated_files := $(shell find pkg/isolate/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 secrets_generated_files := $(shell find pkg/secrets/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 hasYarn := $(shell which yarn)
 
@@ -79,6 +78,11 @@ docker-cli:
 docker-cli: build-cli
 		cp ${mkfile_dir_main}/direkcli  ${mkfile_dir_main}/build/
 		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
+
+.PHONY: docker-sidecar
+docker-sidecar:
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/main.go
+	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
 
 .PHONY: build
 build:

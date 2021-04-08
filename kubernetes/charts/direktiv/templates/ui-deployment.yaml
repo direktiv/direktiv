@@ -30,7 +30,7 @@ spec:
         - name: ui
           image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
           command: ["/direktiv-ui"]
-          args: ["--direktiv-endpoint={{ include "direktiv.fullname" . }}:6666", "--bind=0.0.0.0:1605"]
+          args: ["--direktiv-endpoint={{ include "direktiv.fullname" . }}-ingress:6666", "--bind=0.0.0.0:1605"]
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: ui

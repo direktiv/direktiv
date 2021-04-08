@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-template
+data:
+  template: |
+    {
+      "apiVersion": "serving.knative.dev/v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "%s",
+        "namespace": "default",
+        "labels": {
+          "networking.knative.dev/visibility": "cluster-local"
+        }
+      },
+      "spec": {
+        "template": {
+          "spec": {
+            "containers": [
+              {
+                "image": "%s",
+    						"resources": {
+                  "requests": {
+                    "cpu": %f,
+                    "memory": "%s"
+                  },
+                  "limits": {
+                    "cpu": %f,
+                    "memory": "%s"
+                  }
+                }
+              },
+              {
+                "image": "%s",
+                "env": [
+                  {
+                    "name": "DIREKTIV_DB",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "{{ include "direktiv.fullname" . }}",
+                        "key": "db"
+                      }
+                    }
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 8889
+                  }
+                ],
+                "volumeMounts": [
+                  {{- if ne (default .Values.certificate "none") "none" }}
+                  {
+                    "name": "certs",
+                    "mountPath": "/etc/certs/direktiv",
+                    "readOnly": true
+                  },
+                  {{- end }}
+                  {
+                    "name": "exchange",
+                    "mountPath": "/var/secret"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {{- if ne (default .Values.certificate "none") "none" }}
+              {
+                "name": "certs",
+                "secret": {
+                  "secretName": "{{ include "direktiv.fullname" . }}-tls-secret"
+                }
+                },
+              {{- end }}
+              {
+                "name": "exchange",
+                "secret": {
+                  "secretName": "{{- .Release.Name }}-isolate"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }

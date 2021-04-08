@@ -51,6 +51,14 @@ spec:
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ["/bin/direktiv"]
           args: ["-t", "w", "-d"]
+          volumeMounts:
+          - name: service-template
+            mountPath: /etc/config
+          {{- if ne (default .Values.certificate "none") "none" }}
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
+          {{- end }}
           ports:
             - name: ingress
               containerPort: 6666
@@ -59,26 +67,35 @@ spec:
               containerPort: 7777
               protocol: TCP
           env:
+          - name: DIREKTIV_FLOW_SIDECAR
+            value: {{ .Values.flow.sidecar }}
           - name: DIREKTIV_INGRESS_BIND
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
+          - name: "DIREKTIV_FLOW_ENDPOINT"
+            value: "{{ include "direktiv.fullname" . }}-flow:7777"
+          - name: DIREKTIV_FLOW_EXCHANGE
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}-isolate
+                key: exchangeKey
           - name: DIREKTIV_DB
             valueFrom:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
-          - name: DIREKTIV_ISOLATE_ENDPOINT
-            {{- if .Values.flow.isolateEndpoint }}
-            value: {{ .Values.flow.isolateEndpoint | quote}}
-            {{- else }}
-            value: "{{ include "direktiv.fullname" . }}-isolate:8888"
-            {{- end}}
           - name: DIREKTIV_SECRETS_ENDPOINT
             value:  "localhost:2610"
         - name: secrets
-          image: "{{ .Values.registry }}/{{ .Values.flow.secretsImage }}:{{ .Values.flow.secretsTag | default .Chart.AppVersion }}"
+          image: "{{ .Values.registry }}/{{ .Values.secrets.image }}:{{ .Values.secrets.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if ne (default .Values.certificate "none") "none" }}
+          volumeMounts:
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
+          {{- end }}
           ports:
             - name: secrets
               containerPort: 2610
@@ -91,6 +108,15 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsDb
+      volumes:
+        - name: service-template
+          configMap:
+            name: service-template
+        {{- if ne (default .Values.certificate "none") "none" }}
+        - name: certs
+          secret:
+            secretName: {{ include "direktiv.fullname" . }}-tls-secret
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
