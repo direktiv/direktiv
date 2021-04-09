@@ -29,7 +29,7 @@ Workflows can be triggered by CloudEvents for event-based solutions, can use cro
 Direktiv runs as single pod on kubernetes but each workflow step can be executed on every pod in the system to achieve load balancing and high availability during workflow execution. It uses [Knative](https://knative.dev/) to execute containers as workflow actions.
 
 <p align="center">
-  <img src="assets/images/direktiv-diagram-v0.2.0-background.png" alt="direktiv">
+  <img src="assets/images/direktiv-diagram-v0.2.0-backgound.png" alt="direktiv">
 </p>
 
 
