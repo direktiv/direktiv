@@ -1,3 +1,0 @@
-[[program]]
-  args = "direktiv-ui"
-  env = ["PATH=/usr/sbin:/bin:/sbin:/usr/local/bin:/usr/bin"]
