@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -265,7 +266,89 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
-	log.Debugf("calling isolate: %d", actionHash)
+	we.doHTTPRequest(ctx, actionHash, ar)
+
+	// log.Debugf("calling isolate: %d", actionHash)
+	//
+	// tr := &http.Transport{}
+	//
+	// // on https we add the cert to ca
+	// if we.server.config.FlowAPI.Protocol == "https" {
+	//
+	// 	rootCAs, _ := x509.SystemCertPool()
+	// 	if rootCAs == nil {
+	// 		rootCAs = x509.NewCertPool()
+	// 	}
+	//
+	// 	// Read in the cert file
+	// 	certs, err := ioutil.ReadFile("/etc/ssl/isolate/tls.crt")
+	// 	if err != nil {
+	// 		return NewInternalError(err)
+	// 	}
+	//
+	// 	// Append our cert to the system pool
+	// 	if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+	// 		log.Println("No certs appended, using system certs only")
+	// 	}
+	//
+	// 	// Trust the augmented cert pool in our client
+	// 	config := &tls.Config{
+	// 		InsecureSkipVerify: true,
+	// 		RootCAs:            rootCAs,
+	// 	}
+	// 	tr.TLSClientConfig = config
+	//
+	// }
+	//
+	// // calculate address
+	// addr := fmt.Sprintf("%s://%s-%d.default",
+	// 	we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, actionHash)
+	//
+	// // get exchange key
+	// exchangeKey := we.server.config.FlowAPI.Exchange
+	//
+	// req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
+	// 	bytes.NewReader(ar.Container.Data))
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// // add headers
+	// req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
+	// req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	// req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+	// req.Header.Add(DirektivPingAddrHeader, addr)
+	// req.Header.Add(DirektivExchangeKeyHeader, exchangeKey)
+	// req.Header.Add(DirektivResponseHeader, we.server.config.FlowAPI.Endpoint)
+	// req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
+	// 	int64(ar.Workflow.Timeout)))
+	// req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+	// 	int64(ar.Workflow.Step)))
+	// req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+	// 	int64(ar.Workflow.Step)))
+	// req.Header.Add("Host", addr)
+	//
+	// client := &http.Client{
+	// 	Transport: tr,
+	// 	Timeout:   10 * time.Second,
+	// }
+	// resp, err := client.Do(req)
+	//
+	// if err != nil {
+	// 	return NewInternalError(err)
+	// }
+	//
+	// if resp.StatusCode != 200 {
+	// 	return NewInternalError(fmt.Errorf("action error status: %d",
+	// 		resp.StatusCode))
+	// }
+
+	return nil
+
+}
+
+func (we *workflowEngine) doHTTPRequest(ctx context.Context,
+	ah uint64, ar *isolateRequest) error {
 
 	tr := &http.Transport{}
 
@@ -280,7 +363,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		// Read in the cert file
 		certs, err := ioutil.ReadFile("/etc/ssl/isolate/tls.crt")
 		if err != nil {
-			return NewInternalError(err)
+			return err
 		}
 
 		// Append our cert to the system pool
@@ -299,7 +382,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 	// calculate address
 	addr := fmt.Sprintf("%s://%s-%d.default",
-		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, actionHash)
+		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah)
 
 	// get exchange key
 	exchangeKey := we.server.config.FlowAPI.Exchange
@@ -329,10 +412,28 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		Transport: tr,
 		Timeout:   10 * time.Second,
 	}
-	resp, err := client.Do(req)
+
+	var (
+		resp *http.Response
+		ok   bool
+	)
+
+	// ptentially dns error
+	for i := 0; i < 10; i++ {
+		resp, err = client.Do(req)
+		if err != nil {
+			err, ok = err.(*net.DNSError)
+			if !ok {
+				return err
+			}
+			time.Sleep(100 * time.Millisecond)
+		} else {
+			break
+		}
+	}
 
 	if err != nil {
-		return NewInternalError(err)
+		return err
 	}
 
 	if resp.StatusCode != 200 {

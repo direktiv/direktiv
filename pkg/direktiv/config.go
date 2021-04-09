@@ -58,12 +58,6 @@ type Config struct {
 		Endpoint string
 	} `toml:"ingressAPI"`
 
-	IsolateAPI struct {
-		Bind      string
-		Endpoint  string
-		Isolation string
-	} `toml:"isolateAPI"`
-
 	SecretsAPI struct {
 		Bind     string
 		Endpoint string
@@ -141,10 +135,6 @@ func ReadConfig(file string) (*Config, error) {
 
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
-
-	c.IsolateAPI.Bind = fmt.Sprintf("%s:8888", localIP)
-	c.IsolateAPI.Endpoint = c.IsolateAPI.Bind
-	c.IsolateAPI.Isolation = "vorteil"
 
 	c.SecretsAPI.Bind = fmt.Sprintf("%s:2610", localIP)
 	c.SecretsAPI.Endpoint = c.SecretsAPI.Bind

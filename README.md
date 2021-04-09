@@ -12,66 +12,38 @@
 
 [![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
-**The Direktiv Beta is available now!**
-
-<p align="center">
-  <a href="https://wf.direktiv.io/">
-    <img src="assets/images/direktiv-workflow.png" alt="direktiv-beta">
-  </a>
-    <h5 align="center">Online Direktiv Beta now Available</h5>
-</p>
 
 ## What is Direktiv?
 
-**Diretiv is a serverless workflow engine.**
+**Diretiv is a serverless workflow engine for Kubernetes and Knative.**
 
-Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, can run on container platforms and executes containers as "plugins".
+Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, runs on kubernetes and executes containers as "plugins".
 
 Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run containers as part of Direktiv workflows just about any logic can be implemented.
 
 Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
 
+
+## Direktiv Architecture
+
+Direktiv runs as single pod on kubernetes but each workflow step can be executed on every pod in the system to achieve load balancing and high availability during workflow execution. It uses [Knative](https://knative.dev/) to execute containers as workflow actions.
+
+<p align="center">
+  <img src="assets/images/direktiv-diagram.png" alt="direktiv">
+</p>
+
+
+
 ## Quickstart
 
 ### Starting the Server
 
-Getting a local playground environment can be easily done with either [Vorteil.io](github.com/vorteil/vorteil) or Docker. Direktiv's default isolation level is firecracker based on vorteil
-machines. This behaviour can be changed in the configuration file or via environment variable.
+Getting a local playground environment can be easily done with Docker. The following command starts a docker container with kubernetes. *On startup it can take a few minutes to download all images.* When the installation is done all pods should show "Running" or "Completed".
 
-****
+```
+docker run --privileged -p 6666:32222 -p 8080:32221 -ti vorteil/direktiv-kube
+```
 
-***Using Docker:***
-
-_Container Isolation:_
-
-`docker run --privileged -ti -p6666:6666 -p8080:8080 -eDIREKTIV_ISOLATION=container vorteil/direktiv`
-
-_Firecracker Isolation_
-
-`docker run --privileged -ti -p6666:6666 -p8080:8080 vorteil/direktiv`
-
-_Note:_
-
-- *You may need to run this command as an administrator.*
-
-- ***For VM isolation level only*** In a public cloud instance, nested virualization is needed to support the firecracker micro-VMs . Each public cloud provider has different configuration settings which need to be applied to enable nested virtualization. Examples are shown below for each public cloud provider:
-  - [Google Cloud Platform](https://cloud.google.com/compute/docs/instances/enable-nested-virtualization-vm-instances)
-  - Amazon Web Services (only supported on bare metal instances)
-  - [Microsoft Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/nested-virtualization)
-  - Alibaba (only supported on bare metal instances)
-  - [Oracle Cloud](https://blogs.oracle.com/cloud-infrastructure/nested-kvm-virtualization-on-oracle-iaas)
-  - [VMware](https://communities.vmware.com/t5/Nested-Virtualization-Documents/Running-Nested-VMs/ta-p/2781466)
-
-***Using Vorteil:***
-
-With Vorteil installed (full instructions [here](https://github.com/vorteil/vorteil)):
-
- 1. download `direktiv.vorteil` from the [releases page](https://github.com/vorteil/direktiv/releases),
- 2. run one of the following commands from within your downloads folder:
-
-  `vorteil run direktiv.vorteil` for firecracker/vorteil isolation
-
-   `vorteil run --program[2].env="DIREKTIV_ISOLATION=container" direktiv.vorteil` for container isolation
 
 ***Testing Installation:***
 
@@ -143,13 +115,6 @@ Output: {"msg":"Hello, Alan!"}
 Pre-built plugins are available from this Github repo - we're working hard to add more every day!
 
 [https://github.com/vorteil/direktiv-apps](https://github.com/vorteil/direktiv-apps)
-
-### Roadmap
-
-- Installation instructions (Kubernetes, Non-Kubernetes environments, Container/Vorteil setting)
-- Providing individual vorteil / docker containers for individual components (workflow, isolates etc.)
-- HTTP API & Simple UI
-- Service Mesh configuration
 
 ## Workflow Example
 
@@ -304,32 +269,11 @@ states:
     }'
 ```
 
-The Direktiv Beta is available online now!
-
-<p align="center">
-  <a href="https://wf.direktiv.io/">
-    <img src="assets/images/direktiv-workflow.png" alt="direktiv-beta">
-  </a>
-    <h5 align="center">Online Direktiv Beta now Available</h5>
-</p>
-
 ## Why use Direktiv?
-
-Direktiv was created to address 4 problems faced with workflow engines in general:
 
 - *Cloud agnostic*: we wanted Direktiv to run on any platform or cloud, support any code or capability and NOT be dependent on the cloud provider's services for running the workflow or executing the actions (but obviously support it all)
 - *Simplicity*: the configuration of the workflow components should be simple more than anything else. Using only YAML and `jq` you should be able to express all workflow states, transitions, evaluations and actions needed to complete the workflow
 - *Reusable*: if you're going to the effort and trouble of pushing all your microservices, code or application components into a container platform why not have the ability to reuse and standardise this code across all of your workflows. We wanted to ensure that your code always remains reusable and portable and not tied into a specific vendor format or requirement (or vendor specific language).
-- *Multi-tenanted and secure*: we want to use Direktiv in a multi-tenant service provider space, which means all workflow executions have to be isolated, data access secured and isolated and all workflows and actions are truly ephemeral (or serverless).
-
-## Direktiv internals?
-
-This repository contains a reference implementation that runs Docker containers as isolated virtual machines on [Firecracker](https://github.com/firecracker-microvm/firecracker) using [Vorteil.io](github.com/vorteil/vorteil).
-
-<p align="center">
-  <img src="assets/images/direktiv-overview-solid.png" alt="direktiv">
-</p>
-
 
 
 ## Code of Conduct
@@ -349,5 +293,4 @@ Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 * The [direktiv.io](https://direktiv.io/) website.
 * The [vorteil.io](https://github.com/vorteil/vorteil/) repository.
 * The Direktiv [documentation](https://docs.direktiv.io/).
-* The [Direktiv Beta UI](http://wf.direktiv.io/).
 * The [Godoc](https://godoc.org/github.com/vorteil/direktiv) library documentation.

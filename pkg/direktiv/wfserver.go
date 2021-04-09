@@ -125,9 +125,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	if s.runsComponent(runsWorkflows) {
 		err = s.initWorkflowServer()
 		if err != nil {
 			return nil, err

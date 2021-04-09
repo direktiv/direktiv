@@ -115,8 +115,11 @@ func main() {
 		log.Debugf("shutting down completed")
 	}(s)
 
-	log.Debugf("starting direktiv sidecar container")
-	log.Fatal(s.ListenAndServe(":8889"))
+	log.Infof("starting direktiv sidecar container")
+	err = s.ListenAndServe(":8889")
+	if err != nil {
+		log.Errorf("error running server: %v", err)
+	}
 
 }
 
@@ -376,6 +379,7 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 		svcAddr, bytes.NewReader(body))
 	if err != nil {
+		log.Errorf("can not request service: %v", err)
 		info.ec = direktiv.ServiceErrorNetwork
 		info.em = fmt.Sprintf("create request failed: %s", err.Error())
 		d.respondToFlow(info)
