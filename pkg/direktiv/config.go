@@ -37,10 +37,7 @@ const (
 	// instance logging
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
 
-	certDir    = "DIREKTIV_CERTS"
-	certSecure = "DIREKTIV_SECURE"
-
-	// isolation = "DIREKTIV_ISOLATION"
+	mockupMode = "DIREKTIV_MOCKUP"
 )
 
 // Config is the configuration for workflow and runner server
@@ -82,6 +79,7 @@ type Config struct {
 	}
 
 	Registries map[string]string
+	MockupMode int
 }
 
 func setIP(config *Config, env string, value *net.IP) error {
@@ -172,7 +170,9 @@ func ReadConfig(file string) (*Config, error) {
 	ints := []struct {
 		name  string
 		value *int
-	}{}
+	}{
+		{mockupMode, &c.MockupMode},
+	}
 
 	for _, i := range ints {
 		err := setInt(c, i.name, i.value)

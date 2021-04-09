@@ -72,19 +72,28 @@ func (is *ingressServer) name() string {
 
 func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 
-	ca, err := ioutil.ReadFile(kubeAPICA)
-	if err != nil {
-		return nil, err
-	}
+	var (
+		ca, token, st []byte
+		err           error
+	)
 
-	token, err := ioutil.ReadFile(kubeAPIToken)
-	if err != nil {
-		return nil, err
-	}
+	if s.config.MockupMode == 0 {
 
-	st, err := ioutil.ReadFile("/etc/config/template")
-	if err != nil {
-		return nil, err
+		ca, err = ioutil.ReadFile(kubeAPICA)
+		if err != nil {
+			return nil, err
+		}
+
+		token, err = ioutil.ReadFile(kubeAPIToken)
+		if err != nil {
+			return nil, err
+		}
+
+		st, err = ioutil.ReadFile("/etc/config/template")
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	return &ingressServer{
@@ -719,6 +728,10 @@ func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreReg
 
 func (is *ingressServer) deleteKnativeFunctions(uid string) error {
 
+	if is.wfServer.config.MockupMode == 1 {
+		return nil
+	}
+
 	var wf model.Workflow
 
 	wfdb, err := is.wfServer.dbManager.getWorkflowByUid(context.Background(), uid)
@@ -752,6 +765,10 @@ func (is *ingressServer) deleteKnativeFunctions(uid string) error {
 }
 
 func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.Workflow) error {
+
+	if is.wfServer.config.MockupMode == 1 {
+		return nil
+	}
 
 	for _, f := range workflow.GetFunctions() {
 

@@ -48,18 +48,12 @@ run-postgres-docker:
 
 # protoc generation
 .PHONY: protoc
-protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(isolate_generated_files) $(secrets_generated_files)
+protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(secrets_generated_files)
 
 .PHONY: docker-all
 docker-all:
 docker-all: build docker-ui
 	cd build && docker build -t direktiv -f docker/all/Dockerfile .
-
-.PHONY: docker-isolate
-docker-isolate:
-docker-isolate: build
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
-	cd build && docker build -t direktiv-isolate -f docker/isolate/Dockerfile .
 
 .PHONY: docker-secrets
 docker-secrets:
@@ -120,23 +114,15 @@ docker-ui:
 run-ui: build-ui-frontend
 	go run ./ui/server -bind=':8080' -web-dir='ui/frontend/build'
 
-# run e.g. IP=192.168.0.120 make run-isolate-docker
-# add -e DIREKTIV_ISOLATION=container for container isolation
-.PHONY: run-isolate-docker
-run-isolate-docker:
-	docker run -p 8888:8888 -e DIREKTIV_ISOLATE_BIND="0.0.0.0:8888" \
-	-e DIREKTIV_MINIO_ENDPOINT="$(IP):9000" \
-	-e DIREKTIV_DB="host=$(IP) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
-	--privileged \
-	direktiv-isolate /bin/direktiv -t i -d
 
 # run as sudo because networking needs root privileges
 .PHONY: run
 run:
 	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
-	DIREKTIV_MINIO_SSL=1 \
-	go run cmd/direktiv/main.go -d -t wis -c ${mkfile_dir_main}/build/conf.toml
+	DIREKTIV_INSTANCE_LOGGING_DRIVER="database" \
+	DIREKTIV_MOCKUP=1 \
+	go run cmd/direktiv/main.go -d -t ws -c ${mkfile_dir_main}/build/conf.toml
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
@@ -148,7 +134,4 @@ pkg/health/%.pb.go: pkg/health/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
 
 pkg/ingress/%.pb.go: pkg/ingress/%.proto
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
-
-pkg/isolate/%.pb.go: pkg/isolate/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<

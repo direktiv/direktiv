@@ -323,6 +323,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		int64(ar.Workflow.Step)))
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
+	req.Header.Add("Host", addr)
 
 	client := &http.Client{
 		Transport: tr,
