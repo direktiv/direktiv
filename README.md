@@ -15,7 +15,7 @@
 
 ## What is Direktiv?
 
-**Diretiv is a serverless workflow engine for Kubernetes and Knative.**
+**Diretiv is a serverless workflow and automation engine running on Kubernetes and Knative.**
 
 Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, runs on kubernetes and executes containers as "plugins".
 
@@ -29,7 +29,7 @@ Workflows can be triggered by CloudEvents for event-based solutions, can use cro
 Direktiv runs as single pod on kubernetes but each workflow step can be executed on every pod in the system to achieve load balancing and high availability during workflow execution. It uses [Knative](https://knative.dev/) to execute containers as workflow actions.
 
 <p align="center">
-  <img src="assets/images/direktiv-diagram.png" alt="direktiv">
+  <img src="assets/images/direktiv-diagram-v0.2.0-backgound.png" alt="direktiv">
 </p>
 
 
