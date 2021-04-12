@@ -9,7 +9,7 @@ data:
       "kind": "Service",
       "metadata": {
         "name": "%s",
-        "namespace": "default",
+        "namespace": "{{ .Release.Namespace }}",
         "labels": {
           "networking.knative.dev/visibility": "cluster-local"
         }
@@ -17,6 +17,7 @@ data:
       "spec": {
         "template": {
           "spec": {
+            "serviceAccountName": "%s",
             "containers": [
               {
                 "image": "%s",

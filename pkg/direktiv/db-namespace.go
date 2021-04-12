@@ -36,17 +36,26 @@ func (db *dbManager) addNamespace(ctx context.Context, name string) (*ent.Namesp
 		return nil, err
 	}
 
-	ns, err := db.dbEnt.Namespace.
-		Create().
-		SetID(name).
-		SetKey(key).
-		Save(ctx)
-
+	tx, err := db.dbEnt.Tx(db.ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return ns, nil
+	ns, err := tx.Namespace.
+		Create().
+		SetID(name).
+		SetKey(key).
+		Save(ctx)
+	if err != nil {
+		return nil, rollback(tx, err)
+	}
+
+	err = kubernetesActionServiceAccount(name, true)
+	if err != nil {
+		return nil, rollback(tx, err)
+	}
+
+	return ns, tx.Commit()
 
 }
 
@@ -76,6 +85,12 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 
 	if i == 0 {
 		return fmt.Errorf("namespace %s does not exist", name)
+	}
+
+	err = kubernetesActionServiceAccount(name, false)
+	if err != nil {
+		// we can still proceed
+		log.Errorf("can not delete kubernetes service account: %v", err)
 	}
 
 	return nil

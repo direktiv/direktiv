@@ -1,19 +1,16 @@
 package direktiv
 
 import (
-	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
+	"encoding/base64"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -47,6 +44,9 @@ const (
 	kubeAPIToken = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
 	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services"
+
+	annotationNamespace = "direktiv.io/namespace"
+	annotationURL       = "direktiv.io/url"
 )
 
 func (is *ingressServer) stop() {
@@ -634,8 +634,11 @@ func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSec
 }
 
 func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
-	err := is.deleteEncrypted(ctx, in, secrets.SecretTypes_REGISTRY)
-	return &emptypb.Empty{}, err
+	var resp emptypb.Empty
+
+	err := kubernetesDeleteSecret(in.GetName(), in.GetNamespace())
+
+	return &resp, err
 }
 
 func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,
@@ -668,15 +671,18 @@ func (is *ingressServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsR
 
 func (is *ingressServer) GetRegistries(ctx context.Context, in *ingress.GetRegistriesRequest) (*ingress.GetRegistriesResponse, error) {
 
-	output, err := is.fetchSecrets(ctx, in.GetNamespace(), secrets.SecretTypes_REGISTRY)
+	resp := new(ingress.GetRegistriesResponse)
+
+	regs, err := kubernetesListRegistries(in.GetNamespace())
+
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 
-	resp := new(ingress.GetRegistriesResponse)
-	for i := range output.Secrets {
+	for _, reg := range regs {
+		r := reg
 		resp.Registries = append(resp.Registries, &ingress.GetRegistriesResponse_Registry{
-			Name: output.Secrets[i].Name,
+			Name: &r,
 		})
 	}
 
@@ -723,122 +729,31 @@ func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecre
 
 func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
-	return &resp, is.storeEncrypted(ctx, in, secrets.SecretTypes_REGISTRY)
-}
 
-func (is *ingressServer) deleteKnativeFunctions(uid string) error {
-
-	if is.wfServer.config.MockupMode == 1 {
-		return nil
+	// create secret data, needs to be attached to service account
+	userToken := strings.SplitN(string(in.Data), ":", 2)
+	if len(userToken) != 2 {
+		return nil, fmt.Errorf("invalid username/token format")
 	}
 
-	var wf model.Workflow
+	tmpl := `{
+	"auths": {
+		"%s": {
+			"username": "%s",
+			"password": "%s",
+			"auth": "%s"
+		}
+	}
+	}`
 
-	wfdb, err := is.wfServer.dbManager.getWorkflowByUid(context.Background(), uid)
+	auth := fmt.Sprintf(tmpl, in.GetName(), userToken[0], userToken[1],
+		base64.StdEncoding.EncodeToString(in.Data))
+
+	err := kubernetesAddSecret(in.GetName(), in.GetNamespace(), []byte(auth))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// no need to error check, it passed the save check
-	wf.Load(wfdb.Workflow)
-	namespace := wfdb.Edges.Namespace.ID
-
-	for _, f := range wf.GetFunctions() {
-
-		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
-		if err != nil {
-			return err
-		}
-
-		svcName := fmt.Sprintf("%s-%d", namespace, ah)
-		url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svcName)
-
-		err = is.sendKuberequest(http.MethodDelete, url, nil)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-
-}
-
-func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.Workflow) error {
-
-	if is.wfServer.config.MockupMode == 1 {
-		return nil
-	}
-
-	for _, f := range workflow.GetFunctions() {
-
-		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
-		if err != nil {
-			return err
-		}
-
-		log.Debugf("deleting isolate: %d", ah)
-
-		var (
-			cpu float64
-			mem int
-		)
-
-		switch f.Size {
-		case 1:
-			cpu = 1
-			mem = 512
-		case 2:
-			cpu = 2
-			mem = 1024
-		default:
-			cpu = 0.5
-			mem = 256
-		}
-
-		svc := fmt.Sprintf(is.serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
-			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
-			is.wfServer.config.FlowAPI.Sidecar)
-
-		err = is.sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
-			bytes.NewBufferString(svc))
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-
-}
-
-func (is *ingressServer) sendKuberequest(method, url string, data io.Reader) error {
-
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(is.kubeCA)
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs: caCertPool,
-			},
-		},
-	}
-
-	req, _ := http.NewRequestWithContext(context.Background(), method, url, data)
-
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(is.kubeToken)))
-
-	_, err := client.Do(req)
-	return err
-
-}
-
-func serviceToHash(ns, img, cmd string, size model.Size) (uint64, error) {
-
-	return hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ns, img,
-		cmd, size), hash.FormatV2, nil)
+	return &resp, nil
 
 }

@@ -5,18 +5,16 @@ kubectl port-forward service/{{ include "direktiv.fullname" . }}-ingress 6666:66
 
 {{- if (eq .Values.flow.ingressPortType "NodePort") }}
 
-or via NodePort
-
-localhost:{{- .Values.flow.ingressNodePort }}
+or via NodePort: localhost:{{- .Values.flow.ingressNodePort }}
 {{- end}}
 
+{{- if .Values.withUI -}}
 UI Access:
 
 kubectl port-forward service/{{ include "direktiv.fullname" . }}-ui 1605:1605 -n {{ .Release.Namespace }}
 
 {{- if (eq .Values.ui.portType "NodePort") }}
 
-or via NodePort
-
-localhost:{{- .Values.ui.nodePort }}
+or via NodePort: localhost:{{- .Values.ui.nodePort }}
+{{- end}}
 {{- end}}

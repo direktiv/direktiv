@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/sisatech/tablewriter"
 	cobra "github.com/spf13/cobra"
@@ -339,7 +338,6 @@ var registriesCmd = generateCmd("registries", "List, create and remove registrie
 
 var createRegistryCmd = generateCmd("create NAMESPACE URL USER:TOKEN", "Creates a new registry on provided namespace", "", func(cmd *cobra.Command, args []string) {
 	// replace : with a ! for args[2] ! is used in direktiv ! gets picked up by bash unfortunately
-	args[2] = strings.ReplaceAll(args[2], ":", "!")
 	storeV := store.StoreRequest{
 		Key:   args[1],
 		Value: args[2],

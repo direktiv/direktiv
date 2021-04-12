@@ -14,15 +14,12 @@ import (
 const (
 
 	// flowConfig
-	flowBind     = "DIREKTIV_FLOW_BIND"
-	flowEndpoint = "DIREKTIV_FLOW_ENDPOINT"
-	flowProtocol = "DIREKTIV_FLOW_PROTOCOL"
-	flowExchange = "DIREKTIV_FLOW_EXCHANGE"
-	flowSidecar  = "DIREKTIV_FLOW_SIDECAR"
-
-	flowRegistry      = "DIREKTIV_FLOW_REGISTRY"
-	flowRegistryUser  = "DIREKTIV_FLOW_REGISTRY_USER"
-	flowRegistryToken = "DIREKTIV_FLOW_REGISTRY_TOKEN"
+	flowBind      = "DIREKTIV_FLOW_BIND"
+	flowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+	flowProtocol  = "DIREKTIV_FLOW_PROTOCOL"
+	flowExchange  = "DIREKTIV_FLOW_EXCHANGE"
+	flowSidecar   = "DIREKTIV_FLOW_SIDECAR"
+	flowNamespace = "DIREKTIV_KUBERNETES_NAMESPACE"
 
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
@@ -43,12 +40,13 @@ const (
 // Config is the configuration for workflow and runner server
 type Config struct {
 	FlowAPI struct {
-		Bind     string
-		Endpoint string
-		Exchange string
-		Sidecar  string
-		Protocol string
-		Registry struct {
+		Bind                string
+		Endpoint            string
+		Exchange            string
+		Sidecar             string
+		Protocol            string
+		KubernetesNamespace string
+		Registry            struct {
 			Name, User, Token string
 		}
 	} `toml:"flowAPI"`
@@ -179,9 +177,6 @@ func ReadConfig(file string) (*Config, error) {
 		{instanceLoggingDriver, &c.InstanceLogging.Driver},
 		{flowBind, &c.FlowAPI.Bind},
 		{flowEndpoint, &c.FlowAPI.Endpoint},
-		{flowRegistry, &c.FlowAPI.Registry.Name},
-		{flowRegistryUser, &c.FlowAPI.Registry.User},
-		{flowRegistryToken, &c.FlowAPI.Registry.Token},
 		{ingressBind, &c.IngressAPI.Bind},
 		{ingressEndpoint, &c.IngressAPI.Endpoint},
 		{secretsBind, &c.SecretsAPI.Bind},
@@ -190,6 +185,7 @@ func ReadConfig(file string) (*Config, error) {
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},
 		{flowProtocol, &c.FlowAPI.Protocol},
+		{flowNamespace, &c.FlowAPI.KubernetesNamespace},
 	}
 
 	for _, i := range strings {
