@@ -98,7 +98,7 @@ func (db *dbManager) updateWorkflow(ctx context.Context, id string, revision *in
 		return nil, rollback(tx, err)
 	}
 
-	err = db.processWorkflowEvents(ctx, tx, wf, startDefinition, *active)
+	err = db.processWorkflowEvents(ctx, tx, wf, startDefinition, wf.Active)
 	if err != nil {
 		return nil, rollback(tx, err)
 	}
@@ -217,7 +217,7 @@ func (db *dbManager) getWorkflows(ctx context.Context, ns string, offset, limit 
 		Offset(offset).
 		Select(workflow.FieldID, workflow.FieldName, workflow.FieldCreated, workflow.FieldDescription, workflow.FieldActive, workflow.FieldRevision, workflow.FieldLogToEvents).
 		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
-		Order(ent.Asc(namespace.FieldID)).
+		Order(ent.Asc(workflow.FieldName)).
 		All(ctx)
 
 	if err != nil {

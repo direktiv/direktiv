@@ -517,7 +517,7 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 	}
 
 	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
-	if *in.Active {
+	if wf.Active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {
 			scheduled := def.(*model.ScheduledStart)
