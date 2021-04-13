@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 
 	"github.com/vorteil/direktiv/pkg/model"
 
@@ -22,9 +23,27 @@ import (
 )
 
 const (
+	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services"
+
+	annotationNamespace = "direktiv.io/namespace"
+	annotationURL       = "direktiv.io/url"
+)
+
+const (
 	serviceAccountPrefix = "direktiv-sa"
 	secretsPrefix        = "direktiv-secret"
 )
+
+type kubeRequest struct {
+	serviceTempl string
+	sidecar      string
+	mockup       bool
+
+	apiConfig *rest.Config
+	mtx       sync.Mutex
+}
+
+var kubeReq = kubeRequest{}
 
 func kubernetesListRegistries(namespace string) ([]string, error) {
 
@@ -252,97 +271,170 @@ func getClientSet() (*kubernetes.Clientset, string, error) {
 	return clientset, kns, nil
 }
 
-func (is *ingressServer) deleteKnativeFunctions(uid string) error {
+// func deleteKnativeFunctions(uid string, db *dbManager) error {
+//
+// 	if kubeReq.mockup {
+// 		return nil
+// 	}
+//
+// 	var wf model.Workflow
+//
+// 	wfdb, err := db.getWorkflowByUid(context.Background(), uid)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	// no need to error check, it passed the save check
+// 	wf.Load(wfdb.Workflow)
+// 	namespace := wfdb.Edges.Namespace.ID
+//
+// 	for _, f := range wf.GetFunctions() {
+//
+// 		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
+// 		if err != nil {
+// 			return err
+// 		}
+//
+// 		svcName := fmt.Sprintf("%s-%d", namespace, ah)
+// 		url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svcName)
+//
+// 		_, err = sendKuberequest(http.MethodDelete, url, nil)
+// 		if err != nil {
+// 			return err
+// 		}
+//
+// 	}
+//
+// 	return nil
+//
+// }
 
-	if is.wfServer.config.MockupMode == 1 {
+func getKnativeFunction(svc string) error {
+
+	url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svc)
+	resp, err := sendKuberequest(http.MethodGet, url, nil)
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("service does not exists")
+	}
+
+	return err
+}
+
+func addKnativeFunction(ir *isolateRequest) error {
+
+	log.Debugf("adding knative service")
+
+	if kubeReq.mockup {
 		return nil
 	}
 
-	var wf model.Workflow
+	namespace := ir.Workflow.Namespace
 
-	wfdb, err := is.wfServer.dbManager.getWorkflowByUid(context.Background(), uid)
+	ah, err := serviceToHash(namespace, ir.Container.Image,
+		ir.Container.Cmd, ir.Container.Size)
 	if err != nil {
 		return err
 	}
 
-	// no need to error check, it passed the save check
-	wf.Load(wfdb.Workflow)
-	namespace := wfdb.Edges.Namespace.ID
+	log.Debugf("adding knative service hash %v", ah)
 
-	for _, f := range wf.GetFunctions() {
+	var (
+		cpu float64
+		mem int
+	)
 
-		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
-		if err != nil {
-			return err
-		}
+	switch ir.Container.Size {
+	case 1:
+		cpu = 1
+		mem = 512
+	case 2:
+		cpu = 2
+		mem = 1024
+	default:
+		cpu = 0.5
+		mem = 256
+	}
 
-		svcName := fmt.Sprintf("%s-%d", namespace, ah)
-		url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svcName)
+	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah),
+		fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
+		ir.Container.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
+		kubeReq.sidecar)
 
-		err = is.sendKuberequest(http.MethodDelete, url, nil)
-		if err != nil {
-			return err
-		}
-
+	_, err = sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
+		bytes.NewBufferString(svc))
+	if err != nil {
+		return err
 	}
 
 	return nil
 
 }
 
-func (is *ingressServer) addKnativeFunctions(namespace string, workflow *model.Workflow) error {
+// func addKnativeFunctions(namespace string, workflow *model.Workflow) error {
+//
+// 	log.Debugf("adding knative service")
+//
+// 	if kubeReq.mockup {
+// 		return nil
+// 	}
+//
+// 	for _, f := range workflow.GetFunctions() {
+//
+// 		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
+// 		if err != nil {
+// 			return err
+// 		}
+//
+// 		log.Debugf("deleting isolate: %d", ah)
+//
+// 		var (
+// 			cpu float64
+// 			mem int
+// 		)
+//
+// 		switch f.Size {
+// 		case 1:
+// 			cpu = 1
+// 			mem = 512
+// 		case 2:
+// 			cpu = 2
+// 			mem = 1024
+// 		default:
+// 			cpu = 0.5
+// 			mem = 256
+// 		}
+//
+// 		svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah),
+// 			fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
+// 			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
+// 			kubeReq.sidecar)
+//
+// 		_, err = sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
+// 			bytes.NewBufferString(svc))
+// 		if err != nil {
+// 			return err
+// 		}
+//
+// 	}
+//
+// 	return nil
+//
+// }
 
-	if is.wfServer.config.MockupMode == 1 {
-		return nil
-	}
+func sendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
 
-	for _, f := range workflow.GetFunctions() {
-
-		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
+	if kubeReq.apiConfig == nil {
+		config, err := rest.InClusterConfig()
 		if err != nil {
-			return err
+			return nil, err
 		}
-
-		log.Debugf("deleting isolate: %d", ah)
-
-		var (
-			cpu float64
-			mem int
-		)
-
-		switch f.Size {
-		case 1:
-			cpu = 1
-			mem = 512
-		case 2:
-			cpu = 2
-			mem = 1024
-		default:
-			cpu = 0.5
-			mem = 256
-		}
-
-		svc := fmt.Sprintf(is.serviceTmpl, fmt.Sprintf("%s-%d", namespace, ah),
-			fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
-			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
-			is.wfServer.config.FlowAPI.Sidecar)
-
-		err = is.sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
-			bytes.NewBufferString(svc))
-		if err != nil {
-			return err
-		}
-
+		rest.LoadTLSFiles(config)
+		kubeReq.apiConfig = config
 	}
-
-	return nil
-
-}
-
-func (is *ingressServer) sendKuberequest(method, url string, data io.Reader) error {
 
 	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(is.kubeCA)
+	caCertPool.AppendCertsFromPEM(kubeReq.apiConfig.CAData)
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -356,10 +448,9 @@ func (is *ingressServer) sendKuberequest(method, url string, data io.Reader) err
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(is.kubeToken)))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", kubeReq.apiConfig.BearerToken))
 
-	_, err := client.Do(req)
-	return err
+	return client.Do(req)
 
 }
 

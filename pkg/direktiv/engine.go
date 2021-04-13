@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strings"
@@ -266,91 +267,16 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
-	we.doHTTPRequest(ctx, actionHash, ar)
-
-	// log.Debugf("calling isolate: %d", actionHash)
-	//
-	// tr := &http.Transport{}
-	//
-	// // on https we add the cert to ca
-	// if we.server.config.FlowAPI.Protocol == "https" {
-	//
-	// 	rootCAs, _ := x509.SystemCertPool()
-	// 	if rootCAs == nil {
-	// 		rootCAs = x509.NewCertPool()
-	// 	}
-	//
-	// 	// Read in the cert file
-	// 	certs, err := ioutil.ReadFile("/etc/ssl/isolate/tls.crt")
-	// 	if err != nil {
-	// 		return NewInternalError(err)
-	// 	}
-	//
-	// 	// Append our cert to the system pool
-	// 	if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-	// 		log.Println("No certs appended, using system certs only")
-	// 	}
-	//
-	// 	// Trust the augmented cert pool in our client
-	// 	config := &tls.Config{
-	// 		InsecureSkipVerify: true,
-	// 		RootCAs:            rootCAs,
-	// 	}
-	// 	tr.TLSClientConfig = config
-	//
-	// }
-	//
-	// // calculate address
-	// addr := fmt.Sprintf("%s://%s-%d.default",
-	// 	we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, actionHash)
-	//
-	// // get exchange key
-	// exchangeKey := we.server.config.FlowAPI.Exchange
-	//
-	// req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
-	// 	bytes.NewReader(ar.Container.Data))
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// // add headers
-	// req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
-	// req.Header.Add(DirektivActionIDHeader, ar.ActionID)
-	// req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
-	// req.Header.Add(DirektivPingAddrHeader, addr)
-	// req.Header.Add(DirektivExchangeKeyHeader, exchangeKey)
-	// req.Header.Add(DirektivResponseHeader, we.server.config.FlowAPI.Endpoint)
-	// req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
-	// 	int64(ar.Workflow.Timeout)))
-	// req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
-	// 	int64(ar.Workflow.Step)))
-	// req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
-	// 	int64(ar.Workflow.Step)))
-	// req.Header.Add("Host", addr)
-	//
-	// client := &http.Client{
-	// 	Transport: tr,
-	// 	Timeout:   10 * time.Second,
-	// }
-	// resp, err := client.Do(req)
-	//
-	// if err != nil {
-	// 	return NewInternalError(err)
-	// }
-	//
-	// if resp.StatusCode != 200 {
-	// 	return NewInternalError(fmt.Errorf("action error status: %d",
-	// 		resp.StatusCode))
-	// }
-
-	return nil
+	return we.doHTTPRequest(ctx, actionHash, ar)
 
 }
 
 func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	ah uint64, ar *isolateRequest) error {
 
-	tr := &http.Transport{}
+	tr := &http.Transport{
+		ResponseHeaderTimeout: 10 * time.Second,
+	}
 
 	// on https we add the cert to ca
 	if we.server.config.FlowAPI.Protocol == "https" {
@@ -384,6 +310,8 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	addr := fmt.Sprintf("%s://%s-%d.default",
 		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah)
 
+	log.Debugf("isolate request: %v", addr)
+
 	// get exchange key
 	exchangeKey := we.server.config.FlowAPI.Exchange
 
@@ -415,31 +343,50 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 	var (
 		resp *http.Response
-		ok   bool
 	)
 
-	// ptentially dns error
-	for i := 0; i < 10; i++ {
+	// potentially dns error for a brand new service
+	for i := 0; i < 100; i++ {
+		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
-			err, ok = err.(*net.DNSError)
-			if !ok {
-				return err
+
+			if err, ok := err.(*url.Error); ok {
+				if err, ok := err.Err.(*net.OpError); ok {
+					if _, ok := err.Err.(*net.DNSError); ok {
+						// this happens because the function does not exist
+						kubeReq.mtx.Lock()
+						err := getKnativeFunction(fmt.Sprintf("%s-%d", ar.Workflow.Namespace, ah))
+
+						if err != nil {
+							err := addKnativeFunction(ar)
+							if err != nil {
+								return NewInternalError(fmt.Errorf("can not create knative function %v: %v", addr, err))
+							}
+						}
+						kubeReq.mtx.Unlock()
+
+						time.Sleep(250 * time.Millisecond)
+						continue
+					}
+				}
 			}
-			time.Sleep(100 * time.Millisecond)
+
 		} else {
 			break
 		}
 	}
 
 	if err != nil {
-		return err
+		return NewInternalError(fmt.Errorf("network error: %v", err))
 	}
 
 	if resp.StatusCode != 200 {
 		return NewInternalError(fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
+
+	log.Debugf("isolate request done")
 
 	return nil
 

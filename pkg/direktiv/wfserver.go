@@ -121,7 +121,7 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 
 	// not needed for secrets
 	if s.runsComponent(runsWorkflows) {
-		s.dbManager, err = newDBManager(ctx, s.config.Database.DB)
+		s.dbManager, err = newDBManager(ctx, s.config.Database.DB, config)
 		if err != nil {
 			return nil, err
 		}

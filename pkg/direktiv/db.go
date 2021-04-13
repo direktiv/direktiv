@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/lib/pq"
@@ -26,7 +27,7 @@ type dbManager struct {
 	tm    *timerManager
 }
 
-func newDBManager(ctx context.Context, conn string) (*dbManager, error) {
+func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager, error) {
 
 	var err error
 	db := &dbManager{
@@ -55,6 +56,23 @@ func newDBManager(ctx context.Context, conn string) (*dbManager, error) {
 			return next.Mutate(ctx, m)
 		})
 	})
+
+	kubeReq.mockup = true
+
+	// setting the knative service template
+	if config.MockupMode == 0 {
+
+		st, err := ioutil.ReadFile("/etc/config/template")
+		if err != nil {
+			return nil, err
+		}
+		kubeReq.serviceTempl = string(st)
+
+		kubeReq.sidecar = config.FlowAPI.Sidecar
+
+		kubeReq.mockup = false
+
+	}
 
 	return db, nil
 

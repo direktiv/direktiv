@@ -3,7 +3,6 @@ package direktiv
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"regexp"
 	"strings"
 	"time"
@@ -33,21 +32,7 @@ type ingressServer struct {
 
 	secretsClient secrets.SecretsServiceClient
 	grpcConn      *grpc.ClientConn
-
-	kubeCA, kubeToken []byte
-
-	serviceTmpl string
 }
-
-const (
-	kubeAPICA    = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
-	kubeAPIToken = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-
-	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services"
-
-	annotationNamespace = "direktiv.io/namespace"
-	annotationURL       = "direktiv.io/url"
-)
 
 func (is *ingressServer) stop() {
 
@@ -72,35 +57,8 @@ func (is *ingressServer) name() string {
 
 func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 
-	var (
-		ca, token, st []byte
-		err           error
-	)
-
-	if s.config.MockupMode == 0 {
-
-		ca, err = ioutil.ReadFile(kubeAPICA)
-		if err != nil {
-			return nil, err
-		}
-
-		token, err = ioutil.ReadFile(kubeAPIToken)
-		if err != nil {
-			return nil, err
-		}
-
-		st, err = ioutil.ReadFile("/etc/config/template")
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
 	return &ingressServer{
-		wfServer:    s,
-		kubeCA:      ca,
-		kubeToken:   token,
-		serviceTmpl: string(st),
+		wfServer: s,
 	}, nil
 
 }
@@ -181,12 +139,6 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
-	// get actions
-	err = is.addKnativeFunctions(namespace, &workflow)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid container images: %v", err)
-	}
-
 	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
 		workflow.Description, active, logToEvents, document, workflow.GetStartDefinition())
 	if err != nil {
@@ -264,12 +216,7 @@ func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteW
 	)
 	uid := in.GetUid()
 
-	err := is.deleteKnativeFunctions(uid)
-	if err != nil {
-		return nil, fmt.Errorf("can not delete knative services: %v", err)
-	}
-
-	err = is.wfServer.dbManager.deleteWorkflow(ctx, uid)
+	err := is.wfServer.dbManager.deleteWorkflow(ctx, uid)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
@@ -554,22 +501,6 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 	err := workflow.Load(document)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
-	}
-
-	// delete and recreate all knative functions
-	err = is.deleteKnativeFunctions(uid)
-	if err != nil {
-		return nil, fmt.Errorf("can not delete knative services: %v", err)
-	}
-
-	// to add knative functions we need the namespace
-	wfdb, err := is.wfServer.dbManager.getWorkflowByUid(context.Background(), uid)
-	if err != nil {
-		return nil, err
-	}
-	err = is.addKnativeFunctions(wfdb.Edges.Namespace.ID, &workflow)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid container images: %v", err)
 	}
 
 	var checkRevisionVal int
