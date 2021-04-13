@@ -98,7 +98,7 @@ func (db *dbManager) updateWorkflow(ctx context.Context, id string, revision *in
 		return nil, rollback(tx, err)
 	}
 
-	err = db.processWorkflowEvents(ctx, tx, wf, startDefinition, *active)
+	err = db.processWorkflowEvents(ctx, tx, wf, startDefinition, wf.Active)
 	if err != nil {
 		return nil, rollback(tx, err)
 	}
