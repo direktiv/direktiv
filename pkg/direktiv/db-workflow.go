@@ -217,7 +217,7 @@ func (db *dbManager) getWorkflows(ctx context.Context, ns string, offset, limit 
 		Offset(offset).
 		Select(workflow.FieldID, workflow.FieldName, workflow.FieldCreated, workflow.FieldDescription, workflow.FieldActive, workflow.FieldRevision, workflow.FieldLogToEvents).
 		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
-		Order(ent.Asc(namespace.FieldID)).
+		Order(ent.Asc(workflow.FieldName)).
 		All(ctx)
 
 	if err != nil {
