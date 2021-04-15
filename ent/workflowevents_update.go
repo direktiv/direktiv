@@ -413,6 +413,7 @@ func (weu *WorkflowEventsUpdate) sqlSave(ctx context.Context) (n int, err error)
 // WorkflowEventsUpdateOne is the builder for updating a single WorkflowEvents entity.
 type WorkflowEventsUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *WorkflowEventsMutation
 }
@@ -537,6 +538,13 @@ func (weuo *WorkflowEventsUpdateOne) ClearWorkflowinstance() *WorkflowEventsUpda
 	return weuo
 }
 
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (weuo *WorkflowEventsUpdateOne) Select(field string, fields ...string) *WorkflowEventsUpdateOne {
+	weuo.fields = append([]string{field}, fields...)
+	return weuo
+}
+
 // Save executes the query and returns the updated WorkflowEvents entity.
 func (weuo *WorkflowEventsUpdateOne) Save(ctx context.Context) (*WorkflowEvents, error) {
 	var (
@@ -618,6 +626,18 @@ func (weuo *WorkflowEventsUpdateOne) sqlSave(ctx context.Context) (_node *Workfl
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing WorkflowEvents.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := weuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, workflowevents.FieldID)
+		for _, f := range fields {
+			if !workflowevents.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != workflowevents.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := weuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

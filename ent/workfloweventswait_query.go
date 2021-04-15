@@ -21,6 +21,7 @@ type WorkflowEventsWaitQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.WorkflowEventsWait
@@ -47,6 +48,13 @@ func (wewq *WorkflowEventsWaitQuery) Limit(limit int) *WorkflowEventsWaitQuery {
 // Offset adds an offset step to the query.
 func (wewq *WorkflowEventsWaitQuery) Offset(offset int) *WorkflowEventsWaitQuery {
 	wewq.offset = &offset
+	return wewq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (wewq *WorkflowEventsWaitQuery) Unique(unique bool) *WorkflowEventsWaitQuery {
+	wewq.unique = &unique
 	return wewq
 }
 
@@ -377,11 +385,14 @@ func (wewq *WorkflowEventsWaitQuery) sqlAll(ctx context.Context) ([]*WorkflowEve
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*WorkflowEventsWait)
 		for i := range nodes {
-			fk := nodes[i].workflow_events_wfeventswait
-			if fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].workflow_events_wfeventswait == nil {
+				continue
 			}
+			fk := *nodes[i].workflow_events_wfeventswait
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(workflowevents.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -428,6 +439,9 @@ func (wewq *WorkflowEventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   wewq.sql,
 		Unique: true,
 	}
+	if unique := wewq.unique; unique != nil {
+		_spec.Unique = *unique
+	}
 	if fields := wewq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, workfloweventswait.FieldID)
@@ -453,7 +467,7 @@ func (wewq *WorkflowEventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := wewq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, workfloweventswait.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -472,7 +486,7 @@ func (wewq *WorkflowEventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector
 		p(selector)
 	}
 	for _, p := range wewq.order {
-		p(selector, workfloweventswait.ValidColumn)
+		p(selector)
 	}
 	if offset := wewq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -738,7 +752,7 @@ func (wewgb *WorkflowEventsWaitGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(wewgb.fields)+len(wewgb.fns))
 	columns = append(columns, wewgb.fields...)
 	for _, fn := range wewgb.fns {
-		columns = append(columns, fn(selector, workfloweventswait.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(wewgb.fields...)
 }

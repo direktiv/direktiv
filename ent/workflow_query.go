@@ -25,6 +25,7 @@ type WorkflowQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Workflow
@@ -53,6 +54,13 @@ func (wq *WorkflowQuery) Limit(limit int) *WorkflowQuery {
 // Offset adds an offset step to the query.
 func (wq *WorkflowQuery) Offset(offset int) *WorkflowQuery {
 	wq.offset = &offset
+	return wq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (wq *WorkflowQuery) Unique(unique bool) *WorkflowQuery {
+	wq.unique = &unique
 	return wq
 }
 
@@ -453,11 +461,14 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 		ids := make([]string, 0, len(nodes))
 		nodeids := make(map[string][]*Workflow)
 		for i := range nodes {
-			fk := nodes[i].namespace_workflows
-			if fk != nil {
-				ids = append(ids, *fk)
-				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			if nodes[i].namespace_workflows == nil {
+				continue
 			}
+			fk := *nodes[i].namespace_workflows
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
 		query.Where(namespace.IDIn(ids...))
 		neighbors, err := query.All(ctx)
@@ -562,6 +573,9 @@ func (wq *WorkflowQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   wq.sql,
 		Unique: true,
 	}
+	if unique := wq.unique; unique != nil {
+		_spec.Unique = *unique
+	}
 	if fields := wq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, workflow.FieldID)
@@ -587,7 +601,7 @@ func (wq *WorkflowQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := wq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, workflow.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -606,7 +620,7 @@ func (wq *WorkflowQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range wq.order {
-		p(selector, workflow.ValidColumn)
+		p(selector)
 	}
 	if offset := wq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -872,7 +886,7 @@ func (wgb *WorkflowGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(wgb.fields)+len(wgb.fns))
 	columns = append(columns, wgb.fields...)
 	for _, fn := range wgb.fns {
-		columns = append(columns, fn(selector, workflow.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(wgb.fields...)
 }

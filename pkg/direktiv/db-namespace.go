@@ -8,6 +8,7 @@ import (
 
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/namespace"
+	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -93,7 +94,13 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 		log.Errorf("can not delete kubernetes service account: %v", err)
 	}
 
-	return nil
+	// delete secrets from secrets backend
+	dr := &secretsgrpc.DeleteSecretsRequest{
+		Namespace: &name,
+	}
+	_, err = db.secretsClient.DeleteSecrets(context.Background(), dr)
+
+	return err
 
 }
 

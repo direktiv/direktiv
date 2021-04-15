@@ -28,6 +28,7 @@
 /postgres
 /minio
 /direktiv-ui
+/secrets
 
 /build/docker/*
 !*build/docker/all

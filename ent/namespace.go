@@ -49,11 +49,11 @@ func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case namespace.FieldKey:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case namespace.FieldID:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case namespace.FieldCreated:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Namespace", columns[i])
 		}

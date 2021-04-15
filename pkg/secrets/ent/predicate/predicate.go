@@ -6,5 +6,5 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// BucketSecret is the predicate function for bucketsecret builders.
-type BucketSecret func(*sql.Selector)
+// NamespaceSecret is the predicate function for namespacesecret builders.
+type NamespaceSecret func(*sql.Selector)

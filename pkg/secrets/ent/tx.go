@@ -12,8 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// BucketSecret is the client for interacting with the BucketSecret builders.
-	BucketSecret *BucketSecretClient
+	// NamespaceSecret is the client for interacting with the NamespaceSecret builders.
+	NamespaceSecret *NamespaceSecretClient
 
 	// lazily loaded.
 	client     *Client
@@ -149,7 +149,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.BucketSecret = NewBucketSecretClient(tx.config)
+	tx.NamespaceSecret = NewNamespaceSecretClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
@@ -159,7 +159,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: BucketSecret.QueryXXX(), the query will be executed
+// applies a query, for example: NamespaceSecret.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

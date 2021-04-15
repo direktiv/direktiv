@@ -2,13 +2,6 @@ package direktiv
 
 import (
 	"context"
-	"fmt"
-	"net"
-	"os"
-	"strings"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -120,37 +113,19 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 	}
 
 	// not needed for secrets
-	if s.runsComponent(runsWorkflows) {
-		s.dbManager, err = newDBManager(ctx, s.config.Database.DB, config)
-		if err != nil {
-			return nil, err
-		}
-
-		err = s.initWorkflowServer()
-		if err != nil {
-			return nil, err
-		}
-		s.dbManager.tm = s.tmManager
+	s.dbManager, err = newDBManager(ctx, s.config.Database.DB, config)
+	if err != nil {
+		return nil, err
 	}
 
-	if s.runsComponent(runsSecrets) {
-		secretsServer, err := newSecretsServer(config)
-		if err != nil {
-			log.Errorf("can not create secret server: %v", err)
-			return nil, err
-		}
-		s.components[secretsComponent] = secretsServer
+	err = s.initWorkflowServer()
+	if err != nil {
+		return nil, err
 	}
+	s.dbManager.tm = s.tmManager
 
 	return s, nil
 
-}
-
-func (s *WorkflowServer) runsComponent(c string) bool {
-	if strings.Contains(s.serverType, c) {
-		return true
-	}
-	return false
 }
 
 // SetInstanceLogger set logger for direktiv for firecracker instances
@@ -178,6 +153,10 @@ func (s *WorkflowServer) cleanup() {
 	for _, comp := range s.components {
 		log.Infof("stopping %s", comp.name())
 		comp.stop()
+	}
+
+	if s.dbManager.grpcConn != nil {
+		s.dbManager.grpcConn.Close()
 	}
 
 }
@@ -213,23 +192,18 @@ func (s *WorkflowServer) Kill() {
 // Run starts all components of direktiv
 func (s *WorkflowServer) Run() error {
 
-	// subscribe to cmds
-	if s.runsComponent(runsWorkflows) {
+	log.Debugf("subscribing to sync queue")
+	err := s.startDatabaseListener()
+	if err != nil {
+		s.Kill()
+		return err
+	}
 
-		log.Debugf("subscribing to sync queue")
-		err := s.startDatabaseListener()
-		if err != nil {
-			s.Kill()
-			return err
-		}
-
-		// start timers
-		err = s.tmManager.startTimers()
-		if err != nil {
-			s.Kill()
-			return err
-		}
-
+	// start timers
+	err = s.tmManager.startTimers()
+	if err != nil {
+		s.Kill()
+		return err
 	}
 
 	for _, comp := range s.components {
@@ -240,36 +214,6 @@ func (s *WorkflowServer) Run() error {
 			return err
 		}
 	}
-
-	return nil
-
-}
-
-func (s *WorkflowServer) grpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
-
-	log.Debugf("%s endpoint starting at %s", name, bind)
-
-	var options []grpc.ServerOption
-
-	// Create the TLS credentials
-	if _, err := os.Stat(TLSKey); !os.IsNotExist(err) {
-		creds, err := credentials.NewServerTLSFromFile(TLSCert, TLSKey)
-		if err != nil {
-			return fmt.Errorf("could not load TLS keys: %s", err)
-		}
-		options = append(options, grpc.Creds(creds))
-	}
-
-	listener, err := net.Listen("tcp", bind)
-	if err != nil {
-		return err
-	}
-
-	(*server) = grpc.NewServer(options...)
-
-	register(*server)
-
-	go (*server).Serve(listener)
 
 	return nil
 

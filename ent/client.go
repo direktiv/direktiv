@@ -224,7 +224,9 @@ func (c *NamespaceClient) DeleteOneID(id string) *NamespaceDeleteOne {
 
 // Query returns a query builder for Namespace.
 func (c *NamespaceClient) Query() *NamespaceQuery {
-	return &NamespaceQuery{config: c.config}
+	return &NamespaceQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Namespace entity by its id.
@@ -328,7 +330,9 @@ func (c *TimerClient) DeleteOneID(id int) *TimerDeleteOne {
 
 // Query returns a query builder for Timer.
 func (c *TimerClient) Query() *TimerQuery {
-	return &TimerQuery{config: c.config}
+	return &TimerQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Timer entity by its id.
@@ -416,7 +420,9 @@ func (c *WorkflowClient) DeleteOneID(id uuid.UUID) *WorkflowDeleteOne {
 
 // Query returns a query builder for Workflow.
 func (c *WorkflowClient) Query() *WorkflowQuery {
-	return &WorkflowQuery{config: c.config}
+	return &WorkflowQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Workflow entity by its id.
@@ -552,7 +558,9 @@ func (c *WorkflowEventsClient) DeleteOneID(id int) *WorkflowEventsDeleteOne {
 
 // Query returns a query builder for WorkflowEvents.
 func (c *WorkflowEventsClient) Query() *WorkflowEventsQuery {
-	return &WorkflowEventsQuery{config: c.config}
+	return &WorkflowEventsQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a WorkflowEvents entity by its id.
@@ -688,7 +696,9 @@ func (c *WorkflowEventsWaitClient) DeleteOneID(id int) *WorkflowEventsWaitDelete
 
 // Query returns a query builder for WorkflowEventsWait.
 func (c *WorkflowEventsWaitClient) Query() *WorkflowEventsWaitQuery {
-	return &WorkflowEventsWaitQuery{config: c.config}
+	return &WorkflowEventsWaitQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a WorkflowEventsWait entity by its id.
@@ -792,7 +802,9 @@ func (c *WorkflowInstanceClient) DeleteOneID(id int) *WorkflowInstanceDeleteOne 
 
 // Query returns a query builder for WorkflowInstance.
 func (c *WorkflowInstanceClient) Query() *WorkflowInstanceQuery {
-	return &WorkflowInstanceQuery{config: c.config}
+	return &WorkflowInstanceQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a WorkflowInstance entity by its id.

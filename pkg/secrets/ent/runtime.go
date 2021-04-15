@@ -2,19 +2,8 @@
 
 package ent
 
-import (
-	"github.com/vorteil/direktiv/pkg/secrets/ent/bucketsecret"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/schema"
-)
-
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	bucketsecretFields := schema.BucketSecret{}.Fields()
-	_ = bucketsecretFields
-	// bucketsecretDescType is the schema descriptor for type field.
-	bucketsecretDescType := bucketsecretFields[3].Descriptor()
-	// bucketsecret.DefaultType holds the default value on creation for the type field.
-	bucketsecret.DefaultType = bucketsecretDescType.Default.(int)
 }

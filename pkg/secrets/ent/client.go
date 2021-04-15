@@ -9,7 +9,7 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/secrets/ent/migrate"
 
-	"github.com/vorteil/direktiv/pkg/secrets/ent/bucketsecret"
+	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -20,8 +20,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// BucketSecret is the client for interacting with the BucketSecret builders.
-	BucketSecret *BucketSecretClient
+	// NamespaceSecret is the client for interacting with the NamespaceSecret builders.
+	NamespaceSecret *NamespaceSecretClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -35,7 +35,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.BucketSecret = NewBucketSecretClient(c.config)
+	c.NamespaceSecret = NewNamespaceSecretClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -62,13 +62,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
-	cfg := config{driver: tx, log: c.log, debug: c.debug, hooks: c.hooks}
+	cfg := c.config
+	cfg.driver = tx
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		BucketSecret: NewBucketSecretClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		NamespaceSecret: NewNamespaceSecretClient(cfg),
 	}, nil
 }
 
@@ -77,21 +78,24 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	if _, ok := c.driver.(*txDriver); ok {
 		return nil, fmt.Errorf("ent: cannot start a transaction within a transaction")
 	}
-	tx, err := c.driver.(*sql.Driver).BeginTx(ctx, opts)
+	tx, err := c.driver.(interface {
+		BeginTx(context.Context, *sql.TxOptions) (dialect.Tx, error)
+	}).BeginTx(ctx, opts)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
-	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
+	cfg := c.config
+	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config:       cfg,
-		BucketSecret: NewBucketSecretClient(cfg),
+		config:          cfg,
+		NamespaceSecret: NewNamespaceSecretClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		BucketSecret.
+//		NamespaceSecret.
 //		Query().
 //		Count(ctx)
 //
@@ -99,7 +103,8 @@ func (c *Client) Debug() *Client {
 	if c.debug {
 		return c
 	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks}
+	cfg := c.config
+	cfg.driver = dialect.Debug(c.driver, c.log)
 	client := &Client{config: cfg}
 	client.init()
 	return client
@@ -113,85 +118,87 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.BucketSecret.Use(hooks...)
+	c.NamespaceSecret.Use(hooks...)
 }
 
-// BucketSecretClient is a client for the BucketSecret schema.
-type BucketSecretClient struct {
+// NamespaceSecretClient is a client for the NamespaceSecret schema.
+type NamespaceSecretClient struct {
 	config
 }
 
-// NewBucketSecretClient returns a client for the BucketSecret from the given config.
-func NewBucketSecretClient(c config) *BucketSecretClient {
-	return &BucketSecretClient{config: c}
+// NewNamespaceSecretClient returns a client for the NamespaceSecret from the given config.
+func NewNamespaceSecretClient(c config) *NamespaceSecretClient {
+	return &NamespaceSecretClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `bucketsecret.Hooks(f(g(h())))`.
-func (c *BucketSecretClient) Use(hooks ...Hook) {
-	c.hooks.BucketSecret = append(c.hooks.BucketSecret, hooks...)
+// A call to `Use(f, g, h)` equals to `namespacesecret.Hooks(f(g(h())))`.
+func (c *NamespaceSecretClient) Use(hooks ...Hook) {
+	c.hooks.NamespaceSecret = append(c.hooks.NamespaceSecret, hooks...)
 }
 
-// Create returns a create builder for BucketSecret.
-func (c *BucketSecretClient) Create() *BucketSecretCreate {
-	mutation := newBucketSecretMutation(c.config, OpCreate)
-	return &BucketSecretCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a create builder for NamespaceSecret.
+func (c *NamespaceSecretClient) Create() *NamespaceSecretCreate {
+	mutation := newNamespaceSecretMutation(c.config, OpCreate)
+	return &NamespaceSecretCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of BucketSecret entities.
-func (c *BucketSecretClient) CreateBulk(builders ...*BucketSecretCreate) *BucketSecretCreateBulk {
-	return &BucketSecretCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of NamespaceSecret entities.
+func (c *NamespaceSecretClient) CreateBulk(builders ...*NamespaceSecretCreate) *NamespaceSecretCreateBulk {
+	return &NamespaceSecretCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for BucketSecret.
-func (c *BucketSecretClient) Update() *BucketSecretUpdate {
-	mutation := newBucketSecretMutation(c.config, OpUpdate)
-	return &BucketSecretUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for NamespaceSecret.
+func (c *NamespaceSecretClient) Update() *NamespaceSecretUpdate {
+	mutation := newNamespaceSecretMutation(c.config, OpUpdate)
+	return &NamespaceSecretUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *BucketSecretClient) UpdateOne(bs *BucketSecret) *BucketSecretUpdateOne {
-	mutation := newBucketSecretMutation(c.config, OpUpdateOne, withBucketSecret(bs))
-	return &BucketSecretUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NamespaceSecretClient) UpdateOne(ns *NamespaceSecret) *NamespaceSecretUpdateOne {
+	mutation := newNamespaceSecretMutation(c.config, OpUpdateOne, withNamespaceSecret(ns))
+	return &NamespaceSecretUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *BucketSecretClient) UpdateOneID(id int) *BucketSecretUpdateOne {
-	mutation := newBucketSecretMutation(c.config, OpUpdateOne, withBucketSecretID(id))
-	return &BucketSecretUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NamespaceSecretClient) UpdateOneID(id int) *NamespaceSecretUpdateOne {
+	mutation := newNamespaceSecretMutation(c.config, OpUpdateOne, withNamespaceSecretID(id))
+	return &NamespaceSecretUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for BucketSecret.
-func (c *BucketSecretClient) Delete() *BucketSecretDelete {
-	mutation := newBucketSecretMutation(c.config, OpDelete)
-	return &BucketSecretDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for NamespaceSecret.
+func (c *NamespaceSecretClient) Delete() *NamespaceSecretDelete {
+	mutation := newNamespaceSecretMutation(c.config, OpDelete)
+	return &NamespaceSecretDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a delete builder for the given entity.
-func (c *BucketSecretClient) DeleteOne(bs *BucketSecret) *BucketSecretDeleteOne {
-	return c.DeleteOneID(bs.ID)
+func (c *NamespaceSecretClient) DeleteOne(ns *NamespaceSecret) *NamespaceSecretDeleteOne {
+	return c.DeleteOneID(ns.ID)
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *BucketSecretClient) DeleteOneID(id int) *BucketSecretDeleteOne {
-	builder := c.Delete().Where(bucketsecret.ID(id))
+func (c *NamespaceSecretClient) DeleteOneID(id int) *NamespaceSecretDeleteOne {
+	builder := c.Delete().Where(namespacesecret.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &BucketSecretDeleteOne{builder}
+	return &NamespaceSecretDeleteOne{builder}
 }
 
-// Query returns a query builder for BucketSecret.
-func (c *BucketSecretClient) Query() *BucketSecretQuery {
-	return &BucketSecretQuery{config: c.config}
+// Query returns a query builder for NamespaceSecret.
+func (c *NamespaceSecretClient) Query() *NamespaceSecretQuery {
+	return &NamespaceSecretQuery{
+		config: c.config,
+	}
 }
 
-// Get returns a BucketSecret entity by its id.
-func (c *BucketSecretClient) Get(ctx context.Context, id int) (*BucketSecret, error) {
-	return c.Query().Where(bucketsecret.ID(id)).Only(ctx)
+// Get returns a NamespaceSecret entity by its id.
+func (c *NamespaceSecretClient) Get(ctx context.Context, id int) (*NamespaceSecret, error) {
+	return c.Query().Where(namespacesecret.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *BucketSecretClient) GetX(ctx context.Context, id int) *BucketSecret {
+func (c *NamespaceSecretClient) GetX(ctx context.Context, id int) *NamespaceSecret {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -200,6 +207,6 @@ func (c *BucketSecretClient) GetX(ctx context.Context, id int) *BucketSecret {
 }
 
 // Hooks returns the client hooks.
-func (c *BucketSecretClient) Hooks() []Hook {
-	return c.hooks.BucketSecret
+func (c *NamespaceSecretClient) Hooks() []Hook {
+	return c.hooks.NamespaceSecret
 }

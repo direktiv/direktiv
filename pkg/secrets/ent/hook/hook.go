@@ -9,15 +9,15 @@ import (
 	"github.com/vorteil/direktiv/pkg/secrets/ent"
 )
 
-// The BucketSecretFunc type is an adapter to allow the use of ordinary
-// function as BucketSecret mutator.
-type BucketSecretFunc func(context.Context, *ent.BucketSecretMutation) (ent.Value, error)
+// The NamespaceSecretFunc type is an adapter to allow the use of ordinary
+// function as NamespaceSecret mutator.
+type NamespaceSecretFunc func(context.Context, *ent.NamespaceSecretMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f BucketSecretFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.BucketSecretMutation)
+func (f NamespaceSecretFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.NamespaceSecretMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BucketSecretMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NamespaceSecretMutation", m)
 	}
 	return f(ctx, mv)
 }

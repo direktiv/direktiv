@@ -226,7 +226,7 @@ func (m *NamespaceMutation) ClearWorkflows() {
 	m.clearedworkflows = true
 }
 
-// WorkflowsCleared returns if the "workflows" edge to the Workflow entity was cleared.
+// WorkflowsCleared reports if the "workflows" edge to the Workflow entity was cleared.
 func (m *NamespaceMutation) WorkflowsCleared() bool {
 	return m.clearedworkflows
 }
@@ -1460,7 +1460,7 @@ func (m *WorkflowMutation) ClearNamespace() {
 	m.clearednamespace = true
 }
 
-// NamespaceCleared returns if the "namespace" edge to the Namespace entity was cleared.
+// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
 func (m *WorkflowMutation) NamespaceCleared() bool {
 	return m.clearednamespace
 }
@@ -1504,7 +1504,7 @@ func (m *WorkflowMutation) ClearInstances() {
 	m.clearedinstances = true
 }
 
-// InstancesCleared returns if the "instances" edge to the WorkflowInstance entity was cleared.
+// InstancesCleared reports if the "instances" edge to the WorkflowInstance entity was cleared.
 func (m *WorkflowMutation) InstancesCleared() bool {
 	return m.clearedinstances
 }
@@ -1557,7 +1557,7 @@ func (m *WorkflowMutation) ClearWfevents() {
 	m.clearedwfevents = true
 }
 
-// WfeventsCleared returns if the "wfevents" edge to the WorkflowEvents entity was cleared.
+// WfeventsCleared reports if the "wfevents" edge to the WorkflowEvents entity was cleared.
 func (m *WorkflowMutation) WfeventsCleared() bool {
 	return m.clearedwfevents
 }
@@ -2256,7 +2256,7 @@ func (m *WorkflowEventsMutation) ClearWorkflow() {
 	m.clearedworkflow = true
 }
 
-// WorkflowCleared returns if the "workflow" edge to the Workflow entity was cleared.
+// WorkflowCleared reports if the "workflow" edge to the Workflow entity was cleared.
 func (m *WorkflowEventsMutation) WorkflowCleared() bool {
 	return m.clearedworkflow
 }
@@ -2300,7 +2300,7 @@ func (m *WorkflowEventsMutation) ClearWfeventswait() {
 	m.clearedwfeventswait = true
 }
 
-// WfeventswaitCleared returns if the "wfeventswait" edge to the WorkflowEventsWait entity was cleared.
+// WfeventswaitCleared reports if the "wfeventswait" edge to the WorkflowEventsWait entity was cleared.
 func (m *WorkflowEventsMutation) WfeventswaitCleared() bool {
 	return m.clearedwfeventswait
 }
@@ -2348,7 +2348,7 @@ func (m *WorkflowEventsMutation) ClearWorkflowinstance() {
 	m.clearedworkflowinstance = true
 }
 
-// WorkflowinstanceCleared returns if the "workflowinstance" edge to the WorkflowInstance entity was cleared.
+// WorkflowinstanceCleared reports if the "workflowinstance" edge to the WorkflowInstance entity was cleared.
 func (m *WorkflowEventsMutation) WorkflowinstanceCleared() bool {
 	return m.clearedworkflowinstance
 }
@@ -2823,7 +2823,7 @@ func (m *WorkflowEventsWaitMutation) ClearWorkflowevent() {
 	m.clearedworkflowevent = true
 }
 
-// WorkfloweventCleared returns if the "workflowevent" edge to the WorkflowEvents entity was cleared.
+// WorkfloweventCleared reports if the "workflowevent" edge to the WorkflowEvents entity was cleared.
 func (m *WorkflowEventsWaitMutation) WorkfloweventCleared() bool {
 	return m.clearedworkflowevent
 }
@@ -3910,7 +3910,7 @@ func (m *WorkflowInstanceMutation) ClearWorkflow() {
 	m.clearedworkflow = true
 }
 
-// WorkflowCleared returns if the "workflow" edge to the Workflow entity was cleared.
+// WorkflowCleared reports if the "workflow" edge to the Workflow entity was cleared.
 func (m *WorkflowInstanceMutation) WorkflowCleared() bool {
 	return m.clearedworkflow
 }
@@ -3954,7 +3954,7 @@ func (m *WorkflowInstanceMutation) ClearInstance() {
 	m.clearedinstance = true
 }
 
-// InstanceCleared returns if the "instance" edge to the WorkflowEvents entity was cleared.
+// InstanceCleared reports if the "instance" edge to the WorkflowEvents entity was cleared.
 func (m *WorkflowInstanceMutation) InstanceCleared() bool {
 	return m.clearedinstance
 }

@@ -34,13 +34,13 @@ func (*Timer) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case timer.FieldData:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case timer.FieldID:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case timer.FieldName, timer.FieldFn, timer.FieldCron:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case timer.FieldOne:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Timer", columns[i])
 		}

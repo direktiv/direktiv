@@ -132,6 +132,7 @@ func (tu *TimerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // TimerUpdateOne is the builder for updating a single Timer entity.
 type TimerUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *TimerMutation
 }
@@ -139,6 +140,13 @@ type TimerUpdateOne struct {
 // Mutation returns the TimerMutation object of the builder.
 func (tuo *TimerUpdateOne) Mutation() *TimerMutation {
 	return tuo.mutation
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (tuo *TimerUpdateOne) Select(field string, fields ...string) *TimerUpdateOne {
+	tuo.fields = append([]string{field}, fields...)
+	return tuo
 }
 
 // Save executes the query and returns the updated Timer entity.
@@ -208,6 +216,18 @@ func (tuo *TimerUpdateOne) sqlSave(ctx context.Context) (_node *Timer, err error
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Timer.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := tuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, timer.FieldID)
+		for _, f := range fields {
+			if !timer.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != timer.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := tuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

@@ -11,17 +11,11 @@ import (
 
 type healthServer struct {
 	health.UnimplementedHealthServer
-
-	config *Config
-	grpc   *grpc.Server
-	engine *workflowEngine
+	grpc *grpc.Server
 }
 
-func newHealthServer(config *Config, engine *workflowEngine) *healthServer {
-	return &healthServer{
-		config: config,
-		engine: engine,
-	}
+func newHealthServer() *healthServer {
+	return &healthServer{}
 }
 
 func (hs *healthServer) name() string {

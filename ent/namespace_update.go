@@ -219,6 +219,7 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // NamespaceUpdateOne is the builder for updating a single Namespace entity.
 type NamespaceUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *NamespaceMutation
 }
@@ -268,6 +269,13 @@ func (nuo *NamespaceUpdateOne) RemoveWorkflows(w ...*Workflow) *NamespaceUpdateO
 		ids[i] = w[i].ID
 	}
 	return nuo.RemoveWorkflowIDs(ids...)
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (nuo *NamespaceUpdateOne) Select(field string, fields ...string) *NamespaceUpdateOne {
+	nuo.fields = append([]string{field}, fields...)
+	return nuo
 }
 
 // Save executes the query and returns the updated Namespace entity.
@@ -337,6 +345,18 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Namespace.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := nuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, namespace.FieldID)
+		for _, f := range fields {
+			if !namespace.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != namespace.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := nuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

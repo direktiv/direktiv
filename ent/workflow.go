@@ -89,19 +89,19 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case workflow.FieldWorkflow:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case workflow.FieldActive:
-			values[i] = &sql.NullBool{}
+			values[i] = new(sql.NullBool)
 		case workflow.FieldRevision:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case workflow.FieldName, workflow.FieldDescription, workflow.FieldLogToEvents:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case workflow.FieldCreated:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		case workflow.FieldID:
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		case workflow.ForeignKeys[0]: // namespace_workflows
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Workflow", columns[i])
 		}

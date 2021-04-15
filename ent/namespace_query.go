@@ -22,6 +22,7 @@ type NamespaceQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Namespace
@@ -47,6 +48,13 @@ func (nq *NamespaceQuery) Limit(limit int) *NamespaceQuery {
 // Offset adds an offset step to the query.
 func (nq *NamespaceQuery) Offset(offset int) *NamespaceQuery {
 	nq.offset = &offset
+	return nq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (nq *NamespaceQuery) Unique(unique bool) *NamespaceQuery {
+	nq.unique = &unique
 	return nq
 }
 
@@ -424,6 +432,9 @@ func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   nq.sql,
 		Unique: true,
 	}
+	if unique := nq.unique; unique != nil {
+		_spec.Unique = *unique
+	}
 	if fields := nq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, namespace.FieldID)
@@ -449,7 +460,7 @@ func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := nq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, namespace.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -468,7 +479,7 @@ func (nq *NamespaceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range nq.order {
-		p(selector, namespace.ValidColumn)
+		p(selector)
 	}
 	if offset := nq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -734,7 +745,7 @@ func (ngb *NamespaceGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(ngb.fields)+len(ngb.fns))
 	columns = append(columns, ngb.fields...)
 	for _, fn := range ngb.fns {
-		columns = append(columns, fn(selector, namespace.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(ngb.fields...)
 }

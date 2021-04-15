@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vorteil/direktiv/pkg/secrets/ent/bucketsecret"
+	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
 	"github.com/vorteil/direktiv/pkg/secrets/ent/predicate"
 
 	"entgo.io/ent"
@@ -22,11 +22,11 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeBucketSecret = "BucketSecret"
+	TypeNamespaceSecret = "NamespaceSecret"
 )
 
-// BucketSecretMutation represents an operation that mutates the BucketSecret nodes in the graph.
-type BucketSecretMutation struct {
+// NamespaceSecretMutation represents an operation that mutates the NamespaceSecret nodes in the graph.
+type NamespaceSecretMutation struct {
 	config
 	op            Op
 	typ           string
@@ -34,25 +34,23 @@ type BucketSecretMutation struct {
 	ns            *string
 	name          *string
 	secret        *[]byte
-	_type         *int
-	add_type      *int
 	clearedFields map[string]struct{}
 	done          bool
-	oldValue      func(context.Context) (*BucketSecret, error)
-	predicates    []predicate.BucketSecret
+	oldValue      func(context.Context) (*NamespaceSecret, error)
+	predicates    []predicate.NamespaceSecret
 }
 
-var _ ent.Mutation = (*BucketSecretMutation)(nil)
+var _ ent.Mutation = (*NamespaceSecretMutation)(nil)
 
-// bucketsecretOption allows management of the mutation configuration using functional options.
-type bucketsecretOption func(*BucketSecretMutation)
+// namespacesecretOption allows management of the mutation configuration using functional options.
+type namespacesecretOption func(*NamespaceSecretMutation)
 
-// newBucketSecretMutation creates new mutation for the BucketSecret entity.
-func newBucketSecretMutation(c config, op Op, opts ...bucketsecretOption) *BucketSecretMutation {
-	m := &BucketSecretMutation{
+// newNamespaceSecretMutation creates new mutation for the NamespaceSecret entity.
+func newNamespaceSecretMutation(c config, op Op, opts ...namespacesecretOption) *NamespaceSecretMutation {
+	m := &NamespaceSecretMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeBucketSecret,
+		typ:           TypeNamespaceSecret,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -61,20 +59,20 @@ func newBucketSecretMutation(c config, op Op, opts ...bucketsecretOption) *Bucke
 	return m
 }
 
-// withBucketSecretID sets the ID field of the mutation.
-func withBucketSecretID(id int) bucketsecretOption {
-	return func(m *BucketSecretMutation) {
+// withNamespaceSecretID sets the ID field of the mutation.
+func withNamespaceSecretID(id int) namespacesecretOption {
+	return func(m *NamespaceSecretMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *BucketSecret
+			value *NamespaceSecret
 		)
-		m.oldValue = func(ctx context.Context) (*BucketSecret, error) {
+		m.oldValue = func(ctx context.Context) (*NamespaceSecret, error) {
 			once.Do(func() {
 				if m.done {
 					err = fmt.Errorf("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().BucketSecret.Get(ctx, id)
+					value, err = m.Client().NamespaceSecret.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -83,10 +81,10 @@ func withBucketSecretID(id int) bucketsecretOption {
 	}
 }
 
-// withBucketSecret sets the old BucketSecret of the mutation.
-func withBucketSecret(node *BucketSecret) bucketsecretOption {
-	return func(m *BucketSecretMutation) {
-		m.oldValue = func(context.Context) (*BucketSecret, error) {
+// withNamespaceSecret sets the old NamespaceSecret of the mutation.
+func withNamespaceSecret(node *NamespaceSecret) namespacesecretOption {
+	return func(m *NamespaceSecretMutation) {
+		m.oldValue = func(context.Context) (*NamespaceSecret, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -95,7 +93,7 @@ func withBucketSecret(node *BucketSecret) bucketsecretOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m BucketSecretMutation) Client() *Client {
+func (m NamespaceSecretMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -103,7 +101,7 @@ func (m BucketSecretMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m BucketSecretMutation) Tx() (*Tx, error) {
+func (m NamespaceSecretMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
 	}
@@ -114,7 +112,7 @@ func (m BucketSecretMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID
 // is only available if it was provided to the builder.
-func (m *BucketSecretMutation) ID() (id int, exists bool) {
+func (m *NamespaceSecretMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -122,12 +120,12 @@ func (m *BucketSecretMutation) ID() (id int, exists bool) {
 }
 
 // SetNs sets the "ns" field.
-func (m *BucketSecretMutation) SetNs(s string) {
+func (m *NamespaceSecretMutation) SetNs(s string) {
 	m.ns = &s
 }
 
 // Ns returns the value of the "ns" field in the mutation.
-func (m *BucketSecretMutation) Ns() (r string, exists bool) {
+func (m *NamespaceSecretMutation) Ns() (r string, exists bool) {
 	v := m.ns
 	if v == nil {
 		return
@@ -135,10 +133,10 @@ func (m *BucketSecretMutation) Ns() (r string, exists bool) {
 	return *v, true
 }
 
-// OldNs returns the old "ns" field's value of the BucketSecret entity.
-// If the BucketSecret object wasn't provided to the builder, the object is fetched from the database.
+// OldNs returns the old "ns" field's value of the NamespaceSecret entity.
+// If the NamespaceSecret object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BucketSecretMutation) OldNs(ctx context.Context) (v string, err error) {
+func (m *NamespaceSecretMutation) OldNs(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldNs is only allowed on UpdateOne operations")
 	}
@@ -153,17 +151,17 @@ func (m *BucketSecretMutation) OldNs(ctx context.Context) (v string, err error) 
 }
 
 // ResetNs resets all changes to the "ns" field.
-func (m *BucketSecretMutation) ResetNs() {
+func (m *NamespaceSecretMutation) ResetNs() {
 	m.ns = nil
 }
 
 // SetName sets the "name" field.
-func (m *BucketSecretMutation) SetName(s string) {
+func (m *NamespaceSecretMutation) SetName(s string) {
 	m.name = &s
 }
 
 // Name returns the value of the "name" field in the mutation.
-func (m *BucketSecretMutation) Name() (r string, exists bool) {
+func (m *NamespaceSecretMutation) Name() (r string, exists bool) {
 	v := m.name
 	if v == nil {
 		return
@@ -171,10 +169,10 @@ func (m *BucketSecretMutation) Name() (r string, exists bool) {
 	return *v, true
 }
 
-// OldName returns the old "name" field's value of the BucketSecret entity.
-// If the BucketSecret object wasn't provided to the builder, the object is fetched from the database.
+// OldName returns the old "name" field's value of the NamespaceSecret entity.
+// If the NamespaceSecret object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BucketSecretMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *NamespaceSecretMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldName is only allowed on UpdateOne operations")
 	}
@@ -189,17 +187,17 @@ func (m *BucketSecretMutation) OldName(ctx context.Context) (v string, err error
 }
 
 // ResetName resets all changes to the "name" field.
-func (m *BucketSecretMutation) ResetName() {
+func (m *NamespaceSecretMutation) ResetName() {
 	m.name = nil
 }
 
 // SetSecret sets the "secret" field.
-func (m *BucketSecretMutation) SetSecret(b []byte) {
+func (m *NamespaceSecretMutation) SetSecret(b []byte) {
 	m.secret = &b
 }
 
 // Secret returns the value of the "secret" field in the mutation.
-func (m *BucketSecretMutation) Secret() (r []byte, exists bool) {
+func (m *NamespaceSecretMutation) Secret() (r []byte, exists bool) {
 	v := m.secret
 	if v == nil {
 		return
@@ -207,10 +205,10 @@ func (m *BucketSecretMutation) Secret() (r []byte, exists bool) {
 	return *v, true
 }
 
-// OldSecret returns the old "secret" field's value of the BucketSecret entity.
-// If the BucketSecret object wasn't provided to the builder, the object is fetched from the database.
+// OldSecret returns the old "secret" field's value of the NamespaceSecret entity.
+// If the NamespaceSecret object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BucketSecretMutation) OldSecret(ctx context.Context) (v []byte, err error) {
+func (m *NamespaceSecretMutation) OldSecret(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldSecret is only allowed on UpdateOne operations")
 	}
@@ -225,92 +223,33 @@ func (m *BucketSecretMutation) OldSecret(ctx context.Context) (v []byte, err err
 }
 
 // ResetSecret resets all changes to the "secret" field.
-func (m *BucketSecretMutation) ResetSecret() {
+func (m *NamespaceSecretMutation) ResetSecret() {
 	m.secret = nil
 }
 
-// SetType sets the "type" field.
-func (m *BucketSecretMutation) SetType(i int) {
-	m._type = &i
-	m.add_type = nil
-}
-
-// GetType returns the value of the "type" field in the mutation.
-func (m *BucketSecretMutation) GetType() (r int, exists bool) {
-	v := m._type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldType returns the old "type" field's value of the BucketSecret entity.
-// If the BucketSecret object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BucketSecretMutation) OldType(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
-	}
-	return oldValue.Type, nil
-}
-
-// AddType adds i to the "type" field.
-func (m *BucketSecretMutation) AddType(i int) {
-	if m.add_type != nil {
-		*m.add_type += i
-	} else {
-		m.add_type = &i
-	}
-}
-
-// AddedType returns the value that was added to the "type" field in this mutation.
-func (m *BucketSecretMutation) AddedType() (r int, exists bool) {
-	v := m.add_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetType resets all changes to the "type" field.
-func (m *BucketSecretMutation) ResetType() {
-	m._type = nil
-	m.add_type = nil
-}
-
 // Op returns the operation name.
-func (m *BucketSecretMutation) Op() Op {
+func (m *NamespaceSecretMutation) Op() Op {
 	return m.op
 }
 
-// Type returns the node type of this mutation (BucketSecret).
-func (m *BucketSecretMutation) Type() string {
+// Type returns the node type of this mutation (NamespaceSecret).
+func (m *NamespaceSecretMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *BucketSecretMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+func (m *NamespaceSecretMutation) Fields() []string {
+	fields := make([]string, 0, 3)
 	if m.ns != nil {
-		fields = append(fields, bucketsecret.FieldNs)
+		fields = append(fields, namespacesecret.FieldNs)
 	}
 	if m.name != nil {
-		fields = append(fields, bucketsecret.FieldName)
+		fields = append(fields, namespacesecret.FieldName)
 	}
 	if m.secret != nil {
-		fields = append(fields, bucketsecret.FieldSecret)
-	}
-	if m._type != nil {
-		fields = append(fields, bucketsecret.FieldType)
+		fields = append(fields, namespacesecret.FieldSecret)
 	}
 	return fields
 }
@@ -318,16 +257,14 @@ func (m *BucketSecretMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *BucketSecretMutation) Field(name string) (ent.Value, bool) {
+func (m *NamespaceSecretMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case bucketsecret.FieldNs:
+	case namespacesecret.FieldNs:
 		return m.Ns()
-	case bucketsecret.FieldName:
+	case namespacesecret.FieldName:
 		return m.Name()
-	case bucketsecret.FieldSecret:
+	case namespacesecret.FieldSecret:
 		return m.Secret()
-	case bucketsecret.FieldType:
-		return m.GetType()
 	}
 	return nil, false
 }
@@ -335,177 +272,150 @@ func (m *BucketSecretMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *BucketSecretMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *NamespaceSecretMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case bucketsecret.FieldNs:
+	case namespacesecret.FieldNs:
 		return m.OldNs(ctx)
-	case bucketsecret.FieldName:
+	case namespacesecret.FieldName:
 		return m.OldName(ctx)
-	case bucketsecret.FieldSecret:
+	case namespacesecret.FieldSecret:
 		return m.OldSecret(ctx)
-	case bucketsecret.FieldType:
-		return m.OldType(ctx)
 	}
-	return nil, fmt.Errorf("unknown BucketSecret field %s", name)
+	return nil, fmt.Errorf("unknown NamespaceSecret field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *BucketSecretMutation) SetField(name string, value ent.Value) error {
+func (m *NamespaceSecretMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case bucketsecret.FieldNs:
+	case namespacesecret.FieldNs:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNs(v)
 		return nil
-	case bucketsecret.FieldName:
+	case namespacesecret.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
 		return nil
-	case bucketsecret.FieldSecret:
+	case namespacesecret.FieldSecret:
 		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSecret(v)
 		return nil
-	case bucketsecret.FieldType:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetType(v)
-		return nil
 	}
-	return fmt.Errorf("unknown BucketSecret field %s", name)
+	return fmt.Errorf("unknown NamespaceSecret field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *BucketSecretMutation) AddedFields() []string {
-	var fields []string
-	if m.add_type != nil {
-		fields = append(fields, bucketsecret.FieldType)
-	}
-	return fields
+func (m *NamespaceSecretMutation) AddedFields() []string {
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *BucketSecretMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case bucketsecret.FieldType:
-		return m.AddedType()
-	}
+func (m *NamespaceSecretMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *BucketSecretMutation) AddField(name string, value ent.Value) error {
+func (m *NamespaceSecretMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case bucketsecret.FieldType:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddType(v)
-		return nil
 	}
-	return fmt.Errorf("unknown BucketSecret numeric field %s", name)
+	return fmt.Errorf("unknown NamespaceSecret numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *BucketSecretMutation) ClearedFields() []string {
+func (m *NamespaceSecretMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *BucketSecretMutation) FieldCleared(name string) bool {
+func (m *NamespaceSecretMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *BucketSecretMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown BucketSecret nullable field %s", name)
+func (m *NamespaceSecretMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NamespaceSecret nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *BucketSecretMutation) ResetField(name string) error {
+func (m *NamespaceSecretMutation) ResetField(name string) error {
 	switch name {
-	case bucketsecret.FieldNs:
+	case namespacesecret.FieldNs:
 		m.ResetNs()
 		return nil
-	case bucketsecret.FieldName:
+	case namespacesecret.FieldName:
 		m.ResetName()
 		return nil
-	case bucketsecret.FieldSecret:
+	case namespacesecret.FieldSecret:
 		m.ResetSecret()
 		return nil
-	case bucketsecret.FieldType:
-		m.ResetType()
-		return nil
 	}
-	return fmt.Errorf("unknown BucketSecret field %s", name)
+	return fmt.Errorf("unknown NamespaceSecret field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *BucketSecretMutation) AddedEdges() []string {
+func (m *NamespaceSecretMutation) AddedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *BucketSecretMutation) AddedIDs(name string) []ent.Value {
+func (m *NamespaceSecretMutation) AddedIDs(name string) []ent.Value {
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *BucketSecretMutation) RemovedEdges() []string {
+func (m *NamespaceSecretMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *BucketSecretMutation) RemovedIDs(name string) []ent.Value {
+func (m *NamespaceSecretMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *BucketSecretMutation) ClearedEdges() []string {
+func (m *NamespaceSecretMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *BucketSecretMutation) EdgeCleared(name string) bool {
+func (m *NamespaceSecretMutation) EdgeCleared(name string) bool {
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *BucketSecretMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown BucketSecret unique edge %s", name)
+func (m *NamespaceSecretMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NamespaceSecret unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *BucketSecretMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown BucketSecret edge %s", name)
+func (m *NamespaceSecretMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NamespaceSecret edge %s", name)
 }

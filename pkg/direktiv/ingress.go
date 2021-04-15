@@ -14,7 +14,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
-	"github.com/vorteil/direktiv/pkg/secrets"
+	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -30,7 +30,7 @@ type ingressServer struct {
 	wfServer *WorkflowServer
 	grpc     *grpc.Server
 
-	secretsClient secrets.SecretsServiceClient
+	secretsClient secretsgrpc.SecretsServiceClient
 	grpcConn      *grpc.ClientConn
 }
 
@@ -66,18 +66,18 @@ func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 func (is *ingressServer) start(s *WorkflowServer) error {
 
 	// get secrets client
-	conn, err := getEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	conn, err := GetEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
 	if err != nil {
 		return err
 	}
 	is.grpcConn = conn
-	is.secretsClient = secrets.NewSecretsServiceClient(conn)
+	is.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
-	return s.grpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
+	return GrpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
 		log.Debugf("append health check to ingress service")
-		healthServer := newHealthServer(s.config, s.engine)
+		healthServer := newHealthServer()
 		health.RegisterHealthServer(srv, healthServer)
 		reflection.Register(srv)
 	})
@@ -544,24 +544,18 @@ type deleteEncryptedRequest interface {
 	GetName() string
 }
 
-func (is *ingressServer) deleteEncrypted(ctx context.Context, in deleteEncryptedRequest, stype secrets.SecretTypes) error {
+func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
 
 	namespace := in.GetNamespace()
 	name := in.GetName()
 
-	_, err := is.secretsClient.DeleteSecret(ctx, &secrets.SecretsDeleteRequest{
+	_, err := is.secretsClient.DeleteSecret(ctx, &secretsgrpc.SecretsDeleteRequest{
 		Namespace: &namespace,
 		Name:      &name,
-		Stype:     &stype,
 	})
 
-	return err
-
-}
-
-func (is *ingressServer) DeleteSecret(ctx context.Context, in *ingress.DeleteSecretRequest) (*emptypb.Empty, error) {
-	err := is.deleteEncrypted(ctx, in, secrets.SecretTypes_SECRET)
 	return &emptypb.Empty{}, err
+
 }
 
 func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteRegistryRequest) (*emptypb.Empty, error) {
@@ -572,19 +566,17 @@ func (is *ingressServer) DeleteRegistry(ctx context.Context, in *ingress.DeleteR
 	return &resp, err
 }
 
-func (is *ingressServer) fetchSecrets(ctx context.Context, ns string,
-	stype secrets.SecretTypes) (*secrets.GetSecretsResponse, error) {
+func (is *ingressServer) fetchSecrets(ctx context.Context, ns string) (*secretsgrpc.GetSecretsResponse, error) {
 
-	return is.secretsClient.GetSecrets(ctx, &secrets.GetSecretsRequest{
+	return is.secretsClient.GetSecrets(ctx, &secretsgrpc.GetSecretsRequest{
 		Namespace: &ns,
-		Stype:     &stype,
 	})
 
 }
 
 func (is *ingressServer) GetSecrets(ctx context.Context, in *ingress.GetSecretsRequest) (*ingress.GetSecretsResponse, error) {
 
-	output, err := is.fetchSecrets(ctx, in.GetNamespace(), secrets.SecretTypes_SECRET)
+	output, err := is.fetchSecrets(ctx, in.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -627,35 +619,19 @@ type storeEncryptedRequest interface {
 	GetData() []byte
 }
 
-func (is *ingressServer) storeEncrypted(ctx context.Context, in storeEncryptedRequest, stype secrets.SecretTypes) error {
-
-	ns, err := is.wfServer.dbManager.getNamespace(in.GetNamespace())
-	if err != nil {
-		return err
-	}
-
-	encryptedBytes, err := encryptData(ns.Key, in.GetData())
-	if err != nil {
-		return err
-	}
+func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecretRequest) (*emptypb.Empty, error) {
+	var resp emptypb.Empty
 
 	namespace := in.GetNamespace()
 	name := in.GetName()
 
-	_, err = is.secretsClient.StoreSecret(ctx, &secrets.SecretsStoreRequest{
+	_, err := is.secretsClient.StoreSecret(ctx, &secretsgrpc.SecretsStoreRequest{
 		Namespace: &namespace,
 		Name:      &name,
-		Data:      encryptedBytes,
-		Stype:     &stype,
+		Data:      in.GetData(),
 	})
 
-	return err
-
-}
-
-func (is *ingressServer) StoreSecret(ctx context.Context, in *ingress.StoreSecretRequest) (*emptypb.Empty, error) {
-	var resp emptypb.Empty
-	return &resp, is.storeEncrypted(ctx, in, secrets.SecretTypes_SECRET)
+	return &resp, err
 }
 
 func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreRegistryRequest) (*emptypb.Empty, error) {

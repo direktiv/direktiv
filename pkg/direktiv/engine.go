@@ -22,7 +22,7 @@ import (
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 	"github.com/vorteil/direktiv/pkg/dlog/dummy"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/secrets"
+	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"google.golang.org/grpc"
 
 	"github.com/jinzhu/copier"
@@ -61,7 +61,7 @@ type workflowEngine struct {
 
 	flowClient flow.DirektivFlowClient
 
-	secretsClient secrets.SecretsServiceClient
+	secretsClient secretsgrpc.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
 	grpcConns     []*grpc.ClientConn
 }
@@ -113,7 +113,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := getEndpointTLS(s.config, flowComponent, s.config.FlowAPI.Endpoint)
+	conn, err := GetEndpointTLS(s.config, flowComponent, s.config.FlowAPI.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -122,15 +122,15 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = getEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	conn, err = GetEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
 	if err != nil {
 		return nil, err
 	}
 	we.grpcConns = append(we.grpcConns, conn)
-	we.secretsClient = secrets.NewSecretsServiceClient(conn)
+	we.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
 	// get ingress client
-	conn, err = getEndpointTLS(s.config, ingressComponent, s.config.IngressAPI.Endpoint)
+	conn, err = GetEndpointTLS(s.config, ingressComponent, s.config.IngressAPI.Endpoint)
 	if err != nil {
 		return nil, err
 	}

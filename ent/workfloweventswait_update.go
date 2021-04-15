@@ -195,6 +195,7 @@ func (wewu *WorkflowEventsWaitUpdate) sqlSave(ctx context.Context) (n int, err e
 // WorkflowEventsWaitUpdateOne is the builder for updating a single WorkflowEventsWait entity.
 type WorkflowEventsWaitUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *WorkflowEventsWaitMutation
 }
@@ -224,6 +225,13 @@ func (wewuo *WorkflowEventsWaitUpdateOne) Mutation() *WorkflowEventsWaitMutation
 // ClearWorkflowevent clears the "workflowevent" edge to the WorkflowEvents entity.
 func (wewuo *WorkflowEventsWaitUpdateOne) ClearWorkflowevent() *WorkflowEventsWaitUpdateOne {
 	wewuo.mutation.ClearWorkflowevent()
+	return wewuo
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (wewuo *WorkflowEventsWaitUpdateOne) Select(field string, fields ...string) *WorkflowEventsWaitUpdateOne {
+	wewuo.fields = append([]string{field}, fields...)
 	return wewuo
 }
 
@@ -308,6 +316,18 @@ func (wewuo *WorkflowEventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *W
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing WorkflowEventsWait.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := wewuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, workfloweventswait.FieldID)
+		for _, f := range fields {
+			if !workfloweventswait.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != workfloweventswait.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := wewuo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

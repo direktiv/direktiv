@@ -8,24 +8,23 @@ import (
 )
 
 var (
-	// BucketSecretsColumns holds the columns for the "bucket_secrets" table.
-	BucketSecretsColumns = []*schema.Column{
+	// NamespaceSecretsColumns holds the columns for the "namespace_secrets" table.
+	NamespaceSecretsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "ns", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "secret", Type: field.TypeBytes, Size: 65536},
-		{Name: "type", Type: field.TypeInt},
 	}
-	// BucketSecretsTable holds the schema information for the "bucket_secrets" table.
-	BucketSecretsTable = &schema.Table{
-		Name:        "bucket_secrets",
-		Columns:     BucketSecretsColumns,
-		PrimaryKey:  []*schema.Column{BucketSecretsColumns[0]},
+	// NamespaceSecretsTable holds the schema information for the "namespace_secrets" table.
+	NamespaceSecretsTable = &schema.Table{
+		Name:        "namespace_secrets",
+		Columns:     NamespaceSecretsColumns,
+		PrimaryKey:  []*schema.Column{NamespaceSecretsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		BucketSecretsTable,
+		NamespaceSecretsTable,
 	}
 )
 

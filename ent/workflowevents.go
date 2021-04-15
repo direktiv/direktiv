@@ -90,13 +90,13 @@ func (*WorkflowEvents) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case workflowevents.FieldEvents, workflowevents.FieldCorrelations, workflowevents.FieldSignature:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case workflowevents.FieldID, workflowevents.FieldCount:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case workflowevents.ForeignKeys[0]: // workflow_wfevents
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		case workflowevents.ForeignKeys[1]: // workflow_instance_instance
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type WorkflowEvents", columns[i])
 		}

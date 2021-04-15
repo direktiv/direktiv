@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/hook"
+	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -25,6 +27,9 @@ type dbManager struct {
 	dbEnt *ent.Client
 	ctx   context.Context
 	tm    *timerManager
+
+	grpcConn      *grpc.ClientConn
+	secretsClient secretsgrpc.SecretsServiceClient
 }
 
 func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager, error) {
@@ -73,6 +78,13 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 		kubeReq.mockup = false
 
 	}
+
+	// get secrets client
+	db.grpcConn, err = GetEndpointTLS(config, secretsComponent, config.SecretsAPI.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	db.secretsClient = secretsgrpc.NewSecretsServiceClient(db.grpcConn)
 
 	return db, nil
 

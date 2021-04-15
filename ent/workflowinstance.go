@@ -97,15 +97,15 @@ func (*WorkflowInstance) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case workflowinstance.FieldFlow:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case workflowinstance.FieldID, workflowinstance.FieldRevision, workflowinstance.FieldAttempts:
-			values[i] = &sql.NullInt64{}
+			values[i] = new(sql.NullInt64)
 		case workflowinstance.FieldInstanceID, workflowinstance.FieldInvokedBy, workflowinstance.FieldStatus, workflowinstance.FieldInput, workflowinstance.FieldOutput, workflowinstance.FieldStateData, workflowinstance.FieldMemory, workflowinstance.FieldErrorCode, workflowinstance.FieldErrorMessage:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case workflowinstance.FieldBeginTime, workflowinstance.FieldEndTime, workflowinstance.FieldDeadline, workflowinstance.FieldStateBeginTime:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		case workflowinstance.ForeignKeys[0]: // workflow_instances
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type WorkflowInstance", columns[i])
 		}
