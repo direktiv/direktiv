@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	runtime "github.com/banzaicloud/logrus-runtime-formatter"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/vorteil/direktiv/pkg/secrets"
@@ -22,6 +23,15 @@ func main() {
 	if err != nil {
 		log.Errorf("can not run secrets: %v", err)
 		os.Exit(1)
+	}
+
+	if os.Getenv("DIREKTIV_DEBUG") == "true" {
+		log.SetLevel(log.DebugLevel)
+		formatter := runtime.Formatter{ChildFormatter: &log.TextFormatter{
+			FullTimestamp: true,
+		}}
+		formatter.Line = true
+		log.SetFormatter(&formatter)
 	}
 
 	srv.Run()

@@ -20,6 +20,7 @@
 
 /build/direktiv
 /build/direkcli
+/build/secrets
 /build/alpine-*
 /direktiv
 /direkcli

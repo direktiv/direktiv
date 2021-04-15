@@ -128,8 +128,9 @@ func (s *Server) GetSecrets(ctx context.Context, in *secretsgrpc.GetSecretsReque
 	}
 
 	for _, n := range names {
+		var name = n
 		ls = append(ls, &secretsgrpc.GetSecretsResponse_Secret{
-			Name: &n,
+			Name: &name,
 		})
 	}
 

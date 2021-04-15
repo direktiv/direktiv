@@ -84,12 +84,14 @@ withFlow: true
 withUI: true
 
 db: ""
-debug: "false"
+debug: false
 
 secrets:
   image: "vorteil/secrets"
   tag: "latest"
+  backend: "db"
   db: ""
+  key: ""
 
 # flow config
 flow:

@@ -28,7 +28,7 @@ protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_fi
 .PHONY: docker-secrets
 docker-secrets:
 docker-secrets: build
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
+	cp ${mkfile_dir_main}/secrets  ${mkfile_dir_main}/build/
 	cd build && docker build -t direktiv-secrets -f docker/secrets/Dockerfile .
 
 .PHONY: docker-all

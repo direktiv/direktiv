@@ -31,7 +31,6 @@ spec:
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ["/bin/direktiv"]
-          args: ["-t", "w", "-d"]
           volumeMounts:
           - name: service-template
             mountPath: /etc/config
@@ -48,6 +47,8 @@ spec:
               containerPort: 7777
               protocol: TCP
           env:
+          - name: DIREKTIV_DEBUG
+            value: {{ .Values.debug | quote }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
           - name: DIREKTIV_INSTANCE_LOGGING_DRIVER
@@ -74,9 +75,14 @@ spec:
             value:  "localhost:2610"
         - name: secrets
           image: "{{ .Values.registry }}/{{ .Values.secrets.image }}:{{ .Values.secrets.tag | default .Chart.AppVersion }}"
+          command: ["/bin/secrets"]
+          args: [{{.Values.secrets.backend }}]
           imagePullPolicy: {{ .Values.pullPolicy }}
-          {{- if ne (default .Values.certificate "none") "none" }}
           volumeMounts:
+          - name: backend-config
+            mountPath: "/etc/config/backend"
+            readOnly: true
+          {{- if ne (default .Values.certificate "none") "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
             readOnly: true
@@ -86,6 +92,10 @@ spec:
               containerPort: 2610
               protocol: TCP
           env:
+          - name: DIREKTIV_DEBUG
+            value: {{ .Values.debug | quote }}
+          - name: DIREKTIV_SECRETS_CONFIG
+            value: "/etc/config/backend/config"
           - name: DIREKTIV_SECRETS_BIND
             value: "127.0.0.1:2610"
           - name: DIREKTIV_SECRETS_DB
@@ -94,6 +104,9 @@ spec:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsDb
       volumes:
+        - name: backend-config
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config
         - name: service-template
           configMap:
             name: service-template

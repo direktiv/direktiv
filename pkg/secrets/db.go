@@ -146,6 +146,7 @@ func (db *dbHandler) GetSecrets(namespace string) ([]string, error) {
 	}
 
 	for _, s := range dbs {
+		log.Infof("SCRETS %v", s.Name)
 		names = append(names, s.Name)
 	}
 
