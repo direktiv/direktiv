@@ -21,8 +21,8 @@ import (
 )
 
 var (
-	debug                  bool
-	serverType, configFile string
+	debug      bool
+	configFile string
 )
 
 var rootCmd = &cobra.Command{
@@ -63,7 +63,7 @@ var rootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		server, err := direktiv.NewWorkflowServer(c, serverType)
+		server, err := direktiv.NewWorkflowServer(c)
 		if err != nil {
 			log.Fatalf("failed to create server: %v", err)
 		}
@@ -82,7 +82,7 @@ var rootCmd = &cobra.Command{
 			logger = l
 		default:
 			logrus.Info("creating logger type default")
-			logger, err = dummy.NewLogger()
+			logger, _ = dummy.NewLogger()
 		}
 
 		server.SetInstanceLogger(logger)
@@ -115,7 +115,6 @@ var rootCmd = &cobra.Command{
 func main() {
 
 	rootCmd.Flags().BoolVarP(&debug, "debug", "d", false, "enabled debug output")
-	rootCmd.Flags().StringVarP(&serverType, "type", "t", "wis", "components to run: w (workflow), i (isolate), s (secrets), default 'wis'")
 	rootCmd.Flags().StringVarP(&configFile, "config", "c", "", "configuration file to use")
 
 	err := rootCmd.Execute()

@@ -22,10 +22,9 @@ type component interface {
 
 // WorkflowServer is a direktiv server
 type WorkflowServer struct {
-	id         uuid.UUID
-	ctx        context.Context
-	config     *Config
-	serverType string
+	id     uuid.UUID
+	ctx    context.Context
+	config *Config
 
 	dbManager *dbManager
 	tmManager *timerManager
@@ -94,9 +93,8 @@ func (s *WorkflowServer) initWorkflowServer() error {
 }
 
 // NewWorkflowServer creates a new workflow server
-func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, error) {
+func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 
-	log.Debugf("server type: %s", serverType)
 	ctx := context.Background()
 
 	var (
@@ -107,7 +105,6 @@ func NewWorkflowServer(config *Config, serverType string) (*WorkflowServer, erro
 		id:         uuid.New(),
 		ctx:        ctx,
 		LifeLine:   make(chan bool),
-		serverType: serverType,
 		config:     config,
 		components: make(map[string]component),
 	}
