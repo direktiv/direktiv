@@ -346,7 +346,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	)
 
 	// potentially dns error for a brand new service
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 400; i++ {
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
