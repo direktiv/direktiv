@@ -66,7 +66,7 @@ func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 func (is *ingressServer) start(s *WorkflowServer) error {
 
 	// get secrets client
-	conn, err := GetEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	conn, err := GetEndpointTLS(s.config.SecretsAPI.Endpoint)
 	if err != nil {
 		return err
 	}

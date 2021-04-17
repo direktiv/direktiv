@@ -3,23 +3,20 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 // Server ..
 type Server struct {
-	cfg *Config
-	// handlers map[*mux.Router][]*Handler
+	cfg      *Config
 	direktiv ingress.DirektivIngressClient
 	json     jsonpb.Marshaler
-	handlers *Handlers
-	routes   map[string]map[string]*Handler
+	handler  *Handler
+	routes   map[string]map[string]http.HandlerFunc
 	router   *mux.Router
 	srv      *http.Server
 }
@@ -37,7 +34,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		},
 	}
 
-	s.handlers = &Handlers{
+	s.handler = &Handler{
 		s: s,
 	}
 
@@ -51,27 +48,35 @@ func NewServer(cfg *Config) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) Handlers() *Handlers {
-	return s.handlers
+func (s *Server) APIHandler() *Handler {
+	return s.handler
+}
+
+func (s *Server) Routes() map[string]map[string]http.HandlerFunc {
+	return s.routes
+}
+
+func (s *Server) Router() *mux.Router {
+	return s.router
 }
 
 func (s *Server) initDirektiv() error {
 
 	var opts []grpc.DialOption
-	if s.cfg.Ingress.TLS.Enabled {
-		tc, err := tlsConfig(s.cfg.Ingress.TLS.CertsDir, "client", s.cfg.Ingress.TLS.Secure)
-		if err != nil {
-			return err
-		}
-
-		if len(tc.Certificates) > 0 {
-			opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tc)))
-		} else {
-			opts = append(opts, grpc.WithInsecure())
-		}
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
+	// if s.cfg.Ingress.TLS.Enabled {
+	// 	tc, err := tlsConfig(s.cfg.Ingress.TLS.CertsDir, "client", s.cfg.Ingress.TLS.Secure)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	//
+	// 	if len(tc.Certificates) > 0 {
+	// 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tc)))
+	// 	} else {
+	// 		opts = append(opts, grpc.WithInsecure())
+	// 	}
+	// } else {
+	opts = append(opts, grpc.WithInsecure())
+	// }
 
 	conn, err := grpc.Dial(s.cfg.Ingress.Endpoint, opts...)
 	if err != nil {
@@ -85,57 +90,57 @@ func (s *Server) initDirektiv() error {
 func (s *Server) prepareRoutes() {
 
 	// init routes map
-	s.routes = make(map[string]map[string]*Handler)
-	s.routes[http.MethodGet] = make(map[string]*Handler)
-	s.routes[http.MethodPost] = make(map[string]*Handler)
-	s.routes[http.MethodPut] = make(map[string]*Handler)
-	s.routes[http.MethodDelete] = make(map[string]*Handler)
-	s.routes[http.MethodPatch] = make(map[string]*Handler)
-	s.routes[http.MethodOptions] = make(map[string]*Handler)
+	s.routes = make(map[string]map[string]http.HandlerFunc)
+	s.routes[http.MethodGet] = make(map[string]http.HandlerFunc)
+	s.routes[http.MethodPost] = make(map[string]http.HandlerFunc)
+	s.routes[http.MethodPut] = make(map[string]http.HandlerFunc)
+	s.routes[http.MethodDelete] = make(map[string]http.HandlerFunc)
+	s.routes[http.MethodPatch] = make(map[string]http.HandlerFunc)
+	s.routes[http.MethodOptions] = make(map[string]http.HandlerFunc)
 
 	// Options ..
-	s.routes[http.MethodOptions]["/{path:.*}"] = NewHandler(func(w http.ResponseWriter, r *http.Request) {
+	s.routes[http.MethodOptions]["/{path:.*}"] = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
 		w.WriteHeader(http.StatusOK)
 	})
 
 	// Namespace ..
-	s.routes[http.MethodGet]["/api/namespaces/"] = NewHandler(s.handlers.Namespaces)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}"] = NewHandler(s.handlers.AddNamespace)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}"] = NewHandler(s.handlers.DeleteNamespace)
+	s.routes[http.MethodGet]["/api/namespaces/"] = http.HandlerFunc(s.handler.Namespaces)
+	s.routes[http.MethodPost]["/api/namespaces/{namespace}"] = http.HandlerFunc(s.handler.AddNamespace)
+	s.routes[http.MethodDelete]["/api/namespaces/{namespace}"] = http.HandlerFunc(s.handler.DeleteNamespace)
 
 	// Event ..
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/event"] = NewHandler(s.handlers.NamespaceEvent)
+	s.routes[http.MethodPost]["/api/namespaces/{namespace}/event"] = http.HandlerFunc(s.handler.NamespaceEvent)
 
 	// Secret ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/secrets/"] = NewHandler(s.handlers.Secrets)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/secrets/"] = NewHandler(s.handlers.CreateSecret)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/secrets/"] = NewHandler(s.handlers.DeleteSecret)
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/secrets/"] = http.HandlerFunc(s.handler.Secrets)
+	s.routes[http.MethodPost]["/api/namespaces/{namespace}/secrets/"] = http.HandlerFunc(s.handler.CreateSecret)
+	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/secrets/"] = http.HandlerFunc(s.handler.DeleteSecret)
 
 	// Registry ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/registries/"] = NewHandler(s.handlers.Registries)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/registries/"] = NewHandler(s.handlers.CreateRegistry)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/registries/"] = NewHandler(s.handlers.DeleteRegistry)
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.Registries)
+	s.routes[http.MethodPost]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.CreateRegistry)
+	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.DeleteRegistry)
 
 	// Workflow ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/"] = NewHandler(s.handlers.Workflows)
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = NewHandler(s.handlers.GetWorkflow)
-	s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowUID}"] = NewHandler(s.handlers.UpdateWorkflow)
-	s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowUID}/toggle"] = NewHandler(s.handlers.ToggleWorkflow)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows"] = NewHandler(s.handlers.CreateWorkflow)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/workflows/{workflowUID}"] = NewHandler(s.handlers.DeleteWorkflow)
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowUID}/download"] = NewHandler(s.handlers.DownloadWorkflow)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowID}/execute"] = NewHandler(s.handlers.ExecuteWorkflow)
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/"] = http.HandlerFunc(s.handler.Workflows)
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.GetWorkflow)
+	s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowUID}"] = http.HandlerFunc(s.handler.UpdateWorkflow)
+	s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowUID}/toggle"] = http.HandlerFunc(s.handler.ToggleWorkflow)
+	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows"] = http.HandlerFunc(s.handler.CreateWorkflow)
+	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/workflows/{workflowUID}"] = http.HandlerFunc(s.handler.DeleteWorkflow)
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowUID}/download"] = http.HandlerFunc(s.handler.DownloadWorkflow)
+	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowID}/execute"] = http.HandlerFunc(s.handler.ExecuteWorkflow)
 
 	// Instance ..
-	s.routes[http.MethodGet]["/api/instances/{namespace}"] = NewHandler(s.handlers.Instances)
-	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}"] = NewHandler(s.handlers.GetInstance)
-	s.routes[http.MethodDelete]["/api/instances/{namespace}/{workflowID}/{id}"] = NewHandler(s.handlers.CancelInstance)
-	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}/logs"] = NewHandler(s.handlers.InstanceLogs)
+	s.routes[http.MethodGet]["/api/instances/{namespace}"] = http.HandlerFunc(s.handler.Instances)
+	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.GetInstance)
+	s.routes[http.MethodDelete]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.CancelInstance)
+	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}/logs"] = http.HandlerFunc(s.handler.InstanceLogs)
 
 }
 
-func (s *Server) RegisterHandler(path string, h *Handler, methods ...string) {
+func (s *Server) RegisterHandler(path string, h http.HandlerFunc, methods ...string) {
 	for _, method := range methods {
 		s.routes[method][path] = h
 	}
@@ -145,14 +150,14 @@ func (s *Server) Start() error {
 
 	for method, paths := range s.routes {
 		for path, h := range paths {
-			s.router.HandleFunc(path, h.exec).Methods(method)
+			s.router.HandleFunc(path, h).Methods(method)
 		}
 	}
 
-	if s.cfg.Server.TLS.Enabled {
-		fmt.Println("Starting TLS server...")
-		return s.srv.ListenAndServeTLS(filepath.Join(s.cfg.Server.TLS.CertsDir, "cert.pem"), filepath.Join(s.cfg.Server.TLS.CertsDir, "key.pem"))
-	}
+	// if s.cfg.Server.TLS.Enabled {
+	// 	fmt.Println("Starting TLS server...")
+	// 	return s.srv.ListenAndServeTLS(filepath.Join(s.cfg.Server.TLS.CertsDir, "cert.pem"), filepath.Join(s.cfg.Server.TLS.CertsDir, "key.pem"))
+	// }
 
 	fmt.Printf("Starting server - binding to %s!\n", s.cfg.Server.Bind)
 	return s.srv.ListenAndServe()

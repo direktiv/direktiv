@@ -19,11 +19,11 @@ const (
 	GRPCCommandTimeout = 30 * time.Second
 )
 
-type Handlers struct {
+type Handler struct {
 	s *Server
 }
 
-func (h *Handlers) Namespaces(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Namespaces(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := ctxDeadline()
 	defer cancel()
@@ -37,7 +37,7 @@ func (h *Handlers) Namespaces(w http.ResponseWriter, r *http.Request) {
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) AddNamespace(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -55,7 +55,7 @@ func (h *Handlers) AddNamespace(w http.ResponseWriter, r *http.Request) {
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -73,7 +73,7 @@ func (h *Handlers) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -121,7 +121,7 @@ func (h *Handlers) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) Secrets(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -139,7 +139,7 @@ func (h *Handlers) Secrets(w http.ResponseWriter, r *http.Request) {
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) CreateSecret(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -177,7 +177,7 @@ func (h *Handlers) CreateSecret(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) DeleteSecret(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -214,7 +214,7 @@ func (h *Handlers) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) Registries(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Registries(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -237,7 +237,7 @@ func (h *Handlers) Registries(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) CreateRegistry(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateRegistry(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -275,7 +275,7 @@ func (h *Handlers) CreateRegistry(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -312,7 +312,7 @@ func (h *Handlers) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) Workflows(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Workflows(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
@@ -335,7 +335,7 @@ func (h *Handlers) Workflows(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) GetWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	id := mux.Vars(r)["workflow"]
@@ -360,7 +360,7 @@ func (h *Handlers) GetWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
@@ -439,7 +439,7 @@ func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
@@ -477,7 +477,7 @@ func (h *Handlers) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	active := true
@@ -524,7 +524,7 @@ func (h *Handlers) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) DeleteWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
@@ -548,7 +548,7 @@ func (h *Handlers) DeleteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
@@ -573,7 +573,7 @@ func (h *Handlers) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	uid := mux.Vars(r)["workflowUID"]
@@ -606,7 +606,7 @@ func (h *Handlers) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) Instances(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Instances(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	l, o := paginationParams(r)
@@ -644,7 +644,7 @@ func (h *Handlers) Instances(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) GetInstance(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetInstance(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	wid := mux.Vars(r)["workflowID"]
@@ -671,7 +671,7 @@ func (h *Handlers) GetInstance(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) CancelInstance(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CancelInstance(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	wid := mux.Vars(r)["workflowID"]
@@ -698,7 +698,7 @@ func (h *Handlers) CancelInstance(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handlers) InstanceLogs(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	wid := mux.Vars(r)["workflowID"]

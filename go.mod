@@ -3,9 +3,11 @@ module github.com/vorteil/direktiv
 go 1.15
 
 require (
+	4d63.com/gochecknoglobals v0.0.0-20210416044342-fb0abda3d9aa // indirect
 	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	entgo.io/ent v0.8.0
+	github.com/MicahParks/keyfunc v0.3.3 // indirect
 	github.com/alecthomas/gocyclo v0.0.0-20150208221726-aa8f8b160214 // indirect
 	github.com/alexkohler/nakedret v1.0.0 // indirect
 	github.com/appc/spec v0.8.11
@@ -26,8 +28,10 @@ require (
 	github.com/gordonklaus/ineffassign v0.0.0-20210225214923-2e10b2664254 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/h2non/filetype v1.1.1 // indirect
+	github.com/hashicorp/consul/api v1.1.0
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
+	github.com/jgautheron/goconst v1.4.0 // indirect
 	github.com/jinzhu/copier v0.2.4
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/lib/pq v1.10.0
