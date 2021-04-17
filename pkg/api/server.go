@@ -49,6 +49,11 @@ func NewServer(cfg *Config) (*Server, error) {
 	return s, nil
 }
 
+// IngressClient returns client to backend
+func (s *Server) IngressClient() ingress.DirektivIngressClient {
+	return s.direktiv
+}
+
 // Router returns mux router
 func (s *Server) Router() *mux.Router {
 	return s.router

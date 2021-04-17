@@ -31,8 +31,8 @@ const (
 	secretsEndpoint = "DIREKTIV_SECRETS_ENDPOINT"
 	secretsConn     = "DIREKTIV_SECRETS_DB"
 
-	// database connection
-	dbConn = "DIREKTIV_DB"
+	// DBConn database connection
+	DBConn = "DIREKTIV_DB"
 
 	// instance logging
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
@@ -176,7 +176,7 @@ func ReadConfig(file string) (*Config, error) {
 		name  string
 		value *string
 	}{
-		{dbConn, &c.Database.DB},
+		{DBConn, &c.Database.DB},
 		{instanceLoggingDriver, &c.InstanceLogging.Driver},
 		{flowBind, &c.FlowAPI.Bind},
 		{flowEndpoint, &c.FlowAPI.Endpoint},
