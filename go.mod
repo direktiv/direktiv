@@ -36,6 +36,7 @@ require (
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/lib/pq v1.10.0
 	github.com/mdempsky/maligned v0.0.0-20210215075342-f0178ee82032 // indirect
+	github.com/mdempsky/unconvert v0.0.0-20200228143138-95ecdbfc0b5f // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/mitchellh/hashstructure/v2 v2.0.1
@@ -55,6 +56,7 @@ require (
 	github.com/sisatech/toml v0.0.0-20181010232116-ca247dd35773
 	github.com/spf13/cobra v1.1.3
 	github.com/stoewer/go-strcase v1.2.0 // indirect
+	github.com/stripe/safesql v0.2.0 // indirect
 	github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible

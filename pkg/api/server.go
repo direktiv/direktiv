@@ -1,13 +1,14 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"google.golang.org/grpc"
 )
 
 // Server ..
@@ -48,42 +49,20 @@ func NewServer(cfg *Config) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) APIHandler() *Handler {
-	return s.handler
-}
-
-func (s *Server) Routes() map[string]map[string]http.HandlerFunc {
-	return s.routes
-}
-
+// Router returns mux router
 func (s *Server) Router() *mux.Router {
 	return s.router
 }
 
 func (s *Server) initDirektiv() error {
 
-	var opts []grpc.DialOption
-	// if s.cfg.Ingress.TLS.Enabled {
-	// 	tc, err := tlsConfig(s.cfg.Ingress.TLS.CertsDir, "client", s.cfg.Ingress.TLS.Secure)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	//
-	// 	if len(tc.Certificates) > 0 {
-	// 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tc)))
-	// 	} else {
-	// 		opts = append(opts, grpc.WithInsecure())
-	// 	}
-	// } else {
-	opts = append(opts, grpc.WithInsecure())
-	// }
-
-	conn, err := grpc.Dial(s.cfg.Ingress.Endpoint, opts...)
+	conn, err := direktiv.GetEndpointTLS(s.cfg.Ingress.Endpoint)
 	if err != nil {
 		return err
 	}
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
+
 	return nil
 }
 
@@ -140,12 +119,14 @@ func (s *Server) prepareRoutes() {
 
 }
 
+// RegisterHandler registers all handlers
 func (s *Server) RegisterHandler(path string, h http.HandlerFunc, methods ...string) {
 	for _, method := range methods {
 		s.routes[method][path] = h
 	}
 }
 
+// Start starts the API server
 func (s *Server) Start() error {
 
 	for method, paths := range s.routes {
@@ -154,11 +135,12 @@ func (s *Server) Start() error {
 		}
 	}
 
-	// if s.cfg.Server.TLS.Enabled {
-	// 	fmt.Println("Starting TLS server...")
-	// 	return s.srv.ListenAndServeTLS(filepath.Join(s.cfg.Server.TLS.CertsDir, "cert.pem"), filepath.Join(s.cfg.Server.TLS.CertsDir, "key.pem"))
-	// }
+	log.Infof("Starting server - binding to %s\n", s.cfg.Server.Bind)
 
-	fmt.Printf("Starting server - binding to %s!\n", s.cfg.Server.Bind)
+	if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
+		log.Infof("tls enabled")
+		return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
+	}
+
 	return s.srv.ListenAndServe()
 }
