@@ -14,6 +14,7 @@ import (
 // FlowSync is the name of postgres pubsub channel
 const FlowSync = "flowsync"
 
+// direktiv pub/sub items
 const (
 	AddTimerSync = iota
 	DeleteTimerSync
@@ -28,6 +29,59 @@ type SyncRequest struct {
 	Cmd    int
 	Sender uuid.UUID
 	ID     interface{}
+}
+
+// SyncSubscribeTo subscribes to direktiv interna postgres pub/sub
+func SyncSubscribeTo(dbConnString string, topic int,
+	fn func(interface{})) error {
+
+	reportProblem := func(ev pq.ListenerEventType, err error) {
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	listener := pq.NewListener(dbConnString, 10*time.Second,
+		time.Minute, reportProblem)
+	err := listener.Listen(FlowSync)
+	if err != nil {
+		return err
+	}
+
+	go func(l *pq.Listener) {
+
+		defer l.UnlistenAll()
+
+		for {
+
+			notification, more := <-l.Notify
+			if !more {
+				log.Info("Database listener closed.")
+				return
+			}
+
+			if notification == nil {
+				continue
+			}
+
+			req := new(SyncRequest)
+			err = json.Unmarshal([]byte(notification.Extra), req)
+			if err != nil {
+				log.Errorf("Unexpected notification on database listener: %v", err)
+				continue
+			}
+
+			switch req.Cmd {
+			case topic:
+				fn(req.ID)
+			}
+
+		}
+
+	}(listener)
+
+	return nil
+
 }
 
 func (s *WorkflowServer) startDatabaseListener() error {

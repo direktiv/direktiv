@@ -497,18 +497,15 @@ func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error
 	if !exists {
 		return NewInternalError(fmt.Errorf("workflow cannot resolve state: %s", state))
 	}
-
 	init, exists := we.stateLogics[stateObject.GetType()]
 	if !exists {
 		return NewInternalError(fmt.Errorf("engine cannot resolve state type: %s", stateObject.GetType().String()))
 	}
-
 	stateLogic, err := init(wf, stateObject)
 	if err != nil {
 		return NewInternalError(fmt.Errorf("cannot initialize state logic: %v", err))
 	}
 	logic := stateLogic
-
 	we.cancelChildren(logic, []byte(rec.Memory))
 
 	return nil
@@ -517,7 +514,17 @@ func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error
 
 func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 
-	children := logic.LivingChildren(savedata)
+	if len(savedata) == 0 {
+		return
+	}
+
+	d, err := base64.StdEncoding.DecodeString(string(savedata))
+	if err != nil {
+		log.Errorf("can not decode state data: %v", err)
+		return
+	}
+
+	children := logic.LivingChildren(d)
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
@@ -619,6 +626,11 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	err = tx.Commit()
 	if err != nil {
 		return rollback(tx, err)
+	}
+
+	rec, err = we.db.getWorkflowInstanceByID(context.Background(), rec.ID)
+	if err != nil {
+		return err
 	}
 
 	err = we.cancelRecordsChildren(rec)
