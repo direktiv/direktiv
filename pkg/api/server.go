@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
@@ -22,6 +23,9 @@ type Server struct {
 	routes   map[string]map[string]*Handler
 	router   *mux.Router
 	srv      *http.Server
+
+	reqMapMutex sync.Mutex
+	reqMap      map[*http.Request]*RequestStatus
 }
 
 func NewServer(cfg *Config) (*Server, error) {
@@ -35,6 +39,8 @@ func NewServer(cfg *Config) (*Server, error) {
 			Handler: r,
 			Addr:    cfg.Server.Bind,
 		},
+		reqMapMutex: sync.Mutex{},
+		reqMap:      make(map[*http.Request]*RequestStatus),
 	}
 
 	s.handlers = &Handlers{

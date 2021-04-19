@@ -22,6 +22,7 @@ import (
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 	"github.com/vorteil/direktiv/pkg/dlog/dummy"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"google.golang.org/grpc"
 
@@ -64,6 +65,8 @@ type workflowEngine struct {
 	secretsClient secretsgrpc.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
 	grpcConns     []*grpc.ClientConn
+
+	metricsClient *metrics.Client
 }
 
 func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
@@ -136,6 +139,12 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 	we.grpcConns = append(we.grpcConns, conn)
 	we.ingressClient = ingress.NewDirektivIngressClient(conn)
+
+	// setup metrics client
+	we.metricsClient, err = metrics.NewClient()
+	if err != nil {
+		return nil, err
+	}
 
 	return we, nil
 
@@ -745,7 +754,55 @@ func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition 
 
 func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowInstance, nextState, errCode string, retrying bool) {
 
-	// TODO
+	if len(rec.Flow) == 0 {
+		return
+	}
+
+	if rec.Status != "pending" {
+		return
+	}
+
+	args := new(metrics.InsertRecordArgs)
+
+	wf, err := rec.QueryWorkflow().Only(ctx)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	ns, err := wf.QueryNamespace().Only(ctx)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	args.Namespace = ns.ID
+	args.Workflow = wf.Name
+	args.Instance = rec.InstanceID
+	args.Invoker = rec.InvokedBy
+
+	args.State = rec.Flow[len(rec.Flow)-1]
+
+	d := time.Now().Sub(rec.StateBeginTime)
+	args.WorkflowMilliSeconds = d.Milliseconds()
+
+	args.ErrorCode = errCode
+	args.Transition = nextState
+	args.Next = metrics.NextTransition
+	if nextState == "" {
+		args.Next = metrics.NextEnd
+	} else if retrying {
+		args.Next = metrics.NextRetry
+	}
+
+	if len(rec.Flow) == 1 {
+		args.Invoker = "start"
+	}
+
+	err = we.metricsClient.InsertRecord(args)
+	if err != nil {
+		log.Error(err)
+	}
 
 }
 

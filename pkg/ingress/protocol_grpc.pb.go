@@ -40,6 +40,7 @@ type DirektivIngressClient interface {
 	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
 	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 }
 
 type direktivIngressClient struct {
@@ -239,6 +240,15 @@ func (c *direktivIngressClient) StoreRegistry(ctx context.Context, in *StoreRegi
 	return out, nil
 }
 
+func (c *direktivIngressClient) WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error) {
+	out := new(WorkflowMetricsResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/WorkflowMetrics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DirektivIngressServer is the server API for DirektivIngress service.
 // All implementations must embed UnimplementedDirektivIngressServer
 // for forward compatibility
@@ -264,6 +274,7 @@ type DirektivIngressServer interface {
 	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
 	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
 	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
+	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	mustEmbedUnimplementedDirektivIngressServer()
 }
 
@@ -333,6 +344,9 @@ func (UnimplementedDirektivIngressServer) DeleteRegistry(context.Context, *Delet
 }
 func (UnimplementedDirektivIngressServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
+}
+func (UnimplementedDirektivIngressServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
 }
 func (UnimplementedDirektivIngressServer) mustEmbedUnimplementedDirektivIngressServer() {}
 
@@ -725,6 +739,24 @@ func _DirektivIngress_StoreRegistry_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DirektivIngress_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkflowMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).WorkflowMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/WorkflowMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).WorkflowMetrics(ctx, req.(*WorkflowMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DirektivIngress_ServiceDesc is the grpc.ServiceDesc for DirektivIngress service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -815,6 +847,10 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreRegistry",
 			Handler:    _DirektivIngress_StoreRegistry_Handler,
+		},
+		{
+			MethodName: "WorkflowMetrics",
+			Handler:    _DirektivIngress_WorkflowMetrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

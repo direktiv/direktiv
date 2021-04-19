@@ -27,6 +27,7 @@ import "pkg/ingress/store-secret.proto";
 import "pkg/ingress/get-registries.proto";
 import "pkg/ingress/delete-registry.proto";
 import "pkg/ingress/store-registry.proto";
+import "pkg/ingress/workflow-metrics.proto";
 
 service DirektivIngress {
 	rpc AddNamespace (AddNamespaceRequest) returns (AddNamespaceResponse) {}
@@ -50,4 +51,5 @@ service DirektivIngress {
 	rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
 	rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
+	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 }

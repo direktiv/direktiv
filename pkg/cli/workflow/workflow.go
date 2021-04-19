@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/vorteil/direktiv/pkg/cli/util"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Toggle enables or disables the workflow
@@ -97,6 +99,28 @@ func Execute(conn *grpc.ClientConn, namespace string, id string, input string) (
 	}
 
 	return fmt.Sprintf("Successfully invoked, Instance ID: %s", resp.GetInstanceId()), nil
+}
+
+// Metrics returns workflow metrics data
+func Metrics(conn *grpc.ClientConn, namespace string, id string, since time.Time) (interface{}, error) {
+
+	client, ctx, cancel := util.CreateClient(conn)
+	defer cancel()
+
+	x := timestamppb.New(since)
+
+	in := &ingress.WorkflowMetricsRequest{
+		Namespace:      &namespace,
+		Workflow:       &id,
+		SinceTimestamp: x,
+	}
+
+	resp, err := client.WorkflowMetrics(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 // getWorkflowUID returns the UID of a workflow
