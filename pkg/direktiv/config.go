@@ -16,13 +16,14 @@ const (
 	// DirektivDebug enables debug on dirtektiv applications
 	DirektivDebug = "DIREKTIV_DEBUG"
 
+	direktivWorkflowNamespace = "DIREKTIV_WFNS"
+
 	// flowConfig
-	flowBind      = "DIREKTIV_FLOW_BIND"
-	flowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
-	flowProtocol  = "DIREKTIV_FLOW_PROTOCOL"
-	flowExchange  = "DIREKTIV_FLOW_EXCHANGE"
-	flowSidecar   = "DIREKTIV_FLOW_SIDECAR"
-	flowNamespace = "DIREKTIV_KUBERNETES_NAMESPACE"
+	flowBind     = "DIREKTIV_FLOW_BIND"
+	flowEndpoint = "DIREKTIV_FLOW_ENDPOINT"
+	flowProtocol = "DIREKTIV_FLOW_PROTOCOL"
+	flowExchange = "DIREKTIV_FLOW_EXCHANGE"
+	flowSidecar  = "DIREKTIV_FLOW_SIDECAR"
 
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
@@ -188,7 +189,6 @@ func ReadConfig(file string) (*Config, error) {
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},
 		{flowProtocol, &c.FlowAPI.Protocol},
-		{flowNamespace, &c.FlowAPI.KubernetesNamespace},
 	}
 
 	for _, i := range strings {

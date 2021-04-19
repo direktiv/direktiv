@@ -44,6 +44,7 @@ type isolateContainer struct {
 	Image, Cmd string
 	Data       []byte
 	Size       model.Size
+	Scale      int
 }
 
 type isolateWorkflow struct {

@@ -37,6 +37,7 @@ type FunctionDefinition struct {
 	Image string `yaml:"image"`
 	Size  Size   `yaml:"size,omitempty"`
 	Cmd   string `yaml:"cmd,omitempty"`
+	Scale int    `yaml:"cmd,omitempty"`
 }
 
 func (o *FunctionDefinition) Validate() error {

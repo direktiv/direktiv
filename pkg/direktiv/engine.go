@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -261,8 +262,8 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 
 	// generate hash name as "url"
-	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ar.Workflow.Namespace, ar.Container.Image,
-		ar.Container.Cmd, ar.Container.Size), hash.FormatV2, nil)
+	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d-%d", ar.Workflow.Namespace, ar.Container.Image,
+		ar.Container.Cmd, ar.Container.Size, ar.Container.Scale), hash.FormatV2, nil)
 	if err != nil {
 		return NewInternalError(err)
 	}
@@ -306,9 +307,12 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 	}
 
+	// configured namespace for workflows
+	ns := os.Getenv(direktivWorkflowNamespace)
+
 	// calculate address
-	addr := fmt.Sprintf("%s://%s-%d.default",
-		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah)
+	addr := fmt.Sprintf("%s://%s-%d.%s",
+		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
 
 	log.Debugf("isolate request: %v", addr)
 

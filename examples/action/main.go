@@ -55,9 +55,6 @@ func helloServer(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("AID %v\n", aid)
 
-	log(aid, "WaitForEver")
-	time.Sleep(120 * time.Second)
-
 	w.Write([]byte("{}"))
 
 }
