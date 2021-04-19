@@ -19,67 +19,67 @@ const (
 	GRPCCommandTimeout = 30 * time.Second
 )
 
-type Handlers struct {
+type Handler struct {
 	s *Server
 }
 
-func (h *Handlers) Namespaces(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Namespaces(w http.ResponseWriter, r *http.Request) {
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetNamespaces(ctx, &ingress.GetNamespacesRequest{})
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) AddNamespace(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.AddNamespace(ctx, &ingress.AddNamespaceRequest{
 		Name: &n,
 	})
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteNamespace(ctx, &ingress.DeleteNamespaceRequest{
 		Name: &n,
 	})
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *Handlers) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
 	case "application/json":
 		break
 	default:
-		errResponse(w, http.StatusUnsupportedMediaType, fmt.Errorf("content type '%s' is not supported. supported media types: 'application/json' ", contentType))
+		ErrResponse(w, http.StatusUnsupportedMediaType, fmt.Errorf("content type '%s' is not supported. supported media types: 'application/json' ", contentType))
 		return
 	}
 
@@ -103,60 +103,60 @@ func (h *Handlers) NamespaceEvent(w http.ResponseWriter, r *http.Request) {
 		Cloudevent: b,
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.BroadcastEvent(ctx, &req)
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) Secrets(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Secrets(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetSecrets(ctx, &ingress.GetSecretsRequest{
 		Namespace: &n,
 	})
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	h.s.json.Marshal(w, resp)
 }
 
-func (h *Handlers) CreateSecret(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
 	st := new(NameDataTuple)
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	err = json.Unmarshal(b, st)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.StoreSecret(ctx, &ingress.StoreSecretRequest{
@@ -166,35 +166,35 @@ func (h *Handlers) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) DeleteSecret(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
 	st := new(NameDataTuple)
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	err = json.Unmarshal(b, st)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteSecret(ctx, &ingress.DeleteSecretRequest{
@@ -203,22 +203,22 @@ func (h *Handlers) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) Registries(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Registries(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetRegistries(ctx, &ingress.GetRegistriesRequest{
@@ -226,35 +226,35 @@ func (h *Handlers) Registries(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) CreateRegistry(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateRegistry(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
 	st := new(NameDataTuple)
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	err = json.Unmarshal(b, st)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.StoreRegistry(ctx, &ingress.StoreRegistryRequest{
@@ -264,35 +264,35 @@ func (h *Handlers) CreateRegistry(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
 	st := new(NameDataTuple)
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 	err = json.Unmarshal(b, st)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteRegistry(ctx, &ingress.DeleteRegistryRequest{
@@ -301,22 +301,22 @@ func (h *Handlers) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) Workflows(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Workflows(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflows(ctx, &ingress.GetWorkflowsRequest{
@@ -324,23 +324,23 @@ func (h *Handlers) Workflows(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) GetWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	id := mux.Vars(r)["workflow"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowById(ctx, &ingress.GetWorkflowByIdRequest{
@@ -349,18 +349,18 @@ func (h *Handlers) GetWorkflow(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
@@ -383,7 +383,7 @@ func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	// Read Body
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
@@ -395,7 +395,7 @@ func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	switch contentType {
 	case "text/yaml":
 	default:
-		errResponse(w, http.StatusUnsupportedMediaType, fmt.Errorf("content type '%s' is not supported. supported media types: 'text/yaml'", contentType))
+		ErrResponse(w, http.StatusUnsupportedMediaType, fmt.Errorf("content type '%s' is not supported. supported media types: 'text/yaml'", contentType))
 		return
 	}
 
@@ -414,7 +414,7 @@ func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 		request.Revision = &revision
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.UpdateWorkflow(ctx, &request)
@@ -423,9 +423,9 @@ func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 		s := status.Convert(err)
 		// Catch when user tries to sent array instead of object
 		if strings.HasSuffix(s.Message(), "into map[string]interface {}") {
-			errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf("workflow is not a object"))
+			ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf("workflow is not a object"))
 		} else {
-			errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+			ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		}
 		return
 	}
@@ -433,17 +433,17 @@ func (h *Handlers) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	// Write Data
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByUid(ctx, &ingress.GetWorkflowByUidRequest{
@@ -451,7 +451,7 @@ func (h *Handlers) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
@@ -464,27 +464,27 @@ func (h *Handlers) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	// Write Data
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp2); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	active := true
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
@@ -494,11 +494,11 @@ func (h *Handlers) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if contentType != "text/yaml" {
-		errResponse(w, http.StatusUnsupportedMediaType, fmt.Errorf("content type '%s' is not supported. supported media types: 'text/yaml'", contentType))
+		ErrResponse(w, http.StatusUnsupportedMediaType, fmt.Errorf("content type '%s' is not supported. supported media types: 'text/yaml'", contentType))
 		return
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.AddWorkflow(ctx, &ingress.AddWorkflowRequest{
@@ -509,26 +509,26 @@ func (h *Handlers) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s := status.Convert(err)
 		if strings.HasSuffix(s.Message(), "into map[string]interface {}") {
-			errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf("workflow is not a object"))
+			ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf("workflow is not a object"))
 		} else {
-			errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+			ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		}
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) DeleteWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteWorkflow(ctx, &ingress.DeleteWorkflowRequest{
@@ -536,23 +536,23 @@ func (h *Handlers) DeleteWorkflow(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	uid := mux.Vars(r)["workflowUID"]
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByUid(ctx, &ingress.GetWorkflowByUidRequest{
@@ -560,31 +560,31 @@ func (h *Handlers) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+*resp.Id+".yaml")
 	w.Header().Set("Content-Type", "application/x-yaml")
 	if _, err = w.Write(resp.Workflow); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	uid := mux.Vars(r)["workflowUID"]
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.InvokeWorkflow(ctx, &ingress.InvokeWorkflowRequest{
@@ -594,19 +594,19 @@ func (h *Handlers) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) Instances(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Instances(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	l, o := paginationParams(r)
@@ -622,7 +622,7 @@ func (h *Handlers) Instances(w http.ResponseWriter, r *http.Request) {
 	limit := int32(l)
 	offset := int32(o)
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowInstances(ctx, &ingress.GetWorkflowInstancesRequest{
@@ -632,19 +632,19 @@ func (h *Handlers) Instances(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) GetInstance(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetInstance(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	wid := mux.Vars(r)["workflowID"]
@@ -652,7 +652,7 @@ func (h *Handlers) GetInstance(w http.ResponseWriter, r *http.Request) {
 
 	iid := fmt.Sprintf("%s/%s/%s", n, wid, id)
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowInstance(ctx, &ingress.GetWorkflowInstanceRequest{
@@ -660,18 +660,18 @@ func (h *Handlers) GetInstance(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) CancelInstance(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CancelInstance(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	wid := mux.Vars(r)["workflowID"]
@@ -679,7 +679,7 @@ func (h *Handlers) CancelInstance(w http.ResponseWriter, r *http.Request) {
 
 	iid := fmt.Sprintf("%s/%s/%s", n, wid, id)
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	resp, err := h.s.direktiv.CancelWorkflowInstance(ctx, &ingress.CancelWorkflowInstanceRequest{
@@ -687,18 +687,18 @@ func (h *Handlers) CancelInstance(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 
 }
 
-func (h *Handlers) InstanceLogs(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 	wid := mux.Vars(r)["workflowID"]
@@ -706,7 +706,7 @@ func (h *Handlers) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	iid := fmt.Sprintf("%s/%s/%s", n, wid, id)
 
-	ctx, cancel := ctxDeadline()
+	ctx, cancel := CtxDeadline()
 	defer cancel()
 
 	l, o := paginationParams(r)
@@ -728,12 +728,12 @@ func (h *Handlers) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s := status.Convert(err)
-		errResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
 		return
 	}
 
 	if err := h.s.json.Marshal(w, resp); err != nil {
-		errResponse(w, 0, err)
+		ErrResponse(w, 0, err)
 		return
 	}
 

@@ -66,7 +66,7 @@ func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 func (is *ingressServer) start(s *WorkflowServer) error {
 
 	// get secrets client
-	conn, err := GetEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	conn, err := GetEndpointTLS(s.config.SecretsAPI.Endpoint)
 	if err != nil {
 		return err
 	}
@@ -317,9 +317,11 @@ func (is *ingressServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWo
 
 func (is *ingressServer) CancelWorkflowInstance(ctx context.Context, in *ingress.CancelWorkflowInstanceRequest) (*emptypb.Empty, error) {
 
-	_ = is.wfServer.engine.hardCancelInstance(in.GetId(), "direktiv.cancels.api", "cancelled by api request")
-
-	return nil, nil
+	err := is.wfServer.engine.hardCancelInstance(in.GetId(), "direktiv.cancels.api", "cancelled by api request")
+	if err != nil {
+		log.Errorf("error cancelling instance: %v", err)
+	}
+	return &emptypb.Empty{}, nil
 
 }
 

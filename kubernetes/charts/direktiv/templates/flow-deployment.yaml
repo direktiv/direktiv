@@ -71,6 +71,8 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
+          - name: DIREKTIV_WFNS
+            value: {{ .Release.Namespace }}
           - name: DIREKTIV_SECRETS_ENDPOINT
             value:  "localhost:2610"
         - name: secrets

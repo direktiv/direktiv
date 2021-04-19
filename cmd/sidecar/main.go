@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/fasthttp/router"
-	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
@@ -44,14 +43,16 @@ type responseInfo struct {
 }
 
 type direktivHTTPRequest struct {
-	logger dlog.Logger
+	logger    dlog.Logger
+	ctxCancel context.CancelFunc
 }
 
 type direktivHTTPHandler struct {
 	key      string
 	pingAddr string
 
-	mtx sync.Mutex
+	mtx      sync.Mutex
+	mtxSetup sync.Mutex
 
 	requests map[string]*direktivHTTPRequest
 
@@ -65,11 +66,9 @@ func main() {
 		requests: make(map[string]*direktivHTTPRequest),
 	}
 
-	if os.Getenv("DIREKTIV_DEBUG") == "true" {
+	if os.Getenv(direktiv.DirektivDebug) == "true" {
 		log.SetLevel(logrus.DebugLevel)
 	}
-
-	// setup pub/sub
 
 	k, err := ioutil.ReadFile(exKey)
 	if err != nil {
@@ -105,6 +104,14 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGTERM)
 
+	// subscribe to direktiv pub/sub
+	log.Infof("getting DB %v %v", direktiv.DBConn, os.Getenv(direktiv.DBConn))
+	err = direktiv.SyncSubscribeTo(os.Getenv(direktiv.DBConn),
+		direktiv.CancelIsolate, d.handleSub)
+	if err != nil {
+		log.Errorf("can not setup pub/sub: %v", err)
+	}
+
 	go func(s *fasthttp.Server) {
 		<-sigs
 		log.Debugf("shutting down")
@@ -123,56 +130,22 @@ func main() {
 
 }
 
-func setupPubSub() error {
+func (d *direktivHTTPHandler) handleSub(in interface{}) {
 
-	conninfo := os.Getenv("key")
-
-	reportProblem := func(ev pq.ListenerEventType, err error) {
-		if err != nil {
-			log.Error(err)
-		}
+	aid, ok := in.(string)
+	if !ok {
+		log.Errorf("cancel data %v not valid", in)
+		return
 	}
+	log.Infof("cancelling isolate %v", aid)
 
-	listener := pq.NewListener(conninfo, 10*time.Second,
-		time.Minute, reportProblem)
-	err := listener.Listen(direktiv.FlowSync)
-	if err != nil {
-		return err
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
+	if d.requests[aid] != nil && d.requests[aid].ctxCancel != nil {
+		log.Infof("calling cancelling fn for %v", aid)
+		d.requests[aid].ctxCancel()
+		d.requests[aid].ctxCancel = nil
 	}
-
-	go func(l *pq.Listener) {
-
-		defer l.UnlistenAll()
-
-		for {
-
-			notification, more := <-l.Notify
-			if !more {
-				log.Info("Database listener closed.")
-				return
-			}
-
-			if notification == nil {
-				continue
-			}
-
-			req := new(direktiv.SyncRequest)
-			err = json.Unmarshal([]byte(notification.Extra), req)
-			if err != nil {
-				log.Errorf("Unexpected notification on database listener: %v", err)
-				continue
-			}
-
-			switch req.Cmd {
-			case direktiv.CancelIsolate:
-				log.Infof("cancel isolate %v", req.ID.(string))
-			}
-
-		}
-
-	}(listener)
-
-	return nil
 
 }
 
@@ -206,6 +179,8 @@ func (d *direktivHTTPHandler) postLog(ctx *fasthttp.RequestCtx) {
 		l = ctx.QueryArgs().Peek("log")
 	}
 
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
 	if d.requests[string(aid)].logger != nil {
 		d.requests[string(aid)].logger.Info(string(l))
 	}
@@ -290,6 +265,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 	}
 
 	// disable/enable ping
+	d.mtxSetup.Lock()
 	if len(d.pingAddr) == 0 {
 		d.pingAddr = vals[direktiv.DirektivPingAddrHeader]
 	}
@@ -325,6 +301,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 			fmt.Sprintf("can not setup logger: %s", err.Error()))
 		return
 	}
+	d.mtxSetup.Unlock()
 
 	fmt.Fprintf(ctx, "ok")
 
@@ -356,7 +333,8 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 	// add to request manager
 	d.mtx.Lock()
 	d.requests[info.aid] = &direktivHTTPRequest{
-		logger: info.logger,
+		logger:    info.logger,
+		ctxCancel: cancel,
 	}
 	d.mtx.Unlock()
 
@@ -391,9 +369,15 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		info.ec = direktiv.ServiceErrorNetwork
-		info.em = fmt.Sprintf("execute request failed: %s", err.Error())
-		d.respondToFlow(info)
+		// only respond if it has not been cancelled
+		d.mtx.Lock()
+		if d.requests[info.aid] != nil &&
+			d.requests[info.aid].ctxCancel != nil {
+			info.ec = direktiv.ServiceErrorNetwork
+			info.em = fmt.Sprintf("execute request failed: %s", err.Error())
+			d.respondToFlow(info)
+		}
+		d.mtx.Unlock()
 		return
 	}
 

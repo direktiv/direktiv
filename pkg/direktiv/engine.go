@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -116,7 +117,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := GetEndpointTLS(s.config, flowComponent, s.config.FlowAPI.Endpoint)
+	conn, err := GetEndpointTLS(s.config.FlowAPI.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +126,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = GetEndpointTLS(s.config, secretsComponent, s.config.SecretsAPI.Endpoint)
+	conn, err = GetEndpointTLS(s.config.SecretsAPI.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +134,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
 	// get ingress client
-	conn, err = GetEndpointTLS(s.config, ingressComponent, s.config.IngressAPI.Endpoint)
+	conn, err = GetEndpointTLS(s.config.IngressAPI.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -270,8 +271,8 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 
 	// generate hash name as "url"
-	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ar.Workflow.Namespace, ar.Container.Image,
-		ar.Container.Cmd, ar.Container.Size), hash.FormatV2, nil)
+	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d-%d", ar.Workflow.Namespace, ar.Container.Image,
+		ar.Container.Cmd, ar.Container.Size, ar.Container.Scale), hash.FormatV2, nil)
 	if err != nil {
 		return NewInternalError(err)
 	}
@@ -315,9 +316,12 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 	}
 
+	// configured namespace for workflows
+	ns := os.Getenv(direktivWorkflowNamespace)
+
 	// calculate address
-	addr := fmt.Sprintf("%s://%s-%d.default",
-		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah)
+	addr := fmt.Sprintf("%s://%s-%d.%s",
+		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
 
 	log.Debugf("isolate request: %v", addr)
 
@@ -355,7 +359,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	)
 
 	// potentially dns error for a brand new service
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 400; i++ {
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -506,18 +510,15 @@ func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error
 	if !exists {
 		return NewInternalError(fmt.Errorf("workflow cannot resolve state: %s", state))
 	}
-
 	init, exists := we.stateLogics[stateObject.GetType()]
 	if !exists {
 		return NewInternalError(fmt.Errorf("engine cannot resolve state type: %s", stateObject.GetType().String()))
 	}
-
 	stateLogic, err := init(wf, stateObject)
 	if err != nil {
 		return NewInternalError(fmt.Errorf("cannot initialize state logic: %v", err))
 	}
 	logic := stateLogic
-
 	we.cancelChildren(logic, []byte(rec.Memory))
 
 	return nil
@@ -526,7 +527,17 @@ func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error
 
 func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 
-	children := logic.LivingChildren(savedata)
+	if len(savedata) == 0 {
+		return
+	}
+
+	d, err := base64.StdEncoding.DecodeString(string(savedata))
+	if err != nil {
+		log.Errorf("can not decode state data: %v", err)
+		return
+	}
+
+	children := logic.LivingChildren(d)
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
@@ -628,6 +639,11 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	err = tx.Commit()
 	if err != nil {
 		return rollback(tx, err)
+	}
+
+	rec, err = we.db.getWorkflowInstanceByID(context.Background(), rec.ID)
+	if err != nil {
+		return err
 	}
 
 	err = we.cancelRecordsChildren(rec)

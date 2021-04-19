@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/default/services"
+	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
 
 	annotationNamespace = "direktiv.io/namespace"
 	annotationURL       = "direktiv.io/url"
@@ -263,7 +263,7 @@ func getClientSet() (*kubernetes.Clientset, string, error) {
 		return nil, "", err
 	}
 
-	kns := os.Getenv(flowNamespace)
+	kns := os.Getenv(direktivWorkflowNamespace)
 	if kns == "" {
 		kns = "default"
 	}
@@ -311,7 +311,9 @@ func getClientSet() (*kubernetes.Clientset, string, error) {
 
 func getKnativeFunction(svc string) error {
 
-	url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svc)
+	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+
+	url := fmt.Sprintf("%s/%s", u, svc)
 	resp, err := sendKuberequest(http.MethodGet, url, nil)
 
 	if resp.StatusCode != 200 {
@@ -332,7 +334,7 @@ func addKnativeFunction(ir *isolateRequest) error {
 	namespace := ir.Workflow.Namespace
 
 	ah, err := serviceToHash(namespace, ir.Container.Image,
-		ir.Container.Cmd, ir.Container.Size)
+		ir.Container.Cmd, ir.Container.Size, ir.Container.Scale)
 	if err != nil {
 		return err
 	}
@@ -356,14 +358,17 @@ func addKnativeFunction(ir *isolateRequest) error {
 		mem = 256
 	}
 
-	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah),
+	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah), ir.Container.Scale,
 		fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
 		ir.Container.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
 		kubeReq.sidecar)
 
-	_, err = sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
+	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+
+	_, err = sendKuberequest(http.MethodPost, u,
 		bytes.NewBufferString(svc))
 	if err != nil {
+		log.Errorf("can not send kube request: %v", err)
 		return err
 	}
 
@@ -454,9 +459,9 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 }
 
-func serviceToHash(ns, img, cmd string, size model.Size) (uint64, error) {
+func serviceToHash(ns, img, cmd string, size model.Size, scale int) (uint64, error) {
 
-	return hash.Hash(fmt.Sprintf("%s-%s-%s-%d", ns, img,
-		cmd, size), hash.FormatV2, nil)
+	return hash.Hash(fmt.Sprintf("%s-%s-%s-%d-%d", ns, img,
+		cmd, size, scale), hash.FormatV2, nil)
 
 }

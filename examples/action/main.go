@@ -43,15 +43,20 @@ func shutDown(srv *http.Server) {
 	defer func() {
 		cancel()
 	}()
+
 	srv.Shutdown(ctxShutDown)
 
 }
 
 func helloServer(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("This Is My Data"))
-
 	aid := r.Header.Get(direktiv.DirektivActionIDHeader)
 	log(aid, "Hello")
+
+	fmt.Printf("AID %v\n", aid)
+
+	w.Write([]byte("{}"))
+
 }
 
 func log(aid, l string) {

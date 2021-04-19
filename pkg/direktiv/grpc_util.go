@@ -23,7 +23,7 @@ const (
 )
 
 // GetEndpointTLS creates a grpc client
-func GetEndpointTLS(config *Config, component, endpoint string) (*grpc.ClientConn, error) {
+func GetEndpointTLS(endpoint string) (*grpc.ClientConn, error) {
 
 	var options []grpc.DialOption
 
