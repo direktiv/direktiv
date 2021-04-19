@@ -122,6 +122,9 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowUID}/download"] = http.HandlerFunc(s.handler.DownloadWorkflow)
 	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowID}/execute"] = http.HandlerFunc(s.handler.ExecuteWorkflow)
 
+	// Metrics ..
+	s.routes[http.MethodGet]["/namespaces/{namespace}/workflows/{workflow}/metrics"] = http.HandlerFunc(s.handler.WorkflowMetrics)
+
 	// Instance ..
 	s.routes[http.MethodGet]["/api/instances/{namespace}"] = http.HandlerFunc(s.handler.Instances)
 	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.GetInstance)

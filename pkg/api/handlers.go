@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -732,6 +734,55 @@ func (h *Handler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.s.json.Marshal(w, resp); err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
+func (h *Handler) WorkflowMetrics(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflow"]
+
+	// QueryParams
+	values := r.URL.Query()
+	since := values.Get("since")
+
+	var x time.Time
+	if since != "" {
+		dura, err := time.ParseDuration(since)
+		if err != nil {
+			ErrResponse(w, 0, err)
+			return
+		}
+		x = time.Now().Add(-1 * dura)
+	}
+
+	ts := timestamppb.New(x)
+
+	in := &ingress.WorkflowMetricsRequest{
+		Namespace:      &ns,
+		Workflow:       &wf,
+		SinceTimestamp: ts,
+	}
+
+	// GRPC Context
+	gCTX := context.Background()
+	gCTX, cancel := context.WithDeadline(gCTX, time.Now().Add(GRPCCommandTimeout))
+	defer cancel()
+
+	resp, err := h.s.direktiv.WorkflowMetrics(gCTX, in)
+	if err != nil {
+		// Convert error
+		s := status.Convert(err)
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
 		ErrResponse(w, 0, err)
 		return
