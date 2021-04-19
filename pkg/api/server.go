@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -77,6 +78,15 @@ func (s *Server) initDirektiv() error {
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
 
+	if s.cfg.Templates.WorkflowsDirectory == "" {
+		s.cfg.Templates.WorkflowsDirectory = filepath.Join(os.TempDir(), "workflow-templates")
+	}
+
+	err = os.MkdirAll(s.cfg.Templates.WorkflowsDirectory, 0744)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -133,6 +143,10 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.GetInstance)
 	s.routes[http.MethodDelete]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.CancelInstance)
 	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}/logs"] = http.HandlerFunc(s.handler.InstanceLogs)
+
+	// Templates ..
+	s.routes[http.MethodGet]["/api/workflow-templates/"] = http.HandlerFunc(s.handler.WorkflowTemplates)
+	s.routes[http.MethodGet]["/api/workflow-templates/{template}"] = http.HandlerFunc(s.handler.WorkflowTemplate)
 
 }
 

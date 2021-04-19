@@ -16,11 +16,16 @@ type Config struct {
 	Server struct {
 		Bind string
 	}
+
+	Templates struct {
+		WorkflowsDirectory string
+	}
 }
 
 const (
-	direktivAPIBind    = "DIREKTIV_API_BIND"
-	direktivAPIIngress = "DIREKTIV_API_INGRESS"
+	direktivAPIBind                    = "DIREKTIV_API_BIND"
+	direktivAPIIngress                 = "DIREKTIV_API_INGRESS"
+	direktivWorkflowTemplatesDirectory = "DIREKTIV_WORKFLOW_TEMPLATES"
 )
 
 func configCheck(c *Config) error {
@@ -36,6 +41,7 @@ func ConfigFromEnv() (*Config, error) {
 	c := &Config{}
 	c.Ingress.Endpoint = os.Getenv(direktivAPIIngress)
 	c.Server.Bind = os.Getenv(direktivAPIBind)
+	c.Templates.WorkflowsDirectory = os.Getenv(direktivWorkflowTemplatesDirectory)
 
 	if c.Ingress.Endpoint == "" || c.Server.Bind == "" {
 		return nil, fmt.Errorf("api bind or ingress endpoint not set")

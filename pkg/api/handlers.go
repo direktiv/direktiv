@@ -1,9 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -784,6 +786,45 @@ func (h *Handler) WorkflowMetrics(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	if err := h.s.json.Marshal(w, resp); err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
+func (h *Handler) WorkflowTemplates(w http.ResponseWriter, r *http.Request) {
+
+	out, err := h.s.WorkflowTemplates()
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	b, err := json.Marshal(out)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
+func (h *Handler) WorkflowTemplate(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["template"]
+	b, err := h.s.WorkflowTemplate(n)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/x-yaml")
+	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
 		ErrResponse(w, 0, err)
 		return
 	}
