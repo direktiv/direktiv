@@ -14,6 +14,7 @@ import "pkg/ingress/delete-workflow.proto";
 import "pkg/ingress/cancel-instance.proto";
 import "pkg/ingress/get-instance.proto";
 import "pkg/ingress/get-instances.proto";
+import "pkg/ingress/get-instances-by-workflow.proto";
 import "pkg/ingress/get-instance-logs.proto";
 import "pkg/ingress/get-workflow-id.proto";
 import "pkg/ingress/get-workflow-uid.proto";
@@ -39,6 +40,7 @@ service DirektivIngress {
 	rpc GetWorkflowByUid (GetWorkflowByUidRequest) returns (GetWorkflowByUidResponse) {}
 	rpc GetWorkflowInstance (GetWorkflowInstanceRequest) returns (GetWorkflowInstanceResponse) {}
 	rpc GetWorkflowInstances (GetWorkflowInstancesRequest) returns (GetWorkflowInstancesResponse) {}
+	rpc GetInstancesByWorkflow (GetInstancesByWorkflowRequest) returns (GetInstancesByWorkflowResponse) {}
 	rpc GetWorkflowInstanceLogs (GetWorkflowInstanceLogsRequest) returns (GetWorkflowInstanceLogsResponse) {}
 	rpc CancelWorkflowInstance (CancelWorkflowInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc GetWorkflows (GetWorkflowsRequest) returns (GetWorkflowsResponse) {}

@@ -44,7 +44,7 @@ func (db *dbManager) deleteWorkflowInstance(id int) error {
 
 func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf uuid.UUID) error {
 
-	instances, err := db.getWorkflowInstancesByWFID(ctx, wf)
+	instances, err := db.getWorkflowInstancesByWFID(ctx, wf, 0, 0)
 	if err != nil {
 		return err
 	}
@@ -140,12 +140,14 @@ func (db *dbManager) getWorkflowInstances(ctx context.Context, ns string, offset
 
 }
 
-func (db *dbManager) getWorkflowInstancesByWFID(ctx context.Context, wf uuid.UUID) ([]*ent.WorkflowInstance, error) {
+func (db *dbManager) getWorkflowInstancesByWFID(ctx context.Context, wf uuid.UUID, offset, limit int) ([]*ent.WorkflowInstance, error) {
 
 	wfs, err := db.dbEnt.WorkflowInstance.
 		Query().
 		Select(workflowinstance.FieldInstanceID, workflowinstance.FieldStatus, workflowinstance.FieldBeginTime).
 		Where(workflowinstance.HasWorkflowWith(workflow.IDEQ(wf))).
+		Limit(limit).
+		Offset(offset).
 		Order(ent.Desc(workflowinstance.FieldBeginTime)).
 		All(ctx)
 

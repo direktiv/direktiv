@@ -28,6 +28,7 @@ type DirektivIngressClient interface {
 	GetWorkflowByUid(ctx context.Context, in *GetWorkflowByUidRequest, opts ...grpc.CallOption) (*GetWorkflowByUidResponse, error)
 	GetWorkflowInstance(ctx context.Context, in *GetWorkflowInstanceRequest, opts ...grpc.CallOption) (*GetWorkflowInstanceResponse, error)
 	GetWorkflowInstances(ctx context.Context, in *GetWorkflowInstancesRequest, opts ...grpc.CallOption) (*GetWorkflowInstancesResponse, error)
+	GetInstancesByWorkflow(ctx context.Context, in *GetInstancesByWorkflowRequest, opts ...grpc.CallOption) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(ctx context.Context, in *GetWorkflowInstanceLogsRequest, opts ...grpc.CallOption) (*GetWorkflowInstanceLogsResponse, error)
 	CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetWorkflows(ctx context.Context, in *GetWorkflowsRequest, opts ...grpc.CallOption) (*GetWorkflowsResponse, error)
@@ -126,6 +127,15 @@ func (c *direktivIngressClient) GetWorkflowInstance(ctx context.Context, in *Get
 func (c *direktivIngressClient) GetWorkflowInstances(ctx context.Context, in *GetWorkflowInstancesRequest, opts ...grpc.CallOption) (*GetWorkflowInstancesResponse, error) {
 	out := new(GetWorkflowInstancesResponse)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetWorkflowInstances", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) GetInstancesByWorkflow(ctx context.Context, in *GetInstancesByWorkflowRequest, opts ...grpc.CallOption) (*GetInstancesByWorkflowResponse, error) {
+	out := new(GetInstancesByWorkflowResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetInstancesByWorkflow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -262,6 +272,7 @@ type DirektivIngressServer interface {
 	GetWorkflowByUid(context.Context, *GetWorkflowByUidRequest) (*GetWorkflowByUidResponse, error)
 	GetWorkflowInstance(context.Context, *GetWorkflowInstanceRequest) (*GetWorkflowInstanceResponse, error)
 	GetWorkflowInstances(context.Context, *GetWorkflowInstancesRequest) (*GetWorkflowInstancesResponse, error)
+	GetInstancesByWorkflow(context.Context, *GetInstancesByWorkflowRequest) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error)
 	CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*empty.Empty, error)
 	GetWorkflows(context.Context, *GetWorkflowsRequest) (*GetWorkflowsResponse, error)
@@ -308,6 +319,9 @@ func (UnimplementedDirektivIngressServer) GetWorkflowInstance(context.Context, *
 }
 func (UnimplementedDirektivIngressServer) GetWorkflowInstances(context.Context, *GetWorkflowInstancesRequest) (*GetWorkflowInstancesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowInstances not implemented")
+}
+func (UnimplementedDirektivIngressServer) GetInstancesByWorkflow(context.Context, *GetInstancesByWorkflowRequest) (*GetInstancesByWorkflowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInstancesByWorkflow not implemented")
 }
 func (UnimplementedDirektivIngressServer) GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowInstanceLogs not implemented")
@@ -519,6 +533,24 @@ func _DirektivIngress_GetWorkflowInstances_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DirektivIngressServer).GetWorkflowInstances(ctx, req.(*GetWorkflowInstancesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_GetInstancesByWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInstancesByWorkflowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).GetInstancesByWorkflow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/GetInstancesByWorkflow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).GetInstancesByWorkflow(ctx, req.(*GetInstancesByWorkflowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -799,6 +831,10 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWorkflowInstances",
 			Handler:    _DirektivIngress_GetWorkflowInstances_Handler,
+		},
+		{
+			MethodName: "GetInstancesByWorkflow",
+			Handler:    _DirektivIngress_GetInstancesByWorkflow_Handler,
 		},
 		{
 			MethodName: "GetWorkflowInstanceLogs",

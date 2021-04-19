@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/itchyny/gojq"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -342,7 +343,7 @@ func (h *Handler) Workflows(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
-	id := mux.Vars(r)["workflow"]
+	id := mux.Vars(r)["workflowTarget"]
 
 	ctx, cancel := CtxDeadline()
 	defer cancel()
@@ -580,7 +581,7 @@ func (h *Handler) DownloadWorkflow(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
-	uid := mux.Vars(r)["workflowUID"]
+	uid := mux.Vars(r)["workflowID"]
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -613,7 +614,7 @@ func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Instances(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
-	l, o := paginationParams(r)
+	o, l := paginationParams(r)
 
 	if l < 1 {
 		l = 10
@@ -713,7 +714,7 @@ func (h *Handler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := CtxDeadline()
 	defer cancel()
 
-	l, o := paginationParams(r)
+	o, l := paginationParams(r)
 	if l < 1 {
 		l = 10
 	}
@@ -825,6 +826,89 @@ func (h *Handler) WorkflowTemplate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/x-yaml")
 	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
+func (h *Handler) JQPlayground(w http.ResponseWriter, r *http.Request) {
+
+	var jqBody JQQuery
+	// Read Body
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	err = json.Unmarshal(b, &jqBody)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	query, err := gojq.Parse(jqBody.Query)
+	if err != nil {
+		ErrResponse(w, http.StatusBadRequest, fmt.Errorf("jq Filter is invalid: %v", err))
+		return
+	}
+
+	jqResults := make([]string, 0)
+	iter := query.Run(jqBody.Input) // or query.RunWithContext
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			ErrResponse(w, 0, err)
+			return
+		}
+
+		b, err := json.MarshalIndent(v, "", "    ")
+		if err != nil {
+			ErrResponse(w, 0, err)
+			return
+		}
+
+		jqResults = append(jqResults, string(b))
+	}
+
+	// Write Response
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte(strings.Join(jqResults, "\n")))
+}
+
+func (h *Handler) WorkflowInstances(w http.ResponseWriter, r *http.Request) {
+
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflowID"]
+
+	o, l := paginationParams(r)
+	offset := int32(o)
+	limit := int32(l)
+
+	gCTX := context.Background()
+	gCTX, cancel := context.WithDeadline(gCTX, time.Now().Add(GRPCCommandTimeout))
+	defer cancel()
+
+	resp, err := h.s.direktiv.GetInstancesByWorkflow(gCTX, &ingress.GetInstancesByWorkflowRequest{
+		Offset:    &offset,
+		Limit:     &limit,
+		Namespace: &ns,
+		Workflow:  &wf,
+	})
+	if err != nil {
+		// Convert error
+		s := status.Convert(err)
+		ErrResponse(w, convertGRPCStatusCodeToHTTPCode(s.Code()), fmt.Errorf(s.Message()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := h.s.json.Marshal(w, resp); err != nil {
 		ErrResponse(w, 0, err)
 		return
 	}

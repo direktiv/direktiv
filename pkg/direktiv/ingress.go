@@ -396,6 +396,41 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 
 }
 
+func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress.GetInstancesByWorkflowRequest) (*ingress.GetInstancesByWorkflowResponse, error) {
+
+	var resp ingress.GetInstancesByWorkflowResponse
+
+	namespace := in.GetNamespace()
+	workflow := in.GetWorkflow()
+	offset := in.GetOffset()
+	limit := in.GetLimit()
+
+	workflowUID, err := is.wfServer.dbManager.getWorkflowById(ctx, namespace, workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	instances, err := is.wfServer.dbManager.getWorkflowInstancesByWFID(ctx, workflowUID.ID, int(offset), int(limit))
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Offset = &offset
+	resp.Limit = &limit
+
+	for _, inst := range instances {
+
+		resp.WorkflowInstances = append(resp.WorkflowInstances, &ingress.GetInstancesByWorkflowResponse_WorkflowInstance{
+			Id:        &inst.InstanceID,
+			BeginTime: timestamppb.New(inst.BeginTime),
+			Status:    &inst.Status,
+		})
+
+	}
+
+	return &resp, nil
+}
+
 func (is *ingressServer) GetWorkflowInstances(ctx context.Context, in *ingress.GetWorkflowInstancesRequest) (*ingress.GetWorkflowInstancesResponse, error) {
 
 	var resp ingress.GetWorkflowInstancesResponse

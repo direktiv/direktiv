@@ -125,6 +125,9 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodPost]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.CreateRegistry)
 	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.DeleteRegistry)
 
+	// Metrics ..
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflow}/metrics"] = http.HandlerFunc(s.handler.WorkflowMetrics)
+
 	// Workflow ..
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/"] = http.HandlerFunc(s.handler.Workflows)
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.GetWorkflow)
@@ -135,8 +138,7 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowUID}/download"] = http.HandlerFunc(s.handler.DownloadWorkflow)
 	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowID}/execute"] = http.HandlerFunc(s.handler.ExecuteWorkflow)
 
-	// Metrics ..
-	s.routes[http.MethodGet]["/namespaces/{namespace}/workflows/{workflow}/metrics"] = http.HandlerFunc(s.handler.WorkflowMetrics)
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowID}/instances/"] = http.HandlerFunc(s.handler.WorkflowInstances)
 
 	// Instance ..
 	s.routes[http.MethodGet]["/api/instances/{namespace}"] = http.HandlerFunc(s.handler.Instances)
@@ -147,6 +149,9 @@ func (s *Server) prepareRoutes() {
 	// Templates ..
 	s.routes[http.MethodGet]["/api/workflow-templates/"] = http.HandlerFunc(s.handler.WorkflowTemplates)
 	s.routes[http.MethodGet]["/api/workflow-templates/{template}"] = http.HandlerFunc(s.handler.WorkflowTemplate)
+
+	// jq Playground ...
+	s.routes[http.MethodPost]["/api/jq-playground"] = http.HandlerFunc(s.handler.JQPlayground)
 
 }
 
