@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"context"
-	"fmt"
+	"os"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/metrics/ent/metrics"
@@ -18,13 +18,7 @@ type Client struct {
 // NewClient ..
 func NewClient() (*Client, error) {
 
-	c := fmt.Sprintf(`host=%s port=%s user=%s password=%s database=%s`,
-		dbHost, dbPort, dbUser, dbPass, dbDatabase)
-	if dbSSLMode == "disable" {
-		c = fmt.Sprintf("%s sslmode=%s", c, dbSSLMode)
-	}
-
-	db, err := ent.Open("postgres", c)
+	db, err := ent.Open("postgres", os.Getenv("DIREKTIV_DB"))
 	if err != nil {
 		return nil, err
 	}
