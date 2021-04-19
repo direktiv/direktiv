@@ -39,6 +39,9 @@ func NewServer(cfg *Config) (*Server, error) {
 		},
 		reqMapMutex: sync.Mutex{},
 		reqMap:      make(map[*http.Request]*RequestStatus),
+		json: jsonpb.Marshaler{
+			EmitDefaults: true,
+		},
 	}
 
 	s.handler = &Handler{
