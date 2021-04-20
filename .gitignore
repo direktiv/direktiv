@@ -28,7 +28,6 @@
 /direktiv
 /direkcli
 /ui-server
-/alpine-base
 /postgres
 /minio
 /direktiv-ui
@@ -43,6 +42,7 @@
 !*build/docker/cli
 !*build/docker/ui
 !*build/docker/sidecar
+!*build/docker/api
 /build/docker/sidecar/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
