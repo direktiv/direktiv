@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
@@ -20,6 +21,15 @@ type Server struct {
 	routes   map[string]map[string]http.HandlerFunc
 	router   *mux.Router
 	srv      *http.Server
+
+	reqMapMutex sync.Mutex
+	reqMap      map[*http.Request]*RequestStatus
+
+	wfTemplateDirsPaths map[string]string
+	wfTemplateDirs      []string
+
+	actionTemplateDirsPaths map[string]string
+	actionTemplateDirs      []string
 }
 
 func NewServer(cfg *Config) (*Server, error) {
@@ -33,6 +43,11 @@ func NewServer(cfg *Config) (*Server, error) {
 			Handler: r,
 			Addr:    cfg.Server.Bind,
 		},
+		reqMapMutex: sync.Mutex{},
+		reqMap:      make(map[*http.Request]*RequestStatus),
+		json: jsonpb.Marshaler{
+			EmitDefaults: true,
+		},
 	}
 
 	s.handler = &Handler{
@@ -44,9 +59,29 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
+	err = s.initTemplates()
+	if err != nil {
+		return nil, err
+	}
+
 	s.prepareRoutes()
 
 	return s, nil
+}
+
+func (s *Server) initTemplates() error {
+
+	err := s.initWorkflowTemplates()
+	if err != nil {
+		return err
+	}
+
+	err = s.initActionTemplates()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // IngressClient returns client to backend
@@ -106,6 +141,9 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodPost]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.CreateRegistry)
 	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.DeleteRegistry)
 
+	// Metrics ..
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflow}/metrics"] = http.HandlerFunc(s.handler.WorkflowMetrics)
+
 	// Workflow ..
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/"] = http.HandlerFunc(s.handler.Workflows)
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.GetWorkflow)
@@ -116,11 +154,25 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowUID}/download"] = http.HandlerFunc(s.handler.DownloadWorkflow)
 	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowID}/execute"] = http.HandlerFunc(s.handler.ExecuteWorkflow)
 
+	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowID}/instances/"] = http.HandlerFunc(s.handler.WorkflowInstances)
+
 	// Instance ..
 	s.routes[http.MethodGet]["/api/instances/{namespace}"] = http.HandlerFunc(s.handler.Instances)
 	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.GetInstance)
 	s.routes[http.MethodDelete]["/api/instances/{namespace}/{workflowID}/{id}"] = http.HandlerFunc(s.handler.CancelInstance)
 	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}/logs"] = http.HandlerFunc(s.handler.InstanceLogs)
+
+	// Templates ..
+	s.routes[http.MethodGet]["/api/action-templates/"] = http.HandlerFunc(s.handler.ActionTemplateFolders)
+	s.routes[http.MethodGet]["/api/action-templates/{folder}/"] = http.HandlerFunc(s.handler.ActionTemplates)
+	s.routes[http.MethodGet]["/api/action-templates/{folder}/{template}"] = http.HandlerFunc(s.handler.ActionTemplate)
+
+	s.routes[http.MethodGet]["/api/workflow-templates/"] = http.HandlerFunc(s.handler.WorkflowTemplateFolders)
+	s.routes[http.MethodGet]["/api/workflow-templates/{folder}/"] = http.HandlerFunc(s.handler.WorkflowTemplates)
+	s.routes[http.MethodGet]["/api/workflow-templates/{folder}/{template}"] = http.HandlerFunc(s.handler.WorkflowTemplate)
+
+	// jq Playground ...
+	s.routes[http.MethodPost]["/api/jq-playground"] = http.HandlerFunc(s.handler.JQPlayground)
 
 }
 

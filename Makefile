@@ -35,6 +35,12 @@ docker-secrets: build
 docker-all:
 	docker build -t direktiv-kube ${mkfile_dir_main}/build/docker/all
 
+.PHONY: docker-api
+docker-api:
+docker-api: build-api
+	cp ${mkfile_dir_main}/apiserver ${mkfile_dir_main}/build/
+	cd build && docker build -t direktiv-api -f docker/api/Dockerfile .
+
 .PHONY: docker-flow
 docker-flow:
 docker-flow: build
@@ -51,6 +57,11 @@ docker-cli: build-cli
 docker-sidecar:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/main.go
 	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
+
+.PHONY: build-api
+build-api:
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/apiserver cmd/apiserver/main.go
+	cp ${mkfile_dir_main}/apiserver ${mkfile_dir_main}/build/
 
 .PHONY: build
 build:

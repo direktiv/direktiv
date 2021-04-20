@@ -28,6 +28,7 @@ type DirektivIngressClient interface {
 	GetWorkflowByUid(ctx context.Context, in *GetWorkflowByUidRequest, opts ...grpc.CallOption) (*GetWorkflowByUidResponse, error)
 	GetWorkflowInstance(ctx context.Context, in *GetWorkflowInstanceRequest, opts ...grpc.CallOption) (*GetWorkflowInstanceResponse, error)
 	GetWorkflowInstances(ctx context.Context, in *GetWorkflowInstancesRequest, opts ...grpc.CallOption) (*GetWorkflowInstancesResponse, error)
+	GetInstancesByWorkflow(ctx context.Context, in *GetInstancesByWorkflowRequest, opts ...grpc.CallOption) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(ctx context.Context, in *GetWorkflowInstanceLogsRequest, opts ...grpc.CallOption) (*GetWorkflowInstanceLogsResponse, error)
 	CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetWorkflows(ctx context.Context, in *GetWorkflowsRequest, opts ...grpc.CallOption) (*GetWorkflowsResponse, error)
@@ -40,6 +41,7 @@ type DirektivIngressClient interface {
 	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
 	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 }
 
 type direktivIngressClient struct {
@@ -125,6 +127,15 @@ func (c *direktivIngressClient) GetWorkflowInstance(ctx context.Context, in *Get
 func (c *direktivIngressClient) GetWorkflowInstances(ctx context.Context, in *GetWorkflowInstancesRequest, opts ...grpc.CallOption) (*GetWorkflowInstancesResponse, error) {
 	out := new(GetWorkflowInstancesResponse)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetWorkflowInstances", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) GetInstancesByWorkflow(ctx context.Context, in *GetInstancesByWorkflowRequest, opts ...grpc.CallOption) (*GetInstancesByWorkflowResponse, error) {
+	out := new(GetInstancesByWorkflowResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetInstancesByWorkflow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +250,15 @@ func (c *direktivIngressClient) StoreRegistry(ctx context.Context, in *StoreRegi
 	return out, nil
 }
 
+func (c *direktivIngressClient) WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error) {
+	out := new(WorkflowMetricsResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/WorkflowMetrics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DirektivIngressServer is the server API for DirektivIngress service.
 // All implementations must embed UnimplementedDirektivIngressServer
 // for forward compatibility
@@ -252,6 +272,7 @@ type DirektivIngressServer interface {
 	GetWorkflowByUid(context.Context, *GetWorkflowByUidRequest) (*GetWorkflowByUidResponse, error)
 	GetWorkflowInstance(context.Context, *GetWorkflowInstanceRequest) (*GetWorkflowInstanceResponse, error)
 	GetWorkflowInstances(context.Context, *GetWorkflowInstancesRequest) (*GetWorkflowInstancesResponse, error)
+	GetInstancesByWorkflow(context.Context, *GetInstancesByWorkflowRequest) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error)
 	CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*empty.Empty, error)
 	GetWorkflows(context.Context, *GetWorkflowsRequest) (*GetWorkflowsResponse, error)
@@ -264,6 +285,7 @@ type DirektivIngressServer interface {
 	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
 	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
 	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
+	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	mustEmbedUnimplementedDirektivIngressServer()
 }
 
@@ -297,6 +319,9 @@ func (UnimplementedDirektivIngressServer) GetWorkflowInstance(context.Context, *
 }
 func (UnimplementedDirektivIngressServer) GetWorkflowInstances(context.Context, *GetWorkflowInstancesRequest) (*GetWorkflowInstancesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowInstances not implemented")
+}
+func (UnimplementedDirektivIngressServer) GetInstancesByWorkflow(context.Context, *GetInstancesByWorkflowRequest) (*GetInstancesByWorkflowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInstancesByWorkflow not implemented")
 }
 func (UnimplementedDirektivIngressServer) GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowInstanceLogs not implemented")
@@ -333,6 +358,9 @@ func (UnimplementedDirektivIngressServer) DeleteRegistry(context.Context, *Delet
 }
 func (UnimplementedDirektivIngressServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
+}
+func (UnimplementedDirektivIngressServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
 }
 func (UnimplementedDirektivIngressServer) mustEmbedUnimplementedDirektivIngressServer() {}
 
@@ -505,6 +533,24 @@ func _DirektivIngress_GetWorkflowInstances_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DirektivIngressServer).GetWorkflowInstances(ctx, req.(*GetWorkflowInstancesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_GetInstancesByWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInstancesByWorkflowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).GetInstancesByWorkflow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/GetInstancesByWorkflow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).GetInstancesByWorkflow(ctx, req.(*GetInstancesByWorkflowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -725,6 +771,24 @@ func _DirektivIngress_StoreRegistry_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DirektivIngress_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkflowMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).WorkflowMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/WorkflowMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).WorkflowMetrics(ctx, req.(*WorkflowMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DirektivIngress_ServiceDesc is the grpc.ServiceDesc for DirektivIngress service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -767,6 +831,10 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWorkflowInstances",
 			Handler:    _DirektivIngress_GetWorkflowInstances_Handler,
+		},
+		{
+			MethodName: "GetInstancesByWorkflow",
+			Handler:    _DirektivIngress_GetInstancesByWorkflow_Handler,
 		},
 		{
 			MethodName: "GetWorkflowInstanceLogs",
@@ -815,6 +883,10 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreRegistry",
 			Handler:    _DirektivIngress_StoreRegistry_Handler,
+		},
+		{
+			MethodName: "WorkflowMetrics",
+			Handler:    _DirektivIngress_WorkflowMetrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
