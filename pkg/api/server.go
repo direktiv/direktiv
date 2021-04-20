@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -25,6 +24,11 @@ type Server struct {
 
 	reqMapMutex sync.Mutex
 	reqMap      map[*http.Request]*RequestStatus
+
+	workflowTemplates      []string
+	workflowTemplateInfo   map[string]GithubFileInfo
+	workflowTemplateData   map[string][]byte
+	workflowTemplatesMutex sync.Mutex
 }
 
 func NewServer(cfg *Config) (*Server, error) {
@@ -54,6 +58,11 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
+	err = s.initGitTemplates()
+	if err != nil {
+		return nil, err
+	}
+
 	s.prepareRoutes()
 
 	return s, nil
@@ -77,15 +86,6 @@ func (s *Server) initDirektiv() error {
 	}
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
-
-	if s.cfg.Templates.WorkflowsDirectory == "" {
-		s.cfg.Templates.WorkflowsDirectory = filepath.Join(os.TempDir(), "workflow-templates")
-	}
-
-	err = os.MkdirAll(s.cfg.Templates.WorkflowsDirectory, 0744)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

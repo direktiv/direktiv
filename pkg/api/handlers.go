@@ -795,11 +795,7 @@ func (h *Handler) WorkflowMetrics(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) WorkflowTemplates(w http.ResponseWriter, r *http.Request) {
 
-	out, err := h.s.WorkflowTemplates()
-	if err != nil {
-		ErrResponse(w, 0, err)
-		return
-	}
+	out := h.s.WorkflowTemplates()
 
 	b, err := json.Marshal(out)
 	if err != nil {
