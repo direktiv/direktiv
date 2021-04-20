@@ -828,6 +828,41 @@ func (h *Handler) WorkflowTemplate(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) ActionTemplates(w http.ResponseWriter, r *http.Request) {
+
+	out := h.s.ActionTemplates()
+
+	b, err := json.Marshal(out)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
+func (h *Handler) ActionTemplate(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["template"]
+	b, err := h.s.ActionTemplate(n)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
 func (h *Handler) JQPlayground(w http.ResponseWriter, r *http.Request) {
 
 	var jqBody JQQuery

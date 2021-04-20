@@ -29,6 +29,11 @@ type Server struct {
 	workflowTemplateInfo   map[string]GithubFileInfo
 	workflowTemplateData   map[string][]byte
 	workflowTemplatesMutex sync.Mutex
+
+	actionTemplates      []string
+	actionTemplateInfo   map[string]GithubFileInfo
+	actionTemplateData   map[string][]byte
+	actionTemplatesMutex sync.Mutex
 }
 
 func NewServer(cfg *Config) (*Server, error) {
@@ -147,6 +152,8 @@ func (s *Server) prepareRoutes() {
 	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowID}/{id}/logs"] = http.HandlerFunc(s.handler.InstanceLogs)
 
 	// Templates ..
+	s.routes[http.MethodGet]["/api/action-templates/"] = http.HandlerFunc(s.handler.ActionTemplates)
+	s.routes[http.MethodGet]["/api/action-templates/{template}"] = http.HandlerFunc(s.handler.ActionTemplate)
 	s.routes[http.MethodGet]["/api/workflow-templates/"] = http.HandlerFunc(s.handler.WorkflowTemplates)
 	s.routes[http.MethodGet]["/api/workflow-templates/{template}"] = http.HandlerFunc(s.handler.WorkflowTemplate)
 
