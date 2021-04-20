@@ -9,19 +9,12 @@ import (
 	"github.com/vorteil/direktiv/pkg/cli/instance"
 	"github.com/vorteil/direktiv/pkg/cli/namespace"
 	store "github.com/vorteil/direktiv/pkg/cli/store"
+	"github.com/vorteil/direktiv/pkg/cli/util"
 	"github.com/vorteil/direktiv/pkg/cli/workflow"
 )
 
-// var flagInputFile string
-
 var flagURL string
-
-// var flagJSON bool
-// var flagSecure bool
-
-// var conn *grpc.ClientConn
-// var logger elog.View
-// var grpcConnection = "127.0.0.1:6666"
+var flagSkip bool
 
 func generateCmd(use, short, long string, fn func(cmd *cobra.Command, args []string), c cobra.PositionalArgs) *cobra.Command {
 	return &cobra.Command{
@@ -36,11 +29,12 @@ func generateCmd(use, short, long string, fn func(cmd *cobra.Command, args []str
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "direkcli",
-	Short: "A CLI for interacting with a direktiv server via gRPC.",
+	Short: "A CLI for interacting with a direktiv server via API.",
 	Long:  ``,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 
-		fmt.Printf("HELLO!!!")
+		util.DirektivURL = "http://192.168.1.10:3333"
+		// fmt.Printf("HELLO!!!")
 		// logger = log.GetLogger()
 		// var err error
 		// connF, err := cmd.Flags().GetString("grpc")
@@ -187,7 +181,7 @@ var rootCmd = &cobra.Command{
 // // 	if flagJSON {
 // // 		util.WriteRequestJSON(success, true, logger)
 // // 	} else {
-// // 		logger.Printf(success)
+// // 		logger.Printf(success)util.DirektivURL
 // // 	}
 // // }, cobra.ExactArgs(2))
 // //
@@ -503,9 +497,9 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&flagURL, "url", "", "", "name and port for connection GRPC default is 127.0.0.1:6666")
+	rootCmd.PersistentFlags().StringVarP(&util.DirektivURL, "url", "", "", "name and port for connection, default is 127.0.0.1:80. Overwrite with env DIREKTIV_CLI_ENDPOINT")
 	// rootCmd.PersistentFlags().BoolVarP(&flagJSON, "json", "", false, "provides json output")
-	// rootCmd.PersistentFlags().BoolVarP(&flagSecure, "secure", "", false, "enable tls")
+	rootCmd.PersistentFlags().BoolVarP(&flagSkip, "skipVerify", "", false, "skip certificate validation")
 	// workflowCmd add flag for the namespace
 	// workflowExecuteCmd.PersistentFlags().StringVarP(&flagInputFile, "input", "", "", "filepath to json input")
 }
