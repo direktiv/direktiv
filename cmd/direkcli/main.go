@@ -10,18 +10,18 @@ import (
 	"github.com/vorteil/direktiv/pkg/cli/namespace"
 	store "github.com/vorteil/direktiv/pkg/cli/store"
 	"github.com/vorteil/direktiv/pkg/cli/workflow"
-	"github.com/vorteil/vorteil/pkg/elog"
-	"google.golang.org/grpc"
 )
 
-var flagInputFile string
-var flagGRPC string
-var flagJSON bool
-var flagSecure bool
+// var flagInputFile string
 
-var conn *grpc.ClientConn
-var logger elog.View
-var grpcConnection = "127.0.0.1:6666"
+var flagURL string
+
+// var flagJSON bool
+// var flagSecure bool
+
+// var conn *grpc.ClientConn
+// var logger elog.View
+// var grpcConnection = "127.0.0.1:6666"
 
 func generateCmd(use, short, long string, fn func(cmd *cobra.Command, args []string), c cobra.PositionalArgs) *cobra.Command {
 	return &cobra.Command{
@@ -75,143 +75,143 @@ var rootCmd = &cobra.Command{
 // var namespaceCmd = generateCmd("namespaces", "List, create and delete namespaces", "", nil, nil)
 
 // namespaceSendEventCmd
-var namespaceSendEventCmd = generateCmd("send NAMESPACE CLOUDEVENTPATH", "Send a cloud event to a namespace", "", func(cmd *cobra.Command, args []string) {
-	// success, err := namespace.SendEvent(conn, args[0], args[1])
-	// if err != nil {
-	// 	logger.Errorf(err.Error())
-	// 	os.Exit(1)
-	// }
-	// if flagJSON {
-	// 	util.WriteRequestJSON(success, true, logger)
-	// } else {
-	// 	logger.Printf(success)
-	// }
-}, cobra.ExactArgs(2))
+// var namespaceSendEventCmd = generateCmd("send NAMESPACE CLOUDEVENTPATH", "Send a cloud event to a namespace", "", func(cmd *cobra.Command, args []string) {
+// 	// success, err := namespace.SendEvent(conn, args[0], args[1])
+// 	// if err != nil {
+// 	// 	logger.Errorf(err.Error())
+// 	// 	os.Exit(1)
+// 	// }
+// 	// if flagJSON {
+// 	// 	util.WriteRequestJSON(success, true, logger)
+// 	// } else {
+// 	// 	logger.Printf(success)
+// 	// }
+// }, cobra.ExactArgs(2))
 
 // namespaceListCmd
-var namespaceListCmd = generateCmd("list", "Returns a list of namespaces", "", func(cmd *cobra.Command, args []string) {
-	// list, err := namespace.List(conn)
-	// if err != nil {
-	// 	logger.Errorf("%s", err.Error())
-	// 	os.Exit(1)
-	// }
-	//
-	// if flagJSON {
-	// 	util.WriteJsonList(list, logger)
-	// } else {
-	// 	if len(list) == 0 {
-	// 		logger.Printf("No namespaces exist")
-	// 		return
-	// 	}
-	// 	table := tablewriter.NewWriter(os.Stdout)
-	// 	table.SetHeader([]string{"Name"})
-	//
-	// 	for _, namespace := range list {
-	// 		table.Append([]string{
-	// 			namespace.GetName(),
-	// 		})
-	// 	}
-	//
-	// 	table.Render()
-	// }
+// var namespaceListCmd = generateCmd("list", "Returns a list of namespaces", "", func(cmd *cobra.Command, args []string) {
+// list, err := namespace.List(conn)
+// if err != nil {
+// 	logger.Errorf("%s", err.Error())
+// 	os.Exit(1)
+// }
+//
+// if flagJSON {
+// 	util.WriteJsonList(list, logger)
+// } else {
+// 	if len(list) == 0 {
+// 		logger.Printf("No namespaces exist")
+// 		return
+// 	}
+// 	table := tablewriter.NewWriter(os.Stdout)
+// 	table.SetHeader([]string{"Name"})
+//
+// 	for _, namespace := range list {
+// 		table.Append([]string{
+// 			namespace.GetName(),
+// 		})
+// 	}
+//
+// 	table.Render()
+// }
 
-}, cobra.ExactArgs(0))
+// }, cobra.ExactArgs(0))
 
 // namespaceCreateCmd
-var namespaceCreateCmd = generateCmd("create NAMESPACE", "Create a new namespace", "", func(cmd *cobra.Command, args []string) {
-	// success, err := namespace.Create(args[0], conn)
-	// if err != nil {
-	// 	logger.Errorf("%s", err.Error())
-	// 	os.Exit(1)
-	// }
-	// if flagJSON {
-	// 	util.WriteRequestJSON(success, true, logger)
-	// } else {
-	// 	logger.Printf(success)
-	// }
-}, cobra.ExactArgs(1))
-
-// namespaceDeleteCmd
-var namespaceDeleteCmd = generateCmd("delete NAMESPACE", "Deletes a namespace", "", func(cmd *cobra.Command, args []string) {
-	// success, err := namespace.Delete(args[0], conn)
-	// if err != nil {
-	// 	logger.Errorf("%s", err.Error())
-	// 	os.Exit(1)
-	// }
-	// if flagJSON {
-	// 	util.WriteRequestJSON(success, true, logger)
-	// } else {
-	// 	logger.Printf(success)
-	// }
-}, cobra.ExactArgs(1))
-
-// workflowCmd
-// var workflowCmd = generateCmd("workflows", "List, create, get and execute workflows", "", nil, nil)
-//
-// // workflowListCmd
-// var workflowListCmd = generateCmd("list NAMESPACE", "List all workflows under a namespace", "", func(cmd *cobra.Command, args []string) {
-//
-// 	list, err := workflow.List(conn, args[0])
-// 	if err != nil {
-// 		logger.Errorf(err.Error())
-// 		os.Exit(1)
-// 	}
-// 	if flagJSON {
-// 		util.WriteJsonList(list, logger)
-// 	} else {
-// 		if len(list) == 0 {
-// 			logger.Printf("No workflows exist under '%s'", args[0])
-// 			return
-// 		}
-// 		table := tablewriter.NewWriter(os.Stdout)
-// 		table.SetHeader([]string{"ID"})
-//
-// 		// Build string array rows
-// 		for _, wf := range list {
-// 			table.Append([]string{
-// 				wf.GetId(),
-// 			})
-// 		}
-// 		table.Render()
-// 	}
-//
+// var namespaceCreateCmd = generateCmd("create NAMESPACE", "Create a new namespace", "", func(cmd *cobra.Command, args []string) {
+// 	// success, err := namespace.Create(args[0], conn)
+// 	// if err != nil {
+// 	// 	logger.Errorf("%s", err.Error())
+// 	// 	os.Exit(1)
+// 	// }
+// 	// if flagJSON {
+// 	// 	util.WriteRequestJSON(success, true, logger)
+// 	// } else {
+// 	// 	logger.Printf(success)
+// 	// }
 // }, cobra.ExactArgs(1))
 //
-// // workflowGetCmd
-// var workflowGetCmd = generateCmd("get NAMESPACE ID", "Get YAML of a workflow", "", func(cmd *cobra.Command, args []string) {
-// 	success, err := workflow.Get(conn, args[0], args[1])
-// 	if err != nil {
-// 		logger.Errorf(err.Error())
-// 		os.Exit(1)
-// 	}
-// 	if flagJSON {
-// 		util.WriteRequestJSON(success, true, logger)
-// 	} else {
-// 		logger.Printf(success)
-// 	}
-// }, cobra.ExactArgs(2))
+// // namespaceDeleteCmd
+// var namespaceDeleteCmd = generateCmd("delete NAMESPACE", "Deletes a namespace", "", func(cmd *cobra.Command, args []string) {
+// 	// success, err := namespace.Delete(args[0], conn)
+// 	// if err != nil {
+// 	// 	logger.Errorf("%s", err.Error())
+// 	// 	os.Exit(1)
+// 	// }
+// 	// if flagJSON {
+// 	// 	util.WriteRequestJSON(success, true, logger)
+// 	// } else {
+// 	// 	logger.Printf(success)
+// 	// }
+// }, cobra.ExactArgs(1))
 //
-// // workflowExecuteCmd
-// var workflowExecuteCmd = generateCmd("execute NAMESPACE ID", "Executes workflow with provided ID", "", func(cmd *cobra.Command, args []string) {
-// 	input, err := cmd.Flags().GetString("input")
-// 	if err != nil {
-// 		logger.Errorf("unable to retrieve input flag")
-// 		os.Exit(1)
-// 	}
-//
-// 	success, err := workflow.Execute(conn, args[0], args[1], input)
-// 	if err != nil {
-// 		logger.Errorf(err.Error())
-// 		os.Exit(1)
-// 	}
-// 	if flagJSON {
-// 		util.WriteRequestJSON(success, true, logger)
-// 	} else {
-// 		logger.Printf(success)
-// 	}
-// }, cobra.ExactArgs(2))
-//
-// var workflowToggleCmd = generateCmd("toggle NAMESPACE WORKFLOW", "Enables or disables the workflow provided", "", func(cmd *cobra.Command, args []string) {
+// // workflowCmd
+// // var workflowCmd = generateCmd("workflows", "List, create, get and execute workflows", "", nil, nil)
+// //
+// // // workflowListCmd
+// // var workflowListCmd = generateCmd("list NAMESPACE", "List all workflows under a namespace", "", func(cmd *cobra.Command, args []string) {
+// //
+// // 	list, err := workflow.List(conn, args[0])
+// // 	if err != nil {
+// // 		logger.Errorf(err.Error())
+// // 		os.Exit(1)
+// // 	}
+// // 	if flagJSON {
+// // 		util.WriteJsonList(list, logger)
+// // 	} else {
+// // 		if len(list) == 0 {
+// // 			logger.Printf("No workflows exist under '%s'", args[0])
+// // 			return
+// // 		}
+// // 		table := tablewriter.NewWriter(os.Stdout)
+// // 		table.SetHeader([]string{"ID"})
+// //
+// // 		// Build string array rows
+// // 		for _, wf := range list {
+// // 			table.Append([]string{
+// // 				wf.GetId(),
+// // 			})
+// // 		}
+// // 		table.Render()
+// // 	}
+// //
+// // }, cobra.ExactArgs(1))
+// //
+// // // workflowGetCmd
+// // var workflowGetCmd = generateCmd("get NAMESPACE ID", "Get YAML of a workflow", "", func(cmd *cobra.Command, args []string) {
+// // 	success, err := workflow.Get(conn, args[0], args[1])
+// // 	if err != nil {
+// // 		logger.Errorf(err.Error())
+// // 		os.Exit(1)
+// // 	}
+// // 	if flagJSON {
+// // 		util.WriteRequestJSON(success, true, logger)
+// // 	} else {
+// // 		logger.Printf(success)
+// // 	}
+// // }, cobra.ExactArgs(2))
+// //
+// // // workflowExecuteCmd
+// // var workflowExecuteCmd = generateCmd("execute NAMESPACE ID", "Executes workflow with provided ID", "", func(cmd *cobra.Command, args []string) {
+// // 	input, err := cmd.Flags().GetString("input")
+// // 	if err != nil {
+// // 		logger.Errorf("unable to retrieve input flag")
+// // 		os.Exit(1)
+// // 	}
+// //
+// // 	success, err := workflow.Execute(conn, args[0], args[1], input)
+// // 	if err != nil {
+// // 		logger.Errorf(err.Error())
+// // 		os.Exit(1)
+// // 	}
+// // 	if flagJSON {
+// // 		util.WriteRequestJSON(success, true, logger)
+// // 	} else {
+// // 		logger.Printf(success)
+// // 	}
+// // }, cobra.ExactArgs(2))
+// //
+// // var workflowToggleCmd = generateCmd("toggle NAMESPACE WORKFLOW", "Enables or disables the workflow provided", "", func(cmd *cobra.Command, args []string) {
 // 	success, err := workflow.Toggle(conn, args[0], args[1])
 // 	if err != nil {
 // 		logger.Errorf(err.Error())
@@ -503,9 +503,9 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&flagGRPC, "grpc", "", "", "ip and port for connection GRPC default is 127.0.0.1:6666")
-	rootCmd.PersistentFlags().BoolVarP(&flagJSON, "json", "", false, "provides json output")
-	rootCmd.PersistentFlags().BoolVarP(&flagSecure, "secure", "", false, "enable tls")
+	rootCmd.PersistentFlags().StringVarP(&flagURL, "url", "", "", "name and port for connection GRPC default is 127.0.0.1:6666")
+	// rootCmd.PersistentFlags().BoolVarP(&flagJSON, "json", "", false, "provides json output")
+	// rootCmd.PersistentFlags().BoolVarP(&flagSecure, "secure", "", false, "enable tls")
 	// workflowCmd add flag for the namespace
 	// workflowExecuteCmd.PersistentFlags().StringVarP(&flagInputFile, "input", "", "", "filepath to json input")
 }
