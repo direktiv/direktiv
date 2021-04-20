@@ -1,6 +1,7 @@
 package api
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -105,4 +106,25 @@ func ConfigFromFile(cfgPath string) (*Config, error) {
 	}
 
 	return cfg, configCheck(cfg)
+}
+
+// Configure reads config from file or env
+func Configure() (*Config, error) {
+	var (
+		cfgPath string
+		cfg     *Config
+		err     error
+	)
+
+	flag.StringVar(&cfgPath, "c", "", "points to api server configuration file")
+	flag.Parse()
+
+	if cfgPath == "" {
+		cfg, err = ConfigFromEnv()
+	} else {
+		cfg, err = ConfigFromFile(cfgPath)
+	}
+
+	return cfg, err
+
 }

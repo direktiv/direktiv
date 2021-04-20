@@ -2,13 +2,19 @@ package api
 
 import (
 	"context"
-	"fmt"
-	"io"
+	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+type errObject struct {
+	Code    int
+	Message string
+}
 
 func CtxDeadline() (context.Context, context.CancelFunc) {
 	ctx := context.Background()
@@ -25,18 +31,35 @@ func paginationParams(r *http.Request) (offset, limit int) {
 	return
 }
 
+// ErrResponse creates error based on grpc error
 func ErrResponse(w http.ResponseWriter, code int, err error) {
-	e := fmt.Errorf("unknown error")
-	c := http.StatusInternalServerError
 
-	if code != 0 {
-		c = code
+	st, ok := status.FromError(err)
+	eo := &errObject{
+		Code:    999,
+		Message: err.Error(),
+	}
+	if ok {
+		eo = &errObject{
+			Code:    int(st.Code()),
+			Message: st.Message(),
+		}
 	}
 
-	if err != nil {
-		e = err
+	respCode := 500
+	switch eo.Code {
+	case int(codes.NotFound):
+		{
+			respCode = 404
+		}
+	case int(codes.AlreadyExists):
+		{
+			respCode = 409
+		}
 	}
 
-	w.WriteHeader(c)
-	io.Copy(w, strings.NewReader(e.Error()))
+	w.WriteHeader(respCode)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(eo)
+
 }
