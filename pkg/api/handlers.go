@@ -793,9 +793,32 @@ func (h *Handler) WorkflowMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) WorkflowTemplateFolders(w http.ResponseWriter, r *http.Request) {
+
+	b, err := json.Marshal(h.s.WorkflowTemplateFolders())
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = io.Copy(w, bytes.NewReader(b))
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
 func (h *Handler) WorkflowTemplates(w http.ResponseWriter, r *http.Request) {
 
-	out := h.s.WorkflowTemplates()
+	folder := mux.Vars(r)["folder"]
+
+	out, err := h.s.WorkflowTemplates(folder)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
 
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -813,8 +836,10 @@ func (h *Handler) WorkflowTemplates(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) WorkflowTemplate(w http.ResponseWriter, r *http.Request) {
 
+	folder := mux.Vars(r)["folder"]
 	n := mux.Vars(r)["template"]
-	b, err := h.s.WorkflowTemplate(n)
+
+	b, err := h.s.WorkflowTemplate(folder, n)
 	if err != nil {
 		ErrResponse(w, 0, err)
 		return
@@ -828,9 +853,34 @@ func (h *Handler) WorkflowTemplate(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// --
+
+func (h *Handler) ActionTemplateFolders(w http.ResponseWriter, r *http.Request) {
+
+	b, err := json.Marshal(h.s.ActionTemplateFolders())
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = io.Copy(w, bytes.NewReader(b))
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
+
+}
+
 func (h *Handler) ActionTemplates(w http.ResponseWriter, r *http.Request) {
 
-	out := h.s.ActionTemplates()
+	folder := mux.Vars(r)["folder"]
+
+	out, err := h.s.ActionTemplates(folder)
+	if err != nil {
+		ErrResponse(w, 0, err)
+		return
+	}
 
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -848,14 +898,16 @@ func (h *Handler) ActionTemplates(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ActionTemplate(w http.ResponseWriter, r *http.Request) {
 
+	folder := mux.Vars(r)["folder"]
 	n := mux.Vars(r)["template"]
-	b, err := h.s.ActionTemplate(n)
+
+	b, err := h.s.ActionTemplate(folder, n)
 	if err != nil {
 		ErrResponse(w, 0, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/x-yaml")
 	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
 		ErrResponse(w, 0, err)
 		return

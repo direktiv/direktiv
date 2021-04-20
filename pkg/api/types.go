@@ -32,3 +32,8 @@ type GithubFileInfo struct {
 		HTML string `json:"html"`
 	} `json:"_links"`
 }
+
+type NamedDirectory struct {
+	Label     string
+	Directory string
+}

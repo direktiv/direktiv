@@ -1,239 +1,123 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
-	"sort"
+	"os"
+	"path/filepath"
 	"strings"
-	"time"
 )
 
-const DirektivActionsURL = "https://api.github.com/repos/vorteil/direktiv-apps/contents/.direktiv/"
-const DirektivWorkflowTemplatesURL = "https://api.github.com/repos/vorteil/direktiv-apps/contents/.direktiv/.templates"
-
-func (s *Server) initGitTemplates() error {
-
-	s.workflowTemplates = make([]string, 0)
-	s.workflowTemplateData = make(map[string][]byte)
-	s.workflowTemplateInfo = make(map[string]GithubFileInfo)
-
-	err := s.getWorkflowTemplates()
-	if err != nil {
-		return err
+func (s *Server) initWorkflowTemplates() error {
+	if s.cfg.Templates.WorkflowTemplateDirectories == nil {
+		s.cfg.Templates.WorkflowTemplateDirectories = make([]NamedDirectory, 0)
 	}
 
-	s.actionTemplates = make([]string, 0)
-	s.actionTemplateData = make(map[string][]byte)
-	s.actionTemplateInfo = make(map[string]GithubFileInfo)
+	var hasDefault bool
+	for _, tuple := range s.cfg.Templates.WorkflowTemplateDirectories {
+		if tuple.Label == "default" {
+			hasDefault = true
+			break
+		}
+	}
+	if !hasDefault {
+		p := filepath.Join(os.TempDir(), "workflow-templates")
+		s.cfg.Templates.WorkflowTemplateDirectories = append(s.cfg.Templates.WorkflowTemplateDirectories, NamedDirectory{
+			Label:     "default",
+			Directory: p,
+		})
 
-	err = s.getActionTemplates()
-	if err != nil {
-		return err
+		err := os.MkdirAll(p, 0744)
+		if err != nil {
+			return err
+		}
 	}
 
-	go func() {
-		for {
-			time.Sleep(time.Minute * 60)
-			err := s.getWorkflowTemplates()
-			if err != nil {
-				// TODO log error
-			}
-		}
-	}()
+	s.wfTemplateDirsPaths = make(map[string]string)
+	s.wfTemplateDirs = make([]string, 0)
 
-	go func() {
-		for {
-			time.Sleep(time.Minute * 60)
-			err := s.getActionTemplates()
-			if err != nil {
-				// TODO log error
-			}
-		}
-	}()
+	for _, fi := range s.cfg.Templates.WorkflowTemplateDirectories {
+		s.wfTemplateDirs = append(s.wfTemplateDirs, fi.Label)
+		s.wfTemplateDirsPaths[fi.Label] = fi.Directory
+	}
 
 	return nil
 }
 
-func (s *Server) getActionTemplates() error {
-
-	u := fmt.Sprintf(DirektivActionsURL)
-	req, err := http.NewRequest(http.MethodGet, u, nil)
-	if err != nil {
-		return err
-	}
-	if s.cfg.Github.UseAuthentication {
-		req.SetBasicAuth(s.cfg.Github.Username, s.cfg.Github.Token)
+func (s *Server) initActionTemplates() error {
+	if s.cfg.Templates.ActionTemplateDirectories == nil {
+		s.cfg.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
+	var hasDefault bool
+	for _, tuple := range s.cfg.Templates.ActionTemplateDirectories {
+		if tuple.Label == "default" {
+			hasDefault = true
+			break
+		}
 	}
-	defer resp.Body.Close()
+	if !hasDefault {
+		p := filepath.Join(os.TempDir(), "action-templates")
+		s.cfg.Templates.ActionTemplateDirectories = append(s.cfg.Templates.ActionTemplateDirectories, NamedDirectory{
+			Label:     "default",
+			Directory: p,
+		})
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fis := make([]GithubFileInfo, 0)
-	err = json.Unmarshal(data, &fis)
-	if err != nil {
-		return err
-	}
-
-	list := make([]string, 0)
-	dataMap := make(map[string]GithubFileInfo)
-
-	for _, fi := range fis {
-		if fi.Type == "file" {
-			n := strings.TrimSuffix(fi.Name, ".json")
-			list = append(list, n)
-			dataMap[n] = fi
+		err := os.MkdirAll(p, 0744)
+		if err != nil {
+			return err
 		}
 	}
 
-	sort.Strings(list)
+	s.actionTemplateDirsPaths = make(map[string]string)
+	s.actionTemplateDirs = make([]string, 0)
 
-	s.actionTemplatesMutex.Lock()
-	defer s.actionTemplatesMutex.Unlock()
-
-	s.actionTemplates = list
-	s.actionTemplateInfo = dataMap
-	s.actionTemplateData = make(map[string][]byte)
+	for _, fi := range s.cfg.Templates.ActionTemplateDirectories {
+		s.actionTemplateDirs = append(s.actionTemplateDirs, fi.Label)
+		s.actionTemplateDirsPaths[fi.Label] = fi.Directory
+	}
 
 	return nil
 }
 
-func (s *Server) getActionTemplate(fi GithubFileInfo) ([]byte, error) {
-
-	req, err := http.NewRequest(http.MethodGet, fi.DownloadURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	if s.cfg.Github.UseAuthentication {
-		req.SetBasicAuth(s.cfg.Github.Username, s.cfg.Github.Token)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("github responded with a non-200 status code: %d", resp.StatusCode)
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	s.actionTemplateData[strings.TrimSuffix(fi.Name, ".json")] = data
-	return data, nil
+// WorkflowTemplates returns a list of files found within the
+// directory specified in the Server Config, returning only
+// files that bare the suffix ".yml".
+func (s *Server) WorkflowTemplateFolders() []string {
+	return s.wfTemplateDirs
 }
 
-func (s *Server) getWorkflowTemplates() error {
+func (s *Server) WorkflowTemplates(folder string) ([]string, error) {
 
-	u := fmt.Sprintf(DirektivWorkflowTemplatesURL)
-	req, err := http.NewRequest(http.MethodGet, u, nil)
-	if err != nil {
-		return err
-	}
-	if s.cfg.Github.UseAuthentication {
-		req.SetBasicAuth(s.cfg.Github.Username, s.cfg.Github.Token)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fis := make([]GithubFileInfo, 0)
-	err = json.Unmarshal(data, &fis)
-	if err != nil {
-		return err
-	}
-
-	list := make([]string, 0)
-	dataMap := make(map[string]GithubFileInfo)
-
-	for _, fi := range fis {
-		n := strings.TrimSuffix(fi.Name, ".yml")
-		list = append(list, n)
-		dataMap[n] = fi
-	}
-
-	sort.Strings(list)
-
-	s.workflowTemplatesMutex.Lock()
-	defer s.workflowTemplatesMutex.Unlock()
-
-	s.workflowTemplates = list
-	s.workflowTemplateInfo = dataMap
-	s.workflowTemplateData = make(map[string][]byte)
-
-	return nil
-}
-
-func (s *Server) getWorkflowTemplate(fi GithubFileInfo) ([]byte, error) {
-
-	req, err := http.NewRequest(http.MethodGet, fi.DownloadURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	if s.cfg.Github.UseAuthentication {
-		req.SetBasicAuth(s.cfg.Github.Username, s.cfg.Github.Token)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("github responded with a non-200 status code: %d", resp.StatusCode)
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	s.workflowTemplateData[strings.TrimSuffix(fi.Name, ".yml")] = data
-	return data, nil
-}
-
-func (s *Server) ActionTemplates() []string {
-	return s.actionTemplates
-}
-
-func (s *Server) WorkflowTemplates() []string {
-	return s.workflowTemplates
-}
-
-func (s *Server) ActionTemplate(name string) ([]byte, error) {
-
-	s.actionTemplatesMutex.Lock()
-	defer s.actionTemplatesMutex.Unlock()
-
-	fi, ok := s.actionTemplateInfo[name]
+	// confirm that the specified folder is a 'template directory'
+	path, ok := s.wfTemplateDirsPaths[folder]
 	if !ok {
-		return nil, fmt.Errorf("unknown template '%s'", name)
+		return nil, fmt.Errorf("unknown workflow folder: '%s'", folder)
 	}
 
-	if b, ok := s.actionTemplateData[name]; ok {
-		return b, nil
+	fis, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, err
 	}
 
-	// attempt to get data from GitHub, otherwise fail
-	b, err := s.getActionTemplate(fi)
+	out := make([]string, 0)
+	for _, fi := range fis {
+		if strings.HasSuffix(fi.Name(), ".yml") {
+			out = append(out, strings.TrimSuffix(fi.Name(), ".yml"))
+		}
+	}
+
+	return out, nil
+}
+
+func (s *Server) WorkflowTemplate(folder, name string) ([]byte, error) {
+
+	path, ok := s.wfTemplateDirsPaths[folder]
+	if !ok {
+		return nil, fmt.Errorf("unknown workflow folder: '%s'", folder)
+	}
+
+	b, err := ioutil.ReadFile(filepath.Join(path, fmt.Sprintf("%s.yml", name)))
 	if err != nil {
 		return nil, err
 	}
@@ -241,22 +125,43 @@ func (s *Server) ActionTemplate(name string) ([]byte, error) {
 	return b, nil
 }
 
-func (s *Server) WorkflowTemplate(name string) ([]byte, error) {
+// --
 
-	s.workflowTemplatesMutex.Lock()
-	defer s.workflowTemplatesMutex.Unlock()
+func (s *Server) ActionTemplateFolders() []string {
+	return s.actionTemplateDirs
+}
 
-	fi, ok := s.workflowTemplateInfo[name]
+func (s *Server) ActionTemplates(folder string) ([]string, error) {
+
+	// confirm that the specified folder is a 'template directory'
+	path, ok := s.actionTemplateDirsPaths[folder]
 	if !ok {
-		return nil, fmt.Errorf("unknown template '%s'", name)
+		return nil, fmt.Errorf("unknown actions folder: '%s'", folder)
 	}
 
-	if b, ok := s.workflowTemplateData[name]; ok {
-		return b, nil
+	fis, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, err
 	}
 
-	// attempt to get data from GitHub, otherwise fail
-	b, err := s.getWorkflowTemplate(fi)
+	out := make([]string, 0)
+	for _, fi := range fis {
+		if strings.HasSuffix(fi.Name(), ".json") {
+			out = append(out, strings.TrimSuffix(fi.Name(), ".json"))
+		}
+	}
+
+	return out, nil
+}
+
+func (s *Server) ActionTemplate(folder, name string) ([]byte, error) {
+
+	path, ok := s.actionTemplateDirsPaths[folder]
+	if !ok {
+		return nil, fmt.Errorf("unknown actions folder: '%s'", folder)
+	}
+
+	b, err := ioutil.ReadFile(filepath.Join(path, fmt.Sprintf("%s.json", name)))
 	if err != nil {
 		return nil, err
 	}
