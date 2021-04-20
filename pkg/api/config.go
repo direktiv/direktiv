@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/pelletier/go-toml"
 )
@@ -17,11 +18,18 @@ type Config struct {
 	Server struct {
 		Bind string
 	}
+
+	Templates struct {
+		WorkflowTemplateDirectories []NamedDirectory
+		ActionTemplateDirectories   []NamedDirectory
+	}
 }
 
 const (
-	direktivAPIBind    = "DIREKTIV_API_BIND"
-	direktivAPIIngress = "DIREKTIV_API_INGRESS"
+	direktivAPIBind            = "DIREKTIV_API_BIND"
+	direktivAPIIngress         = "DIREKTIV_API_INGRESS"
+	direktivWFTemplateDirs     = "DIREKTIV_WF_TEMPLATES"
+	direktivActionTemplateDirs = "DIREKTIV_ACTION_TEMPLATES"
 )
 
 func configCheck(c *Config) error {
@@ -40,6 +48,42 @@ func ConfigFromEnv() (*Config, error) {
 
 	if c.Ingress.Endpoint == "" || c.Server.Bind == "" {
 		return nil, fmt.Errorf("api bind or ingress endpoint not set")
+	}
+
+	x := os.Getenv(direktivWFTemplateDirs)
+	if x != "" {
+		c.Templates.WorkflowTemplateDirectories = make([]NamedDirectory, 0)
+		elems := strings.Split(x, ":")
+		for _, t := range elems {
+			y := strings.Split(t, "=")
+			if len(y) != 2 {
+				// invalid string, should be LABEL=PATH
+				continue
+			}
+
+			c.Templates.WorkflowTemplateDirectories = append(c.Templates.WorkflowTemplateDirectories, NamedDirectory{
+				Label:     y[0],
+				Directory: y[1],
+			})
+		}
+	}
+
+	x = os.Getenv(direktivActionTemplateDirs)
+	if x != "" {
+		c.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
+		elems := strings.Split(x, ":")
+		for _, t := range elems {
+			y := strings.Split(t, "=")
+			if len(y) != 2 {
+				// invalid string, should be LABEL=PATH
+				continue
+			}
+
+			c.Templates.ActionTemplateDirectories = append(c.Templates.ActionTemplateDirectories, NamedDirectory{
+				Label:     y[0],
+				Directory: y[1],
+			})
+		}
 	}
 
 	return c, configCheck(c)

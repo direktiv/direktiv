@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+import "google/protobuf/timestamp.proto";
+
+message WorkflowMetricsRequest {
+	optional string namespace = 1;
+	optional string workflow = 2;
+	optional google.protobuf.Timestamp sinceTimestamp = 3;
+}
+
+message WorkflowMetricsResponse {
+	optional int32 totalInstancesRun = 1;
+	optional int32 totalInstanceMilliseconds = 2;
+	optional int32 successfulExecutions = 3;
+	optional int32 failedExecutions = 4;
+	map<string, int32> errorCodes = 5;
+	map<string, float> errorCodesRepresentation = 6;
+	optional int32 sampleSize = 7;
+	optional int32 meanInstanceMilliseconds = 8;
+	optional float successRate = 9;
+	optional float failureRate = 10;
+	repeated State states = 11;
+}
+
+message State {
+	optional string name = 1;
+	map<string, int32> invokers = 2;
+	map<string, float> invokersRepresentation = 3;
+	optional int32 totalExecutions = 4;
+	optional int32 totalMilliseconds = 5;
+	optional int32 totalSuccesses = 6;
+	optional int32 totalFailures = 7;
+	map<string, int32> unhandledErrors = 8;
+	map<string, float> unhandledErrorsRepresentation = 9;
+	optional int32 totalRetries = 10;
+	optional Outcomes outcomes = 11;
+	optional int32 meanExecutionsPerInstance = 12;
+	optional int32 meanMillisecondsPerInstance = 13;
+	optional float successRate = 14;
+	optional float failureRate = 15;
+	optional float meanRetries = 16;
+	optional MeanOutcomes meanOutcomes = 17;
+}
+
+message Outcomes {
+    optional int32 success = 1;
+    optional int32 failure = 2;
+    map<string, int32> transitions = 3;
+}
+
+// message Outcomes {
+// 	optional int32 success = 1;
+// 	optional int32 failure = 2;
+// 	optional google.protobuf.Struct transitions = 3;
+// }
+
+message MeanOutcomes {
+	optional float success = 1;
+	optional float failure = 2;
+	map<string, float> transitions = 3;
+}

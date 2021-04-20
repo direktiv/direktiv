@@ -14,6 +14,7 @@ import "pkg/ingress/delete-workflow.proto";
 import "pkg/ingress/cancel-instance.proto";
 import "pkg/ingress/get-instance.proto";
 import "pkg/ingress/get-instances.proto";
+import "pkg/ingress/get-instances-by-workflow.proto";
 import "pkg/ingress/get-instance-logs.proto";
 import "pkg/ingress/get-workflow-id.proto";
 import "pkg/ingress/get-workflow-uid.proto";
@@ -27,6 +28,7 @@ import "pkg/ingress/store-secret.proto";
 import "pkg/ingress/get-registries.proto";
 import "pkg/ingress/delete-registry.proto";
 import "pkg/ingress/store-registry.proto";
+import "pkg/ingress/workflow-metrics.proto";
 
 service DirektivIngress {
 	rpc AddNamespace (AddNamespaceRequest) returns (AddNamespaceResponse) {}
@@ -38,6 +40,7 @@ service DirektivIngress {
 	rpc GetWorkflowByUid (GetWorkflowByUidRequest) returns (GetWorkflowByUidResponse) {}
 	rpc GetWorkflowInstance (GetWorkflowInstanceRequest) returns (GetWorkflowInstanceResponse) {}
 	rpc GetWorkflowInstances (GetWorkflowInstancesRequest) returns (GetWorkflowInstancesResponse) {}
+	rpc GetInstancesByWorkflow (GetInstancesByWorkflowRequest) returns (GetInstancesByWorkflowResponse) {}
 	rpc GetWorkflowInstanceLogs (GetWorkflowInstanceLogsRequest) returns (GetWorkflowInstanceLogsResponse) {}
 	rpc CancelWorkflowInstance (CancelWorkflowInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc GetWorkflows (GetWorkflowsRequest) returns (GetWorkflowsResponse) {}
@@ -50,4 +53,5 @@ service DirektivIngress {
 	rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
 	rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
+	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 }
