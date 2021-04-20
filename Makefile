@@ -37,13 +37,8 @@ docker-all:
 
 .PHONY: docker-api
 docker-api:
-<<<<<<< HEAD
-docker-api: build-api
-	cp ${mkfile_dir_main}/apiserver ${mkfile_dir_main}/build/
-=======
 docker-api: build
 	cp ${mkfile_dir_main}/api  ${mkfile_dir_main}/build/
->>>>>>> cli
 	cd build && docker build -t direktiv-api -f docker/api/Dockerfile .
 
 .PHONY: docker-flow
