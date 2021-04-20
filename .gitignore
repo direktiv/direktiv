@@ -18,10 +18,12 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+/build/apiserver
 /build/direktiv
 /build/direkcli
 /build/secrets
 /build/alpine-*
+/apiserver
 /direktiv
 /direkcli
 /ui-server
