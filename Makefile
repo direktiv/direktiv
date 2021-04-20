@@ -35,6 +35,12 @@ docker-secrets: build
 docker-all:
 	docker build -t direktiv-kube ${mkfile_dir_main}/build/docker/all
 
+.PHONY: docker-api
+docker-api:
+docker-api: build
+	cp ${mkfile_dir_main}/api  ${mkfile_dir_main}/build/
+	cd build && docker build -t direktiv-api -f docker/api/Dockerfile .
+
 .PHONY: docker-flow
 docker-flow:
 docker-flow: build
@@ -59,6 +65,7 @@ build:
 	go generate ./pkg/secrets/ent/schema
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/secrets cmd/secrets/main.go
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/api cmd/api/main.go
 	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 
 .PHONY: build-cli
@@ -96,7 +103,7 @@ run:
 	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
 	DIREKTIV_INSTANCE_LOGGING_DRIVER="database" \
 	DIREKTIV_MOCKUP=1 \
-	go run cmd/direktiv/main.go -d -t ws -c ${mkfile_dir_main}/build/conf.toml
+	go run cmd/direktiv/main.go -d
 
 pkg/secrets/%.pb.go: pkg/secrets/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<

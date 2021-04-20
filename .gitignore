@@ -21,15 +21,15 @@
 /build/direktiv
 /build/direkcli
 /build/secrets
-/build/alpine-*
+/build/api
 /direktiv
 /direkcli
 /ui-server
-/alpine-base
 /postgres
 /minio
 /direktiv-ui
 /secrets
+/api
 
 /build/docker/*
 !*build/docker/all
@@ -39,6 +39,7 @@
 !*build/docker/cli
 !*build/docker/ui
 !*build/docker/sidecar
+!*build/docker/api
 /build/docker/sidecar/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui

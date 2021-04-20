@@ -41,7 +41,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/mitchellh/hashstructure/v2 v2.0.1
 	github.com/novln/docker-parser v1.0.0
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/opennota/check v0.0.0-20180911053232-0c771f5545ff // indirect
 	github.com/opentracing/opentracing-go v1.2.0

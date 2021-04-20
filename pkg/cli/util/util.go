@@ -6,10 +6,22 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/vorteil/pkg/elog"
 	"google.golang.org/grpc"
 )
+
+// GenerateCmd is a basic cobra function
+func GenerateCmd(use, short, long string, fn func(cmd *cobra.Command, args []string), c cobra.PositionalArgs) *cobra.Command {
+	return &cobra.Command{
+		Use:   use,
+		Short: short,
+		Long:  long,
+		Run:   fn,
+		Args:  c,
+	}
+}
 
 func CreateClient(conn *grpc.ClientConn) (ingress.DirektivIngressClient, context.Context, context.CancelFunc) {
 	client := ingress.NewDirektivIngressClient(conn)
