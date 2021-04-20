@@ -228,6 +228,10 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 	var err error
 
+	if status == "crashed" {
+		code = "direktiv.internal.error"
+	}
+
 	wli.engine.completeState(ctx, wli.rec, "", code, false)
 
 	if wli.rec.ErrorCode == "" {
