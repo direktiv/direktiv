@@ -20,7 +20,8 @@ func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.s.json.Marshal(w, resp)
+	writeData(resp, w)
+
 }
 
 func (h *Handler) addNamespace(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +39,8 @@ func (h *Handler) addNamespace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.s.json.Marshal(w, resp)
+	writeData(resp, w)
+
 }
 
 func (h *Handler) deleteNamespace(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +59,7 @@ func (h *Handler) deleteNamespace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.s.json.Marshal(w, resp)
+	writeData(resp, w)
 }
 
 func (h *Handler) namespaceEvent(w http.ResponseWriter, r *http.Request) {
@@ -99,10 +101,6 @@ func (h *Handler) namespaceEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	if err := h.s.json.Marshal(w, resp); err != nil {
-		ErrResponse(w, err)
-		return
-	}
+	writeData(resp, w)
 
 }
