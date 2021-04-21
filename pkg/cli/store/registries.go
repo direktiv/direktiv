@@ -19,13 +19,13 @@ func CreateCommandRegistries() *cobra.Command {
 }
 
 var createRegistryCmd = util.GenerateCmd("create NAMESPACE URL USER:TOKEN", "Creates a new registry on provided namespace", "", func(cmd *cobra.Command, args []string) {
-
+	createSecret(args[1], args[2], args[0], "registries")
 }, cobra.ExactArgs(3))
 
 var removeRegistryCmd = util.GenerateCmd("delete NAMESPACE URL", "Deletes a registry from the provided namespace", "", func(cmd *cobra.Command, args []string) {
-
+	deleteSecrets(args[0], args[1], "registries")
 }, cobra.ExactArgs(2))
 
 var listRegistriesCmd = util.GenerateCmd("list NAMESPACE", "Returns a list of registries from the provided namespace", "", func(cmd *cobra.Command, args []string) {
-
+	listSecrets(args[0], "registries")
 }, cobra.ExactArgs(1))
