@@ -140,7 +140,7 @@ var instanceListCmd = util.GenerateCmd("list NAMESPACE", "List all workflow inst
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Status"})nsec
+	table.SetHeader([]string{"ID", "Status"})
 	for _, instances := range il.Workflowinstances {
 		table.Append([]string{
 			instances.ID,
