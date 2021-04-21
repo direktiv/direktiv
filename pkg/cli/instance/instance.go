@@ -1,12 +1,61 @@
 package instance
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
 	"github.com/vorteil/direktiv/pkg/cli/util"
 )
 
-// "github.com/vorteil/direktiv/pkg/cli/util"
+type instanceList struct {
+	Workflowinstances []struct {
+		ID        string `json:"id"`
+		Status    string `json:"status"`
+		Begintime struct {
+			Seconds int `json:"seconds"`
+			Nanos   int `json:"nanos"`
+		} `json:"beginTime"`
+	} `json:"workflowInstances"`
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+}
+
+type instanceObject struct {
+	ID        string `json:"id"`
+	Status    string `json:"status"`
+	Invokedby string `json:"invokedBy"`
+	Revision  int    `json:"revision"`
+	Begintime struct {
+		Seconds int `json:"seconds"`
+		Nanos   int `json:"nanos"`
+	} `json:"beginTime"`
+	Endtime struct {
+		Seconds int `json:"seconds"`
+		Nanos   int `json:"nanos"`
+	} `json:"endTime"`
+	Flow   []string `json:"flow"`
+	Input  string   `json:"input"`
+	Output string   `json:"output"`
+}
+
+type instanceLogs struct {
+	Workflowinstancelogs []struct {
+		Timestamp struct {
+			Seconds int `json:"seconds"`
+		} `json:"timestamp"`
+		Message string `json:"message"`
+	} `json:"workflowInstanceLogs"`
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+}
 
 // CreateCommand adds instance commands
 func CreateCommand() *cobra.Command {
@@ -22,124 +71,82 @@ func CreateCommand() *cobra.Command {
 }
 
 var instanceGetCmd = util.GenerateCmd("get ID", "Get details about a workflow instance", "", func(cmd *cobra.Command, args []string) {
-	// resp, err := instance.Get(conn, args[0])
-	// if err != nil {
-	// 	logger.Errorf(err.Error())
-	// 	os.Exit(1)
-	// }
-	// if flagJSON {
-	// 	util.WriteJSON(resp, logger)
-	// } else {
-	// 	logger.Printf("ID: %s", resp.GetId())
-	// 	logger.Printf("Input: %s", string(resp.GetInput()))
-	// 	logger.Printf("Output: %s", string(resp.GetOutput()))
-	// }
+
+	i, err := util.DoRequest(http.MethodGet, fmt.Sprintf("/instances/%s", args[0]),
+		util.NONECt, nil)
+	if err != nil {
+		log.Fatalf("error getting instance: %v", err)
+	}
+
+	var io instanceObject
+	err = json.Unmarshal(i, &io)
+	if err != nil {
+		log.Fatalf("error getting instance: %v", err)
+	}
+
+	in, err := base64.StdEncoding.DecodeString(io.Input)
+	if err != nil {
+		log.Fatalf("can not decode workflow: %v, %v", err, string(i))
+	}
+
+	out, err := base64.StdEncoding.DecodeString(io.Output)
+	if err != nil {
+		log.Fatalf("can not decode workflow: %v, %v", err, string(i))
+	}
+
+	fmt.Printf("Input: %v\nOutput: %v", string(in), string(out))
+
 }, cobra.ExactArgs(1))
 
-var instanceLogsCmd = util.GenerateCmd("logs ID", "Grabs all logs for the instance ID provided", "", func(cmd *cobra.Command, args []string) {
-	// logs, err := instance.Logs(conn, args[0])
-	// if err != nil {
-	// 	logger.Errorf(err.Error())
-	// 	os.Exit(1)
-	// }
-	// if flagJSON {
-	// 	util.WriteJSON(logs, logger)
-	// } else {
-	// 	for _, log := range logs {
-	// 		fmt.Println(log.GetMessage())
-	// 	}
-	// }
+var instanceLogsCmd = util.GenerateCmd("logs ID", "Gets all logs for the instance ID provided", "", func(cmd *cobra.Command, args []string) {
+
+	i, err := util.DoRequest(http.MethodGet, fmt.Sprintf("/instances/%s/logs", args[0]),
+		util.NONECt, nil)
+	if err != nil {
+		log.Fatalf("error getting instance: %v", err)
+	}
+
+	var il instanceLogs
+	err = json.Unmarshal(i, &il)
+	if err != nil {
+		log.Fatalf("error getting instance: %v", err)
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Time", "Log"})
+	for _, l := range il.Workflowinstancelogs {
+		t := time.Unix(int64(l.Timestamp.Seconds), 0)
+		table.Append([]string{
+			t.String(),
+			l.Message,
+		})
+	}
+	table.Render()
 
 }, cobra.ExactArgs(1))
 
 var instanceListCmd = util.GenerateCmd("list NAMESPACE", "List all workflow instances from the provided namespace", "", func(cmd *cobra.Command, args []string) {
-	// list, err := instance.List(conn, args[0])
-	// if err != nil {
-	// 	logger.Errorf(err.Error())
-	// 	os.Exit(1)
-	// }
-	//
-	// if flagJSON {
-	// 	util.WriteJsonList(list, logger)
-	// } else {
-	// 	if len(list) == 0 {
-	// 		logger.Printf("No instances exist under '%s'", args[0])
-	// 		return
-	// 	}
-	//
-	// 	table := tablewriter.NewWriter(os.Stdout)
-	// 	table.SetHeader([]string{"ID", "Status"})
-	//
-	// 	// Build string array rows
-	// 	for _, instance := range list {
-	// 		table.Append([]string{
-	// 			instance.GetId(),
-	// 			instance.GetStatus(),
-	// 		})
-	// 	}
-	// 	table.Render()
-	// }
+
+	i, err := util.DoRequest(http.MethodGet, fmt.Sprintf("/instances/%s", args[0]),
+		util.NONECt, nil)
+	if err != nil {
+		log.Fatalf("error getting instances: %v", err)
+	}
+
+	var il instanceList
+	err = json.Unmarshal(i, &il)
+	if err != nil {
+		log.Fatalf("error getting instances: %v", err)
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"ID", "Status"})nsec
+	for _, instances := range il.Workflowinstances {
+		table.Append([]string{
+			instances.ID,
+			instances.Status,
+		})
+	}
+	table.Render()
 
 }, cobra.ExactArgs(1))
-
-// Logs returns all logs associated with the workflow instance ID
-// func Logs(conn *grpc.ClientConn, id string) ([]*ingress.GetWorkflowInstanceLogsResponse_WorkflowInstanceLog, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-// 	offset := int32(0)
-// 	limit := int32(10000)
-//
-// 	// prepare request
-// 	request := ingress.GetWorkflowInstanceLogsRequest{
-// 		InstanceId: &id,
-// 		Offset:     &offset,
-// 		Limit:      &limit,
-// 	}
-//
-// 	// send grpc request
-// 	resp, err := client.GetWorkflowInstanceLogs(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return nil, fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return resp.GetWorkflowInstanceLogs(), nil
-// }
-//
-// // List workflow instances
-// func List(conn *grpc.ClientConn, namespace string) ([]*ingress.GetWorkflowInstancesResponse_WorkflowInstance, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-// 	// prepare request
-// 	request := ingress.GetWorkflowInstancesRequest{
-// 		Namespace: &namespace,
-// 	}
-//
-// 	// send grpc request
-// 	resp, err := client.GetWorkflowInstances(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return nil, fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return resp.WorkflowInstances, nil
-// }
-//
-// // Get returns a workflow instance.
-// func Get(conn *grpc.ClientConn, id string) (*ingress.GetWorkflowInstanceResponse, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-// 	// prepare request
-// 	request := ingress.GetWorkflowInstanceRequest{
-// 		Id: &id,
-// 	}
-//
-// 	// send grpc request
-// 	resp, err := client.GetWorkflowInstance(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return nil, fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return resp, nil
-// }
