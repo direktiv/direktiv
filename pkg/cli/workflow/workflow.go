@@ -1,9 +1,26 @@
 package workflow
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+
 	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/cli/util"
 )
+
+type workflowObject struct {
+	UID       string `json:"uid"`
+	ID        string `json:"id"`
+	Revision  int    `json:"revision"`
+	Active    bool   `json:"active"`
+	Createdat struct {
+		Seconds int `json:"seconds"`
+		Nanos   int `json:"nanos"`
+	} `json:"createdAt"`
+}
 
 // CreateCommand create the namespace command and subcommands
 func CreateCommand() *cobra.Command {
@@ -22,6 +39,16 @@ func CreateCommand() *cobra.Command {
 
 }
 
+// Workflow ..
+// s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/"] = http.HandlerFunc(s.handler.Workflows)
+// s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.GetWorkflow)
+// s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowUID}"] = http.HandlerFunc(s.handler.UpdateWorkflow)
+// s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowUID}/toggle"] = http.HandlerFunc(s.handler.ToggleWorkflow)
+// s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows"] = http.HandlerFunc(s.handler.CreateWorkflow)
+// s.routes[http.MethodDelete]["/api/namespaces/{namespace}/workflows/{workflowUID}"] = http.HandlerFunc(s.handler.DeleteWorkflow)
+// s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowUID}/download"] = http.HandlerFunc(s.handler.DownloadWorkflow)
+// s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowID}/execute"] = http.HandlerFunc(s.handler.ExecuteWorkflow)
+
 var workflowGetCmd = util.GenerateCmd("get NAMESPACE ID", "Get YAML of a workflow", "", func(cmd *cobra.Command, args []string) {
 
 }, cobra.ExactArgs(2))
@@ -30,19 +57,63 @@ var workflowToggleCmd = util.GenerateCmd("toggle NAMESPACE WORKFLOW", "Enables o
 
 }, cobra.ExactArgs(2))
 
-var workflowAddCmd = util.GenerateCmd("create NAMESPACE WORKFLOW", "Creates a new workflow on provided namespace", "", func(cmd *cobra.Command, args []string) {
+var workflowAddCmd = util.GenerateCmd("create NAMESPACE WORKFLOW FILE", "Creates a new workflow on provided namespace", "", func(cmd *cobra.Command, args []string) {
+
+	// read file
+	f, err := ioutil.ReadFile(args[1])
+	if err != nil {
+		log.Fatalf("can not create workflow: %v", err)
+	}
+	st := string(f)
+
+	wf, err := util.DoRequest(http.MethodPost, fmt.Sprintf("/namespaces/%s/workflows",
+		args[0]), util.YAMLCt, &st)
+	if err != nil {
+		log.Fatalf("error creating workflow: %v", err)
+	}
+
+	var workflow workflowObject
+	err = json.Unmarshal(wf, &workflow)
+	if err != nil {
+		log.Fatalf("can not parse response: %v, %v", err, string(wf))
+	}
+
+	log.Printf("workflow '%s' created", workflow.ID)
 
 }, cobra.ExactArgs(2))
 
-var workflowUpdateCmd = util.GenerateCmd("update NAMESPACE ID WORKFLOW", "Updates an existing workflow", "", func(cmd *cobra.Command, args []string) {
+var workflowUpdateCmd = util.GenerateCmd("update NAMESPACE NAME FILE", "Updates an existing workflow", "", func(cmd *cobra.Command, args []string) {
+
+	// read file
+	f, err := ioutil.ReadFile(args[2])
+	if err != nil {
+		log.Fatalf("can not create workflow: %v", err)
+	}
+	st := string(f)
+
+	wf, err := util.DoRequest(http.MethodPut, fmt.Sprintf("/namespaces/%s/workflows/%s",
+		args[0], args[1]), util.YAMLCt, &st)
+	if err != nil {
+		log.Fatalf("error updating workflow: %v", err)
+	}
+
+	var workflow workflowObject
+	err = json.Unmarshal(wf, &workflow)
+	if err != nil {
+		log.Fatalf("can not parse response: %v, %v", err, string(wf))
+	}
+
+	log.Printf("workflow '%s' updated", workflow.ID)
 
 }, cobra.ExactArgs(3))
 
-var workflowDeleteCmd = util.GenerateCmd("delete NAMESPACE ID", "Deletes an existing workflow", "", func(cmd *cobra.Command, args []string) {
+var workflowDeleteCmd = util.GenerateCmd("delete NAMESPACE NAME", "Deletes an existing workflow", "", func(cmd *cobra.Command, args []string) {
 
 }, cobra.ExactArgs(2))
 
 var workflowListCmd = util.GenerateCmd("list NAMESPACE", "List all workflows under a namespace", "", func(cmd *cobra.Command, args []string) {
+
+	// /api/namespaces/{namespace}/workflows/
 
 }, cobra.ExactArgs(1))
 

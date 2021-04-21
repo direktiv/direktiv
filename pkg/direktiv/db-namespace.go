@@ -3,7 +3,6 @@ package direktiv
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"math"
 
 	"github.com/vorteil/direktiv/ent"
@@ -85,7 +84,7 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 	}
 
 	if i == 0 {
-		return fmt.Errorf("namespace %s does not exist", name)
+		return &ent.NotFoundError{}
 	}
 
 	err = kubernetesActionServiceAccount(name, false)

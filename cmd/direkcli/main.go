@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	cobra "github.com/spf13/cobra"
@@ -13,8 +14,14 @@ import (
 	"github.com/vorteil/direktiv/pkg/cli/workflow"
 )
 
-var flagURL string
-var flagSkip bool
+var (
+	flagURL  string
+	flagSkip bool
+)
+
+const (
+	endpoint = "DIREKTIV_CLI_ENDPOINT"
+)
 
 func generateCmd(use, short, long string, fn func(cmd *cobra.Command, args []string), c cobra.PositionalArgs) *cobra.Command {
 	return &cobra.Command{
@@ -33,32 +40,19 @@ var rootCmd = &cobra.Command{
 	Long:  ``,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 
-		util.DirektivURL = "http://192.168.1.10:3333"
-		// fmt.Printf("HELLO!!!")
-		// logger = log.GetLogger()
-		// var err error
-		// connF, err := cmd.Flags().GetString("grpc")
-		// if err != nil {
-		// 	return err
-		// }
-		// if connF == "" {
-		// 	connF = grpcConnection
-		// }
-		//
-		// var options []grpc.DialOption
-		// if flagSecure {
-		// 	config := &tls.Config{
-		// 		InsecureSkipVerify: true, // TODO
-		// 	}
-		// 	options = append(options, grpc.WithTransportCredentials(credentials.NewTLS(config)))
-		// } else {
-		// 	options = append(options, grpc.WithInsecure())
-		// }
-		//
-		// conn, err = grpc.Dial(connF, options...)
-		// if err != nil {
-		// 	return err
-		// }
+		util.DirektivURL = "http://localhost"
+
+		if os.Getenv(endpoint) != "" {
+			util.DirektivURL = os.Getenv(endpoint)
+		}
+
+		urlValue, err := cmd.Flags().GetString("url")
+		if err != nil {
+			log.Printf("url arg invalid: %v", err)
+		}
+		if len(urlValue) > 0 {
+			util.DirektivURL = urlValue
+		}
 
 		return nil
 	},
@@ -497,7 +491,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&util.DirektivURL, "url", "", "", "name and port for connection, default is 127.0.0.1:80. Overwrite with env DIREKTIV_CLI_ENDPOINT")
+	rootCmd.PersistentFlags().StringVarP(&flagURL, "url", "", "", "name and port for connection, default is 127.0.0.1:80. Overwrite with env DIREKTIV_CLI_ENDPOINT")
 	// rootCmd.PersistentFlags().BoolVarP(&flagJSON, "json", "", false, "provides json output")
 	rootCmd.PersistentFlags().BoolVarP(&flagSkip, "skipVerify", "", false, "skip certificate validation")
 	// workflowCmd add flag for the namespace
@@ -505,5 +499,9 @@ func init() {
 }
 
 func main() {
+
+	log.SetFlags(0)
+	log.SetOutput(new(util.CLILogWriter))
+
 	Execute()
 }

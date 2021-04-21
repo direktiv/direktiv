@@ -261,23 +261,23 @@ func (is *ingressServer) GetNamespaces(ctx context.Context, in *ingress.GetNames
 
 }
 
-func (is *ingressServer) GetWorkflowById(ctx context.Context, in *ingress.GetWorkflowByIdRequest) (*ingress.GetWorkflowByIdResponse, error) {
+func (is *ingressServer) GetWorkflowByName(ctx context.Context, in *ingress.GetWorkflowByNameRequest) (*ingress.GetWorkflowByNameResponse, error) {
 
-	var resp ingress.GetWorkflowByIdResponse
+	var resp ingress.GetWorkflowByNameResponse
 
 	namespace := in.GetNamespace()
-	id := in.GetId()
+	name := in.GetName()
 
-	wf, err := is.wfServer.dbManager.getWorkflowById(ctx, namespace, id)
+	wf, err := is.wfServer.dbManager.getWorkflowByName(ctx, namespace, name)
 	if err != nil {
-		return nil, grpcDatabaseError(err, "workflow", fmt.Sprintf("%s/%s", namespace, id))
+		return nil, grpcDatabaseError(err, "workflow", fmt.Sprintf("%s/%s", namespace, name))
 	}
 
 	uid := wf.ID.String()
 	revision := int32(wf.Revision)
 
 	resp.Uid = &uid
-	resp.Id = &wf.Name
+	resp.Name = &wf.Name
 	resp.Revision = &revision
 	resp.Active = &wf.Active
 	resp.CreatedAt = timestamppb.New(wf.Created)
@@ -405,7 +405,7 @@ func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	workflowUID, err := is.wfServer.dbManager.getWorkflowById(ctx, namespace, workflow)
+	workflowUID, err := is.wfServer.dbManager.getWorkflowByName(ctx, namespace, workflow)
 	if err != nil {
 		return nil, err
 	}
@@ -511,7 +511,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	var resp ingress.InvokeWorkflowResponse
 
 	namespace := in.GetNamespace()
-	workflow := in.GetWorkflowId()
+	workflow := in.GetName()
 	input := in.GetInput()
 
 	instID, err := is.wfServer.engine.DirectInvoke(namespace, workflow, input)
@@ -640,9 +640,15 @@ func (is *ingressServer) GetRegistries(ctx context.Context, in *ingress.GetRegis
 	}
 
 	for _, reg := range regs {
-		r := reg
+		split := strings.SplitN(reg, "###", 2)
+
+		if len(split) != 2 {
+			return nil, fmt.Errorf("invalid registry format")
+		}
+
 		resp.Registries = append(resp.Registries, &ingress.GetRegistriesResponse_Registry{
-			Name: &r,
+			Name: &split[0],
+			Id:   &split[1],
 		})
 	}
 
