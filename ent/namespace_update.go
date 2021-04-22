@@ -28,12 +28,6 @@ func (nu *NamespaceUpdate) Where(ps ...predicate.Namespace) *NamespaceUpdate {
 	return nu
 }
 
-// SetKey sets the "key" field.
-func (nu *NamespaceUpdate) SetKey(b []byte) *NamespaceUpdate {
-	nu.mutation.SetKey(b)
-	return nu
-}
-
 // AddWorkflowIDs adds the "workflows" edge to the Workflow entity by IDs.
 func (nu *NamespaceUpdate) AddWorkflowIDs(ids ...uuid.UUID) *NamespaceUpdate {
 	nu.mutation.AddWorkflowIDs(ids...)
@@ -144,13 +138,6 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := nu.mutation.Key(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: namespace.FieldKey,
-		})
-	}
 	if nu.mutation.WorkflowsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -222,12 +209,6 @@ type NamespaceUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *NamespaceMutation
-}
-
-// SetKey sets the "key" field.
-func (nuo *NamespaceUpdateOne) SetKey(b []byte) *NamespaceUpdateOne {
-	nuo.mutation.SetKey(b)
-	return nuo
 }
 
 // AddWorkflowIDs adds the "workflows" edge to the Workflow entity by IDs.
@@ -363,13 +344,6 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := nuo.mutation.Key(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: namespace.FieldKey,
-		})
 	}
 	if nuo.mutation.WorkflowsCleared() {
 		edge := &sqlgraph.EdgeSpec{

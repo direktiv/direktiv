@@ -2,7 +2,6 @@ package direktiv
 
 import (
 	"context"
-	"crypto/rand"
 	"math"
 
 	"github.com/vorteil/direktiv/ent"
@@ -29,13 +28,6 @@ func (db *dbManager) getNamespace(name string) (*ent.Namespace, error) {
 
 func (db *dbManager) addNamespace(ctx context.Context, name string) (*ent.Namespace, error) {
 
-	key := make([]byte, 32)
-	_, err := rand.Read(key)
-
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := db.dbEnt.Tx(db.ctx)
 	if err != nil {
 		return nil, err
@@ -44,7 +36,6 @@ func (db *dbManager) addNamespace(ctx context.Context, name string) (*ent.Namesp
 	ns, err := tx.Namespace.
 		Create().
 		SetID(name).
-		SetKey(key).
 		Save(ctx)
 	if err != nil {
 		return nil, rollback(tx, err)

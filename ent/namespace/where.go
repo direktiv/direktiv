@@ -100,13 +100,6 @@ func Created(v time.Time) predicate.Namespace {
 	})
 }
 
-// Key applies equality check predicate on the "key" field. It's identical to KeyEQ.
-func Key(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldKey), v))
-	})
-}
-
 // CreatedEQ applies the EQ predicate on the "created" field.
 func CreatedEQ(v time.Time) predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
@@ -180,82 +173,6 @@ func CreatedLT(v time.Time) predicate.Namespace {
 func CreatedLTE(v time.Time) predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreated), v))
-	})
-}
-
-// KeyEQ applies the EQ predicate on the "key" field.
-func KeyEQ(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldKey), v))
-	})
-}
-
-// KeyNEQ applies the NEQ predicate on the "key" field.
-func KeyNEQ(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldKey), v))
-	})
-}
-
-// KeyIn applies the In predicate on the "key" field.
-func KeyIn(vs ...[]byte) predicate.Namespace {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Namespace(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldKey), v...))
-	})
-}
-
-// KeyNotIn applies the NotIn predicate on the "key" field.
-func KeyNotIn(vs ...[]byte) predicate.Namespace {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Namespace(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldKey), v...))
-	})
-}
-
-// KeyGT applies the GT predicate on the "key" field.
-func KeyGT(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldKey), v))
-	})
-}
-
-// KeyGTE applies the GTE predicate on the "key" field.
-func KeyGTE(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldKey), v))
-	})
-}
-
-// KeyLT applies the LT predicate on the "key" field.
-func KeyLT(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldKey), v))
-	})
-}
-
-// KeyLTE applies the LTE predicate on the "key" field.
-func KeyLTE(v []byte) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldKey), v))
 	})
 }
 

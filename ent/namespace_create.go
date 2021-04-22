@@ -36,12 +36,6 @@ func (nc *NamespaceCreate) SetNillableCreated(t *time.Time) *NamespaceCreate {
 	return nc
 }
 
-// SetKey sets the "key" field.
-func (nc *NamespaceCreate) SetKey(b []byte) *NamespaceCreate {
-	nc.mutation.SetKey(b)
-	return nc
-}
-
 // SetID sets the "id" field.
 func (nc *NamespaceCreate) SetID(s string) *NamespaceCreate {
 	nc.mutation.SetID(s)
@@ -126,9 +120,6 @@ func (nc *NamespaceCreate) check() error {
 	if _, ok := nc.mutation.Created(); !ok {
 		return &ValidationError{Name: "created", err: errors.New("ent: missing required field \"created\"")}
 	}
-	if _, ok := nc.mutation.Key(); !ok {
-		return &ValidationError{Name: "key", err: errors.New("ent: missing required field \"key\"")}
-	}
 	if v, ok := nc.mutation.ID(); ok {
 		if err := namespace.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf("ent: validator failed for field \"id\": %w", err)}
@@ -170,14 +161,6 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Column: namespace.FieldCreated,
 		})
 		_node.Created = value
-	}
-	if value, ok := nc.mutation.Key(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: namespace.FieldKey,
-		})
-		_node.Key = value
 	}
 	if nodes := nc.mutation.WorkflowsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

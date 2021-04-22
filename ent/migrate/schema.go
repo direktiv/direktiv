@@ -12,7 +12,6 @@ var (
 	NamespacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 64},
 		{Name: "created", Type: field.TypeTime},
-		{Name: "key", Type: field.TypeBytes},
 	}
 	// NamespacesTable holds the schema information for the "namespaces" table.
 	NamespacesTable = &schema.Table{
