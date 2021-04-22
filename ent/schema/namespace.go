@@ -18,7 +18,6 @@ func (Namespace) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").Immutable().Unique().NotEmpty().MaxLen(64).MinLen(1),
 		field.Time("created").Immutable().Default(time.Now),
-		field.Bytes("key"),
 	}
 }
 

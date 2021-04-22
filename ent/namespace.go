@@ -18,8 +18,6 @@ type Namespace struct {
 	ID string `json:"id,omitempty"`
 	// Created holds the value of the "created" field.
 	Created time.Time `json:"created,omitempty"`
-	// Key holds the value of the "key" field.
-	Key []byte `json:"key,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NamespaceQuery when eager-loading is set.
 	Edges NamespaceEdges `json:"edges"`
@@ -48,8 +46,6 @@ func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case namespace.FieldKey:
-			values[i] = new([]byte)
 		case namespace.FieldID:
 			values[i] = new(sql.NullString)
 		case namespace.FieldCreated:
@@ -80,12 +76,6 @@ func (n *Namespace) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field created", values[i])
 			} else if value.Valid {
 				n.Created = value.Time
-			}
-		case namespace.FieldKey:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field key", values[i])
-			} else if value != nil {
-				n.Key = *value
 			}
 		}
 	}
@@ -122,8 +112,6 @@ func (n *Namespace) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", n.ID))
 	builder.WriteString(", created=")
 	builder.WriteString(n.Created.Format(time.ANSIC))
-	builder.WriteString(", key=")
-	builder.WriteString(fmt.Sprintf("%v", n.Key))
 	builder.WriteByte(')')
 	return builder.String()
 }

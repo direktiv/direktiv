@@ -44,7 +44,6 @@ type NamespaceMutation struct {
 	typ              string
 	id               *string
 	created          *time.Time
-	key              *[]byte
 	clearedFields    map[string]struct{}
 	workflows        map[uuid.UUID]struct{}
 	removedworkflows map[uuid.UUID]struct{}
@@ -175,42 +174,6 @@ func (m *NamespaceMutation) ResetCreated() {
 	m.created = nil
 }
 
-// SetKey sets the "key" field.
-func (m *NamespaceMutation) SetKey(b []byte) {
-	m.key = &b
-}
-
-// Key returns the value of the "key" field in the mutation.
-func (m *NamespaceMutation) Key() (r []byte, exists bool) {
-	v := m.key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKey returns the old "key" field's value of the Namespace entity.
-// If the Namespace object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NamespaceMutation) OldKey(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKey: %w", err)
-	}
-	return oldValue.Key, nil
-}
-
-// ResetKey resets all changes to the "key" field.
-func (m *NamespaceMutation) ResetKey() {
-	m.key = nil
-}
-
 // AddWorkflowIDs adds the "workflows" edge to the Workflow entity by ids.
 func (m *NamespaceMutation) AddWorkflowIDs(ids ...uuid.UUID) {
 	if m.workflows == nil {
@@ -278,12 +241,9 @@ func (m *NamespaceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NamespaceMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 1)
 	if m.created != nil {
 		fields = append(fields, namespace.FieldCreated)
-	}
-	if m.key != nil {
-		fields = append(fields, namespace.FieldKey)
 	}
 	return fields
 }
@@ -295,8 +255,6 @@ func (m *NamespaceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case namespace.FieldCreated:
 		return m.Created()
-	case namespace.FieldKey:
-		return m.Key()
 	}
 	return nil, false
 }
@@ -308,8 +266,6 @@ func (m *NamespaceMutation) OldField(ctx context.Context, name string) (ent.Valu
 	switch name {
 	case namespace.FieldCreated:
 		return m.OldCreated(ctx)
-	case namespace.FieldKey:
-		return m.OldKey(ctx)
 	}
 	return nil, fmt.Errorf("unknown Namespace field %s", name)
 }
@@ -325,13 +281,6 @@ func (m *NamespaceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreated(v)
-		return nil
-	case namespace.FieldKey:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKey(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Namespace field %s", name)
@@ -384,9 +333,6 @@ func (m *NamespaceMutation) ResetField(name string) error {
 	switch name {
 	case namespace.FieldCreated:
 		m.ResetCreated()
-		return nil
-	case namespace.FieldKey:
-		m.ResetKey()
 		return nil
 	}
 	return fmt.Errorf("unknown Namespace field %s", name)

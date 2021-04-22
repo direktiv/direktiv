@@ -406,7 +406,7 @@ metadata:
     manager: kubectl-create
     operation: Update
     time: "2021-04-21T02:10:29Z"
-  name: api-actiontemplates-cm.yaml
+  name: api-actiontemplates-cm
   namespace: default
   resourceVersion: "11388341"
   uid: 18b999b1-18b8-43e6-ba5a-52f9b71c7095

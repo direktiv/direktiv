@@ -13,8 +13,6 @@ const (
 	FieldID = "id"
 	// FieldCreated holds the string denoting the created field in the database.
 	FieldCreated = "created"
-	// FieldKey holds the string denoting the key field in the database.
-	FieldKey = "key"
 	// EdgeWorkflows holds the string denoting the workflows edge name in mutations.
 	EdgeWorkflows = "workflows"
 	// Table holds the table name of the namespace in the database.
@@ -32,7 +30,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldCreated,
-	FieldKey,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
