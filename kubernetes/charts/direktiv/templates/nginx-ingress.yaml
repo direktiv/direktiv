@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: default
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: 
+    http:
+      paths:
+        - path: /api
+          backend:
+            serviceName: {{ include "direktiv.fullname" . }}-api-service
+            servicePort: 8080
+        - path: /
+          backend:
+            serviceName: {{ include "direktiv.fullname" . }}-ui
+            servicePort: 80

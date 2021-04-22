@@ -1,0 +1,28 @@
+apiVersion: v1
+data:
+  action.yml: "id: httpget\nfunctions:\n- id: httprequest\n  image: vorteil/request:v1\nstates:\n- id: getter \n  type: action\n  action:\n    function: httprequest\n    input: '{\n      \"method\": \"GET\",\n      \"url\": \"https://www.example.com/\",\n    }'\n"
+  noop.yml: |
+    id: noop
+    description: "A simple 'no-op' state that returns 'Hello world!'"
+    states:
+    - id: helloworld
+      type: noop
+      transform: '{ result: "Hello world!" }'
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2021-04-21T02:10:28Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:action.yml: {}
+        f:noop.yml: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2021-04-21T02:10:28Z"
+  name: api-wftemplates-cm
+  namespace: default
+  resourceVersion: "11388316"
+  uid: 2ce14972-aa49-465c-8b7d-c6bad4c4efb6

@@ -24,6 +24,9 @@ jobs:
     - name: make build
       run: |
         make build
+    - name: make build api
+      run: |
+        make build-api
     - name: make build cli
       run: |
         make build-cli

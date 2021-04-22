@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-cm-config
+data:
+  # property-like keys; each key maps to a simple value
+  default.toml: |
+    [ingress]
+      endpoint = "{{ include "direktiv.fullname" . }}-ingress.default:6666"
+      
+    [server]
+      bind = ":8080"
+
+    [templates]
+      [[workflowTemplateDirectories]]
+        name = "default"
+        directory = "/tmp/workflow-templates"
+
+      [[actionTemplateDirectories]]
+        name = "default"
+        directory = "/tmp/action-templates"

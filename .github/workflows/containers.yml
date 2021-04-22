@@ -40,6 +40,7 @@ jobs:
         echo "RV set to $RV"
         make docker-secrets
         make docker-flow
+        make docker-api
         make docker-cli
         make docker-all
         make docker-sidecar
@@ -47,6 +48,8 @@ jobs:
         cp -r ui/frontend/build  build/docker/ui
         make docker-ui
         echo "containers built"
+        docker tag direktiv-api vorteil/api:$RV
+        docker tag direktiv-api vorteil/api
         docker tag direktiv-flow vorteil/flow:$RV
         docker tag direktiv-flow vorteil/flow
         docker tag direktiv-secrets vorteil/secrets:$RV
@@ -60,6 +63,8 @@ jobs:
         docker tag sidecar vorteil/sidecar:$RV
         docker tag sidecar vorteil/sidecar
         docker image list
+        docker push vorteil/api:$RV
+        docker push vorteil/api
         docker push vorteil/flow:$RV
         docker push vorteil/flow
         docker push vorteil/secrets:$RV

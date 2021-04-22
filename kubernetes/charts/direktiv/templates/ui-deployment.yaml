@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: {{ include "direktiv.fullname" . }}-ui
   labels:
-    {{- include "direktiv.labelsUI" . | nindent 4 }}
+    {{ include "direktiv.labelsAPI" . | nindent 4 }}-ui
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -29,12 +29,17 @@ spec:
       containers:
         - name: ui
           image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
-          command: ["/direktiv-ui"]
-          args: ["--direktiv-endpoint={{ include "direktiv.fullname" . }}-ingress:6666", "--bind=0.0.0.0:1605"]
+          env:
+          - name: SERVE_PORT
+            value: "80"
+          - name: SERVE_ADDRESS
+            value: "0.0.0.0"
+          - name: API_URL
+            value: "/api"
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: ui
-              containerPort: 1605
+              containerPort: 80
               protocol: TCP
       {{- with .Values.nodeSelector }}
       nodeSelector:

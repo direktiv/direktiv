@@ -1,0 +1,412 @@
+apiVersion: v1
+data:
+  amazon-sns.json: |-
+    {
+        "id": "amazon-sns",
+        "desc": "Sends a message to Simple Notification Service",
+        "image": "vorteil/amazon-sns",
+        "input": {
+            "key": "",
+            "secret": "",
+            "region": "ap-southeast-2",
+            "topic-arn": "",
+            "message": "Hello World!"
+        }
+    }
+  aws-ec2-create.json: |-
+    {
+        "id": "aws-ec2-create",
+        "desc": "Creates an amazon ec2 instance on aws.",
+        "image": "vorteil/aws-ec2-create",
+        "input": {
+                "access-key": "AWS_ACCESS_KEY",
+                "access-secret": "AWS_ACCESS_SECRET",
+                "image-id": "ami-0abcdef1234567890",
+                "region": "us-east-1",
+                "instance-type": "t2.micro"
+        }
+    }
+  aws-ec2-delete.json: |-
+    {
+        "id": "aws-ec2-delete",
+        "desc": "Delete a amazon ec2 instance.",
+        "image": "vorteil/aws-ec2-delete",
+        "input": {
+                "access-key": "AWS_ACCESS_KEY",
+                "access-secret": "AWS_ACCESS_SECRET",
+                "region": "us-east-1",
+                "instance-id": "i-090dd9255a7aaa582"
+        }
+    }
+  aws-ec2-start.json: |-
+    {
+        "id": "aws-ec2-start",
+        "desc": "Start a amazon ec2 instance.",
+        "image": "vorteil/aws-ec2-start",
+        "input": {
+                "access-key": "AWS_ACCESS_KEY",
+                "access-secret": "AWS_ACCESS_SECRET",
+                "region": "us-east-1",
+                "instance-id": "i-090dd9255a7aaa582"
+        }
+    }
+  aws-ec2-stop.json: |-
+    {
+        "id": "aws-ec2-stop",
+        "desc": "Stops a amazon ec2 instance.",
+        "image": "vorteil/aws-ec2-stop",
+        "input": {
+                "access-key": "AWS_ACCESS_KEY",
+                "access-secret": "AWS_ACCESS_SECRET",
+                "region": "us-east-1",
+                "instance-id": "i-090dd9255a7aaa582"
+        }
+    }
+  awsgo.json: |+
+    {
+        "id": "awsgo",
+        "desc": "A golang AWS CLI wrapper",
+        "image": "vorteil/awsgo",
+        "input": {
+            "access-key": "",
+            "access-secret": "",
+            "command": ["iam", "get-account-summary"]
+        }
+    }
+
+  awslog.json: |+
+    {
+        "id": "awslog",
+        "desc": "Writes a message to Amazon Cloudwatch",
+        "image": "vorteil/awslog",
+        "input": {
+            "key": "",
+            "secret": "",
+            "region": "us-east-2",
+            "log-group": "",
+            "log-stream": "",
+            "message": "Hello Log Message"
+        }
+    }
+
+
+
+  azgo.json: |+
+    {
+        "id": "azgo",
+        "desc": "A golang Azure CLI wrapper",
+        "image": "vorteil/azgo",
+        "input": {
+            "name": "SERVICE_PRINCIPAL_APPNAME",
+            "password": "SERVICE_PRINCIPAL_APPPW",
+            "tenant": "SERVICE_PRINCIPAL_APPTENANT",
+            "command": ["account", "show"]
+        }
+    }
+
+
+
+
+  azinvoke.json: |+
+    {
+        "id": "azinvoke",
+        "desc": "Invokes an Azure Cloud Function",
+        "image": "vorteil/azinvoke",
+        "input": {
+            "function-app": "",
+            "function-name": "",
+            "function-key": "",
+            "body": {
+                "data": "sent to function",
+                "x": "y"
+            }
+        }
+    }
+
+
+
+
+  azlog.json: |+
+    {
+        "id": "azlog",
+        "desc": "Writes a message to an Azure Log Workspace",
+        "image": "vorteil/azlog",
+        "input": {
+            "message": "Hello LOG Message",
+            "workspace-id": "",
+            "key": "",
+            "type": "FILTER_TYPE_OPTIONAL"
+        }
+    }
+
+
+
+  azure-servicebus.json: |+
+    {
+        "id": "azure-servicebus",
+        "desc": "Writes a message to the Azure Servicebus",
+        "image": "vorteil/azure-servicebus",
+        "input": {
+            "policy": "",
+            "key": "",
+            "namespace": "",
+            "message": "",
+            "queue": ""
+        }
+    }
+
+
+
+
+  debug.json: |-
+    {
+        "id": "debug",
+        "desc": "Prints the input provided back to the user",
+        "image": "vorteil/debug",
+        "input": {
+           "any": "data gets printed"
+        }
+    }
+  discordmsg.json: |
+    {
+        "id": "discordmsg",
+        "desc": "Writes a message to a Discord Channel",
+        "image": "vorteil/discordmsg",
+        "input": {
+            "message": "HELLO WORLD",
+            "tts": false,
+            "url": "DISCORD_CHAT_WEBHOOK_URL"
+        }
+    }
+  gcloud-instance-create.json: |-
+    {
+        "id": "gcloud-instance-create",
+        "desc": "Create a compute engine instance on google cloud",
+        "image": "vorteil/gcloud-instance-create",
+        "input": {
+                "project": "GCP_PROJECT",
+                "serviceAccountKey": "SERVICE_ACCOUNT_KEY",
+                "name": "example-instance-name",
+                "zone": "us-central1-a",
+                "machineType": "e2-medium",
+                "image": "example_image"
+        }
+    }
+  gcloud-instance-delete.json: |-
+    {
+        "id": "gcloud-instance-delete",
+        "desc": "Delete a compute engine instance on google cloud",
+        "image": "vorteil/gcloud-instance-delete",
+        "input": {
+                "project": "GCP_PROJECT",
+                "serviceAccountKey": "SERVICE_ACCOUNT_KEY",
+                "instanceID": "example-instance-name",
+                "zone": "us-central1-a"
+        }
+    }
+  gcloud-instance-start.json: |-
+    {
+        "id": "gcloud-instance-start",
+        "desc": "Start a compute engine instance on google cloud",
+        "image": "vorteil/gcloud-instance-start",
+        "input": {
+                "project": "GCP_PROJECT",
+                "serviceAccountKey": "SERVICE_ACCOUNT_KEY",
+                "instanceID": "example-instance-name",
+                "zone": "us-central1-a"
+        }
+    }
+  gcloud-instance-stop.json: |-
+    {
+        "id": "gcloud-instance-stop",
+        "desc": "Stop a compute engine instance on google cloud",
+        "image": "vorteil/gcloud-instance-stop",
+        "input": {
+                "project": "GCP_PROJECT",
+                "serviceAccountKey": "SERVICE_ACCOUNT_KEY",
+                "instanceID": "example-instance-name",
+                "zone": "us-central1-a"
+        }
+    }
+  gcloud.json: |-
+    {
+        "id": "gcloud",
+        "desc": "A golang gcloud wrapper",
+        "image": "vorteil/gcloud",
+        "input": {
+            "project": "GCP_PROJECT",
+            "serviceAccountKey": "SERVICE_ACCOUNT_KEY",
+            "command": ["compute", "instances", "list"]
+        }
+    }
+  gcplog.json: |
+    {
+        "id": "gcplog",
+        "desc": "Writes a message to Google's Stackdriver Logging",
+        "image": "vorteil/gcplog",
+        "input": {
+            "serviceAccountKey": "",
+            "message": "Hello Log Message",
+            "project-id": "",
+            "log-name": ""
+        }
+    }
+  greeting.json: |
+    {
+        "id": "greeting",
+        "desc": "Responds with a greeting",
+        "image": "vorteil/greeting",
+        "input": {
+            "name": "Trent"
+        }
+    }
+  lambda.json: |-
+    {
+        "id": "lambda",
+        "desc": "Invokes an Amazon Lambda Function",
+        "image": "vorteil/lambda",
+        "input": {
+            "key": "",
+            "secret": "",
+            "region": "us-east-2",
+            "function": "",
+            "body": {
+                "any": "data"
+            }
+        }
+    }
+  request.json: |-
+    {
+        "id": "request",
+        "desc": "Sends a generic HTTP request",
+        "image": "vorteil/request",
+        "input": {
+            "method": "GET",
+            "url": "https://google.com",
+            "body": {
+                "hello": "world"
+            },
+            "headers": {
+                "Content-Type": "application/json"
+            }
+        }
+    }
+  simplepostgresclient.json: |
+    {
+        "id": "simple-postgres-client",
+        "desc": "Interacts with a postgres server",
+        "image": "vorteil/simplepostgresclient",
+        "input": {
+            "conn": "POSTGRES CONNECTION STRING",
+            "table": "POSTGRES TABLE NAME",
+            "transaction": [
+                {
+                    "type": "select",
+                    "where": {
+                      "a": 1
+                    },
+                    "fields": "*"
+                }
+            ]
+        }
+    }
+  slackmsg.json: |2+
+
+    {
+      "id": "slackmsg",
+      "desc": "Writes a message to a Slack Channel",
+      "image": "vorteil/slackmsg",
+      "input": {
+        "message": "This message will be posted to slack chat",
+        "url": "SLACK_CHAT_WEBHOOK_URL"
+      }
+    }
+
+  smtp.json: |-
+    {
+        "id": "smtp",
+        "desc": "Sends an email using SMTP protocol",
+        "image": "vorteil/smtp",
+        "input": {
+            "to"      : "recipient@example.com",
+            "subject" : "SMTP Email",
+            "message" : "Hello, world!",
+            "from"    : "sender@example.com",
+            "password": "NOT4REALPW",
+            "server"  : "smtp.example.com",
+            "port"    : 587
+        }
+    }
+  solve.json: "{\n    \"id\": \"solve\",\n    \"desc\": \"Solves the expression provided by x\",\n    \"image\": \"vorteil/solve\",\n    \"input\": {\n\t\t\"x\": \"10*3\"\n\t}\n}\n"
+  tweet.json: |+
+    {
+        "id": "tweet",
+        "desc": "Tweets a message",
+        "image": "vorteil/tweet",
+        "input": {
+            "consumerKey": "CONSUMER_KEY",
+            "consumerSecret": "CONSUMER_SECRET",
+            "tokenKey": "TOKEN_KEY",
+            "tokenSecret": "TOKEN_SECRET",
+            "message": "This is getting tweeted :)"
+        }
+    }
+
+  twilio.json: |-
+    {
+        "id": "twilio",
+        "desc": "Sends a sms or email using twilio",
+        "image": "vorteil/twilio",
+        "input": {
+            "typeof"    : "sms",
+            "sid"       : "TWILIO_SID",
+            "token"     : "TWILIO_TOKEN",
+            "message"   : "RECIPIENT_NAME",
+            "from"      : "TWILIO_FROM_NUM",
+            "to"        : "RECIPIENT_NUM"
+        }
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2021-04-21T02:10:29Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:amazon-sns.json: {}
+        f:aws-ec2-create.json: {}
+        f:aws-ec2-delete.json: {}
+        f:aws-ec2-start.json: {}
+        f:aws-ec2-stop.json: {}
+        f:awsgo.json: {}
+        f:awslog.json: {}
+        f:azgo.json: {}
+        f:azinvoke.json: {}
+        f:azlog.json: {}
+        f:azure-servicebus.json: {}
+        f:debug.json: {}
+        f:discordmsg.json: {}
+        f:gcloud-instance-create.json: {}
+        f:gcloud-instance-delete.json: {}
+        f:gcloud-instance-start.json: {}
+        f:gcloud-instance-stop.json: {}
+        f:gcloud.json: {}
+        f:gcplog.json: {}
+        f:greeting.json: {}
+        f:lambda.json: {}
+        f:request.json: {}
+        f:simplepostgresclient.json: {}
+        f:slackmsg.json: {}
+        f:smtp.json: {}
+        f:solve.json: {}
+        f:tweet.json: {}
+        f:twilio.json: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2021-04-21T02:10:29Z"
+  name: api-actiontemplates-cm.yaml
+  namespace: default
+  resourceVersion: "11388341"
+  uid: 18b999b1-18b8-43e6-ba5a-52f9b71c7095

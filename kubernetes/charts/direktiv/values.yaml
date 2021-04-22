@@ -82,6 +82,7 @@ affinity: {}
 withSupport: true
 withFlow: true
 withUI: true
+withAPI: true
 
 db: ""
 debug: false
@@ -113,3 +114,9 @@ ui:
 # cert for inter service communication
 certificate:
 key:
+
+api:
+  image: vorteil/api
+  tag: "latest"
+  ingressPortType: "NodePort"
+  ingressNodePort: 0

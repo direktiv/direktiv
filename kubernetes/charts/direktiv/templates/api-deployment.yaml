@@ -1,0 +1,60 @@
+{{- if .Values.withAPI -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-api
+  labels:
+    {{ include "direktiv.labelsAPI" . | nindent 4 }}-api
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabelsAPI" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "direktiv.selectorLabelsAPI" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      volumes:
+      - name: apiconf
+        configMap:
+          name: api-cm-config
+      - name: wf-templates
+        configMap:
+          name: api-cm-wftemplates
+      - name: action-templates
+        configMap:
+          name: api-cm-actiontemplates
+      containers:
+      - name: api
+        image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
+        volumeMounts:
+        - name: apiconf
+          mountPath: "/config"
+          readOnly: true
+        - name: wf-templates
+          mountPath: "/tmp/workflow-templates"
+        - name: action-templates
+          mountPath: "/tmp/action-templates"
+        ports:
+        - containerPort: 8443
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
