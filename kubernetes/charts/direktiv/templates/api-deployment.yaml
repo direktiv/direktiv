@@ -28,10 +28,10 @@ spec:
           name: api-cm-config
       - name: wf-templates
         configMap:
-          name: api-cm-wftemplates
+          name: api-wftemplates-cm
       - name: action-templates
         configMap:
-          name: api-cm-actiontemplates
+          name: api-actiontemplates-cm
       containers:
       - name: api
         image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"

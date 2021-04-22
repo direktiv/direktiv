@@ -49,7 +49,7 @@ docker-flow: build
 
 .PHONY: docker-cli
 docker-cli:
-docker-cli: build-cli
+docker-cli: build
 		cp ${mkfile_dir_main}/direkcli  ${mkfile_dir_main}/build/
 		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
@@ -71,35 +71,8 @@ build:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/secrets cmd/secrets/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/api cmd/api/main.go
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
-
-.PHONY: build-cli
-build-cli:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direkcli cmd/direkcli/main.go
-
-.PHONY: build-ui-frontend
-build-ui-frontend:
-	if [ ${hasYarn} ]; then \
-		cd ${mkfile_dir_main}/ui/frontend; yarn install; NODE_ENV=production yarn build; \
-	fi
-
-.PHONY: docker-ui
-docker-ui:
-	echo "building app"
-	if [ ! -d ${mkfile_dir_main}/build/docker/ui/build ]; then \
-		docker run -v ${mkfile_dir_main}/ui/frontend:/ui chekote/node:14.8.0-alpine /bin/sh -c "cd /ui && yarn install && NODE_ENV=production yarn build"; \
-	fi
-	echo "copying web folder"
-	cp -r ${mkfile_dir_main}/ui/frontend/build  ${mkfile_dir_main}/build/docker/ui
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o direktiv-ui ${mkfile_dir_main}/ui/server
-	cp ${mkfile_dir_main}/direktiv-ui  ${mkfile_dir_main}/build/docker/ui
-	echo "building image"
-	cd ${mkfile_dir_main}/build && ls -la && docker build -t direktiv-ui -f docker/ui/Dockerfile .
-
-
-.PHONY: run-ui
-run-ui: build-ui-frontend
-	go run ./ui/server -bind=':8080' -web-dir='ui/frontend/build'
+	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 
 # run as sudo because networking needs root privileges
 .PHONY: run
