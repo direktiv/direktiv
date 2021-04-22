@@ -39,7 +39,7 @@ type namespacesList struct {
 
 var listCmd = util.GenerateCmd("list", "Returns a list of namespaces", "", func(cmd *cobra.Command, args []string) {
 
-	ns, err := util.DoRequest(http.MethodGet, "/namespaces/")
+	ns, err := util.DoRequest(http.MethodGet, "/namespaces/", util.NONECt, nil)
 	if err != nil {
 		log.Fatalf("error gettting namespaces: %v", err)
 	}
@@ -64,100 +64,22 @@ var listCmd = util.GenerateCmd("list", "Returns a list of namespaces", "", func(
 
 var createCmd = util.GenerateCmd("create NAME", "Creates a namespaces", "", func(cmd *cobra.Command, args []string) {
 
-	ns, err := util.DoRequest(http.MethodPost, fmt.Sprintf("/namespaces/%s", args[0]))
+	_, err := util.DoRequest(http.MethodPost, fmt.Sprintf("/namespaces/%s", args[0]), util.NONECt, nil)
 	if err != nil {
-		log.Fatalf("error gettting namespaces: %v", err)
+		log.Fatalf("error creating namespace: %v", err)
 	}
 
-	fmt.Printf(">>JJJ %s", ns)
+	log.Printf("namespace %s created", args[0])
 
 }, cobra.ExactArgs(1))
 
-var deleteCmd = util.GenerateCmd("delete", "Deletes a namespace", "", func(cmd *cobra.Command, args []string) {
+var deleteCmd = util.GenerateCmd("delete NAME", "Deletes a namespace", "", func(cmd *cobra.Command, args []string) {
 
-}, cobra.ExactArgs(0))
+	_, err := util.DoRequest(http.MethodDelete, fmt.Sprintf("/namespaces/%s", args[0]), util.NONECt, nil)
+	if err != nil {
+		log.Fatalf("error deleting namespace: %v", err)
+	}
 
-// // SendEvent sends the provided Cloud Event file to the specified namespace.
-// func SendEvent(conn *grpc.ClientConn, namespace string, filepath string) (string, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-//
-// 	// read Cloud Event file
-// 	event, err := ioutil.ReadFile(filepath)
-// 	if err != nil {
-// 		return "", err
-// 	}
-//
-// 	// prepare request
-// 	request := ingress.BroadcastEventRequest{
-// 		Namespace:  &namespace,
-// 		Cloudevent: event,
-// 	}
-//
-// 	// send grpc request
-// 	_, err = client.BroadcastEvent(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return "", fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return fmt.Sprintf("Successfully sent event to '%s'", namespace), nil
-// }
-//
-// // List returns a list of namespaces
-// func List(conn *grpc.ClientConn) ([]*ingress.GetNamespacesResponse_Namespace, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-//
-// 	// prepare request
-// 	request := ingress.GetNamespacesRequest{}
-//
-// 	// send grpc request
-// 	resp, err := client.GetNamespaces(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return nil, fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return resp.Namespaces, nil
-// }
-//
-// // Delete a namespace
-// func Delete(name string, conn *grpc.ClientConn) (string, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-//
-// 	// prepare request
-// 	request := ingress.DeleteNamespaceRequest{
-// 		Name: &name,
-// 	}
-//
-// 	// send grpc request
-// 	resp, err := client.DeleteNamespace(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return "", fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return fmt.Sprintf("Deleted namespace: %s", resp.GetName()), nil
-// }
-//
-// // Create a new namespace
-// func Create(name string, conn *grpc.ClientConn) (string, error) {
-// 	client, ctx, cancel := util.CreateClient(conn)
-// 	defer cancel()
-//
-// 	// prepare request
-// 	request := ingress.AddNamespaceRequest{
-// 		Name: &name,
-// 	}
-//
-// 	// send grpc request
-// 	resp, err := client.AddNamespace(ctx, &request)
-// 	if err != nil {
-// 		s := status.Convert(err)
-// 		return "", fmt.Errorf("[%v] %v", s.Code(), s.Message())
-// 	}
-//
-// 	return fmt.Sprintf("Created namespace: %s", resp.GetName()), nil
-// }
+	log.Printf("namespace %s deleted", args[0])
+
+}, cobra.ExactArgs(1))

@@ -6,14 +6,14 @@ option go_package = "github.com/vorteil/direktiv/pkg/ingress";
 
 import "google/protobuf/timestamp.proto";
 
-message GetWorkflowByIdRequest {
+message GetWorkflowByNameRequest {
 	optional string namespace = 1;
-	optional string id = 2;
+	optional string name = 2;
 }
 
-message GetWorkflowByIdResponse {
+message GetWorkflowByNameResponse {
 	optional string uid = 1;
-	optional string id = 2;
+	optional string name = 2;
 	optional int32 revision = 3;
 	optional bool active = 4;
 	optional google.protobuf.Timestamp createdAt = 5;

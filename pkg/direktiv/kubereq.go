@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,6 +28,7 @@ const (
 
 	annotationNamespace = "direktiv.io/namespace"
 	annotationURL       = "direktiv.io/url"
+	annotationURLHash   = "direktiv.io/urlhash"
 )
 
 const (
@@ -62,7 +64,8 @@ func kubernetesListRegistries(namespace string) ([]string, error) {
 
 	for _, s := range secrets.Items {
 		if s.Annotations[annotationNamespace] == namespace {
-			registries = append(registries, s.Annotations[annotationURL])
+			registries = append(registries, fmt.Sprintf("%s###%s",
+				s.Annotations[annotationURL], s.Annotations[annotationURLHash]))
 		}
 	}
 
@@ -175,6 +178,7 @@ func kubernetesAddSecret(name, namespace string, data []byte) error {
 	sa.Annotations = make(map[string]string)
 	sa.Annotations[annotationNamespace] = namespace
 	sa.Annotations[annotationURL] = name
+	sa.Annotations[annotationURLHash] = base64.StdEncoding.EncodeToString([]byte(name))
 
 	sa.Name = secretName
 	sa.Data[".dockerconfigjson"] = data

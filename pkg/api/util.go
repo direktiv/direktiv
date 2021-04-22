@@ -11,11 +11,25 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type errObject struct {
+// ErrObject for grpc
+type ErrObject struct {
 	Code    int
 	Message string
 }
 
+func writeData(resp interface{}, w http.ResponseWriter) {
+	// Write Data
+	retData, err := json.Marshal(resp)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(retData)
+}
+
+// CtxDeadline defines default request deadline
 func CtxDeadline() (context.Context, context.CancelFunc) {
 	ctx := context.Background()
 	return context.WithDeadline(ctx, time.Now().Add(GRPCCommandTimeout))
@@ -32,21 +46,21 @@ func paginationParams(r *http.Request) (offset, limit int) {
 }
 
 // ErrResponse creates error based on grpc error
-func ErrResponse(w http.ResponseWriter, code int, err error) {
+func ErrResponse(w http.ResponseWriter, err error) {
 
 	st, ok := status.FromError(err)
-	eo := &errObject{
+	eo := &ErrObject{
 		Code:    999,
 		Message: err.Error(),
 	}
 	if ok {
-		eo = &errObject{
+		eo = &ErrObject{
 			Code:    int(st.Code()),
 			Message: st.Message(),
 		}
 	}
 
-	respCode := 500
+	respCode := 400
 	switch eo.Code {
 	case int(codes.NotFound):
 		{
@@ -58,8 +72,8 @@ func ErrResponse(w http.ResponseWriter, code int, err error) {
 		}
 	}
 
-	w.WriteHeader(respCode)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(respCode)
 	json.NewEncoder(w).Encode(eo)
 
 }

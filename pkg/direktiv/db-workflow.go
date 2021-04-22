@@ -154,11 +154,11 @@ func (db *dbManager) getWorkflowByID(id uuid.UUID) (*ent.Workflow, error) {
 
 }
 
-func (db *dbManager) getWorkflowById(ctx context.Context, ns, id string) (*ent.Workflow, error) {
+func (db *dbManager) getWorkflowByName(ctx context.Context, ns, name string) (*ent.Workflow, error) {
 
 	return db.dbEnt.Workflow.
 		Query().
-		Where(workflow.NameEQ(id)).
+		Where(workflow.NameEQ(name)).
 		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
 		Only(ctx)
 
