@@ -96,6 +96,17 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 		useRevision = true
 	}
 
+	var active bool
+	var useActive bool
+	if val, ok := r.URL.Query()["active"]; ok {
+		if val[0] == "true" {
+			active = true
+			useActive = true
+		} else if val[0] == "false" {
+			useActive = true
+		}
+	}
+
 	var logEvent string
 	var useLogEvent bool
 	if val, ok := r.URL.Query()["logEvent"]; ok {
@@ -104,7 +115,6 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	revision := int32(rev)
-	active := true
 
 	// Read Body
 	b, err := ioutil.ReadAll(r.Body)
@@ -128,8 +138,11 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 	// Construct direktiv GRPC Request
 	request := ingress.UpdateWorkflowRequest{
 		Uid:      &uid,
-		Active:   &active,
 		Workflow: b,
+	}
+
+	if useActive {
+		request.Active = &active
 	}
 
 	if useLogEvent {
