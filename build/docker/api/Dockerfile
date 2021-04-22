@@ -1,6 +1,6 @@
 FROM alpine:3.13.2
 
-COPY apiserver /bin/server
+COPY api /bin/server
 RUN chmod 755 /bin/server
 
 EXPOSE 8080

@@ -97,7 +97,7 @@ secrets:
 
 # flow config
 flow:
-  image: "gerke74/flow"
+  image: "vorteil/flow"
   tag: "latest"
   ingressPortType: "ClusterIP"
   ingressNodePort: 0

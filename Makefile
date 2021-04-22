@@ -60,8 +60,7 @@ docker-sidecar:
 
 .PHONY: build-api
 build-api:
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/apiserver ./cmd/api/main.go
-	cp ${mkfile_dir_main}/apiserver ${mkfile_dir_main}/build/
+	cp ${mkfile_dir_main}/api ${mkfile_dir_main}/build/
 
 .PHONY: build
 build:
