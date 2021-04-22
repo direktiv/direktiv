@@ -86,13 +86,14 @@ withAPI: true
 
 db: ""
 debug: false
+ingressClass: "istio"
 
 secrets:
   image: "vorteil/secrets"
   tag: "latest"
   backend: "db"
   db: ""
-  key: ""
+  key: "01234567890123456789012345678912"
 
 # flow config
 flow:
