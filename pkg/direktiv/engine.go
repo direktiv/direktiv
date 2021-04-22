@@ -44,6 +44,7 @@ const (
 	WorkflowStateSubscription = "workflow-state"
 )
 
+// internal errors
 var (
 	ErrCodeJQBadQuery        = "direktiv.jq.badCommand"
 	ErrCodeJQNotObject       = "direktiv.jq.notObject"
