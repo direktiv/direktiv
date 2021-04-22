@@ -107,7 +107,7 @@ flow:
 
 # ui config
 ui:
-  image: "vorteil/ui"
+  image: "vorteil/direktiv-ui"
   tag: "latest"
   portType: "ClusterIP"
   nodePort: 0
