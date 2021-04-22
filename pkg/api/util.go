@@ -72,8 +72,8 @@ func ErrResponse(w http.ResponseWriter, err error) {
 		}
 	}
 
-	w.WriteHeader(respCode)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(respCode)
 	json.NewEncoder(w).Encode(eo)
 
 }

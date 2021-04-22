@@ -118,7 +118,7 @@ func (h *Handler) jqPlayground(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Response
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(strings.Join(jqResults, "\n")))
 }
