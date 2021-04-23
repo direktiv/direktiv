@@ -13,7 +13,7 @@ data:
       transform: '{ result: "Hello world!" }'
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-04-23T04:02:11Z"
+  creationTimestamp: "2021-04-23T04:17:14Z"
   managedFields:
   - apiVersion: v1
     fieldsType: FieldsV1
@@ -24,8 +24,8 @@ metadata:
         f:noop.yml: {}
     manager: kubectl-create
     operation: Update
-    time: "2021-04-23T04:02:11Z"
-  name: api-cm-wftemplates
+    time: "2021-04-23T04:17:14Z"
+  name: api-wftemplates-cm
   namespace: default
-  resourceVersion: "12215411"
-  uid: df788013-e028-4172-bb05-64dfa08f4d4d
+  resourceVersion: "12224435"
+  uid: a0ae0384-2f97-4d81-8b8b-471412110fb2

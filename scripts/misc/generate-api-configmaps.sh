@@ -12,10 +12,10 @@ for i in *.yml; do
 	fromfiles="$fromfiles --from-file=$i"
 done
 
-kubectl delete cm api-cm-wftemplates || true
-kubectl create cm api-cm-wftemplates $fromfiles
-kubectl get cm api-cm-wftemplates -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-wftemplates-cm.yaml
-kubectl delete cm api-cm-wftemplates || true
+kubectl delete cm api-wftemplates-cm || true
+kubectl create cm api-wftemplates-cm  $fromfiles
+kubectl get cm api-wftemplates-cm  -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-wftemplates-cm.yaml
+kubectl delete cm api-wftemplates-cm  || true
 
 cd ../
 fromfiles=""
@@ -24,7 +24,7 @@ for i in *.json; do
   fromfiles="$fromfiles --from-file=$i"
 done
 
-kubectl delete cm api-cm-actiontemplates || true
-kubectl create cm api-cm-actiontemplates $fromfiles
-kubectl get cm api-cm-actiontemplates -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-actiontemplates-cm.yaml
-kubectl delete cm api-cm-actiontemplates || true
+kubectl delete cm api-actiontemplates-cm|| true
+kubectl create cm api-actiontemplates-cm $fromfiles
+kubectl get cm api-actiontemplates-cm -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-actiontemplates-cm.yaml
+kubectl delete cm api-actiontemplates-cm || true
