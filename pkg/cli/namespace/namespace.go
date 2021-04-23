@@ -29,8 +29,8 @@ type namespacesList struct {
 	Namespaces []struct {
 		Name      string `json:"name"`
 		CreatedAt struct {
-			Seconds string `json:"seconds"`
-			Nanos   int    `json:"nanos"`
+			Seconds int `json:"seconds"`
+			Nanos   int `json:"nanos"`
 		} `json:"createdAt"`
 	} `json:"namespaces"`
 	Offset int `json:"offset"`
@@ -41,24 +41,27 @@ var listCmd = util.GenerateCmd("list", "Returns a list of namespaces", "", func(
 
 	ns, err := util.DoRequest(http.MethodGet, "/namespaces/", util.NONECt, nil)
 	if err != nil {
-		log.Fatalf("error gettting namespaces: %v", err)
+		log.Fatalf("error getting namespaces: %v", err)
 	}
 
 	var r namespacesList
 	err = json.Unmarshal(ns, &r)
 	if err != nil {
-		log.Fatalf("error gettting namespaces: %v", err)
+		log.Fatalf("error getting namespaces: %v", err)
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name"})
-	for _, namespace := range r.Namespaces {
-		table.Append([]string{
-			namespace.Name,
-		})
+	if len(r.Namespaces) > 0 {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Name"})
+		for _, namespace := range r.Namespaces {
+			table.Append([]string{
+				namespace.Name,
+			})
+		}
+		table.Render()
+	} else {
+		log.Printf("no namespaces are available. use './direkcli namespaces create NAMESPACE' to create one")
 	}
-
-	table.Render()
 
 }, cobra.ExactArgs(0))
 
