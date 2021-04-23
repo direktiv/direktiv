@@ -33,7 +33,7 @@ docker-secrets: build
 
 .PHONY: docker-all
 docker-all:
-	docker build -t direktiv-kube ${mkfile_dir_main}/build/docker/all
+	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
 
 .PHONY: docker-api
 docker-api:

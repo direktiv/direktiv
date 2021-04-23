@@ -33,6 +33,7 @@
 /direktiv-ui
 /secrets
 /api
+/direktiv-apps
 
 /build/docker/*
 !*build/docker/all

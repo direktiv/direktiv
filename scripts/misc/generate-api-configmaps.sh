@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PWD2=$(pwd)
+
 rm -rf direktiv-apps
 git clone https://github.com/vorteil/direktiv-apps.git
 cd direktiv-apps/.direktiv/.templates
@@ -12,7 +14,7 @@ done
 
 kubectl delete cm api-cm-wftemplates || true
 kubectl create cm api-cm-wftemplates $fromfiles
-kubectl get cm api-cm-wftemplates -o yaml > /tmp/api-cm-wftemplates.yml
+kubectl get cm api-cm-wftemplates -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-wftemplates-cm.yaml
 kubectl delete cm api-cm-wftemplates || true
 
 cd ../
@@ -24,5 +26,5 @@ done
 
 kubectl delete cm api-cm-actiontemplates || true
 kubectl create cm api-cm-actiontemplates $fromfiles
-kubectl get cm api-cm-actiontemplates -o yaml > /tmp/api-cm-actiontemplates.yml
+kubectl get cm api-cm-actiontemplates -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-actiontemplates-cm.yaml
 kubectl delete cm api-cm-actiontemplates || true
