@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
 )
 
@@ -23,7 +24,7 @@ const (
 )
 
 // GetEndpointTLS creates a grpc client
-func GetEndpointTLS(endpoint string) (*grpc.ClientConn, error) {
+func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 
 	var options []grpc.DialOption
 
@@ -35,6 +36,10 @@ func GetEndpointTLS(endpoint string) (*grpc.ClientConn, error) {
 		options = append(options, grpc.WithTransportCredentials(creds))
 	} else {
 		options = append(options, grpc.WithInsecure())
+	}
+
+	if rr {
+		options = append(options, grpc.WithBalancerName(roundrobin.Name))
 	}
 
 	return grpc.Dial(endpoint, options...)

@@ -119,5 +119,5 @@ key:
 api:
   image: vorteil/api
   tag: "latest"
-  ingressPortType: "NodePort"
+  portType: "ClusterIP"
   ingressNodePort: 0

@@ -19,7 +19,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/resolver"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	dlog "github.com/vorteil/direktiv/pkg/dlog"
@@ -285,6 +287,9 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 			options = append(options, grpc.WithInsecure())
 		}
 
+		// rr back to server
+		options = append(options, grpc.WithBalancerName(roundrobin.Name))
+
 		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], options...)
 		if err != nil {
 			generateError(ctx, direktiv.ServiceErrorInternal,
@@ -435,4 +440,8 @@ func (d *direktivHTTPHandler) respondToFlow(info *responseInfo) {
 		return
 	}
 
+}
+
+func init() {
+	resolver.Register(&direktiv.KubeResolverBuilder{})
 }

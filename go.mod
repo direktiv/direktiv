@@ -17,9 +17,11 @@ require (
 	github.com/containerd/go-cni v1.0.1
 	github.com/containerd/stargz-snapshotter/estargz v0.0.0-20201223015020-a9a0c2d64694 // indirect
 	github.com/containers/image v3.0.2+incompatible
+	github.com/envoyproxy/go-control-plane v0.9.8
 	github.com/fasthttp/router v1.3.10
 	github.com/firecracker-microvm/firecracker-go-sdk v0.22.1-0.20210128004148-06a30fe6e315
 	github.com/go-openapi/inflect v0.19.0 // indirect
+	github.com/go-openapi/runtime v0.19.24
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-containerregistry v0.1.2

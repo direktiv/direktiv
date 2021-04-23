@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"google.golang.org/grpc/resolver"
 )
 
 // Server ..
@@ -97,10 +98,12 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) initDirektiv() error {
 
-	conn, err := direktiv.GetEndpointTLS(s.cfg.Ingress.Endpoint)
+	conn, err := direktiv.GetEndpointTLS(s.cfg.Ingress.Endpoint, true)
 	if err != nil {
 		return err
 	}
+
+	log.Infof("connecting to %s", s.cfg.Ingress.Endpoint)
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
 
@@ -192,7 +195,7 @@ func (s *Server) Start() error {
 		}
 	}
 
-	log.Infof("Starting server - binding to %s\n", s.cfg.Server.Bind)
+	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
 
 	if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
 		log.Infof("tls enabled")
@@ -200,4 +203,8 @@ func (s *Server) Start() error {
 	}
 
 	return s.srv.ListenAndServe()
+}
+
+func init() {
+	resolver.Register(&direktiv.KubeResolverBuilder{})
 }

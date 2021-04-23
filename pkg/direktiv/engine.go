@@ -118,7 +118,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := GetEndpointTLS(s.config.FlowAPI.Endpoint)
+	conn, err := GetEndpointTLS(s.config.FlowAPI.Endpoint, true)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = GetEndpointTLS(s.config.SecretsAPI.Endpoint)
+	conn, err = GetEndpointTLS(s.config.SecretsAPI.Endpoint, false)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
 	// get ingress client
-	conn, err = GetEndpointTLS(s.config.IngressAPI.Endpoint)
+	conn, err = GetEndpointTLS(s.config.IngressAPI.Endpoint, true)
 	if err != nil {
 		return nil, err
 	}

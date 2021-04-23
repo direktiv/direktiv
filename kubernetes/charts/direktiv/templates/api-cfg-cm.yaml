@@ -6,8 +6,8 @@ data:
   # property-like keys; each key maps to a simple value
   default.toml: |
     [ingress]
-      endpoint = "{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
-      
+      endpoint = "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
+
     [server]
       bind = ":8080"
 

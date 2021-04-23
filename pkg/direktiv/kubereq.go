@@ -18,6 +18,7 @@ import (
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -101,10 +102,38 @@ func kubernetesActionServiceAccount(name string, create bool) error {
 	}
 
 	// we delete the account if it is there
+	clientset.RbacV1().RoleBindings(kns).Delete(fmt.Sprintf("%s-binding",
+		sa.Name), &metav1.DeleteOptions{})
 	err = clientset.CoreV1().ServiceAccounts(kns).Delete(sa.Name, nil)
 
 	if create {
+
+		sbj := rbac.Subject{
+			Kind:      "ServiceAccount",
+			Name:      sa.Name,
+			Namespace: kns,
+		}
+
+		rb := &rbac.RoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-binding", sa.Name),
+				Namespace: kns,
+			},
+			Subjects: []rbac.Subject{sbj},
+			RoleRef: rbac.RoleRef{
+				Kind: "Role",
+				Name: "sidecar-role",
+			},
+		}
+
 		_, err = clientset.CoreV1().ServiceAccounts(kns).Create(sa)
+		if err != nil {
+			log.Errorf("can not create service account: %v", err)
+			return err
+		}
+
+		_, err = clientset.RbacV1().RoleBindings(kns).Create(rb)
+
 	}
 
 	return err

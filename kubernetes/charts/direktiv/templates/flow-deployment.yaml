@@ -60,7 +60,9 @@ spec:
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
           - name: "DIREKTIV_FLOW_ENDPOINT"
-            value: "{{ include "direktiv.fullname" . }}-flow:7777"
+            value: "direktiv-kube:///{{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}:7777"
+          - name: "DIREKTIV_INGRESS_ENDPOINT"
+            value: "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
           - name: DIREKTIV_FLOW_EXCHANGE
             valueFrom:
               secretKeyRef:

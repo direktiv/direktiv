@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
+		"google.golang.org/grpc/resolver"
 )
 
 const (
@@ -214,4 +215,8 @@ func (s *WorkflowServer) Run() error {
 
 	return nil
 
+}
+
+func init(){
+    resolver.Register(&KubeResolverBuilder{})
 }
