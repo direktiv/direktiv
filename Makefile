@@ -58,11 +58,6 @@ docker-sidecar:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/main.go
 	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
 
-.PHONY: build-api
-build-api:
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/apiserver ./cmd/api/main.go
-	cp ${mkfile_dir_main}/apiserver ${mkfile_dir_main}/build/
-
 .PHONY: build
 build:
 	go get entgo.io/ent
@@ -73,6 +68,7 @@ build:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/api cmd/api/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli cmd/direkcli/main.go
 	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
+	cp ${mkfile_dir_main}/api ${mkfile_dir_main}/build/
 
 # run as sudo because networking needs root privileges
 .PHONY: run

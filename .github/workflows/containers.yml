@@ -19,19 +19,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
-    - name: build ui
-      uses: addnab/docker-run-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        registry: docker.io
-        image: chekote/node:14.8.0-alpine
-        options: -v ${{ github.workspace }}:/work
-        run: |
-          echo "Building UI"
-          cd /work/ui/frontend
-          yarn install
-          NODE_ENV=production yarn build
     - name: build containers
       run: |
         export RV=${{ env.RELEASE_VERSION }}
@@ -44,9 +31,6 @@ jobs:
         make docker-cli
         make docker-all
         make docker-sidecar
-        echo "Copying Built UI Files over"
-        cp -r ui/frontend/build  build/docker/ui
-        make docker-ui
         echo "containers built"
         docker tag direktiv-api vorteil/api:$RV
         docker tag direktiv-api vorteil/api
@@ -56,8 +40,6 @@ jobs:
         docker tag direktiv-secrets vorteil/secrets
         docker tag direktiv-cli vorteil/direkcli:$RV
         docker tag direktiv-cli vorteil/direkcli
-        docker tag direktiv-ui vorteil/ui:$RV
-        docker tag direktiv-ui vorteil/ui
         docker tag direktiv-kube vorteil/direktiv-kube
         docker tag direktiv-kube vorteil/direktiv-kube:$RV
         docker tag sidecar vorteil/sidecar:$RV
@@ -71,8 +53,6 @@ jobs:
         docker push vorteil/secrets
         docker push vorteil/direkcli:$RV
         docker push vorteil/direkcli
-        docker push vorteil/ui:$RV
-        docker push vorteil/ui
         docker push vorteil/direktiv-kube:$RV
         docker push vorteil/direktiv-kube
         docker push vorteil/sidecar:$RV

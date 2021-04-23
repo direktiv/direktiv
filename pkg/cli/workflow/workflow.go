@@ -95,7 +95,7 @@ var workflowToggleCmd = util.GenerateCmd("toggle NAMESPACE WORKFLOW", "Enables o
 
 }, cobra.ExactArgs(2))
 
-var workflowAddCmd = util.GenerateCmd("create NAMESPACE WORKFLOW FILE", "Creates a new workflow on provided namespace", "", func(cmd *cobra.Command, args []string) {
+var workflowAddCmd = util.GenerateCmd("create NAMESPACE FILE", "Creates a new workflow on provided namespace", "", func(cmd *cobra.Command, args []string) {
 
 	// read file
 	f, err := ioutil.ReadFile(args[1])

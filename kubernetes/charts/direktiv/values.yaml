@@ -9,6 +9,7 @@ pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+logDriver: "database"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -97,7 +98,7 @@ secrets:
 
 # flow config
 flow:
-  image: "gerke74/flow"
+  image: "vorteil/flow"
   tag: "latest"
   ingressPortType: "ClusterIP"
   ingressNodePort: 0
@@ -107,7 +108,7 @@ flow:
 
 # ui config
 ui:
-  image: "vorteil/ui"
+  image: "vorteil/direktiv-ui"
   tag: "latest"
   portType: "ClusterIP"
   nodePort: 0
