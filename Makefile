@@ -58,6 +58,10 @@ docker-sidecar:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/main.go
 	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
 
+.PHONY: template-configmaps
+template-configmaps:
+				scripts/misc/generate-api-configmaps.sh
+
 .PHONY: build
 build:
 	go get entgo.io/ent
