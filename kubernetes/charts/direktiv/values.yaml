@@ -9,6 +9,7 @@ pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+logDriver: "database"
 
 serviceAccount:
   # Specifies whether a service account should be created
