@@ -41,7 +41,7 @@ Direktiv runs as single pod on kubernetes but each workflow step can be executed
 Getting a local playground environment can be easily done with Docker. The following command starts a docker container with kubernetes. *On startup it can take a few minutes to download all images.* When the installation is done all pods should show "Running" or "Completed".
 
 ```
-docker run --privileged -p 6666:32222 -p 8080:32221 -ti vorteil/direktiv-kube
+docker run --privileged -p 8080:80 -ti vorteil/direktiv-kube
 ```
 
 

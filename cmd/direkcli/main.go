@@ -40,7 +40,7 @@ var rootCmd = &cobra.Command{
 	Long:  ``,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 
-		util.DirektivURL = "http://localhost"
+		util.DirektivURL = "http://localhost:8080"
 
 		if os.Getenv(endpoint) != "" {
 			util.DirektivURL = os.Getenv(endpoint)
@@ -76,7 +76,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&flagURL, "url", "", "", "name and port for connection, default is 127.0.0.1:80. Overwrite with env DIREKTIV_CLI_ENDPOINT")
+	rootCmd.PersistentFlags().StringVarP(&flagURL, "url", "", "", "name and port for connection, default is 127.0.0.1:8080. Overwrite with env DIREKTIV_CLI_ENDPOINT")
 	rootCmd.PersistentFlags().BoolVarP(&flagSkip, "skipVerify", "", false, "skip certificate validation")
 }
 
