@@ -100,12 +100,11 @@ var instanceGetCmd = util.GenerateCmd("get ID", "Get details about a workflow in
 
 var instanceLogsCmd = util.GenerateCmd("logs ID", "Gets all logs for the instance ID provided", "", func(cmd *cobra.Command, args []string) {
 
-	i, err := util.DoRequest(http.MethodGet, fmt.Sprintf("/instances/%s/logs", args[0]),
+	i, err := util.DoRequest(http.MethodGet, fmt.Sprintf("/instances/%s/logs?offset=0&limit=300", args[0]),
 		util.NONECt, nil)
 	if err != nil {
 		log.Fatalf("error getting instance: %v", err)
 	}
-
 	var il instanceLogs
 	err = json.Unmarshal(i, &il)
 	if err != nil {
