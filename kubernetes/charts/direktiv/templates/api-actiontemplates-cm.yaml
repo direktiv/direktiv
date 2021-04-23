@@ -337,8 +337,7 @@ data:
             "port"    : 587
         }
     }
-  solve.json: "{\n    \"id\": \"solve\",\n    \"desc\": \"Solves the expression provided
-    by x\",\n    \"image\": \"vorteil/solve\",\n    \"input\": {\n\t\t\"x\": \"10*3\"\n\t}\n}\n"
+  solve.json: "{\n    \"id\": \"solve\",\n    \"desc\": \"Solves the expression provided by x\",\n    \"image\": \"vorteil/solve\",\n    \"input\": {\n\t\t\"x\": \"10*3\"\n\t}\n}\n"
   tweet.json: |+
     {
         "id": "tweet",
@@ -369,7 +368,7 @@ data:
     }
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-04-23T04:17:14Z"
+  creationTimestamp: "2021-04-23T04:34:10Z"
   managedFields:
   - apiVersion: v1
     fieldsType: FieldsV1
@@ -406,8 +405,8 @@ metadata:
         f:twilio.json: {}
     manager: kubectl-create
     operation: Update
-    time: "2021-04-23T04:17:14Z"
+    time: "2021-04-23T04:34:10Z"
   name: api-actiontemplates-cm
-  namespace: default
-  resourceVersion: "12224438"
-  uid: 6e460561-1186-4d17-a664-3d5ad538c5e1
+  namespace: {{ .Release.Namespace }}
+  resourceVersion: "13362038"
+  uid: 217912f2-d9cf-4634-ab23-44a8350df2ae

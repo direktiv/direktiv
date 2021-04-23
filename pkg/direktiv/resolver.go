@@ -68,6 +68,7 @@ func watchEndpoints(svc, port string, conn resolver.ClientConn) error {
 	ns := strings.SplitN(svc, ".", 2)
 	if len(ns) == 2 {
 		svc = ns[0]
+		kns = ns[1]
 	}
 
 	// get initial backends

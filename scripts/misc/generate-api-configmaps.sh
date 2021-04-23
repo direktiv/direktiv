@@ -15,6 +15,7 @@ done
 kubectl delete cm api-wftemplates-cm || true
 kubectl create cm api-wftemplates-cm  $fromfiles
 kubectl get cm api-wftemplates-cm  -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-wftemplates-cm.yaml
+sed -i 's/  namespace: default/  namespace: {{ .Release.Namespace }}/g' $PWD2/kubernetes/charts/direktiv/templates/api-wftemplates-cm.yaml
 kubectl delete cm api-wftemplates-cm  || true
 
 cd ../
@@ -27,4 +28,5 @@ done
 kubectl delete cm api-actiontemplates-cm|| true
 kubectl create cm api-actiontemplates-cm $fromfiles
 kubectl get cm api-actiontemplates-cm -o yaml > $PWD2/kubernetes/charts/direktiv/templates/api-actiontemplates-cm.yaml
+sed -i 's/  namespace: default/  namespace: {{ .Release.Namespace }}/g' $PWD2/kubernetes/charts/direktiv/templates/api-actiontemplates-cm.yaml
 kubectl delete cm api-actiontemplates-cm || true
