@@ -28,9 +28,7 @@ const (
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
 
-	secretsBind     = "DIREKTIV_SECRETS_BIND"
 	secretsEndpoint = "DIREKTIV_SECRETS_ENDPOINT"
-	secretsConn     = "DIREKTIV_SECRETS_DB"
 
 	// DBConn database connection
 	DBConn = "DIREKTIV_DB"
@@ -183,9 +181,7 @@ func ReadConfig(file string) (*Config, error) {
 		{flowEndpoint, &c.FlowAPI.Endpoint},
 		{ingressBind, &c.IngressAPI.Bind},
 		{ingressEndpoint, &c.IngressAPI.Endpoint},
-		{secretsBind, &c.SecretsAPI.Bind},
 		{secretsEndpoint, &c.SecretsAPI.Endpoint},
-		{secretsConn, &c.SecretsAPI.DB},
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},
 		{flowProtocol, &c.FlowAPI.Protocol},

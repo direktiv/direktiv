@@ -82,11 +82,8 @@ spec:
           command: ["/bin/secrets"]
           args: [{{.Values.secrets.backend }}]
           imagePullPolicy: {{ .Values.pullPolicy }}
-          volumeMounts:
-          - name: backend-config
-            mountPath: "/etc/config/backend"
-            readOnly: true
           {{- if ne (default .Values.certificate "none") "none" }}
+          volumeMounts:
           - name: certs
             mountPath: "/etc/certs/direktiv"
             readOnly: true
@@ -107,10 +104,12 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsDb
+          - name: DIREKTIV_SECRETS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: key
       volumes:
-        - name: backend-config
-          configMap:
-            name: {{ include "direktiv.fullname" . }}-config
         - name: service-template
           configMap:
             name: service-template

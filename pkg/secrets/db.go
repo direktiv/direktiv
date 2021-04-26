@@ -7,17 +7,20 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	_ "github.com/lib/pq"
-	toml "github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/secrets/ent"
 	entc "github.com/vorteil/direktiv/pkg/secrets/ent"
 	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	secretsConn = "DIREKTIV_SECRETS_DB"
+	secretsKey  = "DIREKTIV_SECRETS_KEY"
 )
 
 type dbHandler struct {
@@ -27,34 +30,18 @@ type dbHandler struct {
 
 func (s *Server) setupDB() error {
 
-	// DB, KEY
-	cfgFile := os.Getenv(configFile)
+	dbEnv := os.Getenv(secretsConn)
+	keyEnv := os.Getenv(secretsKey)
 
-	if cfgFile == "" {
-		return fmt.Errorf("configuration file not provided")
-	}
-
-	b, err := ioutil.ReadFile(cfgFile)
-	if err != nil {
-		return err
-	}
-
-	c := new(dbConfig)
-
-	err = toml.Unmarshal(b, c)
-	if err != nil {
-		return err
-	}
-
-	if c.DB == "" || c.Key == "" {
+	if keyEnv == "" || dbEnv == "" {
 		return fmt.Errorf("DB and Key have to be set")
 	}
 
-	if len(c.Key) != 32 {
+	if len(keyEnv) != 32 {
 		return fmt.Errorf("key needs to be 32 characters")
 	}
 
-	db, err := ent.Open("postgres", c.DB)
+	db, err := ent.Open("postgres", dbEnv)
 	if err != nil {
 		log.Errorf("can not connect to secrets db: %v", err)
 		return err
@@ -64,9 +51,10 @@ func (s *Server) setupDB() error {
 		log.Errorf("failed creating schema resources: %v", err)
 		return err
 	}
+
 	s.handler = &dbHandler{
 		db:  db,
-		key: c.Key,
+		key: keyEnv,
 	}
 
 	log.Infof("secrets configured")
