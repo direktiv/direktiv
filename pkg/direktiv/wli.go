@@ -524,7 +524,7 @@ func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string,
 	deadline = deadline.Add(duration)
 
 	var rec *ent.WorkflowInstance
-	rec, err = wli.rec.Update().SetDeadline(deadline).Save(ctx)
+	rec, err = wli.rec.Update().SetAttempts(attempt).SetDeadline(deadline).Save(ctx)
 	if err != nil {
 		return err
 	}
