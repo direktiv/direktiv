@@ -36,7 +36,7 @@ Direktiv runs as single pod on kubernetes but each workflow step can be executed
 
 ## Quickstart
 
-### Starting the Server
+### Docker Install
 
 Getting a local playground environment can be easily done with Docker. The following command starts a docker container with kubernetes. *On startup it can take a few minutes to download all images.* When the installation is done all pods should show "Running" or "Completed".
 
@@ -66,6 +66,10 @@ $ direkcli namespaces list
 | demo |
 +------+
 ```
+
+### Kubernetes Install
+
+For full instructions on how to install Direktiv on a Kubernetes environment go to the [installation pages](https://docs.direktiv.io/docs/install.html)
 
 ### Workflow specification
 
