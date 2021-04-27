@@ -409,57 +409,6 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 }
 
-// func addKnativeFunctions(namespace string, workflow *model.Workflow) error {
-//
-// 	log.Debugf("adding knative service")
-//
-// 	if kubeReq.mockup {
-// 		return nil
-// 	}
-//
-// 	for _, f := range workflow.GetFunctions() {
-//
-// 		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		log.Debugf("deleting isolate: %d", ah)
-//
-// 		var (
-// 			cpu float64
-// 			mem int
-// 		)
-//
-// 		switch f.Size {
-// 		case 1:
-// 			cpu = 1
-// 			mem = 512
-// 		case 2:
-// 			cpu = 2
-// 			mem = 1024
-// 		default:
-// 			cpu = 0.5
-// 			mem = 256
-// 		}
-//
-// 		svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah),
-// 			fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
-// 			f.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
-// 			kubeReq.sidecar)
-//
-// 		_, err = sendKuberequest(http.MethodPost, kubeAPIKServiceURL,
-// 			bytes.NewBufferString(svc))
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 	}
-//
-// 	return nil
-//
-// }
-
 func sendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
 
 	if kubeReq.apiConfig == nil {
