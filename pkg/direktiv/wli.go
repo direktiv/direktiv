@@ -501,6 +501,11 @@ func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string,
 		multiplier = 1.0
 	}
 
+	// Set a default delay string if none is provided to parse delay properly.
+	if delayString == "" {
+		delayString = "PT1S"
+	}
+
 	delay, err := duration.ParseISO8601(delayString)
 	if err != nil {
 		return NewInternalError(err)
