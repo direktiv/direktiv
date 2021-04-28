@@ -13,10 +13,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/vorteil/direktiv/pkg/model"
-
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/model"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -304,43 +303,60 @@ func getClientSet() (*kubernetes.Clientset, string, error) {
 	return clientset, kns, nil
 }
 
-// func deleteKnativeFunctions(uid string, db *dbManager) error {
-//
-// 	if kubeReq.mockup {
-// 		return nil
-// 	}
-//
-// 	var wf model.Workflow
-//
-// 	wfdb, err := db.getWorkflowByUid(context.Background(), uid)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	// no need to error check, it passed the save check
-// 	wf.Load(wfdb.Workflow)
-// 	namespace := wfdb.Edges.Namespace.ID
-//
-// 	for _, f := range wf.GetFunctions() {
-//
-// 		ah, err := serviceToHash(namespace, f.Image, f.Cmd, f.Size)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		svcName := fmt.Sprintf("%s-%d", namespace, ah)
-// 		url := fmt.Sprintf("%s/%s", kubeAPIKServiceURL, svcName)
-//
-// 		_, err = sendKuberequest(http.MethodDelete, url, nil)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 	}
-//
-// 	return nil
-//
-// }
+func deleteKnativeFunctions(uid string, db *dbManager) error {
+
+	log.Debugf("delete functions for %v", uid)
+
+	if kubeReq.mockup {
+		return nil
+	}
+
+	var wf model.Workflow
+
+	wfdb, err := db.getWorkflowByUid(context.Background(), uid)
+	if err != nil {
+		return err
+	}
+
+	// no need to error check, it passed the save check
+	wf.Load(wfdb.Workflow)
+	namespace := wfdb.Edges.Namespace.ID
+
+	log.Debugf("delete functions for %v, %s", wfdb.Name, namespace)
+
+	for _, f := range wf.GetFunctions() {
+
+		var ir isolateRequest
+
+		ir.Workflow.Namespace = namespace
+		ir.Workflow.Name = wf.Name
+		ir.Workflow.ID = wf.ID
+
+		ir.Container.Image = f.Image
+		ir.Container.Cmd = f.Cmd
+		ir.Container.Size = f.Size
+		ir.Container.Scale = f.Scale
+
+		ah, err := serviceToHash(&ir)
+		if err != nil {
+			return err
+		}
+
+		u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+		url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%d", namespace, ah))
+
+		log.Debugf("deleting url %v", url)
+
+		_, err = sendKuberequest(http.MethodDelete, url, nil)
+		if err != nil {
+			log.Errorf("can not delete function: %v", err)
+		}
+
+	}
+
+	return nil
+
+}
 
 func getKnativeFunction(svc string) error {
 
@@ -366,8 +382,7 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 	namespace := ir.Workflow.Namespace
 
-	ah, err := serviceToHash(namespace, ir.Container.Image,
-		ir.Container.Cmd, ir.Container.Size, ir.Container.Scale)
+	ah, err := serviceToHash(ir)
 	if err != nil {
 		return err
 	}
@@ -431,7 +446,10 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 		},
 	}
 
-	req, _ := http.NewRequestWithContext(context.Background(), method, url, data)
+	req, err := http.NewRequestWithContext(context.Background(), method, url, data)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -441,9 +459,10 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 }
 
-func serviceToHash(ns, img, cmd string, size model.Size, scale int) (uint64, error) {
+func serviceToHash(ar *isolateRequest) (uint64, error) {
 
-	return hash.Hash(fmt.Sprintf("%s-%s-%s-%d-%d", ns, img,
-		cmd, size, scale), hash.FormatV2, nil)
+	return hash.Hash(fmt.Sprintf("%s-%s-%s-%s-%d-%d", ar.Workflow.Namespace,
+		ar.Workflow.ID, ar.Container.Image, ar.Container.Cmd, ar.Container.Size,
+		ar.Container.Scale), hash.FormatV2, nil)
 
 }

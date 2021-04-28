@@ -1,7 +1,2 @@
-flow:
-  ingressPortType: "NodePort"
-  ingressNodePort: 32222
-
-ui:
-  portType: "NodePort"
-  nodePort: 32221
+pullPolicy: Always
+debug: "true"
