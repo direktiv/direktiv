@@ -19,7 +19,6 @@ type Server struct {
 	direktiv ingress.DirektivIngressClient
 	json     jsonpb.Marshaler
 	handler  *Handler
-	routes   map[string]map[string]http.HandlerFunc
 	router   *mux.Router
 	srv      *http.Server
 
@@ -112,88 +111,66 @@ func (s *Server) initDirektiv() error {
 
 func (s *Server) prepareRoutes() {
 
-	// init routes map
-	s.routes = make(map[string]map[string]http.HandlerFunc)
-	s.routes[http.MethodGet] = make(map[string]http.HandlerFunc)
-	s.routes[http.MethodPost] = make(map[string]http.HandlerFunc)
-	s.routes[http.MethodPut] = make(map[string]http.HandlerFunc)
-	s.routes[http.MethodDelete] = make(map[string]http.HandlerFunc)
-	s.routes[http.MethodPatch] = make(map[string]http.HandlerFunc)
-	s.routes[http.MethodOptions] = make(map[string]http.HandlerFunc)
-
 	// Options ..
-	s.routes[http.MethodOptions]["/{path:.*}"] = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Router().HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
 		w.WriteHeader(http.StatusOK)
-	})
+	}).Methods(http.MethodOptions).Name("Preflight")
 
 	// Namespace ..
-	s.routes[http.MethodGet]["/api/namespaces/"] = http.HandlerFunc(s.handler.namespaces)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}"] = http.HandlerFunc(s.handler.addNamespace)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}"] = http.HandlerFunc(s.handler.deleteNamespace)
+	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name("ListNamespaces")
+	s.Router().HandleFunc("/api/namespaces/{namespace}", s.handler.addNamespace).Methods(http.MethodPost).Name("AddNamespace")
+	s.Router().HandleFunc("/api/namespaces/{namespace}", s.handler.deleteNamespace).Methods(http.MethodDelete).Name("DeleteNamespace")
 
 	// Event ..
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/event"] = http.HandlerFunc(s.handler.namespaceEvent)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/event", s.handler.namespaceEvent).Methods(http.MethodPost).Name("NamespaceEvent")
 
 	// Secret ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/secrets/"] = http.HandlerFunc(s.handler.secrets)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/secrets/"] = http.HandlerFunc(s.handler.createSecret)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/secrets/"] = http.HandlerFunc(s.handler.deleteSecret)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.secrets).Methods(http.MethodGet).Name("ListSecrets")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.createSecret).Methods(http.MethodPost).Name("CreateSecret")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.deleteSecret).Methods(http.MethodDelete).Name("DeleteSecret")
 
 	// Registry ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.registries)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.createRegistry)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/registries/"] = http.HandlerFunc(s.handler.deleteRegistry)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.registries).Methods(http.MethodGet).Name("ListRegistries")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.createRegistry).Methods(http.MethodPost).Name("CreateRegistry")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.deleteRegistry).Methods(http.MethodDelete).Name("DeleteRegistry")
 
 	// Metrics ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflow}/metrics"] = http.HandlerFunc(s.handler.workflowMetrics)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics", s.handler.workflowMetrics).Methods(http.MethodGet).Name("GetWorkflowMetrics")
 
 	// Workflow ..
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/"] = http.HandlerFunc(s.handler.workflows)
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.getWorkflow)
-	s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.updateWorkflow)
-	s.routes[http.MethodPut]["/api/namespaces/{namespace}/workflows/{workflowTarget}/toggle"] = http.HandlerFunc(s.handler.toggleWorkflow)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows"] = http.HandlerFunc(s.handler.createWorkflow)
-	s.routes[http.MethodDelete]["/api/namespaces/{namespace}/workflows/{workflowTarget}"] = http.HandlerFunc(s.handler.deleteWorkflow)
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}/download"] = http.HandlerFunc(s.handler.downloadWorkflow)
-	s.routes[http.MethodPost]["/api/namespaces/{namespace}/workflows/{workflowTarget}/execute"] = http.HandlerFunc(s.handler.executeWorkflow)
-	s.routes[http.MethodGet]["/api/namespaces/{namespace}/workflows/{workflowTarget}/instances/"] = http.HandlerFunc(s.handler.workflowInstances)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/", s.handler.workflows).Methods(http.MethodGet).Name("ListWorkflows")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}", s.handler.getWorkflow).Methods(http.MethodGet).Name("GetWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}", s.handler.updateWorkflow).Methods(http.MethodPut).Name("UpdateWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/toggle", s.handler.toggleWorkflow).Methods(http.MethodPut).Name("ToggleWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows", s.handler.createWorkflow).Methods(http.MethodPost).Name("CreateWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}", s.handler.deleteWorkflow).Methods(http.MethodDelete).Name("DeleteWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/download", s.handler.downloadWorkflow).Methods(http.MethodGet).Name("DownloadWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/execute", s.handler.executeWorkflow).Methods(http.MethodPost).Name("ExecuteWorkflow")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/instances/", s.handler.workflowInstances).Methods(http.MethodGet).Name("ListWorkflowInstances")
 
 	// Instance ..
-	s.routes[http.MethodGet]["/api/instances/{namespace}"] = http.HandlerFunc(s.handler.instances)
-	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowTarget}/{id}"] = http.HandlerFunc(s.handler.getInstance)
-	s.routes[http.MethodDelete]["/api/instances/{namespace}/{workflowTarget}/{id}"] = http.HandlerFunc(s.handler.cancelInstance)
-	s.routes[http.MethodGet]["/api/instances/{namespace}/{workflowTarget}/{id}/logs"] = http.HandlerFunc(s.handler.instanceLogs)
+	s.Router().HandleFunc("/api/instances/{namespace}", s.handler.instances).Methods(http.MethodGet).Name("ListInstances")
+	s.Router().HandleFunc("/api/instances/{namespace}/{workflowTarget}/{id}", s.handler.getInstance).Methods(http.MethodGet).Name("GetInstance")
+	s.Router().HandleFunc("/api/instances/{namespace}/{workflowTarget}/{id}", s.handler.cancelInstance).Methods(http.MethodDelete).Name("CancelInstance")
+	s.Router().HandleFunc("/api/instances/{namespace}/{workflowTarget}/{id}/logs", s.handler.instanceLogs).Methods(http.MethodGet).Name("GetInstanceLogs")
 
 	// Templates ..
-	s.routes[http.MethodGet]["/api/action-templates/"] = http.HandlerFunc(s.handler.actionTemplateFolders)
-	s.routes[http.MethodGet]["/api/action-templates/{folder}/"] = http.HandlerFunc(s.handler.actionTemplates)
-	s.routes[http.MethodGet]["/api/action-templates/{folder}/{template}"] = http.HandlerFunc(s.handler.actionTemplate)
+	s.Router().HandleFunc("/api/action-templates/", s.handler.actionTemplateFolders).Methods(http.MethodGet).Name("ListActionTemplateFolders")
+	s.Router().HandleFunc("/api/action-templates/{folder}/", s.handler.actionTemplates).Methods(http.MethodGet).Name("ListActionTemplates")
+	s.Router().HandleFunc("/api/action-templates/{folder}/{template}", s.handler.actionTemplate).Methods(http.MethodGet).Name("GetActionTemplate")
 
-	s.routes[http.MethodGet]["/api/workflow-templates/"] = http.HandlerFunc(s.handler.workflowTemplateFolders)
-	s.routes[http.MethodGet]["/api/workflow-templates/{folder}/"] = http.HandlerFunc(s.handler.workflowTemplates)
-	s.routes[http.MethodGet]["/api/workflow-templates/{folder}/{template}"] = http.HandlerFunc(s.handler.workflowTemplate)
+	s.Router().HandleFunc("/api/workflow-templates/", s.handler.workflowTemplateFolders).Methods(http.MethodGet).Name("ListWorkflowTemplateFolders")
+	s.Router().HandleFunc("/api/workflow-templates/{folder}/", s.handler.workflowTemplates).Methods(http.MethodGet).Name("ListWorkflowTemplates")
+	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.workflowTemplate).Methods(http.MethodGet).Name("GetWorkflowTemplate")
 
 	// jq Playground ...
-	s.routes[http.MethodPost]["/api/jq-playground"] = http.HandlerFunc(s.handler.jqPlayground)
+	s.Router().HandleFunc("/api/jq-playground", s.handler.jqPlayground).Methods(http.MethodPost).Name("JQPlayground")
 
-}
-
-// RegisterHandler registers all handlers
-func (s *Server) RegisterHandler(path string, h http.HandlerFunc, methods ...string) {
-	for _, method := range methods {
-		s.routes[method][path] = h
-	}
 }
 
 // Start starts the API server
 func (s *Server) Start() error {
-
-	for method, paths := range s.routes {
-		for path, h := range paths {
-			s.router.HandleFunc(path, h).Methods(method)
-		}
-	}
 
 	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
 
