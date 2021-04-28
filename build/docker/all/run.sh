@@ -26,14 +26,14 @@ echo "direktiv installed, pulling containers can take several minutes"
 sleep 5
 
 a=0
-until [ $a -gt 20 ]
+until [ $a -gt 50 ]
 do
+  clear
   kubectl get pods -A
   sleep 10
   a=`expr $a + 1`
 done
 
-echo "UI: localhost:32221"
-echo "API: localhost:32222"
+echo "UI/API: localhost:8080"
 
 sleep infinity

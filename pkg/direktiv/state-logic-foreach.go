@@ -164,6 +164,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				ar.Workflow.State = sl.state.GetID()
 				ar.Workflow.Step = instance.step
 				ar.Workflow.Name = instance.wf.Name
+				ar.Workflow.ID = instance.wf.ID
 
 				// TODO: timeout
 				ar.Container.Data = inputData
