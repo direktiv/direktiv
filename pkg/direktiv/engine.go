@@ -32,7 +32,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -272,8 +271,8 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 
 	// generate hash name as "url"
-	actionHash, err := hash.Hash(fmt.Sprintf("%s-%s-%s-%d-%d", ar.Workflow.Namespace, ar.Container.Image,
-		ar.Container.Cmd, ar.Container.Size, ar.Container.Scale), hash.FormatV2, nil)
+	actionHash, err := serviceToHash(ar)
+
 	if err != nil {
 		return NewInternalError(err)
 	}

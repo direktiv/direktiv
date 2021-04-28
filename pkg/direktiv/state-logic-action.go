@@ -180,6 +180,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			ar.Workflow.State = sl.state.GetID()
 			ar.Workflow.Step = instance.step
 			ar.Workflow.Name = instance.wf.Name
+			ar.Workflow.ID = instance.wf.ID
 
 			// TODO: timeout
 			ar.Container.Data = inputData

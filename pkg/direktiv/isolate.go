@@ -49,6 +49,7 @@ type isolateContainer struct {
 
 type isolateWorkflow struct {
 	Name       string
+	ID         string
 	InstanceID string
 	Namespace  string
 	State      string

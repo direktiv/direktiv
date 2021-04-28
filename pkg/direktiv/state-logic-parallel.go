@@ -143,6 +143,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			ar.Workflow.State = sl.state.GetID()
 			ar.Workflow.Step = instance.step
 			ar.Workflow.Name = instance.wf.Name
+			ar.Workflow.ID = instance.wf.ID
 
 			// TODO: timeout
 			ar.Container.Data = inputData
