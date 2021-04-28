@@ -117,7 +117,6 @@ func (h *Handler) instanceLogs(w http.ResponseWriter, r *http.Request) {
 		Limit:      &limit,
 		Offset:     &offset,
 	})
-
 	if err != nil {
 		ErrResponse(w, err)
 		return
