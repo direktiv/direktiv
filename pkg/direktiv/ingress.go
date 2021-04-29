@@ -385,7 +385,7 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 		l := &logs.Logs[i]
 
 		resp.WorkflowInstanceLogs = append(resp.WorkflowInstanceLogs, &ingress.GetWorkflowInstanceLogsResponse_WorkflowInstanceLog{
-			Timestamp: timestamppb.New(time.Unix(l.Timestamp, 0)),
+			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
 			Message:   &l.Message,
 			Context:   l.Context,
 		})
