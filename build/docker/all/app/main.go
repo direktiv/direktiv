@@ -1,0 +1,163 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"sort"
+	"time"
+
+	"github.com/apoorvam/goterminal"
+	"github.com/olekukonko/tablewriter"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+)
+
+func main() {
+
+	log.Println("all-in-one version of direktiv")
+
+	kc, err := exec.LookPath("kubectl")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	changeIstio()
+
+	go func() {
+		err := startingK3s()
+		if err != nil {
+			panic(err.Error())
+		}
+	}()
+
+	log.Println("waiting for k3s kubeconfig")
+	for {
+		if _, err := os.Stat("/etc/rancher/k3s/k3s.yaml"); !os.IsNotExist(err) {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	log.Println("installing direktiv")
+
+	applyYaml(kc)
+	runHelm()
+
+	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	writer := goterminal.New(os.Stdout)
+	n := time.Now()
+
+	log.Println("waiting for pods (can take several minutes)")
+
+	var lo metav1.ListOptions
+	for {
+
+		table := tablewriter.NewWriter(writer)
+		table.SetHeader([]string{"Pod", "Status", "Time"})
+
+		pods, err := clientset.CoreV1().Pods("").List(context.Background(), lo)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		if len(pods.Items) == 0 {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		allRun := true
+
+		sort.Sort(byName(pods.Items))
+		for _, pod := range pods.Items {
+
+			t := "ready"
+			if pod.Status.Phase != v1.PodRunning {
+				allRun = false
+				t = fmt.Sprintf("%vs", int(time.Since(n).Seconds()))
+			}
+			table.Append([]string{pod.GetName(), string(pod.Status.Phase), t})
+		}
+
+		table.Render()
+		writer.Print()
+		if allRun && len(pods.Items) > 0 {
+			break
+		}
+		time.Sleep(5 * time.Second)
+		writer.Clear()
+	}
+
+	writer.Reset()
+	fmt.Println("direktiv ready at http://localhost:8080")
+
+	select {}
+
+}
+
+type byName []v1.Pod
+
+func (a byName) Len() int           { return len(a) }
+func (a byName) Less(i, j int) bool { return a[i].GetName() < a[j].GetName() }
+func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+func runHelm() {
+
+	log.Printf("running direktiv helm\n")
+	cmd := exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
+	cmd.Dir = "/direktiv/kubernetes/charts/direktiv"
+	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
+	cmd.Run()
+
+}
+
+func applyYaml(kc string) {
+
+	fs := []string{"serving-crds.yaml", "serving-core.yaml", "istio.yaml", "net-istio.yaml"}
+
+	for _, f := range fs {
+		log.Printf("applying %s\n", f)
+		cmd := exec.Command(kc, "apply", "-f", f)
+		cmd.Dir = "/direktiv/scripts/knative"
+		cmd.Run()
+		time.Sleep(2 * time.Second)
+	}
+
+}
+
+func startingK3s() error {
+
+	log.Println("starting k3s")
+	cmd := exec.Command("k3s", "server", "--disable", "traefik", "--write-kubeconfig-mode=644")
+	return cmd.Run()
+
+}
+
+func changeIstio() {
+	iyaml, err := ioutil.ReadFile("/direktiv/scripts/knative/istio.yaml")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	output := bytes.Replace(iyaml, []byte("minReplicas: 3"), []byte("minReplicas: 1"), -1)
+	output = bytes.Replace(output, []byte("replicas: 3"), []byte("replicas: 1"), -1)
+
+	if err = ioutil.WriteFile("/direktiv/scripts/knative/istio.yaml", output, 0666); err != nil {
+		panic(err.Error())
+	}
+}
