@@ -54,6 +54,15 @@ func ListRegisteredTypes() []SecretType {
 	return stList
 }
 
+func ListRegisteredTypesString() []string {
+	stList := make([]string, 0)
+	for k := range secretHandlers {
+		stList = append(stList, k.String())
+	}
+
+	return stList
+}
+
 // String returns a string representation of the SecretType.
 func (x SecretType) String() string {
 	return string(x)

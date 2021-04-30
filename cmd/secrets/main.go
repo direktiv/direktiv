@@ -10,13 +10,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/vorteil/direktiv/pkg/secrets"
-	"github.com/vorteil/direktiv/pkg/secrets/hanlder"
+	"github.com/vorteil/direktiv/pkg/secrets/handler"
 )
 
 func main() {
 
 	if len(os.Args) != 2 {
-		supportedSecrets := hanlder.ListRegisteredTypes()
+		supportedSecrets := handler.ListRegisteredTypesString()
 		log.Fatalf("secrets needs type, supported types: %s", strings.Join(supportedSecrets, ", "))
 	}
 
