@@ -50,7 +50,7 @@ func (l *Logger) initDB() error {
 		id serial primary key,
 		namespace text,
 		instance text,
-		time int,
+		time bigint,
 		lvl int,
 		msg text,
 		ctx bytea
@@ -122,7 +122,7 @@ func (h *Handler) dispatcher() {
 
 			idx := i * 6
 			rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
-			vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.Unix(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
+			vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
 
 		}
 

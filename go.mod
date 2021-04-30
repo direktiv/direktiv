@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	entgo.io/ent v0.8.0
+	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5 // indirect
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/fasthttp/router v1.3.10

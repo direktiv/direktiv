@@ -95,8 +95,6 @@ spec:
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
-          - name: DIREKTIV_SECRETS_CONFIG
-            value: "/etc/config/backend/config"
           - name: DIREKTIV_SECRETS_BIND
             value: "127.0.0.1:2610"
           - name: DIREKTIV_SECRETS_DB
