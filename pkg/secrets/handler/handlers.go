@@ -8,7 +8,7 @@ import (
 type SecretType string
 
 const (
-	DBSecretType SecretType = "string"
+	DBSecretType SecretType = "db"
 )
 
 var (
