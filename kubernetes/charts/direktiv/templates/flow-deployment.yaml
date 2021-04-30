@@ -109,6 +109,21 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: key
+          - name: DIREKTIV_SECRETS_VAULT
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsVault
+          - name: DIREKTIV_SECRETS_VAULT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsVaultToken
+          - name: DIREKTIV_SECRETS_VAULT_PATH
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsVaultPath
       volumes:
         - name: service-template
           configMap:
