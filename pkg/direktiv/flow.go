@@ -47,6 +47,8 @@ func (fs *flowServer) start(s *WorkflowServer) error {
 
 func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
+	log.Debugf("action response: %v", in.GetActionId())
+
 	var resp emptypb.Empty
 
 	ctx, wli, err := fs.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))

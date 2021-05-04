@@ -26,6 +26,8 @@ type Timer struct {
 	One time.Time `json:"one,omitempty"`
 	// Data holds the value of the "data" field.
 	Data []byte `json:"data,omitempty"`
+	// Last holds the value of the "last" field.
+	Last time.Time `json:"last,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -39,7 +41,7 @@ func (*Timer) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case timer.FieldName, timer.FieldFn, timer.FieldCron:
 			values[i] = new(sql.NullString)
-		case timer.FieldOne:
+		case timer.FieldOne, timer.FieldLast:
 			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Timer", columns[i])
@@ -92,6 +94,12 @@ func (t *Timer) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil {
 				t.Data = *value
 			}
+		case timer.FieldLast:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last", values[i])
+			} else if value.Valid {
+				t.Last = value.Time
+			}
 		}
 	}
 	return nil
@@ -130,6 +138,8 @@ func (t *Timer) String() string {
 	builder.WriteString(t.One.Format(time.ANSIC))
 	builder.WriteString(", data=")
 	builder.WriteString(fmt.Sprintf("%v", t.Data))
+	builder.WriteString(", last=")
+	builder.WriteString(t.Last.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

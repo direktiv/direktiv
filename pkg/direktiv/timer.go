@@ -198,16 +198,37 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 	if hasLock {
 
 		unlock := func(hashin uint64) {
-			// delay the unlock to make sure minimal tiome offsets accross a cluster
+			// delay the unlock to make sure minimal time offsets accross a cluster
 			// does not make that fire a second time if the executin is fast
-			time.Sleep(10 * time.Second)
 			tm.server.dbManager.unlockDB(hashin, conn)
 		}
 		defer unlock(hash)
 
+		ct, err := tm.server.dbManager.getTimerByID(ti.dbItem.ID)
+		if err != nil {
+			log.Errorf("can not get timer: %v", err)
+			return
+		}
+
+		// if one shot was deleted, it has already failed fetching it
+		// if it is around +/- 30s we stop here. the timer execution was so short
+		// that another server got the lock as well. Can happen if they are millis off.
+		last := ct.Last
+		secs := time.Now().Sub(last).Seconds()
+		if secs > -30 || secs < 30 {
+			log.Debugf("double call, not executing")
+		}
+
 		if ti.timerType == timerTypeOneShot {
 			log.Debugf("%s is one shot, disable (execute)", ti.dbItem.Name)
 			tm.disableTimer(ti, true, needsSyncRequest)
+		} else {
+			// update last run time
+			ti.dbItem, err = tm.server.dbManager.updateRunTime(ti.dbItem, time.Now())
+			if err != nil {
+				log.Debugf("can not set update time: %v", err)
+				return
+			}
 		}
 
 		err = ti.fn(ti.dbItem.Data)
@@ -377,7 +398,6 @@ func (tm *timerManager) syncTimerDelete(name string) {
 
 }
 
-// jens
 func (tm *timerManager) syncTimerEnable(name string) {
 
 	tm.mtx.Lock()
@@ -528,4 +548,21 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 	log.Debugf("deleted %d instance records", len(wfis))
 
 	return nil
+}
+
+func (tm *timerManager) deleteCronForWorkflow(id string) error {
+
+	// get name
+	name := fmt.Sprintf("cron:%s", id)
+
+	// delete from database
+	tm.server.dbManager.deleteTimer(name)
+
+	// delete from local sync
+	tm.syncTimerDelete(name)
+
+	// send sync request
+	return syncServer(context.Background(), tm.server.dbManager,
+		&tm.server.id, name, DeleteTimerSync)
+
 }

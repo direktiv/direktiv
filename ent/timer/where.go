@@ -127,6 +127,13 @@ func Data(v []byte) predicate.Timer {
 	})
 }
 
+// Last applies equality check predicate on the "last" field. It's identical to LastEQ.
+func Last(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLast), v))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Timer {
 	return predicate.Timer(func(s *sql.Selector) {
@@ -651,6 +658,96 @@ func DataIsNil() predicate.Timer {
 func DataNotNil() predicate.Timer {
 	return predicate.Timer(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldData)))
+	})
+}
+
+// LastEQ applies the EQ predicate on the "last" field.
+func LastEQ(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLast), v))
+	})
+}
+
+// LastNEQ applies the NEQ predicate on the "last" field.
+func LastNEQ(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLast), v))
+	})
+}
+
+// LastIn applies the In predicate on the "last" field.
+func LastIn(vs ...time.Time) predicate.Timer {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Timer(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldLast), v...))
+	})
+}
+
+// LastNotIn applies the NotIn predicate on the "last" field.
+func LastNotIn(vs ...time.Time) predicate.Timer {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Timer(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldLast), v...))
+	})
+}
+
+// LastGT applies the GT predicate on the "last" field.
+func LastGT(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLast), v))
+	})
+}
+
+// LastGTE applies the GTE predicate on the "last" field.
+func LastGTE(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLast), v))
+	})
+}
+
+// LastLT applies the LT predicate on the "last" field.
+func LastLT(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLast), v))
+	})
+}
+
+// LastLTE applies the LTE predicate on the "last" field.
+func LastLTE(v time.Time) predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLast), v))
+	})
+}
+
+// LastIsNil applies the IsNil predicate on the "last" field.
+func LastIsNil() predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLast)))
+	})
+}
+
+// LastNotNil applies the NotNil predicate on the "last" field.
+func LastNotNil() predicate.Timer {
+	return predicate.Timer(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLast)))
 	})
 }
 

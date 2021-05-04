@@ -30,7 +30,7 @@ func (db *dbManager) deleteWorkflowInstance(id int) error {
 
 	// delete all events attached to this instance
 	err = db.deleteWorkflowEventListenerByInstanceID(id)
-	if err != nil {
+	if err != nil && !ent.IsNotFound(err) {
 		log.Errorf("can not delete event listeners for instance: %v", err)
 	}
 

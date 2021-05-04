@@ -139,7 +139,11 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 		log.Errorf("can not delete knative functions: %v", err)
 	}
 
-	// TODO: delete cron
+	// delete crons
+	err = db.tm.deleteCronForWorkflow(id)
+	if err != nil {
+		log.Errorf("Can not delete cron for workflow: %v", id)
+	}
 
 	i, err := db.dbEnt.Workflow.Delete().
 		Where(workflow.IDEQ(u)).
