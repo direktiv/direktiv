@@ -23,6 +23,12 @@ const (
 	TLSKey = "/etc/certs/direktiv/tls.key"
 )
 
+var globalGRPCDialOptions []grpc.DialOption
+
+func AddGlobalGRPCDialOption(opt grpc.DialOption) {
+	globalGRPCDialOptions = append(globalGRPCDialOptions, opt)
+}
+
 // GetEndpointTLS creates a grpc client
 func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 
@@ -41,6 +47,8 @@ func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 	if rr {
 		options = append(options, grpc.WithBalancerName(roundrobin.Name))
 	}
+
+	options = append(options, globalGRPCDialOptions...)
 
 	return grpc.Dial(endpoint, options...)
 
