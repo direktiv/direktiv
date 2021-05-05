@@ -38,7 +38,7 @@ type workflowLogicInstance struct {
 	logger      dlog.Logger
 }
 
-func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input []byte) (*workflowLogicInstance, error) {
+func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
 
 	var err error
 	var inputData, stateData interface{}
@@ -56,7 +56,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input
 		}
 	}
 
-	rec, err := we.db.getNamespaceWorkflow(name, namespace)
+	rec, err := we.db.getNamespaceWorkflow(ctx, name, namespace)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, NewUncatchableError("direktiv.subflow.notExist", "workflow '%s' does not exist", name)
@@ -708,5 +708,22 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	}(wli.engine, wli.id, nextState, wli.step)
 
 	return
+
+}
+
+func InstanceMemory(rec *ent.WorkflowInstance) ([]byte, error) {
+
+	if rec.Memory == "" {
+		return nil, nil
+	}
+
+	savedata, err := base64.StdEncoding.DecodeString(rec.Memory)
+	if err != nil {
+		err = fmt.Errorf("cannot decode the savedata: %v", err)
+		log.Error(err)
+		return nil, err
+	}
+
+	return savedata, nil
 
 }

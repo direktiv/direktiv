@@ -28,6 +28,7 @@ var (
 		{Name: "cron", Type: field.TypeString, Nullable: true},
 		{Name: "one", Type: field.TypeTime, Nullable: true},
 		{Name: "data", Type: field.TypeBytes, Nullable: true},
+		{Name: "last", Type: field.TypeTime, Nullable: true},
 	}
 	// TimersTable holds the schema information for the "timers" table.
 	TimersTable = &schema.Table{

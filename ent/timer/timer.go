@@ -17,6 +17,8 @@ const (
 	FieldOne = "one"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
+	// FieldLast holds the string denoting the last field in the database.
+	FieldLast = "last"
 	// Table holds the table name of the timer in the database.
 	Table = "timers"
 )
@@ -29,6 +31,7 @@ var Columns = []string{
 	FieldCron,
 	FieldOne,
 	FieldData,
+	FieldLast,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

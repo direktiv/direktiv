@@ -168,7 +168,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 			var subflowID string
 
-			subflowID, err = instance.engine.subflowInvoke(caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
 			if err != nil {
 				return err
 			}
