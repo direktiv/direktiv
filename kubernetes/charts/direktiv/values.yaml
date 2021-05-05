@@ -95,6 +95,11 @@ secrets:
   backend: "db"
   db: ""
   key: "01234567890123456789012345678912"
+  vault:
+    address: ""
+    token: ""
+    path: ""
+    skipVerify: false
 
 # flow config
 flow:
