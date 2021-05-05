@@ -38,7 +38,7 @@ type workflowLogicInstance struct {
 	logger      dlog.Logger
 }
 
-func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input []byte) (*workflowLogicInstance, error) {
+func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
 
 	var err error
 	var inputData, stateData interface{}
@@ -56,7 +56,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input
 		}
 	}
 
-	rec, err := we.db.getNamespaceWorkflow(name, namespace)
+	rec, err := we.db.getNamespaceWorkflow(ctx, name, namespace)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, NewUncatchableError("direktiv.subflow.notExist", "workflow '%s' does not exist", name)
