@@ -710,3 +710,20 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	return
 
 }
+
+func InstanceMemory(rec *ent.WorkflowInstance) ([]byte, error) {
+
+	if rec.Memory == "" {
+		return nil, nil
+	}
+
+	savedata, err := base64.StdEncoding.DecodeString(rec.Memory)
+	if err != nil {
+		err = fmt.Errorf("cannot decode the savedata: %v", err)
+		log.Error(err)
+		return nil, err
+	}
+
+	return savedata, nil
+
+}

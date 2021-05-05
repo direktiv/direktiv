@@ -232,18 +232,10 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 		return err
 	}
 
-	var savedata []byte
-
-	if wli.rec.Memory != "" {
-
-		savedata, err = base64.StdEncoding.DecodeString(wli.rec.Memory)
-		if err != nil {
-			wli.Close()
-			err = fmt.Errorf("cannot decode the savedata: %v", err)
-			log.Error(err)
-			return err
-		}
-
+	savedata, err := InstanceMemory(wli.rec)
+	if err != nil {
+		wli.Close()
+		return err
 	}
 
 	go wli.engine.runState(ctx, wli, savedata, wakedata)
@@ -519,7 +511,13 @@ func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error
 		return NewInternalError(fmt.Errorf("cannot initialize state logic: %v", err))
 	}
 	logic := stateLogic
-	we.cancelChildren(logic, []byte(rec.Memory))
+
+	savedata, err := InstanceMemory(rec)
+	if err != nil {
+		return err
+	}
+
+	we.cancelChildren(logic, savedata)
 
 	return nil
 
@@ -919,7 +917,10 @@ failure:
 		err = NewInternalError(errors.New("somehow ended up in a catchable error loop"))
 	}
 
-	wli.engine.cancelChildren(wli.logic, []byte(wli.rec.Memory))
+	savedata, err = InstanceMemory(wli.rec)
+	if err == nil {
+		wli.engine.cancelChildren(wli.logic, savedata)
+	}
 
 	if uerr, ok := err.(*UncatchableError); ok {
 
