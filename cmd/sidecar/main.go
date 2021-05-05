@@ -107,7 +107,6 @@ func main() {
 	signal.Notify(sigs, syscall.SIGTERM)
 
 	// subscribe to direktiv pub/sub
-	log.Infof("getting DB %v %v", direktiv.DBConn, os.Getenv(direktiv.DBConn))
 	err = direktiv.SyncSubscribeTo(os.Getenv(direktiv.DBConn),
 		direktiv.CancelIsolate, d.handleSub)
 	if err != nil {
