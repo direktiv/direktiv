@@ -97,6 +97,7 @@ spec:
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SECRETS_BIND
             value: "127.0.0.1:2610"
+          {{- if eq .Values.secrets.backend "db" }}
           - name: DIREKTIV_SECRETS_DB
             valueFrom:
               secretKeyRef:
@@ -107,6 +108,7 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: key
+          {{- else if eq .Values.secrets.backend "vault" }}
           - name: DIREKTIV_SECRETS_VAULT
             valueFrom:
               secretKeyRef:
@@ -122,6 +124,12 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsVaultPath
+          - name: DIREKTIV_SECRETS_VAULT_SKIP_VERIFY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsVaultSkipVerify
+          {{- end}}
       volumes:
         - name: service-template
           configMap:
