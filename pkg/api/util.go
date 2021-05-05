@@ -30,8 +30,7 @@ func writeData(resp interface{}, w http.ResponseWriter) {
 }
 
 // CtxDeadline defines default request deadline
-func CtxDeadline() (context.Context, context.CancelFunc) {
-	ctx := context.Background()
+func CtxDeadline(ctx context.Context) (context.Context, context.CancelFunc) {
 	return context.WithDeadline(ctx, time.Now().Add(GRPCCommandTimeout))
 }
 

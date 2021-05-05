@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,9 +13,9 @@ import (
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
 
-func (h *Handler) getUIDforName(ns, name string) (string, error) {
+func (h *Handler) getUIDforName(ctx context.Context, ns, name string) (string, error) {
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(ctx)
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByName(ctx, &ingress.GetWorkflowByNameRequest{
@@ -34,7 +35,7 @@ func (h *Handler) workflows(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflows(ctx, &ingress.GetWorkflowsRequest{
@@ -59,7 +60,7 @@ func (h *Handler) getWorkflow(w http.ResponseWriter, r *http.Request) {
 	n := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByName(ctx, &ingress.GetWorkflowByNameRequest{
@@ -84,7 +85,7 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 	ns := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
-	uid, err := h.getUIDforName(ns, name)
+	uid, err := h.getUIDforName(r.Context(), ns, name)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -153,7 +154,7 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 		request.Revision = &revision
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.UpdateWorkflow(ctx, &request)
@@ -170,13 +171,13 @@ func (h *Handler) toggleWorkflow(w http.ResponseWriter, r *http.Request) {
 	ns := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
-	uid, err := h.getUIDforName(ns, name)
+	uid, err := h.getUIDforName(r.Context(), ns, name)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByUid(ctx, &ingress.GetWorkflowByUidRequest{
@@ -224,7 +225,7 @@ func (h *Handler) createWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.AddWorkflow(ctx, &ingress.AddWorkflowRequest{
@@ -257,13 +258,13 @@ func (h *Handler) deleteWorkflow(w http.ResponseWriter, r *http.Request) {
 	ns := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
-	uid, err := h.getUIDforName(ns, name)
+	uid, err := h.getUIDforName(r.Context(), ns, name)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteWorkflow(ctx, &ingress.DeleteWorkflowRequest{
@@ -283,13 +284,13 @@ func (h *Handler) downloadWorkflow(w http.ResponseWriter, r *http.Request) {
 	ns := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
-	uid, err := h.getUIDforName(ns, name)
+	uid, err := h.getUIDforName(r.Context(), ns, name)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByUid(ctx, &ingress.GetWorkflowByUidRequest{
@@ -318,7 +319,7 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.InvokeWorkflow(ctx, &ingress.InvokeWorkflowRequest{
@@ -348,7 +349,7 @@ func (h *Handler) workflowInstances(w http.ResponseWriter, r *http.Request) {
 	offset := int32(o)
 	limit := int32(l)
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetInstancesByWorkflow(ctx, &ingress.GetInstancesByWorkflowRequest{

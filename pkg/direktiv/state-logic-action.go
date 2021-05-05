@@ -238,7 +238,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 			if sl.state.Async {
 
-				subflowID, err = instance.engine.subflowInvoke(caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
+				subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
 				if err != nil {
 					return
 				}
@@ -254,7 +254,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 			} else {
 
-				subflowID, err = instance.engine.subflowInvoke(caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
+				subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
 				if err != nil {
 					return
 				}

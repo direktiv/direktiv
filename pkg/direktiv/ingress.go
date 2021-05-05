@@ -514,7 +514,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	workflow := in.GetName()
 	input := in.GetInput()
 
-	instID, err := is.wfServer.engine.DirectInvoke(namespace, workflow, input)
+	instID, err := is.wfServer.engine.DirectInvoke(ctx, namespace, workflow, input)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}
