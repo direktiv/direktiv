@@ -56,7 +56,8 @@ const (
 func (tm *timerManager) disableTimer(ti *timerItem, remove, needsSync bool) error {
 
 	var err error
-	if ti == nil {
+
+	if ti == nil || ti.dbItem == nil {
 		return fmt.Errorf("timer item is nil")
 	}
 
@@ -104,7 +105,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 
 	var err error
 
-	if ti == nil {
+	if ti == nil || ti.dbItem == nil {
 		return fmt.Errorf("timer item is nil")
 	}
 
@@ -179,7 +180,7 @@ func (tm *timerManager) enableTimer(ti *timerItem, needsSync bool) error {
 
 func (tm *timerManager) executeFunction(ti *timerItem) {
 
-	if ti == nil {
+	if ti == nil || ti.dbItem == nil {
 		log.Errorf("timer item is nil")
 		return
 	}
