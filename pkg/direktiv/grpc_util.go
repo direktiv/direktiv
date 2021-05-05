@@ -29,6 +29,12 @@ func AddGlobalGRPCDialOption(opt grpc.DialOption) {
 	globalGRPCDialOptions = append(globalGRPCDialOptions, opt)
 }
 
+var globalGRPCServerOptions []grpc.ServerOption
+
+func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
+	globalGRPCServerOptions = append(globalGRPCServerOptions, opt)
+}
+
 // GetEndpointTLS creates a grpc client
 func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 
@@ -74,6 +80,8 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 	if err != nil {
 		return err
 	}
+
+	options = append(options, globalGRPCServerOptions...)
 
 	(*server) = grpc.NewServer(options...)
 
