@@ -38,6 +38,8 @@ service:
   port: 80
 
 ingress:
+  auth:
+    enabled: false
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.class: nginx
