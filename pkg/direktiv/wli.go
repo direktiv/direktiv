@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -416,7 +417,7 @@ func jqObject(input interface{}, command string) (map[string]interface{}, error)
 
 }
 
-func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
+func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...interface{}) {
 
 	s := fmt.Sprintf(msg, a...)
 
@@ -430,7 +431,19 @@ func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetData("application/json", s)
-		go wli.engine.server.handleEvent(wli.namespace, &event)
+		data, err := event.MarshalJSON()
+		if err != nil {
+			log.Errorf("failed to marshal UserLog cloudevent: %v", err)
+			return
+		}
+		_, err = wli.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
+			Namespace:  &wli.namespace,
+			Cloudevent: data,
+		})
+		if err != nil {
+			log.Errorf("failed to broadcast cloudevent: %v", err)
+			return
+		}
 	}
 
 }

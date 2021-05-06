@@ -894,7 +894,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 			goto failure
 		}
 
-		wli.UserLog(string(data))
+		wli.UserLog(ctx, string(data))
 	}
 
 	transition, err = wli.logic.Run(ctx, wli, savedata, wakedata)
