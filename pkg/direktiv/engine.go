@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -527,13 +526,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 		return
 	}
 
-	d, err := base64.StdEncoding.DecodeString(string(savedata))
-	if err != nil {
-		log.Errorf("can not decode state data: %v", err)
-		return
-	}
-
-	children := logic.LivingChildren(d)
+	children := logic.LivingChildren(savedata)
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
