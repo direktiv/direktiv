@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -115,7 +116,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot assume control of workflow instance lock: %v", err))
 	}
 
-	rec, err := we.db.getWorkflowInstance(context.Background(), id)
+	rec, err := we.db.getWorkflowInstance(ctx, id)
 	if err != nil {
 		return nil, nil, NewInternalError(err)
 	}
@@ -251,7 +252,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 }
 
-func (wli *workflowLogicInstance) wakeCaller(data []byte) {
+func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 
 	if wli.rec.InvokedBy != "" {
 
@@ -277,7 +278,7 @@ func (wli *workflowLogicInstance) wakeCaller(data []byte) {
 
 		wli.Log("Reporting results to calling workflow.")
 
-		err = wli.engine.wakeCaller(msg)
+		err = wli.engine.wakeCaller(ctx, msg)
 		if err != nil {
 			log.Error(err)
 			return
@@ -416,7 +417,7 @@ func jqObject(input interface{}, command string) (map[string]interface{}, error)
 
 }
 
-func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
+func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...interface{}) {
 
 	s := fmt.Sprintf(msg, a...)
 
@@ -430,7 +431,19 @@ func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetData("application/json", s)
-		go wli.engine.server.handleEvent(wli.namespace, &event)
+		data, err := event.MarshalJSON()
+		if err != nil {
+			log.Errorf("failed to marshal UserLog cloudevent: %v", err)
+			return
+		}
+		_, err = wli.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
+			Namespace:  &wli.namespace,
+			Cloudevent: data,
+		})
+		if err != nil {
+			log.Errorf("failed to broadcast cloudevent: %v", err)
+			return
+		}
 	}
 
 }
