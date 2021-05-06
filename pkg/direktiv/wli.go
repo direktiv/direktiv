@@ -116,7 +116,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot assume control of workflow instance lock: %v", err))
 	}
 
-	rec, err := we.db.getWorkflowInstance(context.Background(), id)
+	rec, err := we.db.getWorkflowInstance(ctx, id)
 	if err != nil {
 		return nil, nil, NewInternalError(err)
 	}

@@ -88,7 +88,7 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 	dr := &secretsgrpc.DeleteSecretsRequest{
 		Namespace: &name,
 	}
-	_, err = db.secretsClient.DeleteSecrets(context.Background(), dr)
+	_, err = db.secretsClient.DeleteSecrets(ctx, dr)
 
 	return err
 

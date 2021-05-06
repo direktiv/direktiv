@@ -339,7 +339,7 @@ func (is *ingressServer) GetWorkflowInstance(ctx context.Context, in *ingress.Ge
 	rev := int32(inst.Revision)
 
 	var invokedBy string
-	if wfID, err := inst.QueryWorkflow().FirstID(context.Background()); err == nil {
+	if wfID, err := inst.QueryWorkflow().FirstID(ctx); err == nil {
 		invokedBy = wfID.String()
 	} else {
 		return nil, grpcDatabaseError(err, "workflow instance", id)
