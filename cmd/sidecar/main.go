@@ -424,8 +424,6 @@ func (d *direktivHTTPHandler) pingMe() {
 
 func (d *direktivHTTPHandler) respondToFlow(info *responseInfo) {
 
-	defer info.logger.Close()
-
 	r := &flow.ReportActionResultsRequest{
 		InstanceId:   &info.iid,
 		Step:         &info.step,

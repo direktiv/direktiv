@@ -116,14 +116,21 @@ func (db *dbManager) tryLockDB(id uint64) (bool, *sql.Conn, error) {
 
 }
 
+// connection for locks
+var conn *sql.Conn
+
 func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
+
+	var err error
 
 	ctx, cancel := context.WithTimeout(db.ctx, time.Duration(wait)*time.Second)
 	defer cancel()
 
-	conn, err := db.dbEnt.DB().Conn(db.ctx)
-	if err != nil {
-		return nil, err
+	if conn == nil || conn.PingContext(context.Background()) != nil {
+		conn, err = db.dbEnt.DB().Conn(db.ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	_, err = conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", int64(id))
