@@ -252,7 +252,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 }
 
-func (wli *workflowLogicInstance) wakeCaller(data []byte) {
+func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 
 	if wli.rec.InvokedBy != "" {
 
@@ -278,7 +278,7 @@ func (wli *workflowLogicInstance) wakeCaller(data []byte) {
 
 		wli.Log("Reporting results to calling workflow.")
 
-		err = wli.engine.wakeCaller(msg)
+		err = wli.engine.wakeCaller(ctx, msg)
 		if err != nil {
 			log.Error(err)
 			return

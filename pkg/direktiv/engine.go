@@ -399,9 +399,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 const actionWakeupFunction = "actionWakeup"
 
-func (we *workflowEngine) wakeCaller(msg *actionResultMessage) error {
-
-	ctx := context.Background()
+func (we *workflowEngine) wakeCaller(ctx context.Context, msg *actionResultMessage) error {
 
 	// TODO: timeouts & retries
 
@@ -688,7 +686,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 		logger.Info(fmt.Sprintf("Reporting failure to calling workflow."))
 
-		err = we.wakeCaller(msg)
+		err = we.wakeCaller(ctx, msg)
 		if err != nil {
 			log.Error(err)
 			return nil
@@ -856,7 +854,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 	wli.engine.freeResources(rec)
 
-	wli.wakeCaller(data)
+	wli.wakeCaller(ctx, data)
 
 }
 
@@ -935,7 +933,7 @@ failure:
 		wli.Log("Workflow failed with uncatchable error: %s", uerr.Message)
 
 		wli.engine.freeResources(wli.rec)
-		wli.wakeCaller(nil)
+		wli.wakeCaller(ctx, nil)
 		return
 
 	} else if cerr, ok := err.(*CatchableError); ok {
@@ -989,7 +987,7 @@ failure:
 
 		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
 		wli.engine.freeResources(wli.rec)
-		wli.wakeCaller(nil)
+		wli.wakeCaller(ctx, nil)
 		return
 
 	} else if ierr, ok := err.(*InternalError); ok {
@@ -1004,7 +1002,7 @@ failure:
 			if err == nil {
 				log.Errorf("Workflow failed with internal error: %s", ierr.Error())
 				wli.Log("Workflow crashed due to an internal error.")
-				wli.wakeCaller(nil)
+				wli.wakeCaller(ctx, nil)
 				return
 			}
 
