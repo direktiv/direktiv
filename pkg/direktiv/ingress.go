@@ -339,7 +339,7 @@ func (is *ingressServer) GetWorkflowInstance(ctx context.Context, in *ingress.Ge
 	rev := int32(inst.Revision)
 
 	var invokedBy string
-	if wfID, err := inst.QueryWorkflow().FirstID(context.Background()); err == nil {
+	if wfID, err := inst.QueryWorkflow().FirstID(ctx); err == nil {
 		invokedBy = wfID.String()
 	} else {
 		return nil, grpcDatabaseError(err, "workflow instance", id)
@@ -385,7 +385,7 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 		l := &logs.Logs[i]
 
 		resp.WorkflowInstanceLogs = append(resp.WorkflowInstanceLogs, &ingress.GetWorkflowInstanceLogsResponse_WorkflowInstanceLog{
-			Timestamp: timestamppb.New(time.Unix(l.Timestamp, 0)),
+			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
 			Message:   &l.Message,
 			Context:   l.Context,
 		})
@@ -514,7 +514,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	workflow := in.GetName()
 	input := in.GetInput()
 
-	instID, err := is.wfServer.engine.DirectInvoke(namespace, workflow, input)
+	instID, err := is.wfServer.engine.DirectInvoke(ctx, namespace, workflow, input)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}

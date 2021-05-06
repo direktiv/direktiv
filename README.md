@@ -155,25 +155,27 @@ This is how Direktiv would execute this process:
 The YAML file below shows the structure of the complex workflow:
 
 ```yaml
-id: check-image-v2
+id: check-nsfw-image
+description: "Classify an image uploaded to Azure Blob Storage as SFW or NSFW using Google Vision, AWS Lambda and Azure Storage functions"
 start:
   type: event
-  state: getImageFromAzure
-  event:
+  state: getRatingFromGoogleVision
+  event: 
     type: Microsoft.Storage.BlobCreated
 functions:
 - id: imageCheck
-  image: vorteil/imagerecognition:v1
-- id: azurego
-  image: vorteil/azgo:v1
-  size: large
+  image: vorteil/imagerecognition:v2
 - id: awslambda
-  image: vorteil/lambda:v1
+  image: vorteil/lambda:v2
 - id: send-email
-  image: vorteil/smtp:latest
-description: "Listen for an azure event upload to bucket"
+  image: vorteil/smtp:v2
+- id: azureupload
+  image: vorteil/azure-upload:v2
+- id: azurecli
+  image: vorteil/azgo:v2
+  size: large   
 states:
-- id: getImageFromAzure
+- id: getRatingFromGoogleVision
   type: action
   action:
     secrets: ["GOOGLE_SERVICE_ACCOUNT_KEY"]
@@ -184,92 +186,100 @@ states:
     }'
   transition: checkRatingForImage
 - id: checkRatingForImage
+  log: "."
   type: switch
   conditions:
   - condition: .return.safeForWork == true
-    transition: addWaterMark
-  defaultTransition: ValidateEmail
-- id: ValidateEmail
-  type: validate
-  subject: .email
-  schema:
-    type: string
-    format: email
-  catch:
-  - error: direktiv.schema.*
-    transition: EmailNotValid
-  transition: SendEmail
-- id: EmailNotValid
-  type: noop
-  transform: '{ result: "Email not valid" }'
-  transition: notSafeForWork
-- id: SendEmail
+    transition: addWaterMarkApproved
+  defaultTransition: addWaterMarkNotApproved
+- id: addWaterMarkApproved
   type: action
-  action:
-    function: send-email
-    secrets: ["GOOOGLE_SMTP_PASSWORD"]
+  action: 
+    function: awslambda 
+    secrets: ["LAMBDA_KEY", "LAMBDA_SECRET"]
     input: '{
-      "from": "support@vorteil.io",
-      "to": .email,
-      "subject": "SMTP Email",
-      "message": "NSFW Image detected",
-      "server": "smtp.gmail.com",
-      "port": 587,
-      "password": .secrets.GOOOGLE_SMTP_PASSWORD
-    }'
-  transition: notSafeForWork
-- id: notSafeForWork
-  type: action
-  action:
-    secrets: ["AZ_NAME", "AZ_PASSWORD", "AZ_TENANT","AZ_STORAGE_KEY"]
-    function: azurego
-    input: '{
-      "name": .secrets.AZ_NAME,
-      "password": .secrets.AZ_PASSWORD,
-      "tenant": .secrets.AZ_TENANT,
-      "command": ["storage", "blob", "copy", "start", "--destination-blob", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--destination-container", "not-safe-for-work", "--source-container", "processing", "--source-blob", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--account-key", .secrets.AZ_STORAGE_KEY, "--account-name", "direktiv"]
-    }'
-  transition: cleanup
-- id: addWaterMark
-  type: action
-  action:
-    function: awslambda
-    secrets: [lambdaKey, lambdaSecret]
-    input: '{
-      key: .secrets.lambdaKey,
-      secret: .secrets.lambdaSecret,
-      function: "-pnt-workflow-master-sns-publish:release",
+      key: .secrets.LAMBDA_KEY,
+      secret: .secrets.LAMBDA_SECRET,
+      region: "ap-southeast-2",
+      function: "python-watermark",
       body: {
-        Url: ."Microsoft.Storage.BlobCreated".url
-        TransactionId: .transactionId,
-        Payload: .requestType,
-        StateName: "AddWaterMarkImage"
+        imageurl: ."Microsoft.Storage.BlobCreated".url,
+        message: "Approved by Direktiv.io",
       }
     }'
   transform: '.notify = .return | del(.return)'
-  transition: safeForWork
-- id: safeForWork
+  transition: copyFileToSafeForWork
+- id: addWaterMarkNotApproved
   type: action
-  action:
-    secrets: ["AZ_NAME", "AZ_PASSWORD", "AZ_TENANT","AZ_STORAGE_KEY"]
-    function: azurego
+  action: 
+    function: awslambda 
+    secrets: ["LAMBDA_KEY", "LAMBDA_SECRET"]
     input: '{
-      "name": .secrets.AZ_NAME,
-      "password": .secrets.AZ_PASSWORD,
-      "tenant": .secrets.AZ_TENANT,
-      "command": ["storage", "blob", "copy", "start", "--destination-blob", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--destination-container", "safe-for-work", "--source-container", "processing", "--source-blob", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--account-key", .secrets.AZ_STORAGE_KEY, "--account-name", "direktiv"]
+      key: .secrets.LAMBDA_KEY,
+      secret: .secrets.LAMBDA_SECRET,
+      region: "ap-southeast-2",
+      function: "python-watermark",
+      body: {
+        imageurl: ."Microsoft.Storage.BlobCreated".url,
+        message: "Not approved by Direktiv.io",
+      }
+    }'
+  transform: '.notify = .return | del(.return)'
+  transition: sendEmail
+- id: sendEmail
+  type: action
+  log: "."
+  action:
+    function: send-email
+    secrets: ["GMAIL_PASSWORD"]
+    input: '{
+      "from": "wilhelm.wonigkeit@vorteil.io",
+      "to": "wilhelm.wonigkeit@vorteil.io",
+      "subject": "Direktiv NSFW Image Workflow",
+      "message": "NSFW Image detected",
+      "server": "smtp.gmail.com",
+      "port": 587,
+      "password": .secrets.GMAIL_PASSWORD
+    }'
+  transition: copyFileToNotSafeForWork
+- id: copyFileToNotSafeForWork
+  type: action
+  log: "."
+  action:
+    secrets: ["AZ_STORAGE_ACCOUNT", "AZ_STORAGE_KEY"]
+    function: azureupload
+    input: '{
+      "container": "not-safe-for-work",
+      "storage-account": .secrets.AZ_STORAGE_ACCOUNT,
+      "storage-account-key": .secrets.AZ_STORAGE_KEY,
+      "data": .notify.body,
+      "upload-name": ."Microsoft.Storage.BlobCreated".url | capture("(?<filename>[a-z.]+$)").filename
+    }'
+  transition: cleanup
+- id: copyFileToSafeForWork
+  type: action
+  log: "."
+  action:
+    secrets: ["AZ_STORAGE_ACCOUNT", "AZ_STORAGE_KEY"]
+    function: azureupload
+    input: '{
+      "container": "safe-for-work",
+      "storage-account": .secrets.AZ_STORAGE_ACCOUNT,
+      "storage-account-key": .secrets.AZ_STORAGE_KEY,
+      "data": .notify.body,
+      "upload-name": ."Microsoft.Storage.BlobCreated".url | capture("(?<filename>[a-z.]+$)").filename
     }'
   transition: cleanup
 - id: cleanup
   type: action
   action:
-    secrets: ["AZ_NAME", "AZ_PASSWORD", "AZ_TENANT","AZ_STORAGE_KEY"]
-    function: azurego
+    secrets: ["AZ_STORAGE_ACCOUNT", "AZ_NAME", "AZ_PASSWORD", "AZ_TENANT","AZ_STORAGE_KEY"]
+    function: azurecli
     input: '{
       "name": .secrets.AZ_NAME,
       "password": .secrets.AZ_PASSWORD,
       "tenant": .secrets.AZ_TENANT,
-      "command": ["storage", "blob", "delete", "--container", "processing", "--name", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--account-name", "direktiv", "--account-key", .secrets.AZ_STORAGE_KEY]
+      "command": ["storage", "blob", "delete", "--container", "processing", "--name", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--account-name", .secrets.AZ_STORAGE_ACCOUNT, "--account-key", .secrets.AZ_STORAGE_KEY]
     }'
 ```
 

@@ -18,5 +18,6 @@ func (Timer) Fields() []ent.Field {
 		field.String("cron").Immutable().Optional(),
 		field.Time("one").Immutable().Optional(),
 		field.Bytes("data").Immutable().Optional(),
+		field.Time("last").Optional(),
 	}
 }

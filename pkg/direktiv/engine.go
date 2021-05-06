@@ -232,18 +232,10 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 		return err
 	}
 
-	var savedata []byte
-
-	if wli.rec.Memory != "" {
-
-		savedata, err = base64.StdEncoding.DecodeString(wli.rec.Memory)
-		if err != nil {
-			wli.Close()
-			err = fmt.Errorf("cannot decode the savedata: %v", err)
-			log.Error(err)
-			return err
-		}
-
+	savedata, err := InstanceMemory(wli.rec)
+	if err != nil {
+		wli.Close()
+		return err
 	}
 
 	go wli.engine.runState(ctx, wli, savedata, wakedata)
@@ -407,9 +399,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 const actionWakeupFunction = "actionWakeup"
 
-func (we *workflowEngine) wakeCaller(msg *actionResultMessage) error {
-
-	ctx := context.Background()
+func (we *workflowEngine) wakeCaller(ctx context.Context, msg *actionResultMessage) error {
 
 	// TODO: timeouts & retries
 
@@ -490,9 +480,9 @@ func (we *workflowEngine) sleepWakeup(data []byte) error {
 
 }
 
-func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error {
+func (we *workflowEngine) cancelRecordsChildren(ctx context.Context, rec *ent.WorkflowInstance) error {
 
-	wfrec, err := rec.QueryWorkflow().Only(context.Background())
+	wfrec, err := rec.QueryWorkflow().Only(ctx)
 	if err != nil {
 		return err
 	}
@@ -519,7 +509,13 @@ func (we *workflowEngine) cancelRecordsChildren(rec *ent.WorkflowInstance) error
 		return NewInternalError(fmt.Errorf("cannot initialize state logic: %v", err))
 	}
 	logic := stateLogic
-	we.cancelChildren(logic, []byte(rec.Memory))
+
+	savedata, err := InstanceMemory(rec)
+	if err != nil {
+		return err
+	}
+
+	we.cancelChildren(logic, savedata)
 
 	return nil
 
@@ -582,6 +578,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 	killer := make(chan bool)
 
+	ctx := context.Background()
+
 	go func() {
 
 		timer := time.After(time.Millisecond)
@@ -591,7 +589,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 			select {
 			case <-timer:
 				// broadcast cancel across cluster
-				syncServer(context.Background(), we.db, &we.server.id, instanceId, CancelSubflow)
+				syncServer(ctx, we.db, &we.server.id, instanceId, CancelSubflow)
 				// TODO: mark cancelled instances even if not scheduled in
 			case <-killer:
 				return
@@ -605,12 +603,12 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		close(killer)
 	}()
 
-	tx, err := we.db.dbEnt.Tx(context.Background())
+	tx, err := we.db.dbEnt.Tx(ctx)
 	if err != nil {
 		return err
 	}
 
-	rec, err := tx.WorkflowInstance.Query().Where(workflowinstance.InstanceIDEQ(instanceId)).Only(context.Background())
+	rec, err := tx.WorkflowInstance.Query().Where(workflowinstance.InstanceIDEQ(instanceId)).Only(ctx)
 	if err != nil {
 		return rollback(tx, err)
 	}
@@ -619,9 +617,9 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		return rollback(tx, nil)
 	}
 
-	we.completeState(context.Background(), rec, "", code, false)
+	we.completeState(ctx, rec, "", code, false)
 
-	ns, err := rec.QueryWorkflow().QueryNamespace().Only(context.Background())
+	ns, err := rec.QueryWorkflow().QueryNamespace().Only(ctx)
 	if err != nil {
 		return rollback(tx, err)
 	}
@@ -631,7 +629,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		SetEndTime(time.Now()).
 		SetErrorCode(code).
 		SetErrorMessage(message).
-		Save(context.Background())
+		Save(ctx)
 	if err != nil {
 		return rollback(tx, err)
 	}
@@ -641,12 +639,12 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		return rollback(tx, err)
 	}
 
-	rec, err = we.db.getWorkflowInstanceByID(context.Background(), rec.ID)
+	rec, err = we.db.getWorkflowInstanceByID(ctx, rec.ID)
 	if err != nil {
 		return err
 	}
 
-	err = we.cancelRecordsChildren(rec)
+	err = we.cancelRecordsChildren(ctx, rec)
 	if err != nil {
 		log.Error(err)
 	}
@@ -688,7 +686,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 		logger.Info(fmt.Sprintf("Reporting failure to calling workflow."))
 
-		err = we.wakeCaller(msg)
+		err = we.wakeCaller(ctx, msg)
 		if err != nil {
 			log.Error(err)
 			return nil
@@ -856,7 +854,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 	wli.engine.freeResources(rec)
 
-	wli.wakeCaller(data)
+	wli.wakeCaller(ctx, data)
 
 }
 
@@ -894,7 +892,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 			goto failure
 		}
 
-		wli.UserLog(string(data))
+		wli.UserLog(ctx, string(data))
 	}
 
 	transition, err = wli.logic.Run(ctx, wli, savedata, wakedata)
@@ -919,7 +917,10 @@ failure:
 		err = NewInternalError(errors.New("somehow ended up in a catchable error loop"))
 	}
 
-	wli.engine.cancelChildren(wli.logic, []byte(wli.rec.Memory))
+	savedata, err = InstanceMemory(wli.rec)
+	if err == nil {
+		wli.engine.cancelChildren(wli.logic, savedata)
+	}
 
 	if uerr, ok := err.(*UncatchableError); ok {
 
@@ -932,7 +933,7 @@ failure:
 		wli.Log("Workflow failed with uncatchable error: %s", uerr.Message)
 
 		wli.engine.freeResources(wli.rec)
-		wli.wakeCaller(nil)
+		wli.wakeCaller(ctx, nil)
 		return
 
 	} else if cerr, ok := err.(*CatchableError); ok {
@@ -986,7 +987,7 @@ failure:
 
 		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
 		wli.engine.freeResources(wli.rec)
-		wli.wakeCaller(nil)
+		wli.wakeCaller(ctx, nil)
 		return
 
 	} else if ierr, ok := err.(*InternalError); ok {
@@ -1001,7 +1002,7 @@ failure:
 			if err == nil {
 				log.Errorf("Workflow failed with internal error: %s", ierr.Error())
 				wli.Log("Workflow crashed due to an internal error.")
-				wli.wakeCaller(nil)
+				wli.wakeCaller(ctx, nil)
 				return
 			}
 
@@ -1023,17 +1024,19 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 
 	var err error
 
+	ctx := context.Background()
+
 	wf, err := we.db.getWorkflow(uid)
 	if err != nil {
 		return err
 	}
 
-	ns, err := wf.QueryNamespace().Only(context.Background())
+	ns, err := wf.QueryNamespace().Only(ctx)
 	if err != nil {
 		return nil
 	}
 
-	wli, err := we.newWorkflowLogicInstance(ns.ID, wf.Name, []byte("{}"))
+	wli, err := we.newWorkflowLogicInstance(ctx, ns.ID, wf.Name, []byte("{}"))
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
 			log.Errorf("Internal error on CronInvoke: %v", err)
@@ -1048,7 +1051,7 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 		return fmt.Errorf("cannot cron invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ns.ID, wf.Name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData))
 	if err != nil {
 		return NewInternalError(err)
 	}
@@ -1063,11 +1066,11 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 
 }
 
-func (we *workflowEngine) DirectInvoke(namespace, name string, input []byte) (string, error) {
+func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name string, input []byte) (string, error) {
 
 	var err error
 
-	wli, err := we.newWorkflowLogicInstance(namespace, name, input)
+	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
 			log.Errorf("Internal error on DirectInvoke: %v", err)
@@ -1082,7 +1085,7 @@ func (we *workflowEngine) DirectInvoke(namespace, name string, input []byte) (st
 		return "", fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(namespace, name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData))
 	if err != nil {
 		return "", NewInternalError(err)
 	}
@@ -1099,13 +1102,15 @@ func (we *workflowEngine) DirectInvoke(namespace, name string, input []byte) (st
 
 func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
 
+	ctx := context.Background()
+
 	wf, err := we.db.getWorkflowByID(workflowID)
 	if err != nil {
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
-	ns, err := wf.QueryNamespace().Only(we.db.ctx)
+	ns, err := wf.QueryNamespace().Only(ctx)
 	if err != nil {
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
@@ -1139,7 +1144,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 	namespace := ns.ID
 	name := wf.Name
 
-	wli, err := we.newWorkflowLogicInstance(namespace, name, input)
+	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
 	if err != nil {
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
@@ -1160,7 +1165,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 		return
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(namespace, name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData))
 	if err != nil {
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
@@ -1191,7 +1196,7 @@ type subflowCaller struct {
 
 const maxSubflowDepth = 5
 
-func (we *workflowEngine) subflowInvoke(caller *subflowCaller, callersCaller, namespace, name string, input []byte) (string, error) {
+func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCaller, callersCaller, namespace, name string, input []byte) (string, error) {
 
 	var err error
 
@@ -1210,7 +1215,7 @@ func (we *workflowEngine) subflowInvoke(caller *subflowCaller, callersCaller, na
 		}
 	}
 
-	wli, err := we.newWorkflowLogicInstance(namespace, name, input)
+	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
 			log.Errorf("Internal error on subflowInvoke: %v", err)
@@ -1225,7 +1230,7 @@ func (we *workflowEngine) subflowInvoke(caller *subflowCaller, callersCaller, na
 		return "", fmt.Errorf("cannot subflow invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(namespace, name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData))
 	if err != nil {
 		return "", NewInternalError(err)
 	}
@@ -1239,7 +1244,7 @@ func (we *workflowEngine) subflowInvoke(caller *subflowCaller, callersCaller, na
 			return "", NewInternalError(err)
 		}
 
-		wli.rec, err = wli.rec.Update().SetInvokedBy(string(data)).Save(context.Background())
+		wli.rec, err = wli.rec.Update().SetInvokedBy(string(data)).Save(ctx)
 		if err != nil {
 			return "", NewInternalError(err)
 		}

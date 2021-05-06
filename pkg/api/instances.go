@@ -25,7 +25,7 @@ func (h *Handler) instances(w http.ResponseWriter, r *http.Request) {
 	limit := int32(l)
 	offset := int32(o)
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowInstances(ctx, &ingress.GetWorkflowInstancesRequest{
@@ -51,7 +51,7 @@ func (h *Handler) getInstance(w http.ResponseWriter, r *http.Request) {
 
 	iid := fmt.Sprintf("%s/%s/%s", n, name, id)
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowInstance(ctx, &ingress.GetWorkflowInstanceRequest{
@@ -74,7 +74,7 @@ func (h *Handler) cancelInstance(w http.ResponseWriter, r *http.Request) {
 
 	iid := fmt.Sprintf("%s/%s/%s", n, name, id)
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.CancelWorkflowInstance(ctx, &ingress.CancelWorkflowInstanceRequest{
@@ -97,7 +97,7 @@ func (h *Handler) instanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	iid := fmt.Sprintf("%s/%s/%s", n, name, id)
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	o, l := paginationParams(r)
@@ -117,7 +117,6 @@ func (h *Handler) instanceLogs(w http.ResponseWriter, r *http.Request) {
 		Limit:      &limit,
 		Offset:     &offset,
 	})
-
 	if err != nil {
 		ErrResponse(w, err)
 		return

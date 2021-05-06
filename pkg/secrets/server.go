@@ -11,27 +11,24 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/secrets/handler"
 )
 
 // NewServer creates a new secrets server
 func NewServer(backend string) (*Server, error) {
-
 	srv := &Server{
 		lifeLine: make(chan bool),
 	}
 
 	log.Infof("starting secret backend %s", backend)
+	backendType, err := handler.ParseType(backend)
+	if err != nil {
+		return nil, err
+	}
 
-	switch backend {
-	case BackendDB:
-		err := srv.setupDB()
-		if err != nil {
-			return nil, err
-		}
-	case BackendVault:
-
-	default:
-		return nil, fmt.Errorf("backend %s not supported", backend)
+	srv.handler, err = backendType.Setup()
+	if err != nil {
+		return nil, err
 	}
 
 	return srv, nil

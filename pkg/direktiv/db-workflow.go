@@ -139,7 +139,11 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 		log.Errorf("can not delete knative functions: %v", err)
 	}
 
-	// TODO: delete cron
+	// delete crons
+	err = db.tm.deleteCronForWorkflow(id)
+	if err != nil {
+		log.Errorf("Can not delete cron for workflow: %v", id)
+	}
 
 	i, err := db.dbEnt.Workflow.Delete().
 		Where(workflow.IDEQ(u)).
@@ -206,14 +210,14 @@ func (db *dbManager) getWorkflow(id string) (*ent.Workflow, error) {
 
 }
 
-func (db *dbManager) getNamespaceWorkflow(n string, ns string) (*ent.Workflow, error) {
+func (db *dbManager) getNamespaceWorkflow(ctx context.Context, n string, ns string) (*ent.Workflow, error) {
 
 	return db.dbEnt.Workflow.
 		Query().
 		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
 		Where(workflow.NameEQ(n)).
 		WithNamespace().
-		Only(db.ctx)
+		Only(ctx)
 
 }
 

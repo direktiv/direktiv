@@ -1,4 +1,4 @@
-package secrets
+package handler
 
 import (
 	"context"
@@ -28,38 +28,34 @@ type dbHandler struct {
 	key string
 }
 
-func (s *Server) setupDB() error {
+func setupDB() (SecretsHandler, error) {
 
 	dbEnv := os.Getenv(secretsConn)
 	keyEnv := os.Getenv(secretsKey)
 
 	if keyEnv == "" || dbEnv == "" {
-		return fmt.Errorf("DB and Key have to be set")
+		return nil, fmt.Errorf("DB and Key have to be set")
 	}
 
 	if len(keyEnv) != 32 {
-		return fmt.Errorf("key needs to be 32 characters")
+		return nil, fmt.Errorf("key needs to be 32 characters")
 	}
 
 	db, err := ent.Open("postgres", dbEnv)
 	if err != nil {
 		log.Errorf("can not connect to secrets db: %v", err)
-		return err
+		return nil, err
 	}
 
 	if err := db.Schema.Create(context.Background()); err != nil {
 		log.Errorf("failed creating schema resources: %v", err)
-		return err
+		return nil, err
 	}
 
-	s.handler = &dbHandler{
+	return &dbHandler{
 		db:  db,
 		key: keyEnv,
-	}
-
-	log.Infof("secrets configured")
-
-	return nil
+	}, err
 }
 
 func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {

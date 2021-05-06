@@ -66,6 +66,20 @@ func (tc *TimerCreate) SetData(b []byte) *TimerCreate {
 	return tc
 }
 
+// SetLast sets the "last" field.
+func (tc *TimerCreate) SetLast(t time.Time) *TimerCreate {
+	tc.mutation.SetLast(t)
+	return tc
+}
+
+// SetNillableLast sets the "last" field if the given value is not nil.
+func (tc *TimerCreate) SetNillableLast(t *time.Time) *TimerCreate {
+	if t != nil {
+		tc.SetLast(*t)
+	}
+	return tc
+}
+
 // Mutation returns the TimerMutation object of the builder.
 func (tc *TimerCreate) Mutation() *TimerMutation {
 	return tc.mutation
@@ -199,6 +213,14 @@ func (tc *TimerCreate) createSpec() (*Timer, *sqlgraph.CreateSpec) {
 			Column: timer.FieldData,
 		})
 		_node.Data = value
+	}
+	if value, ok := tc.mutation.Last(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: timer.FieldLast,
+		})
+		_node.Last = value
 	}
 	return _node, _spec
 }

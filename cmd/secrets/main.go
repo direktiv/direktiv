@@ -3,18 +3,21 @@ package main
 import (
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	runtime "github.com/banzaicloud/logrus-runtime-formatter"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/vorteil/direktiv/pkg/secrets"
+	"github.com/vorteil/direktiv/pkg/secrets/handler"
 )
 
 func main() {
 
 	if len(os.Args) != 2 {
-		log.Fatal("secrets needs type, e.g. database, vault")
+		supportedSecrets := handler.ListRegisteredTypesString()
+		log.Fatalf("secrets needs type, supported types: %s", strings.Join(supportedSecrets, ", "))
 	}
 
 	backend := os.Args[1]

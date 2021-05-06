@@ -2,7 +2,6 @@ package direktiv
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -47,6 +46,8 @@ func (fs *flowServer) start(s *WorkflowServer) error {
 
 func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
+	log.Debugf("action response: %v", in.GetActionId())
+
 	var resp emptypb.Empty
 
 	ctx, wli, err := fs.engine.loadWorkflowLogicInstance(in.GetInstanceId(), int(in.GetStep()))
@@ -67,25 +68,10 @@ func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportAc
 		return nil, err
 	}
 
-	var savedata []byte
-
-	if wli.rec.Memory != "" {
-
-		savedata, err = base64.StdEncoding.DecodeString(wli.rec.Memory)
-		if err != nil {
-			wli.Close()
-			err = fmt.Errorf("cannot decode the savedata: %v", err)
-			log.Error(err)
-			return nil, err
-		}
-
-		// TODO: ?
-		// wli.rec, err = wli.rec.Update().SetNillableMemory(nil).Save(ctx)
-		// if err != nil {
-		// 	log.Errorf("cannot update savedata information: %v", err)
-		// 	return
-		// }
-
+	savedata, err := InstanceMemory(wli.rec)
+	if err != nil {
+		wli.Close()
+		return nil, err
 	}
 
 	go fs.engine.runState(ctx, wli, savedata, wakedata)

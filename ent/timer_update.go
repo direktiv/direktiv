@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,6 +24,26 @@ type TimerUpdate struct {
 // Where adds a new predicate for the TimerUpdate builder.
 func (tu *TimerUpdate) Where(ps ...predicate.Timer) *TimerUpdate {
 	tu.mutation.predicates = append(tu.mutation.predicates, ps...)
+	return tu
+}
+
+// SetLast sets the "last" field.
+func (tu *TimerUpdate) SetLast(t time.Time) *TimerUpdate {
+	tu.mutation.SetLast(t)
+	return tu
+}
+
+// SetNillableLast sets the "last" field if the given value is not nil.
+func (tu *TimerUpdate) SetNillableLast(t *time.Time) *TimerUpdate {
+	if t != nil {
+		tu.SetLast(*t)
+	}
+	return tu
+}
+
+// ClearLast clears the value of the "last" field.
+func (tu *TimerUpdate) ClearLast() *TimerUpdate {
+	tu.mutation.ClearLast()
 	return tu
 }
 
@@ -118,6 +139,19 @@ func (tu *TimerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: timer.FieldData,
 		})
 	}
+	if value, ok := tu.mutation.Last(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: timer.FieldLast,
+		})
+	}
+	if tu.mutation.LastCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: timer.FieldLast,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{timer.Label}
@@ -135,6 +169,26 @@ type TimerUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TimerMutation
+}
+
+// SetLast sets the "last" field.
+func (tuo *TimerUpdateOne) SetLast(t time.Time) *TimerUpdateOne {
+	tuo.mutation.SetLast(t)
+	return tuo
+}
+
+// SetNillableLast sets the "last" field if the given value is not nil.
+func (tuo *TimerUpdateOne) SetNillableLast(t *time.Time) *TimerUpdateOne {
+	if t != nil {
+		tuo.SetLast(*t)
+	}
+	return tuo
+}
+
+// ClearLast clears the value of the "last" field.
+func (tuo *TimerUpdateOne) ClearLast() *TimerUpdateOne {
+	tuo.mutation.ClearLast()
+	return tuo
 }
 
 // Mutation returns the TimerMutation object of the builder.
@@ -251,6 +305,19 @@ func (tuo *TimerUpdateOne) sqlSave(ctx context.Context) (_node *Timer, err error
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeBytes,
 			Column: timer.FieldData,
+		})
+	}
+	if value, ok := tuo.mutation.Last(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: timer.FieldLast,
+		})
+	}
+	if tuo.mutation.LastCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: timer.FieldLast,
 		})
 	}
 	_node = &Timer{config: tuo.config}

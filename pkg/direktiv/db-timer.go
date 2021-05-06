@@ -9,6 +9,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func (db *dbManager) updateRunTime(timer *ent.Timer, t time.Time) (*ent.Timer, error) {
+
+	tx, err := db.dbEnt.Tx(db.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	updater := timer.Update()
+	updater.SetLast(t)
+
+	newTimer, err := updater.Save(db.ctx)
+	if err != nil {
+		return nil, rollback(tx, err)
+	}
+
+	return newTimer, nil
+
+}
+
 func (db *dbManager) addTimer(name, fn, pattern string, t *time.Time, data []byte) (*ent.Timer, error) {
 
 	tc := db.dbEnt.Timer.

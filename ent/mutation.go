@@ -433,6 +433,7 @@ type TimerMutation struct {
 	cron          *string
 	one           *time.Time
 	data          *[]byte
+	last          *time.Time
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Timer, error)
@@ -737,6 +738,55 @@ func (m *TimerMutation) ResetData() {
 	delete(m.clearedFields, timer.FieldData)
 }
 
+// SetLast sets the "last" field.
+func (m *TimerMutation) SetLast(t time.Time) {
+	m.last = &t
+}
+
+// Last returns the value of the "last" field in the mutation.
+func (m *TimerMutation) Last() (r time.Time, exists bool) {
+	v := m.last
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLast returns the old "last" field's value of the Timer entity.
+// If the Timer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimerMutation) OldLast(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLast is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLast requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLast: %w", err)
+	}
+	return oldValue.Last, nil
+}
+
+// ClearLast clears the value of the "last" field.
+func (m *TimerMutation) ClearLast() {
+	m.last = nil
+	m.clearedFields[timer.FieldLast] = struct{}{}
+}
+
+// LastCleared returns if the "last" field was cleared in this mutation.
+func (m *TimerMutation) LastCleared() bool {
+	_, ok := m.clearedFields[timer.FieldLast]
+	return ok
+}
+
+// ResetLast resets all changes to the "last" field.
+func (m *TimerMutation) ResetLast() {
+	m.last = nil
+	delete(m.clearedFields, timer.FieldLast)
+}
+
 // Op returns the operation name.
 func (m *TimerMutation) Op() Op {
 	return m.op
@@ -751,7 +801,7 @@ func (m *TimerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TimerMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, timer.FieldName)
 	}
@@ -766,6 +816,9 @@ func (m *TimerMutation) Fields() []string {
 	}
 	if m.data != nil {
 		fields = append(fields, timer.FieldData)
+	}
+	if m.last != nil {
+		fields = append(fields, timer.FieldLast)
 	}
 	return fields
 }
@@ -785,6 +838,8 @@ func (m *TimerMutation) Field(name string) (ent.Value, bool) {
 		return m.One()
 	case timer.FieldData:
 		return m.Data()
+	case timer.FieldLast:
+		return m.Last()
 	}
 	return nil, false
 }
@@ -804,6 +859,8 @@ func (m *TimerMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldOne(ctx)
 	case timer.FieldData:
 		return m.OldData(ctx)
+	case timer.FieldLast:
+		return m.OldLast(ctx)
 	}
 	return nil, fmt.Errorf("unknown Timer field %s", name)
 }
@@ -848,6 +905,13 @@ func (m *TimerMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetData(v)
 		return nil
+	case timer.FieldLast:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLast(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Timer field %s", name)
 }
@@ -887,6 +951,9 @@ func (m *TimerMutation) ClearedFields() []string {
 	if m.FieldCleared(timer.FieldData) {
 		fields = append(fields, timer.FieldData)
 	}
+	if m.FieldCleared(timer.FieldLast) {
+		fields = append(fields, timer.FieldLast)
+	}
 	return fields
 }
 
@@ -910,6 +977,9 @@ func (m *TimerMutation) ClearField(name string) error {
 	case timer.FieldData:
 		m.ClearData()
 		return nil
+	case timer.FieldLast:
+		m.ClearLast()
+		return nil
 	}
 	return fmt.Errorf("unknown Timer nullable field %s", name)
 }
@@ -932,6 +1002,9 @@ func (m *TimerMutation) ResetField(name string) error {
 		return nil
 	case timer.FieldData:
 		m.ResetData()
+		return nil
+	case timer.FieldLast:
+		m.ResetLast()
 		return nil
 	}
 	return fmt.Errorf("unknown Timer field %s", name)

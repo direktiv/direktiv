@@ -54,7 +54,7 @@ func (h *Handler) workflowMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// GRPC Context
-	gCTX := context.Background()
+	gCTX := r.Context()
 	gCTX, cancel := context.WithDeadline(gCTX, time.Now().Add(GRPCCommandTimeout))
 	defer cancel()
 
