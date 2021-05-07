@@ -12,7 +12,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/itchyny/gojq"
-	"github.com/mitchellh/hashstructure/v2"
+	hashstructure "github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
@@ -118,6 +118,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 
 	rec, err := we.db.getWorkflowInstance(ctx, id)
 	if err != nil {
+		wli.unlock()
 		return nil, nil, NewInternalError(err)
 	}
 	wli.rec = rec
@@ -296,7 +297,6 @@ func (wli *workflowLogicInstance) lock(timeout time.Duration) (context.Context, 
 	}
 
 	wait := int(timeout.Seconds())
-
 	conn, err := wli.engine.db.lockDB(hash, wait)
 	if err != nil {
 		return nil, NewInternalError(err)
@@ -579,8 +579,8 @@ func (wli *workflowLogicInstance) scheduleTimeout(t time.Time, soft bool) {
 
 	// cancel existing timeouts
 
-	wli.engine.timer.actionTimerByName(oldId, deleteTimerAction)
-	wli.engine.timer.actionTimerByName(id, deleteTimerAction)
+	wli.engine.timer.deleteTimerByName(oldId)
+	wli.engine.timer.deleteTimerByName(id)
 
 	// schedule timeout
 
@@ -595,7 +595,7 @@ func (wli *workflowLogicInstance) scheduleTimeout(t time.Time, soft bool) {
 		log.Error(err)
 	}
 
-	_, err = wli.engine.timer.addOneShot(id, timeoutFunction, deadline, data)
+	err = wli.engine.timer.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
 		log.Error(err)
 	}

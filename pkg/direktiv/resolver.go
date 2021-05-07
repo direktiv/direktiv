@@ -80,7 +80,7 @@ func watchEndpoints(svc, port string, conn resolver.ClientConn) error {
 	}
 
 	addrs := getAddrFromEnpoint(ep, port)
-	log.Infof("initial addresses: %v", addrs)
+	log.Debugf("initial addresses: %v", addrs)
 	conn.UpdateState(resolver.State{Addresses: addrs})
 
 	resyncPeriod := 30 * time.Minute
@@ -93,7 +93,7 @@ func watchEndpoints(svc, port string, conn resolver.ClientConn) error {
 				s := obj.(*v1.Endpoints)
 				if s.Name == svc {
 					addrs := getAddrFromEnpoint(s, port)
-					log.Infof("new addresses: %v", addrs)
+					log.Debugf("new addresses: %v", addrs)
 					conn.UpdateState(resolver.State{Addresses: addrs})
 				}
 			},
@@ -103,7 +103,7 @@ func watchEndpoints(svc, port string, conn resolver.ClientConn) error {
 				s := newObj.(*v1.Endpoints)
 				if s.Name == svc {
 					addrs := getAddrFromEnpoint(s, port)
-					log.Infof("updated addresses: %v", addrs)
+					log.Debugf("updated addresses: %v", addrs)
 					conn.UpdateState(resolver.State{Addresses: addrs})
 				}
 			},

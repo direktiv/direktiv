@@ -145,7 +145,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
+	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()))
 	if active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {
@@ -221,7 +221,7 @@ func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteW
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
 
-	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", uid), deleteTimerAction)
+	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", uid))
 
 	log.Debugf("Deleted workflow: %s", uid)
 
@@ -553,7 +553,7 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
+	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()))
 	if wf.Active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {

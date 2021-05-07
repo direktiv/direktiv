@@ -152,7 +152,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 
 func (we *workflowEngine) localCancel(id string) {
 
-	we.timer.actionTimerByName(id, deleteTimerAction)
+	we.timer.deleteTimerByName(id)
 	we.cancelsLock.Lock()
 	cancel, exists := we.cancels[id]
 	if exists {
@@ -446,7 +446,7 @@ func (we *workflowEngine) sleep(id, state string, step int, t time.Time) error {
 		Step:       step,
 	})
 
-	_, err := we.timer.addOneShot(id, sleepWakeupFunction, t, data)
+	err := we.timer.addOneShot(id, sleepWakeupFunction, t, data)
 	if err != nil {
 		return NewInternalError(err)
 	}
@@ -642,7 +642,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		log.Error(err)
 	}
 
-	we.timer.actionTimerByName(instanceId, deleteTimerAction)
+	we.timer.deleteTimerByName(instanceId)
 	// TODO: cancel any other outstanding timers
 
 	logger, err := (*we.instanceLogger).LoggerFunc(ns.ID, instanceId)
@@ -707,7 +707,7 @@ func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time)
 		Step:       step,
 	})
 
-	_, err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
+	err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
 	if err != nil {
 		return NewInternalError(err)
 	}

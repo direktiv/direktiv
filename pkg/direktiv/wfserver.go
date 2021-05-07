@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
-		"google.golang.org/grpc/resolver"
+	"google.golang.org/grpc/resolver"
 )
 
 const (
@@ -66,17 +66,10 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	}
 
 	addCron := func(name, cron string) {
-		// add clean up timers
-		_, err := s.dbManager.getTimer(name)
-
-		// on error we assuming it is not in the database
-		if err != nil {
-			s.tmManager.addCron(name, name, cron, []byte(""))
-		}
-
+		s.tmManager.addCron(name, name, cron, []byte(""))
 	}
 
-	addCron(timerCleanOneShot, "*/10 * * * *")
+	addCron(timerCleanOneShot, "* * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
 	ingressServer, err := newIngressServer(s)
@@ -197,13 +190,6 @@ func (s *WorkflowServer) Run() error {
 		return err
 	}
 
-	// start timers
-	err = s.tmManager.startTimers()
-	if err != nil {
-		s.Kill()
-		return err
-	}
-
 	for _, comp := range s.components {
 		log.Infof("starting %s component", comp.name())
 		err := comp.start(s)
@@ -217,6 +203,6 @@ func (s *WorkflowServer) Run() error {
 
 }
 
-func init(){
-    resolver.Register(&KubeResolverBuilder{})
+func init() {
+	resolver.Register(&KubeResolverBuilder{})
 }

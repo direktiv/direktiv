@@ -17,9 +17,6 @@ import (
 
 const (
 	filterPrefix = "filter-"
-
-	maxInstancesPerInterval   = 100
-	maxInstancesLimitInterval = time.Minute
 )
 
 // DBManager contains all database related information and functions
@@ -40,8 +37,8 @@ func prepLockDB(conn string) (*sql.DB, error) {
 
 	db.SetConnMaxIdleTime(-1)
 	db.SetConnMaxLifetime(-1)
-	db.SetMaxOpenConns(20)
-	db.SetMaxIdleConns(20)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(10)
 
 	return db, err
 
@@ -61,6 +58,10 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 		log.Errorf("can not connect to db: %v", err)
 		return nil, err
 	}
+
+	udb := db.dbEnt.DB()
+	udb.SetMaxIdleConns(10)
+	udb.SetMaxOpenConns(10)
 
 	// Run the auto migration tool.
 	if err := db.dbEnt.Schema.Create(db.ctx); err != nil {
@@ -139,7 +140,8 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 	var err error
 
-	ctx, cancel := context.WithTimeout(db.ctx, time.Duration(wait)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Duration(wait)*time.Hour)
 	defer cancel()
 
 	conn, err := db.dbForLock.Conn(ctx)
@@ -165,7 +167,7 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
 
-	_, err := conn.ExecContext(db.ctx,
+	_, err := conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
 
 	if err != nil {
