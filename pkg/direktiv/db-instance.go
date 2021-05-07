@@ -61,19 +61,19 @@ func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf u
 
 func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string) (*ent.WorkflowInstance, error) {
 
-	count, err := db.dbEnt.WorkflowInstance.
-		Query().
-		Where(workflowinstance.HasWorkflowWith(workflow.HasNamespaceWith(namespace.IDEQ(ns)))).
-		Where(workflowinstance.BeginTimeGT(time.Now().Add(-maxInstancesLimitInterval))).
-		Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// only limit if running in prod mode
-	if log.GetLevel() != log.DebugLevel && count > maxInstancesPerInterval {
-		return nil, NewCatchableError("direktiv.limits.instances", "new workflow instance rejected because it would exceed the maximum number of new workflow instances (%d) per time interval (%s) for the namespace", maxInstancesPerInterval, maxInstancesLimitInterval)
-	}
+	// count, err := db.dbEnt.WorkflowInstance.
+	// 	Query().
+	// 	Where(workflowinstance.HasWorkflowWith(workflow.HasNamespaceWith(namespace.IDEQ(ns)))).
+	// 	Where(workflowinstance.BeginTimeGT(time.Now().Add(-maxInstancesLimitInterval))).
+	// 	Count(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	//
+	// // only limit if running in prod mode
+	// if log.GetLevel() != log.DebugLevel && count > maxInstancesPerInterval {
+	// 	return nil, NewCatchableError("direktiv.limits.instances", "new workflow instance rejected because it would exceed the maximum number of new workflow instances (%d) per time interval (%s) for the namespace", maxInstancesPerInterval, maxInstancesLimitInterval)
+	// }
 
 	wf, err := db.getNamespaceWorkflow(ctx, workflowID, ns)
 	if err != nil {
