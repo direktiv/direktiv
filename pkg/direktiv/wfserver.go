@@ -54,7 +54,7 @@ func (s *WorkflowServer) initWorkflowServer() error {
 
 	// register the timer functions
 	var timerFunctions = map[string]func([]byte) error{
-		timerCleanOneShot:         s.tmManager.cleanOneShot,
+		timerGC:                   s.tmManager.timerGC,
 		timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
 	}
 
@@ -69,7 +69,7 @@ func (s *WorkflowServer) initWorkflowServer() error {
 		s.tmManager.addCron(name, name, cron, []byte(""))
 	}
 
-	addCron(timerCleanOneShot, "* * * * *")
+	addCron(timerGC, "0/5 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
 	ingressServer, err := newIngressServer(s)

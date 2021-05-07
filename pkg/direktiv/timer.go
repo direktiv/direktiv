@@ -3,6 +3,7 @@ package direktiv
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 const (
 	timerCleanServer          = "cleanServer"
 	timerSchedWorkflow        = "schedWorkflow"
-	timerCleanOneShot         = "cleanOneShot"
+	timerGC                   = "timerGC"
 	timerCleanInstanceRecords = "cleanInstanceRecords"
 )
 
@@ -63,6 +64,10 @@ func (tm *timerManager) disableTimer(ti *timerItem) error {
 		return fmt.Errorf("unknown timer type")
 	}
 
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
+	delete(tm.timers, ti.name)
+
 	return nil
 }
 
@@ -73,6 +78,10 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 	err := ti.fn(ti.data)
 	if err != nil {
 		log.Errorf("can not run function for %s: %v", ti.name, err)
+	}
+
+	if ti.timerType == timerTypeOneShot {
+		tm.disableTimer(ti)
 	}
 
 }
@@ -227,39 +236,34 @@ func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byt
 
 func (tm *timerManager) deleteTimersForInstance(name string) error {
 
-	// 	log.Debugf("deleting timers for instance %s", name)
-	//
-	// 	delT := func(pattern, name string) error {
-	// 		timers, err := tm.server.dbManager.getTimersWithPrefix(fmt.Sprintf(pattern, name))
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	//
-	// 		for _, t := range timers {
-	// 			tm.actionTimerByName(t.Name, deleteTimerAction)
-	// 		}
-	// 		return nil
-	// 	}
-	//
-	// 	patterns := []string{
-	// 		"timeout:%s",
-	// 		"%s",
-	// 	}
-	//
-	// 	for _, p := range patterns {
-	// 		err := delT(p, name)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	//
+	log.Debugf("deleting timers for instance %s", name)
+
+	delT := func(pattern, name string) error {
+		for _, n := range tm.timers {
+			if strings.HasPrefix(n.name, fmt.Sprintf(pattern, name)) {
+				tm.disableTimer(n)
+			}
+		}
+		return nil
+
+	}
+
+	patterns := []string{
+		"timeout:%s",
+		"%s",
+	}
+
+	for _, p := range patterns {
+		err := delT(p, name)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (tm *timerManager) deleteTimerByName(name string) error {
-
-	tm.mtx.Lock()
-	defer tm.mtx.Unlock()
 
 	if ti, ok := tm.timers[name]; ok {
 		return tm.disableTimer(ti)
@@ -269,15 +273,10 @@ func (tm *timerManager) deleteTimerByName(name string) error {
 }
 
 // cron job to delete orphaned one-shot timers
-func (tm *timerManager) cleanOneShot(data []byte) error {
+func (tm *timerManager) timerGC(data []byte) error {
 
-	// 	d, err := tm.server.dbManager.deleteExpiredOneshots()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	//
-	// 	log.Debugf("%d old one-shots deleted", d)
-	//
+	log.Infof("GC")
+
 	return nil
 }
 
@@ -311,18 +310,5 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 }
 
 func (tm *timerManager) deleteCronForWorkflow(id string) error {
-
-	// 	// get name
-	// 	name := fmt.Sprintf("cron:%s", id)
-	//
-	// 	// delete from database
-	// 	tm.server.dbManager.deleteTimer(name)
-	//
-	// 	// delete from local sync
-	// 	tm.syncTimerDelete(name)
-	//
-	// 	// send sync request
-	// 	return syncServer(context.Background(), tm.server.dbManager,
-	// 		&tm.server.id, name, DeleteTimerSync)
-	return nil
+	return tm.deleteTimerByName(fmt.Sprintf("cron:%s", id))
 }
