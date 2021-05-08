@@ -111,7 +111,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		}
 	}()
 
-	ctx, err := wli.lock(time.Second * 5)
+	ctx, err := wli.lock(time.Second * defaultLockWait)
 	if err != nil {
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot assume control of workflow instance lock: %v", err))
 	}

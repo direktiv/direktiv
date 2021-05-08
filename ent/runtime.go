@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/schema"
-	"github.com/vorteil/direktiv/ent/timer"
 	"github.com/vorteil/direktiv/ent/workflow"
 )
 
@@ -41,16 +40,6 @@ func init() {
 			return nil
 		}
 	}()
-	timerFields := schema.Timer{}.Fields()
-	_ = timerFields
-	// timerDescName is the schema descriptor for name field.
-	timerDescName := timerFields[0].Descriptor()
-	// timer.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	timer.NameValidator = timerDescName.Validators[0].(func(string) error)
-	// timerDescFn is the schema descriptor for fn field.
-	timerDescFn := timerFields[1].Descriptor()
-	// timer.FnValidator is a validator for the "fn" field. It is called by the builders before save.
-	timer.FnValidator = timerDescFn.Validators[0].(func(string) error)
 	workflowFields := schema.Workflow{}.Fields()
 	_ = workflowFields
 	// workflowDescName is the schema descriptor for name field.

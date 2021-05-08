@@ -9,9 +9,6 @@ import (
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)
 
-// Timer is the predicate function for timer builders.
-type Timer func(*sql.Selector)
-
 // Workflow is the predicate function for workflow builders.
 type Workflow func(*sql.Selector)
 

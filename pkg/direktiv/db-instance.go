@@ -108,6 +108,24 @@ func (db *dbManager) getWorkflowInstanceByID(ctx context.Context, id int) (*ent.
 
 }
 
+func (db *dbManager) getWorkflowInstanceExpired(ctx context.Context) ([]*ent.WorkflowInstance, error) {
+
+	t := time.Now().Add(-1 * time.Minute)
+
+	return db.dbEnt.WorkflowInstance.
+		Query().
+		Select(workflowinstance.FieldInstanceID, workflowinstance.FieldStatus,
+			workflowinstance.FieldDeadline, workflowinstance.FieldFlow).
+		Where(
+			workflowinstance.And(
+				workflowinstance.DeadlineLT(t),
+				workflowinstance.StatusEQ("pending"),
+			),
+		).
+		All(ctx)
+
+}
+
 func (db *dbManager) getWorkflowInstance(ctx context.Context, id string) (*ent.WorkflowInstance, error) {
 
 	return db.dbEnt.WorkflowInstance.

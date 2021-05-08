@@ -20,23 +20,6 @@ var (
 		PrimaryKey:  []*schema.Column{NamespacesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
-	// TimersColumns holds the columns for the "timers" table.
-	TimersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "fn", Type: field.TypeString},
-		{Name: "cron", Type: field.TypeString, Nullable: true},
-		{Name: "one", Type: field.TypeTime, Nullable: true},
-		{Name: "data", Type: field.TypeBytes, Nullable: true},
-		{Name: "last", Type: field.TypeTime, Nullable: true},
-	}
-	// TimersTable holds the schema information for the "timers" table.
-	TimersTable = &schema.Table{
-		Name:        "timers",
-		Columns:     TimersColumns,
-		PrimaryKey:  []*schema.Column{TimersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
-	}
 	// WorkflowsColumns holds the columns for the "workflows" table.
 	WorkflowsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -158,7 +141,6 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		NamespacesTable,
-		TimersTable,
 		WorkflowsTable,
 		WorkflowEventsTable,
 		WorkflowEventsWaitsTable,

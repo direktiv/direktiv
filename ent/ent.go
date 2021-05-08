@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/timer"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
@@ -37,7 +36,6 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		namespace.Table:          namespace.ValidColumn,
-		timer.Table:              timer.ValidColumn,
 		workflow.Table:           workflow.ValidColumn,
 		workflowevents.Table:     workflowevents.ValidColumn,
 		workfloweventswait.Table: workfloweventswait.ValidColumn,

@@ -146,7 +146,44 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 		return nil, err
 	}
 
+	go we.checkTimeoutInstances()
+
 	return we, nil
+
+}
+
+// checks if deadlines have exceeded. That can happen if a node dies
+// this function picks them up and starts a retry.
+// if that fails instance is getting cancelled
+func (we *workflowEngine) checkTimeoutInstances() {
+
+	ticker := time.NewTicker(5 * time.Minutes)
+
+	for {
+		select {
+		case <-ticker.C:
+			log.Debugf("run expired worklflow thread")
+			in, err := we.db.getWorkflowInstanceExpired(context.Background())
+			if err != nil {
+				log.Errorf("can not get expired workflows: %v", err)
+				continue
+			}
+			for _, i := range in {
+				data, _ := json.Marshal(&retryMessage{
+					InstanceID: i.InstanceID,
+					State:      i.Status,
+					Step:       len(i.Flow),
+				})
+
+				log.Debugf("rescheduling workflow %v", i.InstanceID)
+				err = we.retryWakeup(data)
+				if err != nil {
+					log.Errorf("can not kickstart workflow: %v", err)
+					we.hardCancelInstance(i.InstanceID, "direktiv.cancels.kickstart", "cancelled by failed kickstart")
+				}
+			}
+		}
+	}
 
 }
 

@@ -141,7 +141,7 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	var err error
 
 	ctx, cancel := context.WithTimeout(context.Background(),
-		time.Duration(wait)*time.Hour)
+		time.Duration(wait)*time.Second)
 	defer cancel()
 
 	conn, err := db.dbForLock.Conn(ctx)

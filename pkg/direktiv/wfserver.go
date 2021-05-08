@@ -13,6 +13,8 @@ import (
 const (
 	runsWorkflows = "w"
 	runsSecrets   = "s"
+
+	defaultLockWait = 10
 )
 
 type component interface {
@@ -54,7 +56,6 @@ func (s *WorkflowServer) initWorkflowServer() error {
 
 	// register the timer functions
 	var timerFunctions = map[string]func([]byte) error{
-		timerGC:                   s.tmManager.timerGC,
 		timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
 	}
 

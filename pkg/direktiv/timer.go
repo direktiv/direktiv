@@ -16,7 +16,6 @@ import (
 const (
 	timerCleanServer          = "cleanServer"
 	timerSchedWorkflow        = "schedWorkflow"
-	timerGC                   = "timerGC"
 	timerCleanInstanceRecords = "cleanInstanceRecords"
 )
 
@@ -268,14 +267,6 @@ func (tm *timerManager) deleteTimerByName(name string) error {
 	if ti, ok := tm.timers[name]; ok {
 		return tm.disableTimer(ti)
 	}
-
-	return nil
-}
-
-// cron job to delete orphaned one-shot timers
-func (tm *timerManager) timerGC(data []byte) error {
-
-	log.Infof("GC")
 
 	return nil
 }

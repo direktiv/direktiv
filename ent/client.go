@@ -11,7 +11,6 @@ import (
 	"github.com/vorteil/direktiv/ent/migrate"
 
 	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/timer"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
@@ -29,8 +28,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Timer is the client for interacting with the Timer builders.
-	Timer *TimerClient
 	// Workflow is the client for interacting with the Workflow builders.
 	Workflow *WorkflowClient
 	// WorkflowEvents is the client for interacting with the WorkflowEvents builders.
@@ -53,7 +50,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Namespace = NewNamespaceClient(c.config)
-	c.Timer = NewTimerClient(c.config)
 	c.Workflow = NewWorkflowClient(c.config)
 	c.WorkflowEvents = NewWorkflowEventsClient(c.config)
 	c.WorkflowEventsWait = NewWorkflowEventsWaitClient(c.config)
@@ -92,7 +88,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                ctx,
 		config:             cfg,
 		Namespace:          NewNamespaceClient(cfg),
-		Timer:              NewTimerClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
 		WorkflowEventsWait: NewWorkflowEventsWaitClient(cfg),
@@ -116,7 +111,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		config:             cfg,
 		Namespace:          NewNamespaceClient(cfg),
-		Timer:              NewTimerClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
 		WorkflowEventsWait: NewWorkflowEventsWaitClient(cfg),
@@ -151,7 +145,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Namespace.Use(hooks...)
-	c.Timer.Use(hooks...)
 	c.Workflow.Use(hooks...)
 	c.WorkflowEvents.Use(hooks...)
 	c.WorkflowEventsWait.Use(hooks...)
@@ -262,96 +255,6 @@ func (c *NamespaceClient) QueryWorkflows(n *Namespace) *WorkflowQuery {
 // Hooks returns the client hooks.
 func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
-}
-
-// TimerClient is a client for the Timer schema.
-type TimerClient struct {
-	config
-}
-
-// NewTimerClient returns a client for the Timer from the given config.
-func NewTimerClient(c config) *TimerClient {
-	return &TimerClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `timer.Hooks(f(g(h())))`.
-func (c *TimerClient) Use(hooks ...Hook) {
-	c.hooks.Timer = append(c.hooks.Timer, hooks...)
-}
-
-// Create returns a create builder for Timer.
-func (c *TimerClient) Create() *TimerCreate {
-	mutation := newTimerMutation(c.config, OpCreate)
-	return &TimerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Timer entities.
-func (c *TimerClient) CreateBulk(builders ...*TimerCreate) *TimerCreateBulk {
-	return &TimerCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Timer.
-func (c *TimerClient) Update() *TimerUpdate {
-	mutation := newTimerMutation(c.config, OpUpdate)
-	return &TimerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *TimerClient) UpdateOne(t *Timer) *TimerUpdateOne {
-	mutation := newTimerMutation(c.config, OpUpdateOne, withTimer(t))
-	return &TimerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *TimerClient) UpdateOneID(id int) *TimerUpdateOne {
-	mutation := newTimerMutation(c.config, OpUpdateOne, withTimerID(id))
-	return &TimerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Timer.
-func (c *TimerClient) Delete() *TimerDelete {
-	mutation := newTimerMutation(c.config, OpDelete)
-	return &TimerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *TimerClient) DeleteOne(t *Timer) *TimerDeleteOne {
-	return c.DeleteOneID(t.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *TimerClient) DeleteOneID(id int) *TimerDeleteOne {
-	builder := c.Delete().Where(timer.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &TimerDeleteOne{builder}
-}
-
-// Query returns a query builder for Timer.
-func (c *TimerClient) Query() *TimerQuery {
-	return &TimerQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Timer entity by its id.
-func (c *TimerClient) Get(ctx context.Context, id int) (*Timer, error) {
-	return c.Query().Where(timer.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *TimerClient) GetX(ctx context.Context, id int) *Timer {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *TimerClient) Hooks() []Hook {
-	return c.hooks.Timer
 }
 
 // WorkflowClient is a client for the Workflow schema.
