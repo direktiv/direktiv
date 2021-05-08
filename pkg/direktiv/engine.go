@@ -157,7 +157,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 // if that fails instance is getting cancelled
 func (we *workflowEngine) checkTimeoutInstances() {
 
-	ticker := time.NewTicker(5 * time.Minutes)
+	ticker := time.NewTicker(5 * time.Minute)
 
 	for {
 		select {
@@ -371,6 +371,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	req.Header.Add(DirektivResponseHeader, we.server.config.FlowAPI.Endpoint)
 	req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Timeout)))
+	req.Header.Add(DirektivSourceHeader, we.server.hostname)
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",

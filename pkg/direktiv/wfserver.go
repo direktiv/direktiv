@@ -2,6 +2,7 @@ package direktiv
 
 import (
 	"context"
+	"os"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
@@ -37,6 +38,7 @@ type WorkflowServer struct {
 	instanceLogger dlog.Log
 
 	components map[string]component
+	hostname   string
 }
 
 func (s *WorkflowServer) initWorkflowServer() error {
@@ -70,7 +72,6 @@ func (s *WorkflowServer) initWorkflowServer() error {
 		s.tmManager.addCron(name, name, cron, []byte(""))
 	}
 
-	addCron(timerGC, "0/5 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
 	ingressServer, err := newIngressServer(s)
@@ -115,6 +116,13 @@ func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 		return nil, err
 	}
 	s.dbManager.tm = s.tmManager
+
+	hn, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
+	s.hostname = hn
 
 	return s, nil
 

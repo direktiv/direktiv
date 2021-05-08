@@ -55,6 +55,10 @@ func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportAc
 		return nil, err
 	}
 
+	if fs.engine.server.hostname == in.GetSource() {
+		log.Debugf("different action receiver")
+	}
+
 	wakedata, err := json.Marshal(&actionResultPayload{
 		ActionID:     in.GetActionId(),
 		ErrorCode:    in.GetErrorCode(),
