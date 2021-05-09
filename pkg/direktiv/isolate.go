@@ -12,6 +12,7 @@ const (
 	DirektivStepHeader        = "Direktiv-Step"
 	DirektivResponseHeader    = "Direktiv-Response"
 	DirektivNamespaceHeader   = "Direktiv-Namespace"
+	DirektivSourceHeader      = "Direktiv-Source"
 
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"

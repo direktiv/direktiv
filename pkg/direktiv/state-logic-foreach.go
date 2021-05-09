@@ -191,7 +191,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 				// TODO: log subflow instance IDs
 
-				subflowID, err = instance.engine.subflowInvoke(caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+				subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
 				if err != nil {
 					return
 				}

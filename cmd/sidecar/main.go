@@ -36,12 +36,12 @@ const (
 )
 
 type responseInfo struct {
-	iid, aid string
-	ec, em   string
-	step     int32
-	timeout  int
-	data     []byte
-	logger   dlog.Logger
+	iid, aid, src string
+	ec, em        string
+	step          int32
+	timeout       int
+	data          []byte
+	logger        dlog.Logger
 }
 
 type direktivHTTPRequest struct {
@@ -107,7 +107,6 @@ func main() {
 	signal.Notify(sigs, syscall.SIGTERM)
 
 	// subscribe to direktiv pub/sub
-	log.Infof("getting DB %v %v", direktiv.DBConn, os.Getenv(direktiv.DBConn))
 	err = direktiv.SyncSubscribeTo(os.Getenv(direktiv.DBConn),
 		direktiv.CancelIsolate, d.handleSub)
 	if err != nil {
@@ -225,6 +224,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		direktiv.DirektivStepHeader,
 		direktiv.DirektivResponseHeader,
 		direktiv.DirektivNamespaceHeader,
+		direktiv.DirektivSourceHeader,
 	}
 
 	// map with values of the headers
@@ -317,6 +317,7 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 		logger:  log15log,
 		data:    ctx.Request.Body(),
 		timeout: to,
+		src:     vals[direktiv.DirektivSourceHeader],
 	}
 
 	go d.handleSubRequest(info)
@@ -432,6 +433,7 @@ func (d *direktivHTTPHandler) respondToFlow(info *responseInfo) {
 		Output:       info.data,
 		ErrorCode:    &info.ec,
 		ErrorMessage: &info.em,
+		Source:       &info.src,
 	}
 
 	_, err := d.flowClient.ReportActionResults(context.Background(), r)

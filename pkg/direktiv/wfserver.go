@@ -2,17 +2,20 @@ package direktiv
 
 import (
 	"context"
+	"os"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
-		"google.golang.org/grpc/resolver"
+	"google.golang.org/grpc/resolver"
 )
 
 const (
 	runsWorkflows = "w"
 	runsSecrets   = "s"
+
+	defaultLockWait = 10
 )
 
 type component interface {
@@ -35,6 +38,7 @@ type WorkflowServer struct {
 	instanceLogger dlog.Log
 
 	components map[string]component
+	hostname   string
 }
 
 func (s *WorkflowServer) initWorkflowServer() error {
@@ -54,7 +58,6 @@ func (s *WorkflowServer) initWorkflowServer() error {
 
 	// register the timer functions
 	var timerFunctions = map[string]func([]byte) error{
-		timerCleanOneShot:         s.tmManager.cleanOneShot,
 		timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
 	}
 
@@ -66,17 +69,9 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	}
 
 	addCron := func(name, cron string) {
-		// add clean up timers
-		_, err := s.dbManager.getTimer(name)
-
-		// on error we assuming it is not in the database
-		if err != nil {
-			s.tmManager.addCron(name, name, cron, []byte(""))
-		}
-
+		s.tmManager.addCron(name, name, cron, []byte(""))
 	}
 
-	addCron(timerCleanOneShot, "*/10 * * * *")
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
 	ingressServer, err := newIngressServer(s)
@@ -121,6 +116,13 @@ func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 		return nil, err
 	}
 	s.dbManager.tm = s.tmManager
+
+	hn, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
+	s.hostname = hn
 
 	return s, nil
 
@@ -197,13 +199,6 @@ func (s *WorkflowServer) Run() error {
 		return err
 	}
 
-	// start timers
-	err = s.tmManager.startTimers()
-	if err != nil {
-		s.Kill()
-		return err
-	}
-
 	for _, comp := range s.components {
 		log.Infof("starting %s component", comp.name())
 		err := comp.start(s)
@@ -217,6 +212,6 @@ func (s *WorkflowServer) Run() error {
 
 }
 
-func init(){
-    resolver.Register(&KubeResolverBuilder{})
+func init() {
+	resolver.Register(&KubeResolverBuilder{})
 }

@@ -14,8 +14,6 @@ type Tx struct {
 	config
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Timer is the client for interacting with the Timer builders.
-	Timer *TimerClient
 	// Workflow is the client for interacting with the Workflow builders.
 	Workflow *WorkflowClient
 	// WorkflowEvents is the client for interacting with the WorkflowEvents builders.
@@ -160,7 +158,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Namespace = NewNamespaceClient(tx.config)
-	tx.Timer = NewTimerClient(tx.config)
 	tx.Workflow = NewWorkflowClient(tx.config)
 	tx.WorkflowEvents = NewWorkflowEventsClient(tx.config)
 	tx.WorkflowEventsWait = NewWorkflowEventsWaitClient(tx.config)

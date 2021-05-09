@@ -14,7 +14,7 @@ func (h *Handler) registries(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetRegistries(ctx, &ingress.GetRegistriesRequest{
@@ -46,7 +46,7 @@ func (h *Handler) createRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.StoreRegistry(ctx, &ingress.StoreRegistryRequest{
@@ -80,7 +80,7 @@ func (h *Handler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteRegistry(ctx, &ingress.DeleteRegistryRequest{

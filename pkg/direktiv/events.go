@@ -158,7 +158,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 	// 	where v::json->>'type' = '%s'`,
 	// 	ce.Type())
 
-	rows, err := db.Query(`select 
+	rows, err := db.Query(`select
 	we.id, signature, count, correlations, events, workflow_wfevents, v
 	from workflow_events we
 	inner join workflows w
@@ -190,7 +190,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 			}
 		}
 
-		conn, err = s.dbManager.lockDB(hash, 5)
+		conn, err = s.dbManager.lockDB(hash, defaultLockWait)
 
 		if err != nil {
 			log.Errorf("can not lock event row: %d, %v", id, err)

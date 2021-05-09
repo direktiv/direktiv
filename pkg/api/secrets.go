@@ -14,7 +14,7 @@ func (h *Handler) secrets(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetSecrets(ctx, &ingress.GetSecretsRequest{
@@ -46,7 +46,7 @@ func (h *Handler) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.StoreSecret(ctx, &ingress.StoreSecretRequest{
@@ -80,7 +80,7 @@ func (h *Handler) deleteSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteSecret(ctx, &ingress.DeleteSecretRequest{

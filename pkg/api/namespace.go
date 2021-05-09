@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetNamespaces(ctx, &ingress.GetNamespacesRequest{})
@@ -28,7 +28,7 @@ func (h *Handler) addNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.AddNamespace(ctx, &ingress.AddNamespaceRequest{
@@ -47,7 +47,7 @@ func (h *Handler) deleteNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.DeleteNamespace(ctx, &ingress.DeleteNamespaceRequest{
@@ -92,7 +92,7 @@ func (h *Handler) namespaceEvent(w http.ResponseWriter, r *http.Request) {
 		Cloudevent: b,
 	}
 
-	ctx, cancel := CtxDeadline()
+	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.BroadcastEvent(ctx, &req)

@@ -11,4 +11,5 @@ message ReportActionResultsRequest {
 	optional string errorCode = 4;
 	optional string errorMessage = 5;
 	optional bytes output = 6;
+	optional string source = 7;
 }

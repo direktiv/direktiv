@@ -145,7 +145,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
+	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()))
 	if active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {
@@ -221,7 +221,7 @@ func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteW
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
 
-	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", uid), deleteTimerAction)
+	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", uid))
 
 	log.Debugf("Deleted workflow: %s", uid)
 
@@ -339,7 +339,7 @@ func (is *ingressServer) GetWorkflowInstance(ctx context.Context, in *ingress.Ge
 	rev := int32(inst.Revision)
 
 	var invokedBy string
-	if wfID, err := inst.QueryWorkflow().FirstID(context.Background()); err == nil {
+	if wfID, err := inst.QueryWorkflow().FirstID(ctx); err == nil {
 		invokedBy = wfID.String()
 	} else {
 		return nil, grpcDatabaseError(err, "workflow instance", id)
@@ -514,7 +514,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	workflow := in.GetName()
 	input := in.GetInput()
 
-	instID, err := is.wfServer.engine.DirectInvoke(namespace, workflow, input)
+	instID, err := is.wfServer.engine.DirectInvoke(ctx, namespace, workflow, input)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}
@@ -553,7 +553,7 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	is.wfServer.tmManager.actionTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()), deleteTimerAction)
+	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()))
 	if wf.Active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {

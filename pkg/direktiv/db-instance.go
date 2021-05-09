@@ -30,7 +30,7 @@ func (db *dbManager) deleteWorkflowInstance(id int) error {
 
 	// delete all events attached to this instance
 	err = db.deleteWorkflowEventListenerByInstanceID(id)
-	if err != nil {
+	if err != nil && !ent.IsNotFound(err) {
 		log.Errorf("can not delete event listeners for instance: %v", err)
 	}
 
@@ -59,23 +59,23 @@ func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf u
 	return nil
 }
 
-func (db *dbManager) addWorkflowInstance(ns, workflowID, instanceID, input string) (*ent.WorkflowInstance, error) {
+func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string) (*ent.WorkflowInstance, error) {
 
-	count, err := db.dbEnt.WorkflowInstance.
-		Query().
-		Where(workflowinstance.HasWorkflowWith(workflow.HasNamespaceWith(namespace.IDEQ(ns)))).
-		Where(workflowinstance.BeginTimeGT(time.Now().Add(-maxInstancesLimitInterval))).
-		Count(db.ctx)
-	if err != nil {
-		return nil, err
-	}
+	// count, err := db.dbEnt.WorkflowInstance.
+	// 	Query().
+	// 	Where(workflowinstance.HasWorkflowWith(workflow.HasNamespaceWith(namespace.IDEQ(ns)))).
+	// 	Where(workflowinstance.BeginTimeGT(time.Now().Add(-maxInstancesLimitInterval))).
+	// 	Count(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	//
+	// // only limit if running in prod mode
+	// if log.GetLevel() != log.DebugLevel && count > maxInstancesPerInterval {
+	// 	return nil, NewCatchableError("direktiv.limits.instances", "new workflow instance rejected because it would exceed the maximum number of new workflow instances (%d) per time interval (%s) for the namespace", maxInstancesPerInterval, maxInstancesLimitInterval)
+	// }
 
-	// only limit if running in prod mode
-	if log.GetLevel() != log.DebugLevel && count > maxInstancesPerInterval {
-		return nil, NewCatchableError("direktiv.limits.instances", "new workflow instance rejected because it would exceed the maximum number of new workflow instances (%d) per time interval (%s) for the namespace", maxInstancesPerInterval, maxInstancesLimitInterval)
-	}
-
-	wf, err := db.getNamespaceWorkflow(workflowID, ns)
+	wf, err := db.getNamespaceWorkflow(ctx, workflowID, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (db *dbManager) addWorkflowInstance(ns, workflowID, instanceID, input strin
 		SetBeginTime(time.Now()).
 		SetInput(input).
 		SetWorkflow(wf).
-		Save(db.ctx)
+		Save(ctx)
 
 	if err != nil {
 		return nil, err
@@ -105,6 +105,24 @@ func (db *dbManager) getWorkflowInstanceByID(ctx context.Context, id int) (*ent.
 		Query().
 		Where(workflowinstance.IDEQ(id)).
 		Only(ctx)
+
+}
+
+func (db *dbManager) getWorkflowInstanceExpired(ctx context.Context) ([]*ent.WorkflowInstance, error) {
+
+	t := time.Now().Add(-1 * time.Minute)
+
+	return db.dbEnt.WorkflowInstance.
+		Query().
+		Select(workflowinstance.FieldInstanceID, workflowinstance.FieldStatus,
+			workflowinstance.FieldDeadline, workflowinstance.FieldFlow).
+		Where(
+			workflowinstance.And(
+				workflowinstance.DeadlineLT(t),
+				workflowinstance.StatusEQ("pending"),
+			),
+		).
+		All(ctx)
 
 }
 

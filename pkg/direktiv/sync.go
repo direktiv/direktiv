@@ -16,11 +16,7 @@ const FlowSync = "flowsync"
 
 // direktiv pub/sub items
 const (
-	AddTimerSync = iota
-	DeleteTimerSync
-	EnableTimerSync
-	DisableTimerSync
-	CancelIsolate
+	CancelIsolate = iota
 	CancelSubflow
 )
 
@@ -130,14 +126,6 @@ func (s *WorkflowServer) startDatabaseListener() error {
 				log.Debugf("sync received: %v", req)
 
 				switch req.Cmd {
-				case AddTimerSync:
-					s.tmManager.syncTimerAdd(int(req.ID.(float64)))
-				case DeleteTimerSync:
-					s.tmManager.syncTimerDelete(req.ID.(string))
-				case EnableTimerSync:
-					s.tmManager.syncTimerEnable(req.ID.(string))
-				case DisableTimerSync:
-					s.tmManager.syncTimerDisable(req.ID.(string))
 				case CancelSubflow:
 					s.engine.finishCancelSubflow(req.ID.(string))
 				}

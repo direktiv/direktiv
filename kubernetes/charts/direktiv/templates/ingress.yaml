@@ -1,3 +1,14 @@
+{{ if .Values.ingress.crt }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.ingress.secret.name }}
+  namespace: {{ .Values.ingress.secret.namespace }}
+data:
+  tls.crt: {{ .Values.ingress.crt | b64enc | quote }}
+  tls.key: {{ .Values.ingress.key | b64enc | quote }}
+{{ end }}
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,10 +17,18 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingressClass }}
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
+  {{ if .Values.ingress.crt }}
+  tls:
+  - hosts:
+      - {{ .Values.ingress.host }}
+      {{ if .Values.ingress.auth.enabled }}
+      - {{ .Values.ingress.auth.host }}
+      {{ end }}
+    secretName: {{ .Values.ingress.secret.name }}
+  {{ end }}
   rules:
-  - host:
+  - host: {{ .Values.ingress.host }}
     http:
       paths:
         - path: /api
@@ -26,3 +45,15 @@ spec:
               name: {{ include "direktiv.fullname" . }}-ui
               port:
                 number: 80
+  {{ if .Values.ingress.auth.enabled }}
+  - host: {{ .Values.ingress.auth.host }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Values.ingress.auth.service }}
+              port:
+                number: {{ .Values.ingress.auth.port }}
+  {{ end }}

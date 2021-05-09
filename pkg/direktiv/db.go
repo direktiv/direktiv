@@ -17,9 +17,6 @@ import (
 
 const (
 	filterPrefix = "filter-"
-
-	maxInstancesPerInterval   = 100
-	maxInstancesLimitInterval = time.Minute
 )
 
 // DBManager contains all database related information and functions
@@ -30,6 +27,21 @@ type dbManager struct {
 
 	grpcConn      *grpc.ClientConn
 	secretsClient secretsgrpc.SecretsServiceClient
+
+	dbForLock *sql.DB
+}
+
+func prepLockDB(conn string) (*sql.DB, error) {
+
+	db, err := sql.Open("postgres", conn)
+
+	db.SetConnMaxIdleTime(-1)
+	db.SetConnMaxLifetime(-1)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(10)
+
+	return db, err
+
 }
 
 func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager, error) {
@@ -46,6 +58,10 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 		log.Errorf("can not connect to db: %v", err)
 		return nil, err
 	}
+
+	udb := db.dbEnt.DB()
+	udb.SetMaxIdleConns(10)
+	udb.SetMaxOpenConns(10)
 
 	// Run the auto migration tool.
 	if err := db.dbEnt.Schema.Create(db.ctx); err != nil {
@@ -86,6 +102,11 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 	}
 	db.secretsClient = secretsgrpc.NewSecretsServiceClient(db.grpcConn)
 
+	db.dbForLock, err = prepLockDB(conn)
+	if err != nil {
+		return nil, err
+	}
+
 	return db, nil
 
 }
@@ -100,14 +121,13 @@ func rollback(tx *ent.Tx, err error) error {
 func (db *dbManager) tryLockDB(id uint64) (bool, *sql.Conn, error) {
 
 	var gotLock bool
-	conn, err := db.dbEnt.DB().Conn(db.ctx)
+
+	conn, err := db.dbForLock.Conn(context.Background())
 	if err != nil {
 		return false, nil, err
 	}
 
-	conn.QueryRowContext(db.ctx, "SELECT pg_try_advisory_lock($1)", int64(id)).Scan(&gotLock)
-
-	// close conn if we did not get the lock
+	conn.QueryRowContext(context.Background(), "SELECT pg_try_advisory_lock($1)", int64(id)).Scan(&gotLock)
 	if !gotLock {
 		conn.Close()
 	}
@@ -118,10 +138,13 @@ func (db *dbManager) tryLockDB(id uint64) (bool, *sql.Conn, error) {
 
 func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
-	ctx, cancel := context.WithTimeout(db.ctx, time.Duration(wait)*time.Second)
+	var err error
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Duration(wait)*time.Second)
 	defer cancel()
 
-	conn, err := db.dbEnt.DB().Conn(db.ctx)
+	conn, err := db.dbForLock.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -132,11 +155,8 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 		log.Debugf("db lock failed: %v", err)
 		if err.Code == "57014" {
-			conn.Close()
 			return conn, fmt.Errorf("canceled query")
 		}
-
-		conn.Close()
 		return conn, err
 
 	}
@@ -147,14 +167,13 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
 
-	_, err := conn.ExecContext(db.ctx,
+	_, err := conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
 
 	if err != nil {
 		log.Errorf("can not unlock lock %d: %v", id, err)
 	}
-	conn.Close()
 
-	return err
+	return conn.Close()
 
 }

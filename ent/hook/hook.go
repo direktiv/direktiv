@@ -22,19 +22,6 @@ func (f NamespaceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return f(ctx, mv)
 }
 
-// The TimerFunc type is an adapter to allow the use of ordinary
-// function as Timer mutator.
-type TimerFunc func(context.Context, *ent.TimerMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f TimerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.TimerMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TimerMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The WorkflowFunc type is an adapter to allow the use of ordinary
 // function as Workflow mutator.
 type WorkflowFunc func(context.Context, *ent.WorkflowMutation) (ent.Value, error)

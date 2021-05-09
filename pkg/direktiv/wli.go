@@ -12,11 +12,12 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/itchyny/gojq"
-	"github.com/mitchellh/hashstructure/v2"
+	hashstructure "github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,7 +39,7 @@ type workflowLogicInstance struct {
 	logger      dlog.Logger
 }
 
-func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input []byte) (*workflowLogicInstance, error) {
+func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
 
 	var err error
 	var inputData, stateData interface{}
@@ -56,7 +57,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(namespace, name string, input
 		}
 	}
 
-	rec, err := we.db.getNamespaceWorkflow(name, namespace)
+	rec, err := we.db.getNamespaceWorkflow(ctx, name, namespace)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, NewUncatchableError("direktiv.subflow.notExist", "workflow '%s' does not exist", name)
@@ -110,13 +111,14 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		}
 	}()
 
-	ctx, err := wli.lock(time.Second * 5)
+	ctx, err := wli.lock(time.Second * defaultLockWait)
 	if err != nil {
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot assume control of workflow instance lock: %v", err))
 	}
 
-	rec, err := we.db.getWorkflowInstance(context.Background(), id)
+	rec, err := we.db.getWorkflowInstance(ctx, id)
 	if err != nil {
+		wli.unlock()
 		return nil, nil, NewInternalError(err)
 	}
 	wli.rec = rec
@@ -251,7 +253,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 }
 
-func (wli *workflowLogicInstance) wakeCaller(data []byte) {
+func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 
 	if wli.rec.InvokedBy != "" {
 
@@ -277,7 +279,7 @@ func (wli *workflowLogicInstance) wakeCaller(data []byte) {
 
 		wli.Log("Reporting results to calling workflow.")
 
-		err = wli.engine.wakeCaller(msg)
+		err = wli.engine.wakeCaller(ctx, msg)
 		if err != nil {
 			log.Error(err)
 			return
@@ -295,7 +297,6 @@ func (wli *workflowLogicInstance) lock(timeout time.Duration) (context.Context, 
 	}
 
 	wait := int(timeout.Seconds())
-
 	conn, err := wli.engine.db.lockDB(hash, wait)
 	if err != nil {
 		return nil, NewInternalError(err)
@@ -416,7 +417,7 @@ func jqObject(input interface{}, command string) (map[string]interface{}, error)
 
 }
 
-func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
+func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...interface{}) {
 
 	s := fmt.Sprintf(msg, a...)
 
@@ -430,7 +431,19 @@ func (wli *workflowLogicInstance) UserLog(msg string, a ...interface{}) {
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetData("application/json", s)
-		go wli.engine.server.handleEvent(wli.namespace, &event)
+		data, err := event.MarshalJSON()
+		if err != nil {
+			log.Errorf("failed to marshal UserLog cloudevent: %v", err)
+			return
+		}
+		_, err = wli.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
+			Namespace:  &wli.namespace,
+			Cloudevent: data,
+		})
+		if err != nil {
+			log.Errorf("failed to broadcast cloudevent: %v", err)
+			return
+		}
 	}
 
 }
@@ -566,8 +579,8 @@ func (wli *workflowLogicInstance) scheduleTimeout(t time.Time, soft bool) {
 
 	// cancel existing timeouts
 
-	wli.engine.timer.actionTimerByName(oldId, deleteTimerAction)
-	wli.engine.timer.actionTimerByName(id, deleteTimerAction)
+	wli.engine.timer.deleteTimerByName(oldId)
+	wli.engine.timer.deleteTimerByName(id)
 
 	// schedule timeout
 
@@ -582,7 +595,7 @@ func (wli *workflowLogicInstance) scheduleTimeout(t time.Time, soft bool) {
 		log.Error(err)
 	}
 
-	_, err = wli.engine.timer.addOneShot(id, timeoutFunction, deadline, data)
+	err = wli.engine.timer.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
 		log.Error(err)
 	}
@@ -708,5 +721,22 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	}(wli.engine, wli.id, nextState, wli.step)
 
 	return
+
+}
+
+func InstanceMemory(rec *ent.WorkflowInstance) ([]byte, error) {
+
+	if rec.Memory == "" {
+		return nil, nil
+	}
+
+	savedata, err := base64.StdEncoding.DecodeString(rec.Memory)
+	if err != nil {
+		err = fmt.Errorf("cannot decode the savedata: %v", err)
+		log.Error(err)
+		return nil, err
+	}
+
+	return savedata, nil
 
 }
