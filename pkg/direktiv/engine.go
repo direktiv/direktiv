@@ -948,9 +948,10 @@ failure:
 		err = NewInternalError(errors.New("somehow ended up in a catchable error loop"))
 	}
 
-	savedata, err = InstanceMemory(wli.rec)
-	if err == nil {
+	savedata, err2 := InstanceMemory(wli.rec)
+	if err2 == nil {
 		wli.engine.cancelChildren(wli.logic, savedata)
+		log.Error(err2)
 	}
 
 	if uerr, ok := err.(*UncatchableError); ok {
