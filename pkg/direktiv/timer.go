@@ -10,6 +10,7 @@ import (
 	cron "github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
@@ -172,11 +173,26 @@ func (tm *timerManager) stopTimers() {
 
 func (tm *timerManager) addCron(name, fn, pattern string, data []byte) error {
 
+	err := syncServer(tm.server.dbManager.ctx, tm.server.dbManager, &tm.server.id, map[string]interface{}{
+		"name":    name,
+		"fn":      fn,
+		"pattern": pattern,
+		"data":    data,
+	}, AddCron)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return tm.addCronNoBroadcast(name, fn, pattern, data)
+
+}
+
+func (tm *timerManager) addCronNoBroadcast(name, fn, pattern string, data []byte) error {
+
 	// check if cron pattern matches
 	c := cron.NewParser(cron.Minute | cron.Hour | cron.Dom |
 		cron.Month | cron.DowOptional | cron.Descriptor)
 	_, err := c.Parse(pattern)
-
 	if err != nil {
 		return err
 	}
@@ -202,6 +218,7 @@ func (tm *timerManager) addCron(name, fn, pattern string, data []byte) error {
 	tm.timers[name] = ti
 
 	return err
+
 }
 
 func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byte) error {
@@ -237,6 +254,19 @@ func (tm *timerManager) deleteTimersForInstance(name string) error {
 
 	log.Debugf("deleting timers for instance %s", name)
 
+	err := syncServer(tm.server.dbManager.ctx, tm.server.dbManager, &tm.server.id, name, CancelInstanceTimers)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return tm.deleteTimersForInstanceNoBroadcast(name)
+
+}
+
+func (tm *timerManager) deleteTimersForInstanceNoBroadcast(name string) error {
+
+	log.Debugf("deleting timers for instance %s", name)
+
 	delT := func(pattern, name string) error {
 		for _, n := range tm.timers {
 			if strings.HasPrefix(n.name, fmt.Sprintf(pattern, name)) {
@@ -262,10 +292,34 @@ func (tm *timerManager) deleteTimersForInstance(name string) error {
 	return nil
 }
 
-func (tm *timerManager) deleteTimerByName(name string) error {
+func (tm *timerManager) deleteTimerByName(oldController, newController, name string) error {
 
+	if oldController != newController && oldController != "" {
+		// send delete to specific server
+		var err error
+		req := map[string]interface{}{"action": "deleteTimer"}
+		req["timerId"] = name
+		err = publishToHostname(tm.server.engine.db, oldController, req)
+		if err != nil {
+			log.Error(err)
+		}
+		return nil
+	}
+
+	// delete local timer
 	if ti, ok := tm.timers[name]; ok {
-		return tm.disableTimer(ti)
+		err := tm.disableTimer(ti)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	if newController == "" {
+		// broadcast timer delete
+		err := syncServer(tm.server.dbManager.ctx, tm.server.dbManager, &tm.server.id, name, CancelTimer)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	return nil
@@ -287,12 +341,16 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 	for _, wfi := range wfis {
 		err = tm.server.instanceLogger.DeleteInstanceLogs(wfi.InstanceID)
 		if err != nil {
-			return err
+			if !ent.IsNotFound(err) {
+				return err
+			}
 		}
 
 		err = tm.server.dbManager.deleteWorkflowInstance(wfi.ID)
 		if err != nil {
-			return err
+			if !ent.IsNotFound(err) {
+				return err
+			}
 		}
 	}
 	log.Debugf("deleted %d instance records", len(wfis))
@@ -301,5 +359,5 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 }
 
 func (tm *timerManager) deleteCronForWorkflow(id string) error {
-	return tm.deleteTimerByName(fmt.Sprintf("cron:%s", id))
+	return tm.deleteTimerByName("", "", fmt.Sprintf("cron:%s", id))
 }

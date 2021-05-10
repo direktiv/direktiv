@@ -11,6 +11,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -73,6 +74,9 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 	is.grpcConn = conn
 	is.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
+	is.cronPoll()
+	go is.cronPoller()
+
 	return GrpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
@@ -116,6 +120,50 @@ func (is *ingressServer) AddNamespace(ctx context.Context, in *ingress.AddNamesp
 
 }
 
+func (is *ingressServer) cronPoller() {
+	for {
+		time.Sleep(time.Minute * 15)
+		is.cronPoll()
+	}
+}
+
+func (is *ingressServer) cronPoll() {
+
+	wfs, err := is.wfServer.dbManager.getAllWorkflows()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, x := range wfs {
+		wf, err := is.wfServer.dbManager.getWorkflowByID(x.ID)
+		if err != nil {
+			log.Error(err)
+		}
+		is.cronPollerWorkflow(wf)
+	}
+
+}
+
+func (is *ingressServer) cronPollerWorkflow(wf *ent.Workflow) {
+
+	var workflow model.Workflow
+	err := workflow.Load(wf.Workflow)
+	if err != nil {
+		log.Error(err)
+	}
+
+	is.wfServer.tmManager.deleteTimerByName("", is.wfServer.hostname, fmt.Sprintf("cron:%s", wf.ID.String()))
+	if wf.Active {
+		def := workflow.GetStartDefinition()
+		if def.GetType() == model.StartTypeScheduled {
+			scheduled := def.(*model.ScheduledStart)
+			is.wfServer.tmManager.addCronNoBroadcast(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, scheduled.Cron, []byte(wf.ID.String()))
+		}
+	}
+
+}
+
 func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflowRequest) (*ingress.AddWorkflowResponse, error) {
 
 	var resp ingress.AddWorkflowResponse
@@ -145,7 +193,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()))
+	is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", wf.ID.String()))
 	if active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {
@@ -221,7 +269,10 @@ func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteW
 		return nil, grpcDatabaseError(err, "workflow", uid)
 	}
 
-	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", uid))
+	err = is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", uid))
+	if err != nil {
+		log.Error(err)
+	}
 
 	log.Debugf("Deleted workflow: %s", uid)
 
@@ -553,7 +604,7 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
 	}
 
-	is.wfServer.tmManager.deleteTimerByName(fmt.Sprintf("cron:%s", wf.ID.String()))
+	is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", wf.ID.String()))
 	if wf.Active {
 		def := workflow.GetStartDefinition()
 		if def.GetType() == model.StartTypeScheduled {

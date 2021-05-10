@@ -122,6 +122,7 @@ var (
 		{Name: "error_code", Type: field.TypeString, Nullable: true},
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
 		{Name: "state_begin_time", Type: field.TypeTime, Nullable: true},
+		{Name: "controller", Type: field.TypeString, Nullable: true},
 		{Name: "workflow_instances", Type: field.TypeUUID, Nullable: true},
 	}
 	// WorkflowInstancesTable holds the schema information for the "workflow_instances" table.
@@ -132,7 +133,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workflow_instances_workflows_instances",
-				Columns:    []*schema.Column{WorkflowInstancesColumns[17]},
+				Columns:    []*schema.Column{WorkflowInstancesColumns[18]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

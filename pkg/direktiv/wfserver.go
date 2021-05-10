@@ -71,7 +71,7 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	}
 
 	addCron := func(name, cron string) {
-		s.tmManager.addCron(name, name, cron, []byte(""))
+		s.tmManager.addCronNoBroadcast(name, name, cron, []byte(""))
 	}
 
 	addCron(timerCleanInstanceRecords, "0 * * * *")

@@ -30,6 +30,7 @@ func (WorkflowInstance) Fields() []ent.Field {
 		field.String("errorCode").Optional(),
 		field.String("errorMessage").Optional(),
 		field.Time("stateBeginTime").Optional(),
+		field.String("controller").Optional(),
 	}
 }
 

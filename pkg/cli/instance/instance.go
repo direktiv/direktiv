@@ -138,14 +138,18 @@ var instanceListCmd = util.GenerateCmd("list NAMESPACE", "List all workflow inst
 		log.Fatalf("error getting instances: %v", err)
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Status"})
-	for _, instances := range il.Workflowinstances {
-		table.Append([]string{
-			instances.ID,
-			instances.Status,
-		})
+	if len(il.Workflowinstances) > 0 {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "Status"})
+		for _, instances := range il.Workflowinstances {
+			table.Append([]string{
+				instances.ID,
+				instances.Status,
+			})
+		}
+		table.Render()
+	} else {
+		log.Printf("no instances are available. have you tried executing a workflow 'direkcli workflows execute %s WORKFLOW' ?", args[0])
 	}
-	table.Render()
 
 }, cobra.ExactArgs(1))
