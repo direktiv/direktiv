@@ -198,6 +198,13 @@ func StateBeginTime(v time.Time) predicate.WorkflowInstance {
 	})
 }
 
+// Controller applies equality check predicate on the "controller" field. It's identical to ControllerEQ.
+func Controller(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldController), v))
+	})
+}
+
 // InstanceIDEQ applies the EQ predicate on the "instanceID" field.
 func InstanceIDEQ(v string) predicate.WorkflowInstance {
 	return predicate.WorkflowInstance(func(s *sql.Selector) {
@@ -1790,6 +1797,131 @@ func StateBeginTimeIsNil() predicate.WorkflowInstance {
 func StateBeginTimeNotNil() predicate.WorkflowInstance {
 	return predicate.WorkflowInstance(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldStateBeginTime)))
+	})
+}
+
+// ControllerEQ applies the EQ predicate on the "controller" field.
+func ControllerEQ(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldController), v))
+	})
+}
+
+// ControllerNEQ applies the NEQ predicate on the "controller" field.
+func ControllerNEQ(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldController), v))
+	})
+}
+
+// ControllerIn applies the In predicate on the "controller" field.
+func ControllerIn(vs ...string) predicate.WorkflowInstance {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldController), v...))
+	})
+}
+
+// ControllerNotIn applies the NotIn predicate on the "controller" field.
+func ControllerNotIn(vs ...string) predicate.WorkflowInstance {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldController), v...))
+	})
+}
+
+// ControllerGT applies the GT predicate on the "controller" field.
+func ControllerGT(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldController), v))
+	})
+}
+
+// ControllerGTE applies the GTE predicate on the "controller" field.
+func ControllerGTE(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldController), v))
+	})
+}
+
+// ControllerLT applies the LT predicate on the "controller" field.
+func ControllerLT(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldController), v))
+	})
+}
+
+// ControllerLTE applies the LTE predicate on the "controller" field.
+func ControllerLTE(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldController), v))
+	})
+}
+
+// ControllerContains applies the Contains predicate on the "controller" field.
+func ControllerContains(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldController), v))
+	})
+}
+
+// ControllerHasPrefix applies the HasPrefix predicate on the "controller" field.
+func ControllerHasPrefix(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldController), v))
+	})
+}
+
+// ControllerHasSuffix applies the HasSuffix predicate on the "controller" field.
+func ControllerHasSuffix(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldController), v))
+	})
+}
+
+// ControllerIsNil applies the IsNil predicate on the "controller" field.
+func ControllerIsNil() predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldController)))
+	})
+}
+
+// ControllerNotNil applies the NotNil predicate on the "controller" field.
+func ControllerNotNil() predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldController)))
+	})
+}
+
+// ControllerEqualFold applies the EqualFold predicate on the "controller" field.
+func ControllerEqualFold(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldController), v))
+	})
+}
+
+// ControllerContainsFold applies the ContainsFold predicate on the "controller" field.
+func ControllerContainsFold(v string) predicate.WorkflowInstance {
+	return predicate.WorkflowInstance(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldController), v))
 	})
 }
 

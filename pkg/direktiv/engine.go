@@ -189,7 +189,14 @@ func (we *workflowEngine) checkTimeoutInstances() {
 
 func (we *workflowEngine) localCancel(id string) {
 
-	we.timer.deleteTimerByName(id)
+	rec, err := we.db.getWorkflowInstance(we.db.ctx, id)
+	if err == nil {
+		err = we.timer.deleteTimerByName(rec.Controller, we.server.hostname, id)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
 	we.cancelsLock.Lock()
 	cancel, exists := we.cancels[id]
 	if exists {
@@ -680,7 +687,10 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		log.Error(err)
 	}
 
-	we.timer.deleteTimerByName(instanceId)
+	err = we.timer.deleteTimerByName(rec.Controller, we.server.hostname, instanceId)
+	if err != nil {
+		log.Error(err)
+	}
 	// TODO: cancel any other outstanding timers
 
 	logger, err := (*we.instanceLogger).LoggerFunc(ns.ID, instanceId)
@@ -948,9 +958,10 @@ failure:
 		err = NewInternalError(errors.New("somehow ended up in a catchable error loop"))
 	}
 
-	savedata, err = InstanceMemory(wli.rec)
-	if err == nil {
+	savedata, err2 := InstanceMemory(wli.rec)
+	if err2 == nil {
 		wli.engine.cancelChildren(wli.logic, savedata)
+		log.Error(err2)
 	}
 
 	if uerr, ok := err.(*UncatchableError); ok {

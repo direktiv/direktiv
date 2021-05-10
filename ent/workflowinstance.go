@@ -51,6 +51,8 @@ type WorkflowInstance struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 	// StateBeginTime holds the value of the "stateBeginTime" field.
 	StateBeginTime time.Time `json:"stateBeginTime,omitempty"`
+	// Controller holds the value of the "controller" field.
+	Controller string `json:"controller,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowInstanceQuery when eager-loading is set.
 	Edges              WorkflowInstanceEdges `json:"edges"`
@@ -100,7 +102,7 @@ func (*WorkflowInstance) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case workflowinstance.FieldID, workflowinstance.FieldRevision, workflowinstance.FieldAttempts:
 			values[i] = new(sql.NullInt64)
-		case workflowinstance.FieldInstanceID, workflowinstance.FieldInvokedBy, workflowinstance.FieldStatus, workflowinstance.FieldInput, workflowinstance.FieldOutput, workflowinstance.FieldStateData, workflowinstance.FieldMemory, workflowinstance.FieldErrorCode, workflowinstance.FieldErrorMessage:
+		case workflowinstance.FieldInstanceID, workflowinstance.FieldInvokedBy, workflowinstance.FieldStatus, workflowinstance.FieldInput, workflowinstance.FieldOutput, workflowinstance.FieldStateData, workflowinstance.FieldMemory, workflowinstance.FieldErrorCode, workflowinstance.FieldErrorMessage, workflowinstance.FieldController:
 			values[i] = new(sql.NullString)
 		case workflowinstance.FieldBeginTime, workflowinstance.FieldEndTime, workflowinstance.FieldDeadline, workflowinstance.FieldStateBeginTime:
 			values[i] = new(sql.NullTime)
@@ -226,6 +228,12 @@ func (wi *WorkflowInstance) assignValues(columns []string, values []interface{})
 			} else if value.Valid {
 				wi.StateBeginTime = value.Time
 			}
+		case workflowinstance.FieldController:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field controller", values[i])
+			} else if value.Valid {
+				wi.Controller = value.String
+			}
 		case workflowinstance.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_instances", values[i])
@@ -302,6 +310,8 @@ func (wi *WorkflowInstance) String() string {
 	builder.WriteString(wi.ErrorMessage)
 	builder.WriteString(", stateBeginTime=")
 	builder.WriteString(wi.StateBeginTime.Format(time.ANSIC))
+	builder.WriteString(", controller=")
+	builder.WriteString(wi.Controller)
 	builder.WriteByte(')')
 	return builder.String()
 }
