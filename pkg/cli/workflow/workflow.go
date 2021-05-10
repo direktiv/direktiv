@@ -171,14 +171,18 @@ var workflowListCmd = util.GenerateCmd("list NAMESPACE", "List all workflows und
 		log.Fatalf("error getting workflows: %v", err)
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name"})
-	for _, workflow := range w.Workflows {
-		table.Append([]string{
-			workflow.ID,
-		})
+	if len(w.Workflows) > 0 {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Name"})
+		for _, workflow := range w.Workflows {
+			table.Append([]string{
+				workflow.ID,
+			})
+		}
+		table.Render()
+	} else {
+		log.Printf("no workflows are available. use 'direkcli workflows create %s FILE' to create one", args[0])
 	}
-	table.Render()
 
 }, cobra.ExactArgs(1))
 

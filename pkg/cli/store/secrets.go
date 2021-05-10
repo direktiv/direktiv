@@ -69,29 +69,37 @@ func listSecrets(ns, t string) {
 		if err != nil {
 			log.Fatalf("error gettting secrets: %v", err)
 		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name"})
-		for _, ss := range r.Registries {
-			table.Append([]string{
-				ss.Name,
-			})
+		if len(r.Registries) > 0 {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name"})
+			for _, ss := range r.Registries {
+				table.Append([]string{
+					ss.Name,
+				})
+			}
+			table.Render()
+		} else {
+			log.Printf("no registries are available. use 'direkcli registries create %s URL USER:TOKEN' to create one", ns)
 		}
-		table.Render()
 	} else {
 		var r secretsList
 		err = json.Unmarshal(s, &r)
 		if err != nil {
 			log.Fatalf("error gettting secrets: %v", err)
 		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name"})
-		for _, ss := range r.Secrets {
-			table.Append([]string{
-				ss.Name,
-			})
-		}
+		if len(r.Secrets) > 0 {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name"})
+			for _, ss := range r.Secrets {
+				table.Append([]string{
+					ss.Name,
+				})
+			}
 
-		table.Render()
+			table.Render()
+		} else {
+			log.Printf("no secrets are available. use 'direkcli secrets create %s KEY VALUE'", ns)
+		}
 
 	}
 }

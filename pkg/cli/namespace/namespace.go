@@ -60,7 +60,7 @@ var listCmd = util.GenerateCmd("list", "Returns a list of namespaces", "", func(
 		}
 		table.Render()
 	} else {
-		log.Printf("no namespaces are available. use './direkcli namespaces create NAMESPACE' to create one")
+		log.Printf("no namespaces are available. use 'direkcli namespaces create NAMESPACE' to create one")
 	}
 
 }, cobra.ExactArgs(0))
