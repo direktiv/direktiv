@@ -8,9 +8,9 @@ sudo apt install golang-cfssl
 cat <<EOF | cfssl genkey - | cfssljson -bare server
 {
   "hosts": [
-    "direktiv-flow.default.svc.cluster.local",
     "direktiv-flow",
-    "direktiv-flow.default"
+    "direktiv-flow.default",
+    "direktiv-flow.default.svc.cluster.local"
   ],
   "CN": "system:node:direktiv-flow.default.svc.cluster.local",
   "key": {

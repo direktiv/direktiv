@@ -13,6 +13,7 @@ import (
 type Config struct {
 	Ingress struct {
 		Endpoint string
+		TLS      bool
 	}
 
 	Server struct {

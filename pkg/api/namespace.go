@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
 
@@ -16,6 +17,7 @@ func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.s.direktiv.GetNamespaces(ctx, &ingress.GetNamespacesRequest{})
 	if err != nil {
+		log.Errorf("error getting namespaces: %v", err)
 		ErrResponse(w, err)
 		return
 	}

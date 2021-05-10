@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"os"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -99,6 +98,7 @@ func (s *Server) initDirektiv() error {
 
 	conn, err := direktiv.GetEndpointTLS(s.cfg.Ingress.Endpoint, true)
 	if err != nil {
+		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
 	}
 
@@ -174,10 +174,10 @@ func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
 
-	if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
-		log.Infof("tls enabled")
-		return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
-	}
+	// if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
+	// 	log.Infof("tls enabled")
+	// 	return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
+	// }
 
 	return s.srv.ListenAndServe()
 }

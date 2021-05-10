@@ -32,6 +32,11 @@ spec:
       - name: action-templates
         configMap:
           name: api-actiontemplates-cm
+      {{- if ne  .Values.certificate "none" }}
+      - name: certs
+        secret:
+          secretName: {{ .Values.certificate }}
+      {{- end }}
       containers:
       - name: api
         image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
@@ -43,6 +48,11 @@ spec:
           mountPath: "/tmp/workflow-templates"
         - name: action-templates
           mountPath: "/tmp/action-templates"
+        {{- if ne  .Values.certificate "none" }}
+        - name: certs
+          mountPath: "/etc/certs/direktiv"
+          readOnly: true
+        {{- end }}
         ports:
         - containerPort: 8443
       {{- with .Values.nodeSelector }}

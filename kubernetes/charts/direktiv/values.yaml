@@ -105,10 +105,9 @@ ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
 
-# cert for inter service communication
-certificate:
-key:
-
 api:
   image: vorteil/api
   tag: "latest"
+
+# cert for inter service communication
+certificate: none
