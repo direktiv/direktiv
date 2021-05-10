@@ -78,25 +78,15 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 		})
 	})
 
-	kubeReq.mockup = true
-
-	// setting the knative service template
-	if config.MockupMode == 0 {
-
-		st, err := ioutil.ReadFile("/etc/config/template")
-		if err != nil {
-			return nil, err
-		}
-		kubeReq.serviceTempl = string(st)
-
-		kubeReq.sidecar = config.FlowAPI.Sidecar
-
-		kubeReq.mockup = false
-
+	st, err := ioutil.ReadFile("/etc/config/template")
+	if err != nil {
+		return nil, err
 	}
+	kubeReq.serviceTempl = string(st)
+	kubeReq.sidecar = config.FlowAPI.Sidecar
 
 	// get secrets client
-	db.grpcConn, err = GetEndpointTLS(config.SecretsAPI.Endpoint, false)
+	db.grpcConn, err = GetEndpointTLS("127.0.0.1:2610", false)
 	if err != nil {
 		return nil, err
 	}

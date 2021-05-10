@@ -39,7 +39,6 @@ const (
 type kubeRequest struct {
 	serviceTempl string
 	sidecar      string
-	mockup       bool
 
 	apiConfig *rest.Config
 	mtx       sync.Mutex
@@ -307,10 +306,6 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 
 	log.Debugf("delete functions for %v", uid)
 
-	if kubeReq.mockup {
-		return nil
-	}
-
 	var wf model.Workflow
 
 	wfdb, err := db.getWorkflowByUid(context.Background(), uid)
@@ -375,10 +370,6 @@ func getKnativeFunction(svc string) error {
 func addKnativeFunction(ir *isolateRequest) error {
 
 	log.Debugf("adding knative service")
-
-	if kubeReq.mockup {
-		return nil
-	}
 
 	namespace := ir.Workflow.Namespace
 

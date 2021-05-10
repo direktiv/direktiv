@@ -16,6 +16,8 @@ const (
 	runsSecrets   = "s"
 
 	defaultLockWait = 10
+
+	secretsEndpoint = "127.0.0.1:2610"
 )
 
 type component interface {

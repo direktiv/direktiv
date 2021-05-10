@@ -125,7 +125,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = GetEndpointTLS(s.config.SecretsAPI.Endpoint, false)
+	conn, err = GetEndpointTLS(secretsEndpoint, false)
 	if err != nil {
 		return nil, err
 	}
