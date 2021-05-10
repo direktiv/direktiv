@@ -10,6 +10,7 @@ import (
 	cron "github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
@@ -340,12 +341,16 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 	for _, wfi := range wfis {
 		err = tm.server.instanceLogger.DeleteInstanceLogs(wfi.InstanceID)
 		if err != nil {
-			return err
+			if !ent.IsNotFound(err) {
+				return err
+			}
 		}
 
 		err = tm.server.dbManager.deleteWorkflowInstance(wfi.ID)
 		if err != nil {
-			return err
+			if !ent.IsNotFound(err) {
+				return err
+			}
 		}
 	}
 	log.Debugf("deleted %d instance records", len(wfis))
