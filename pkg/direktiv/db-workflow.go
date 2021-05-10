@@ -161,6 +161,10 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 
 }
 
+func (db *dbManager) getAllWorkflows() ([]*ent.Workflow, error) {
+	return db.dbEnt.Workflow.Query().Select(workflow.FieldID).All(db.ctx)
+}
+
 func (db *dbManager) getWorkflowByID(id uuid.UUID) (*ent.Workflow, error) {
 
 	return db.dbEnt.Workflow.

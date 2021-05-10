@@ -20,6 +20,7 @@ const (
 	CancelSubflow
 	CancelTimer
 	CancelInstanceTimers
+	AddCron
 )
 
 // SyncRequest sync maintenance requests between instances subscribed to FlowSync
@@ -140,6 +141,36 @@ func (s *WorkflowServer) startDatabaseListener() error {
 						s.tmManager.deleteTimerByName(s.hostname, s.hostname, req.ID.(string))
 					case CancelInstanceTimers:
 						s.tmManager.deleteTimersForInstanceNoBroadcast(req.ID.(string))
+					case AddCron:
+						m, ok := req.ID.(map[string]interface{})
+						if ok {
+							var name, fn, pattern string
+							var data []byte
+							if x, exists := m["name"]; exists {
+								if str, ok := x.(string); ok {
+									name = str
+								}
+							}
+							if x, exists := m["fn"]; exists {
+								if str, ok := x.(string); ok {
+									fn = str
+								}
+							}
+							if x, exists := m["pattern"]; exists {
+								if str, ok := x.(string); ok {
+									pattern = str
+								}
+							}
+							if x, exists := m["data"]; exists {
+								if b, ok := x.([]byte); ok {
+									data = b
+								}
+							}
+							err = s.tmManager.addCronNoBroadcast(name, fn, pattern, data)
+							if err != nil {
+								log.Error(err)
+							}
+						}
 					}
 
 				}

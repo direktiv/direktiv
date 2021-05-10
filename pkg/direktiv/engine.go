@@ -1093,8 +1093,11 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 		return fmt.Errorf("cannot cron invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true)
 	if err != nil {
+		if strings.Contains(err.Error(), "invoked") || strings.Contains(err.Error(), "transactions") {
+			return nil
+		}
 		return NewInternalError(err)
 	}
 
@@ -1127,7 +1130,7 @@ func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name stri
 		return "", fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
 	if err != nil {
 		return "", NewInternalError(err)
 	}
@@ -1207,7 +1210,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 		return
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
 	if err != nil {
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
@@ -1272,7 +1275,7 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 		return "", fmt.Errorf("cannot subflow invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData))
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
 	if err != nil {
 		return "", NewInternalError(err)
 	}

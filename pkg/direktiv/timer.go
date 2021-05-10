@@ -172,11 +172,26 @@ func (tm *timerManager) stopTimers() {
 
 func (tm *timerManager) addCron(name, fn, pattern string, data []byte) error {
 
+	err := syncServer(tm.server.dbManager.ctx, tm.server.dbManager, &tm.server.id, map[string]interface{}{
+		"name":    name,
+		"fn":      fn,
+		"pattern": pattern,
+		"data":    data,
+	}, AddCron)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return tm.addCronNoBroadcast(name, fn, pattern, data)
+
+}
+
+func (tm *timerManager) addCronNoBroadcast(name, fn, pattern string, data []byte) error {
+
 	// check if cron pattern matches
 	c := cron.NewParser(cron.Minute | cron.Hour | cron.Dom |
 		cron.Month | cron.DowOptional | cron.Descriptor)
 	_, err := c.Parse(pattern)
-
 	if err != nil {
 		return err
 	}
@@ -202,6 +217,7 @@ func (tm *timerManager) addCron(name, fn, pattern string, data []byte) error {
 	tm.timers[name] = ti
 
 	return err
+
 }
 
 func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byte) error {

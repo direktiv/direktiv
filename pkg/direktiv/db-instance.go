@@ -2,6 +2,8 @@ package direktiv
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"math"
 	"time"
 
@@ -59,28 +61,46 @@ func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf u
 	return nil
 }
 
-func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string) (*ent.WorkflowInstance, error) {
+func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string, cronCheck bool) (*ent.WorkflowInstance, error) {
 
-	// count, err := db.dbEnt.WorkflowInstance.
-	// 	Query().
-	// 	Where(workflowinstance.HasWorkflowWith(workflow.HasNamespaceWith(namespace.IDEQ(ns)))).
-	// 	Where(workflowinstance.BeginTimeGT(time.Now().Add(-maxInstancesLimitInterval))).
-	// 	Count(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// // only limit if running in prod mode
-	// if log.GetLevel() != log.DebugLevel && count > maxInstancesPerInterval {
-	// 	return nil, NewCatchableError("direktiv.limits.instances", "new workflow instance rejected because it would exceed the maximum number of new workflow instances (%d) per time interval (%s) for the namespace", maxInstancesPerInterval, maxInstancesLimitInterval)
-	// }
+	tx, err := db.dbEnt.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
 
-	wf, err := db.getNamespaceWorkflow(ctx, workflowID, ns)
+	if cronCheck {
+
+		t := time.Now().Add(time.Second * 30 * -1)
+
+		wf, err := tx.WorkflowInstance.
+			Query().
+			Limit(1).
+			Where(workflowinstance.BeginTimeGT(t)).
+			Order(ent.Desc(workflowinstance.FieldBeginTime)).All(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(wf) > 0 {
+			return nil, errors.New("cron already invoked")
+		}
+
+	}
+
+	wf, err := tx.Workflow.
+		Query().
+		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
+		Where(workflow.NameEQ(workflowID)).
+		WithNamespace().
+		Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wi, err := db.dbEnt.WorkflowInstance.
+	wi, err := tx.WorkflowInstance.
 		Create().
 		SetInstanceID(instanceID).
 		SetInvokedBy("").
@@ -91,6 +111,16 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		SetWorkflow(wf).
 		Save(ctx)
 
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	wi, err = db.dbEnt.WorkflowInstance.Get(ctx, wi.ID)
 	if err != nil {
 		return nil, err
 	}
