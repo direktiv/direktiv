@@ -2444,6 +2444,7 @@ type WorkflowInstanceMutation struct {
 	errorCode       *string
 	errorMessage    *string
 	stateBeginTime  *time.Time
+	controller      *string
 	clearedFields   map[string]struct{}
 	workflow        *uuid.UUID
 	clearedworkflow bool
@@ -3281,6 +3282,55 @@ func (m *WorkflowInstanceMutation) ResetStateBeginTime() {
 	delete(m.clearedFields, workflowinstance.FieldStateBeginTime)
 }
 
+// SetController sets the "controller" field.
+func (m *WorkflowInstanceMutation) SetController(s string) {
+	m.controller = &s
+}
+
+// Controller returns the value of the "controller" field in the mutation.
+func (m *WorkflowInstanceMutation) Controller() (r string, exists bool) {
+	v := m.controller
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldController returns the old "controller" field's value of the WorkflowInstance entity.
+// If the WorkflowInstance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowInstanceMutation) OldController(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldController is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldController requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldController: %w", err)
+	}
+	return oldValue.Controller, nil
+}
+
+// ClearController clears the value of the "controller" field.
+func (m *WorkflowInstanceMutation) ClearController() {
+	m.controller = nil
+	m.clearedFields[workflowinstance.FieldController] = struct{}{}
+}
+
+// ControllerCleared returns if the "controller" field was cleared in this mutation.
+func (m *WorkflowInstanceMutation) ControllerCleared() bool {
+	_, ok := m.clearedFields[workflowinstance.FieldController]
+	return ok
+}
+
+// ResetController resets all changes to the "controller" field.
+func (m *WorkflowInstanceMutation) ResetController() {
+	m.controller = nil
+	delete(m.clearedFields, workflowinstance.FieldController)
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by id.
 func (m *WorkflowInstanceMutation) SetWorkflowID(id uuid.UUID) {
 	m.workflow = &id
@@ -3387,7 +3437,7 @@ func (m *WorkflowInstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowInstanceMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 17)
 	if m.instanceID != nil {
 		fields = append(fields, workflowinstance.FieldInstanceID)
 	}
@@ -3436,6 +3486,9 @@ func (m *WorkflowInstanceMutation) Fields() []string {
 	if m.stateBeginTime != nil {
 		fields = append(fields, workflowinstance.FieldStateBeginTime)
 	}
+	if m.controller != nil {
+		fields = append(fields, workflowinstance.FieldController)
+	}
 	return fields
 }
 
@@ -3476,6 +3529,8 @@ func (m *WorkflowInstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.ErrorMessage()
 	case workflowinstance.FieldStateBeginTime:
 		return m.StateBeginTime()
+	case workflowinstance.FieldController:
+		return m.Controller()
 	}
 	return nil, false
 }
@@ -3517,6 +3572,8 @@ func (m *WorkflowInstanceMutation) OldField(ctx context.Context, name string) (e
 		return m.OldErrorMessage(ctx)
 	case workflowinstance.FieldStateBeginTime:
 		return m.OldStateBeginTime(ctx)
+	case workflowinstance.FieldController:
+		return m.OldController(ctx)
 	}
 	return nil, fmt.Errorf("unknown WorkflowInstance field %s", name)
 }
@@ -3638,6 +3695,13 @@ func (m *WorkflowInstanceMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetStateBeginTime(v)
 		return nil
+	case workflowinstance.FieldController:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetController(v)
+		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance field %s", name)
 }
@@ -3725,6 +3789,9 @@ func (m *WorkflowInstanceMutation) ClearedFields() []string {
 	if m.FieldCleared(workflowinstance.FieldStateBeginTime) {
 		fields = append(fields, workflowinstance.FieldStateBeginTime)
 	}
+	if m.FieldCleared(workflowinstance.FieldController) {
+		fields = append(fields, workflowinstance.FieldController)
+	}
 	return fields
 }
 
@@ -3768,6 +3835,9 @@ func (m *WorkflowInstanceMutation) ClearField(name string) error {
 		return nil
 	case workflowinstance.FieldStateBeginTime:
 		m.ClearStateBeginTime()
+		return nil
+	case workflowinstance.FieldController:
+		m.ClearController()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance nullable field %s", name)
@@ -3824,6 +3894,9 @@ func (m *WorkflowInstanceMutation) ResetField(name string) error {
 		return nil
 	case workflowinstance.FieldStateBeginTime:
 		m.ResetStateBeginTime()
+		return nil
+	case workflowinstance.FieldController:
+		m.ResetController()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowInstance field %s", name)

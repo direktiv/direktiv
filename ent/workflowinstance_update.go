@@ -273,6 +273,26 @@ func (wiu *WorkflowInstanceUpdate) ClearStateBeginTime() *WorkflowInstanceUpdate
 	return wiu
 }
 
+// SetController sets the "controller" field.
+func (wiu *WorkflowInstanceUpdate) SetController(s string) *WorkflowInstanceUpdate {
+	wiu.mutation.SetController(s)
+	return wiu
+}
+
+// SetNillableController sets the "controller" field if the given value is not nil.
+func (wiu *WorkflowInstanceUpdate) SetNillableController(s *string) *WorkflowInstanceUpdate {
+	if s != nil {
+		wiu.SetController(*s)
+	}
+	return wiu
+}
+
+// ClearController clears the value of the "controller" field.
+func (wiu *WorkflowInstanceUpdate) ClearController() *WorkflowInstanceUpdate {
+	wiu.mutation.ClearController()
+	return wiu
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (wiu *WorkflowInstanceUpdate) SetWorkflowID(id uuid.UUID) *WorkflowInstanceUpdate {
 	wiu.mutation.SetWorkflowID(id)
@@ -598,6 +618,19 @@ func (wiu *WorkflowInstanceUpdate) sqlSave(ctx context.Context) (n int, err erro
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Column: workflowinstance.FieldStateBeginTime,
+		})
+	}
+	if value, ok := wiu.mutation.Controller(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflowinstance.FieldController,
+		})
+	}
+	if wiu.mutation.ControllerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: workflowinstance.FieldController,
 		})
 	}
 	if wiu.mutation.WorkflowCleared() {
@@ -950,6 +983,26 @@ func (wiuo *WorkflowInstanceUpdateOne) ClearStateBeginTime() *WorkflowInstanceUp
 	return wiuo
 }
 
+// SetController sets the "controller" field.
+func (wiuo *WorkflowInstanceUpdateOne) SetController(s string) *WorkflowInstanceUpdateOne {
+	wiuo.mutation.SetController(s)
+	return wiuo
+}
+
+// SetNillableController sets the "controller" field if the given value is not nil.
+func (wiuo *WorkflowInstanceUpdateOne) SetNillableController(s *string) *WorkflowInstanceUpdateOne {
+	if s != nil {
+		wiuo.SetController(*s)
+	}
+	return wiuo
+}
+
+// ClearController clears the value of the "controller" field.
+func (wiuo *WorkflowInstanceUpdateOne) ClearController() *WorkflowInstanceUpdateOne {
+	wiuo.mutation.ClearController()
+	return wiuo
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (wiuo *WorkflowInstanceUpdateOne) SetWorkflowID(id uuid.UUID) *WorkflowInstanceUpdateOne {
 	wiuo.mutation.SetWorkflowID(id)
@@ -1299,6 +1352,19 @@ func (wiuo *WorkflowInstanceUpdateOne) sqlSave(ctx context.Context) (_node *Work
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Column: workflowinstance.FieldStateBeginTime,
+		})
+	}
+	if value, ok := wiuo.mutation.Controller(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflowinstance.FieldController,
+		})
+	}
+	if wiuo.mutation.ControllerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: workflowinstance.FieldController,
 		})
 	}
 	if wiuo.mutation.WorkflowCleared() {

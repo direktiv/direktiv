@@ -39,6 +39,8 @@ const (
 	FieldErrorMessage = "error_message"
 	// FieldStateBeginTime holds the string denoting the statebegintime field in the database.
 	FieldStateBeginTime = "state_begin_time"
+	// FieldController holds the string denoting the controller field in the database.
+	FieldController = "controller"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
@@ -80,6 +82,7 @@ var Columns = []string{
 	FieldErrorCode,
 	FieldErrorMessage,
 	FieldStateBeginTime,
+	FieldController,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "workflow_instances"
