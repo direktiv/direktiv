@@ -76,7 +76,9 @@ ingress:
   secret:
     name: "ingress-tls-secret"
     namespace: "istio-system"
-    class: "istio"
+  class: "istio"
+  auth:
+    enabled: false
 
 secrets:
   image: "vorteil/secrets"
