@@ -11,6 +11,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/itchyny/gojq"
 	hashstructure "github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
@@ -427,6 +428,7 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 	if attr := wli.logToEvents; attr != "" {
 		event := cloudevents.NewEvent()
+		event.SetID(uuid.New().String())
 		event.SetSource(wli.wf.ID)
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
