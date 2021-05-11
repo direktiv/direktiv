@@ -93,6 +93,8 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 		model.StateTypeParallel:      initParallelStateLogic,
 		model.StateTypeSwitch:        initSwitchStateLogic,
 		model.StateTypeValidate:      initValidateStateLogic,
+		model.StateTypeGetter:        initGetterStateLogic,
+		model.StateTypeSetter:        initSetterStateLogic,
 	}
 
 	err = we.timer.registerFunction(sleepWakeupFunction, we.sleepWakeup)
@@ -610,6 +612,12 @@ func (we *workflowEngine) freeResources(rec *ent.WorkflowInstance) {
 
 	we.clearEventListeners(rec)
 
+	var namespace, workflow, instance string
+	namespace = rec.Edges.Workflow.Edges.Namespace.ID
+	workflow = rec.Edges.Workflow.ID.String()
+	instance = rec.InstanceID
+	we.server.variableStorage.DeleteAllInScope(context.Background(), namespace, workflow, instance)
+
 }
 
 func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft bool) error {
@@ -883,11 +891,18 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		return
 	}
 
-	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus("complete").Save(ctx)
+	status := "complete"
+	if wli.rec.ErrorCode != "" {
+		status = "failed"
+	}
+
+	wf := wli.rec.Edges.Workflow
+	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus(status).Save(ctx)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	rec.Edges.Workflow = wf
 
 	wli.rec = rec
 	log.Debugf("Workflow instance completed: %s", wli.id)

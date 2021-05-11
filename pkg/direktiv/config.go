@@ -72,6 +72,10 @@ type Config struct {
 		Driver string
 	}
 
+	VariablesStorage struct {
+		Driver string
+	}
+
 	Registries map[string]string
 	MockupMode int
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/hook"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/varstore"
 	"google.golang.org/grpc"
 )
 
@@ -21,9 +22,10 @@ const (
 
 // DBManager contains all database related information and functions
 type dbManager struct {
-	dbEnt *ent.Client
-	ctx   context.Context
-	tm    *timerManager
+	dbEnt      *ent.Client
+	ctx        context.Context
+	tm         *timerManager
+	varStorage *varstore.VarStorage
 
 	grpcConn      *grpc.ClientConn
 	secretsClient secretsgrpc.SecretsServiceClient

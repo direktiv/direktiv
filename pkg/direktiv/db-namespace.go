@@ -89,6 +89,14 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 		Namespace: &name,
 	}
 	_, err = db.secretsClient.DeleteSecrets(ctx, dr)
+	if err != nil {
+		return err
+	}
+
+	err = (*db.varStorage).DeleteAllInScope(ctx, name)
+	if err != nil {
+		return err
+	}
 
 	return err
 

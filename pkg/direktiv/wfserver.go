@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/vorteil/direktiv/pkg/varstore"
+
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
@@ -34,8 +36,9 @@ type WorkflowServer struct {
 	tmManager *timerManager
 	engine    *workflowEngine
 
-	LifeLine       chan bool
-	instanceLogger dlog.Log
+	LifeLine        chan bool
+	instanceLogger  dlog.Log
+	variableStorage varstore.VarStorage
 
 	components map[string]component
 	hostname   string
@@ -110,6 +113,7 @@ func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 	if err != nil {
 		return nil, err
 	}
+	s.dbManager.varStorage = &s.variableStorage
 
 	err = s.initWorkflowServer()
 	if err != nil {
@@ -131,6 +135,10 @@ func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 // SetInstanceLogger set logger for direktiv for firecracker instances
 func (s *WorkflowServer) SetInstanceLogger(l dlog.Log) {
 	s.instanceLogger = l
+}
+
+func (s *WorkflowServer) SetVariableStorage(vs varstore.VarStorage) {
+	s.variableStorage = vs
 }
 
 // Lifeline interface impl

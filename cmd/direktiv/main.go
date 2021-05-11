@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/vorteil/direktiv/pkg/varstore"
 
 	runtime "github.com/banzaicloud/logrus-runtime-formatter"
 	"github.com/sirupsen/logrus"
@@ -86,6 +89,25 @@ var rootCmd = &cobra.Command{
 		}
 
 		server.SetInstanceLogger(logger)
+
+		var vstore varstore.VarStorage
+
+		switch c.VariablesStorage.Driver {
+		case "":
+			fallthrough
+		case "database":
+			vstore, err = varstore.NewPostgresVarStorage(c.Database.DB)
+			if err != nil {
+				logrus.Error(err)
+				os.Exit(1)
+			}
+			defer vstore.Close()
+		default:
+			logrus.Error(errors.New("unsupported variables storage driver"))
+			os.Exit(1)
+		}
+
+		server.SetVariableStorage(vstore)
 
 		go func() {
 			sig := make(chan os.Signal, 1)

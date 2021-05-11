@@ -146,6 +146,10 @@ func getStateFromType(stype string) (State, error) {
 		s = new(CallbackState)
 	case StateTypeParallel.String():
 		s = new(ParallelState)
+	case StateTypeGetter.String():
+		s = new(GetterState)
+	case StateTypeSetter.String():
+		s = new(SetterState)
 	case "":
 		err = errors.New("type required")
 	default:

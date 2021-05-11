@@ -42,6 +42,12 @@ type DirektivIngressClient interface {
 	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
+	ListNamespaceVariables(ctx context.Context, in *ListNamespaceVariablesRequest, opts ...grpc.CallOption) (*ListNamespaceVariablesResponse, error)
+	ListWorkflowVariables(ctx context.Context, in *ListWorkflowVariablesRequest, opts ...grpc.CallOption) (*ListWorkflowVariablesResponse, error)
+	GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (*GetNamespaceVariableResponse, error)
+	GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (*GetWorkflowVariableResponse, error)
+	SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type direktivIngressClient struct {
@@ -259,6 +265,60 @@ func (c *direktivIngressClient) WorkflowMetrics(ctx context.Context, in *Workflo
 	return out, nil
 }
 
+func (c *direktivIngressClient) ListNamespaceVariables(ctx context.Context, in *ListNamespaceVariablesRequest, opts ...grpc.CallOption) (*ListNamespaceVariablesResponse, error) {
+	out := new(ListNamespaceVariablesResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/ListNamespaceVariables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) ListWorkflowVariables(ctx context.Context, in *ListWorkflowVariablesRequest, opts ...grpc.CallOption) (*ListWorkflowVariablesResponse, error) {
+	out := new(ListWorkflowVariablesResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/ListWorkflowVariables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (*GetNamespaceVariableResponse, error) {
+	out := new(GetNamespaceVariableResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetNamespaceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (*GetWorkflowVariableResponse, error) {
+	out := new(GetWorkflowVariableResponse)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetWorkflowVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/SetNamespaceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivIngressClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/SetWorkflowVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DirektivIngressServer is the server API for DirektivIngress service.
 // All implementations must embed UnimplementedDirektivIngressServer
 // for forward compatibility
@@ -286,6 +346,12 @@ type DirektivIngressServer interface {
 	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
 	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
+	ListNamespaceVariables(context.Context, *ListNamespaceVariablesRequest) (*ListNamespaceVariablesResponse, error)
+	ListWorkflowVariables(context.Context, *ListWorkflowVariablesRequest) (*ListWorkflowVariablesResponse, error)
+	GetNamespaceVariable(context.Context, *GetNamespaceVariableRequest) (*GetNamespaceVariableResponse, error)
+	GetWorkflowVariable(context.Context, *GetWorkflowVariableRequest) (*GetWorkflowVariableResponse, error)
+	SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*empty.Empty, error)
+	SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedDirektivIngressServer()
 }
 
@@ -361,6 +427,24 @@ func (UnimplementedDirektivIngressServer) StoreRegistry(context.Context, *StoreR
 }
 func (UnimplementedDirektivIngressServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
+}
+func (UnimplementedDirektivIngressServer) ListNamespaceVariables(context.Context, *ListNamespaceVariablesRequest) (*ListNamespaceVariablesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListNamespaceVariables not implemented")
+}
+func (UnimplementedDirektivIngressServer) ListWorkflowVariables(context.Context, *ListWorkflowVariablesRequest) (*ListWorkflowVariablesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListWorkflowVariables not implemented")
+}
+func (UnimplementedDirektivIngressServer) GetNamespaceVariable(context.Context, *GetNamespaceVariableRequest) (*GetNamespaceVariableResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceVariable not implemented")
+}
+func (UnimplementedDirektivIngressServer) GetWorkflowVariable(context.Context, *GetWorkflowVariableRequest) (*GetWorkflowVariableResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowVariable not implemented")
+}
+func (UnimplementedDirektivIngressServer) SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceVariable not implemented")
+}
+func (UnimplementedDirektivIngressServer) SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowVariable not implemented")
 }
 func (UnimplementedDirektivIngressServer) mustEmbedUnimplementedDirektivIngressServer() {}
 
@@ -789,6 +873,114 @@ func _DirektivIngress_WorkflowMetrics_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DirektivIngress_ListNamespaceVariables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListNamespaceVariablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).ListNamespaceVariables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/ListNamespaceVariables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).ListNamespaceVariables(ctx, req.(*ListNamespaceVariablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_ListWorkflowVariables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListWorkflowVariablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).ListWorkflowVariables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/ListWorkflowVariables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).ListWorkflowVariables(ctx, req.(*ListWorkflowVariablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_GetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNamespaceVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).GetNamespaceVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/GetNamespaceVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).GetNamespaceVariable(ctx, req.(*GetNamespaceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_GetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkflowVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).GetWorkflowVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/GetWorkflowVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).GetWorkflowVariable(ctx, req.(*GetWorkflowVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_SetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetNamespaceVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).SetNamespaceVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/SetNamespaceVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).SetNamespaceVariable(ctx, req.(*SetNamespaceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_SetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetWorkflowVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivIngressServer).SetWorkflowVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ingress.DirektivIngress/SetWorkflowVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivIngressServer).SetWorkflowVariable(ctx, req.(*SetWorkflowVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DirektivIngress_ServiceDesc is the grpc.ServiceDesc for DirektivIngress service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -887,6 +1079,30 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WorkflowMetrics",
 			Handler:    _DirektivIngress_WorkflowMetrics_Handler,
+		},
+		{
+			MethodName: "ListNamespaceVariables",
+			Handler:    _DirektivIngress_ListNamespaceVariables_Handler,
+		},
+		{
+			MethodName: "ListWorkflowVariables",
+			Handler:    _DirektivIngress_ListWorkflowVariables_Handler,
+		},
+		{
+			MethodName: "GetNamespaceVariable",
+			Handler:    _DirektivIngress_GetNamespaceVariable_Handler,
+		},
+		{
+			MethodName: "GetWorkflowVariable",
+			Handler:    _DirektivIngress_GetWorkflowVariable_Handler,
+		},
+		{
+			MethodName: "SetNamespaceVariable",
+			Handler:    _DirektivIngress_SetNamespaceVariable_Handler,
+		},
+		{
+			MethodName: "SetWorkflowVariable",
+			Handler:    _DirektivIngress_SetWorkflowVariable_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

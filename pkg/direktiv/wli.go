@@ -124,17 +124,8 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 	}
 	wli.rec = rec
 
-	qwf, err := rec.QueryWorkflow().Only(ctx)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot resolve instance workflow: %v", err))
-	}
-
-	qns, err := qwf.QueryNamespace().Only(ctx)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot resolve instance namespace: %v", err))
-	}
+	qwf := wli.rec.Edges.Workflow
+	qns := qwf.Edges.Namespace
 
 	wli.namespace = qns.ID
 
@@ -151,14 +142,9 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 	}
 
 	wli.wf = new(model.Workflow)
-	wfrec, err := rec.QueryWorkflow().Only(ctx)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow from database: %v", err))
-	}
-	wli.logToEvents = wfrec.LogToEvents
+	wli.logToEvents = qwf.LogToEvents
 
-	err = wli.wf.Load(wfrec.Workflow)
+	err = wli.wf.Load(qwf.Workflow)
 	if err != nil {
 		wli.unlock()
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow definition: %v", err))
@@ -237,6 +223,8 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 
 	wli.engine.completeState(ctx, wli.rec, "", code, false)
 
+	wf := wli.rec.Edges.Workflow
+
 	if wli.rec.ErrorCode == "" {
 		wli.rec, err = wli.rec.Update().
 			SetStatus(status).
@@ -244,12 +232,14 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 			SetErrorCode(code).
 			SetErrorMessage(message).
 			Save(ctx)
+		wli.rec.Edges.Workflow = wf
 		return err
 	}
 
 	wli.rec, err = wli.rec.Update().
 		SetEndTime(time.Now()).
 		Save(ctx)
+	wli.rec.Edges.Workflow = wf
 	return err
 
 }
