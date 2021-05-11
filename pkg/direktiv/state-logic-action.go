@@ -68,6 +68,10 @@ func (sl *actionStateLogic) Deadline() time.Time {
 
 }
 
+func (sl *actionStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *actionStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

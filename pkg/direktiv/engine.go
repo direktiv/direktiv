@@ -995,7 +995,10 @@ failure:
 
 	} else if cerr, ok := err.(*CatchableError); ok {
 
+		var hasAlreadyFailed bool
 		_ = wli.StoreData("error", cerr)
+
+	alreadyFailed:
 
 		for i, catch := range wli.logic.ErrorCatchers() {
 
@@ -1008,18 +1011,6 @@ failure:
 
 				wli.Log("State failed with error '%s': %s", cerr.Code, cerr.Message)
 				wli.Log("Error caught by error definition %d: %s", i, catch.Error)
-
-				if catch.Retry != nil {
-					if wli.rec.Attempts < catch.Retry.MaxAttempts {
-						err = wli.Retry(ctx, catch.Retry.Delay, catch.Retry.Multiplier, cerr.Code)
-						if err != nil {
-							goto failure
-						}
-						return
-					} else {
-						wli.Log("Maximum retry attempts exceeded.")
-					}
-				}
 
 				transition = &stateTransition{
 					Transform: "",
@@ -1034,6 +1025,23 @@ failure:
 
 			}
 
+		}
+
+		if retries := wli.logic.Retries(); retries != nil && !hasAlreadyFailed {
+			if wli.rec.Attempts < retries.MaxAttempts {
+				err = wli.Retry(ctx, retries.Delay, retries.Multiplier, cerr.Code)
+				if err != nil {
+					goto failure
+				}
+				return
+			} else {
+				wli.Log("Maximum retry attempts exceeded.")
+				if retries.Throw != "" {
+					cerr = NewCatchableError(retries.Throw, retries.Throw)
+					hasAlreadyFailed = true
+					goto alreadyFailed
+				}
+			}
 		}
 
 		err = wli.setStatus(ctx, "failed", cerr.Code, cerr.Message)

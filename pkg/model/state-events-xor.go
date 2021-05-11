@@ -15,7 +15,6 @@ type EventsXorState struct {
 	StateCommon `yaml:",inline"`
 	Events      []EventConditionDefinition `yaml:"events"`
 	Timeout     string                     `yaml:"timeout,omitempty"`
-	Catch       []ErrorDefinition          `yaml:"catch,omitempty"`
 }
 
 func (o *EventsXorState) GetID() string {
@@ -56,14 +55,6 @@ func (o *EventsXorState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *EventsXorState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *EventsXorState) GetEvents() []EventConditionDefinition {

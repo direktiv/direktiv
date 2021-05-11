@@ -37,6 +37,10 @@ func (sl *getterStateLogic) Deadline() time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
+func (sl *getterStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *getterStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

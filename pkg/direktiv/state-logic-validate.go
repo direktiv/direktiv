@@ -36,6 +36,10 @@ func (sl *validateStateLogic) Deadline() time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
+func (sl *validateStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *validateStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

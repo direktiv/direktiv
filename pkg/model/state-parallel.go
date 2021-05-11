@@ -12,7 +12,6 @@ type ParallelState struct {
 	Timeout     string             `yaml:"timeout,omitempty"`
 	Transform   string             `yaml:"transform,omitempty"`
 	Transition  string             `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition  `yaml:"catch,omitempty"`
 }
 
 func (o *ParallelState) GetID() string {
@@ -47,14 +46,6 @@ func (o *ParallelState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *ParallelState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *ParallelState) GetActions() []ActionDefinition {

@@ -34,6 +34,10 @@ func (sl *switchStateLogic) Deadline() time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
+func (sl *switchStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *switchStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

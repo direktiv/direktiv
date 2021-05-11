@@ -11,6 +11,7 @@ type RetryDefinition struct {
 	MaxAttempts int     `yaml:"max_attempts"`
 	Delay       string  `yaml:"delay,omitempty"`
 	Multiplier  float64 `yaml:"multiplier,omitempty"`
+	Throw       string  `yaml:"throw,omitempty"`
 }
 
 func (o *RetryDefinition) Validate() error {
@@ -30,18 +31,13 @@ func (o *RetryDefinition) Validate() error {
 }
 
 type ErrorDefinition struct {
-	Error      string           `yaml:"error"`
-	Retry      *RetryDefinition `yaml:"retry,omitempty"`
-	Transition string           `yaml:"transition,omitempty"`
+	Error      string `yaml:"error"`
+	Transition string `yaml:"transition,omitempty"`
 }
 
 func (o *ErrorDefinition) Validate() error {
 	if o.Error == "" {
 		return errors.New("error required")
-	}
-
-	if err := o.Retry.Validate(); err != nil {
-		return err
 	}
 
 	return nil
@@ -91,13 +87,27 @@ func (o *ProduceEventDefinition) Validate() error {
 }
 
 type StateCommon struct {
-	ID   string    `yaml:"id"`
-	Type StateType `yaml:"type"`
-	Log  string    `yaml:"log"`
+	ID      string            `yaml:"id"`
+	Type    StateType         `yaml:"type"`
+	Log     string            `yaml:"log,omitempty"`
+	Retries *RetryDefinition  `yaml:"retries,omitempty"`
+	Catch   []ErrorDefinition `yaml:"catch,omitempty"`
 }
 
 func (o *StateCommon) GetType() StateType {
 	return o.Type
+}
+
+func (o *StateCommon) ErrorDefinitions() []ErrorDefinition {
+	if o.Catch == nil {
+		return make([]ErrorDefinition, 0)
+	}
+
+	return o.Catch
+}
+
+func (o *StateCommon) RetryDefinition() *RetryDefinition {
+	return o.Retries
 }
 
 func (o *StateCommon) commonValidate() error {
@@ -108,6 +118,16 @@ func (o *StateCommon) commonValidate() error {
 	if o.Log != "" {
 		if _, err := gojq.Parse(o.Log); err != nil {
 			return fmt.Errorf("log is an invalid jq string: %v", err)
+		}
+	}
+
+	if err := o.Retries.Validate(); err != nil {
+		return err
+	}
+
+	for _, catch := range o.Catch {
+		if err := catch.Validate(); err != nil {
+			return err
 		}
 	}
 

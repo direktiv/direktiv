@@ -7,11 +7,10 @@ import (
 
 type ValidateState struct {
 	StateCommon `yaml:",inline"`
-	Subject     string            `yaml:"subject"`
-	Schema      interface{}       `yaml:"schema"`
-	Transform   string            `yaml:"transform,omitempty"`
-	Transition  string            `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition `yaml:"catch,omitempty"`
+	Subject     string      `yaml:"subject"`
+	Schema      interface{} `yaml:"schema"`
+	Transform   string      `yaml:"transform,omitempty"`
+	Transition  string      `yaml:"transition,omitempty"`
 }
 
 func (o *ValidateState) GetID() string {
@@ -46,14 +45,6 @@ func (o *ValidateState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *ValidateState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *ValidateState) Validate() error {

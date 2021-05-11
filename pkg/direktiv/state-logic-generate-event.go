@@ -40,6 +40,10 @@ func (sl *generateEventStateLogic) Deadline() time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
+func (sl *generateEventStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *generateEventStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

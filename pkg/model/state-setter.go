@@ -10,7 +10,6 @@ type SetterState struct {
 	Variables   []SetterDefinition `yaml:"variables"`
 	Transform   string             `yaml:"transform,omitempty"`
 	Transition  string             `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition  `yaml:"catch,omitempty"`
 }
 
 type SetterDefinition struct {
@@ -73,14 +72,6 @@ func (o *SetterState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *SetterState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *SetterState) Validate() error {
