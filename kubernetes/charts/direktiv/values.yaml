@@ -98,10 +98,17 @@ secrets:
   db: ""
   key: "01234567890123456789012345678912"
   vault:
-    address: ""
-    token: ""
-    path: ""
+    address:    ""
+    token:      ""
+    tokenPath:  ""
+    watchToken: false
+    path:       ""
     skipVerify: false
+
+vaultAgent:
+  image: "vorteil/vault-agent"
+  tag: "latest"
+  enable: false
 
 # flow config
 flow:
