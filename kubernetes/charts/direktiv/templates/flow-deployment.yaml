@@ -51,8 +51,10 @@ spec:
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
+          - name: DIREKTIV_FLOW_PROTOCOL
+            value: {{ .Values.flow.protocol }}
           - name: DIREKTIV_INSTANCE_LOGGING_DRIVER
-            value: {{ .Values.logDriver}}
+            value: {{ .Values.logDriver }}
           - name: DIREKTIV_FLOW_SIDECAR
             value: {{ .Values.flow.sidecar }}
           - name: DIREKTIV_INGRESS_BIND

@@ -42,7 +42,7 @@ func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 
 	var options []grpc.DialOption
 
-	if _, err := os.Stat(TLSCA); !os.IsNotExist(err) {
+	if _, err := os.Stat(TLSCert); !os.IsNotExist(err) {
 		log.Infof("loading cert for grpc")
 		creds, err := credentials.NewClientTLSFromFile(TLSCert, "")
 		if err != nil {

@@ -99,6 +99,7 @@ flow:
   exchange: "checkMe"
   sidecar: "vorteil/sidecar"
   db: ""
+  protocol: "http"
 
 # ui config
 ui:
