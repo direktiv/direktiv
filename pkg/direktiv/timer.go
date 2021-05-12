@@ -50,6 +50,23 @@ const (
 	timerTypeOneShot
 )
 
+func (tm *timerManager) prepDisableTimer(ti *timerItem) (string, error) {
+
+	switch ti.timerType {
+	case timerTypeOneShot:
+		// only if the timer had been setup
+		if ti.oneshot.timer != nil {
+			ti.oneshot.timer.Stop()
+		}
+	case timerTypeCron:
+		tm.cron.Remove(ti.cron.cronID)
+	default:
+		return "", fmt.Errorf("unknown timer type")
+	}
+
+	return ti.name, nil
+}
+
 func (tm *timerManager) disableTimer(ti *timerItem) error {
 
 	switch ti.timerType {
@@ -267,14 +284,22 @@ func (tm *timerManager) deleteTimersForInstanceNoBroadcast(name string) error {
 
 	log.Debugf("deleting timers for instance %s", name)
 
+	var keys []string
+
+	tm.mtx.Lock()
+	defer tm.mtx.Unlock()
+
 	delT := func(pattern, name string) error {
 		for _, n := range tm.timers {
 			if strings.HasPrefix(n.name, fmt.Sprintf(pattern, name)) {
-				tm.disableTimer(n)
+				key, err := tm.prepDisableTimer(n)
+				if err != nil {
+					return err
+				}
+				keys = append(keys, key)
 			}
 		}
 		return nil
-
 	}
 
 	patterns := []string{
@@ -287,6 +312,10 @@ func (tm *timerManager) deleteTimersForInstanceNoBroadcast(name string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	for _, key := range keys {
+		delete(tm.timers, key)
 	}
 
 	return nil
