@@ -120,8 +120,19 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 		return err
 	}
 
+	wf, err := db.getWorkflowByUid(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	ns := wf.Edges.Namespace
+
 	// delete all event listeners and events
-	uid, _ := uuid.Parse(id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
 	wfe, err := db.getWorkflowEventByWorkflowUID(uid)
 	if err == nil {
 		db.deleteWorkflowEventListener(wfe.ID)
@@ -155,6 +166,11 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 
 	if i == 0 {
 		return fmt.Errorf("workflow with id %s does not exist", id)
+	}
+
+	err = (*db.varStorage).DeleteAllInScope(ctx, ns.ID, id)
+	if err != nil {
+		return err
 	}
 
 	return nil

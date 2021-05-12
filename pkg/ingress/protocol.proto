@@ -29,6 +29,12 @@ import "pkg/ingress/get-registries.proto";
 import "pkg/ingress/delete-registry.proto";
 import "pkg/ingress/store-registry.proto";
 import "pkg/ingress/workflow-metrics.proto";
+import "pkg/ingress/list-namespace-variables.proto";
+import "pkg/ingress/list-workflow-variables.proto";
+import "pkg/ingress/get-namespace-variable.proto";
+import "pkg/ingress/get-workflow-variable.proto";
+import "pkg/ingress/set-namespace-variable.proto";
+import "pkg/ingress/set-workflow-variable.proto";
 
 service DirektivIngress {
 	rpc AddNamespace (AddNamespaceRequest) returns (AddNamespaceResponse) {}
@@ -54,4 +60,10 @@ service DirektivIngress {
 	rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
+	rpc ListNamespaceVariables (ListNamespaceVariablesRequest) returns (ListNamespaceVariablesResponse) {}
+	rpc ListWorkflowVariables (ListWorkflowVariablesRequest) returns (ListWorkflowVariablesResponse) {}
+	rpc GetNamespaceVariable (GetNamespaceVariableRequest) returns (GetNamespaceVariableResponse) {}
+	rpc GetWorkflowVariable (GetWorkflowVariableRequest) returns (GetWorkflowVariableResponse) {}
+	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (google.protobuf.Empty) {}
+	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (google.protobuf.Empty) {}
 }

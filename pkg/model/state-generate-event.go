@@ -30,7 +30,6 @@ type GenerateEventState struct {
 	Event       *GenerateEventDefinition `yaml:"event"`
 	Transform   string                   `yaml:"transform,omitempty"`
 	Transition  string                   `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition        `yaml:"catch,omitempty"`
 }
 
 func (o *GenerateEventState) GetID() string {
@@ -65,14 +64,6 @@ func (o *GenerateEventState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *GenerateEventState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *GenerateEventState) Validate() error {

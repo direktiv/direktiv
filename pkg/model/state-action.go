@@ -13,7 +13,6 @@ type ActionState struct {
 	Timeout     string            `yaml:"timeout,omitempty"`
 	Transform   string            `yaml:"transform,omitempty"`
 	Transition  string            `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition `yaml:"catch,omitempty"`
 }
 
 func (o *ActionState) GetID() string {
@@ -48,14 +47,6 @@ func (o *ActionState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *ActionState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *ActionState) Validate() error {

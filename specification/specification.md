@@ -119,6 +119,44 @@ If a `retry` strategy is defined the state will be immediately retried. Only onc
 | delay       | Time delay between retry attempts (ISO8601).               | string | no       |
 | multiplier  | Value by which the delay is multiplied after each attempt. | float  | no       |
 
+
+### GetterState
+
+| Parameter  | Description                                        | Type                                                    | Required |
+| ---------- | -------------------------------------------------- | ------------------------------------------------------- | -------- |
+| id         | State unique identifier.                           | string                                                  | yes      |
+| type       | State type ("getter").                             | string                                                  | yes      |
+| variables  | Variables to fetch.                                | [[]VariableGetterDefinition](#VariableGetterDefinition) | yes      |
+| transform  | `jq` command to transform the state's data output. | string                                                  | no       |
+| transition | State to transition to next.                       | string                                                  | no       |
+| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)                   | no       |
+
+#### VariableGetterDefinition 
+
+| Parameter | Description                                              | Type   | Required |
+| --------- | -------------------------------------------------------- | ------ | -------- |
+| key       | Variable name.                                           | string | yes      |
+| scope     | Variable scope ("instance", "workflow", or "namespace"). | string | yes      |
+
+### SetterState
+
+| Parameter  | Description                                        | Type                                                    | Required |
+| ---------- | -------------------------------------------------- | ------------------------------------------------------- | -------- |
+| id         | State unique identifier.                           | string                                                  | yes      |
+| type       | State type ("setter").                             | string                                                  | yes      |
+| variables  | Variables to push.                                 | [[]VariableSetterDefinition](#VariableSetterDefinition) | yes      |
+| transform  | `jq` command to transform the state's data output. | string                                                  | no       |
+| transition | State to transition to next.                       | string                                                  | no       |
+| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)                   | no       |
+
+#### VariableSetterDefinition 
+
+| Parameter | Description                                              | Type   | Required |
+| --------- | -------------------------------------------------------- | ------ | -------- |
+| key       | Variable name.                                           | string | yes      |
+| scope     | Variable scope ("instance", "workflow", or "namespace"). | string | yes      |
+| value     | `jq` command to generate variable value.                 | string | yes      |
+
 ### ActionState
 
 | Parameter  | Description                                                                  | Type                                  | Required |

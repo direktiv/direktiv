@@ -6,9 +6,8 @@ import (
 
 type NoopState struct {
 	StateCommon `yaml:",inline"`
-	Transform   string            `yaml:"transform,omitempty"`
-	Transition  string            `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition `yaml:"catch,omitempty"`
+	Transform   string `yaml:"transform,omitempty"`
+	Transition  string `yaml:"transition,omitempty"`
 }
 
 func (o *NoopState) GetID() string {
@@ -43,14 +42,6 @@ func (o *NoopState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *NoopState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *NoopState) Validate() error {

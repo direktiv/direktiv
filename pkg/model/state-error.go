@@ -35,10 +35,6 @@ func (o *ErrorState) GetTransitions() []string {
 	return transitions
 }
 
-func (o *ErrorState) ErrorDefinitions() []ErrorDefinition {
-	return make([]ErrorDefinition, 0) // Does not have error definitions
-}
-
 func (o *ErrorState) GetArgs() []string {
 	if o.Args == nil {
 		return make([]string, 0)

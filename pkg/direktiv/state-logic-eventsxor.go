@@ -38,6 +38,10 @@ func (sl *eventsXorStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
+func (sl *eventsXorStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *eventsXorStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -57,8 +61,8 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, instance *wo
 	}
 
 	var events []*model.ConsumeEventDefinition
-	for _, event := range sl.state.Events {
-		events = append(events, &event.Event)
+	for i := range sl.state.Events {
+		events = append(events, &sl.state.Events[i].Event)
 	}
 
 	instance.engine.clearEventListeners(instance.rec)

@@ -1,8 +1,12 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"regexp"
 	"strings"
 	"time"
@@ -756,5 +760,253 @@ func (is *ingressServer) StoreRegistry(ctx context.Context, in *ingress.StoreReg
 	}
 
 	return &resp, nil
+
+}
+
+func (is *ingressServer) SetNamespaceVariable(ctx context.Context, in *ingress.SetNamespaceVariableRequest) (*emptypb.Empty, error) {
+
+	var resp emptypb.Empty
+
+	namespace := in.GetNamespace()
+	if namespace == "" {
+		return nil, errors.New("required namespace")
+	}
+
+	key := in.GetKey()
+	if key == "" {
+		return nil, errors.New("requires variable key")
+	}
+
+	data := in.GetValue()
+
+	_, err := is.wfServer.dbManager.getNamespace(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		err = is.wfServer.variableStorage.Delete(ctx, key, namespace)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		w, err := is.wfServer.variableStorage.Store(ctx, key, namespace)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = io.Copy(w, bytes.NewReader(data))
+		if err != nil {
+			return nil, err
+		}
+
+		err = w.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		// TODO: resolve edge-case where namespace is deleted during this process
+	}
+
+	return &resp, nil
+
+}
+
+func (is *ingressServer) GetNamespaceVariable(ctx context.Context, in *ingress.GetNamespaceVariableRequest) (*ingress.GetNamespaceVariableResponse, error) {
+
+	resp := new(ingress.GetNamespaceVariableResponse)
+
+	namespace := in.GetNamespace()
+	if namespace == "" {
+		return nil, errors.New("required namespace")
+	}
+
+	key := in.GetKey()
+	if key == "" {
+		return nil, errors.New("requires variable key")
+	}
+
+	r, err := is.wfServer.variableStorage.Retrieve(ctx, key, namespace)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Name = &key
+	resp.Value = data
+
+	return resp, nil
+
+}
+
+func (is *ingressServer) ListNamespaceVariables(ctx context.Context, in *ingress.ListNamespaceVariablesRequest) (*ingress.ListNamespaceVariablesResponse, error) {
+
+	resp := new(ingress.ListNamespaceVariablesResponse)
+
+	namespace := in.GetNamespace()
+	if namespace == "" {
+		return nil, errors.New("required namespace")
+	}
+
+	list, err := is.wfServer.variableStorage.List(ctx, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	var names []string
+	var sizes []int64
+
+	for i, tuple := range list {
+		names = append(names, tuple.Key())
+		sizes = append(sizes, tuple.Size())
+		resp.Variables = append(resp.Variables, &ingress.ListNamespaceVariablesResponse_Variable{
+			Name: &(names[i]),
+			Size: &(sizes[i]),
+		})
+	}
+
+	return resp, nil
+
+}
+
+func (is *ingressServer) SetWorkflowVariable(ctx context.Context, in *ingress.SetWorkflowVariableRequest) (*emptypb.Empty, error) {
+
+	var resp emptypb.Empty
+
+	workflow := in.GetWorkflowUid()
+	if workflow == "" {
+		return nil, errors.New("required workflow uid")
+	}
+
+	key := in.GetKey()
+	if key == "" {
+		return nil, errors.New("requires variable key")
+	}
+
+	data := in.GetValue()
+
+	wf, err := is.wfServer.dbManager.getWorkflowByUid(ctx, workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	ns := wf.Edges.Namespace
+
+	if len(data) == 0 {
+		err = is.wfServer.variableStorage.Delete(ctx, key, ns.ID, workflow)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		w, err := is.wfServer.variableStorage.Store(ctx, ns.ID, workflow)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = io.Copy(w, bytes.NewReader(data))
+		if err != nil {
+			return nil, err
+		}
+
+		err = w.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		// TODO: resolve edge-case where namespace or workflow is deleted during this process
+	}
+
+	return &resp, nil
+
+}
+
+func (is *ingressServer) GetWorkflowVariable(ctx context.Context, in *ingress.GetWorkflowVariableRequest) (*ingress.GetWorkflowVariableResponse, error) {
+
+	resp := new(ingress.GetWorkflowVariableResponse)
+
+	workflow := in.GetWorkflowUid()
+	if workflow == "" {
+		return nil, errors.New("required workflow uid")
+	}
+
+	key := in.GetKey()
+	if key == "" {
+		return nil, errors.New("requires variable key")
+	}
+
+	wf, err := is.wfServer.dbManager.getWorkflowByUid(ctx, workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	ns := wf.Edges.Namespace
+
+	r, err := is.wfServer.variableStorage.Retrieve(ctx, key, ns.ID, workflow)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Name = &key
+	resp.Value = data
+
+	return resp, nil
+
+}
+
+func (is *ingressServer) ListWorkflowVariables(ctx context.Context, in *ingress.ListWorkflowVariablesRequest) (*ingress.ListWorkflowVariablesResponse, error) {
+
+	resp := new(ingress.ListWorkflowVariablesResponse)
+
+	workflow := in.GetWorkflowUid()
+	if workflow == "" {
+		return nil, errors.New("required workflow uid")
+	}
+
+	wf, err := is.wfServer.dbManager.getWorkflowByUid(ctx, workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	ns := wf.Edges.Namespace
+
+	list, err := is.wfServer.variableStorage.List(ctx, ns.ID, workflow)
+	if err != nil {
+		return nil, err
+	}
+
+	var names []string
+	var sizes []int64
+
+	for i, tuple := range list {
+		names = append(names, tuple.Key())
+		sizes = append(sizes, tuple.Size())
+		resp.Variables = append(resp.Variables, &ingress.ListWorkflowVariablesResponse_Variable{
+			Name: &(names[i]),
+			Size: &(sizes[i]),
+		})
+	}
+
+	return resp, nil
 
 }

@@ -41,6 +41,10 @@ func (sl *foreachStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
+func (sl *foreachStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *foreachStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

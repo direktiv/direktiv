@@ -57,6 +57,10 @@ type Config struct {
 	InstanceLogging struct {
 		Driver string
 	}
+
+	VariablesStorage struct {
+		Driver string
+	}
 }
 
 func setIP(config *Config, env string, value *net.IP) error {

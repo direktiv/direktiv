@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package ingress;
+
+option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+
+message ListNamespaceVariablesRequest {
+	optional string namespace = 1;
+}
+
+message ListNamespaceVariablesResponse {
+	message Variable {
+		optional string name = 1;
+		optional int64 size = 2;
+	}
+	repeated Variable variables = 1;
+}

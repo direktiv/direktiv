@@ -7,10 +7,9 @@ import (
 
 type DelayState struct {
 	StateCommon `yaml:",inline"`
-	Duration    string            `yaml:"duration"`
-	Transform   string            `yaml:"transform,omitempty"`
-	Transition  string            `yaml:"transition,omitempty"`
-	Catch       []ErrorDefinition `yaml:"catch,omitempty"`
+	Duration    string `yaml:"duration"`
+	Transform   string `yaml:"transform,omitempty"`
+	Transition  string `yaml:"transition,omitempty"`
 }
 
 func (o *DelayState) GetID() string {
@@ -45,14 +44,6 @@ func (o *DelayState) GetTransitions() []string {
 	}
 
 	return transitions
-}
-
-func (o *DelayState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *DelayState) Validate() error {

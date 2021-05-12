@@ -38,6 +38,10 @@ func (sl *consumeEventStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
+func (sl *consumeEventStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *consumeEventStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

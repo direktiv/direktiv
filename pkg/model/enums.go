@@ -191,6 +191,8 @@ const (
 	StateTypeValidate
 	StateTypeConsume
 	StateTypeCallback
+	StateTypeGetter
+	StateTypeSetter
 )
 
 var stateTypeStrings []string = []string{
@@ -208,6 +210,8 @@ var stateTypeStrings []string = []string{
 	"validate",
 	"consumeEvent",
 	"callback",
+	"getter",
+	"setter",
 }
 
 func ParseStateType(s string) (StateType, error) {

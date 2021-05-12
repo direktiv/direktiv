@@ -93,6 +93,8 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 		model.StateTypeParallel:      initParallelStateLogic,
 		model.StateTypeSwitch:        initSwitchStateLogic,
 		model.StateTypeValidate:      initValidateStateLogic,
+		model.StateTypeGetter:        initGetterStateLogic,
+		model.StateTypeSetter:        initSetterStateLogic,
 	}
 
 	err = we.timer.registerFunction(sleepWakeupFunction, we.sleepWakeup)
@@ -608,6 +610,12 @@ func (we *workflowEngine) freeResources(rec *ent.WorkflowInstance) {
 
 	we.clearEventListeners(rec)
 
+	var namespace, workflow, instance string
+	namespace = rec.Edges.Workflow.Edges.Namespace.ID
+	workflow = rec.Edges.Workflow.ID.String()
+	instance = rec.InstanceID
+	we.server.variableStorage.DeleteAllInScope(context.Background(), namespace, workflow, instance)
+
 }
 
 func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft bool) error {
@@ -881,11 +889,18 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		return
 	}
 
-	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus("complete").Save(ctx)
+	status := "complete"
+	if wli.rec.ErrorCode != "" {
+		status = "failed"
+	}
+
+	wf := wli.rec.Edges.Workflow
+	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus(status).Save(ctx)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	rec.Edges.Workflow = wf
 
 	wli.rec = rec
 	log.Debugf("Workflow instance completed: %s", wli.id)
@@ -978,7 +993,10 @@ failure:
 
 	} else if cerr, ok := err.(*CatchableError); ok {
 
+		var hasAlreadyFailed bool
 		_ = wli.StoreData("error", cerr)
+
+	alreadyFailed:
 
 		for i, catch := range wli.logic.ErrorCatchers() {
 
@@ -991,18 +1009,6 @@ failure:
 
 				wli.Log("State failed with error '%s': %s", cerr.Code, cerr.Message)
 				wli.Log("Error caught by error definition %d: %s", i, catch.Error)
-
-				if catch.Retry != nil {
-					if wli.rec.Attempts < catch.Retry.MaxAttempts {
-						err = wli.Retry(ctx, catch.Retry.Delay, catch.Retry.Multiplier, cerr.Code)
-						if err != nil {
-							goto failure
-						}
-						return
-					} else {
-						wli.Log("Maximum retry attempts exceeded.")
-					}
-				}
 
 				transition = &stateTransition{
 					Transform: "",
@@ -1017,6 +1023,23 @@ failure:
 
 			}
 
+		}
+
+		if retries := wli.logic.Retries(); retries != nil && !hasAlreadyFailed {
+			if wli.rec.Attempts < retries.MaxAttempts {
+				err = wli.Retry(ctx, retries.Delay, retries.Multiplier, cerr.Code)
+				if err != nil {
+					goto failure
+				}
+				return
+			} else {
+				wli.Log("Maximum retry attempts exceeded.")
+				if retries.Throw != "" {
+					cerr = NewCatchableError(retries.Throw, retries.Throw)
+					hasAlreadyFailed = true
+					goto alreadyFailed
+				}
+			}
 		}
 
 		err = wli.setStatus(ctx, "failed", cerr.Code, cerr.Message)

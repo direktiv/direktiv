@@ -41,6 +41,10 @@ func (sl *parallelStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
+func (sl *parallelStateLogic) Retries() *model.RetryDefinition {
+	return sl.state.RetryDefinition()
+}
+
 func (sl *parallelStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

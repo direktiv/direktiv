@@ -23,6 +23,9 @@ func (db *dbManager) deleteWorkflowInstance(id int) error {
 		return err
 	}
 
+	wf := wfi.Edges.Workflow
+	ns := wf.Edges.Namespace
+
 	if db.tm != nil {
 		err := db.tm.deleteTimersForInstance(wfi.InstanceID)
 		if err != nil {
@@ -37,6 +40,11 @@ func (db *dbManager) deleteWorkflowInstance(id int) error {
 	}
 
 	err = db.dbEnt.WorkflowInstance.DeleteOneID(id).Exec(db.ctx)
+	if err != nil {
+		return err
+	}
+
+	err = (*db.varStorage).DeleteAllInScope(db.ctx, ns.ID, wf.ID.String(), wfi.InstanceID)
 	if err != nil {
 		return err
 	}
@@ -134,6 +142,9 @@ func (db *dbManager) getWorkflowInstanceByID(ctx context.Context, id int) (*ent.
 	return db.dbEnt.WorkflowInstance.
 		Query().
 		Where(workflowinstance.IDEQ(id)).
+		WithWorkflow(func(q *ent.WorkflowQuery) {
+			q.WithNamespace()
+		}).
 		Only(ctx)
 
 }
@@ -161,6 +172,9 @@ func (db *dbManager) getWorkflowInstance(ctx context.Context, id string) (*ent.W
 	return db.dbEnt.WorkflowInstance.
 		Query().
 		Where(workflowinstance.InstanceIDEQ(id)).
+		WithWorkflow(func(q *ent.WorkflowQuery) {
+			q.WithNamespace()
+		}).
 		Only(ctx)
 
 }

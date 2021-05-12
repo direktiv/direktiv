@@ -84,12 +84,16 @@ spec:
           command: ["/bin/secrets"]
           args: [{{.Values.secrets.backend }}]
           imagePullPolicy: {{ .Values.pullPolicy }}
-         {{- if ne  .Values.flow.certificate "none" }}
           volumeMounts:
+          {{- if ne  .Values.flow.certificate "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
             readOnly: true
           {{- end }}
+          {{- if .Values.vaultAgent.enable}}
+          - name: vault-agent-sink
+            mountPath: "/sink"
+          {{- end}}
           ports:
             - name: secrets
               containerPort: 2610
@@ -121,6 +125,16 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsVaultToken
+          - name: DIREKTIV_SECRETS_VAULT_TOKEN_PATH
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsVaultTokenPath
+          - name: DIREKTIV_SECRETS_VAULT_WATCH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: secretsVaultWatchToken
           - name: DIREKTIV_SECRETS_VAULT_PATH
             valueFrom:
               secretKeyRef:
@@ -132,10 +146,37 @@ spec:
                 name: {{ include "direktiv.fullname" . }}
                 key: secretsVaultSkipVerify
           {{- end}}
+        {{- if .Values.vaultAgent.enable }}
+        - name: vault-agent
+          image: "{{ .Values.registry }}/{{ .Values.vaultAgent.image }}:{{ .Values.vaultAgent.tag | default .Chart.AppVersion }}"
+          command: ["/bin/vault"]
+          args: ["agent", "-config=/config/config.hcl"]
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: VAULT_SKIP_VERIFY
+            value: "true"
+          volumeMounts:
+          - name: vault-agent-config
+            mountPath: "/config"
+            readOnly: false
+          - name: vault-agent-sink
+            mountPath: "/sink"
+          ports:
+            - name: vault-agent
+              containerPort: 8100
+              protocol: TCP
+        {{- end}}
       volumes:
         - name: service-template
           configMap:
             name: service-template
+        {{- if .Values.vaultAgent.enable }}
+        - name: vault-agent-config
+          configMap:
+            name: vault-agent-config
+        - name: vault-agent-sink
+          emptyDir: {}
+        {{- end }}
         {{- if ne  .Values.flow.certificate "none" }}
         - name: certs
           secret:

@@ -5,20 +5,37 @@ import (
 	"fmt"
 )
 
-type ParallelState struct {
+type GetterState struct {
 	StateCommon `yaml:",inline"`
-	Actions     []ActionDefinition `yaml:"actions"`
-	Mode        BranchMode         `yaml:"mode,omitempty"`
-	Timeout     string             `yaml:"timeout,omitempty"`
+	Variables   []GetterDefinition `yaml:"variables"`
 	Transform   string             `yaml:"transform,omitempty"`
 	Transition  string             `yaml:"transition,omitempty"`
 }
 
-func (o *ParallelState) GetID() string {
+type GetterDefinition struct {
+	Scope string `yaml:"scope"`
+	Key   string `yaml:"key"`
+}
+
+func (o *GetterDefinition) Validate() error {
+
+	if o.Scope == "" {
+		return errors.New(`scope required ("instance", "workflow", or "namespace")`)
+	}
+
+	if o.Key == "" {
+		return errors.New(`key required`)
+	}
+
+	return nil
+
+}
+
+func (o *GetterState) GetID() string {
 	return o.ID
 }
 
-func (o *ParallelState) getTransitions() map[string]string {
+func (o *GetterState) getTransitions() map[string]string {
 	transitions := make(map[string]string)
 	if o.Transition != "" {
 		transitions["transition"] = o.Transition
@@ -33,7 +50,7 @@ func (o *ParallelState) getTransitions() map[string]string {
 	return transitions
 }
 
-func (o *ParallelState) GetTransitions() []string {
+func (o *GetterState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
 		transitions = append(transitions, o.Transition)
@@ -48,35 +65,23 @@ func (o *ParallelState) GetTransitions() []string {
 	return transitions
 }
 
-func (o *ParallelState) GetActions() []ActionDefinition {
-	if o.Actions == nil {
-		return make([]ActionDefinition, 0)
-	}
-
-	return o.Actions
-}
-
-func (o *ParallelState) Validate() error {
+func (o *GetterState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if len(o.Variables) == 0 {
+		return errors.New("variables required")
 	}
 
-	if o.Actions == nil || len(o.Actions) == 0 {
-		return errors.New("actions required")
-	}
-
-	for i, action := range o.GetActions() {
-		if err := action.Validate(); err != nil {
-			return fmt.Errorf("action[%v] is invalid: %v", i, err)
+	for i, varDef := range o.Variables {
+		if err := varDef.Validate(); err != nil {
+			return fmt.Errorf("variables[%d] is invalid: %v", i, err)
 		}
 	}
 
-	if o.Timeout != "" && !isISO8601(o.Timeout) {
-		return errors.New("timeout is not a ISO8601 string")
+	if err := validateTransformJQ(o.Transform); err != nil {
+		return err
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {

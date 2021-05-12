@@ -26,10 +26,8 @@ func (o *SwitchConditionDefinition) Validate() error {
 type SwitchState struct {
 	StateCommon       `yaml:",inline"`
 	Conditions        []SwitchConditionDefinition `yaml:"conditions"`
-	Default           string                      `yaml:"default,omitempty"`
 	DefaultTransform  string                      `yaml:"defaultTransform,omitempty"`
 	DefaultTransition string                      `yaml:"defaultTransition,omitempty"`
-	Catch             []ErrorDefinition           `yaml:"catch,omitempty"`
 }
 
 func (o *SwitchState) GetID() string {
@@ -74,14 +72,6 @@ func (o *SwitchState) GetTransitions() []string {
 		}
 	}
 	return transitions
-}
-
-func (o *SwitchState) ErrorDefinitions() []ErrorDefinition {
-	if o.Catch == nil {
-		return make([]ErrorDefinition, 0)
-	}
-
-	return o.Catch
 }
 
 func (o *SwitchState) GetConditions() []SwitchConditionDefinition {
