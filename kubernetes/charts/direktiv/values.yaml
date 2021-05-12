@@ -37,24 +37,6 @@ service:
   type: ClusterIP
   port: 80
 
-ingress:
-  auth:
-    enabled: false
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-      - path: /
-        backend:
-          serviceName: chart-example.local
-          servicePort: 80
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -87,9 +69,14 @@ withFlow: true
 withUI: true
 withAPI: true
 
-db: ""
 debug: false
-ingressClass: "istio"
+
+ingress:
+  host: ""
+  certificate: none
+  class: "contour-external"
+  auth:
+    enabled: false
 
 secrets:
   image: "vorteil/secrets"
@@ -114,25 +101,19 @@ vaultAgent:
 flow:
   image: "vorteil/flow"
   tag: "latest"
-  ingressPortType: "ClusterIP"
-  ingressNodePort: 0
-  secretsEndpoint: ""
   exchange: "checkMe"
   sidecar: "vorteil/sidecar"
+  db: ""
+  protocol: "http"
+  certificate: none
 
 # ui config
 ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
-  portType: "ClusterIP"
-  nodePort: 0
-
-# cert for inter service communication
-certificate:
-key:
 
 api:
   image: vorteil/api
   tag: "latest"
-  portType: "ClusterIP"
-  ingressNodePort: 0
+
+uiapiCertificate: none

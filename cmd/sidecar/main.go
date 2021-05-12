@@ -18,9 +18,6 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/resolver"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
@@ -274,28 +271,16 @@ func (d *direktivHTTPHandler) Base(ctx *fasthttp.RequestCtx) {
 
 	if d.flowClient == nil {
 
-		var options []grpc.DialOption
-		if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
-			creds, err := credentials.NewClientTLSFromFile("/etc/certs/direktiv/tls.crt", "")
-			if err != nil {
-				generateError(ctx, direktiv.ServiceErrorInternal,
-					fmt.Sprintf("can not get grpc cert: %s", err.Error()))
-				return
-			}
-			options = append(options, grpc.WithTransportCredentials(creds))
-		} else {
-			options = append(options, grpc.WithInsecure())
-		}
-
-		// rr back to server
-		options = append(options, grpc.WithBalancerName(roundrobin.Name))
-
-		conn, err := grpc.Dial(vals[direktiv.DirektivResponseHeader], options...)
+		conn, err := direktiv.GetEndpointTLS(vals[direktiv.DirektivResponseHeader], true)
 		if err != nil {
+			log.Errorf("can not connect to direktiv ingress: %v", err)
 			generateError(ctx, direktiv.ServiceErrorInternal,
-				fmt.Sprintf("can not connect to flow: %s", err.Error()))
+				fmt.Sprintf("can not setup flow client: %s", err.Error()))
 			return
 		}
+
+		log.Infof("connecting to %s", vals[direktiv.DirektivResponseHeader])
+
 		d.flowClient = flow.NewDirektivFlowClient(conn)
 	}
 
@@ -352,7 +337,7 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 		d.mtx.Unlock()
 	}()
 
-	log.Infof("handle request aid: %s", info.aid)
+	log.Debugf("handle request aid: %s", info.aid)
 
 	// wipe data field for "real" response
 	body := info.data

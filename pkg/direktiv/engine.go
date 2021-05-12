@@ -127,7 +127,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = GetEndpointTLS(s.config.SecretsAPI.Endpoint, false)
+	conn, err = GetEndpointTLS(secretsEndpoint, false)
 	if err != nil {
 		return nil, err
 	}
@@ -333,15 +333,14 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 			rootCAs = x509.NewCertPool()
 		}
 
-		// Read in the cert file
-		certs, err := ioutil.ReadFile("/etc/ssl/isolate/tls.crt")
-		if err != nil {
-			return err
-		}
-
-		// Append our cert to the system pool
-		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-			log.Println("No certs appended, using system certs only")
+		// Read in the cert file. just in case it is the same being used
+		// in the ingress
+		certs, err := ioutil.ReadFile(TLSCert)
+		if err == nil {
+			// Append our cert to the system pool if we have it
+			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+				log.Println("No certs appended, using system certs only")
+			}
 		}
 
 		// Trust the augmented cert pool in our client
@@ -401,7 +400,6 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
-
 			if err, ok := err.(*url.Error); ok {
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {

@@ -28,41 +28,27 @@ const (
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
 
-	secretsEndpoint = "DIREKTIV_SECRETS_ENDPOINT"
-
 	// DBConn database connection
 	DBConn = "DIREKTIV_DB"
 
 	// instance logging
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
-
-	mockupMode = "DIREKTIV_MOCKUP"
 )
 
 // Config is the configuration for workflow and runner server
 type Config struct {
 	FlowAPI struct {
-		Bind                string
-		Endpoint            string
-		Exchange            string
-		Sidecar             string
-		Protocol            string
-		KubernetesNamespace string
-		Registry            struct {
-			Name, User, Token string
-		}
+		Bind     string
+		Endpoint string
+		Exchange string
+		Sidecar  string
+		Protocol string
 	} `toml:"flowAPI"`
 
 	IngressAPI struct {
 		Bind     string
 		Endpoint string
 	} `toml:"ingressAPI"`
-
-	SecretsAPI struct {
-		Bind     string
-		Endpoint string
-		DB       string
-	} `toml:"secretsAPI"`
 
 	Database struct {
 		DB string
@@ -75,9 +61,6 @@ type Config struct {
 	VariablesStorage struct {
 		Driver string
 	}
-
-	Registries map[string]string
-	MockupMode int
 }
 
 func setIP(config *Config, env string, value *net.IP) error {
@@ -140,9 +123,6 @@ func ReadConfig(file string) (*Config, error) {
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
 
-	c.SecretsAPI.Bind = fmt.Sprintf("%s:2610", localIP)
-	c.SecretsAPI.Endpoint = c.SecretsAPI.Bind
-
 	// read config file if exists
 	if len(file) > 0 {
 
@@ -164,9 +144,7 @@ func ReadConfig(file string) (*Config, error) {
 	ints := []struct {
 		name  string
 		value *int
-	}{
-		{mockupMode, &c.MockupMode},
-	}
+	}{}
 
 	for _, i := range ints {
 		err := setInt(c, i.name, i.value)
@@ -185,7 +163,6 @@ func ReadConfig(file string) (*Config, error) {
 		{flowEndpoint, &c.FlowAPI.Endpoint},
 		{ingressBind, &c.IngressAPI.Bind},
 		{ingressEndpoint, &c.IngressAPI.Endpoint},
-		{secretsEndpoint, &c.SecretsAPI.Endpoint},
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},
 		{flowProtocol, &c.FlowAPI.Protocol},
@@ -199,7 +176,7 @@ func ReadConfig(file string) (*Config, error) {
 	}
 
 	// test database is set
-	if len(c.Database.DB) == 0 && len(c.SecretsAPI.DB) == 0 {
+	if len(c.Database.DB) == 0 {
 		return nil, fmt.Errorf("no database configured")
 	}
 

@@ -21,6 +21,8 @@ const (
 	TLSCert = "/etc/certs/direktiv/tls.crt"
 	// TLSKey key
 	TLSKey = "/etc/certs/direktiv/tls.key"
+	// TLSCA cert CA
+	TLSCA = "/etc/certs/direktiv/ca.crt"
 )
 
 var globalGRPCDialOptions []grpc.DialOption
@@ -41,6 +43,7 @@ func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 	var options []grpc.DialOption
 
 	if _, err := os.Stat(TLSCert); !os.IsNotExist(err) {
+		log.Infof("loading cert for grpc")
 		creds, err := credentials.NewClientTLSFromFile(TLSCert, "")
 		if err != nil {
 			return nil, fmt.Errorf("could not load tls cert: %s", err)
@@ -69,6 +72,7 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	// Create the TLS credentials
 	if _, err := os.Stat(TLSKey); !os.IsNotExist(err) {
+		log.Infof("enabling tls for %s", name)
 		creds, err := credentials.NewServerTLSFromFile(TLSCert, TLSKey)
 		if err != nil {
 			return fmt.Errorf("could not load TLS keys: %s", err)

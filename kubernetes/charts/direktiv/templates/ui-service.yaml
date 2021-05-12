@@ -5,16 +5,16 @@ metadata:
   name: {{ include "direktiv.fullname" . }}-ui
   labels:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
+  {{- if ne  .Values.uiapiCertificate "none" }}
+  annotations:
+    projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-ui,80"
+  {{- end }}
 spec:
-  type: {{ .Values.ui.portType }}
   ports:
     - port: 80
       targetPort: 80
       protocol: TCP
       name: ui
-      {{- if (eq .Values.ui.portType "NodePort") }}
-      nodePort: {{ int .Values.ui.nodePort }}
-      {{- end }}
   selector:
     {{- include "direktiv.selectorLabelsUI" . | nindent 4 }}
 {{- end }}

@@ -9,7 +9,8 @@ data:
 
     [ingress]
       endpoint = "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
-
+      tls = true
+      
     [server]
       bind = ":8080"
 
