@@ -28,7 +28,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	changeIstio()
+	changeContour()
 
 	go func() {
 		err := startingK3s()
@@ -48,6 +48,7 @@ func main() {
 	log.Println("installing direktiv")
 
 	applyYaml(kc)
+	patch(kc)
 	runHelm()
 
 	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
@@ -128,7 +129,7 @@ func runHelm() {
 
 func applyYaml(kc string) {
 
-	fs := []string{"serving-crds.yaml", "serving-core.yaml", "istio.yaml", "net-istio.yaml"}
+	fs := []string{"serving-crds.yaml", "serving-core.yaml", "contour.yaml", "net-contour.yaml"}
 
 	for _, f := range fs {
 		log.Printf("applying %s\n", f)
@@ -140,24 +141,34 @@ func applyYaml(kc string) {
 
 }
 
+func patch(kc string) {
+
+	log.Printf("patching configmap\n")
+	cmd := exec.Command(kc, "patch", "configmap/config-network",
+		"--namespace", "knative-serving", "--type", "merge", "--patch",
+		"{\"data\":{\"ingress.class\":\"contour.ingress.networking.knative.dev\"}}")
+	cmd.Run()
+
+}
+
 func startingK3s() error {
 
 	log.Println("starting k3s")
 	cmd := exec.Command("k3s", "server", "--disable", "traefik", "--write-kubeconfig-mode=644")
+
 	return cmd.Run()
 
 }
 
-func changeIstio() {
-	iyaml, err := ioutil.ReadFile("/direktiv/scripts/knative/istio.yaml")
+func changeContour() {
+	iyaml, err := ioutil.ReadFile("/direktiv/scripts/knative/contour.yaml")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	output := bytes.Replace(iyaml, []byte("minReplicas: 3"), []byte("minReplicas: 1"), -1)
-	output = bytes.Replace(output, []byte("replicas: 3"), []byte("replicas: 1"), -1)
+	output := bytes.Replace(iyaml, []byte("replicas: 2"), []byte("replicas: 1"), -1)
 
-	if err = ioutil.WriteFile("/direktiv/scripts/knative/istio.yaml", output, 0666); err != nil {
+	if err = ioutil.WriteFile("/direktiv/scripts/knative/contour.yaml", output, 0666); err != nil {
 		panic(err.Error())
 	}
 }

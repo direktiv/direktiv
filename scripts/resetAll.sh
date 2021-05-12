@@ -33,7 +33,9 @@ kubectl apply -f scripts/knative/serving-crds.yaml
 kubectl apply -f scripts/knative/serving-core.yaml
 kubectl apply -f scripts/knative/contour.yaml
 kubectl apply -f scripts/knative/net-contour.yaml
+
 kubectl apply -f scripts/knative/config-deployment.yaml
+
 kubectl patch configmap/config-network \
   --namespace knative-serving \
   --type merge \
