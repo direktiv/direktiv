@@ -20,4 +20,6 @@ message GetWorkflowInstanceResponse {
 	repeated string flow = 7;
 	optional bytes input = 8;
 	optional bytes output = 9;
+	optional string errorCode = 10;
+	optional string errorMessage = 11;
 }

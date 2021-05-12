@@ -415,6 +415,9 @@ func (is *ingressServer) GetWorkflowInstance(ctx context.Context, in *ingress.Ge
 	resp.Input = []byte(inst.Input)
 	resp.Output = []byte(inst.Output)
 
+	resp.ErrorCode = &inst.ErrorCode
+	resp.ErrorMessage = &inst.ErrorMessage
+
 	return &resp, nil
 
 }
