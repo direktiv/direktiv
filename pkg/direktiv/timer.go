@@ -336,12 +336,21 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 	}
 
 	// delete local timer
+	var key string
+	var err error
+
+	tm.mtx.Lock()
+
 	if ti, ok := tm.timers[name]; ok {
-		err := tm.disableTimer(ti)
+		key, err = tm.prepDisableTimer(ti)
 		if err != nil {
 			log.Error(err)
 		}
 	}
+
+	delete(tm.timers, key)
+
+	tm.mtx.Unlock()
 
 	if newController == "" {
 		// broadcast timer delete
