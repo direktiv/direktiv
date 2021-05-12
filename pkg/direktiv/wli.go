@@ -197,11 +197,13 @@ func (wli *workflowLogicInstance) Raise(ctx context.Context, cerr *CatchableErro
 	var err error
 
 	if wli.rec.ErrorCode == "" {
+		wf := wli.rec.Edges.Workflow
 		wli.rec, err = wli.rec.Update().
 			SetStatus("failed").
 			SetErrorCode(cerr.Code).
 			SetErrorMessage(cerr.Message).
 			Save(ctx)
+		wli.rec.Edges.Workflow = wf
 		if err != nil {
 			return NewInternalError(err)
 		}

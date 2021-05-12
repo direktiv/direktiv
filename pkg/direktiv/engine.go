@@ -974,7 +974,6 @@ failure:
 	savedata, err2 := InstanceMemory(wli.rec)
 	if err2 == nil {
 		wli.engine.cancelChildren(wli.logic, savedata)
-		log.Error(err2)
 	}
 
 	if uerr, ok := err.(*UncatchableError); ok {
