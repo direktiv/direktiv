@@ -21,6 +21,12 @@ const _ = grpc.SupportPackageIsVersion7
 type DirektivFlowClient interface {
 	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	Resume(ctx context.Context, in *ResumeRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (*GetNamespaceVariableResponse, error)
+	GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (*GetWorkflowVariableResponse, error)
+	GetInstanceVariable(ctx context.Context, in *GetInstanceVariableRequest, opts ...grpc.CallOption) (*GetInstanceVariableResponse, error)
+	SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SetInstanceVariable(ctx context.Context, in *SetInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type direktivFlowClient struct {
@@ -49,12 +55,72 @@ func (c *direktivFlowClient) Resume(ctx context.Context, in *ResumeRequest, opts
 	return out, nil
 }
 
+func (c *direktivFlowClient) GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (*GetNamespaceVariableResponse, error) {
+	out := new(GetNamespaceVariableResponse)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/GetNamespaceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivFlowClient) GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (*GetWorkflowVariableResponse, error) {
+	out := new(GetWorkflowVariableResponse)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/GetWorkflowVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivFlowClient) GetInstanceVariable(ctx context.Context, in *GetInstanceVariableRequest, opts ...grpc.CallOption) (*GetInstanceVariableResponse, error) {
+	out := new(GetInstanceVariableResponse)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/GetInstanceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivFlowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/SetNamespaceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivFlowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/SetWorkflowVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *direktivFlowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/SetInstanceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DirektivFlowServer is the server API for DirektivFlow service.
 // All implementations must embed UnimplementedDirektivFlowServer
 // for forward compatibility
 type DirektivFlowServer interface {
 	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
 	Resume(context.Context, *ResumeRequest) (*empty.Empty, error)
+	GetNamespaceVariable(context.Context, *GetNamespaceVariableRequest) (*GetNamespaceVariableResponse, error)
+	GetWorkflowVariable(context.Context, *GetWorkflowVariableRequest) (*GetWorkflowVariableResponse, error)
+	GetInstanceVariable(context.Context, *GetInstanceVariableRequest) (*GetInstanceVariableResponse, error)
+	SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*empty.Empty, error)
+	SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*empty.Empty, error)
+	SetInstanceVariable(context.Context, *SetInstanceVariableRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedDirektivFlowServer()
 }
 
@@ -67,6 +133,24 @@ func (UnimplementedDirektivFlowServer) ReportActionResults(context.Context, *Rep
 }
 func (UnimplementedDirektivFlowServer) Resume(context.Context, *ResumeRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Resume not implemented")
+}
+func (UnimplementedDirektivFlowServer) GetNamespaceVariable(context.Context, *GetNamespaceVariableRequest) (*GetNamespaceVariableResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceVariable not implemented")
+}
+func (UnimplementedDirektivFlowServer) GetWorkflowVariable(context.Context, *GetWorkflowVariableRequest) (*GetWorkflowVariableResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowVariable not implemented")
+}
+func (UnimplementedDirektivFlowServer) GetInstanceVariable(context.Context, *GetInstanceVariableRequest) (*GetInstanceVariableResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInstanceVariable not implemented")
+}
+func (UnimplementedDirektivFlowServer) SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceVariable not implemented")
+}
+func (UnimplementedDirektivFlowServer) SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowVariable not implemented")
+}
+func (UnimplementedDirektivFlowServer) SetInstanceVariable(context.Context, *SetInstanceVariableRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetInstanceVariable not implemented")
 }
 func (UnimplementedDirektivFlowServer) mustEmbedUnimplementedDirektivFlowServer() {}
 
@@ -117,6 +201,114 @@ func _DirektivFlow_Resume_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DirektivFlow_GetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNamespaceVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).GetNamespaceVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/GetNamespaceVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).GetNamespaceVariable(ctx, req.(*GetNamespaceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivFlow_GetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkflowVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).GetWorkflowVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/GetWorkflowVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).GetWorkflowVariable(ctx, req.(*GetWorkflowVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivFlow_GetInstanceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInstanceVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).GetInstanceVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/GetInstanceVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).GetInstanceVariable(ctx, req.(*GetInstanceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivFlow_SetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetNamespaceVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).SetNamespaceVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/SetNamespaceVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).SetNamespaceVariable(ctx, req.(*SetNamespaceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivFlow_SetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetWorkflowVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).SetWorkflowVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/SetWorkflowVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).SetWorkflowVariable(ctx, req.(*SetWorkflowVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivFlow_SetInstanceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetInstanceVariableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).SetInstanceVariable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/SetInstanceVariable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).SetInstanceVariable(ctx, req.(*SetInstanceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DirektivFlow_ServiceDesc is the grpc.ServiceDesc for DirektivFlow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -131,6 +323,30 @@ var DirektivFlow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Resume",
 			Handler:    _DirektivFlow_Resume_Handler,
+		},
+		{
+			MethodName: "GetNamespaceVariable",
+			Handler:    _DirektivFlow_GetNamespaceVariable_Handler,
+		},
+		{
+			MethodName: "GetWorkflowVariable",
+			Handler:    _DirektivFlow_GetWorkflowVariable_Handler,
+		},
+		{
+			MethodName: "GetInstanceVariable",
+			Handler:    _DirektivFlow_GetInstanceVariable_Handler,
+		},
+		{
+			MethodName: "SetNamespaceVariable",
+			Handler:    _DirektivFlow_SetNamespaceVariable_Handler,
+		},
+		{
+			MethodName: "SetWorkflowVariable",
+			Handler:    _DirektivFlow_SetWorkflowVariable_Handler,
+		},
+		{
+			MethodName: "SetInstanceVariable",
+			Handler:    _DirektivFlow_SetInstanceVariable_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

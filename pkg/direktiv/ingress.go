@@ -911,7 +911,7 @@ func (is *ingressServer) SetWorkflowVariable(ctx context.Context, in *ingress.Se
 			return nil, err
 		}
 	} else {
-		w, err := is.wfServer.variableStorage.Store(ctx, ns.ID, workflow)
+		w, err := is.wfServer.variableStorage.Store(ctx, key, ns.ID, workflow)
 		if err != nil {
 			return nil, err
 		}

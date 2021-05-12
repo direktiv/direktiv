@@ -8,8 +8,20 @@ import "google/protobuf/empty.proto";
 
 import "pkg/flow/resume.proto";
 import "pkg/flow/report-action-results.proto";
+import "pkg/flow/get-namespace-variable.proto";
+import "pkg/flow/get-workflow-variable.proto";
+import "pkg/flow/get-instance-variable.proto";
+import "pkg/flow/set-namespace-variable.proto";
+import "pkg/flow/set-workflow-variable.proto";
+import "pkg/flow/set-instance-variable.proto";
 
 service DirektivFlow {
 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
 	rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
+	rpc GetNamespaceVariable (GetNamespaceVariableRequest) returns (GetNamespaceVariableResponse) {}
+	rpc GetWorkflowVariable (GetWorkflowVariableRequest) returns (GetWorkflowVariableResponse) {}
+	rpc GetInstanceVariable (GetInstanceVariableRequest) returns (GetInstanceVariableResponse) {}
+	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (google.protobuf.Empty) {}
+	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (google.protobuf.Empty) {}
+	rpc SetInstanceVariable (SetInstanceVariableRequest) returns (google.protobuf.Empty) {}
 }
