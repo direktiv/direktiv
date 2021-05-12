@@ -892,6 +892,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	status := "complete"
 	if wli.rec.ErrorCode != "" {
 		status = "failed"
+		wli.Log("Workflow failed with error '%s': %s", wli.rec.ErrorCode, wli.rec.ErrorMessage)
 	}
 
 	wf := wli.rec.Edges.Workflow
