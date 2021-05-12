@@ -337,7 +337,7 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 		d.mtx.Unlock()
 	}()
 
-	log.Infof("handle request aid: %s", info.aid)
+	log.Debugf("handle request aid: %s", info.aid)
 
 	// wipe data field for "real" response
 	body := info.data

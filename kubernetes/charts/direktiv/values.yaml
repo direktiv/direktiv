@@ -73,10 +73,8 @@ debug: false
 
 ingress:
   host: ""
-  secret:
-    name: "ingress-tls-secret"
-    namespace: "istio-system"
-  class: "istio"
+  certificate: none
+  class: "contour-external"
   auth:
     enabled: false
 
@@ -100,6 +98,7 @@ flow:
   sidecar: "vorteil/sidecar"
   db: ""
   protocol: "http"
+  certificate: none
 
 # ui config
 ui:
@@ -110,5 +109,4 @@ api:
   image: vorteil/api
   tag: "latest"
 
-# cert for inter service communication
-certificate: none
+uiapiCertificate: none

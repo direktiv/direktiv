@@ -38,11 +38,23 @@ spec:
             value: "/api"
           - name: KEYCLOAK_URL
             value: {{ .Values.ui.keycloakUrl }}
+          {{- if ne .Values.uiapiCertificate "none" }}
+          volumeMounts:
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
+          {{- end }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: ui
               containerPort: 80
               protocol: TCP
+      volumes:
+      {{- if ne  .Values.uiapiCertificate "none" }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.uiapiCertificate }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

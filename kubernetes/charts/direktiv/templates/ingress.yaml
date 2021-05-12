@@ -6,16 +6,19 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+    {{- if ne .Values.ingress.certificate "none" }}
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    {{- end }}
 spec:
-  {{ if .Values.ingress.crt }}
+  {{- if ne .Values.ingress.certificate "none" }}
   tls:
   - hosts:
       - {{ .Values.ingress.host }}
-      {{ if .Values.ingress.auth.enabled }}
+      {{- if .Values.ingress.auth.enabled }}
       - {{ .Values.ingress.auth.host }}
-      {{ end }}
-    secretName: {{ .Values.ingress.secret.name }}
-  {{ end }}
+      {{- end }}
+    secretName: {{ .Values.ingress.certificate }}
+  {{- end }}
   rules:
   - host: {{ .Values.ingress.host }}
     http:
@@ -34,7 +37,7 @@ spec:
               name: {{ include "direktiv.fullname" . }}-ui
               port:
                 number: 80
-  {{ if .Values.ingress.auth.enabled }}
+  {{- if .Values.ingress.auth.enabled }}
   - host: {{ .Values.ingress.auth.host }}
     http:
       paths:
@@ -45,4 +48,4 @@ spec:
               name: {{ .Values.ingress.auth.service }}
               port:
                 number: {{ .Values.ingress.auth.port }}
-  {{ end }}
+  {{- end }}

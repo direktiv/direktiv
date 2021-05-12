@@ -326,8 +326,6 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	// on https we add the cert to ca
 	if we.server.config.FlowAPI.Protocol == "https" {
 
-		log.Infof("!!!!!!!!!!!!!!!!!!!!!!!HTTPS")
-
 		rootCAs, _ := x509.SystemCertPool()
 		if rootCAs == nil {
 			rootCAs = x509.NewCertPool()

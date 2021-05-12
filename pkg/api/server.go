@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -174,10 +175,10 @@ func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
 
-	// if _, err := os.Stat(direktiv.TLSCert); !os.IsNotExist(err) {
-	// 	log.Infof("tls enabled")
-	// 	return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
-	// }
+	if _, err := os.Stat("/etc/certs/servedirektiv"); !os.IsNotExist(err) {
+		log.Infof("api tls enabled")
+		return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
+	}
 
 	return s.srv.ListenAndServe()
 }

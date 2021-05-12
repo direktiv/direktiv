@@ -34,7 +34,7 @@ spec:
           volumeMounts:
           - name: service-template
             mountPath: /etc/config
-          {{- if ne .Values.certificate "none" }}
+          {{- if ne .Values.flow.certificate "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
             readOnly: true
@@ -84,7 +84,7 @@ spec:
           command: ["/bin/secrets"]
           args: [{{.Values.secrets.backend }}]
           imagePullPolicy: {{ .Values.pullPolicy }}
-         {{- if ne  .Values.certificate "none" }}
+         {{- if ne  .Values.flow.certificate "none" }}
           volumeMounts:
           - name: certs
             mountPath: "/etc/certs/direktiv"
@@ -136,10 +136,10 @@ spec:
         - name: service-template
           configMap:
             name: service-template
-        {{- if ne  .Values.certificate "none" }}
+        {{- if ne  .Values.flow.certificate "none" }}
         - name: certs
           secret:
-            secretName: {{ .Values.certificate }}
+            secretName: {{ .Values.flow.certificate }}
         {{- end }}
       {{- with .Values.nodeSelector }}:0
 
