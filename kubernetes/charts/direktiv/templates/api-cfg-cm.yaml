@@ -5,7 +5,9 @@ metadata:
 data:
   # property-like keys; each key maps to a simple value
   default.toml: |
-    {{ .Values.api.additionalConfig }}
+    {{ range .Values.api.additionalConfig }}
+    {{ . }}
+    {{ end }}
 
     [ingress]
       endpoint = "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
