@@ -11,4 +11,6 @@ message GetNamespaceVariableRequest {
 
 message GetNamespaceVariableResponse {
 	optional bytes value = 1;
+	optional int64 totalSize = 2; 
+	optional int64 chunkSize = 3;
 }

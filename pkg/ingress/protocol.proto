@@ -62,8 +62,8 @@ service DirektivIngress {
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 	rpc ListNamespaceVariables (ListNamespaceVariablesRequest) returns (ListNamespaceVariablesResponse) {}
 	rpc ListWorkflowVariables (ListWorkflowVariablesRequest) returns (ListWorkflowVariablesResponse) {}
-	rpc GetNamespaceVariable (GetNamespaceVariableRequest) returns (GetNamespaceVariableResponse) {}
-	rpc GetWorkflowVariable (GetWorkflowVariableRequest) returns (GetWorkflowVariableResponse) {}
-	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (google.protobuf.Empty) {}
-	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (google.protobuf.Empty) {}
+	rpc GetNamespaceVariable (GetNamespaceVariableRequest) returns (stream GetNamespaceVariableResponse) {}
+	rpc GetWorkflowVariable (GetWorkflowVariableRequest) returns (stream GetWorkflowVariableResponse) {}
+	rpc SetNamespaceVariable (stream SetNamespaceVariableRequest) returns (google.protobuf.Empty) {}
+	rpc SetWorkflowVariable (stream SetWorkflowVariableRequest) returns (google.protobuf.Empty) {}
 }

@@ -44,10 +44,10 @@ type DirektivIngressClient interface {
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	ListNamespaceVariables(ctx context.Context, in *ListNamespaceVariablesRequest, opts ...grpc.CallOption) (*ListNamespaceVariablesResponse, error)
 	ListWorkflowVariables(ctx context.Context, in *ListWorkflowVariablesRequest, opts ...grpc.CallOption) (*ListWorkflowVariablesResponse, error)
-	GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (*GetNamespaceVariableResponse, error)
-	GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (*GetWorkflowVariableResponse, error)
-	SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (DirektivIngress_GetNamespaceVariableClient, error)
+	GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (DirektivIngress_GetWorkflowVariableClient, error)
+	SetNamespaceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivIngress_SetNamespaceVariableClient, error)
+	SetWorkflowVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivIngress_SetWorkflowVariableClient, error)
 }
 
 type direktivIngressClient struct {
@@ -283,40 +283,136 @@ func (c *direktivIngressClient) ListWorkflowVariables(ctx context.Context, in *L
 	return out, nil
 }
 
-func (c *direktivIngressClient) GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (*GetNamespaceVariableResponse, error) {
-	out := new(GetNamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetNamespaceVariable", in, out, opts...)
+func (c *direktivIngressClient) GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (DirektivIngress_GetNamespaceVariableClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[0], "/ingress.DirektivIngress/GetNamespaceVariable", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &direktivIngressGetNamespaceVariableClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
 
-func (c *direktivIngressClient) GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (*GetWorkflowVariableResponse, error) {
-	out := new(GetWorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetWorkflowVariable", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+type DirektivIngress_GetNamespaceVariableClient interface {
+	Recv() (*GetNamespaceVariableResponse, error)
+	grpc.ClientStream
 }
 
-func (c *direktivIngressClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/SetNamespaceVariable", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+type direktivIngressGetNamespaceVariableClient struct {
+	grpc.ClientStream
 }
 
-func (c *direktivIngressClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/SetWorkflowVariable", in, out, opts...)
+func (x *direktivIngressGetNamespaceVariableClient) Recv() (*GetNamespaceVariableResponse, error) {
+	m := new(GetNamespaceVariableResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *direktivIngressClient) GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (DirektivIngress_GetWorkflowVariableClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[1], "/ingress.DirektivIngress/GetWorkflowVariable", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &direktivIngressGetWorkflowVariableClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type DirektivIngress_GetWorkflowVariableClient interface {
+	Recv() (*GetWorkflowVariableResponse, error)
+	grpc.ClientStream
+}
+
+type direktivIngressGetWorkflowVariableClient struct {
+	grpc.ClientStream
+}
+
+func (x *direktivIngressGetWorkflowVariableClient) Recv() (*GetWorkflowVariableResponse, error) {
+	m := new(GetWorkflowVariableResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *direktivIngressClient) SetNamespaceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivIngress_SetNamespaceVariableClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[2], "/ingress.DirektivIngress/SetNamespaceVariable", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &direktivIngressSetNamespaceVariableClient{stream}
+	return x, nil
+}
+
+type DirektivIngress_SetNamespaceVariableClient interface {
+	Send(*SetNamespaceVariableRequest) error
+	CloseAndRecv() (*empty.Empty, error)
+	grpc.ClientStream
+}
+
+type direktivIngressSetNamespaceVariableClient struct {
+	grpc.ClientStream
+}
+
+func (x *direktivIngressSetNamespaceVariableClient) Send(m *SetNamespaceVariableRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *direktivIngressSetNamespaceVariableClient) CloseAndRecv() (*empty.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(empty.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *direktivIngressClient) SetWorkflowVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivIngress_SetWorkflowVariableClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[3], "/ingress.DirektivIngress/SetWorkflowVariable", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &direktivIngressSetWorkflowVariableClient{stream}
+	return x, nil
+}
+
+type DirektivIngress_SetWorkflowVariableClient interface {
+	Send(*SetWorkflowVariableRequest) error
+	CloseAndRecv() (*empty.Empty, error)
+	grpc.ClientStream
+}
+
+type direktivIngressSetWorkflowVariableClient struct {
+	grpc.ClientStream
+}
+
+func (x *direktivIngressSetWorkflowVariableClient) Send(m *SetWorkflowVariableRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *direktivIngressSetWorkflowVariableClient) CloseAndRecv() (*empty.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(empty.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // DirektivIngressServer is the server API for DirektivIngress service.
@@ -348,10 +444,10 @@ type DirektivIngressServer interface {
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	ListNamespaceVariables(context.Context, *ListNamespaceVariablesRequest) (*ListNamespaceVariablesResponse, error)
 	ListWorkflowVariables(context.Context, *ListWorkflowVariablesRequest) (*ListWorkflowVariablesResponse, error)
-	GetNamespaceVariable(context.Context, *GetNamespaceVariableRequest) (*GetNamespaceVariableResponse, error)
-	GetWorkflowVariable(context.Context, *GetWorkflowVariableRequest) (*GetWorkflowVariableResponse, error)
-	SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*empty.Empty, error)
-	SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*empty.Empty, error)
+	GetNamespaceVariable(*GetNamespaceVariableRequest, DirektivIngress_GetNamespaceVariableServer) error
+	GetWorkflowVariable(*GetWorkflowVariableRequest, DirektivIngress_GetWorkflowVariableServer) error
+	SetNamespaceVariable(DirektivIngress_SetNamespaceVariableServer) error
+	SetWorkflowVariable(DirektivIngress_SetWorkflowVariableServer) error
 	mustEmbedUnimplementedDirektivIngressServer()
 }
 
@@ -434,17 +530,17 @@ func (UnimplementedDirektivIngressServer) ListNamespaceVariables(context.Context
 func (UnimplementedDirektivIngressServer) ListWorkflowVariables(context.Context, *ListWorkflowVariablesRequest) (*ListWorkflowVariablesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListWorkflowVariables not implemented")
 }
-func (UnimplementedDirektivIngressServer) GetNamespaceVariable(context.Context, *GetNamespaceVariableRequest) (*GetNamespaceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceVariable not implemented")
+func (UnimplementedDirektivIngressServer) GetNamespaceVariable(*GetNamespaceVariableRequest, DirektivIngress_GetNamespaceVariableServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetNamespaceVariable not implemented")
 }
-func (UnimplementedDirektivIngressServer) GetWorkflowVariable(context.Context, *GetWorkflowVariableRequest) (*GetWorkflowVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowVariable not implemented")
+func (UnimplementedDirektivIngressServer) GetWorkflowVariable(*GetWorkflowVariableRequest, DirektivIngress_GetWorkflowVariableServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetWorkflowVariable not implemented")
 }
-func (UnimplementedDirektivIngressServer) SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceVariable not implemented")
+func (UnimplementedDirektivIngressServer) SetNamespaceVariable(DirektivIngress_SetNamespaceVariableServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetNamespaceVariable not implemented")
 }
-func (UnimplementedDirektivIngressServer) SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowVariable not implemented")
+func (UnimplementedDirektivIngressServer) SetWorkflowVariable(DirektivIngress_SetWorkflowVariableServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetWorkflowVariable not implemented")
 }
 func (UnimplementedDirektivIngressServer) mustEmbedUnimplementedDirektivIngressServer() {}
 
@@ -909,76 +1005,98 @@ func _DirektivIngress_ListWorkflowVariables_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DirektivIngress_GetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetNamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _DirektivIngress_GetNamespaceVariable_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetNamespaceVariableRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).GetNamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/GetNamespaceVariable",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).GetNamespaceVariable(ctx, req.(*GetNamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(DirektivIngressServer).GetNamespaceVariable(m, &direktivIngressGetNamespaceVariableServer{stream})
 }
 
-func _DirektivIngress_GetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWorkflowVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).GetWorkflowVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/GetWorkflowVariable",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).GetWorkflowVariable(ctx, req.(*GetWorkflowVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+type DirektivIngress_GetNamespaceVariableServer interface {
+	Send(*GetNamespaceVariableResponse) error
+	grpc.ServerStream
 }
 
-func _DirektivIngress_SetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetNamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).SetNamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/SetNamespaceVariable",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).SetNamespaceVariable(ctx, req.(*SetNamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+type direktivIngressGetNamespaceVariableServer struct {
+	grpc.ServerStream
 }
 
-func _DirektivIngress_SetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetWorkflowVariableRequest)
-	if err := dec(in); err != nil {
+func (x *direktivIngressGetNamespaceVariableServer) Send(m *GetNamespaceVariableResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _DirektivIngress_GetWorkflowVariable_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetWorkflowVariableRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(DirektivIngressServer).GetWorkflowVariable(m, &direktivIngressGetWorkflowVariableServer{stream})
+}
+
+type DirektivIngress_GetWorkflowVariableServer interface {
+	Send(*GetWorkflowVariableResponse) error
+	grpc.ServerStream
+}
+
+type direktivIngressGetWorkflowVariableServer struct {
+	grpc.ServerStream
+}
+
+func (x *direktivIngressGetWorkflowVariableServer) Send(m *GetWorkflowVariableResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _DirektivIngress_SetNamespaceVariable_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(DirektivIngressServer).SetNamespaceVariable(&direktivIngressSetNamespaceVariableServer{stream})
+}
+
+type DirektivIngress_SetNamespaceVariableServer interface {
+	SendAndClose(*empty.Empty) error
+	Recv() (*SetNamespaceVariableRequest, error)
+	grpc.ServerStream
+}
+
+type direktivIngressSetNamespaceVariableServer struct {
+	grpc.ServerStream
+}
+
+func (x *direktivIngressSetNamespaceVariableServer) SendAndClose(m *empty.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *direktivIngressSetNamespaceVariableServer) Recv() (*SetNamespaceVariableRequest, error) {
+	m := new(SetNamespaceVariableRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).SetWorkflowVariable(ctx, in)
+	return m, nil
+}
+
+func _DirektivIngress_SetWorkflowVariable_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(DirektivIngressServer).SetWorkflowVariable(&direktivIngressSetWorkflowVariableServer{stream})
+}
+
+type DirektivIngress_SetWorkflowVariableServer interface {
+	SendAndClose(*empty.Empty) error
+	Recv() (*SetWorkflowVariableRequest, error)
+	grpc.ServerStream
+}
+
+type direktivIngressSetWorkflowVariableServer struct {
+	grpc.ServerStream
+}
+
+func (x *direktivIngressSetWorkflowVariableServer) SendAndClose(m *empty.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *direktivIngressSetWorkflowVariableServer) Recv() (*SetWorkflowVariableRequest, error) {
+	m := new(SetWorkflowVariableRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
 	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/SetWorkflowVariable",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).SetWorkflowVariable(ctx, req.(*SetWorkflowVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 // DirektivIngress_ServiceDesc is the grpc.ServiceDesc for DirektivIngress service.
@@ -1088,23 +1206,28 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ListWorkflowVariables",
 			Handler:    _DirektivIngress_ListWorkflowVariables_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "GetNamespaceVariable",
-			Handler:    _DirektivIngress_GetNamespaceVariable_Handler,
+			StreamName:    "GetNamespaceVariable",
+			Handler:       _DirektivIngress_GetNamespaceVariable_Handler,
+			ServerStreams: true,
 		},
 		{
-			MethodName: "GetWorkflowVariable",
-			Handler:    _DirektivIngress_GetWorkflowVariable_Handler,
+			StreamName:    "GetWorkflowVariable",
+			Handler:       _DirektivIngress_GetWorkflowVariable_Handler,
+			ServerStreams: true,
 		},
 		{
-			MethodName: "SetNamespaceVariable",
-			Handler:    _DirektivIngress_SetNamespaceVariable_Handler,
+			StreamName:    "SetNamespaceVariable",
+			Handler:       _DirektivIngress_SetNamespaceVariable_Handler,
+			ClientStreams: true,
 		},
 		{
-			MethodName: "SetWorkflowVariable",
-			Handler:    _DirektivIngress_SetWorkflowVariable_Handler,
+			StreamName:    "SetWorkflowVariable",
+			Handler:       _DirektivIngress_SetWorkflowVariable_Handler,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "pkg/ingress/protocol.proto",
 }
