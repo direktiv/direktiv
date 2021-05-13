@@ -236,7 +236,7 @@ func (db *dbManager) getNamespaceWorkflow(ctx context.Context, n string, ns stri
 		Query().
 		Where(workflow.HasNamespaceWith(namespace.IDEQ(ns))).
 		Where(workflow.NameEQ(n)).
-		WithNamespace().
+		// WithNamespace().
 		Only(ctx)
 
 }
