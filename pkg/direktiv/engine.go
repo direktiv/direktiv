@@ -314,12 +314,34 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
-	return we.doHTTPRequest(ctx, actionHash, ar)
+	go we.doHTTPRequest(ctx, actionHash, ar)
+
+	return nil
 
 }
 
 func (we *workflowEngine) doHTTPRequest(ctx context.Context,
-	ah uint64, ar *isolateRequest) error {
+	ah uint64, ar *isolateRequest) {
+
+	// from here we need to report error as grpc because this is go-routined
+	// prepare error here in case
+	reportErr := func(err error) {
+		ec := ""
+		em := err.Error()
+		step := int32(ar.Workflow.Step)
+		r := &flow.ReportActionResultsRequest{
+			InstanceId:   &ar.Workflow.InstanceID,
+			Step:         &step,
+			ActionId:     &ar.ActionID,
+			ErrorCode:    &ec,
+			ErrorMessage: &em,
+		}
+
+		_, err = we.flowClient.ReportActionResults(context.Background(), r)
+		if err != nil {
+			log.Errorf("can not respond to flow: %v", err)
+		}
+	}
 
 	tr := &http.Transport{
 		ResponseHeaderTimeout: 10 * time.Second,
@@ -364,10 +386,12 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	// get exchange key
 	exchangeKey := we.server.config.FlowAPI.Exchange
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr,
+	req, err := http.NewRequestWithContext(context.Background(),
+		http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
 	if err != nil {
-		return err
+		reportErr(err)
+		return
 	}
 
 	// add headers
@@ -410,7 +434,8 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 						if err != nil {
 							err := addKnativeFunction(ar)
 							if err != nil {
-								return NewInternalError(fmt.Errorf("can not create knative function %v: %v", addr, err))
+								reportErr(fmt.Errorf("can not create knative function %v: %v", addr, err))
+								return
 							}
 						}
 						kubeReq.mtx.Unlock()
@@ -427,17 +452,16 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	}
 
 	if err != nil {
-		return NewInternalError(fmt.Errorf("network error: %v", err))
+		reportErr(err)
+		return
 	}
 
 	if resp.StatusCode != 200 {
-		return NewInternalError(fmt.Errorf("action error status: %d",
+		reportErr(fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
 
 	log.Debugf("isolate request done")
-
-	return nil
 
 }
 
@@ -1141,9 +1165,9 @@ func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name stri
 		if _, ok := err.(*InternalError); ok {
 			log.Errorf("Internal error on DirectInvoke: %v", err)
 			return "", errors.New("an internal error occurred")
-		} else {
-			return "", err
 		}
+
+		return "", err
 	}
 	defer wli.Close()
 
