@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -44,6 +45,7 @@ type responseInfo struct {
 type direktivHTTPRequest struct {
 	logger    dlog.Logger
 	ctxCancel context.CancelFunc
+	info      *responseInfo
 }
 
 type direktivHTTPHandler struct {
@@ -86,6 +88,16 @@ func main() {
 	// logs can be post or get
 	r.POST("/log", d.postLog)
 	r.GET("/log", d.postLog)
+
+	// persistent variables
+	r.POST("/namespace/{key}", d.postNamespaceData)
+	r.GET("/namespace/{key}", d.getNamespaceData)
+
+	r.POST("/workflow/{key}", d.postWorkflowData)
+	r.GET("/workflow/{key}", d.getWorkflowData)
+
+	r.POST("/instance/{key}", d.postInstanceData)
+	r.GET("/instance/{key}", d.getInstanceData)
 
 	// prepare ping mechanism
 	go d.pingMe()
@@ -325,6 +337,7 @@ func (d *direktivHTTPHandler) handleSubRequest(info *responseInfo) {
 	d.requests[info.aid] = &direktivHTTPRequest{
 		logger:    info.logger,
 		ctxCancel: cancel,
+		info:      info,
 	}
 	d.mtx.Unlock()
 
@@ -429,4 +442,429 @@ func (d *direktivHTTPHandler) respondToFlow(info *responseInfo) {
 
 func init() {
 	resolver.Register(&direktiv.KubeResolverBuilder{})
+}
+
+const grpcChunkSize = 2 * 1024 * 1024
+
+func (d *direktivHTTPHandler) postNamespaceData(ctx *fasthttp.RequestCtx) {
+
+	aid := ctx.QueryArgs().Peek("aid")
+
+	// check if this requests actually exists
+	var info *responseInfo
+	d.mtx.Lock()
+	if r, ok := d.requests[string(aid)]; ok {
+		info = r.info
+	} else {
+		log.Errorf("request action id does not exist")
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+	d.mtx.Unlock()
+
+	key := ctx.UserValue("key").(string)
+
+	str, err := checkHeader(ctx, "Content-Length")
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	l, err := strconv.Atoi(str)
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	totalSize := int64(l)
+	chunkSize := int64(grpcChunkSize)
+
+	r := ctx.RequestBodyStream()
+
+	client, err := d.flowClient.SetNamespaceVariable(context.Background())
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	var totalRead int64
+	var chunks int
+
+	for {
+		buf := new(bytes.Buffer)
+		rdr := io.LimitReader(r, chunkSize)
+		var k int64
+		k, err = io.Copy(buf, rdr)
+		totalRead += k
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+
+		if k == 0 && chunks > 0 {
+			break
+		}
+
+		data := buf.Bytes()
+
+		req := new(flow.SetNamespaceVariableRequest)
+		req.InstanceId = &info.iid
+		req.Key = &key
+		req.Value = data
+		req.TotalSize = &totalSize
+		req.ChunkSize = &chunkSize
+
+		err = client.Send(req)
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+
+		chunks++
+		if totalRead >= totalSize {
+			break
+		}
+	}
+
+}
+
+func (d *direktivHTTPHandler) postWorkflowData(ctx *fasthttp.RequestCtx) {
+
+	aid := ctx.QueryArgs().Peek("aid")
+
+	// check if this requests actually exists
+	var info *responseInfo
+	d.mtx.Lock()
+	if r, ok := d.requests[string(aid)]; ok {
+		info = r.info
+	} else {
+		log.Errorf("request action id does not exist")
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+	d.mtx.Unlock()
+
+	key := ctx.UserValue("key").(string)
+
+	str, err := checkHeader(ctx, "Content-Length")
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	l, err := strconv.Atoi(str)
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	totalSize := int64(l)
+	chunkSize := int64(grpcChunkSize)
+
+	r := ctx.RequestBodyStream()
+
+	client, err := d.flowClient.SetWorkflowVariable(context.Background())
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	var totalRead int64
+	var chunks int
+
+	for {
+		buf := new(bytes.Buffer)
+		rdr := io.LimitReader(r, chunkSize)
+		var k int64
+		k, err = io.Copy(buf, rdr)
+		totalRead += k
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+
+		if k == 0 && chunks > 0 {
+			break
+		}
+
+		data := buf.Bytes()
+
+		req := new(flow.SetWorkflowVariableRequest)
+		req.InstanceId = &info.iid
+		req.Key = &key
+		req.Value = data
+		req.TotalSize = &totalSize
+		req.ChunkSize = &chunkSize
+
+		err = client.Send(req)
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+
+		chunks++
+		if totalRead >= totalSize {
+			break
+		}
+	}
+
+}
+
+func (d *direktivHTTPHandler) postInstanceData(ctx *fasthttp.RequestCtx) {
+
+	aid := ctx.QueryArgs().Peek("aid")
+
+	// check if this requests actually exists
+	var info *responseInfo
+	d.mtx.Lock()
+	if r, ok := d.requests[string(aid)]; ok {
+		info = r.info
+	} else {
+		log.Errorf("request action id does not exist")
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+	d.mtx.Unlock()
+
+	key := ctx.UserValue("key").(string)
+
+	str, err := checkHeader(ctx, "Content-Length")
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	l, err := strconv.Atoi(str)
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	totalSize := int64(l)
+	chunkSize := int64(grpcChunkSize)
+
+	r := ctx.RequestBodyStream()
+
+	client, err := d.flowClient.SetInstanceVariable(context.Background())
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	var totalRead int64
+	var chunks int
+
+	for {
+		buf := new(bytes.Buffer)
+		rdr := io.LimitReader(r, chunkSize)
+		var k int64
+		k, err = io.Copy(buf, rdr)
+		totalRead += k
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+
+		if k == 0 && chunks > 0 {
+			break
+		}
+
+		data := buf.Bytes()
+
+		req := new(flow.SetInstanceVariableRequest)
+		req.InstanceId = &info.iid
+		req.Key = &key
+		req.Value = data
+		req.TotalSize = &totalSize
+		req.ChunkSize = &chunkSize
+
+		err = client.Send(req)
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+
+		chunks++
+		if totalRead >= totalSize {
+			break
+		}
+	}
+
+}
+
+func (d *direktivHTTPHandler) getNamespaceData(ctx *fasthttp.RequestCtx) {
+
+	aid := ctx.QueryArgs().Peek("aid")
+
+	// check if this requests actually exists
+	var info *responseInfo
+	d.mtx.Lock()
+	if r, ok := d.requests[string(aid)]; ok {
+		info = r.info
+	} else {
+		log.Errorf("request action id does not exist")
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+	d.mtx.Unlock()
+
+	key := ctx.UserValue("key").(string)
+
+	req := &flow.GetNamespaceVariableRequest{
+		InstanceId: &info.iid,
+		Key:        &key,
+	}
+
+	client, err := d.flowClient.GetNamespaceVariable(context.Background(), req)
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	in, err := client.Recv()
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	// chunkSize := in.GetChunkSize()
+	// totalSize := in.GetTotalSize()
+
+	for {
+		k, err := io.Copy(ctx, bytes.NewReader(in.GetValue()))
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+		if k == 0 {
+			break
+		}
+	}
+
+}
+
+func (d *direktivHTTPHandler) getWorkflowData(ctx *fasthttp.RequestCtx) {
+
+	aid := ctx.QueryArgs().Peek("aid")
+
+	// check if this requests actually exists
+	var info *responseInfo
+	d.mtx.Lock()
+	if r, ok := d.requests[string(aid)]; ok {
+		info = r.info
+	} else {
+		log.Errorf("request action id does not exist")
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+	d.mtx.Unlock()
+
+	key := ctx.UserValue("key").(string)
+
+	req := &flow.GetWorkflowVariableRequest{
+		InstanceId: &info.iid,
+		Key:        &key,
+	}
+
+	client, err := d.flowClient.GetWorkflowVariable(context.Background(), req)
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	in, err := client.Recv()
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	// chunkSize := in.GetChunkSize()
+	// totalSize := in.GetTotalSize()
+
+	for {
+		k, err := io.Copy(ctx, bytes.NewReader(in.GetValue()))
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+		if k == 0 {
+			break
+		}
+	}
+
+}
+
+func (d *direktivHTTPHandler) getInstanceData(ctx *fasthttp.RequestCtx) {
+
+	aid := ctx.QueryArgs().Peek("aid")
+
+	// check if this requests actually exists
+	var info *responseInfo
+	d.mtx.Lock()
+	if r, ok := d.requests[string(aid)]; ok {
+		info = r.info
+	} else {
+		log.Errorf("request action id does not exist")
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+	d.mtx.Unlock()
+
+	key := ctx.UserValue("key").(string)
+
+	req := &flow.GetInstanceVariableRequest{
+		InstanceId: &info.iid,
+		Key:        &key,
+	}
+
+	client, err := d.flowClient.GetInstanceVariable(context.Background(), req)
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	in, err := client.Recv()
+	if err != nil {
+		log.Error(err)
+		ctx.Response.SetStatusCode(500)
+		return
+	}
+
+	// chunkSize := in.GetChunkSize()
+	// totalSize := in.GetTotalSize()
+
+	for {
+		k, err := io.Copy(ctx, bytes.NewReader(in.GetValue()))
+		if err != nil {
+			log.Error(err)
+			ctx.Response.SetStatusCode(500)
+			return
+		}
+		if k == 0 {
+			break
+		}
+	}
+
 }
