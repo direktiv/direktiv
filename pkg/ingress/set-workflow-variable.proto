@@ -8,4 +8,6 @@ message SetWorkflowVariableRequest {
 	optional string workflowUid = 1;
 	optional string key = 2;
 	optional bytes value = 3;
+	optional int64 totalSize = 4;
+	optional int64 chunkSize = 5;
 }

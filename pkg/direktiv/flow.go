@@ -99,66 +99,85 @@ func (fs *flowServer) Resume(ctx context.Context, in *flow.ResumeRequest) (*empt
 
 }
 
-func (fs *flowServer) GetNamespaceVariable(ctx context.Context, in *flow.GetNamespaceVariableRequest) (*flow.GetNamespaceVariableResponse, error) {
+const grpcChunkSize = 2 * 1024 * 1024
 
-	resp := new(flow.GetNamespaceVariableResponse)
+func (fs *flowServer) GetNamespaceVariable(in *flow.GetNamespaceVariableRequest, out flow.DirektivFlow_GetNamespaceVariableServer) error {
+
+	ctx := out.Context()
 
 	instanceId := in.GetInstanceId()
 	if instanceId == "" {
-		return nil, errors.New("required instanceId")
+		return errors.New("required instanceId")
 	}
 
 	key := in.GetKey()
 	if key == "" {
-		return nil, errors.New("requires variable key")
+		return errors.New("requires variable key")
 	}
 
 	wi, err := fs.engine.server.dbManager.getWorkflowInstance(ctx, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	namespace := wi.Edges.Workflow.Edges.Namespace.ID
 
 	r, err := fs.engine.server.variableStorage.Retrieve(ctx, key, namespace)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer r.Close()
 
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
+	// break data into chunks
+	var chunks int
+	chunkSize := int64(grpcChunkSize)
+	totalSize := r.Size()
+	for {
+		cr := io.LimitReader(r, grpcChunkSize)
+		data, err := ioutil.ReadAll(cr)
+		if err != nil {
+			return err
+		}
+		if chunks > 0 && len(data) == 0 {
+			break
+		}
+		resp := new(flow.GetNamespaceVariableResponse)
+		resp.Value = data
+		resp.TotalSize = &totalSize
+		resp.ChunkSize = &chunkSize
+		err = out.Send(resp)
+		if err != nil {
+			return err
+		}
+		chunks++
 	}
 
 	err = r.Close()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	resp.Value = data
-
-	return resp, nil
+	return nil
 
 }
 
-func (fs *flowServer) GetWorkflowVariable(ctx context.Context, in *flow.GetWorkflowVariableRequest) (*flow.GetWorkflowVariableResponse, error) {
+func (fs *flowServer) GetWorkflowVariable(in *flow.GetWorkflowVariableRequest, out flow.DirektivFlow_GetWorkflowVariableServer) error {
 
-	resp := new(flow.GetWorkflowVariableResponse)
+	ctx := out.Context()
 
 	instanceId := in.GetInstanceId()
 	if instanceId == "" {
-		return nil, errors.New("required instanceId")
+		return errors.New("required instanceId")
 	}
 
 	key := in.GetKey()
 	if key == "" {
-		return nil, errors.New("requires variable key")
+		return errors.New("requires variable key")
 	}
 
 	wi, err := fs.engine.server.dbManager.getWorkflowInstance(ctx, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	namespace := wi.Edges.Workflow.Edges.Namespace.ID
@@ -166,43 +185,60 @@ func (fs *flowServer) GetWorkflowVariable(ctx context.Context, in *flow.GetWorkf
 
 	r, err := fs.engine.server.variableStorage.Retrieve(ctx, key, namespace, wfId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer r.Close()
 
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
+	// break data into chunks
+	var chunks int
+	totalSize := r.Size()
+	chunkSize := int64(grpcChunkSize)
+	for {
+		cr := io.LimitReader(r, grpcChunkSize)
+		data, err := ioutil.ReadAll(cr)
+		if err != nil {
+			return err
+		}
+		if chunks > 0 && len(data) == 0 {
+			break
+		}
+		resp := new(flow.GetWorkflowVariableResponse)
+		resp.Value = data
+		resp.TotalSize = &totalSize
+		resp.ChunkSize = &chunkSize
+		err = out.Send(resp)
+		if err != nil {
+			return err
+		}
+		chunks++
 	}
 
 	err = r.Close()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	resp.Value = data
-
-	return resp, nil
+	return nil
 
 }
 
-func (fs *flowServer) GetInstanceVariable(ctx context.Context, in *flow.GetInstanceVariableRequest) (*flow.GetInstanceVariableResponse, error) {
+func (fs *flowServer) GetInstanceVariable(in *flow.GetInstanceVariableRequest, out flow.DirektivFlow_GetInstanceVariableServer) error {
 
-	resp := new(flow.GetInstanceVariableResponse)
+	ctx := out.Context()
 
 	instanceId := in.GetInstanceId()
 	if instanceId == "" {
-		return nil, errors.New("required instanceId")
+		return errors.New("required instanceId")
 	}
 
 	key := in.GetKey()
 	if key == "" {
-		return nil, errors.New("requires variable key")
+		return errors.New("requires variable key")
 	}
 
 	wi, err := fs.engine.server.dbManager.getWorkflowInstance(ctx, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	namespace := wi.Edges.Workflow.Edges.Namespace.ID
@@ -210,177 +246,248 @@ func (fs *flowServer) GetInstanceVariable(ctx context.Context, in *flow.GetInsta
 
 	r, err := fs.engine.server.variableStorage.Retrieve(ctx, key, namespace, wfId, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer r.Close()
 
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
+	// break data into chunks
+	var chunks int
+	totalSize := r.Size()
+	chunkSize := int64(grpcChunkSize)
+	for {
+		cr := io.LimitReader(r, grpcChunkSize)
+		data, err := ioutil.ReadAll(cr)
+		if err != nil {
+			return err
+		}
+		if chunks > 0 && len(data) == 0 {
+			break
+		}
+		resp := new(flow.GetInstanceVariableResponse)
+		resp.Value = data
+		resp.TotalSize = &totalSize
+		resp.ChunkSize = &chunkSize
+		err = out.Send(resp)
+		if err != nil {
+			return err
+		}
+		chunks++
 	}
 
 	err = r.Close()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	resp.Value = data
-
-	return resp, nil
+	return nil
 
 }
 
-func (fs *flowServer) SetNamespaceVariable(ctx context.Context, in *flow.SetNamespaceVariableRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) SetNamespaceVariable(srv flow.DirektivFlow_SetNamespaceVariableServer) error {
 
-	var resp emptypb.Empty
+	ctx := srv.Context()
+
+	in, err := srv.Recv()
+	if err != nil {
+		return err
+	}
 
 	instanceId := in.GetInstanceId()
 	if instanceId == "" {
-		return nil, errors.New("required instanceId")
+		return errors.New("required instanceId")
 	}
 
 	key := in.GetKey()
 	if key == "" {
-		return nil, errors.New("requires variable key")
+		return errors.New("requires variable key")
 	}
 
-	data := in.GetValue()
+	totalSize := in.GetTotalSize()
 
 	wi, err := fs.engine.server.dbManager.getWorkflowInstance(ctx, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	namespace := wi.Edges.Workflow.Edges.Namespace.ID
 
-	if len(data) == 0 {
+	if totalSize == 0 {
 		err = fs.engine.server.variableStorage.Delete(ctx, key, namespace)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		w, err := fs.engine.server.variableStorage.Store(ctx, key, namespace)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		_, err = io.Copy(w, bytes.NewReader(data))
-		if err != nil {
-			return nil, err
+		var totalRead int64
+
+		for {
+			data := in.GetValue()
+			k, err := io.Copy(w, bytes.NewReader(data))
+			if err != nil {
+				return err
+			}
+			totalRead += k
+			if totalRead >= totalSize {
+				break
+			}
+			in, err = srv.Recv()
+			if err != nil {
+				return err
+			}
 		}
 
 		err = w.Close()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// TODO: resolve edge-case where namespace or workflow is deleted during this process
 	}
 
-	return &resp, nil
+	return nil
 
 }
 
-func (fs *flowServer) SetWorkflowVariable(ctx context.Context, in *flow.SetWorkflowVariableRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) SetWorkflowVariable(srv flow.DirektivFlow_SetWorkflowVariableServer) error {
 
-	var resp emptypb.Empty
+	ctx := srv.Context()
+
+	in, err := srv.Recv()
+	if err != nil {
+		return err
+	}
 
 	instanceId := in.GetInstanceId()
 	if instanceId == "" {
-		return nil, errors.New("required instanceId")
+		return errors.New("required instanceId")
 	}
 
 	key := in.GetKey()
 	if key == "" {
-		return nil, errors.New("requires variable key")
+		return errors.New("requires variable key")
 	}
 
-	data := in.GetValue()
+	totalSize := in.GetTotalSize()
 
 	wi, err := fs.engine.server.dbManager.getWorkflowInstance(ctx, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	namespace := wi.Edges.Workflow.Edges.Namespace.ID
 	wfId := wi.Edges.Workflow.ID.String()
 
-	if len(data) == 0 {
+	if totalSize == 0 {
 		err = fs.engine.server.variableStorage.Delete(ctx, key, namespace, wfId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		w, err := fs.engine.server.variableStorage.Store(ctx, key, namespace, wfId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		_, err = io.Copy(w, bytes.NewReader(data))
-		if err != nil {
-			return nil, err
+		var totalRead int64
+
+		for {
+			data := in.GetValue()
+			k, err := io.Copy(w, bytes.NewReader(data))
+			if err != nil {
+				return err
+			}
+			totalRead += k
+			if totalRead >= totalSize {
+				break
+			}
+			in, err = srv.Recv()
+			if err != nil {
+				return err
+			}
 		}
 
 		err = w.Close()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// TODO: resolve edge-case where namespace or workflow is deleted during this process
 	}
 
-	return &resp, nil
+	return nil
 
 }
 
-func (fs *flowServer) SetInstanceVariable(ctx context.Context, in *flow.SetInstanceVariableRequest) (*emptypb.Empty, error) {
+func (fs *flowServer) SetInstanceVariable(srv flow.DirektivFlow_SetInstanceVariableServer) error {
 
-	var resp emptypb.Empty
+	ctx := srv.Context()
+
+	in, err := srv.Recv()
+	if err != nil {
+		return err
+	}
 
 	instanceId := in.GetInstanceId()
 	if instanceId == "" {
-		return nil, errors.New("required instanceId")
+		return errors.New("required instanceId")
 	}
 
 	key := in.GetKey()
 	if key == "" {
-		return nil, errors.New("requires variable key")
+		return errors.New("requires variable key")
 	}
 
-	data := in.GetValue()
+	totalSize := in.GetTotalSize()
 
 	wi, err := fs.engine.server.dbManager.getWorkflowInstance(ctx, instanceId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	namespace := wi.Edges.Workflow.Edges.Namespace.ID
 	wfId := wi.Edges.Workflow.ID.String()
 
-	if len(data) == 0 {
+	if totalSize == 0 {
 		err = fs.engine.server.variableStorage.Delete(ctx, key, namespace, wfId, instanceId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		w, err := fs.engine.server.variableStorage.Store(ctx, key, namespace, wfId, instanceId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		_, err = io.Copy(w, bytes.NewReader(data))
-		if err != nil {
-			return nil, err
+		var totalRead int64
+
+		for {
+			data := in.GetValue()
+			k, err := io.Copy(w, bytes.NewReader(data))
+			if err != nil {
+				return err
+			}
+			totalRead += k
+			if totalRead >= totalSize {
+				break
+			}
+			in, err = srv.Recv()
+			if err != nil {
+				return err
+			}
 		}
 
 		err = w.Close()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// TODO: resolve edge-case where namespace or workflow is deleted during this process
 	}
 
-	return &resp, nil
+	return nil
 
 }
