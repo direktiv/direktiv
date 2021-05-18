@@ -26,6 +26,7 @@ data:
             "containers": [
               {
                 "image": "%s",
+                  "name": "direktiv-container",
     						"resources": {
                   "requests": {
                     "cpu": %f,
@@ -39,6 +40,7 @@ data:
               },
               {
                 "image": "%s",
+                "name": "direktiv-sidecar",
                 "env": [
                   {
                     "name": "DIREKTIV_DB",

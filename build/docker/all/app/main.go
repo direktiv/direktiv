@@ -88,7 +88,7 @@ func main() {
 		for _, pod := range pods.Items {
 
 			t := "ready"
-			if pod.Status.Phase != v1.PodRunning {
+			if pod.Status.Phase != v1.PodRunning && pod.Status.Phase != v1.PodSucceeded {
 				allRun = false
 				t = fmt.Sprintf("%vs", int(time.Since(n).Seconds()))
 			}
