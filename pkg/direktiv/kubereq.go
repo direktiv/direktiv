@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,7 +25,8 @@ import (
 )
 
 const (
-	kubeAPIKServiceURL = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
+	kubeAPIKServiceURL         = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
+	kubeAPIKServiceURLSpecific = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services/%s"
 
 	annotationNamespace = "direktiv.io/namespace"
 	annotationURL       = "direktiv.io/url"
@@ -56,7 +58,7 @@ func kubernetesListRegistries(namespace string) ([]string, error) {
 	}
 
 	var lo metav1.ListOptions
-	secrets, err := clientset.CoreV1().Secrets(kns).List(lo)
+	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
 	if err != nil {
 		return registries, err
 	}
@@ -85,13 +87,13 @@ func kubernetesActionServiceAccount(name string, create bool) error {
 
 	if !create {
 		var opt metav1.GetOptions
-		sa, err = clientset.CoreV1().ServiceAccounts(kns).Get(sa.Name, opt)
+		sa, err = clientset.CoreV1().ServiceAccounts(kns).Get(context.Background(), sa.Name, opt)
 		if err != nil {
 			return err
 		}
 
 		for _, ps := range sa.ImagePullSecrets {
-			err = clientset.CoreV1().Secrets(kns).Delete(ps.Name, &metav1.DeleteOptions{})
+			err = clientset.CoreV1().Secrets(kns).Delete(context.Background(), ps.Name, metav1.DeleteOptions{})
 			if err != nil {
 				// we can keep going
 				log.Errorf("can not delete secret for sa: %v", err)
@@ -100,9 +102,9 @@ func kubernetesActionServiceAccount(name string, create bool) error {
 	}
 
 	// we delete the account if it is there
-	clientset.RbacV1().RoleBindings(kns).Delete(fmt.Sprintf("%s-binding",
-		sa.Name), &metav1.DeleteOptions{})
-	err = clientset.CoreV1().ServiceAccounts(kns).Delete(sa.Name, nil)
+	clientset.RbacV1().RoleBindings(kns).Delete(context.Background(), fmt.Sprintf("%s-binding",
+		sa.Name), metav1.DeleteOptions{})
+	err = clientset.CoreV1().ServiceAccounts(kns).Delete(context.Background(), sa.Name, metav1.DeleteOptions{})
 
 	if create {
 
@@ -124,13 +126,13 @@ func kubernetesActionServiceAccount(name string, create bool) error {
 			},
 		}
 
-		_, err = clientset.CoreV1().ServiceAccounts(kns).Create(sa)
+		_, err = clientset.CoreV1().ServiceAccounts(kns).Create(context.Background(), sa, metav1.CreateOptions{})
 		if err != nil {
 			log.Errorf("can not create service account: %v", err)
 			return err
 		}
 
-		_, err = clientset.RbacV1().RoleBindings(kns).Create(rb)
+		_, err = clientset.RbacV1().RoleBindings(kns).Create(context.Background(), rb, metav1.CreateOptions{})
 
 	}
 
@@ -148,7 +150,7 @@ func kubernetesDeleteSecret(name, namespace string) error {
 	}
 
 	var lo metav1.ListOptions
-	secrets, err := clientset.CoreV1().Secrets(kns).List(lo)
+	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
 	if err != nil {
 		return err
 	}
@@ -164,7 +166,7 @@ func kubernetesDeleteSecret(name, namespace string) error {
 			}
 			secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
 
-			err = clientset.CoreV1().Secrets(kns).Delete(secretName, &metav1.DeleteOptions{})
+			err = clientset.CoreV1().Secrets(kns).Delete(context.Background(), secretName, metav1.DeleteOptions{})
 			if err != nil {
 				return err
 			}
@@ -211,7 +213,7 @@ func kubernetesAddSecret(name, namespace string, data []byte) error {
 	sa.Data[".dockerconfigjson"] = data
 	sa.Type = "kubernetes.io/dockerconfigjson"
 
-	_, err = clientset.CoreV1().Secrets(kns).Create(sa)
+	_, err = clientset.CoreV1().Secrets(kns).Create(context.Background(), sa, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -233,7 +235,7 @@ func kubernetesSecretFromServiceAccount(name, secret string) error {
 	}
 
 	var opt metav1.GetOptions
-	sa, err := clientset.CoreV1().ServiceAccounts(kns).Get(fmt.Sprintf("%s-%s", serviceAccountPrefix, name), opt)
+	sa, err := clientset.CoreV1().ServiceAccounts(kns).Get(context.Background(), fmt.Sprintf("%s-%s", serviceAccountPrefix, name), opt)
 	if err != nil {
 		return err
 	}
@@ -248,7 +250,7 @@ func kubernetesSecretFromServiceAccount(name, secret string) error {
 
 	sa.ImagePullSecrets = r
 
-	_, err = clientset.CoreV1().ServiceAccounts(kns).Update(sa)
+	_, err = clientset.CoreV1().ServiceAccounts(kns).Update(context.Background(), sa, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -266,7 +268,7 @@ func kubernetesSecretToServiceAccount(name, secret string) error {
 	}
 
 	var opt metav1.GetOptions
-	sa, err := clientset.CoreV1().ServiceAccounts(kns).Get(name, opt)
+	sa, err := clientset.CoreV1().ServiceAccounts(kns).Get(context.Background(), name, opt)
 	if err != nil {
 		return err
 	}
@@ -275,7 +277,7 @@ func kubernetesSecretToServiceAccount(name, secret string) error {
 		Name: secret,
 	})
 
-	_, err = clientset.CoreV1().ServiceAccounts(kns).Update(sa)
+	_, err = clientset.CoreV1().ServiceAccounts(kns).Update(context.Background(), sa, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -331,6 +333,7 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 		ir.Container.Cmd = f.Cmd
 		ir.Container.Size = f.Size
 		ir.Container.Scale = f.Scale
+		ir.Container.ID = f.ID
 
 		ah, err := serviceToHash(&ir)
 		if err != nil {
@@ -359,12 +362,15 @@ func getKnativeFunction(svc string) error {
 
 	url := fmt.Sprintf("%s/%s", u, svc)
 	resp, err := sendKuberequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
 
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("service does not exists")
 	}
 
-	return err
+	return nil
 }
 
 func addKnativeFunction(ir *isolateRequest) error {
@@ -397,18 +403,23 @@ func addKnativeFunction(ir *isolateRequest) error {
 		mem = 256
 	}
 
+	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+
 	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah), ir.Container.Scale,
 		fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
 		ir.Container.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
 		kubeReq.sidecar)
 
-	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-
-	_, err = sendKuberequest(http.MethodPost, u,
-		bytes.NewBufferString(svc))
+	resp, err := sendKuberequest(http.MethodPost, u, bytes.NewBufferString(svc))
 	if err != nil {
 		log.Errorf("can not send kube request: %v", err)
 		return err
+	}
+
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		b, _ := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		return fmt.Errorf("can not add knative service: %v", string(b))
 	}
 
 	return nil
@@ -444,7 +455,8 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", kubeReq.apiConfig.BearerToken))
+	req.Header.Add("Authorization",
+		fmt.Sprintf("Bearer %s", kubeReq.apiConfig.BearerToken))
 
 	return client.Do(req)
 
@@ -452,8 +464,7 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 func serviceToHash(ar *isolateRequest) (uint64, error) {
 
-	return hash.Hash(fmt.Sprintf("%s-%s-%s-%s-%d-%d", ar.Workflow.Namespace,
-		ar.Workflow.ID, ar.Container.Image, ar.Container.Cmd, ar.Container.Size,
-		ar.Container.Scale), hash.FormatV2, nil)
+	return hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
+		ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
 
 }

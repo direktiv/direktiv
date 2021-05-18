@@ -14,7 +14,6 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
@@ -47,8 +46,10 @@ require (
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.17.4
-	k8s.io/apimachinery v0.17.4
-	k8s.io/client-go v0.17.4
+	k8s.io/api v0.19.7
+	k8s.io/apimachinery v0.19.7
+	k8s.io/client-go v0.19.7
+	knative.dev/serving v0.22.0
+	sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
