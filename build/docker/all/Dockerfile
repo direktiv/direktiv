@@ -12,7 +12,7 @@ RUN cd /app && CGO_LDFLAGS="-static -w -s"  go build  -tags osusergo,netgo  -o /
 
 RUN curl -fsSL -o /helm.tar.gz https://get.helm.sh/helm-v3.5.3-linux-amd64.tar.gz && tar -C / -xvzf /helm.tar.gz
 
-FROM rancher/k3s
+FROM rancher/k3s:v1.21.1-rc1-k3s1
 COPY --from=build-env /linux-amd64/helm /helm
 COPY --from=build-env /direktiv /direktiv
 COPY --from=build-env /dlapp /dlapp

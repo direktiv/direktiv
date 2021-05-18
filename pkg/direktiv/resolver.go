@@ -1,6 +1,7 @@
 package direktiv
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -73,7 +74,7 @@ func watchEndpoints(svc, port string, conn resolver.ClientConn) error {
 
 	// get initial backends
 	var opt metav1.GetOptions
-	ep, err := clientset.CoreV1().Endpoints(kns).Get(svc, opt)
+	ep, err := clientset.CoreV1().Endpoints(kns).Get(context.Background(), svc, opt)
 	if err != nil {
 		log.Errorf("can not get client set for kubernetes resolver: %v", err)
 		return err
