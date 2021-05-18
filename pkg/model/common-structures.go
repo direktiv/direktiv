@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/itchyny/gojq"
 	"github.com/qri-io/jsonschema"
 	"github.com/senseyeio/duration"
 )
+
+const CommonNameRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
 type TimeoutDefinition struct {
 	Interrupt string `yaml:"interrupt,omitempty"`
@@ -47,6 +50,15 @@ func (o *FunctionDefinition) Validate() error {
 
 	if o.ID == "" {
 		return errors.New("id required")
+	}
+
+	matched, err := regexp.MatchString(CommonNameRegex, o.ID)
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return fmt.Errorf("function id must match regex: %s", CommonNameRegex)
 	}
 
 	if o.Image == "" {
