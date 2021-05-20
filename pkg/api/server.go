@@ -1,8 +1,13 @@
 package api
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -37,13 +42,37 @@ func NewServer(cfg *Config) (*Server, error) {
 
 	r := mux.NewRouter()
 
-	s := &Server{
-		cfg:    cfg,
-		router: r,
-		srv: &http.Server{
+	srv := &http.Server{
+		Handler: r,
+		Addr:    cfg.Server.Bind,
+	}
+
+	if tlsEnabled() && cfg.Server.RequestClientCertificates {
+		ca, err := ioutil.ReadFile(filepath.Join(tlsDir, "ca.crt"))
+		if err != nil {
+			return nil, err
+		}
+
+		cp := x509.NewCertPool()
+		ok := cp.AppendCertsFromPEM(ca)
+		if !ok {
+			return nil, fmt.Errorf("failed to load root cert")
+		}
+
+		srv = &http.Server{
 			Handler: r,
 			Addr:    cfg.Server.Bind,
-		},
+			TLSConfig: &tls.Config{
+				ClientAuth: tls.RequireAndVerifyClientCert,
+				ClientCAs:  cp,
+			},
+		}
+	}
+
+	s := &Server{
+		cfg:         cfg,
+		router:      r,
+		srv:         srv,
 		reqMapMutex: sync.Mutex{},
 		reqMap:      make(map[*http.Request]*RequestStatus),
 		json: jsonpb.Marshaler{
@@ -178,14 +207,21 @@ func (s *Server) prepareRoutes() {
 
 }
 
+const tlsDir = "/etc/certs/servedirektiv"
+
+func tlsEnabled() bool {
+	_, err := os.Stat(tlsDir)
+	return !os.IsNotExist(err)
+}
+
 // Start starts the API server
 func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
 
-	if _, err := os.Stat("/etc/certs/servedirektiv"); !os.IsNotExist(err) {
+	if tlsEnabled() {
 		log.Infof("api tls enabled")
-		return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
+		return s.srv.ListenAndServeTLS(filepath.Join(tlsDir, "tls.crt"), filepath.Join(tlsDir, "tls.key"))
 	}
 
 	return s.srv.ListenAndServe()
