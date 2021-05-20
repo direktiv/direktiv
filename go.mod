@@ -38,6 +38,7 @@ require (
 	github.com/vorteil/direktiv-apps v0.0.0-20210423031131-1bc5000144a1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
+	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154 // indirect

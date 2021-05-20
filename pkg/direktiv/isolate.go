@@ -9,6 +9,7 @@ const (
 	DirektivExchangeKeyHeader = "Direktiv-ExchangeKey"
 	DirektivPingAddrHeader    = "Direktiv-PingAddr"
 	DirektivTimeoutHeader     = "Direktiv-Timeout"
+	DirektivDeadlineHeader    = "Direktiv-Deadline"
 	DirektivStepHeader        = "Direktiv-Step"
 	DirektivResponseHeader    = "Direktiv-Response"
 	DirektivNamespaceHeader   = "Direktiv-Namespace"
