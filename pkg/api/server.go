@@ -1,10 +1,6 @@
 package api
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -42,37 +38,13 @@ func NewServer(cfg *Config) (*Server, error) {
 
 	r := mux.NewRouter()
 
-	srv := &http.Server{
-		Handler: r,
-		Addr:    cfg.Server.Bind,
-	}
-
-	if tlsEnabled() && cfg.Server.RequestClientCertificates {
-		ca, err := ioutil.ReadFile(filepath.Join(tlsDir, "ca.crt"))
-		if err != nil {
-			return nil, err
-		}
-
-		cp := x509.NewCertPool()
-		ok := cp.AppendCertsFromPEM(ca)
-		if !ok {
-			return nil, fmt.Errorf("failed to load root cert")
-		}
-
-		srv = &http.Server{
+	s := &Server{
+		cfg:    cfg,
+		router: r,
+		srv: &http.Server{
 			Handler: r,
 			Addr:    cfg.Server.Bind,
-			TLSConfig: &tls.Config{
-				ClientAuth: tls.RequireAndVerifyClientCert,
-				ClientCAs:  cp,
-			},
-		}
-	}
-
-	s := &Server{
-		cfg:         cfg,
-		router:      r,
-		srv:         srv,
+		},
 		reqMapMutex: sync.Mutex{},
 		reqMap:      make(map[*http.Request]*RequestStatus),
 		json: jsonpb.Marshaler{
