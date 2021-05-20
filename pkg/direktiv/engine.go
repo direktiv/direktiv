@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -417,6 +418,15 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
+
+	for _, f := range ar.Container.Files {
+		data, err := json.Marshal(&f)
+		if err != nil {
+			panic(err)
+		}
+		str := base64.StdEncoding.EncodeToString(data)
+		req.Header.Add(DirektivFileHeader, str)
+	}
 
 	client := &http.Client{
 		Transport: tr,

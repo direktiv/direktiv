@@ -14,6 +14,7 @@ const (
 	DirektivResponseHeader    = "Direktiv-Response"
 	DirektivNamespaceHeader   = "Direktiv-Namespace"
 	DirektivSourceHeader      = "Direktiv-Source"
+	DirektivFileHeader        = "Direktiv-Files"
 
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
@@ -48,6 +49,7 @@ type isolateContainer struct {
 	Data       []byte
 	Size       model.Size
 	Scale      int
+	Files      []model.FunctionFileDefinition
 }
 
 type isolateWorkflow struct {
