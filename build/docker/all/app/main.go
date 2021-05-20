@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/apoorvam/goterminal"
@@ -139,6 +140,16 @@ func applyYaml(kc string) {
 		time.Sleep(2 * time.Second)
 	}
 
+	isgcp := isGCP()
+	log.Printf("running on GCP: %v\n", isgcp)
+	if isgcp {
+		cmd := exec.Command(kc, "apply", "-f", "/google-dns.yaml")
+		cmd.Dir = "/"
+		cmd.Run()
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+
 }
 
 func patch(kc string) {
@@ -171,4 +182,20 @@ func changeContour() {
 	if err = ioutil.WriteFile("/direktiv/scripts/knative/contour.yaml", output, 0666); err != nil {
 		panic(err.Error())
 	}
+}
+
+func isGCP() bool {
+
+	data, err := ioutil.ReadFile("/sys/class/dmi/id/product_name")
+	if err != nil {
+		return false
+	}
+	name := strings.TrimSpace(string(data))
+
+	if name == "Google" || name == "Google Compute Engine" {
+		return true
+	}
+
+	return false
+
 }
