@@ -33,6 +33,12 @@ const (
 	RN_ListWorkflowTemplateFolders = "ListWorkflowTemplateFolders"
 	RN_ListWorkflowTemplates       = "ListWorkflowTemplates"
 	RN_GetWorkflowTemplate         = "GetWorkflowTemplate"
+	RN_ListWorkflowVariables       = "ListWorkflowVariables"
+	RN_GetWorkflowVariable         = "GetWorkflowVariable"
+	RN_SetWorkflowVariable         = "SetWorkflowVariable"
+	RN_ListNamespaceVariables      = "ListNamespaceVariables"
+	RN_GetNamespaceVariable        = "GetNamespaceVariable"
+	RN_SetNamespaceVariable        = "SetNamespaceVariable"
 	RN_JQPlayground                = "JQPlayground"
 )
 
@@ -68,5 +74,11 @@ var RouteNames = []string{
 	RN_ListWorkflowTemplateFolders,
 	RN_ListWorkflowTemplates,
 	RN_GetWorkflowTemplate,
+	RN_ListWorkflowVariables,
+	RN_GetWorkflowVariable,
+	RN_SetWorkflowVariable,
+	RN_ListNamespaceVariables,
+	RN_GetNamespaceVariable,
+	RN_SetNamespaceVariable,
 	RN_JQPlayground,
 }
