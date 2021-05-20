@@ -1,0 +1,21 @@
+[[program]]
+  args = "/dlapp"
+  env = ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/bin/aux", "CRI_CONFIG_FILE=/var/lib/rancher/k3s/agent/etc/crictl.yaml"]
+
+[[program]]
+  args = "/server.sh"
+  bootstrap = ["WAIT_FILE /etc/rancher/k3s/k3s.yaml"]
+
+[[network]]
+  http = ["8080", "80", "9090", "6443", "10250"]
+  udp = ["8472"]
+
+[system]
+  max-fds = 1024000
+
+[vm]
+  cpus = 8
+  ram = "8096 MiB"
+  disk-size = "+5 GiB"
+  inodes = 1024000
+

@@ -26,7 +26,13 @@ data:
             "containers": [
               {
                 "image": "%s",
-                  "name": "direktiv-container",
+                "name": "direktiv-container",
+                "volumeMounts": [
+                  {
+                    "name": "workdir",
+                    "mountPath": "/mnt/shared"
+                  }
+                ],
     						"resources": {
                   "requests": {
                     "cpu": %f,
@@ -71,8 +77,12 @@ data:
                     "name": "certs",
                     "mountPath": "/etc/certs/direktiv",
                     "readOnly": true
-                  }
+                  },
                   {{- end }}
+                  {
+                    "name": "workdir",
+                    "mountPath": "/mnt/shared"
+                  }
                 ]
               }
             ],
@@ -83,8 +93,12 @@ data:
                 "secret": {
                   "secretName": "{{ .Values.flow.certificate }}"
                 }
-                }
+              },
               {{- end }}
+              {
+                "name": "workdir",
+                "emptyDir": {}
+              }
             ]
           }
         }
