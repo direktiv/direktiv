@@ -1,8 +1,13 @@
 package api
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -37,13 +42,37 @@ func NewServer(cfg *Config) (*Server, error) {
 
 	r := mux.NewRouter()
 
-	s := &Server{
-		cfg:    cfg,
-		router: r,
-		srv: &http.Server{
+	srv := &http.Server{
+		Handler: r,
+		Addr:    cfg.Server.Bind,
+	}
+
+	if tlsEnabled() && cfg.Server.RequestClientCertificates {
+		ca, err := ioutil.ReadFile(filepath.Join(tlsDir, "ca.crt"))
+		if err != nil {
+			return nil, err
+		}
+
+		cp := x509.NewCertPool()
+		ok := cp.AppendCertsFromPEM(ca)
+		if !ok {
+			return nil, fmt.Errorf("failed to load root cert")
+		}
+
+		srv = &http.Server{
 			Handler: r,
 			Addr:    cfg.Server.Bind,
-		},
+			TLSConfig: &tls.Config{
+				ClientAuth: tls.RequireAndVerifyClientCert,
+				ClientCAs:  cp,
+			},
+		}
+	}
+
+	s := &Server{
+		cfg:         cfg,
+		router:      r,
+		srv:         srv,
 		reqMapMutex: sync.Mutex{},
 		reqMap:      make(map[*http.Request]*RequestStatus),
 		json: jsonpb.Marshaler{
@@ -165,9 +194,24 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/", s.handler.workflowTemplates).Methods(http.MethodGet).Name(RN_ListWorkflowTemplates)
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.workflowTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
 
+	// Varaibles
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/", s.handler.workflowVariables).Methods(http.MethodGet).Name(RN_ListWorkflowVariables)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/{variable}", s.handler.setWorkflowVariable).Methods(http.MethodPost).Name(RN_SetWorkflowVariable)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/{variable}", s.handler.getWorkflowVariable).Methods(http.MethodGet).Name(RN_GetWorkflowVariable)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/variables/", s.handler.namespaceVariables).Methods(http.MethodGet).Name(RN_ListNamespaceVariables)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/variables/{variable}", s.handler.setNamespaceVariable).Methods(http.MethodPost).Name(RN_SetNamespaceVariable)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/variables/{variable}", s.handler.getNamespaceVariable).Methods(http.MethodGet).Name(RN_GetNamespaceVariable)
+
 	// jq Playground ...
 	s.Router().HandleFunc("/api/jq-playground", s.handler.jqPlayground).Methods(http.MethodPost).Name(RN_JQPlayground)
 
+}
+
+const tlsDir = "/etc/certs/servedirektiv"
+
+func tlsEnabled() bool {
+	_, err := os.Stat(tlsDir)
+	return !os.IsNotExist(err)
 }
 
 // Start starts the API server
@@ -175,9 +219,9 @@ func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
 
-	if _, err := os.Stat("/etc/certs/servedirektiv"); !os.IsNotExist(err) {
+	if tlsEnabled() {
 		log.Infof("api tls enabled")
-		return s.srv.ListenAndServeTLS(direktiv.TLSCert, direktiv.TLSKey)
+		return s.srv.ListenAndServeTLS(filepath.Join(tlsDir, "tls.crt"), filepath.Join(tlsDir, "tls.key"))
 	}
 
 	return s.srv.ListenAndServe()

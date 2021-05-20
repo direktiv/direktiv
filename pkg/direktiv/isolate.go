@@ -9,10 +9,12 @@ const (
 	DirektivExchangeKeyHeader = "Direktiv-ExchangeKey"
 	DirektivPingAddrHeader    = "Direktiv-PingAddr"
 	DirektivTimeoutHeader     = "Direktiv-Timeout"
+	DirektivDeadlineHeader    = "Direktiv-Deadline"
 	DirektivStepHeader        = "Direktiv-Step"
 	DirektivResponseHeader    = "Direktiv-Response"
 	DirektivNamespaceHeader   = "Direktiv-Namespace"
 	DirektivSourceHeader      = "Direktiv-Source"
+	DirektivFileHeader        = "Direktiv-Files"
 
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
@@ -47,6 +49,7 @@ type isolateContainer struct {
 	Data       []byte
 	Size       model.Size
 	Scale      int
+	Files      []model.FunctionFileDefinition
 }
 
 type isolateWorkflow struct {

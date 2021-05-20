@@ -36,6 +36,7 @@ require (
 	github.com/valyala/fasthttp v1.22.0
 	github.com/vorteil/direktiv-apps v0.0.0-20210423031131-1bc5000144a1
 	github.com/xeipuuv/gojsonschema v1.2.0
+	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect

@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -343,8 +344,19 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 		}
 	}
 
+	// NOTE: transport copied & modified from http.DefaultTransport
 	tr := &http.Transport{
-		ResponseHeaderTimeout: 10 * time.Second,
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   10 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	// on https we add the cert to ca
@@ -383,10 +395,15 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 	log.Debugf("isolate request: %v", addr)
 
-	// get exchange key
-	exchangeKey := we.server.config.FlowAPI.Exchange
+	if ar.Workflow.Timeout == 0 {
+		ar.Workflow.Timeout = 15 * 60 // 15 minutes default
+	}
 
-	req, err := http.NewRequestWithContext(context.Background(),
+	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	rctx, cancel := context.WithDeadline(context.Background(), deadline.Add(time.Second*60))
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(rctx,
 		http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
 	if err != nil {
@@ -398,21 +415,21 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
-	req.Header.Add(DirektivPingAddrHeader, addr)
-	req.Header.Add(DirektivExchangeKeyHeader, exchangeKey)
-	req.Header.Add(DirektivResponseHeader, we.server.config.FlowAPI.Endpoint)
-	req.Header.Add(DirektivTimeoutHeader, fmt.Sprintf("%d",
-		int64(ar.Workflow.Timeout)))
-	req.Header.Add(DirektivSourceHeader, we.server.hostname)
+	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
-	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
-		int64(ar.Workflow.Step)))
-	req.Header.Add("Host", addr)
+
+	for _, f := range ar.Container.Files {
+		data, err := json.Marshal(&f)
+		if err != nil {
+			panic(err)
+		}
+		str := base64.StdEncoding.EncodeToString(data)
+		req.Header.Add(DirektivFileHeader, str)
+	}
 
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   10 * time.Second,
 	}
 
 	var (

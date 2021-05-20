@@ -177,6 +177,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				ar.Container.Size = fn.Size
 				ar.Container.Scale = fn.Scale
 				ar.Container.ID = fn.ID
+				ar.Container.Files = fn.Files
 
 				err = instance.engine.doActionRequest(ctx, ar)
 				if err != nil {

@@ -50,11 +50,19 @@ data:
                         "key": "db"
                       }
                     }
+                  },
+                  {
+                    "name": "DIREKTIV_DEBUG",
+                    "value": "{{ .Values.debug }}"
+                  },
+                  {
+                    "name": "DIREKTIV_FLOW_ENDPOINT",
+                    "value": "direktiv-kube:///{{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}:7777"
                   }
                 ],
                 "ports": [
                   {
-                    "containerPort": 8889
+                    "containerPort": 8890
                   }
                 ],
                 "volumeMounts": [
@@ -63,12 +71,8 @@ data:
                     "name": "certs",
                     "mountPath": "/etc/certs/direktiv",
                     "readOnly": true
-                  },
-                  {{- end }}
-                  {
-                    "name": "exchange",
-                    "mountPath": "/var/secret"
                   }
+                  {{- end }}
                 ]
               }
             ],
@@ -79,14 +83,8 @@ data:
                 "secret": {
                   "secretName": "{{ .Values.flow.certificate }}"
                 }
-                },
-              {{- end }}
-              {
-                "name": "exchange",
-                "secret": {
-                  "secretName": "{{- .Release.Name }}-isolate"
                 }
-              }
+              {{- end }}
             ]
           }
         }

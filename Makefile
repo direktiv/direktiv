@@ -55,7 +55,7 @@ docker-cli: build
 
 .PHONY: docker-sidecar
 docker-sidecar:
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/main.go
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/*.go
 	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
 
 .PHONY: template-configmaps

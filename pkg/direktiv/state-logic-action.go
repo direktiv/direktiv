@@ -192,7 +192,9 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			ar.Container.Cmd = fn.Cmd
 			ar.Container.Size = fn.Size
 			ar.Container.Scale = fn.Scale
+
 			ar.Container.ID = fn.ID
+			ar.Container.Files = fn.Files
 
 			if sl.state.Async {
 
