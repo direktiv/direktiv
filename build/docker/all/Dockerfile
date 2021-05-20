@@ -21,4 +21,8 @@ RUN chmod 755 /dlapp
 
 ADD debug.yaml /
 
+ADD google-dns.yaml /
+
+ADD server.sh /
+
 ENTRYPOINT ["/dlapp"]
