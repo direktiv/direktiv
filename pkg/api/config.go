@@ -17,8 +17,7 @@ type Config struct {
 	}
 
 	Server struct {
-		Bind                      string
-		RequestClientCertificates bool
+		Bind string
 	}
 
 	Templates struct {
