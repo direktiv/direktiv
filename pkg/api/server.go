@@ -197,6 +197,14 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/", s.handler.workflowTemplates).Methods(http.MethodGet).Name(RN_ListWorkflowTemplates)
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.workflowTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
 
+	// Varaibles
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/", s.handler.workflowVariables).Methods(http.MethodGet).Name(RN_ListWorkflowVariables)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/{variable}", s.handler.setWorkflowVariable).Methods(http.MethodPost).Name(RN_SetWorkflowVariable)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/{variable}", s.handler.getWorkflowVariable).Methods(http.MethodGet).Name(RN_GetWorkflowVariable)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/variables/", s.handler.namespaceVariables).Methods(http.MethodGet).Name(RN_ListNamespaceVariables)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/variables/{variable}", s.handler.setNamespaceVariable).Methods(http.MethodPost).Name(RN_SetNamespaceVariable)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/variables/{variable}", s.handler.getNamespaceVariable).Methods(http.MethodGet).Name(RN_GetNamespaceVariable)
+
 	// jq Playground ...
 	s.Router().HandleFunc("/api/jq-playground", s.handler.jqPlayground).Methods(http.MethodPost).Name(RN_JQPlayground)
 
