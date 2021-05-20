@@ -155,6 +155,7 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 			ar.Container.Cmd = fn.Cmd
 			ar.Container.Size = fn.Size
 			ar.Container.Scale = fn.Scale
+			ar.Container.Files = fn.Files
 
 			err = instance.engine.doActionRequest(ctx, ar)
 			if err != nil {

@@ -15,6 +15,7 @@ type Workflow struct {
 	ID          string               `yaml:"id"`
 	Name        string               `yaml:"name,omitempty"`
 	Description string               `yaml:"description,omitempty"`
+	Version     string               `yaml:"version,omitempty"`
 	Functions   []FunctionDefinition `yaml:"functions,omitempty"`
 	Schemas     []SchemaDefinition   `yaml:"schemas,omitempty"`
 	States      []State              `yaml:"states,omitempty"`
