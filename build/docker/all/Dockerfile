@@ -25,4 +25,6 @@ ADD google-dns.yaml /
 
 ADD server.sh /
 
+ADD default_direktiv.vcfg /
+
 ENTRYPOINT ["/dlapp"]
