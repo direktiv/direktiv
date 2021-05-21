@@ -1,0 +1,61 @@
+name: AWS
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Prepare machine
+      run: |
+        make docker-all
+        wget https://github.com/vorteil/vorteil/releases/download/0.5.11/vorteil_linux-x86.tar.gz
+        tar -xzf vorteil_linux-x86.tar.gz
+        ./vorteil projects convert-container local.docker/direktiv-kube:latest dk
+        cp dk/default_direktiv.vcfg dk/default.vcfg
+        cat dk/default.vcfg
+    - name: proviosion gcp
+      run: |
+        echo "$GCP_UPLOAD" > gcp.json
+        ./vorteil provisioners new google ./gcp.provisioner --bucket="direktiv-all-in" --credentials="gcp.json"
+        ./vorteil images provision dk ./gcp.provisioner --name direktiv-kube -f
+      env:
+        GCP_UPLOAD : ${{ secrets.GCP_UPLOAD }}
+    - name: make gcp image public
+      run: |
+        echo "$GCP_UPLOAD" > gcp.json
+        curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-341.0.0-linux-x86_64.tar.gz
+        tar -xzf google-cloud-sdk-341.0.0-linux-x86_64.tar.gz
+        ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file gcp.json
+        ./google-cloud-sdk/bin/gcloud config set project direktiv
+        ./google-cloud-sdk/bin/gcloud compute images add-iam-policy-binding direktiv-kube --member='allAuthenticatedUsers' --role='roles/compute.imageUser'
+      env:
+        GCP_UPLOAD : ${{ secrets.GCP_UPLOAD }}
+    - name: provision to aws
+      run: |
+        ./vorteil provisioners new amazon-ec2 ./aws.provisioner --key=${{ secrets.AWS_ACCESS_KEY_ID }} --region=ap-southeast-2 --secret=${{ secrets.AWS_SECRET_ACCESS_KEY }} --bucket vorteilimgupload
+        ./vorteil images provision dk ./aws.provisioner --name direktiv-kube -f
+    - name: configure aws cli
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: copy ami
+      run: |
+        sudo apt-get install jq
+        for value in `aws ec2 describe-regions | jq -j '.Regions[] | .RegionName, " "'`
+        do
+          if [[ ! $value == "ap-southeast-2" ]]; then
+            echo "region copy: $value"
+            aws ec2 deregister-image --region=$value --image-id `aws ec2 describe-images --owners self --region $value | jq -j '.Images[] | select(.Name == "direktiv-kube") | .ImageId'`
+            aws ec2 copy-image --region $value --name direktiv-kube --source-image-id=`aws ec2 describe-images --owners self --region ap-southeast-2 | jq -r '.Images[] | select(.Name == "direktiv-kube") | .ImageId'` --source-region ap-southeast-2
+          fi
+        done
+        sleep 600
+        for value in `aws ec2 describe-regions | jq -j '.Regions[] | .RegionName, " "'`
+        do
+          echo "region permission: $value"
+          aws ec2 modify-image-attribute --region $value --image-id `aws ec2 describe-images --owners self --region $value | jq -j '.Images[] | select(.Name == "direktiv-kube") | .ImageId'` --launch-permission "Add=[{Group=all}]"
+        done
