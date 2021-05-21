@@ -47,7 +47,9 @@ docker run --privileged -p 8080:80 -ti vorteil/direktiv-kube
 
 ***Testing Installation:***
 
-To test if the installation was successful go to http://localhost:8080 to access the UI
+To test if the installation was successful go to http://localhost:8080 to access the UI.
+
+For more information, documentation and examples visit the [documentation page](https://docs.direktiv.io/).
 
 
 ***Testing Direktiv***:
@@ -160,7 +162,7 @@ description: "Classify an image uploaded to Azure Blob Storage as SFW or NSFW us
 start:
   type: event
   state: getRatingFromGoogleVision
-  event: 
+  event:
     type: Microsoft.Storage.BlobCreated
 functions:
 - id: imageCheck
@@ -194,8 +196,8 @@ states:
   defaultTransition: addWaterMarkNotApproved
 - id: addWaterMarkApproved
   type: action
-  action: 
-    function: awslambda 
+  action:
+    function: awslambda
     secrets: ["LAMBDA_KEY", "LAMBDA_SECRET"]
     input: '{
       key: .secrets.LAMBDA_KEY,
@@ -211,8 +213,8 @@ states:
   transition: copyFileToSafeForWork
 - id: addWaterMarkNotApproved
   type: action
-  action: 
-    function: awslambda 
+  action:
+    function: awslambda
     secrets: ["LAMBDA_KEY", "LAMBDA_SECRET"]
     input: '{
       key: .secrets.LAMBDA_KEY,
