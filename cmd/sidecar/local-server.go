@@ -718,7 +718,7 @@ func (worker *inboundWorker) validateIsolateRequest(req *inboundRequest) *isolat
 
 }
 
-const sharedDir = "/var/log"
+const sharedDir = "/mnt/shared"
 
 func (worker *inboundWorker) isolateDir(ir *isolateRequest) string {
 	return filepath.Join(sharedDir, ir.actionId)
@@ -986,7 +986,6 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *isolateRequest, scop
 			InstanceId: &ir.instanceId,
 			Key:        &key,
 		})
-		ivClient.Recv()
 		client = ivClient
 		recv = func() (varClientMsg, error) {
 			return ivClient.Recv()
@@ -1074,7 +1073,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *isolateRequest, totalSiz
 	}
 
 	chunkSize := int64(0x200000) // 2 MiB
-	if totalSize == 0 {
+	if totalSize <= 0 {
 		buf := new(bytes.Buffer)
 		_, err := io.CopyN(buf, r, chunkSize+1)
 		if err == nil {
