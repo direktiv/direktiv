@@ -718,7 +718,7 @@ func (worker *inboundWorker) validateIsolateRequest(req *inboundRequest) *isolat
 
 }
 
-const sharedDir = "/var/log"
+const sharedDir = "/mnt/shared"
 
 func (worker *inboundWorker) isolateDir(ir *isolateRequest) string {
 	return filepath.Join(sharedDir, ir.actionId)
