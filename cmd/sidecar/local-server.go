@@ -986,7 +986,6 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *isolateRequest, scop
 			InstanceId: &ir.instanceId,
 			Key:        &key,
 		})
-		ivClient.Recv()
 		client = ivClient
 		recv = func() (varClientMsg, error) {
 			return ivClient.Recv()
