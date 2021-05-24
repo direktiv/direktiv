@@ -909,7 +909,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {
-		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step)
+		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step+1)
 		go wli.Transition(ctx, transition.NextState, 0)
 		return
 	}
