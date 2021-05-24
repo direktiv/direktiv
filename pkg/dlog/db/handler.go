@@ -18,7 +18,7 @@ type Handler struct {
 	queueMutex sync.Mutex
 	logQueue   chan *log15.Record
 	queuedLogs []log15.Record
-	closed     bool
+	closed     chan bool
 }
 
 type HandlerArgs struct {
@@ -78,7 +78,7 @@ func (h *Handler) onboarder() {
 		h.queueMutex.Lock()
 
 		if !more {
-			h.closed = true
+			close(h.closed)
 			h.queueMutex.Unlock()
 			return
 		}
@@ -93,8 +93,18 @@ func (h *Handler) onboarder() {
 
 func (h *Handler) dispatcher() {
 
-	for {
-		time.Sleep(time.Millisecond * time.Duration(h.args.InsertFrequencyMilliSeconds))
+	var closed bool
+
+	ticker := time.NewTicker(time.Millisecond * time.Duration(h.args.InsertFrequencyMilliSeconds))
+	defer ticker.Stop()
+
+	for !closed {
+
+		select {
+		case <-h.closed:
+			closed = true
+		case <-ticker.C:
+		}
 
 		h.queueMutex.Lock()
 
@@ -133,9 +143,6 @@ func (h *Handler) dispatcher() {
 
 	nextIter:
 		h.queuedLogs = h.queuedLogs[:0]
-		if h.closed {
-			return
-		}
 		h.queueMutex.Unlock()
 
 	}
@@ -145,7 +152,8 @@ func (h *Handler) dispatcher() {
 func (h *Handler) init() (*Handler, error) {
 
 	h.queuedLogs = make([]log15.Record, 0)
-	h.logQueue = make(chan *log15.Record, 10)
+	h.logQueue = make(chan *log15.Record, 100)
+	h.closed = make(chan bool)
 
 	go h.onboarder()
 	go h.dispatcher()
