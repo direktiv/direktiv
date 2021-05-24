@@ -979,7 +979,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 
 	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
 		var object interface{}
-		object, err = jqObject(wli.data, lq)
+		object, err = jqOne(wli.data, lq)
 		if err != nil {
 			goto failure
 		}
