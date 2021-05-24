@@ -330,6 +330,8 @@ func sendContent(w http.ResponseWriter, r *http.Request, data []byte) error {
 	if ok {
 
 		s, ok := v.(string)
+
+		// if there is no such a field in the jq search
 		if !ok {
 			return fmt.Errorf("field not a string or null")
 		}
@@ -339,7 +341,7 @@ func sendContent(w http.ResponseWriter, r *http.Request, data []byte) error {
 		for {
 			n, err := decoder.Read(buf)
 
-			// check for error or non-base64 daat
+			// check for error or non-base64 retData
 			if err != nil && err != io.EOF {
 				if strings.Contains(err.Error(), "illegal base64 data") {
 					mimeType := http.DetectContentType([]byte(s))
@@ -414,6 +416,7 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	} else if wait {
 
+		// simple wait without displaying data
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set(direktiv.DirektivInstanceIDHeader, *resp.InstanceId)
 		w.Write(resp.Output)
