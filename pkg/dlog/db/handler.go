@@ -106,6 +106,7 @@ func (h *Handler) dispatcher() {
 			goto nextIter
 		}
 
+		fmt.Printf("logs: %+v\n", h.queuedLogs)
 		for i, msg := range h.queuedLogs {
 
 			ctxMap := make(map[string]interface{}, 0)
