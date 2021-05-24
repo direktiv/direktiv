@@ -486,10 +486,12 @@ func (wli *workflowLogicInstance) Save(ctx context.Context, data []byte) error {
 
 	str := base64.StdEncoding.EncodeToString(data)
 
+	wf := wli.rec.Edges.Workflow
 	wli.rec, err = wli.rec.Update().SetMemory(str).Save(ctx)
 	if err != nil {
 		return NewInternalError(err)
 	}
+	wli.rec.Edges.Workflow = wf
 	return nil
 }
 

@@ -69,7 +69,7 @@ func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf u
 	return nil
 }
 
-func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string, cronCheck bool) (*ent.WorkflowInstance, error) {
+func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string, cronCheck bool, callerData []byte) (*ent.WorkflowInstance, error) {
 
 	tx, err := db.dbEnt.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
@@ -117,6 +117,7 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		SetBeginTime(time.Now()).
 		SetInput(input).
 		SetWorkflow(wf).
+		SetInvokedBy(string(callerData)).
 		Save(ctx)
 
 	if err != nil {

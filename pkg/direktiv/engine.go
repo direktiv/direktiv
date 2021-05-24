@@ -866,17 +866,8 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 
 	args := new(metrics.InsertRecordArgs)
 
-	wf, err := rec.QueryWorkflow().Only(ctx)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	ns, err := wf.QueryNamespace().Only(ctx)
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	wf := rec.Edges.Workflow
+	ns := wf.Edges.Namespace
 
 	args.Namespace = ns.ID
 	args.Workflow = wf.Name
@@ -901,7 +892,7 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 		args.Invoker = "start"
 	}
 
-	err = we.metricsClient.InsertRecord(args)
+	err := we.metricsClient.InsertRecord(args)
 	if err != nil {
 		log.Error(err)
 	}
@@ -1166,7 +1157,7 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 		return fmt.Errorf("cannot cron invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true, nil)
 	if err != nil {
 		wli.Close()
 		if strings.Contains(err.Error(), "invoked") || strings.Contains(err.Error(), "transactions") {
@@ -1202,7 +1193,7 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 		return nil, fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, nil)
 	if err != nil {
 		wli.Close()
 		return nil, NewInternalError(err)
@@ -1279,7 +1270,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 		return
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, nil)
 	if err != nil {
 		wli.Close()
 		log.Errorf("Internal error on EventsInvoke: %v", err)
@@ -1343,28 +1334,21 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 		return "", fmt.Errorf("cannot subflow invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
+	var callerData []byte
+	if caller != nil {
+
+		callerData, err = json.Marshal(caller)
+		if err != nil {
+			wli.Close()
+			return "", NewInternalError(err)
+		}
+
+	}
+
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, callerData)
 	if err != nil {
 		wli.Close()
 		return "", NewInternalError(err)
-	}
-
-	if caller != nil {
-
-		var data []byte
-
-		data, err = json.Marshal(caller)
-		if err != nil {
-			wli.Close()
-			return "", NewInternalError(err)
-		}
-
-		wli.rec, err = wli.rec.Update().SetInvokedBy(string(data)).Save(ctx)
-		if err != nil {
-			wli.Close()
-			return "", NewInternalError(err)
-		}
-
 	}
 
 	wli.Log("Preparing workflow triggered as subflow to caller: %s", caller.InstanceID)
