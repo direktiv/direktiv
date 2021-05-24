@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	timerCleanServer          = "cleanServer"
-	timerSchedWorkflow        = "schedWorkflow"
-	timerCleanInstanceRecords = "cleanInstanceRecords"
+	timerCleanServer           = "cleanServer"
+	timerSchedWorkflow         = "schedWorkflow"
+	timerCleanInstanceRecords  = "cleanInstanceRecords"
+	timerCleanNamespaceRecords = "cleanNamespaceRecords"
 )
 
 type timerManager struct {
@@ -363,6 +364,29 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 	return nil
 }
 
+// cron job delete old namespace logs every 2 hrs
+func (tm *timerManager) cleanNamespaceRecords(data []byte) error {
+	log.Debugf("deleting old namespace records/logs")
+	ctx := context.Background()
+
+	namespaces, err := tm.server.dbManager.dbEnt.Namespace.Query().All(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, namespace := range namespaces {
+		err = tm.server.instanceLogger.DeleteNamespaceLogs(namespace.ID)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return err
+			}
+		}
+	}
+
+	log.Debugf("delete namespaces logs from %v namespaces", len(namespaces))
+	return nil
+}
+
 // cron job to delete old instance records / logs
 func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 	log.Debugf("deleting old instance records/logs")
@@ -399,3 +423,4 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 func (tm *timerManager) deleteCronForWorkflow(id string) error {
 	return tm.deleteTimerByName("", "", fmt.Sprintf("cron:%s", id))
 }
+

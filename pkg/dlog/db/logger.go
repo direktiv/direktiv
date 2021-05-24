@@ -53,6 +53,24 @@ func (dl *dbLogger) Close() error {
 	return dl.handler.Close()
 }
 
+func (l *Logger) NamespaceLogger(namespace string) (dlog.Logger, error) {
+	lg := new(dbLogger)
+	lg.Logger = log15.New()
+
+	h, err := NewHandler(&HandlerArgs{
+		Driver:                      l.db,
+		Namespace:                   namespace,
+		InsertFrequencyMilliSeconds: 500,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	lg.handler = h
+	lg.SetHandler(h)
+	return lg, nil
+}
+
 func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 
 	lg := new(dbLogger)
@@ -73,6 +91,55 @@ func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 
 	return lg, nil
 
+}
+
+func (l *Logger) QueryNamespaceLogs(ctx context.Context, namespace string, limit, offset int) (dlog.QueryReponse, error) {
+	logs := dlog.QueryReponse{
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	var Msg string
+	var Ctx string
+	var Lvl int
+	var Time int64
+	var err error
+
+	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
+	WHERE (instance is null or instance = '') AND namespace = $1
+	ORDER BY time ASC
+	LIMIT $2 OFFSET $3`
+	rows, err := l.db.Query(sqlStatement, namespace, limit, offset)
+	if err != nil {
+		return logs, err
+	}
+
+	for rows.Next() {
+		ctxMap := make(map[string]string)
+
+		err = rows.Scan(&Msg, &Ctx, &Time, &Lvl)
+		if err != nil {
+			break
+		}
+
+		err := json.Unmarshal([]byte(Ctx), &ctxMap)
+		if err != nil {
+			break
+		}
+
+		logs.Logs = append(logs.Logs, dlog.LogEntry{
+			Message:   Msg,
+			Timestamp: Time,
+			Context:   ctxMap,
+		})
+	}
+
+	if err == nil {
+		err = rows.Err()
+	}
+
+	logs.Count = len(logs.Logs)
+	return logs, err
 }
 
 func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset int) (dlog.QueryReponse, error) {
@@ -132,6 +199,22 @@ func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset i
 
 	testLOG.Count = len(testLOG.Logs)
 	return testLOG, err
+}
+
+func (l *Logger) DeleteNamespaceLogs(namespace string) error {
+	tx, err := l.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	_, err = l.db.Exec("DELETE FROM logs WHERE namespace = $1 AND (instance is null or instance = '')", namespace)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (l *Logger) DeleteInstanceLogs(instance string) error {
