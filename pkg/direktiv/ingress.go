@@ -593,7 +593,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 		<-done
 	}
 
-	go inst.start(ctx)
+	go inst.start()
 
 	if in.GetWait() {
 		log.Debugf("waiting for response %v", inst.id)
