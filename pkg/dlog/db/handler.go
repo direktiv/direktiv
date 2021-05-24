@@ -106,6 +106,7 @@ func (h *Handler) dispatcher() {
 			goto nextIter
 		}
 
+		fmt.Printf("logs: %+v\n", h.queuedLogs)
 		for i, msg := range h.queuedLogs {
 
 			ctxMap := make(map[string]interface{}, 0)
@@ -121,14 +122,26 @@ func (h *Handler) dispatcher() {
 			}
 
 			idx := i * 6
-			rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
-			vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
+			if h.args.InstanceID != "" {
+				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
+				vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
+			} else {
+				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d,  $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5))
+				vals = append(vals, h.args.Namespace, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
+			}
 
 		}
 
-		_, err = h.db.Exec(fmt.Sprintf("insert into logs (namespace, instance, time, lvl, msg, ctx) values %s", strings.Join(rowValues, ", ")), vals...)
-		if err != nil {
-			fmt.Printf("(todo: improve this log!) %s", err.Error())
+		if h.args.InstanceID != "" {
+			_, err = h.db.Exec(fmt.Sprintf("insert into logs (namespace, instance, time, lvl, msg, ctx) values %s", strings.Join(rowValues, ", ")), vals...)
+			if err != nil {
+				fmt.Printf("(todo: improve this log!) %s", err.Error())
+			}
+		} else {
+			_, err = h.db.Exec(fmt.Sprintf("insert into logs (namespace, time, lvl, msg, ctx) values %s", strings.Join(rowValues, ", ")), vals...)
+			if err != nil {
+				fmt.Printf("(todo: improve this log!) %s", err.Error())
+			}
 		}
 
 	nextIter:

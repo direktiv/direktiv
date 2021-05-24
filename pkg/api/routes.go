@@ -25,6 +25,7 @@ const (
 	RN_ListWorkflowInstances       = "ListWorkflowInstances"
 	RN_ListInstances               = "ListInstances"
 	RN_GetInstance                 = "GetInstance"
+	RN_GetNamespaceLogs            = "GetNamespaceLogs"
 	RN_CancelInstance              = "CancelInstance"
 	RN_GetInstanceLogs             = "GetInstanceLogs"
 	RN_ListActionTemplateFolders   = "ListActionTemplateFolders"
@@ -42,6 +43,7 @@ var RouteNames = []string{
 	RN_AddNamespace,
 	RN_DeleteNamespace,
 	RN_NamespaceEvent,
+	RN_GetNamespaceLogs,
 	RN_ListSecrets,
 	RN_CreateSecret,
 	RN_DeleteSecret,

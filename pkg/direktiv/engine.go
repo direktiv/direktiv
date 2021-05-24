@@ -721,8 +721,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	if err != nil {
 		log.Error(err)
 	}
-	// TODO: cancel any other outstanding timers
 
+	// TODO: cancel any other outstanding timers
 	logger, err := (*we.instanceLogger).LoggerFunc(ns.ID, instanceId)
 	if err != nil {
 		dl, _ := dummy.NewLogger()
@@ -1148,6 +1148,8 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 
 	start := wli.wf.GetStartState()
 
+	wli.NamespaceLog("Workflow '%s' has been triggered by the API.", start.GetID())
+
 	wli.Log("Beginning workflow triggered by API.")
 
 	go wli.Transition(start.GetID(), 0)
@@ -1182,6 +1184,7 @@ func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name stri
 
 	start := wli.wf.GetStartState()
 
+	wli.NamespaceLog("Workflow '%s' has been triggered by the API.", start.GetID())
 	wli.Log("Beginning workflow triggered by API.")
 
 	go wli.Transition(start.GetID(), 0)
@@ -1265,11 +1268,15 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 
 	if len(events) == 1 {
 		wli.Log("Beginning workflow triggered by event: %s", events[0].ID())
+		wli.namespaceLogger.Info(fmt.Sprintf("Workflow '%s' triggered by cloud event: '%s'", name, events[0].Type()), "source", events[0].Source(), "data", fmt.Sprintf("%s", events[0].Data()))
 	} else {
 		var ids = make([]string, len(events))
+		var types = make([]string, len(events))
 		for i := range events {
 			ids[i] = events[i].ID()
+			types[i] = events[i].Type()
 		}
+		wli.NamespaceLog("Workflow '%s' triggered by event types: %v", name, types)
 		wli.Log("Beginning workflow triggered by events: %v", ids)
 	}
 
@@ -1343,6 +1350,7 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 
 	start := wli.wf.GetStartState()
 
+	wli.NamespaceLog("Workflow '%s' triggered as subflow from '%s'", name, caller.InstanceID)
 	wli.Log("Beginning workflow triggered as subflow to caller: %s", caller.InstanceID)
 
 	go wli.Transition(start.GetID(), 0)

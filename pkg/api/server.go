@@ -123,6 +123,9 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/namespaces/{namespace}", s.handler.addNamespace).Methods(http.MethodPost).Name(RN_AddNamespace)
 	s.Router().HandleFunc("/api/namespaces/{namespace}", s.handler.deleteNamespace).Methods(http.MethodDelete).Name(RN_DeleteNamespace)
 
+	// Logs ..
+	s.Router().HandleFunc("/api/namespaces/{namespace}/logs", s.handler.namespaceLogs).Methods(http.MethodGet).Name(RN_GetNamespaceLogs)
+
 	// Event ..
 	s.Router().HandleFunc("/api/namespaces/{namespace}/event", s.handler.namespaceEvent).Methods(http.MethodPost).Name(RN_NamespaceEvent)
 

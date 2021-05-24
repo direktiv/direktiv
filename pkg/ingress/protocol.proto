@@ -25,6 +25,7 @@ import "pkg/ingress/broadcast-event.proto";
 import "pkg/ingress/get-secrets.proto";
 import "pkg/ingress/delete-secret.proto";
 import "pkg/ingress/store-secret.proto";
+import "pkg/ingress/get-namespace-logs.proto";
 import "pkg/ingress/get-registries.proto";
 import "pkg/ingress/delete-registry.proto";
 import "pkg/ingress/store-registry.proto";
@@ -46,6 +47,7 @@ service DirektivIngress {
 	rpc GetWorkflowByUid (GetWorkflowByUidRequest) returns (GetWorkflowByUidResponse) {}
 	rpc GetWorkflowInstance (GetWorkflowInstanceRequest) returns (GetWorkflowInstanceResponse) {}
 	rpc GetWorkflowInstances (GetWorkflowInstancesRequest) returns (GetWorkflowInstancesResponse) {}
+	rpc GetNamespaceLogs (GetNamespaceLogsRequest) returns (GetNamespaceLogsResponse) {}
 	rpc GetInstancesByWorkflow (GetInstancesByWorkflowRequest) returns (GetInstancesByWorkflowResponse) {}
 	rpc GetWorkflowInstanceLogs (GetWorkflowInstanceLogsRequest) returns (GetWorkflowInstanceLogsResponse) {}
 	rpc CancelWorkflowInstance (CancelWorkflowInstanceRequest) returns (google.protobuf.Empty) {}
