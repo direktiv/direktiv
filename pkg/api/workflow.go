@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
 
@@ -313,6 +314,14 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 	ns := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
+	// check query parameter 'wait'. if set it waits for workflow response
+	// instead of the instance id only. this will still timeout after 30 seconds
+	// which means it is for shorter workflows only
+	wait := false
+	if r.URL.Query().Get("wait") != "" {
+		wait = true
+	}
+
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		ErrResponse(w, err)
@@ -326,16 +335,29 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 		Namespace: &ns,
 		Name:      &name,
 		Input:     b,
+		Wait:      &wait,
 	})
+
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	if err := h.s.json.Marshal(w, resp); err != nil {
-		ErrResponse(w, err)
-		return
+	w.Header().Set("Content-Type", "application/json")
+
+	// for wait there is special handling
+	if wait {
+
+		w.Header().Set(direktiv.DirektivInstanceIDHeader, *resp.InstanceId)
+		w.Write(resp.Output)
+
+	} else {
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
 	}
 
 }
