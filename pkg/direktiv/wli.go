@@ -98,6 +98,12 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 
 }
 
+func (wli *workflowLogicInstance) start(ctx context.Context) {
+	log.Debugf("starting workflow %v", wli.id)
+	start := wli.wf.GetStartState()
+	wli.Transition(start.GetID(), 0)
+}
+
 func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (context.Context, *workflowLogicInstance, error) {
 
 	wli := new(workflowLogicInstance)
@@ -242,6 +248,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 		SetEndTime(time.Now()).
 		Save(ctx)
 	wli.rec.Edges.Workflow = wf
+
 	return err
 
 }

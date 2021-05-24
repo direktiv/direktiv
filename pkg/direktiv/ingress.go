@@ -14,6 +14,7 @@ import (
 	"encoding/base64"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/health"
@@ -572,14 +573,40 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	workflow := in.GetName()
 	input := in.GetInput()
 
-	instID, err := is.wfServer.engine.DirectInvoke(ctx, namespace, workflow, input)
+	inst, err := is.wfServer.engine.PrepareInvoke(ctx, namespace, workflow, input)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}
 
-	log.Debugf("Invoked workflow %s/%s: %s", namespace, workflow, instID)
+	log.Debugf("Invoked workflow %s/%s: %s", namespace, workflow, inst.id)
 
-	resp.InstanceId = &instID
+	resp.InstanceId = &inst.id
+
+	done := make(chan bool)
+	defer close(done)
+
+	// the workflow started, check if we need to wait
+	// wait sends to chan -> sub ready
+	if in.GetWait() {
+		h, _ := hash.Hash(fmt.Sprintf("%s", inst.id), hash.FormatV2, nil)
+		go syncAPIWait(is.wfServer.config.Database.DB, fmt.Sprintf("api:%d", h), done)
+		<-done
+	}
+
+	go inst.start(ctx)
+
+	if in.GetWait() {
+		log.Debugf("waiting for response %v", inst.id)
+		<-done
+		log.Debugf("got response %v", inst.id)
+
+		// query results here
+		wfi, err := is.wfServer.dbManager.getWorkflowInstance(ctx, inst.id)
+		if err != nil {
+			return nil, fmt.Errorf("can not fetch instance id %v for wait request: %v", inst.id, err)
+		}
+		resp.Output = []byte(wfi.Output)
+	}
 
 	return &resp, nil
 

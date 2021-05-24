@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,9 +31,7 @@ type SyncRequest struct {
 	ID     interface{}
 }
 
-// SyncSubscribeTo subscribes to direktiv interna postgres pub/sub
-func SyncSubscribeTo(dbConnString string, topic int,
-	fn func(interface{})) error {
+func syncAPIWait(dbConnString string, channel string, w chan bool) error {
 
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
@@ -42,44 +41,32 @@ func SyncSubscribeTo(dbConnString string, topic int,
 
 	listener := pq.NewListener(dbConnString, 10*time.Second,
 		time.Minute, reportProblem)
-	err := listener.Listen(FlowSync)
+	err := listener.Listen(channel)
 	if err != nil {
 		return err
 	}
 
-	go func(l *pq.Listener) {
+	w <- true
 
-		defer l.UnlistenAll()
+	defer listener.UnlistenAll()
 
-		for {
+	for {
 
-			notification, more := <-l.Notify
-			if !more {
-				log.Info("Database listener closed.")
-				return
-			}
-
-			if notification == nil {
-				continue
-			}
-
-			req := new(SyncRequest)
-			err = json.Unmarshal([]byte(notification.Extra), req)
-			if err != nil {
-				log.Errorf("Unexpected notification on database listener: %v", err)
-				continue
-			}
-
-			switch req.Cmd {
-			case topic:
-				fn(req.ID)
-			}
-
+		notification, more := <-listener.Notify
+		if !more {
+			log.Errorf("database listener closed")
+			return fmt.Errorf("database listener closed")
 		}
 
-	}(listener)
+		if notification == nil {
+			continue
+		}
 
-	return nil
+		w <- true
+
+		return nil
+
+	}
 
 }
 
@@ -258,6 +245,33 @@ func publishToHostname(db *dbManager, hostname string, req interface{}) error {
 	channel := fmt.Sprintf("hostname:%s", hostname)
 
 	_, err = conn.ExecContext(db.ctx, "SELECT pg_notify($1, $2)", channel, string(b))
+	if err, ok := err.(*pq.Error); ok {
+
+		log.Debugf("db notification failed: %v", err)
+		if err.Code == "57014" {
+			return fmt.Errorf("canceled query")
+		}
+
+		return err
+
+	}
+
+	return err
+
+}
+
+func publishToAPI(db *dbManager, id string) error {
+
+	conn, err := db.dbEnt.DB().Conn(db.ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	h, _ := hash.Hash(fmt.Sprintf("%s", id), hash.FormatV2, nil)
+	channel := fmt.Sprintf("api:%d", h)
+
+	_, err = conn.ExecContext(db.ctx, "SELECT pg_notify($1, $2)", channel, id)
 	if err, ok := err.(*pq.Error); ok {
 
 		log.Debugf("db notification failed: %v", err)

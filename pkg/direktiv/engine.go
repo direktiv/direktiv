@@ -952,6 +952,9 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 	wli.wakeCaller(ctx, data)
 
+	// wake API call if there is a waiter
+	go publishToAPI(we.server.dbManager, wli.id)
+
 }
 
 func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte) {
@@ -1173,7 +1176,7 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 
 }
 
-func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name string, input []byte) (string, error) {
+func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
 
 	var err error
 
@@ -1181,29 +1184,25 @@ func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name stri
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
 			log.Errorf("Internal error on DirectInvoke: %v", err)
-			return "", errors.New("an internal error occurred")
+			return nil, errors.New("an internal error occurred")
 		}
 
-		return "", err
+		return nil, err
 	}
 	defer wli.Close()
 
 	if wli.wf.Start != nil && wli.wf.Start.GetType() != model.StartTypeDefault {
-		return "", fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
+		return nil, fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
 	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
 	if err != nil {
-		return "", NewInternalError(err)
+		return nil, NewInternalError(err)
 	}
 
-	start := wli.wf.GetStartState()
+	wli.Log("preparing workflow triggered by API.")
 
-	wli.Log("Beginning workflow triggered by API.")
-
-	go wli.Transition(start.GetID(), 0)
-
-	return wli.id, nil
+	return wli, nil
 
 }
 
