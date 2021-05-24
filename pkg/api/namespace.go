@@ -64,6 +64,37 @@ func (h *Handler) deleteNamespace(w http.ResponseWriter, r *http.Request) {
 	writeData(resp, w)
 }
 
+func (h *Handler) namespaceLogs(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["namespace"]
+
+	ctx, cancel := CtxDeadline(r.Context())
+	defer cancel()
+
+	o, l := paginationParams(r)
+	if l < 1 {
+		l = 10
+	}
+
+	if o < 0 {
+		o = 0
+	}
+
+	limit := int32(l)
+	offset := int32(o)
+
+	resp, err := h.s.direktiv.GetNamespaceLogs(ctx, &ingress.GetNamespaceLogsRequest{
+		Namespace: &n,
+		Limit:     &limit,
+		Offset:    &offset,
+	})
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	writeData(resp, w)
+}
+
 func (h *Handler) namespaceEvent(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
