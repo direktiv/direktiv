@@ -68,6 +68,10 @@ func truth(x interface{}) bool {
 			if x.(int) != 0 {
 				success = true
 			}
+		case float64:
+			if x.(float64) != 0.0 {
+				success = true
+			}
 		case []interface{}:
 			if len(x.([]interface{})) > 0 {
 				success = true
