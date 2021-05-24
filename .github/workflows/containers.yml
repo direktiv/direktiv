@@ -1,5 +1,8 @@
 name: Build Container Components
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
   create:
     tags:
