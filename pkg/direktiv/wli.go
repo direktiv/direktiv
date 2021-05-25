@@ -32,12 +32,13 @@ type workflowLogicInstance struct {
 	rec       *ent.WorkflowInstance
 	step      int
 
-	namespace   string
-	id          string
-	logToEvents string
-	lockConn    *sql.Conn
-	logic       stateLogic
-	logger      dlog.Logger
+	namespace       string
+	id              string
+	logToEvents     string
+	lockConn        *sql.Conn
+	logic           stateLogic
+	logger          dlog.Logger
+	namespaceLogger dlog.Logger
 }
 
 func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
@@ -94,6 +95,11 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 		return nil, NewInternalError(err)
 	}
 
+	wli.namespaceLogger, err = (*we.instanceLogger).NamespaceLogger(namespace)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
 	return wli, nil
 
 }
@@ -142,6 +148,12 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 	qns := qwf.Edges.Namespace
 
 	wli.namespace = qns.ID
+
+	wli.namespaceLogger, err = (*we.instanceLogger).NamespaceLogger(qns.ID)
+	if err != nil {
+		wli.unlock()
+		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize namespace logger: %v", err))
+	}
 
 	wli.logger, err = (*we.instanceLogger).LoggerFunc(qns.ID, wli.id)
 	if err != nil {
@@ -203,6 +215,12 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 }
 
 func (wli *workflowLogicInstance) Close() error {
+	if wli.namespaceLogger != nil {
+		err := wli.namespaceLogger.Close()
+		if err != nil {
+			return err
+		}
+	}
 
 	if wli.lockConn != nil {
 		wli.unlock()
@@ -473,12 +491,16 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 }
 
-func (wli *workflowLogicInstance) Log(msg string, a ...interface{}) {
+func (wli *workflowLogicInstance) NamespaceLog(msg string, a ...interface{}) {
+	s := fmt.Sprintf(msg, a...)
 
+	wli.namespaceLogger.Info(s)
+}
+
+func (wli *workflowLogicInstance) Log(msg string, a ...interface{}) {
 	s := fmt.Sprintf(msg, a...)
 
 	wli.logger.Info(s)
-
 }
 
 func (wli *workflowLogicInstance) Save(ctx context.Context, data []byte) error {

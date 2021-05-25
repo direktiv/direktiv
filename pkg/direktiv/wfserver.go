@@ -63,7 +63,8 @@ func (s *WorkflowServer) initWorkflowServer() error {
 
 	// register the timer functions
 	var timerFunctions = map[string]func([]byte) error{
-		timerCleanInstanceRecords: s.tmManager.cleanInstanceRecords,
+		timerCleanInstanceRecords:  s.tmManager.cleanInstanceRecords,
+		timerCleanNamespaceRecords: s.tmManager.cleanNamespaceRecords,
 	}
 
 	for n, f := range timerFunctions {
@@ -78,6 +79,8 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	}
 
 	addCron(timerCleanInstanceRecords, "0 * * * *")
+
+	addCron(timerCleanNamespaceRecords, "0 */2 * * *")
 
 	ingressServer, err := newIngressServer(s)
 	if err != nil {
@@ -225,3 +228,4 @@ func (s *WorkflowServer) Run() error {
 func init() {
 	resolver.Register(&KubeResolverBuilder{})
 }
+

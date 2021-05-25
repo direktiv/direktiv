@@ -262,6 +262,38 @@ func (is *ingressServer) DeleteNamespace(ctx context.Context, in *ingress.Delete
 
 }
 
+func (is *ingressServer) GetNamespaceLogs(ctx context.Context, in *ingress.GetNamespaceLogsRequest) (*ingress.GetNamespaceLogsResponse, error) {
+
+	var resp ingress.GetNamespaceLogsResponse
+
+	namespace := in.GetNamespace()
+	offset := in.GetOffset()
+	limit := in.GetLimit()
+
+	logs, err := is.wfServer.instanceLogger.QueryNamespaceLogs(ctx, namespace, int(limit), int(offset))
+	if err != nil {
+		return nil, grpcDatabaseError(err, "namespace-logs", namespace)
+	}
+
+	resp.Offset = &offset
+	resp.Limit = &limit
+
+	for i := range logs.Logs {
+
+		l := &logs.Logs[i]
+
+		resp.NamespaceLogs = append(resp.NamespaceLogs, &ingress.GetNamespaceLogsResponse_NamespaceLog{
+			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
+			Message:   &l.Message,
+			Context:   l.Context,
+		})
+
+	}
+
+	return &resp, nil
+
+}
+
 func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteWorkflowRequest) (*ingress.DeleteWorkflowResponse, error) {
 
 	var (
@@ -1109,3 +1141,4 @@ func (is *ingressServer) ListWorkflowVariables(ctx context.Context, in *ingress.
 	return resp, nil
 
 }
+

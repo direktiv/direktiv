@@ -738,8 +738,8 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	if err != nil {
 		log.Error(err)
 	}
-	// TODO: cancel any other outstanding timers
 
+	// TODO: cancel any other outstanding timers
 	logger, err := (*we.instanceLogger).LoggerFunc(ns.ID, instanceId)
 	if err != nil {
 		dl, _ := dummy.NewLogger()
@@ -1166,6 +1166,10 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 		return NewInternalError(err)
 	}
 
+	start := wli.wf.GetStartState()
+
+	wli.NamespaceLog("Workflow '%s' has been triggered by the cron scheduler.", start.GetID())
+
 	wli.Log("Preparing workflow triggered by cron scheduler.")
 
 	go wli.start()
@@ -1199,6 +1203,9 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 		return nil, NewInternalError(err)
 	}
 
+	start := wli.wf.GetStartState()
+
+	wli.NamespaceLog("Workflow '%s' has been triggered by the API.", start.GetID())
 	wli.Log("Preparing workflow triggered by API.")
 
 	return wli, nil
@@ -1278,12 +1285,16 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 	}
 
 	if len(events) == 1 {
+		wli.namespaceLogger.Info(fmt.Sprintf("Workflow '%s' triggered by cloud event: '%s'", name, events[0].Type()), "source", events[0].Source(), "data", fmt.Sprintf("%s", events[0].Data()))
 		wli.Log("Preparing workflow triggered by event: %s", events[0].ID())
 	} else {
 		var ids = make([]string, len(events))
+		var types = make([]string, len(events))
 		for i := range events {
 			ids[i] = events[i].ID()
+			types[i] = events[i].Type()
 		}
+		wli.NamespaceLog("Workflow '%s' triggered by event types: %v", name, types)
 		wli.Log("Preparing workflow triggered by events: %v", ids)
 	}
 
@@ -1351,6 +1362,7 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 		return "", NewInternalError(err)
 	}
 
+	wli.NamespaceLog("Workflow '%s' triggered as subflow from '%s'", name, caller.InstanceID)
 	wli.Log("Preparing workflow triggered as subflow to caller: %s", caller.InstanceID)
 
 	go wli.start()

@@ -38,6 +38,7 @@ const (
 	RN_SetWorkflowVariable         = "setWorkflowVariable"
 	RN_ListNamespaceVariables      = "listNamespaceVariables"
 	RN_GetNamespaceVariable        = "getNamespaceVariable"
+	RN_GetNamespaceLogs            = "getNamespaceLogs"
 	RN_SetNamespaceVariable        = "setNamespaceVariable"
 	RN_JQPlayground                = "jqPlayground"
 )
@@ -48,6 +49,7 @@ var RouteNames = []string{
 	RN_AddNamespace,
 	RN_DeleteNamespace,
 	RN_NamespaceEvent,
+	RN_GetNamespaceLogs,
 	RN_ListSecrets,
 	RN_CreateSecret,
 	RN_DeleteSecret,
