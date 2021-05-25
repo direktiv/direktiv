@@ -38,7 +38,7 @@ const (
 	RN_SetWorkflowVariable         = "setWorkflowVariable"
 	RN_ListNamespaceVariables      = "listNamespaceVariables"
 	RN_GetNamespaceVariable        = "getNamespaceVariable"
-	RN_GetNamespaceLogs            = "GetNamespaceLogs"
+	RN_GetNamespaceLogs            = "getNamespaceLogs"
 	RN_SetNamespaceVariable        = "setNamespaceVariable"
 	RN_JQPlayground                = "jqPlayground"
 )
