@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,8 @@ const (
 	CancelInstanceTimers
 	AddCron
 )
+
+const ApiSync = "apisync"
 
 // SyncRequest sync maintenance requests between instances subscribed to FlowSync
 type SyncRequest struct {
@@ -42,7 +45,7 @@ func SyncSubscribeTo(dbConnString string, topic int,
 
 	listener := pq.NewListener(dbConnString, 10*time.Second,
 		time.Minute, reportProblem)
-	err := listener.Listen(FlowSync)
+	err := listener.Listen(ApiSync)
 	if err != nil {
 		return err
 	}
@@ -80,6 +83,45 @@ func SyncSubscribeTo(dbConnString string, topic int,
 	}(listener)
 
 	return nil
+
+}
+
+func syncAPIWait(dbConnString string, channel string, w chan bool) error {
+
+	reportProblem := func(ev pq.ListenerEventType, err error) {
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	listener := pq.NewListener(dbConnString, 10*time.Second,
+		time.Minute, reportProblem)
+	err := listener.Listen(channel)
+	if err != nil {
+		return err
+	}
+
+	w <- true
+
+	defer listener.UnlistenAll()
+
+	for {
+
+		notification, more := <-listener.Notify
+		if !more {
+			log.Errorf("database listener closed")
+			return fmt.Errorf("database listener closed")
+		}
+
+		if notification == nil {
+			continue
+		}
+
+		w <- true
+
+		return nil
+
+	}
 
 }
 
@@ -258,6 +300,33 @@ func publishToHostname(db *dbManager, hostname string, req interface{}) error {
 	channel := fmt.Sprintf("hostname:%s", hostname)
 
 	_, err = conn.ExecContext(db.ctx, "SELECT pg_notify($1, $2)", channel, string(b))
+	if err, ok := err.(*pq.Error); ok {
+
+		log.Debugf("db notification failed: %v", err)
+		if err.Code == "57014" {
+			return fmt.Errorf("canceled query")
+		}
+
+		return err
+
+	}
+
+	return err
+
+}
+
+func publishToAPI(db *dbManager, id string) error {
+
+	conn, err := db.dbEnt.DB().Conn(db.ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	h, _ := hash.Hash(fmt.Sprintf("%s", id), hash.FormatV2, nil)
+	channel := fmt.Sprintf("api:%d", h)
+
+	_, err = conn.ExecContext(db.ctx, "SELECT pg_notify($1, $2)", channel, id)
 	if err, ok := err.(*pq.Error); ok {
 
 		log.Debugf("db notification failed: %v", err)

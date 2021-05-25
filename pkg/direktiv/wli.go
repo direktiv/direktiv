@@ -104,6 +104,20 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 
 }
 
+func (wli *workflowLogicInstance) start() {
+
+	ctx, err := wli.lock(time.Second * 5)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	log.Debugf("Starting workflow %v", wli.id)
+	start := wli.wf.GetStartState()
+	wli.Transition(ctx, start.GetID(), 0)
+
+}
+
 func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (context.Context, *workflowLogicInstance, error) {
 
 	wli := new(workflowLogicInstance)
@@ -201,11 +215,26 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 }
 
 func (wli *workflowLogicInstance) Close() error {
-	err := wli.namespaceLogger.Close()
-	if err != nil {
-		return err
+	if wli.namespaceLogger != nil {
+		err := wli.namespaceLogger.Close()
+		if err != nil {
+			return err
+		}
 	}
-	return wli.logger.Close()
+
+	if wli.lockConn != nil {
+		wli.unlock()
+	}
+
+	if wli.logger != nil {
+		err := wli.logger.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }
 
 func (wli *workflowLogicInstance) Raise(ctx context.Context, cerr *CatchableError) error {
@@ -258,11 +287,15 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 		SetEndTime(time.Now()).
 		Save(ctx)
 	wli.rec.Edges.Workflow = wf
+
 	return err
 
 }
 
 func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
+
+	// wake API call if there is a waiter
+	go publishToAPI(wli.engine.server.dbManager, wli.id)
 
 	if wli.rec.InvokedBy != "" {
 
@@ -475,10 +508,12 @@ func (wli *workflowLogicInstance) Save(ctx context.Context, data []byte) error {
 
 	str := base64.StdEncoding.EncodeToString(data)
 
+	wf := wli.rec.Edges.Workflow
 	wli.rec, err = wli.rec.Update().SetMemory(str).Save(ctx)
 	if err != nil {
 		return NewInternalError(err)
 	}
+	wli.rec.Edges.Workflow = wf
 	return nil
 }
 
@@ -553,6 +588,8 @@ func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string,
 	oldController := wli.rec.Controller
 	newController := wli.engine.server.hostname
 
+	wf := wli.rec.Edges.Workflow
+
 	var rec *ent.WorkflowInstance
 	rec, err = wli.rec.Update().
 		SetAttempts(attempt).
@@ -563,19 +600,23 @@ func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string,
 		return err
 	}
 	wli.rec = rec
+	wli.rec.Edges.Workflow = wf
 
 	wli.ScheduleSoftTimeout(oldController, deadline)
 
 	if duration < time.Second*5 {
-		time.Sleep(duration)
-		wli.Log("Retrying failed workflow state.")
-		go wli.Transition(nextState, attempt)
+		go func() {
+			time.Sleep(duration)
+			wli.Log("Retrying failed workflow state.")
+			wli.Transition(ctx, nextState, attempt)
+		}()
 	} else {
 		wli.Log("Scheduling a retry for the failed workflow state at approximate time: %s.", schedule.UTC().String())
 		err = wli.engine.scheduleRetry(wli.id, nextState, wli.step, schedule)
 		if err != nil {
 			return err
 		}
+		wli.Close()
 	}
 
 	return nil
@@ -632,15 +673,7 @@ func (wli *workflowLogicInstance) ScheduleSoftTimeout(oldController string, t ti
 	wli.scheduleTimeout(oldController, t, true)
 }
 
-func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
-
-	ctx, err := wli.lock(time.Second * 5)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	defer wli.unlock()
+func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState string, attempt int) {
 
 	oldController := wli.rec.Controller
 
@@ -654,6 +687,7 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 				d, err := duration.ParseISO8601(s)
 				if err != nil {
 					log.Error(err)
+					wli.Close()
 					return
 				}
 				tSoft = d.Shift(t)
@@ -664,6 +698,7 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 				d, err := duration.ParseISO8601(s)
 				if err != nil {
 					log.Error(err)
+					wli.Close()
 					return
 				}
 				tHard = d.Shift(t)
@@ -674,8 +709,9 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	}
 
 	if len(wli.rec.Flow) != wli.step {
-		err = errors.New("workflow logic instance aborted for being tardy")
+		err := errors.New("workflow logic instance aborted for being tardy")
 		log.Error(err)
+		wli.Close()
 		return
 	}
 
@@ -683,6 +719,7 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	if err != nil {
 		err = fmt.Errorf("engine cannot marshal state data for storage: %v", err)
 		log.Error(err)
+		wli.Close()
 		return
 	}
 
@@ -695,6 +732,7 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	if !exists {
 		err = fmt.Errorf("workflow cannot resolve transition: %s", nextState)
 		log.Error(err)
+		wli.Close()
 		return
 	}
 
@@ -702,6 +740,7 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	if !exists {
 		err = fmt.Errorf("engine cannot resolve state type: %s", state.GetType().String())
 		log.Error(err)
+		wli.Close()
 		return
 	}
 
@@ -709,6 +748,7 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	if err != nil {
 		err = fmt.Errorf("cannot initialize state logic: %v", err)
 		log.Error(err)
+		wli.Close()
 		return
 	}
 	wli.logic = stateLogic
@@ -718,6 +758,8 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 	deadline := stateLogic.Deadline()
 
 	t := time.Now()
+
+	wf := wli.rec.Edges.Workflow
 
 	var rec *ent.WorkflowInstance
 	rec, err = wli.rec.Update().
@@ -731,21 +773,15 @@ func (wli *workflowLogicInstance) Transition(nextState string, attempt int) {
 		Save(ctx)
 	if err != nil {
 		log.Error(err)
+		wli.Close()
 		return
 	}
 	wli.rec = rec
+	wli.rec.Edges.Workflow = wf
+
 	wli.ScheduleSoftTimeout(oldController, deadline)
 
-	go func(we *workflowEngine, id, state string, step int) {
-		ctx, wli, err := we.loadWorkflowLogicInstance(wli.id, wli.step)
-		if err != nil {
-			log.Errorf("cannot load workflow logic instance: %v", err)
-			return
-		}
-		go wli.engine.runState(ctx, wli, nil, nil)
-	}(wli.engine, wli.id, nextState, wli.step)
-
-	return
+	wli.engine.runState(ctx, wli, nil, nil)
 
 }
 
@@ -765,4 +801,3 @@ func InstanceMemory(rec *ent.WorkflowInstance) ([]byte, error) {
 	return savedata, nil
 
 }
-

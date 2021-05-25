@@ -866,17 +866,8 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 
 	args := new(metrics.InsertRecordArgs)
 
-	wf, err := rec.QueryWorkflow().Only(ctx)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	ns, err := wf.QueryNamespace().Only(ctx)
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	wf := rec.Edges.Workflow
+	ns := wf.Edges.Namespace
 
 	args.Namespace = ns.ID
 	args.Workflow = wf.Name
@@ -901,7 +892,7 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 		args.Invoker = "start"
 	}
 
-	err = we.metricsClient.InsertRecord(args)
+	err := we.metricsClient.InsertRecord(args)
 	if err != nil {
 		log.Error(err)
 	}
@@ -911,14 +902,15 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition, errCode string) {
 
 	if transition == nil {
+		wli.Close()
 		return
 	}
 
 	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {
-		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step)
-		go wli.Transition(transition.NextState, 0)
+		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step+1)
+		go wli.Transition(ctx, transition.NextState, 0)
 		return
 	}
 
@@ -927,6 +919,9 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	if err != nil {
 		err = fmt.Errorf("engine cannot marshal state data for storage: %v", err)
 		log.Error(err)
+		wli.engine.freeResources(wli.rec)
+		wli.wakeCaller(ctx, nil)
+		wli.Close()
 		return
 	}
 
@@ -940,6 +935,9 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus(status).Save(ctx)
 	if err != nil {
 		log.Error(err)
+		wli.engine.freeResources(wli.rec)
+		wli.wakeCaller(ctx, nil)
+		wli.Close()
 		return
 	}
 	rec.Edges.Workflow = wf
@@ -949,8 +947,8 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	wli.Log("Workflow completed.")
 
 	wli.engine.freeResources(rec)
-
 	wli.wakeCaller(ctx, data)
+	wli.Close()
 
 }
 
@@ -967,8 +965,8 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 
 	we.logRunState(wli, savedata, wakedata)
 
-	defer wli.unlock()
-	defer wli.Close()
+	// defer wli.unlock()
+	// defer wli.Close()
 
 	var err error
 	var code string
@@ -976,7 +974,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 
 	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
 		var object interface{}
-		object, err = jqObject(wli.data, lq)
+		object, err = jqOne(wli.data, lq)
 		if err != nil {
 			goto failure
 		}
@@ -1030,6 +1028,7 @@ failure:
 
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
+		wli.Close()
 		return
 
 	} else if cerr, ok := err.(*CatchableError); ok {
@@ -1092,6 +1091,7 @@ failure:
 		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
+		wli.Close()
 		return
 
 	} else if ierr, ok := err.(*InternalError); ok {
@@ -1099,28 +1099,30 @@ failure:
 		code := ""
 		msg := "an internal error occurred"
 
-		if wli != nil && wli.rec != nil {
-
-			var err error
-			err = wli.setStatus(ctx, "crashed", code, msg)
-			if err == nil {
-				log.Errorf("Workflow failed with internal error: %s", ierr.Error())
-				wli.Log("Workflow crashed due to an internal error.")
-				wli.wakeCaller(ctx, nil)
-				return
-			}
-
+		var err error
+		err = wli.setStatus(ctx, "crashed", code, msg)
+		if err == nil {
+			log.Errorf("Workflow failed with internal error: %s", ierr.Error())
+			wli.Log("Workflow crashed due to an internal error.")
+			wli.engine.freeResources(wli.rec)
+			wli.wakeCaller(ctx, nil)
+			wli.Close()
+			return
 		}
 
 		log.Errorf("Workflow failed with internal error and the database couldn't be updated: %s", ierr.Error())
-
 		wli.engine.freeResources(wli.rec)
+		wli.wakeCaller(ctx, nil)
+		wli.Close()
+		return
 
 	} else {
 		log.Errorf("Unwrapped error detected: %v", err)
+		wli.engine.freeResources(wli.rec)
+		wli.wakeCaller(ctx, nil)
+		wli.Close()
+		return
 	}
-
-	return
 
 }
 
@@ -1149,14 +1151,15 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 			return err
 		}
 	}
-	defer wli.Close()
 
 	if wli.wf.Start == nil || wli.wf.Start.GetType() != model.StartTypeScheduled {
+		wli.Close()
 		return fmt.Errorf("cannot cron invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true, nil)
 	if err != nil {
+		wli.Close()
 		if strings.Contains(err.Error(), "invoked") || strings.Contains(err.Error(), "transactions") {
 			return nil
 		}
@@ -1165,17 +1168,17 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 
 	start := wli.wf.GetStartState()
 
-	wli.NamespaceLog("Workflow '%s' has been triggered by the API.", start.GetID())
+	wli.NamespaceLog("Workflow '%s' has been triggered by the cron scheduler.", start.GetID())
 
-	wli.Log("Beginning workflow triggered by API.")
+	wli.Log("Preparing workflow triggered by cron scheduler.")
 
-	go wli.Transition(start.GetID(), 0)
+	go wli.start()
 
 	return nil
 
 }
 
-func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name string, input []byte) (string, error) {
+func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
 
 	var err error
 
@@ -1183,30 +1186,29 @@ func (we *workflowEngine) DirectInvoke(ctx context.Context, namespace, name stri
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
 			log.Errorf("Internal error on DirectInvoke: %v", err)
-			return "", errors.New("an internal error occurred")
+			return nil, errors.New("an internal error occurred")
 		}
 
-		return "", err
+		return nil, err
 	}
-	defer wli.Close()
 
 	if wli.wf.Start != nil && wli.wf.Start.GetType() != model.StartTypeDefault {
-		return "", fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
+		wli.Close()
+		return nil, fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, nil)
 	if err != nil {
-		return "", NewInternalError(err)
+		wli.Close()
+		return nil, NewInternalError(err)
 	}
 
 	start := wli.wf.GetStartState()
 
 	wli.NamespaceLog("Workflow '%s' has been triggered by the API.", start.GetID())
-	wli.Log("Beginning workflow triggered by API.")
+	wli.Log("Preparing workflow triggered by API.")
 
-	go wli.Transition(start.GetID(), 0)
-
-	return wli.id, nil
+	return wli, nil
 
 }
 
@@ -1259,7 +1261,6 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
-	defer wli.Close()
 
 	var stype model.StartType
 	if wli.wf.Start != nil {
@@ -1271,21 +1272,21 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 	case model.StartTypeEventsAnd:
 	case model.StartTypeEventsXor:
 	default:
+		wli.Close()
 		log.Errorf("cannot event invoke workflows with '%s' starts", stype)
 		return
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, nil)
 	if err != nil {
+		wli.Close()
 		log.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
-	start := wli.wf.GetStartState()
-
 	if len(events) == 1 {
-		wli.Log("Beginning workflow triggered by event: %s", events[0].ID())
 		wli.namespaceLogger.Info(fmt.Sprintf("Workflow '%s' triggered by cloud event: '%s'", name, events[0].Type()), "source", events[0].Source(), "data", fmt.Sprintf("%s", events[0].Data()))
+		wli.Log("Preparing workflow triggered by event: %s", events[0].ID())
 	} else {
 		var ids = make([]string, len(events))
 		var types = make([]string, len(events))
@@ -1294,10 +1295,10 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 			types[i] = events[i].Type()
 		}
 		wli.NamespaceLog("Workflow '%s' triggered by event types: %v", name, types)
-		wli.Log("Beginning workflow triggered by events: %v", ids)
+		wli.Log("Preparing workflow triggered by events: %v", ids)
 	}
 
-	go wli.Transition(start.GetID(), 0)
+	go wli.start()
 
 }
 
@@ -1338,39 +1339,33 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 			return "", err
 		}
 	}
-	defer wli.Close()
 
 	if wli.wf.Start != nil && wli.wf.Start.GetType() != model.StartTypeDefault {
+		wli.Close()
 		return "", fmt.Errorf("cannot subflow invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false)
+	var callerData []byte
+	if caller != nil {
+
+		callerData, err = json.Marshal(caller)
+		if err != nil {
+			wli.Close()
+			return "", NewInternalError(err)
+		}
+
+	}
+
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, callerData)
 	if err != nil {
+		wli.Close()
 		return "", NewInternalError(err)
 	}
 
-	if caller != nil {
-
-		var data []byte
-
-		data, err = json.Marshal(caller)
-		if err != nil {
-			return "", NewInternalError(err)
-		}
-
-		wli.rec, err = wli.rec.Update().SetInvokedBy(string(data)).Save(ctx)
-		if err != nil {
-			return "", NewInternalError(err)
-		}
-
-	}
-
-	start := wli.wf.GetStartState()
-
 	wli.NamespaceLog("Workflow '%s' triggered as subflow from '%s'", name, caller.InstanceID)
-	wli.Log("Beginning workflow triggered as subflow to caller: %s", caller.InstanceID)
+	wli.Log("Preparing workflow triggered as subflow to caller: %s", caller.InstanceID)
 
-	go wli.Transition(start.GetID(), 0)
+	go wli.start()
 
 	return wli.id, nil
 
@@ -1470,4 +1465,3 @@ func (we *workflowEngine) listenForEvents(ctx context.Context, wli *workflowLogi
 	return nil
 
 }
-

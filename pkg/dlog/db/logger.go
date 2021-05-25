@@ -80,7 +80,7 @@ func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 		Driver:                      l.db,
 		Namespace:                   namespace,
 		InstanceID:                  instance,
-		InsertFrequencyMilliSeconds: 500,
+		InsertFrequencyMilliSeconds: 250,
 	})
 	if err != nil {
 		return nil, err

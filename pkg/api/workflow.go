@@ -2,14 +2,19 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/itchyny/gojq"
 
+	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
 
@@ -308,10 +313,77 @@ func (h *Handler) downloadWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func sendContent(w http.ResponseWriter, r *http.Request, data []byte) error {
+
+	var in map[string]interface{}
+	json.Unmarshal(data, &in)
+
+	query, err := gojq.Parse(r.URL.Query().Get("field"))
+	if err != nil {
+		return err
+	}
+
+	// jq we get the first result
+	iter := query.Run(in)
+	v, ok := iter.Next()
+
+	if ok {
+
+		s, ok := v.(string)
+
+		// if there is no such a field in the jq search
+		if !ok {
+			return fmt.Errorf("field not a string or null")
+		}
+		decoder := base64.NewDecoder(base64.StdEncoding, strings.NewReader(s))
+
+		buf := make([]byte, 16384)
+		for {
+			n, err := decoder.Read(buf)
+
+			// check for error or non-base64 retData
+			if err != nil && err != io.EOF {
+				if strings.Contains(err.Error(), "illegal base64 data") {
+					mimeType := http.DetectContentType([]byte(s))
+					w.Header().Set("Content-Type", mimeType)
+					w.Write([]byte(s))
+					err = nil
+				}
+				return err
+			}
+
+			w.Write(buf[:n])
+
+			// here we can guess content type and set if in the first loop
+			if w.Header().Get("Content-Type") == "" {
+				mimeType := http.DetectContentType(buf[:n])
+				w.Header().Set("Content-Type", mimeType)
+			}
+
+			if err == io.EOF {
+				err = nil
+				break
+			}
+		}
+
+	}
+
+	return nil
+
+}
+
 func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	ns := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
+
+	// check query parameter 'wait'. if set it waits for workflow response
+	// instead of the instance id only. this will still timeout after 30 seconds
+	// which means it is for shorter workflows only
+	wait := false
+	if r.URL.Query().Get("wait") != "" {
+		wait = true
+	}
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -326,16 +398,36 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 		Namespace: &ns,
 		Name:      &name,
 		Input:     b,
+		Wait:      &wait,
 	})
+
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	if err := h.s.json.Marshal(w, resp); err != nil {
-		ErrResponse(w, err)
-		return
+	// for wait there is special handling
+	if wait && r.URL.Query().Get("field") != "" {
+
+		err := sendContent(w, r, resp.Output)
+		if err != nil {
+			ErrResponse(w, err)
+		}
+
+	} else if wait {
+
+		// simple wait without displaying data
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(direktiv.DirektivInstanceIDHeader, *resp.InstanceId)
+		w.Write(resp.Output)
+
+	} else {
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			ErrResponse(w, err)
+		}
+
 	}
 
 }

@@ -368,7 +368,7 @@ data:
     }
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-05-11T03:59:16Z"
+  creationTimestamp: "2021-05-24T03:47:11Z"
   managedFields:
   - apiVersion: v1
     fieldsType: FieldsV1
@@ -405,8 +405,8 @@ metadata:
         f:twilio.json: {}
     manager: kubectl-create
     operation: Update
-    time: "2021-05-11T03:59:16Z"
+    time: "2021-05-24T03:47:11Z"
   name: api-actiontemplates-cm
   namespace: {{ .Release.Namespace }}
-  resourceVersion: "15727183"
-  uid: 81eb8bb8-ada2-4559-92cb-e4d5d944cf48
+  resourceVersion: "29663"
+  uid: 427fa5ee-4824-4299-90a2-d6f6b7ea4637
