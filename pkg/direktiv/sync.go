@@ -45,7 +45,7 @@ func SyncSubscribeTo(dbConnString string, topic int,
 
 	listener := pq.NewListener(dbConnString, 10*time.Second,
 		time.Minute, reportProblem)
-	err := listener.Listen(ApiSync)
+	err := listener.Listen(FlowSync)
 	if err != nil {
 		return err
 	}
