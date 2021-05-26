@@ -31,7 +31,7 @@ docker-ui: build
 	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
-	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server
+	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server 
 .PHONY: docker-secrets
 docker-secrets:
 docker-secrets: build
