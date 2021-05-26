@@ -215,12 +215,6 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 }
 
 func (wli *workflowLogicInstance) Close() error {
-	if wli.namespaceLogger != nil {
-		err := wli.namespaceLogger.Close()
-		if err != nil {
-			return err
-		}
-	}
 
 	if wli.lockConn != nil {
 		wli.unlock()
@@ -228,6 +222,13 @@ func (wli *workflowLogicInstance) Close() error {
 
 	if wli.logger != nil {
 		err := wli.logger.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	if wli.namespaceLogger != nil {
+		err := wli.namespaceLogger.Close()
 		if err != nil {
 			return err
 		}
