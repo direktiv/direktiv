@@ -124,7 +124,16 @@ type InternalError struct {
 	Line     int
 }
 
-func NewInternalError(err error) *InternalError {
+func NewInternalError(err error) error {
+	if _, ok := err.(*InternalError); ok {
+		return err
+	}
+	if _, ok := err.(*UncatchableError); ok {
+		return err
+	}
+	if _, ok := err.(*CatchableError); ok {
+		return err
+	}
 	fn, file, line, _ := runtime.Caller(1)
 	return &InternalError{
 		Err:      err,
