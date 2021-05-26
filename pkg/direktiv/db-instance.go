@@ -129,11 +129,6 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		return nil, err
 	}
 
-	wi, err = db.dbEnt.WorkflowInstance.Get(ctx, wi.ID)
-	if err != nil {
-		return nil, err
-	}
-
 	wi.Edges.Workflow = wf
 
 	return wi, nil
