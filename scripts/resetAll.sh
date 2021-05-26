@@ -20,6 +20,7 @@ echo "deleting k3s data"
 
 rm -Rf /etc/rancher/k3s
 rm -Rf /var/lib/rancher/k3s
+rm -rf /var/lib/cni/networks/cbr0
 
 echo "starting k3s"
 
