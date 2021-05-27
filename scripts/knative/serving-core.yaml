@@ -795,6 +795,16 @@ spec:
                                 description: 'Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                                 type: object
                                 properties:
+                                  capabilities:
+                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                                    type: object
+                                    properties:
+                                      drop:
+                                        description: Removed capabilities
+                                        type: array
+                                        items:
+                                          description: Capability represent POSIX capabilities type
+                                          type: string
                                   readOnlyRootFilesystem:
                                     description: Whether this container has a read-only root filesystem. Default is false.
                                     type: boolean
@@ -1810,6 +1820,16 @@ spec:
                         description: 'Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                         type: object
                         properties:
+                          capabilities:
+                            description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                            type: object
+                            properties:
+                              drop:
+                                description: Removed capabilities
+                                type: array
+                                items:
+                                  description: Capability represent POSIX capabilities type
+                                  type: string
                           readOnlyRootFilesystem:
                             description: Whether this container has a read-only root filesystem. Default is false.
                             type: boolean
@@ -2777,6 +2797,16 @@ spec:
                                 description: 'Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                                 type: object
                                 properties:
+                                  capabilities:
+                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                                    type: object
+                                    properties:
+                                      drop:
+                                        description: Removed capabilities
+                                        type: array
+                                        items:
+                                          description: Capability represent POSIX capabilities type
+                                          type: string
                                   readOnlyRootFilesystem:
                                     description: Whether this container has a read-only root filesystem. Default is false.
                                     type: boolean
@@ -3153,7 +3183,7 @@ metadata:
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  image: docker.io/vorteil/queue-39be6f1d08a095bd076a71d288d295b6@sha256:7cfdb13006cfdd33b67fa6fa2d37c2a7a449d5cd06cf0bab192de68cad466fa5
+  image: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:9e41132520aa97b474b5eb3c594302d9138bc127719950edd2a09d52b0e6baac
 
 ---
 # Copyright 2018 The Knative Authors
@@ -3521,7 +3551,7 @@ metadata:
 data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  queueSidecarImage: docker.io/vorteil/queue-39be6f1d08a095bd076a71d288d295b6@sha256:7cfdb13006cfdd33b67fa6fa2d37c2a7a449d5cd06cf0bab192de68cad466fa5
+  queueSidecarImage: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:9e41132520aa97b474b5eb3c594302d9138bc127719950edd2a09d52b0e6baac
   _example: |
     ################################
     #                              #
@@ -4411,7 +4441,7 @@ spec:
         - name: activator
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: docker.io/vorteil/activator-ecd51ca5034883acbe737fde417a3d86@sha256:a0dbcea43f1ab9ee5bb92b6140a3a5bc0744ce725db168f4c777d688c16b8e7d
+          image: gcr.io/direktiv/knative.dev/serving/cmd/activator@sha256:ebc6a915aa1ab799db779152ec7308e2074b28e08854643bf94ab75d38cf1317
           # The numbers are based on performance test results from
           # https://github.com/knative/serving/issues/1625#issuecomment-511930023
           resources:
@@ -4561,7 +4591,7 @@ spec:
         - name: autoscaler
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: docker.io/vorteil/autoscaler-12c0fa24db31956a7cfa673210e4fa13@sha256:76f0bbc544be5078598c437891016adf3753cd9184f22552e97bd7c8adb05c35
+          image: gcr.io/direktiv/knative.dev/serving/cmd/autoscaler@sha256:053329f0cd912186111ef870b64ea6764fb8ffbba66442a578c119424dbe4cad
           resources:
             requests:
               cpu: 100m
@@ -4689,7 +4719,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: docker.io/vorteil/controller-f6fdb41c6acbc726e29a3104ff2ef720@sha256:034f07c36c7e0ef02cfaa76ac79cccd412871a9e052c3c4396ee1626a0287265
+          image: gcr.io/direktiv/knative.dev/serving/cmd/controller@sha256:09bf68a4c04644a1fc0687616967c6ccc8a121e2018ff4ee32fe9ae92324bb49
           resources:
             requests:
               cpu: 100m
@@ -4849,7 +4879,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: docker.io/vorteil/webhook-261c6506fca17bc41be50b3461f98f1c@sha256:473f44c57306cabd8cdf89a8d6ec05a2af96980ad3fabd1b4d6100883db8db94
+          image: gcr.io/direktiv/knative.dev/serving/cmd/webhook@sha256:a613695ee8c54d42bcb0199b2879d3b205393e4e7c886fd6f60373f46b217d4a
           resources:
             requests:
               cpu: 100m
