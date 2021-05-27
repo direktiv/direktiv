@@ -461,6 +461,16 @@ spec:
                                 description: 'Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                                 type: object
                                 properties:
+                                  capabilities:
+                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                                    type: object
+                                    properties:
+                                      drop:
+                                        description: Removed capabilities
+                                        type: array
+                                        items:
+                                          description: Capability represent POSIX capabilities type
+                                          type: string
                                   readOnlyRootFilesystem:
                                     description: Whether this container has a read-only root filesystem. Default is false.
                                     type: boolean
@@ -1476,6 +1486,16 @@ spec:
                         description: 'Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                         type: object
                         properties:
+                          capabilities:
+                            description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                            type: object
+                            properties:
+                              drop:
+                                description: Removed capabilities
+                                type: array
+                                items:
+                                  description: Capability represent POSIX capabilities type
+                                  type: string
                           readOnlyRootFilesystem:
                             description: Whether this container has a read-only root filesystem. Default is false.
                             type: boolean
@@ -2443,6 +2463,16 @@ spec:
                                 description: 'Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                                 type: object
                                 properties:
+                                  capabilities:
+                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                                    type: object
+                                    properties:
+                                      drop:
+                                        description: Removed capabilities
+                                        type: array
+                                        items:
+                                          description: Capability represent POSIX capabilities type
+                                          type: string
                                   readOnlyRootFilesystem:
                                     description: Whether this container has a read-only root filesystem. Default is false.
                                     type: boolean
