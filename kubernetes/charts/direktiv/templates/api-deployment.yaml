@@ -45,6 +45,14 @@ spec:
       containers:
       - name: api
         image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
+        env:
+          {{- if  .Values.api.key }}
+          - name: DIREKTIV_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: apiKey
+          {{- end }}
         volumeMounts:
         - name: apiconf
           mountPath: "/config"
