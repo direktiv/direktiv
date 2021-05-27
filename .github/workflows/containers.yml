@@ -1,6 +1,8 @@
 name: Build Container Components
 on:
   workflow_dispatch:
+    inputs:
+      tag:
   create:
     tags:
       - v*
