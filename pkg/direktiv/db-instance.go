@@ -69,7 +69,7 @@ func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf u
 	return nil
 }
 
-func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string, cronCheck bool, callerData []byte) (*ent.WorkflowInstance, error) {
+func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, instanceID, input string, cronCheck, mutex bool, callerData []byte) (*ent.WorkflowInstance, error) {
 
 	tx, err := db.dbEnt.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
@@ -108,16 +108,47 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		return nil, err
 	}
 
+	var status = "pending"
+	var errCode, errMsg string
+
+	if mutex {
+		// NOTE: I know this is ugly and similar to the cronCheck. But they solve different problems because
+		// 	we don't want duplicate crons to be added to the database.
+
+		conn, err := db.wfLock(wf, time.Second*5)
+		if err != nil {
+			return nil, err
+		}
+		defer db.wfUnlock(wf, conn)
+
+		wfs, err := tx.WorkflowInstance.
+			Query().
+			Limit(1).
+			Where(workflowinstance.StatusEQ("pending")).
+			Order(ent.Desc(workflowinstance.FieldBeginTime)).All(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(wfs) > 0 {
+			status = "failed"
+			errCode = "direktiv.mutex"
+			errMsg = "exclusive property prevents new instances while another exists"
+		}
+
+	}
+
 	wi, err := tx.WorkflowInstance.
 		Create().
 		SetInstanceID(instanceID).
-		SetInvokedBy("").
 		SetRevision(wf.Revision).
-		SetStatus("pending").
+		SetStatus(status).
 		SetBeginTime(time.Now()).
 		SetInput(input).
 		SetWorkflow(wf).
 		SetInvokedBy(string(callerData)).
+		SetErrorMessage(errMsg).
+		SetErrorCode(errCode).
 		Save(ctx)
 
 	if err != nil {
@@ -129,12 +160,16 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		return nil, err
 	}
 
-	wi, err = db.dbEnt.WorkflowInstance.Get(ctx, wi.ID)
+	wi, err = db.getWorkflowInstanceByID(ctx, wi.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	wi.Edges.Workflow = wf
+
+	if errCode != "" {
+		return nil, NewCatchableError(errCode, errMsg)
+	}
 
 	return wi, nil
 

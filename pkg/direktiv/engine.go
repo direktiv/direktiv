@@ -579,6 +579,11 @@ func (we *workflowEngine) cancelRecordsChildren(ctx context.Context, rec *ent.Wo
 	}
 
 	step := len(rec.Flow)
+
+	if step == 0 {
+		return nil
+	}
+
 	state := rec.Flow[step-1]
 	states := wf.GetStatesMap()
 	stateObject, exists := states[state]
@@ -1159,7 +1164,7 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 		return fmt.Errorf("cannot cron invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true, nil)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true, wli.wf.Exclusive, nil)
 	if err != nil {
 		wli.Close()
 		if strings.Contains(err.Error(), "invoked") || strings.Contains(err.Error(), "transactions") {
@@ -1199,7 +1204,7 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 		return nil, fmt.Errorf("cannot directly invoke workflows with '%s' starts", wli.wf.Start.GetType())
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, nil)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, wli.wf.Exclusive, nil)
 	if err != nil {
 		wli.Close()
 		return nil, NewInternalError(err)
@@ -1279,7 +1284,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 		return
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, nil)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, wli.wf.Exclusive, nil)
 	if err != nil {
 		wli.Close()
 		log.Errorf("Internal error on EventsInvoke: %v", err)
@@ -1358,7 +1363,7 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 
 	}
 
-	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, callerData)
+	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, wli.wf.Exclusive, callerData)
 	if err != nil {
 		wli.Close()
 		return "", NewInternalError(err)

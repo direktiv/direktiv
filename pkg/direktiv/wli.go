@@ -215,12 +215,6 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 }
 
 func (wli *workflowLogicInstance) Close() error {
-	if wli.namespaceLogger != nil {
-		err := wli.namespaceLogger.Close()
-		if err != nil {
-			return err
-		}
-	}
 
 	if wli.lockConn != nil {
 		wli.unlock()
@@ -228,6 +222,13 @@ func (wli *workflowLogicInstance) Close() error {
 
 	if wli.logger != nil {
 		err := wli.logger.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	if wli.namespaceLogger != nil {
+		err := wli.namespaceLogger.Close()
 		if err != nil {
 			return err
 		}
@@ -328,6 +329,41 @@ func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 		}
 
 	}
+
+}
+
+func (db *dbManager) wfLock(rec *ent.Workflow, timeout time.Duration) (*sql.Conn, error) {
+
+	hash, err := hashstructure.Hash(rec.ID, hashstructure.FormatV2, nil)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
+	wait := int(timeout.Seconds())
+	conn, err := db.lockDB(hash, wait)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
+	return conn, nil
+
+}
+
+func (db *dbManager) wfUnlock(rec *ent.Workflow, conn *sql.Conn) {
+
+	hash, err := hashstructure.Hash(rec.ID, hashstructure.FormatV2, nil)
+	if err != nil {
+		log.Error(NewInternalError(err))
+		return
+	}
+
+	err = db.unlockDB(hash, conn)
+	if err != nil {
+		log.Error(NewInternalError(fmt.Errorf("Failed to unlock database mutex: %v", err)))
+		return
+	}
+
+	return
 
 }
 
