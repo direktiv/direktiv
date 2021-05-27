@@ -37,6 +37,7 @@ jobs:
         make docker-sidecar
         echo "containers built"
         docker tag direktiv-ui vorteil/direktiv-ui:$RV
+        docker tag direktiv-ui vorteil/direktiv-ui
         docker tag direktiv-api vorteil/api:$RV
         docker tag direktiv-api vorteil/api
         docker tag direktiv-flow vorteil/flow:$RV
