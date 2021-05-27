@@ -25,13 +25,20 @@ run-postgres:
 protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(secrets_generated_files)
 
 
+.PHONY: local-docker-ui
+local-docker-ui:
+local-docker-ui: build
+	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
+		git clone https://github.com/vorteil/direktiv-ui.git; \
+	fi
+	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server
 .PHONY: docker-ui
 docker-ui:
 docker-ui: build
 	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
-	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server && docker build . -t direktiv-ui -f Dockerfile
+	cd direktiv-ui && make update-containers
 .PHONY: docker-secrets
 docker-secrets:
 docker-secrets: build
