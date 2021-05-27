@@ -1,9 +1,9 @@
 #!/bin/sh
 
-curl https://knative.direktiv.io/yamls/serving-crds.yaml > serving-crds.yaml
-curl https://knative.direktiv.io/yamls/serving-core.yaml > serving-core.yaml
-curl https://knative.direktiv.io/yamls/contour.yaml > contour.yaml
-curl https://knative.direktiv.io/yamls/net-contour.yaml > net-contour.yaml
+curl -H 'Cache-Control: no-cache' https://knative.direktiv.io/yamls/serving-crds.yaml > serving-crds.yaml
+curl -H 'Cache-Control: no-cache' https://knative.direktiv.io/yamls/serving-core.yaml > serving-core.yaml
+curl -H 'Cache-Control: no-cache' https://knative.direktiv.io/yamls/contour.yaml > contour.yaml
+curl -H 'Cache-Control: no-cache' https://knative.direktiv.io/yamls/net-contour.yaml > net-contour.yaml
 
 kubectl apply -f serving-crds.yaml
 sleep 5
