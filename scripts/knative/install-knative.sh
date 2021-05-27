@@ -13,6 +13,8 @@ kubectl apply -f contour.yaml
 sleep 5
 kubectl apply -f net-contour.yaml
 
+kubectl apply -f knative-default.yaml
+
 kubectl patch configmap/config-network \
   --namespace knative-serving \
   --type merge \
