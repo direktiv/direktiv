@@ -693,7 +693,9 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		return err
 	}
 
-	rec, err := tx.WorkflowInstance.Query().Where(workflowinstance.InstanceIDEQ(instanceId)).Only(ctx)
+	rec, err := tx.WorkflowInstance.Query().Where(workflowinstance.InstanceIDEQ(instanceId)).WithWorkflow(func(q *ent.WorkflowQuery) {
+		q.WithNamespace()
+	}).Only(ctx)
 	if err != nil {
 		return rollback(tx, err)
 	}
