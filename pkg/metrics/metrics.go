@@ -79,15 +79,42 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 
 	// range through all records and sort by state
 	instances := make(map[string]int)
-
 	states := make(map[string]*StateData)
+
+	sortRecordsByState(states, instances, records)
+
+	out.SampleSize = out.TotalInstancesRun
+	out.TotalInstancesRun = int32(len(instances))
+	out.States = make([]StateData, 0)
+
+	// range over states, with total numbers now finalised
+	// and perform further calculations
+	var totalErrors int32
+	allErrors := make(map[string]int32)
+
+	finaliseStateRecordValues(states, out, &totalErrors, allErrors)
+
+	out.SuccessRate = float32(out.SuccessfulExecutions) / float32(out.TotalInstancesRun)
+	out.FailureRate = float32(out.FailedExecutions) / float32(out.TotalInstancesRun)
+
+	out.ErrorCodes = allErrors
+	out.ErrorCodesRepresentation = make(map[string]float32)
+	for k, v := range allErrors {
+		out.ErrorCodesRepresentation[k] = float32(v) / float32(totalErrors)
+	}
+
+	return out, nil
+}
+
+func sortRecordsByState(m map[string]*StateData, instances map[string]int, records []*ent.Metrics) {
+
 	for _, v := range records {
-		if _, ok := states[v.State]; !ok {
-			states[v.State] = &StateData{
+		if _, ok := m[v.State]; !ok {
+			m[v.State] = &StateData{
 				Name: v.State,
 			}
 		}
-		s := states[v.State]
+		s := m[v.State]
 
 		if s.UnhandledErrors == nil {
 			s.UnhandledErrors = make(map[string]int32)
@@ -167,17 +194,12 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 			}
 		}
 
-		states[v.State] = s
+		m[v.State] = s
 	}
 
-	out.SampleSize = out.TotalInstancesRun
-	out.TotalInstancesRun = int32(len(instances))
-	out.States = make([]StateData, 0)
+}
 
-	// range over states, with total numbers now finalised
-	// and perform further calculations
-	var totalErrors int32
-	allErrors := make(map[string]int32)
+func finaliseStateRecordValues(states map[string]*StateData, out *Dataset, totalErrors *int32, allErrors map[string]int32) {
 
 	for k, s := range states {
 
@@ -200,7 +222,7 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 			thisState.MeanOutcomes.Transitions[k] = float32(t) / float32(thisState.TotalExecutions)
 		}
 		for k, v := range thisState.UnhandledErrors {
-			totalErrors += v
+			*totalErrors += v
 			if _, ok := allErrors[k]; !ok {
 				allErrors[k] = v
 			} else {
@@ -218,14 +240,4 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 		out.States = append(out.States, *thisState)
 	}
 
-	out.SuccessRate = float32(out.SuccessfulExecutions) / float32(out.TotalInstancesRun)
-	out.FailureRate = float32(out.FailedExecutions) / float32(out.TotalInstancesRun)
-
-	out.ErrorCodes = allErrors
-	out.ErrorCodesRepresentation = make(map[string]float32)
-	for k, v := range allErrors {
-		out.ErrorCodesRepresentation[k] = float32(v) / float32(totalErrors)
-	}
-
-	return out, nil
 }
