@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/inconshreveable/log15"
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -93,54 +94,54 @@ func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 
 }
 
-func (l *Logger) QueryNamespaceLogs(ctx context.Context, namespace string, limit, offset int) (dlog.QueryReponse, error) {
-	logs := dlog.QueryReponse{
-		Limit:  limit,
-		Offset: offset,
-	}
+// func (l *Logger) QueryNamespaceLogs(ctx context.Context, namespace string, limit, offset int) (dlog.QueryReponse, error) {
+// 	logs := dlog.QueryReponse{
+// 		Limit:  limit,
+// 		Offset: offset,
+// 	}
 
-	var Msg string
-	var Ctx string
-	var Lvl int
-	var Time int64
-	var err error
+// 	var Msg string
+// 	var Ctx string
+// 	var Lvl int
+// 	var Time int64
+// 	var err error
 
-	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
-	WHERE (instance is null or instance = '') AND namespace = $1
-	ORDER BY time ASC
-	LIMIT $2 OFFSET $3`
-	rows, err := l.db.Query(sqlStatement, namespace, limit, offset)
-	if err != nil {
-		return logs, err
-	}
+// 	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
+// 	WHERE (instance is null or instance = '') AND namespace = $1
+// 	ORDER BY time ASC
+// 	LIMIT $2 OFFSET $3`
+// 	rows, err := l.db.Query(sqlStatement, namespace, limit, offset)
+// 	if err != nil {
+// 		return logs, err
+// 	}
 
-	for rows.Next() {
-		ctxMap := make(map[string]string)
+// 	for rows.Next() {
+// 		ctxMap := make(map[string]string)
 
-		err = rows.Scan(&Msg, &Ctx, &Time, &Lvl)
-		if err != nil {
-			break
-		}
+// 		err = rows.Scan(&Msg, &Ctx, &Time, &Lvl)
+// 		if err != nil {
+// 			break
+// 		}
 
-		err := json.Unmarshal([]byte(Ctx), &ctxMap)
-		if err != nil {
-			break
-		}
+// 		err := json.Unmarshal([]byte(Ctx), &ctxMap)
+// 		if err != nil {
+// 			break
+// 		}
 
-		logs.Logs = append(logs.Logs, dlog.LogEntry{
-			Message:   Msg,
-			Timestamp: Time,
-			Context:   ctxMap,
-		})
-	}
+// 		logs.Logs = append(logs.Logs, dlog.LogEntry{
+// 			Message:   Msg,
+// 			Timestamp: Time,
+// 			Context:   ctxMap,
+// 		})
+// 	}
 
-	if err == nil {
-		err = rows.Err()
-	}
+// 	if err == nil {
+// 		err = rows.Err()
+// 	}
 
-	logs.Count = len(logs.Logs)
-	return logs, err
-}
+// 	logs.Count = len(logs.Logs)
+// 	return logs, err
+// }
 
 func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset int) (dlog.QueryReponse, error) {
 	testLOG := dlog.QueryReponse{
@@ -156,9 +157,17 @@ func (l *Logger) QueryLogs(ctx context.Context, instance string, limit, offset i
 	var err error
 
 	sqlStatement := `SELECT msg, ctx, time, lvl FROM logs
-	WHERE instance=$1
+	WHERE (instance is null or instance = '') AND namespace = $1
 	ORDER BY time ASC
-	LIMIT $2 OFFSET $3;`
+	LIMIT $2 OFFSET $3`
+	// If instance has slashes means its an instance log
+	if strings.Contains(instance, "/") {
+		sqlStatement = `SELECT msg, ctx, time, lvl FROM logs
+		WHERE instance=$1
+		ORDER BY time ASC
+		LIMIT $2 OFFSET $3;`
+	}
+
 	rows, err := l.db.Query(sqlStatement, instance, limit, offset)
 	if err != nil {
 		return testLOG, err
