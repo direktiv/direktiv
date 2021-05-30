@@ -14,29 +14,61 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// createDefaultNameDir - Creates a NamedDirectory object for default, and makes the directory on fs
+func createDefaultNameDir(dir string) (NamedDirectory, error) {
+	p := filepath.Join(os.TempDir(), dir)
+	defaultDir := NamedDirectory{
+		Label:     "default",
+		Directory: p,
+	}
+
+	err := os.MkdirAll(p, 0744)
+	return defaultDir, err
+}
+
+// readDirOfType - Reads directory and returns list of file names of a specific file type suffix
+func readDirOfType(dirPath, fileTypeSuffix string) ([]string, error) {
+	fis, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]string, 0)
+	for _, fi := range fis {
+		if strings.HasSuffix(fi.Name(), fileTypeSuffix) {
+			out = append(out, strings.TrimSuffix(fi.Name(), fileTypeSuffix))
+		}
+	}
+
+	return out, nil
+}
+
+func writeJSONResponse(w http.ResponseWriter, obj interface{}) error {
+	b, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Server) initWorkflowTemplates() error {
 	if s.cfg.Templates.WorkflowTemplateDirectories == nil {
 		s.cfg.Templates.WorkflowTemplateDirectories = make([]NamedDirectory, 0)
 	}
 
-	var hasDefault bool
-	for _, tuple := range s.cfg.Templates.WorkflowTemplateDirectories {
-		if tuple.Label == "default" {
-			hasDefault = true
-			break
-		}
-	}
-	if !hasDefault {
-		p := filepath.Join(os.TempDir(), "workflow-templates")
-		s.cfg.Templates.WorkflowTemplateDirectories = append(s.cfg.Templates.WorkflowTemplateDirectories, NamedDirectory{
-			Label:     "default",
-			Directory: p,
-		})
-
-		err := os.MkdirAll(p, 0744)
+	if !s.cfg.hasWorkflowTemplateDefault() {
+		defaultDir, err := createDefaultNameDir("workflow-templates")
 		if err != nil {
 			return err
 		}
+
+		s.cfg.Templates.WorkflowTemplateDirectories = append(s.cfg.Templates.WorkflowTemplateDirectories, defaultDir)
 	}
 
 	s.wfTemplateDirsPaths = make(map[string]string)
@@ -55,24 +87,13 @@ func (s *Server) initActionTemplates() error {
 		s.cfg.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
 	}
 
-	var hasDefault bool
-	for _, tuple := range s.cfg.Templates.ActionTemplateDirectories {
-		if tuple.Label == "default" {
-			hasDefault = true
-			break
-		}
-	}
-	if !hasDefault {
-		p := filepath.Join(os.TempDir(), "action-templates")
-		s.cfg.Templates.ActionTemplateDirectories = append(s.cfg.Templates.ActionTemplateDirectories, NamedDirectory{
-			Label:     "default",
-			Directory: p,
-		})
-
-		err := os.MkdirAll(p, 0744)
+	if !s.cfg.hasActionTemplateDefault() {
+		defaultDir, err := createDefaultNameDir("action-templates")
 		if err != nil {
 			return err
 		}
+
+		s.cfg.Templates.ActionTemplateDirectories = append(s.cfg.Templates.ActionTemplateDirectories, defaultDir)
 	}
 
 	s.actionTemplateDirsPaths = make(map[string]string)
@@ -101,19 +122,7 @@ func (s *Server) workflowTemplates(folder string) ([]string, error) {
 		return nil, fmt.Errorf("unknown workflow folder: '%s'", folder)
 	}
 
-	fis, err := ioutil.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-
-	out := make([]string, 0)
-	for _, fi := range fis {
-		if strings.HasSuffix(fi.Name(), ".yml") {
-			out = append(out, strings.TrimSuffix(fi.Name(), ".yml"))
-		}
-	}
-
-	return out, nil
+	return readDirOfType(path, ".yml")
 }
 
 func (s *Server) workflowTemplate(folder, name string) ([]byte, error) {
@@ -145,19 +154,7 @@ func (s *Server) actionTemplates(folder string) ([]string, error) {
 		return nil, fmt.Errorf("unknown actions folder: '%s'", folder)
 	}
 
-	fis, err := ioutil.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-
-	out := make([]string, 0)
-	for _, fi := range fis {
-		if strings.HasSuffix(fi.Name(), ".json") {
-			out = append(out, strings.TrimSuffix(fi.Name(), ".json"))
-		}
-	}
-
-	return out, nil
+	return readDirOfType(path, ".json")
 }
 
 func (s *Server) actionTemplate(folder, name string) ([]byte, error) {
@@ -202,18 +199,10 @@ func (h *Handler) workflowTemplates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := json.Marshal(out)
-	if err != nil {
+	if err := writeJSONResponse(w, out); err != nil {
 		ErrResponse(w, err)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
 }
 
 func (h *Handler) workflowTemplate(w http.ResponseWriter, r *http.Request) {
@@ -264,18 +253,10 @@ func (h *Handler) actionTemplates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := json.Marshal(out)
-	if err != nil {
+	if err := writeJSONResponse(w, out); err != nil {
 		ErrResponse(w, err)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
 }
 
 func (h *Handler) actionTemplate(w http.ResponseWriter, r *http.Request) {
