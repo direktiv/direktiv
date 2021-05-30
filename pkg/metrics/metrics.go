@@ -168,40 +168,86 @@ func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metric
 
 	s.TotalExecutions += 1
 	s.TotalMilliSeconds += int32(v.WorkflowMs)
-	if r.didSucceed() {
-		if NextEnums[r.r.Next] == NextEnd {
-			s.TotalSuccesses += 1
-		}
-		if NextEnums[r.r.Next] == NextEnd {
-			s.Outcomes.EndStates.Success += 1
-		} else {
-			if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
-				s.Outcomes.Transitions[r.r.Transition] = 1
-				s.MeanOutcomes.Transitions[r.r.Transition] = 0 // calculate later
-			} else {
-				x := s.Outcomes.Transitions[r.r.Transition]
-				s.Outcomes.Transitions[r.r.Transition] = x + 1
-			}
-		}
 
-	} else {
-		s.Outcomes.EndStates.Failure += 1
-		s.totalUnhandledErrors += 1
+	// if r.didSucceed() {
+	// 	if NextEnums[r.r.Next] == NextEnd {
+	// 		s.TotalSuccesses += 1
+	// 	}
+	// 	if NextEnums[r.r.Next] == NextEnd {
+	// 		s.Outcomes.EndStates.Success += 1
+	// 	} else {
+	// 		if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
+	// 			s.Outcomes.Transitions[r.r.Transition] = 1
+	// 			s.MeanOutcomes.Transitions[r.r.Transition] = 0 // calculate later
+	// 		} else {
+	// 			x := s.Outcomes.Transitions[r.r.Transition]
+	// 			s.Outcomes.Transitions[r.r.Transition] = x + 1
+	// 		}
+	// 	}
 
-		if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
-			s.UnhandledErrors[r.r.ErrorCode] = 0
-			s.UnhandledErrorsRepresentation[r.r.ErrorCode] = 0
-		}
-		s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
+	// } else {
+	// 	s.Outcomes.EndStates.Failure += 1
+	// 	s.totalUnhandledErrors += 1
 
-		if NextEnums[r.r.Next] == NextRetry {
-			s.TotalRetries += 1
-		} else {
-			s.TotalFailures += 1
-		}
-	}
+	// 	if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
+	// 		s.UnhandledErrors[r.r.ErrorCode] = 0
+	// 		s.UnhandledErrorsRepresentation[r.r.ErrorCode] = 0
+	// 	}
+	// 	s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
+
+	// 	if NextEnums[r.r.Next] == NextRetry {
+	// 		s.TotalRetries += 1
+	// 	} else {
+	// 		s.TotalFailures += 1
+	// 	}
+	// }
+
+	handleSuccessRecord(&r, s)
+	handleFailRecord(&r, s)
 
 	m[v.State] = s
+
+}
+
+func handleSuccessRecord(r *record, s *StateData) {
+	if !r.didSucceed() {
+		return
+	}
+
+	if NextEnums[r.r.Next] == NextEnd {
+		s.TotalSuccesses += 1
+		s.Outcomes.EndStates.Success += 1
+	} else {
+		if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
+			s.Outcomes.Transitions[r.r.Transition] = 1
+			s.MeanOutcomes.Transitions[r.r.Transition] = 0
+		} else {
+			x := s.Outcomes.Transitions[r.r.Transition]
+			s.Outcomes.Transitions[r.r.Transition] = x + 1
+		}
+	}
+}
+
+func handleFailRecord(r *record, s *StateData) {
+
+	if r.didSucceed() {
+		return
+	}
+
+	s.Outcomes.EndStates.Failure += 1
+	s.totalUnhandledErrors += 1
+
+	if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
+		s.UnhandledErrors[r.r.ErrorCode] = 0
+		s.UnhandledErrorsRepresentation[r.r.ErrorCode] = 0
+	}
+	s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
+
+	if NextEnums[r.r.Next] == NextRetry {
+		s.TotalRetries += 1
+	} else {
+		s.TotalFailures += 1
+	}
 
 }
 
