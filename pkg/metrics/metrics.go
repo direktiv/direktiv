@@ -81,7 +81,9 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 	instances := make(map[string]int)
 	states := make(map[string]*StateData)
 
-	sortRecordsByState(states, instances, records)
+	for _, v := range records {
+		sortRecord(states, instances, v)
+	}
 
 	out.SampleSize = out.TotalInstancesRun
 	out.TotalInstancesRun = int32(len(instances))
@@ -92,7 +94,13 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 	var totalErrors int32
 	allErrors := make(map[string]int32)
 
-	finaliseStateRecordValues(states, out, &totalErrors, allErrors)
+	finaliseStateRecordValues(&finaliseStateRecordValuesArgs{
+		states:      states,
+		out:         out,
+		totalErrors: &totalErrors,
+		allErrors:   allErrors,
+		instances:   instances,
+	})
 
 	out.SuccessRate = float32(out.SuccessfulExecutions) / float32(out.TotalInstancesRun)
 	out.FailureRate = float32(out.FailedExecutions) / float32(out.TotalInstancesRun)
@@ -106,111 +114,117 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 	return out, nil
 }
 
-func sortRecordsByState(m map[string]*StateData, instances map[string]int, records []*ent.Metrics) {
+func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metrics) {
 
-	for _, v := range records {
-		if _, ok := m[v.State]; !ok {
-			m[v.State] = &StateData{
-				Name: v.State,
-			}
+	if _, ok := m[v.State]; !ok {
+		m[v.State] = &StateData{
+			Name: v.State,
 		}
-		s := m[v.State]
-
-		if s.UnhandledErrors == nil {
-			s.UnhandledErrors = make(map[string]int32)
-		}
-		if s.UnhandledErrorsRepresentation == nil {
-			s.UnhandledErrorsRepresentation = make(map[string]float32)
-		}
-		if s.Outcomes.Transitions == nil {
-			s.Outcomes.Transitions = make(map[string]int32)
-		}
-		if s.MeanOutcomes.Transitions == nil {
-			s.MeanOutcomes.Transitions = make(map[string]float32)
-		}
-		if s.Invokers == nil {
-			s.Invokers = make(map[string]int32)
-		}
-		if s.InvokersRepresentation == nil {
-			s.InvokersRepresentation = make(map[string]float32)
-		}
-
-		if _, ok := instances[v.Instance]; !ok {
-			instances[v.Instance] = 1
-		} else {
-			x := instances[v.Instance]
-			instances[v.Instance] = x + 1
-		}
-
-		r := record{
-			r: v,
-		}
-
-		if r.r.Invoker == "" {
-			r.r.Invoker = "unknown"
-		}
-
-		if _, ok := s.Invokers[r.r.Invoker]; !ok {
-			s.Invokers[r.r.Invoker] = 0
-		}
-		s.Invokers[r.r.Invoker] += 1
-
-		if _, ok := s.InvokersRepresentation[r.r.Invoker]; !ok {
-			s.InvokersRepresentation[r.r.Invoker] = 0
-		}
-
-		s.TotalExecutions += 1
-		s.TotalMilliSeconds += int32(v.WorkflowMs)
-		if r.didSucceed() {
-			if NextEnums[r.r.Next] == NextEnd {
-				s.TotalSuccesses += 1
-			}
-			if NextEnums[r.r.Next] == NextEnd {
-				s.Outcomes.EndStates.Success += 1
-			} else {
-				if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
-					s.Outcomes.Transitions[r.r.Transition] = 1
-					s.MeanOutcomes.Transitions[r.r.Transition] = 0 // calculate later
-				} else {
-					x := s.Outcomes.Transitions[r.r.Transition]
-					s.Outcomes.Transitions[r.r.Transition] = x + 1
-				}
-			}
-
-		} else {
-			s.Outcomes.EndStates.Failure += 1
-			s.totalUnhandledErrors += 1
-
-			if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
-				s.UnhandledErrors[r.r.ErrorCode] = 0
-				s.UnhandledErrorsRepresentation[r.r.ErrorCode] = 0
-			}
-			s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
-
-			if NextEnums[r.r.Next] == NextRetry {
-				s.TotalRetries += 1
-			} else {
-				s.TotalFailures += 1
-			}
-		}
-
-		m[v.State] = s
 	}
+	s := m[v.State]
+
+	if s.UnhandledErrors == nil {
+		s.UnhandledErrors = make(map[string]int32)
+	}
+	if s.UnhandledErrorsRepresentation == nil {
+		s.UnhandledErrorsRepresentation = make(map[string]float32)
+	}
+	if s.Outcomes.Transitions == nil {
+		s.Outcomes.Transitions = make(map[string]int32)
+	}
+	if s.MeanOutcomes.Transitions == nil {
+		s.MeanOutcomes.Transitions = make(map[string]float32)
+	}
+	if s.Invokers == nil {
+		s.Invokers = make(map[string]int32)
+	}
+	if s.InvokersRepresentation == nil {
+		s.InvokersRepresentation = make(map[string]float32)
+	}
+
+	if _, ok := instances[v.Instance]; !ok {
+		instances[v.Instance] = 1
+	} else {
+		x := instances[v.Instance]
+		instances[v.Instance] = x + 1
+	}
+
+	r := record{
+		r: v,
+	}
+
+	if r.r.Invoker == "" {
+		r.r.Invoker = "unknown"
+	}
+
+	if _, ok := s.Invokers[r.r.Invoker]; !ok {
+		s.Invokers[r.r.Invoker] = 0
+	}
+	s.Invokers[r.r.Invoker] += 1
+
+	if _, ok := s.InvokersRepresentation[r.r.Invoker]; !ok {
+		s.InvokersRepresentation[r.r.Invoker] = 0
+	}
+
+	s.TotalExecutions += 1
+	s.TotalMilliSeconds += int32(v.WorkflowMs)
+	if r.didSucceed() {
+		if NextEnums[r.r.Next] == NextEnd {
+			s.TotalSuccesses += 1
+		}
+		if NextEnums[r.r.Next] == NextEnd {
+			s.Outcomes.EndStates.Success += 1
+		} else {
+			if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
+				s.Outcomes.Transitions[r.r.Transition] = 1
+				s.MeanOutcomes.Transitions[r.r.Transition] = 0 // calculate later
+			} else {
+				x := s.Outcomes.Transitions[r.r.Transition]
+				s.Outcomes.Transitions[r.r.Transition] = x + 1
+			}
+		}
+
+	} else {
+		s.Outcomes.EndStates.Failure += 1
+		s.totalUnhandledErrors += 1
+
+		if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
+			s.UnhandledErrors[r.r.ErrorCode] = 0
+			s.UnhandledErrorsRepresentation[r.r.ErrorCode] = 0
+		}
+		s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
+
+		if NextEnums[r.r.Next] == NextRetry {
+			s.TotalRetries += 1
+		} else {
+			s.TotalFailures += 1
+		}
+	}
+
+	m[v.State] = s
 
 }
 
-func finaliseStateRecordValues(states map[string]*StateData, out *Dataset, totalErrors *int32, allErrors map[string]int32) {
+type finaliseStateRecordValuesArgs struct {
+	states      map[string]*StateData
+	out         *Dataset
+	totalErrors *int32
+	allErrors   map[string]int32
+	instances   map[string]int
+}
 
-	for k, s := range states {
+func finaliseStateRecordValues(args *finaliseStateRecordValuesArgs) {
+
+	for k, s := range args.states {
 
 		thisState := s
 
-		out.SuccessfulExecutions += thisState.TotalSuccesses
-		out.FailedExecutions += thisState.TotalFailures
-		out.TotalInstanceMilliSeconds += thisState.TotalMilliSeconds
+		args.out.SuccessfulExecutions += thisState.TotalSuccesses
+		args.out.FailedExecutions += thisState.TotalFailures
+		args.out.TotalInstanceMilliSeconds += thisState.TotalMilliSeconds
 
-		thisState.MeanExecutionsPerInstance = (thisState.TotalExecutions - thisState.TotalRetries) / int32(len(instances))
-		thisState.MeanMilliSecondsPerInstance = thisState.TotalMilliSeconds / int32(len(instances))
+		thisState.MeanExecutionsPerInstance = (thisState.TotalExecutions - thisState.TotalRetries) / int32(len(args.instances))
+		thisState.MeanMilliSecondsPerInstance = thisState.TotalMilliSeconds / int32(len(args.instances))
 		thisState.SuccessRate = float32(thisState.TotalSuccesses) / float32(thisState.TotalExecutions)
 		thisState.FailureRate = float32(thisState.TotalFailures) / float32(thisState.TotalExecutions)
 
@@ -222,13 +236,13 @@ func finaliseStateRecordValues(states map[string]*StateData, out *Dataset, total
 			thisState.MeanOutcomes.Transitions[k] = float32(t) / float32(thisState.TotalExecutions)
 		}
 		for k, v := range thisState.UnhandledErrors {
-			*totalErrors += v
-			if _, ok := allErrors[k]; !ok {
-				allErrors[k] = v
+			*args.totalErrors += v
+			if _, ok := args.allErrors[k]; !ok {
+				args.allErrors[k] = v
 			} else {
-				x := allErrors[k]
+				x := args.allErrors[k]
 				x += v
-				allErrors[k] = x
+				args.allErrors[k] = x
 			}
 			thisState.UnhandledErrorsRepresentation[k] = float32(v) / float32(thisState.totalUnhandledErrors)
 		}
@@ -236,8 +250,8 @@ func finaliseStateRecordValues(states map[string]*StateData, out *Dataset, total
 			thisState.InvokersRepresentation[k] = float32(v) / float32(thisState.TotalExecutions)
 		}
 
-		states[k] = thisState
-		out.States = append(out.States, *thisState)
+		args.states[k] = thisState
+		args.out.States = append(args.out.States, *thisState)
 	}
 
 }
