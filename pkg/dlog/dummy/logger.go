@@ -34,14 +34,6 @@ func (l *DummyLogger) LoggerFunc(namespace, instance string) (dlog.Logger, error
 	return logger, nil
 }
 
-// func (l *DummyLogger) QueryNamespaceLogs(ctx context.Context, instance string, limit, offset int) (dlog.QueryReponse, error) {
-// 	dlg := dlog.QueryReponse{
-// 		Logs: make([]dlog.LogEntry, 0),
-// 	}
-
-// 	return dlg, nil
-// }
-
 func (l *DummyLogger) QueryLogs(ctx context.Context, instance string, limit, offset int) (dlog.QueryReponse, error) {
 	dlg := dlog.QueryReponse{
 		Logs: make([]dlog.LogEntry, 0),
