@@ -6,16 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
-
-// ErrObject for grpc
-type ErrObject struct {
-	Code    int
-	Message string
-}
 
 func writeData(resp interface{}, w http.ResponseWriter) {
 	// Write Data
@@ -46,33 +37,9 @@ func paginationParams(r *http.Request) (offset, limit int) {
 
 // ErrResponse creates error based on grpc error
 func ErrResponse(w http.ResponseWriter, err error) {
-
-	st, ok := status.FromError(err)
-	eo := &ErrObject{
-		Code:    999,
-		Message: err.Error(),
-	}
-	if ok {
-		eo = &ErrObject{
-			Code:    int(st.Code()),
-			Message: st.Message(),
-		}
-	}
-
-	respCode := 400
-	switch eo.Code {
-	case int(codes.NotFound):
-		{
-			respCode = 404
-		}
-	case int(codes.AlreadyExists):
-		{
-			respCode = 409
-		}
-	}
+	eo := GenerateErrObject(err)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(respCode)
+	w.WriteHeader(eo.Code)
 	json.NewEncoder(w).Encode(eo)
-
 }
