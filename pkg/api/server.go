@@ -131,14 +131,14 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/namespaces/{namespace}/event", s.handler.namespaceEvent).Methods(http.MethodPost).Name(RN_NamespaceEvent)
 
 	// Secret ..
-	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.secrets).Methods(http.MethodGet).Name(RN_ListSecrets)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.createSecret).Methods(http.MethodPost).Name(RN_CreateSecret)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.deleteSecret).Methods(http.MethodDelete).Name(RN_DeleteSecret)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.getSecretsOrRegistries).Methods(http.MethodGet).Name(RN_ListSecrets)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.createSecretOrRegistry).Methods(http.MethodPost).Name(RN_CreateSecret)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.deleteSecretOrRegistry).Methods(http.MethodDelete).Name(RN_DeleteSecret)
 
 	// Registry ..
-	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.registries).Methods(http.MethodGet).Name(RN_ListRegistries)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.getSecretsOrRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.createSecretOrRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.deleteSecretOrRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 	// Metrics ..
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics", s.handler.workflowMetrics).Methods(http.MethodGet).Name(RN_GetWorkflowMetrics)
