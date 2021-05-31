@@ -212,22 +212,43 @@ func (h *Handler) workflowTemplates(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) workflowTemplate(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
 
 	folder := mux.Vars(r)["folder"]
 	n := mux.Vars(r)["template"]
 
-	b, err := h.s.workflowTemplate(folder, n)
-	if err != nil {
-		ErrResponse(w, err)
+	var x interface{}
+
+	switch mux.CurrentRoute(r).GetName() {
+	case RN_GetWorkflowTemplate:
+
+		b, err := h.s.workflowTemplate(folder, n)
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		x = b
+
+	case RN_GetActionTemplate:
+
+		b, err := h.s.actionTemplate(folder, n)
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		x = b
+
+	default:
+
+		ErrResponse(w, fmt.Errorf(http.StatusText(http.StatusBadRequest)))
 		return
+
 	}
 
-	w.Header().Set("Content-Type", "application/x-yaml")
-	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
+	w.Header().Set("Content-Type", "application/json")
+	writeData(x, w)
 
 }
 
@@ -247,23 +268,4 @@ func (h *Handler) actionTemplates(w http.ResponseWriter, r *http.Request) {
 		ErrResponse(w, err)
 		return
 	}
-}
-
-func (h *Handler) actionTemplate(w http.ResponseWriter, r *http.Request) {
-
-	folder := mux.Vars(r)["folder"]
-	n := mux.Vars(r)["template"]
-
-	b, err := h.s.actionTemplate(folder, n)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/x-yaml")
-	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
 }
