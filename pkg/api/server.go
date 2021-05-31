@@ -61,7 +61,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
-	err = s.initTemplates()
+	err = s.initTemplateFolders()
 	if err != nil {
 		return nil, err
 	}
@@ -69,21 +69,6 @@ func NewServer(cfg *Config) (*Server, error) {
 	s.prepareRoutes()
 
 	return s, nil
-}
-
-func (s *Server) initTemplates() error {
-
-	err := s.initWorkflowTemplates()
-	if err != nil {
-		return err
-	}
-
-	err = s.initActionTemplates()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // IngressClient returns client to backend

@@ -57,9 +57,13 @@ func writeJSONResponse(w http.ResponseWriter, obj interface{}) error {
 	return nil
 }
 
-func (s *Server) initWorkflowTemplates() error {
+func (s *Server) initTemplateFolders() error {
+
 	if s.cfg.Templates.WorkflowTemplateDirectories == nil {
 		s.cfg.Templates.WorkflowTemplateDirectories = make([]NamedDirectory, 0)
+	}
+	if s.cfg.Templates.ActionTemplateDirectories == nil {
+		s.cfg.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
 	}
 
 	if !s.cfg.hasWorkflowTemplateDefault() {
@@ -70,23 +74,6 @@ func (s *Server) initWorkflowTemplates() error {
 
 		s.cfg.Templates.WorkflowTemplateDirectories = append(s.cfg.Templates.WorkflowTemplateDirectories, defaultDir)
 	}
-
-	s.wfTemplateDirsPaths = make(map[string]string)
-	s.wfTemplateDirs = make([]string, 0)
-
-	for _, fi := range s.cfg.Templates.WorkflowTemplateDirectories {
-		s.wfTemplateDirs = append(s.wfTemplateDirs, fi.Label)
-		s.wfTemplateDirsPaths[fi.Label] = fi.Directory
-	}
-
-	return nil
-}
-
-func (s *Server) initActionTemplates() error {
-	if s.cfg.Templates.ActionTemplateDirectories == nil {
-		s.cfg.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
-	}
-
 	if !s.cfg.hasActionTemplateDefault() {
 		defaultDir, err := createDefaultNameDir("action-templates")
 		if err != nil {
@@ -94,6 +81,14 @@ func (s *Server) initActionTemplates() error {
 		}
 
 		s.cfg.Templates.ActionTemplateDirectories = append(s.cfg.Templates.ActionTemplateDirectories, defaultDir)
+	}
+
+	s.wfTemplateDirsPaths = make(map[string]string)
+	s.wfTemplateDirs = make([]string, 0)
+
+	for _, fi := range s.cfg.Templates.WorkflowTemplateDirectories {
+		s.wfTemplateDirs = append(s.wfTemplateDirs, fi.Label)
+		s.wfTemplateDirsPaths[fi.Label] = fi.Directory
 	}
 
 	s.actionTemplateDirsPaths = make(map[string]string)
