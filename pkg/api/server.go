@@ -61,7 +61,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
-	err = s.initTemplates()
+	err = s.initTemplateFolders()
 	if err != nil {
 		return nil, err
 	}
@@ -69,21 +69,6 @@ func NewServer(cfg *Config) (*Server, error) {
 	s.prepareRoutes()
 
 	return s, nil
-}
-
-func (s *Server) initTemplates() error {
-
-	err := s.initWorkflowTemplates()
-	if err != nil {
-		return err
-	}
-
-	err = s.initActionTemplates()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // IngressClient returns client to backend
@@ -131,14 +116,14 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/namespaces/{namespace}/event", s.handler.namespaceEvent).Methods(http.MethodPost).Name(RN_NamespaceEvent)
 
 	// Secret ..
-	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.secrets).Methods(http.MethodGet).Name(RN_ListSecrets)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.createSecret).Methods(http.MethodPost).Name(RN_CreateSecret)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.deleteSecret).Methods(http.MethodDelete).Name(RN_DeleteSecret)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.getSecretsOrRegistries).Methods(http.MethodGet).Name(RN_ListSecrets)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.createSecretOrRegistry).Methods(http.MethodPost).Name(RN_CreateSecret)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/secrets/", s.handler.deleteSecretOrRegistry).Methods(http.MethodDelete).Name(RN_DeleteSecret)
 
 	// Registry ..
-	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.registries).Methods(http.MethodGet).Name(RN_ListRegistries)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.getSecretsOrRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.createSecretOrRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.deleteSecretOrRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 	// Metrics ..
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics", s.handler.workflowMetrics).Methods(http.MethodGet).Name(RN_GetWorkflowMetrics)
@@ -161,13 +146,13 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/instances/{namespace}/{workflowTarget}/{id}/logs", s.handler.instanceLogs).Methods(http.MethodGet).Name(RN_GetInstanceLogs)
 
 	// Templates ..
-	s.Router().HandleFunc("/api/action-templates/", s.handler.actionTemplateFolders).Methods(http.MethodGet).Name(RN_ListActionTemplateFolders)
+	s.Router().HandleFunc("/api/action-templates/", s.handler.templateFolders).Methods(http.MethodGet).Name(RN_ListActionTemplateFolders)
 	s.Router().HandleFunc("/api/action-templates/{folder}/", s.handler.actionTemplates).Methods(http.MethodGet).Name(RN_ListActionTemplates)
-	s.Router().HandleFunc("/api/action-templates/{folder}/{template}", s.handler.actionTemplate).Methods(http.MethodGet).Name(RN_GetActionTemplate)
+	s.Router().HandleFunc("/api/action-templates/{folder}/{template}", s.handler.getTemplate).Methods(http.MethodGet).Name(RN_GetActionTemplate)
 
-	s.Router().HandleFunc("/api/workflow-templates/", s.handler.workflowTemplateFolders).Methods(http.MethodGet).Name(RN_ListWorkflowTemplateFolders)
+	s.Router().HandleFunc("/api/workflow-templates/", s.handler.templateFolders).Methods(http.MethodGet).Name(RN_ListWorkflowTemplateFolders)
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/", s.handler.workflowTemplates).Methods(http.MethodGet).Name(RN_ListWorkflowTemplates)
-	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.workflowTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
+	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.getTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
 
 	// Varaibles
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/", s.handler.workflowVariables).Methods(http.MethodGet).Name(RN_ListWorkflowVariables)

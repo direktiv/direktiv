@@ -113,6 +113,7 @@ func (h *Handler) namespaceEvent(w http.ResponseWriter, r *http.Request) {
 	switch contentType {
 	case "application/cloudevents+json; charset=utf-8":
 	case "application/cloudevents+json":
+	case "application/json; charset=utf-8":
 	case "application/json":
 		break
 	default:
