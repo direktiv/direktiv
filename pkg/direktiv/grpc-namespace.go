@@ -71,7 +71,7 @@ func (is *ingressServer) GetNamespaceLogs(ctx context.Context, in *ingress.GetNa
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	logs, err := is.wfServer.instanceLogger.QueryNamespaceLogs(ctx, namespace, int(limit), int(offset))
+	logs, err := is.wfServer.instanceLogger.QueryLogs(ctx, namespace, int(limit), int(offset))
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace-logs", namespace)
 	}

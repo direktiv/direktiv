@@ -16,7 +16,6 @@ type Log interface {
 	LoggerFunc(namespace, instance string) (Logger, error)
 	NamespaceLogger(namespace string) (Logger, error)
 	QueryLogs(ctx context.Context, instance string, limit, offset int) (QueryReponse, error)
-	QueryNamespaceLogs(ctx context.Context, namespace string, limit, offset int) (QueryReponse, error)
 	DeleteNamespaceLogs(namespace string) error
 	DeleteInstanceLogs(instance string) error
 }
