@@ -57,9 +57,13 @@ func writeJSONResponse(w http.ResponseWriter, obj interface{}) error {
 	return nil
 }
 
-func (s *Server) initWorkflowTemplates() error {
+func (s *Server) initTemplateFolders() error {
+
 	if s.cfg.Templates.WorkflowTemplateDirectories == nil {
 		s.cfg.Templates.WorkflowTemplateDirectories = make([]NamedDirectory, 0)
+	}
+	if s.cfg.Templates.ActionTemplateDirectories == nil {
+		s.cfg.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
 	}
 
 	if !s.cfg.hasWorkflowTemplateDefault() {
@@ -70,23 +74,6 @@ func (s *Server) initWorkflowTemplates() error {
 
 		s.cfg.Templates.WorkflowTemplateDirectories = append(s.cfg.Templates.WorkflowTemplateDirectories, defaultDir)
 	}
-
-	s.wfTemplateDirsPaths = make(map[string]string)
-	s.wfTemplateDirs = make([]string, 0)
-
-	for _, fi := range s.cfg.Templates.WorkflowTemplateDirectories {
-		s.wfTemplateDirs = append(s.wfTemplateDirs, fi.Label)
-		s.wfTemplateDirsPaths[fi.Label] = fi.Directory
-	}
-
-	return nil
-}
-
-func (s *Server) initActionTemplates() error {
-	if s.cfg.Templates.ActionTemplateDirectories == nil {
-		s.cfg.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
-	}
-
 	if !s.cfg.hasActionTemplateDefault() {
 		defaultDir, err := createDefaultNameDir("action-templates")
 		if err != nil {
@@ -94,6 +81,14 @@ func (s *Server) initActionTemplates() error {
 		}
 
 		s.cfg.Templates.ActionTemplateDirectories = append(s.cfg.Templates.ActionTemplateDirectories, defaultDir)
+	}
+
+	s.wfTemplateDirsPaths = make(map[string]string)
+	s.wfTemplateDirs = make([]string, 0)
+
+	for _, fi := range s.cfg.Templates.WorkflowTemplateDirectories {
+		s.wfTemplateDirs = append(s.wfTemplateDirs, fi.Label)
+		s.wfTemplateDirsPaths[fi.Label] = fi.Directory
 	}
 
 	s.actionTemplateDirsPaths = make(map[string]string)
@@ -172,16 +167,28 @@ func (s *Server) actionTemplate(folder, name string) ([]byte, error) {
 	return b, nil
 }
 
-func (h *Handler) workflowTemplateFolders(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) templateFolders(w http.ResponseWriter, r *http.Request) {
 
-	b, err := json.Marshal(h.s.workflowTemplateFolders())
-	if err != nil {
-		ErrResponse(w, err)
+	var x interface{}
+
+	switch mux.CurrentRoute(r).GetName() {
+	case RN_ListWorkflowTemplateFolders:
+
+		x = h.s.workflowTemplateFolders
+
+	case RN_ListActionTemplateFolders:
+
+		x = h.s.actionTemplateFolders
+
+	default:
+
+		ErrResponse(w, fmt.Errorf(http.StatusText(http.StatusBadRequest)))
 		return
+
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err = io.Copy(w, bytes.NewReader(b))
+	err := json.NewEncoder(w).Encode(x)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -205,31 +212,36 @@ func (h *Handler) workflowTemplates(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) workflowTemplate(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
 
 	folder := mux.Vars(r)["folder"]
 	n := mux.Vars(r)["template"]
 
-	b, err := h.s.workflowTemplate(folder, n)
-	if err != nil {
-		ErrResponse(w, err)
+	var err error
+	var b []byte
+
+	switch mux.CurrentRoute(r).GetName() {
+	case RN_GetWorkflowTemplate:
+
+		b, err = h.s.workflowTemplate(folder, n)
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+	case RN_GetActionTemplate:
+
+		b, err = h.s.actionTemplate(folder, n)
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+	default:
+
+		ErrResponse(w, fmt.Errorf(http.StatusText(http.StatusBadRequest)))
 		return
-	}
 
-	w.Header().Set("Content-Type", "application/x-yaml")
-	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-}
-
-func (h *Handler) actionTemplateFolders(w http.ResponseWriter, r *http.Request) {
-
-	b, err := json.Marshal(h.s.actionTemplateFolders())
-	if err != nil {
-		ErrResponse(w, err)
-		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -257,23 +269,4 @@ func (h *Handler) actionTemplates(w http.ResponseWriter, r *http.Request) {
 		ErrResponse(w, err)
 		return
 	}
-}
-
-func (h *Handler) actionTemplate(w http.ResponseWriter, r *http.Request) {
-
-	folder := mux.Vars(r)["folder"]
-	n := mux.Vars(r)["template"]
-
-	b, err := h.s.actionTemplate(folder, n)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/x-yaml")
-	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
 }

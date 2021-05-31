@@ -61,7 +61,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
-	err = s.initTemplates()
+	err = s.initTemplateFolders()
 	if err != nil {
 		return nil, err
 	}
@@ -69,21 +69,6 @@ func NewServer(cfg *Config) (*Server, error) {
 	s.prepareRoutes()
 
 	return s, nil
-}
-
-func (s *Server) initTemplates() error {
-
-	err := s.initWorkflowTemplates()
-	if err != nil {
-		return err
-	}
-
-	err = s.initActionTemplates()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // IngressClient returns client to backend
@@ -161,13 +146,13 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/instances/{namespace}/{workflowTarget}/{id}/logs", s.handler.instanceLogs).Methods(http.MethodGet).Name(RN_GetInstanceLogs)
 
 	// Templates ..
-	s.Router().HandleFunc("/api/action-templates/", s.handler.actionTemplateFolders).Methods(http.MethodGet).Name(RN_ListActionTemplateFolders)
+	s.Router().HandleFunc("/api/action-templates/", s.handler.templateFolders).Methods(http.MethodGet).Name(RN_ListActionTemplateFolders)
 	s.Router().HandleFunc("/api/action-templates/{folder}/", s.handler.actionTemplates).Methods(http.MethodGet).Name(RN_ListActionTemplates)
-	s.Router().HandleFunc("/api/action-templates/{folder}/{template}", s.handler.actionTemplate).Methods(http.MethodGet).Name(RN_GetActionTemplate)
+	s.Router().HandleFunc("/api/action-templates/{folder}/{template}", s.handler.getTemplate).Methods(http.MethodGet).Name(RN_GetActionTemplate)
 
-	s.Router().HandleFunc("/api/workflow-templates/", s.handler.workflowTemplateFolders).Methods(http.MethodGet).Name(RN_ListWorkflowTemplateFolders)
+	s.Router().HandleFunc("/api/workflow-templates/", s.handler.templateFolders).Methods(http.MethodGet).Name(RN_ListWorkflowTemplateFolders)
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/", s.handler.workflowTemplates).Methods(http.MethodGet).Name(RN_ListWorkflowTemplates)
-	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.workflowTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
+	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.getTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
 
 	// Varaibles
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/variables/", s.handler.workflowVariables).Methods(http.MethodGet).Name(RN_ListWorkflowVariables)
