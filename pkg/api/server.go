@@ -146,11 +146,11 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/instances/{namespace}/{workflowTarget}/{id}/logs", s.handler.instanceLogs).Methods(http.MethodGet).Name(RN_GetInstanceLogs)
 
 	// Templates ..
-	s.Router().HandleFunc("/api/action-templates/", s.handler.actionTemplateFolders).Methods(http.MethodGet).Name(RN_ListActionTemplateFolders)
+	s.Router().HandleFunc("/api/action-templates/", s.handler.templateFolders).Methods(http.MethodGet).Name(RN_ListActionTemplateFolders)
 	s.Router().HandleFunc("/api/action-templates/{folder}/", s.handler.actionTemplates).Methods(http.MethodGet).Name(RN_ListActionTemplates)
 	s.Router().HandleFunc("/api/action-templates/{folder}/{template}", s.handler.actionTemplate).Methods(http.MethodGet).Name(RN_GetActionTemplate)
 
-	s.Router().HandleFunc("/api/workflow-templates/", s.handler.workflowTemplateFolders).Methods(http.MethodGet).Name(RN_ListWorkflowTemplateFolders)
+	s.Router().HandleFunc("/api/workflow-templates/", s.handler.templateFolders).Methods(http.MethodGet).Name(RN_ListWorkflowTemplateFolders)
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/", s.handler.workflowTemplates).Methods(http.MethodGet).Name(RN_ListWorkflowTemplates)
 	s.Router().HandleFunc("/api/workflow-templates/{folder}/{template}", s.handler.workflowTemplate).Methods(http.MethodGet).Name(RN_GetWorkflowTemplate)
 

@@ -167,16 +167,28 @@ func (s *Server) actionTemplate(folder, name string) ([]byte, error) {
 	return b, nil
 }
 
-func (h *Handler) workflowTemplateFolders(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) templateFolders(w http.ResponseWriter, r *http.Request) {
 
-	b, err := json.Marshal(h.s.workflowTemplateFolders())
-	if err != nil {
-		ErrResponse(w, err)
+	var x interface{}
+
+	switch mux.CurrentRoute(r).GetName() {
+	case RN_ListWorkflowTemplateFolders:
+
+		x = h.s.workflowTemplateFolders
+
+	case RN_ListActionTemplateFolders:
+
+		x = h.s.actionTemplateFolders
+
+	default:
+
+		ErrResponse(w, fmt.Errorf(http.StatusText(http.StatusBadRequest)))
 		return
+
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err = io.Copy(w, bytes.NewReader(b))
+	err := json.NewEncoder(w).Encode(x)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -213,23 +225,6 @@ func (h *Handler) workflowTemplate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/x-yaml")
 	if _, err = io.Copy(w, bytes.NewReader(b)); err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-}
-
-func (h *Handler) actionTemplateFolders(w http.ResponseWriter, r *http.Request) {
-
-	b, err := json.Marshal(h.s.actionTemplateFolders())
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	_, err = io.Copy(w, bytes.NewReader(b))
-	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
