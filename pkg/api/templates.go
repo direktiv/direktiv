@@ -217,28 +217,25 @@ func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
 	folder := mux.Vars(r)["folder"]
 	n := mux.Vars(r)["template"]
 
-	var x interface{}
+	var err error
+	var b []byte
 
 	switch mux.CurrentRoute(r).GetName() {
 	case RN_GetWorkflowTemplate:
 
-		b, err := h.s.workflowTemplate(folder, n)
+		b, err = h.s.workflowTemplate(folder, n)
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
-
-		x = b
 
 	case RN_GetActionTemplate:
 
-		b, err := h.s.actionTemplate(folder, n)
+		b, err = h.s.actionTemplate(folder, n)
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
-
-		x = b
 
 	default:
 
@@ -248,7 +245,11 @@ func (h *Handler) getTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	writeData(x, w)
+	_, err = io.Copy(w, bytes.NewReader(b))
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 }
 
