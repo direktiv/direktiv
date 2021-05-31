@@ -9,14 +9,14 @@ import (
 )
 
 const (
-	humanErrorInvalidRegex string = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
+	humanErrorInvalidRegex string     = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
+	unknownGrpcCode        codes.Code = 20
 )
 
 // ErrObject for grpc
 type ErrObject struct {
-	Code     int
-	Message  string
-	grpcCode codes.Code
+	Code    codes.Code
+	Message string
 }
 
 var grpcErrorHttpCodeMap = map[codes.Code]int{
@@ -36,10 +36,11 @@ var grpcErrorHttpCodeMap = map[codes.Code]int{
 	codes.Unavailable:        http.StatusBadRequest,
 	codes.DataLoss:           http.StatusBadRequest,
 	codes.Unauthenticated:    http.StatusBadRequest,
+	unknownGrpcCode:          http.StatusInternalServerError,
 }
 
-// convertGRPCStatusCodeToHTTPCode - Errors GRPC
-func convertGRPCStatusCodeToHTTPCode(code codes.Code) int {
+// ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes
+func ConvertGRPCStatusCodeToHTTPCode(code codes.Code) int {
 	if val, ok := grpcErrorHttpCodeMap[code]; ok {
 		return val
 	}
@@ -47,14 +48,14 @@ func convertGRPCStatusCodeToHTTPCode(code codes.Code) int {
 	return http.StatusInternalServerError
 }
 
+// GenerateErrObject - Unwrap grpc errors into ErrorObject
 func GenerateErrObject(err error) *ErrObject {
 	eo := new(ErrObject)
 	if st, ok := status.FromError(err); ok {
-		eo.Code = convertGRPCStatusCodeToHTTPCode(st.Code())
+		eo.Code = st.Code()
 		eo.Message = st.Message()
-		eo.grpcCode = st.Code()
 	} else {
-		eo.Code = 999
+		eo.Code = unknownGrpcCode
 		eo.Message = err.Error()
 	}
 
@@ -66,12 +67,8 @@ func GenerateErrObject(err error) *ErrObject {
 	return eo
 }
 
-func (e *ErrObject) GrpcCode() codes.Code {
-	return e.grpcCode
-}
-
 func (e *ErrObject) isRegexError() (ok bool) {
-	if e.grpcCode != codes.InvalidArgument {
+	if e.Code != codes.InvalidArgument {
 		ok = false
 	} else if strings.HasSuffix(e.Message, `^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`) {
 		ok = true

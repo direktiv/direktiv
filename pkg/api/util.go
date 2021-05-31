@@ -38,8 +38,9 @@ func paginationParams(r *http.Request) (offset, limit int) {
 // ErrResponse creates error based on grpc error
 func ErrResponse(w http.ResponseWriter, err error) {
 	eo := GenerateErrObject(err)
+	respCode := ConvertGRPCStatusCodeToHTTPCode(eo.Code)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(eo.Code)
+	w.WriteHeader(respCode)
 	json.NewEncoder(w).Encode(eo)
 }
