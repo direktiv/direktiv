@@ -189,8 +189,7 @@ func handleSuccessRecord(r *record, s *StateData) {
 			s.Outcomes.Transitions[r.r.Transition] = 1
 			s.MeanOutcomes.Transitions[r.r.Transition] = 0
 		} else {
-			x := s.Outcomes.Transitions[r.r.Transition]
-			s.Outcomes.Transitions[r.r.Transition] = x + 1
+			s.Outcomes.Transitions[r.r.Transition] += 1
 		}
 	}
 }
@@ -253,9 +252,7 @@ func finaliseStateRecordValues(args *finaliseStateRecordValuesArgs) {
 			if _, ok := args.allErrors[k]; !ok {
 				args.allErrors[k] = v
 			} else {
-				x := args.allErrors[k]
-				x += v
-				args.allErrors[k] = x
+				args.allErrors[k] += v
 			}
 			thisState.UnhandledErrorsRepresentation[k] = float32(v) / float32(thisState.totalUnhandledErrors)
 		}
