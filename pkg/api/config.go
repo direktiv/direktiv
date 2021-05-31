@@ -129,3 +129,31 @@ func Configure() (*Config, error) {
 	return cfg, err
 
 }
+
+func (c *Config) hasWorkflowTemplateDefault() bool {
+	if c.Templates.WorkflowTemplateDirectories == nil {
+		return false
+	}
+
+	for _, tuple := range c.Templates.WorkflowTemplateDirectories {
+		if tuple.Label == "default" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *Config) hasActionTemplateDefault() bool {
+	if c.Templates.ActionTemplateDirectories == nil {
+		return false
+	}
+
+	for _, tuple := range c.Templates.ActionTemplateDirectories {
+		if tuple.Label == "default" {
+			return true
+		}
+	}
+
+	return false
+}
