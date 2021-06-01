@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	humanErrorInvalidRegex string     = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
-	unknownGrpcCode        codes.Code = 20
+	humanErrorInvalidRegex string = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
+
+	// GenericErrorCode - Reserved status code for generic non grpc errors
+	GenericErrorCode codes.Code = 50
 )
 
 // ErrObject for grpc
@@ -36,7 +38,7 @@ var grpcErrorHttpCodeMap = map[codes.Code]int{
 	codes.Unavailable:        http.StatusBadRequest,
 	codes.DataLoss:           http.StatusBadRequest,
 	codes.Unauthenticated:    http.StatusBadRequest,
-	unknownGrpcCode:          http.StatusInternalServerError,
+	GenericErrorCode:         http.StatusInternalServerError,
 }
 
 // ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes
@@ -55,7 +57,7 @@ func GenerateErrObject(err error) *ErrObject {
 		eo.Code = st.Code()
 		eo.Message = st.Message()
 	} else {
-		eo.Code = unknownGrpcCode
+		eo.Code = GenericErrorCode
 		eo.Message = err.Error()
 	}
 
