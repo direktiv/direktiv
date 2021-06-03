@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -370,6 +371,14 @@ func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRe
 		}
 	}
 
+	subDirs := []string{"namespace", "workflow", "instance"}
+	for _, d := range subDirs {
+		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0777)
+		if err != nil {
+			return fmt.Errorf("failed to prepare isolate output dirs: %v", err)
+		}
+	}
+
 	return nil
 
 }
@@ -418,8 +427,115 @@ func (worker *inboundWorker) handleIsolateRequest(req *inboundRequest) {
 		return
 	}
 
+	// fetch output variables
+	err = worker.setOutVariables(rctx, ir)
+	if err != nil {
+		worker.reportSidecarError(ir, err)
+		return
+	}
+
 	worker.respondToFlow(rctx, ir, out)
 
+}
+
+func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateRequest) error {
+
+	subDirs := []string{"namespace", "workflow", "instance"}
+	for _, d := range subDirs {
+
+		out := path.Join(worker.isolateDir(ir), "out", d)
+
+		files, err := ioutil.ReadDir(out)
+		if err != nil {
+			return fmt.Errorf("can not read out folder: %v", err)
+		}
+
+		for _, f := range files {
+
+			fp := path.Join(worker.isolateDir(ir), "out", d, f.Name())
+
+			if f.IsDir() {
+
+				tf, err := ioutil.TempFile("", "outtar")
+				if err != nil {
+					return err
+				}
+
+				err = tarGzDir(fp, tf)
+				if err != nil {
+					return err
+				}
+				defer os.Remove(tf.Name())
+
+				end, _ := tf.Seek(0, io.SeekEnd)
+				tf.Seek(0, io.SeekStart)
+
+				err = worker.srv.setVar(ctx, ir, end, tf, d, f.Name())
+				if err != nil {
+					return err
+				}
+
+			} else {
+
+				v, err := os.Open(fp)
+				if err != nil {
+					return err
+				}
+				defer v.Close()
+
+				err = worker.srv.setVar(ctx, ir, f.Size(), v, d, f.Name())
+				if err != nil {
+					return err
+				}
+
+			}
+
+		}
+
+	}
+
+	return nil
+}
+
+func tarGzDir(src string, buf io.Writer) error {
+
+	zr := gzip.NewWriter(buf)
+	tw := tar.NewWriter(zr)
+
+	filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+
+		header, err := tar.FileInfoHeader(fi, file)
+		if err != nil {
+			return err
+		}
+
+		header.Name = filepath.ToSlash(file)
+
+		if err := tw.WriteHeader(header); err != nil {
+			return err
+		}
+
+		if !fi.IsDir() {
+			data, err := os.Open(file)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(tw, data); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err := tw.Close(); err != nil {
+		return err
+	}
+
+	if err := zr.Close(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *isolateRequest, out *outcome) {
