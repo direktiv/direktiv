@@ -454,8 +454,8 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 
 			fp := path.Join(worker.isolateDir(ir), "out", d, f.Name())
 
-			if f.IsDir() {
-
+			switch mode := f.Mode(); {
+			case mode.IsDir():
 				tf, err := ioutil.TempFile("", "outtar")
 				if err != nil {
 					return err
@@ -474,9 +474,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 				if err != nil {
 					return err
 				}
-
-			} else {
-
+			case mode.IsRegular():
 				v, err := os.Open(fp)
 				if err != nil {
 					return err
@@ -502,7 +500,11 @@ func tarGzDir(src string, buf io.Writer) error {
 	zr := gzip.NewWriter(buf)
 	tw := tar.NewWriter(zr)
 
-	filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+	err := filepath.Walk(src, func(file string, fi os.FileInfo, err error) error {
+
+		if !fi.Mode().IsDir() && !fi.Mode().IsRegular() {
+			return nil
+		}
 
 		header, err := tar.FileInfoHeader(fi, file)
 		if err != nil {
@@ -526,6 +528,10 @@ func tarGzDir(src string, buf io.Writer) error {
 		}
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
 
 	if err := tw.Close(); err != nil {
 		return err
