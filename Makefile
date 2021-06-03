@@ -28,8 +28,11 @@ protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_fi
 .PHONY: local-docker-ui
 local-docker-ui:
 local-docker-ui: build
+	echo  ${mkfile_dir_main}direktiv-ui
 	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
 		git clone https://github.com/vorteil/direktiv-ui.git; \
+	else \
+		cd ${mkfile_dir_main}direktiv-ui && git pull; \
 	fi
 	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server
 .PHONY: docker-ui
