@@ -181,11 +181,12 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
 	}
 
-	wli.step = step
-	if len(rec.Flow) != wli.step {
+	wli.step = len(rec.Flow)
+	if step >= 0 && step != wli.step {
 		wli.unlock()
 		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: steps out of sync (expect/actual - %d/%d)", step, len(rec.Flow)))
 	}
+	step = wli.step
 
 	state := rec.Flow[step-1]
 	states := wli.wf.GetStatesMap()
@@ -686,7 +687,7 @@ func (wli *workflowLogicInstance) scheduleTimeout(oldController string, t time.T
 	args := &timeoutArgs{
 		InstanceId: wli.id,
 		Step:       wli.step,
-		Soft:       false,
+		Soft:       soft,
 	}
 
 	data, err := json.Marshal(args)
@@ -817,7 +818,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 
 	wli.ScheduleSoftTimeout(oldController, deadline)
 
-	wli.engine.runState(ctx, wli, nil, nil)
+	wli.engine.runState(ctx, wli, nil, nil, nil)
 
 }
 
