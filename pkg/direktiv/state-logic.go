@@ -189,6 +189,10 @@ func extractEventPayload(event *cloudevents.Event) (interface{}, error) {
 	var x interface{}
 	var err error
 
+	if len(event.Data()) == 0 {
+		return "", nil
+	}
+
 	if event.DataContentType() == "application/json" || event.DataContentType() == "" {
 		err = json.Unmarshal(event.Data(), &x)
 		if err != nil {
