@@ -70,7 +70,26 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, instance *workflowLog
 		}
 
 		var events []*model.ConsumeEventDefinition
-		events = append(events, sl.state.Event)
+
+		event := new(model.ConsumeEventDefinition)
+		event.Type = sl.state.Event.Type
+		event.Context = make(map[string]interface{})
+		for k, v := range sl.state.Event.Context {
+			query, ok := v.(string)
+			if !ok {
+				err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': not a jq query string", k)
+				return
+			}
+			var x interface{}
+			x, err = jqOne(instance.data, query)
+			if err != nil {
+				err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
+				return
+			}
+			event.Context[k] = x
+		}
+
+		events = append(events, event)
 
 		instance.engine.clearEventListeners(instance.rec)
 
