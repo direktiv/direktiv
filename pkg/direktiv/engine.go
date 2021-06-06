@@ -882,10 +882,10 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 }
 
-func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte) {
+func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
 	log.Debugf("Running state logic -- %s:%v (%s)", wli.id, wli.step, wli.logic.ID())
-	if len(savedata) == 0 && len(wakedata) == 0 {
+	if len(savedata) == 0 && len(wakedata) == 0 && err == nil {
 		wli.Log("Running state logic -- %s:%v (%s)", wli.logic.ID(), wli.step, wli.logic.Type())
 	}
 
@@ -893,7 +893,7 @@ func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wake
 
 func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
-	we.logRunState(wli, savedata, wakedata)
+	we.logRunState(wli, savedata, wakedata, err)
 
 	var code string
 	var transition *stateTransition
