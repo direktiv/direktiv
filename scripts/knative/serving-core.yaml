@@ -1059,7 +1059,7 @@ spec:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
-                    description: 'Conditions defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
                     type: object
                     required:
                       - status
@@ -1244,7 +1244,7 @@ spec:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
-                    description: 'Conditions defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
                     type: object
                     required:
                       - status
@@ -1393,7 +1393,7 @@ spec:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
-                    description: 'Conditions defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
                     type: object
                     required:
                       - status
@@ -2088,7 +2088,7 @@ spec:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
-                    description: 'Conditions defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
                     type: object
                     required:
                       - status
@@ -2258,7 +2258,7 @@ spec:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
-                    description: 'Conditions defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
                     type: object
                     required:
                       - status
@@ -3093,7 +3093,7 @@ spec:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
-                    description: 'Conditions defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
                     type: object
                     required:
                       - status
@@ -3183,7 +3183,7 @@ metadata:
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  image: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:9e41132520aa97b474b5eb3c594302d9138bc127719950edd2a09d52b0e6baac
+  image: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:d32998c0b5ae3981f76ce8e91f6229469a318fd5a6eba8ee09722651eedfb04a
 
 ---
 # Copyright 2018 The Knative Authors
@@ -3551,7 +3551,7 @@ metadata:
 data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  queueSidecarImage: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:9e41132520aa97b474b5eb3c594302d9138bc127719950edd2a09d52b0e6baac
+  queueSidecarImage: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:d32998c0b5ae3981f76ce8e91f6229469a318fd5a6eba8ee09722651eedfb04a
   _example: |
     ################################
     #                              #
@@ -4056,7 +4056,7 @@ metadata:
   labels:
     serving.knative.dev/release: devel
   annotations:
-    knative.dev/example-checksum: "15954d34"
+    knative.dev/example-checksum: "386cf23d"
 data:
   _example: |
     ################################
@@ -4137,7 +4137,7 @@ data:
     # It requires autoTLS to be enabled.
     # 1. Enabled: The Knative ingress will be able to serve HTTP connection.
     # 2. Disabled: The Knative ingress will reject HTTP traffic.
-    # 3. Redirected: The Knative ingress will send a 302 redirect for all
+    # 3. Redirected: The Knative ingress will send a 301 redirect for all
     # http connections, asking the clients to use HTTPS.
     httpProtocol: "Enabled"
 
@@ -4441,7 +4441,7 @@ spec:
         - name: activator
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/direktiv/knative.dev/serving/cmd/activator@sha256:ebc6a915aa1ab799db779152ec7308e2074b28e08854643bf94ab75d38cf1317
+          image: gcr.io/direktiv/knative.dev/serving/cmd/activator@sha256:fce2fe5b651ce8ac1f550cb3627997d16cce09661b92ce17b7457dac7bd60242
           # The numbers are based on performance test results from
           # https://github.com/knative/serving/issues/1625#issuecomment-511930023
           resources:
@@ -4591,7 +4591,7 @@ spec:
         - name: autoscaler
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/direktiv/knative.dev/serving/cmd/autoscaler@sha256:053329f0cd912186111ef870b64ea6764fb8ffbba66442a578c119424dbe4cad
+          image: gcr.io/direktiv/knative.dev/serving/cmd/autoscaler@sha256:d3a47947241c445173051b10e267531386494848f2bfa2a72835d1f696b00e54
           resources:
             requests:
               cpu: 100m
@@ -4719,7 +4719,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/direktiv/knative.dev/serving/cmd/controller@sha256:09bf68a4c04644a1fc0687616967c6ccc8a121e2018ff4ee32fe9ae92324bb49
+          image: gcr.io/direktiv/knative.dev/serving/cmd/controller@sha256:8d38b3f9c1d136f6d364ba1341b445a8bcd3bb4fcd31cafc8578da8a1afc8f8d
           resources:
             requests:
               cpu: 100m
@@ -4879,7 +4879,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/direktiv/knative.dev/serving/cmd/webhook@sha256:a613695ee8c54d42bcb0199b2879d3b205393e4e7c886fd6f60373f46b217d4a
+          image: gcr.io/direktiv/knative.dev/serving/cmd/webhook@sha256:b96a309c350fa5c16670dec840b98c8922cd3dd26fd8516464a32c6a3b1567a7
           resources:
             requests:
               cpu: 100m

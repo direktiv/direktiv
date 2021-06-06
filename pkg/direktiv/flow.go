@@ -78,7 +78,7 @@ func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportAc
 		return nil, err
 	}
 
-	go fs.engine.runState(ctx, wli, savedata, wakedata)
+	go fs.engine.runState(ctx, wli, savedata, wakedata, nil)
 
 	return &resp, nil
 
@@ -93,7 +93,7 @@ func (fs *flowServer) Resume(ctx context.Context, in *flow.ResumeRequest) (*empt
 		return nil, err
 	}
 
-	go fs.engine.runState(ctx, wli, nil, nil)
+	go fs.engine.runState(ctx, wli, nil, nil, nil)
 
 	return &resp, nil
 

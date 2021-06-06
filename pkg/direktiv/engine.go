@@ -20,8 +20,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vorteil/direktiv/ent/workflowinstance"
-	"github.com/vorteil/direktiv/pkg/dlog/dummy"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
@@ -284,7 +282,7 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 		return err
 	}
 
-	go wli.engine.runState(ctx, wli, savedata, wakedata)
+	go wli.engine.runState(ctx, wli, savedata, wakedata, nil)
 
 	return nil
 
@@ -559,7 +557,7 @@ func (we *workflowEngine) sleepWakeup(data []byte) error {
 
 	wli.Log("Waking up from sleep.")
 
-	go wli.engine.runState(ctx, wli, nil, []byte(sleepWakedata))
+	go wli.engine.runState(ctx, wli, nil, []byte(sleepWakedata), nil)
 
 	return nil
 
@@ -672,7 +670,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 	go func() {
 
-		timer := time.After(time.Millisecond)
+		timer := time.After(100 * time.Millisecond)
 
 		for {
 
@@ -693,101 +691,26 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 		close(killer)
 	}()
 
-	tx, err := we.db.dbEnt.Tx(ctx)
+	ctx, wli, err := we.loadWorkflowLogicInstance(instanceId, -1)
 	if err != nil {
+		err = fmt.Errorf("cannot load workflow logic instance: %v", err)
+		log.Error(err)
 		return err
 	}
 
-	rec, err := tx.WorkflowInstance.Query().Where(workflowinstance.InstanceIDEQ(instanceId)).WithWorkflow(func(q *ent.WorkflowQuery) {
-		q.WithNamespace()
-	}).Only(ctx)
+	savedata, err := InstanceMemory(wli.rec)
 	if err != nil {
-		return rollback(tx, err)
-	}
-
-	if rec.Status != "pending" && rec.Status != "running" {
-		return rollback(tx, nil)
-	}
-
-	we.completeState(ctx, rec, "", code, false)
-
-	ns, err := rec.QueryWorkflow().QueryNamespace().Only(ctx)
-	if err != nil {
-		return rollback(tx, err)
-	}
-
-	rec, err = rec.Update().
-		SetStatus("cancelled").
-		SetEndTime(time.Now()).
-		SetErrorCode(code).
-		SetErrorMessage(message).
-		Save(ctx)
-	if err != nil {
-		return rollback(tx, err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return rollback(tx, err)
-	}
-
-	rec, err = we.db.getWorkflowInstanceByID(ctx, rec.ID)
-	if err != nil {
+		wli.Close()
 		return err
 	}
 
-	err = we.cancelRecordsChildren(ctx, rec)
-	if err != nil {
-		log.Error(err)
+	if soft {
+		err = NewCatchableError(code, message)
+	} else {
+		err = NewUncatchableError(code, message)
 	}
 
-	err = we.timer.deleteTimerByName(rec.Controller, we.server.hostname, instanceId)
-	if err != nil {
-		log.Error(err)
-	}
-
-	// TODO: cancel any other outstanding timers
-	logger, err := (*we.instanceLogger).LoggerFunc(ns.ID, instanceId)
-	if err != nil {
-		dl, _ := dummy.NewLogger()
-		logger, _ = dl.LoggerFunc(ns.ID, instanceId)
-	}
-	defer logger.Close()
-
-	logger.Info(fmt.Sprintf("Workflow %s.", message))
-
-	we.freeResources(rec)
-
-	if rec.InvokedBy != "" {
-
-		// wakeup caller
-		caller := new(subflowCaller)
-		err = json.Unmarshal([]byte(rec.InvokedBy), caller)
-		if err != nil {
-			log.Error(err)
-			return nil
-		}
-
-		msg := &actionResultMessage{
-			InstanceID: caller.InstanceID,
-			State:      caller.State,
-			Step:       caller.Step,
-			Payload: actionResultPayload{
-				ActionID:     instanceId,
-				ErrorCode:    rec.ErrorCode,
-				ErrorMessage: rec.ErrorMessage,
-			},
-		}
-
-		logger.Info(fmt.Sprintf("Reporting failure to calling workflow."))
-
-		err = we.wakeCaller(ctx, msg)
-		if err != nil {
-			log.Error(err)
-			return nil
-		}
-
-	}
+	go wli.engine.runState(ctx, wli, savedata, nil, err)
 
 	return nil
 
@@ -836,7 +759,7 @@ func (we *workflowEngine) retryWakeup(data []byte) error {
 
 	wli.Log("Retrying failed state.")
 
-	go wli.engine.runState(ctx, wli, nil, nil)
+	go wli.engine.runState(ctx, wli, nil, nil, nil)
 
 	return nil
 
@@ -959,25 +882,25 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 }
 
-func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte) {
+func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
 	log.Debugf("Running state logic -- %s:%v (%s)", wli.id, wli.step, wli.logic.ID())
-	if len(savedata) == 0 && len(wakedata) == 0 {
+	if len(savedata) == 0 && len(wakedata) == 0 && err == nil {
 		wli.Log("Running state logic -- %s:%v (%s)", wli.logic.ID(), wli.step, wli.logic.Type())
 	}
 
 }
 
-func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte) {
+func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
-	we.logRunState(wli, savedata, wakedata)
+	we.logRunState(wli, savedata, wakedata, err)
 
-	// defer wli.unlock()
-	// defer wli.Close()
-
-	var err error
 	var code string
 	var transition *stateTransition
+
+	if err != nil {
+		goto failure
+	}
 
 	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
 		var object interface{}
