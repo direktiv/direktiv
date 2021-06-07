@@ -677,7 +677,7 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *isolateRequest, w io.Wri
 		data := msg.GetValue()
 		received += int64(len(data))
 
-		if totalSize > received {
+		if received > totalSize {
 			return errors.New("variable returned too many bytes")
 		}
 
