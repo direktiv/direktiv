@@ -76,8 +76,6 @@ func (worker *inboundWorker) run() {
 
 func (worker *inboundWorker) fileReader(ctx context.Context, ir *isolateRequest, f *isolateFiles, pw *io.PipeWriter) error {
 
-	defer pw.Close()
-
 	err := worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
 	if err != nil {
 		return err
@@ -456,6 +454,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 
 			switch mode := f.Mode(); {
 			case mode.IsDir():
+
 				tf, err := ioutil.TempFile("", "outtar")
 				if err != nil {
 					return err
@@ -475,6 +474,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 					return err
 				}
 			case mode.IsRegular():
+
 				v, err := os.Open(fp)
 				if err != nil {
 					return err
@@ -511,7 +511,8 @@ func tarGzDir(src string, buf io.Writer) error {
 			return err
 		}
 
-		header.Name = filepath.ToSlash(file)
+		// use "subpath"
+		header.Name = filepath.ToSlash(file[len(src):])
 
 		if err := tw.WriteHeader(header); err != nil {
 			return err
