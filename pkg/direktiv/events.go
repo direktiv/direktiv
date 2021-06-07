@@ -44,10 +44,6 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 					return false
 				}
 
-				if v == f {
-					return true
-				}
-
 			} else {
 				log.Debugf("event does not contain %v", kt)
 				return false
@@ -221,6 +217,12 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 
 		// adding source for comparison
 		m := ce.Context.GetExtensions()
+
+		// if there is none, we need to create one for source
+		if m == nil {
+			m = make(map[string]interface{})
+		}
+
 		m["source"] = ce.Context.GetSource()
 
 		// check filters
