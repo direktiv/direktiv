@@ -100,8 +100,10 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 		event.SetData("application/json", x)
 	}
 
-	// TODO: sl.state.Event.Context
-	instance.Log("Context information not generated.")
+	for k, v := range sl.state.Event.Context {
+		instance.Log("Adding context %v: %v", k, v)
+		event.Context.SetExtension(k, v)
+	}
 
 	data, err = event.MarshalJSON()
 	if err != nil {

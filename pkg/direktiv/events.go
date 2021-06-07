@@ -12,7 +12,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	"github.com/mitchellh/hashstructure/v2"
 	hash "github.com/mitchellh/hashstructure/v2"
 	glob "github.com/ryanuber/go-glob"
 	log "github.com/sirupsen/logrus"
@@ -30,8 +29,10 @@ func init() {
 func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 
 	for k, f := range eventMap {
+
 		if strings.HasPrefix(k, filterPrefix) {
 			kt := strings.TrimPrefix(k, filterPrefix)
+
 			if v, ok := extensions[kt]; ok {
 
 				fs, ok := f.(string)
@@ -41,10 +42,6 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 				if ok && ok2 && !glob.Glob(fs, vs) {
 					log.Debugf("%s does not match %s", vs, fs)
 					return false
-				}
-
-				if v == f {
-					return true
 				}
 
 			} else {
@@ -58,6 +55,20 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 	return true
 }
 
+func hasEventInList(ev *cloudevents.Event, evl []*cloudevents.Event) bool {
+
+	for _, e := range evl {
+
+		if ev.Context.GetID() == e.Context.GetID() &&
+			ev.Context.GetSource() == e.Context.GetSource() {
+			return true
+		}
+
+	}
+
+	return false
+}
+
 func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 	correlations []string) ([]*cloudevents.Event, error) {
 
@@ -65,12 +76,6 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 	db := s.dbManager.dbEnt.DB()
 
 	chash := generateCorrelationHash(ce, ce.Type(), correlations)
-
-	// sql := fmt.Sprintf(`update workflow_events_waits
-	// 	set events = jsonb_set(events, '{%s}', '"%s"', true)
-	// 	WHERE events::jsonb ? '%s' and workflow_events_wfeventswait = %d
-	// 	returning *`, chash,
-	// 	base64.StdEncoding.EncodeToString(eventToBytes(*ce)), chash, id)
 
 	rows, err := db.Query(`update workflow_events_waits
 	set events = jsonb_set(events, $1, $2, true)
@@ -127,7 +132,10 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 					continue
 				}
 				ev := bytesToEvent(b)
-				retEvents = append(retEvents, ev)
+
+				if !hasEventInList(ev, retEvents) {
+					retEvents = append(retEvents, ev)
+				}
 			}
 
 		}
@@ -182,7 +190,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 			continue
 		}
 
-		hash, _ := hashstructure.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hashstructure.FormatV2, nil)
+		hash, _ := hash.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hash.FormatV2, nil)
 
 		unlock := func() {
 			if conn != nil {
@@ -207,8 +215,18 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 			continue
 		}
 
+		// adding source for comparison
+		m := ce.Context.GetExtensions()
+
+		// if there is none, we need to create one for source
+		if m == nil {
+			m = make(map[string]interface{})
+		}
+
+		m["source"] = ce.Context.GetSource()
+
 		// check filters
-		if !matchesExtensions(eventMap, ce.Context.GetExtensions()) {
+		if !matchesExtensions(eventMap, m) {
 			log.Debugf("event listener %d does not match", id)
 			unlock()
 			continue
