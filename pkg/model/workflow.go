@@ -12,16 +12,16 @@ import (
 const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
 type Workflow struct {
-	ID          string               `yaml:"id"`
-	Name        string               `yaml:"name,omitempty"`
-	Description string               `yaml:"description,omitempty"`
-	Version     string               `yaml:"version,omitempty"`
-	Exclusive   bool                 `yaml:"singular,omitempty"`
-	Functions   []FunctionDefinition `yaml:"functions,omitempty"`
-	Schemas     []SchemaDefinition   `yaml:"schemas,omitempty"`
-	States      []State              `yaml:"states,omitempty"`
-	Timeouts    *TimeoutDefinition   `yaml:"timeouts,omitempty"`
-	Start       StartDefinition      `yaml:"start,omitempty"`
+	ID          string               `yaml:"id" json:"id"`
+	Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
+	Description string               `yaml:"description,omitempty" json:"description,omitempty"`
+	Version     string               `yaml:"version,omitempty" json:"version,omitempty"`
+	Exclusive   bool                 `yaml:"singular,omitempty" json:"singular,omitempty"`
+	Functions   []FunctionDefinition `yaml:"functions,omitempty" json:"functions,omitempty"`
+	Schemas     []SchemaDefinition   `yaml:"schemas,omitempty" json:"schemas,omitempty"`
+	States      []State              `yaml:"states,omitempty" json:"states,omitempty"`
+	Timeouts    *TimeoutDefinition   `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
+	Start       StartDefinition      `yaml:"start,omitempty" json:"start,omitempty"`
 }
 
 func (o *Workflow) unmarshal(m map[string]interface{}) error {
