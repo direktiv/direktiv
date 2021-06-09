@@ -113,34 +113,9 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 		for _, inputSource := range array {
 
-			var input interface{}
-
-			input, err = jqObject(inputSource, ".")
-			if err != nil {
-				return
-			}
-
-			m, ok := input.(map[string]interface{})
-			if !ok {
-				err = NewInternalError(errors.New("invalid state data"))
-				return
-			}
-
-			m, err = addSecrets(ctx, instance, m, sl.state.Action.Secrets...)
-			if err != nil {
-				return
-			}
-
-			input, err = jqObject(m, action.Input)
-			if err != nil {
-				return
-			}
-
 			var inputData []byte
-
-			inputData, err = json.Marshal(input)
+			inputData, err = generateActionInput(ctx, instance, inputSource, sl.state.Action)
 			if err != nil {
-				err = NewInternalError(err)
 				return
 			}
 
