@@ -1,10 +1,10 @@
 package api
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -105,19 +105,10 @@ func (h *Handler) namespaceEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var contentType string
-	if typeMap, ok := r.Header["Content-Type"]; ok {
-		contentType = typeMap[0]
-	}
-
-	switch contentType {
-	case "application/cloudevents+json; charset=utf-8":
-	case "application/cloudevents+json":
-	case "application/json; charset=utf-8":
-	case "application/json":
-		break
-	default:
-		ErrResponse(w, fmt.Errorf("content type '%s' is not supported. supported media types: 'application/json' ", contentType))
+	event := new(cloudevents.Event)
+	err = event.UnmarshalJSON(b)
+	if err != nil {
+		ErrResponse(w, err)
 		return
 	}
 
