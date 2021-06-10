@@ -141,8 +141,16 @@ func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 	}
 
 	log.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
+	dlogger, err := is.wfServer.instanceLogger.NamespaceLogger(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	dlogger.Info(fmt.Sprintf("Broadcasting event: type=%s, source=%s", event.Type(), event.Source()))
 
 	err = is.wfServer.handleEvent(*in.Namespace, event)
+
+	dlogger.Close()
 
 	return &resp, err
 
