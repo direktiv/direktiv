@@ -5,6 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"reflect"
+	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -129,34 +132,9 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		var input interface{}
-
-		input, err = jqObject(instance.data, ".")
-		if err != nil {
-			return
-		}
-
-		m, ok := input.(map[string]interface{})
-		if !ok {
-			err = NewInternalError(errors.New("invalid state data"))
-			return
-		}
-
-		m, err = addSecrets(ctx, instance, m, sl.state.Action.Secrets...)
-		if err != nil {
-			return
-		}
-
-		input, err = jqObject(m, sl.state.Action.Input)
-		if err != nil {
-			return
-		}
-
 		var inputData []byte
-
-		inputData, err = json.Marshal(input)
+		inputData, err = generateActionInput(ctx, instance, instance.data, sl.state.Action)
 		if err != nil {
-			err = NewInternalError(err)
 			return
 		}
 
@@ -352,5 +330,96 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	}
 
 	return
+
+}
+
+func generateActionInput(ctx context.Context, instance *workflowLogicInstance, data interface{}, action *model.ActionDefinition) ([]byte, error) {
+
+	var err error
+	var input interface{}
+
+	input, err = jqObject(data, ".")
+	if err != nil {
+		return nil, err
+	}
+
+	m, ok := input.(map[string]interface{})
+	if !ok {
+		err = NewInternalError(errors.New("invalid state data"))
+		return nil, err
+	}
+
+	m, err = addSecrets(ctx, instance, m, action.Secrets...)
+	if err != nil {
+		return nil, err
+	}
+
+	var recurse func(x interface{}) (interface{}, error)
+	recurse = func(x interface{}) (interface{}, error) {
+		switch x.(type) {
+		case bool:
+			return x, nil
+		case int:
+			return x, nil
+		case float64:
+			return x, nil
+		case string:
+			s := x.(string)
+			if strings.HasPrefix(s, "{{") && strings.HasSuffix(s, "}}") {
+				s = s[2 : len(s)-2]
+				z, err := jqOne(input, s)
+				if err != nil {
+					return nil, err
+				}
+				return z, nil
+			} else {
+				return s, nil
+			}
+		case map[string]interface{}:
+			var m = make(map[string]interface{})
+			for k, y := range x.(map[string]interface{}) {
+				z, err := recurse(y)
+				if err != nil {
+					return nil, err
+				}
+				m[k] = z
+			}
+			return m, nil
+		case []interface{}:
+			var list []interface{}
+			for _, y := range x.([]interface{}) {
+				z, err := recurse(y)
+				if err != nil {
+					return nil, err
+				}
+				list = append(list, z)
+			}
+			return list, nil
+		default:
+			return nil, NewInternalError(fmt.Errorf("unexpected type '%s'", reflect.TypeOf(x)))
+		}
+	}
+
+	if query, ok := action.Input.(string); ok {
+		input, err = jqObject(m, query)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		input, err = recurse(action.Input)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var inputData []byte
+
+	inputData, err = json.Marshal(input)
+	if err != nil {
+		err = NewInternalError(err)
+		return nil, err
+	}
+
+	return inputData, nil
 
 }

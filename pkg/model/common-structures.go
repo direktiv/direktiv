@@ -137,10 +137,10 @@ func (o *SchemaDefinition) Validate() error {
 }
 
 type ActionDefinition struct {
-	Function string   `yaml:"function,omitempty"`
-	Workflow string   `yaml:"workflow,omitempty"`
-	Input    string   `yaml:"input,omitempty"`
-	Secrets  []string `yaml:"secrets,omitempty"`
+	Function string      `yaml:"function,omitempty"`
+	Workflow string      `yaml:"workflow,omitempty"`
+	Input    interface{} `yaml:"input,omitempty"`
+	Secrets  []string    `yaml:"secrets,omitempty"`
 }
 
 func (o *ActionDefinition) Validate() error {

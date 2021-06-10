@@ -95,33 +95,10 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 	for _, action := range sl.state.Actions {
 
-		var input interface{}
-
-		input, err = jqObject(instance.data, ".")
-		if err != nil {
-			return err
-		}
-
-		m, ok := input.(map[string]interface{})
-		if !ok {
-			return NewInternalError(errors.New("invalid state data"))
-		}
-
-		m, err = addSecrets(ctx, instance, m, action.Secrets...)
-		if err != nil {
-			return err
-		}
-
-		input, err = jqObject(m, action.Input)
-		if err != nil {
-			return err
-		}
-
 		var inputData []byte
-
-		inputData, err = json.Marshal(input)
+		inputData, err = generateActionInput(ctx, instance, instance.data, &action)
 		if err != nil {
-			return NewInternalError(err)
+			return err
 		}
 
 		if action.Function != "" {
