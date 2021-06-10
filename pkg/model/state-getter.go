@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"regexp"
 )
 
 type GetterState struct {
@@ -23,8 +24,25 @@ func (o *GetterDefinition) Validate() error {
 		return errors.New(`scope required ("instance", "workflow", or "namespace")`)
 	}
 
+	switch o.Scope {
+	case "instance":
+	case "workflow":
+	case "namespace":
+	default:
+		return fmt.Errorf(`invalid scope '%s' (requires "instance", "workflow", or "namespace")`, o.Scope)
+	}
+
 	if o.Key == "" {
 		return errors.New(`key required`)
+	}
+
+	matched, err := regexp.MatchString(VariableNameRegex, o.Key)
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return fmt.Errorf("variable key must match regex: %s", VariableNameRegex)
 	}
 
 	return nil

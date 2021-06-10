@@ -14,6 +14,7 @@ import (
 )
 
 const CommonNameRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
+const VariableNameRegex = `^[^_-][\w]*[^_-]$`
 
 type TimeoutDefinition struct {
 	Interrupt string `yaml:"interrupt,omitempty"`
