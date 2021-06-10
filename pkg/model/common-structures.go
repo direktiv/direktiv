@@ -90,13 +90,13 @@ func (o *FunctionDefinition) Validate() error {
 		return errors.New("id required")
 	}
 
-	matched, err := regexp.MatchString(CommonNameRegex, o.ID)
+	matched, err := regexp.MatchString(VariableNameRegex, o.ID)
 	if err != nil {
 		return err
 	}
 
 	if !matched {
-		return fmt.Errorf("function id must match regex: %s", CommonNameRegex)
+		return fmt.Errorf("function id must match regex: %s", VariableNameRegex)
 	}
 
 	if o.Image == "" {
