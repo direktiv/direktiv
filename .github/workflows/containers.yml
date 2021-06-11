@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-  create:
+  push:
     tags:
       - v*
 jobs:
