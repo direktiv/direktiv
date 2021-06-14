@@ -7,10 +7,10 @@ import (
 
 type EventsAndState struct {
 	StateCommon `yaml:",inline"`
-	Events      []EventConditionDefinition `yaml:"events"`
-	Timeout     string                     `yaml:"timeout,omitempty"`
-	Transform   string                     `yaml:"transform,omitempty"`
-	Transition  string                     `yaml:"transition,omitempty"`
+	Events      []ConsumeEventDefinition `yaml:"events"`
+	Timeout     string                   `yaml:"timeout,omitempty"`
+	Transform   string                   `yaml:"transform,omitempty"`
+	Transition  string                   `yaml:"transition,omitempty"`
 }
 
 func (o *EventsAndState) GetID() string {
@@ -47,9 +47,9 @@ func (o *EventsAndState) GetTransitions() []string {
 	return transitions
 }
 
-func (o *EventsAndState) GetEvents() []EventConditionDefinition {
+func (o *EventsAndState) GetEvents() []ConsumeEventDefinition {
 	if o.Events == nil {
-		return make([]EventConditionDefinition, 0)
+		return make([]ConsumeEventDefinition, 0)
 	}
 
 	return o.Events
@@ -73,7 +73,7 @@ func (o *EventsAndState) Validate() error {
 	}
 
 	for i, event := range o.GetEvents() {
-		if err := event.Event.Validate(); err != nil {
+		if err := event.Validate(); err != nil {
 			return fmt.Errorf("event[%v] is invalid: %v", i, err)
 		}
 	}
