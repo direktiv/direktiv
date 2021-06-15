@@ -75,6 +75,84 @@ func (sl *parallelStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 }
 
+func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *workflowLogicInstance, action *model.ActionDefinition, attempt int) (logic multiactionTuple, err error) {
+
+	var inputData []byte
+	inputData, err = generateActionInput(ctx, instance, instance.data, action)
+	if err != nil {
+		return
+	}
+
+	if action.Function != "" {
+
+		// container
+
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
+
+		var fn *model.FunctionDefinition
+		fn, err = sl.workflow.GetFunction(action.Function)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
+
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
+
+		// TODO: timeout
+		ar.Container.Data = inputData
+		ar.Container.Image = fn.Image
+		ar.Container.Cmd = fn.Cmd
+		ar.Container.Size = fn.Size
+		ar.Container.Scale = fn.Scale
+
+		ar.Container.ID = fn.ID
+		ar.Container.Files = fn.Files
+
+		err = instance.engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
+		}
+
+	} else {
+
+		// subflow
+
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+		if err != nil {
+			return
+		}
+
+		logic = multiactionTuple{
+			ID:       subflowID,
+			Type:     "subflow",
+			Attempts: attempt,
+		}
+
+	}
+
+	return
+
+}
+
 func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *workflowLogicInstance, savedata []byte) error {
 
 	var err error
@@ -91,74 +169,13 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 	for _, action := range sl.state.Actions {
 
-		var inputData []byte
-		inputData, err = generateActionInput(ctx, instance, instance.data, &action)
+		var logic multiactionTuple
+		logic, err = sl.dispatchAction(ctx, instance, &action, 0)
 		if err != nil {
 			return err
 		}
 
-		if action.Function != "" {
-
-			// container
-
-			uid := ksuid.New()
-			logics = append(logics, multiactionTuple{
-				ID:   uid.String(),
-				Type: "isolate",
-			})
-
-			var fn *model.FunctionDefinition
-			fn, err = sl.workflow.GetFunction(action.Function)
-			if err != nil {
-				return NewInternalError(err)
-			}
-
-			ar := new(isolateRequest)
-			ar.ActionID = uid.String()
-			ar.Workflow.InstanceID = instance.id
-			ar.Workflow.Namespace = instance.namespace
-			ar.Workflow.State = sl.state.GetID()
-			ar.Workflow.Step = instance.step
-			ar.Workflow.Name = instance.wf.Name
-			ar.Workflow.ID = instance.wf.ID
-
-			// TODO: timeout
-			ar.Container.Data = inputData
-			ar.Container.Image = fn.Image
-			ar.Container.Cmd = fn.Cmd
-			ar.Container.Size = fn.Size
-			ar.Container.Scale = fn.Scale
-
-			ar.Container.ID = fn.ID
-			ar.Container.Files = fn.Files
-
-			err = instance.engine.doActionRequest(ctx, ar)
-			if err != nil {
-				return err
-			}
-
-		} else {
-
-			// subflow
-
-			caller := new(subflowCaller)
-			caller.InstanceID = instance.id
-			caller.State = sl.state.GetID()
-			caller.Step = instance.step
-
-			var subflowID string
-
-			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
-			if err != nil {
-				return err
-			}
-
-			logics = append(logics, multiactionTuple{
-				ID:   subflowID,
-				Type: "subflow",
-			})
-
-		}
+		logics = append(logics, logic)
 
 	}
 
@@ -174,6 +191,34 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 	}
 
 	return nil
+
+}
+
+func (sl *parallelStateLogic) doSpecific(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int) (err error) {
+
+	action := sl.state.Actions[idx]
+
+	var logic multiactionTuple
+	logic, err = sl.dispatchAction(ctx, instance, &action, logics[idx].Attempts)
+	if err != nil {
+		return
+	}
+
+	logics[idx] = logic
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return
+	}
+
+	return
 
 }
 

@@ -131,6 +131,145 @@ func (sd *actionStateSavedata) Marshal() []byte {
 	return data
 }
 
+func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInstance, attempt int) (transition *stateTransition, err error) {
+
+	var inputData []byte
+	inputData, err = generateActionInput(ctx, instance, instance.data, sl.state.Action)
+	if err != nil {
+		return
+	}
+
+	if sl.state.Action.Function != "" {
+
+		// container
+
+		uid := ksuid.New()
+
+		sd := &actionStateSavedata{
+			Id:       string(uid.Bytes()),
+			Attempts: attempt,
+		}
+
+		err = instance.Save(ctx, sd.Marshal())
+		if err != nil {
+			return
+		}
+
+		var fn *model.FunctionDefinition
+		fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
+
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
+
+		// TODO: timeout
+		ar.Container.Data = inputData
+		ar.Container.Image = fn.Image
+		ar.Container.Cmd = fn.Cmd
+		ar.Container.Size = fn.Size
+		ar.Container.Scale = fn.Scale
+
+		ar.Container.ID = fn.ID
+		ar.Container.Files = fn.Files
+
+		if sl.state.Async {
+
+			instance.Log("Running function '%s' in fire-and-forget mode (async).", fn.ID)
+
+			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
+
+				ar.Workflow.InstanceID = ""
+				ar.Workflow.Namespace = ""
+				ar.Workflow.State = ""
+				ar.Workflow.Step = 0
+
+				err = instance.engine.doActionRequest(ctx, ar)
+				if err != nil {
+					return
+				}
+
+			}(ctx, instance, ar)
+
+			transition = &stateTransition{
+				Transform: sl.state.Transform,
+				NextState: sl.state.Transition,
+			}
+
+			return
+
+		} else {
+
+			instance.Log("Sleeping until function '%s' returns.", fn.ID)
+
+			err = instance.engine.doActionRequest(ctx, ar)
+			if err != nil {
+				return
+			}
+
+		}
+
+	} else {
+
+		// subflow
+
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		if sl.state.Async {
+
+			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
+			if err != nil {
+				return
+			}
+
+			instance.Log("Running subflow '%s' in fire-and-forget mode (async).", subflowID)
+
+			transition = &stateTransition{
+				Transform: sl.state.Transform,
+				NextState: sl.state.Transition,
+			}
+
+			return
+
+		} else {
+
+			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
+			if err != nil {
+				return
+			}
+
+			instance.Log("Sleeping until subflow '%s' returns.", subflowID)
+
+			sd := &actionStateSavedata{
+				Id:       subflowID,
+				Attempts: attempt,
+			}
+
+			err = instance.Save(ctx, sd.Marshal())
+			if err != nil {
+				return
+			}
+
+		}
+
+	}
+
+	return
+}
+
 func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
@@ -142,141 +281,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		var inputData []byte
-		inputData, err = generateActionInput(ctx, instance, instance.data, sl.state.Action)
-		if err != nil {
-			return
-		}
-
-		if sl.state.Action.Function != "" {
-
-			// container
-
-			uid := ksuid.New()
-
-			sd := &actionStateSavedata{
-				Id:       string(uid.Bytes()),
-				Attempts: 0,
-			}
-
-			err = instance.Save(ctx, sd.Marshal())
-			if err != nil {
-				return
-			}
-
-			var fn *model.FunctionDefinition
-			fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
-			if err != nil {
-				err = NewInternalError(err)
-				return
-			}
-
-			ar := new(isolateRequest)
-			ar.ActionID = uid.String()
-			ar.Workflow.InstanceID = instance.id
-			ar.Workflow.Namespace = instance.namespace
-			ar.Workflow.State = sl.state.GetID()
-			ar.Workflow.Step = instance.step
-			ar.Workflow.Name = instance.wf.Name
-			ar.Workflow.ID = instance.wf.ID
-
-			// TODO: timeout
-			ar.Container.Data = inputData
-			ar.Container.Image = fn.Image
-			ar.Container.Cmd = fn.Cmd
-			ar.Container.Size = fn.Size
-			ar.Container.Scale = fn.Scale
-
-			ar.Container.ID = fn.ID
-			ar.Container.Files = fn.Files
-
-			if sl.state.Async {
-
-				instance.Log("Running function '%s' in fire-and-forget mode (async).", fn.ID)
-
-				go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
-
-					ar.Workflow.InstanceID = ""
-					ar.Workflow.Namespace = ""
-					ar.Workflow.State = ""
-					ar.Workflow.Step = 0
-
-					err = instance.engine.doActionRequest(ctx, ar)
-					if err != nil {
-						return
-					}
-
-				}(ctx, instance, ar)
-
-				transition = &stateTransition{
-					Transform: sl.state.Transform,
-					NextState: sl.state.Transition,
-				}
-
-				return
-
-			} else {
-
-				instance.Log("Sleeping until function '%s' returns.", fn.ID)
-
-				err = instance.engine.doActionRequest(ctx, ar)
-				if err != nil {
-					return
-				}
-
-			}
-
-		} else {
-
-			// subflow
-
-			caller := new(subflowCaller)
-			caller.InstanceID = instance.id
-			caller.State = sl.state.GetID()
-			caller.Step = instance.step
-
-			var subflowID string
-
-			if sl.state.Async {
-
-				subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
-				if err != nil {
-					return
-				}
-
-				instance.Log("Running subflow '%s' in fire-and-forget mode (async).", subflowID)
-
-				transition = &stateTransition{
-					Transform: sl.state.Transform,
-					NextState: sl.state.Transition,
-				}
-
-				return
-
-			} else {
-
-				subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
-				if err != nil {
-					return
-				}
-
-				instance.Log("Sleeping until subflow '%s' returns.", subflowID)
-
-				sd := &actionStateSavedata{
-					Id:       subflowID,
-					Attempts: 0,
-				}
-
-				err = instance.Save(ctx, sd.Marshal())
-				if err != nil {
-					return
-				}
-
-			}
-
-		}
-
-		return
+		return sl.do(ctx, instance, 0)
 
 	}
 
@@ -284,8 +289,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	retryData := new(actionStateSavedata)
 	err = json.Unmarshal(wakedata, retryData)
 	if err == nil {
-		err = NewInternalError(errors.New("action retry unimplemented"))
-		return
+		return sl.do(ctx, instance, retryData.Attempts)
 	}
 
 	// second part
