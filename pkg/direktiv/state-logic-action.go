@@ -368,7 +368,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 }
 
-func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
+// func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
+func scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
 
 	var err error
 
@@ -380,7 +381,7 @@ func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflo
 		return err
 	}
 
-	TODO
+	// TODO: actually schedule the retry
 
 	return nil
 

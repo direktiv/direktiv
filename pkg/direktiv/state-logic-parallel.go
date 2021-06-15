@@ -241,8 +241,19 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	case model.BranchModeAnd:
 
 		if results.ErrorCode != "" {
+
 			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+			instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+
+			var d time.Duration
+			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
+			if err != nil {
+				return
+			}
+
+			err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 			return
+
 		}
 
 		if results.ErrorMessage != "" {
@@ -262,11 +273,17 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	case model.BranchModeOr:
 
 		if results.ErrorCode != "" {
-			instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
-			if retries := sl.state.Actions[idx].Retries; retries != nil {
-				// TODO
-				goto execute
+
+			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+			// instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
+			instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+			var d time.Duration
+			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
+			if err == nil {
+				err = sl.scheduleRetry(ctx, instance, logics, idx, d)
+				return
 			}
+
 		} else if results.ErrorMessage != "" {
 			instance.Log("Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
 			err = NewInternalError(errors.New(results.ErrorMessage))

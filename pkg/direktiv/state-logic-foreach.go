@@ -239,14 +239,17 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 	if results.ErrorCode != "" {
 
-		if retries := sl.state.Action.Retries; retries != nil {
-			// TODO
-			goto execute
+		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		var d time.Duration
+		d, err = preprocessRetry(sl.state.Action.Retries, logics[idx].Attempts, err)
+		if err != nil {
+			return
 		}
 
-		instance.Log("Action returned catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
-		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+		err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 		return
+
 	}
 
 	if results.ErrorMessage != "" {
