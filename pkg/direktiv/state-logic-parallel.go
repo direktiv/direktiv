@@ -188,6 +188,14 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		return
 	}
 
+	// check for scheduled retry
+	retryData := new(parallelStateLogicRetry)
+	err = json.Unmarshal(wakedata, retryData)
+	if err == nil {
+		err = NewInternalError(errors.New("parallel retry unimplemented"))
+		return
+	}
+
 	results := new(actionResultPayload)
 	err = json.Unmarshal(wakedata, results)
 	if err != nil {
@@ -338,5 +346,53 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	}
 
 	return
+
+}
+
+type parallelStateLogicRetry struct {
+	Logics []multiactionTuple
+	Idx    int
+}
+
+func (r *parallelStateLogicRetry) Marshal() []byte {
+	data, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func (sl *parallelStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int, d time.Duration) error {
+
+	var err error
+
+	logics[idx].Attempts++
+	logics[idx].ID = ""
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return err
+	}
+
+	r := &parallelStateLogicRetry{
+		Idx:    idx,
+		Logics: logics,
+	}
+	data = r.Marshal()
+
+	t := time.Now().Add(d)
+
+	err = instance.engine.scheduleRetry(instance.id, sl.ID(), instance.step, t, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }

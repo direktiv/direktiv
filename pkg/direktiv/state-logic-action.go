@@ -280,6 +280,14 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	}
 
+	// check for scheduled retry
+	retryData := new(actionStateSavedata)
+	err = json.Unmarshal(wakedata, retryData)
+	if err == nil {
+		err = NewInternalError(errors.New("action retry unimplemented"))
+		return
+	}
+
 	// second part
 
 	results := new(actionResultPayload)
@@ -368,20 +376,25 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 }
 
-// func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
-func scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
+func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
 
 	var err error
 
 	sd.Attempts++
 	sd.Id = ""
 
-	err = instance.Save(ctx, sd.Marshal())
+	data := sd.Marshal()
+	err = instance.Save(ctx, data)
 	if err != nil {
 		return err
 	}
 
-	// TODO: actually schedule the retry
+	t := time.Now().Add(d)
+
+	err = instance.engine.scheduleRetry(instance.id, sl.ID(), instance.step, t, data)
+	if err != nil {
+		return err
+	}
 
 	return nil
 

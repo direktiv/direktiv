@@ -513,6 +513,70 @@ func (we *workflowEngine) wfCronHandler(data []byte) error {
 
 }
 
+type retryMessage struct {
+	InstanceID string
+	State      string
+	Step       int
+	Data       []byte
+}
+
+const retryWakeupFunction = "retryWakeup"
+
+func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
+
+	data, _ = json.Marshal(&retryMessage{
+		InstanceID: id,
+		State:      state,
+		Step:       step,
+		Data:       data,
+	})
+
+	if d := t.Sub(time.Now()); d < time.Second*5 {
+		go func() {
+			time.Sleep(d)
+			we.retryWakeup(data)
+		}()
+		return nil
+	}
+
+	err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	return nil
+
+}
+
+func (we *workflowEngine) retryWakeup(data []byte) error {
+
+	msg := new(retryMessage)
+
+	err := json.Unmarshal(data, msg)
+	if err != nil {
+		log.Errorf("cannot handle retry wakeup: %v", err)
+		return nil
+	}
+
+	ctx, wli, err := we.loadWorkflowLogicInstance(msg.InstanceID, msg.Step)
+	if err != nil {
+		log.Errorf("cannot load workflow logic instance: %v", err)
+		return nil
+	}
+
+	wli.Log("Waking up to retry.")
+
+	savedata, err := InstanceMemory(wli.rec)
+	if err != nil {
+		return err
+	}
+
+	go wli.engine.runState(ctx, wli, savedata, []byte(msg.Data), nil)
+
+	return nil
+
+}
+
 type sleepMessage struct {
 	InstanceID string
 	State      string
@@ -711,55 +775,6 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	}
 
 	go wli.engine.runState(ctx, wli, savedata, nil, err)
-
-	return nil
-
-}
-
-type retryMessage struct {
-	InstanceID string
-	State      string
-	Step       int
-}
-
-const retryWakeupFunction = "retryWakeup"
-
-func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time) error {
-
-	data, _ := json.Marshal(&retryMessage{
-		InstanceID: id,
-		State:      state,
-		Step:       step,
-	})
-
-	err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
-	if err != nil {
-		return NewInternalError(err)
-	}
-
-	return nil
-
-}
-
-func (we *workflowEngine) retryWakeup(data []byte) error {
-
-	msg := new(retryMessage)
-
-	err := json.Unmarshal(data, msg)
-	if err != nil {
-		log.Errorf("cannot handle retry wakeup: %v", err)
-		return nil
-	}
-
-	ctx, wli, err := we.loadWorkflowLogicInstance(msg.InstanceID, msg.Step)
-	if err != nil {
-		log.Errorf("cannot load workflow logic instance: %v", err)
-		return nil
-	}
-
-	wli.Log("Retrying failed state.")
-
-	go wli.engine.runState(ctx, wli, nil, nil, nil)
 
 	return nil
 

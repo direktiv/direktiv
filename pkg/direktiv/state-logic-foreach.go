@@ -198,6 +198,14 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 	}
 
+	// check for scheduled retry
+	retryData := new(foreachStateLogicRetry)
+	err = json.Unmarshal(wakedata, retryData)
+	if err == nil {
+		err = NewInternalError(errors.New("foreach retry unimplemented"))
+		return
+	}
+
 	// second part
 
 	results := new(actionResultPayload)
@@ -310,5 +318,53 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 	}
 
 	return
+
+}
+
+type foreachStateLogicRetry struct {
+	Logics []multiactionTuple
+	Idx    int
+}
+
+func (r *foreachStateLogicRetry) Marshal() []byte {
+	data, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func (sl *foreachStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int, d time.Duration) error {
+
+	var err error
+
+	logics[idx].Attempts++
+	logics[idx].ID = ""
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return err
+	}
+
+	r := &foreachStateLogicRetry{
+		Idx:    idx,
+		Logics: logics,
+	}
+	data = r.Marshal()
+
+	t := time.Now().Add(d)
+
+	err = instance.engine.scheduleRetry(instance.id, sl.ID(), instance.step, t, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }

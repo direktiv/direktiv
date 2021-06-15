@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -575,87 +574,6 @@ func (wli *workflowLogicInstance) Transform(transform string) error {
 	}
 
 	wli.data = x
-	return nil
-
-}
-
-func (wli *workflowLogicInstance) Retry(ctx context.Context, delayString string, multiplier float64, errCode string) error {
-
-	var err error
-	var x interface{}
-
-	err = json.Unmarshal([]byte(wli.rec.StateData), &x)
-	if err != nil {
-		return NewInternalError(err)
-	}
-
-	wli.data = x
-
-	nextState := wli.rec.Flow[len(wli.rec.Flow)-1]
-
-	wli.engine.completeState(ctx, wli.rec, nextState, errCode, true)
-
-	attempt := wli.rec.Attempts + 1
-	if multiplier == 0 {
-		multiplier = 1.0
-	}
-
-	// Set a default delay string if none is provided to parse delay properly.
-	if delayString == "" {
-		delayString = "PT1S"
-	}
-
-	delay, err := duration.ParseISO8601(delayString)
-	if err != nil {
-		return NewInternalError(err)
-	}
-
-	multiplier = math.Pow(multiplier, float64(attempt))
-
-	now := time.Now()
-	t := delay.Shift(now)
-	duration := t.Sub(now)
-	duration = time.Duration(float64(duration) * multiplier)
-
-	schedule := now.Add(duration)
-	deadline := schedule.Add(time.Second * 5)
-	duration = wli.logic.Deadline().Sub(now)
-	deadline = deadline.Add(duration)
-
-	oldController := wli.rec.Controller
-	newController := wli.engine.server.hostname
-
-	wf := wli.rec.Edges.Workflow
-
-	var rec *ent.WorkflowInstance
-	rec, err = wli.rec.Update().
-		SetAttempts(attempt).
-		SetDeadline(deadline).
-		SetController(newController).
-		Save(ctx)
-	if err != nil {
-		return err
-	}
-	wli.rec = rec
-	wli.rec.Edges.Workflow = wf
-
-	wli.ScheduleSoftTimeout(oldController, deadline)
-
-	if duration < time.Second*5 {
-		go func() {
-			time.Sleep(duration)
-			wli.Log("Retrying failed workflow state.")
-			wli.Transition(ctx, nextState, attempt)
-		}()
-	} else {
-		wli.Log("Scheduling a retry for the failed workflow state at approximate time: %s.", schedule.UTC().String())
-		err = wli.engine.scheduleRetry(wli.id, nextState, wli.step, schedule)
-		if err != nil {
-			return err
-		}
-		wli.Close()
-	}
-
 	return nil
 
 }
