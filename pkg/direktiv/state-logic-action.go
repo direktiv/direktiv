@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
@@ -71,10 +72,6 @@ func (sl *actionStateLogic) Deadline() time.Time {
 
 }
 
-func (sl *actionStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *actionStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -121,6 +118,19 @@ func (sl *actionStateLogic) LogJQ() string {
 	return sl.state.Log
 }
 
+type actionStateSavedata struct {
+	Id       string
+	Attempts int
+}
+
+func (sd *actionStateSavedata) Marshal() []byte {
+	data, err := json.Marshal(sd)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
 func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
@@ -143,7 +153,13 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			// container
 
 			uid := ksuid.New()
-			err = instance.Save(ctx, uid.Bytes())
+
+			sd := &actionStateSavedata{
+				Id:       string(uid.Bytes()),
+				Attempts: 0,
+			}
+
+			err = instance.Save(ctx, sd.Marshal())
 			if err != nil {
 				return
 			}
@@ -246,7 +262,12 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 				instance.Log("Sleeping until subflow '%s' returns.", subflowID)
 
-				err = instance.Save(ctx, []byte(subflowID))
+				sd := &actionStateSavedata{
+					Id:       subflowID,
+					Attempts: 0,
+				}
+
+				err = instance.Save(ctx, sd.Marshal())
 				if err != nil {
 					return
 				}
@@ -268,10 +289,17 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 		return
 	}
 
+	sd := new(actionStateSavedata)
+	err = json.Unmarshal(savedata, sd)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
 	if sl.state.Action.Function != "" {
 
 		var uid ksuid.KSUID
-		uid, err = ksuid.FromBytes(savedata)
+		uid, err = ksuid.FromBytes([]byte(sd.Id))
 		if err != nil {
 			err = NewInternalError(err)
 			return
@@ -286,7 +314,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	} else {
 
-		id := string(savedata)
+		id := sd.Id
 		if results.ActionID != id {
 			err = NewInternalError(errors.New("incorrect subflow action ID"))
 			return
@@ -298,10 +326,17 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	if results.ErrorCode != "" {
 
-		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
-
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		var d time.Duration
+		d, err = preprocessRetry(sl.state.Action.Retries, sd.Attempts, err)
+		if err != nil {
+			return
+		}
+
+		err = sl.scheduleRetry(ctx, instance, sd, d)
 		return
+
 	}
 
 	if results.ErrorMessage != "" {
@@ -330,6 +365,24 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	}
 
 	return
+
+}
+
+func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, sd *actionStateSavedata, d time.Duration) error {
+
+	var err error
+
+	sd.Attempts++
+	sd.Id = ""
+
+	err = instance.Save(ctx, sd.Marshal())
+	if err != nil {
+		return err
+	}
+
+	TODO
+
+	return nil
 
 }
 
@@ -421,5 +474,63 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 	}
 
 	return inputData, nil
+
+}
+
+func isRetryable(code string, patterns []string) bool {
+
+	for _, pattern := range patterns {
+		// NOTE: this error should be checked in model validation
+		matched, _ := regexp.MatchString(pattern, code)
+		if matched {
+			return true
+		}
+	}
+
+	return false
+
+}
+
+func retryDelay(attempt int, delay string, multiplier float64) time.Duration {
+
+	d := time.Second * 5
+	if x, err := time.ParseDuration(delay); err == nil {
+		d = x
+	}
+
+	if multiplier != 0 {
+		for i := 0; i < attempt; i++ {
+			d = time.Duration(float64(d) * multiplier)
+		}
+	}
+
+	return d
+
+}
+
+func preprocessRetry(retry *model.RetryDefinition, attempt int, err error) (time.Duration, error) {
+
+	var d time.Duration
+
+	if retry == nil {
+		return d, err
+	}
+
+	cerr, ok := err.(*CatchableError)
+	if !ok {
+		return d, err
+	}
+
+	if !isRetryable(cerr.Code, retry.Codes) {
+		return d, err
+	}
+
+	if attempt >= retry.MaxAttempts {
+		return d, NewCatchableError("direktiv.retries.exceeded", "maximum retries exceeded")
+	}
+
+	d = retryDelay(attempt, retry.Delay, retry.Multiplier)
+
+	return d, nil
 
 }

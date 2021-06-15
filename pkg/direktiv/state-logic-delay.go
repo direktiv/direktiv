@@ -45,10 +45,6 @@ func (sl *delayStateLogic) Deadline() time.Time {
 
 }
 
-func (sl *delayStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *delayStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

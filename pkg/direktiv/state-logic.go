@@ -47,7 +47,6 @@ type stateLogic interface {
 	ID() string
 	Type() string
 	Deadline() time.Time
-	Retries() *model.RetryDefinition
 	ErrorCatchers() []model.ErrorDefinition
 	Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error)
 	LivingChildren(savedata []byte) []stateChild
@@ -136,10 +135,6 @@ func (sl *noopStateLogic) Deadline() time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
-func (sl *noopStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *noopStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -181,6 +176,7 @@ type multiactionTuple struct {
 	ID       string
 	Complete bool
 	Type     string
+	Attempts int
 	Results  interface{}
 }
 

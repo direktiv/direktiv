@@ -963,10 +963,7 @@ failure:
 
 	} else if cerr, ok := err.(*CatchableError); ok {
 
-		var hasAlreadyFailed bool
 		_ = wli.StoreData("error", cerr)
-
-	alreadyFailed:
 
 		for i, catch := range wli.logic.ErrorCatchers() {
 
@@ -993,23 +990,6 @@ failure:
 
 			}
 
-		}
-
-		if retries := wli.logic.Retries(); retries != nil && !hasAlreadyFailed {
-			if wli.rec.Attempts < retries.MaxAttempts {
-				err = wli.Retry(ctx, retries.Delay, retries.Multiplier, cerr.Code)
-				if err != nil {
-					goto failure
-				}
-				return
-			} else {
-				wli.Log("Maximum retry attempts exceeded.")
-				if retries.Throw != "" {
-					cerr = NewCatchableError(retries.Throw, retries.Throw)
-					hasAlreadyFailed = true
-					goto alreadyFailed
-				}
-			}
 		}
 
 		err = wli.setStatus(ctx, "failed", cerr.Code, cerr.Message)

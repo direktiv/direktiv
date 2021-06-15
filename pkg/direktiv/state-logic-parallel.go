@@ -41,10 +41,6 @@ func (sl *parallelStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
-func (sl *parallelStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *parallelStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -218,8 +214,6 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 				err = NewInternalError(fmt.Errorf("action '%s' already completed", lid.ID))
 				return
 			}
-			logics[i].Complete = true
-			lid.Complete = true
 			idx = i
 		}
 
@@ -246,10 +240,6 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	switch sl.state.Mode {
 	case model.BranchModeAnd:
 
-		if completed == len(logics) {
-			ready = true
-		}
-
 		if results.ErrorCode != "" {
 			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
 			return
@@ -260,17 +250,35 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 			return
 		}
 
+		logics[idx].Complete = true
+		if logics[idx].Complete {
+			completed++
+		}
+		instance.Log("Action returned. (%d/%d)", completed, len(logics))
+		if completed == len(logics) {
+			ready = true
+		}
+
 	case model.BranchModeOr:
 
 		if results.ErrorCode != "" {
 			instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
+			if retries := sl.state.Actions[idx].Retries; retries != nil {
+				// TODO
+				goto execute
+			}
 		} else if results.ErrorMessage != "" {
-			instance.Log("Branch %d failed with an internal error: %s", idx, results.ErrorMessage)
+			instance.Log("Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
+			err = NewInternalError(errors.New(results.ErrorMessage))
+			return
 		} else {
 			ready = true
 		}
 
-		if completed == len(logics) {
+		logics[idx].Complete = true
+		completed++
+		instance.Log("Action returned. (%d/%d)", completed, len(logics))
+		if !ready && completed == len(logics) {
 			err = NewCatchableError(ErrCodeAllBranchesFailed, "all branches failed")
 			return
 		}

@@ -41,10 +41,6 @@ func (sl *foreachStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
-func (sl *foreachStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *foreachStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -230,13 +226,8 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				err = NewInternalError(fmt.Errorf("action '%s' already completed", lid.ID))
 				return
 			}
-			logics[i].Complete = true
-			lid.Complete = true
 			idx = i
-		}
-
-		if lid.Complete {
-			completed++
+			break
 		}
 
 	}
@@ -246,9 +237,13 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 		return
 	}
 
-	instance.Log("Action returned. (%d/%d)", completed, len(logics))
-
 	if results.ErrorCode != "" {
+
+		if retries := sl.state.Action.Retries; retries != nil {
+			// TODO
+			goto execute
+		}
+
 		instance.Log("Action returned catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		return
@@ -259,6 +254,10 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return
 	}
+
+	logics[idx].Complete = true
+	completed++
+	instance.Log("Action returned. (%d/%d)", completed, len(logics))
 
 	var x interface{}
 	err = json.Unmarshal(results.Output, &x)

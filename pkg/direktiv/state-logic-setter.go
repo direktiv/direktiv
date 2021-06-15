@@ -36,10 +36,6 @@ func (sl *setterStateLogic) Deadline() time.Time {
 	return time.Now().Add(time.Second * 5)
 }
 
-func (sl *setterStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *setterStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
