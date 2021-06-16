@@ -1,6 +1,7 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -233,23 +234,26 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		return
 	}
 
-	// check for scheduled retry
-	retryData := new(parallelStateLogicRetry)
-	err = json.Unmarshal(wakedata, retryData)
-	if err == nil {
-		err = NewInternalError(errors.New("parallel retry unimplemented"))
-		return
-	}
-
-	results := new(actionResultPayload)
-	err = json.Unmarshal(wakedata, results)
+	var logics []multiactionTuple
+	err = json.Unmarshal(savedata, &logics)
 	if err != nil {
 		err = NewInternalError(err)
 		return
 	}
 
-	var logics []multiactionTuple
-	err = json.Unmarshal(savedata, &logics)
+	// check for scheduled retry
+	retryData := new(parallelStateLogicRetry)
+	dec := json.NewDecoder(bytes.NewReader(wakedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(retryData)
+	if err == nil {
+		instance.Log("Retrying...")
+		err = sl.doSpecific(ctx, instance, logics, retryData.Idx)
+		return
+	}
+
+	results := new(actionResultPayload)
+	err = json.Unmarshal(wakedata, results)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -304,6 +308,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 				return
 			}
 
+			instance.Log("Scheduling retry attempt in: %v.", d)
 			err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 			return
 

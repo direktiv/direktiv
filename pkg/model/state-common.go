@@ -8,10 +8,10 @@ import (
 )
 
 type RetryDefinition struct {
-	MaxAttempts int      `yaml:"max_attempts"`
-	Delay       string   `yaml:"delay,omitempty"`
-	Multiplier  float64  `yaml:"multiplier,omitempty"`
-	Codes       []string `yaml:"codes"`
+	MaxAttempts int      `yaml:"max_attempts" json:"max_attempts"`
+	Delay       string   `yaml:"delay,omitempty" json:"delay"`
+	Multiplier  float64  `yaml:"multiplier,omitempty" json:"multiplier"`
+	Codes       []string `yaml:"codes" json:"codes"`
 }
 
 func (o *RetryDefinition) Validate() error {

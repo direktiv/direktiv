@@ -1,6 +1,7 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -119,6 +120,7 @@ func (sl *actionStateLogic) LogJQ() string {
 }
 
 type actionStateSavedata struct {
+	Op       string
 	Id       string
 	Attempts int
 }
@@ -146,6 +148,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		uid := ksuid.New()
 
 		sd := &actionStateSavedata{
+			Op:       "do",
 			Id:       string(uid.Bytes()),
 			Attempts: attempt,
 		}
@@ -254,6 +257,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 			instance.Log("Sleeping until subflow '%s' returns.", subflowID)
 
 			sd := &actionStateSavedata{
+				Op:       "do",
 				Id:       subflowID,
 				Attempts: attempt,
 			}
@@ -287,8 +291,11 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	// check for scheduled retry
 	retryData := new(actionStateSavedata)
-	err = json.Unmarshal(wakedata, retryData)
-	if err == nil {
+	dec := json.NewDecoder(bytes.NewReader(wakedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(retryData)
+	if err == nil && retryData.Op == "retry" {
+		instance.Log("Retrying...")
 		return sl.do(ctx, instance, retryData.Attempts)
 	}
 
@@ -341,11 +348,13 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
 		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 		var d time.Duration
+
 		d, err = preprocessRetry(sl.state.Action.Retries, sd.Attempts, err)
 		if err != nil {
 			return
 		}
 
+		instance.Log("Scheduling retry attempt in: %v.", d)
 		err = sl.scheduleRetry(ctx, instance, sd, d)
 		return
 
@@ -385,6 +394,7 @@ func (sl *actionStateLogic) scheduleRetry(ctx context.Context, instance *workflo
 	var err error
 
 	sd.Attempts++
+	sd.Op = "retry"
 	sd.Id = ""
 
 	data := sd.Marshal()
@@ -427,6 +437,9 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 
 	var recurse func(x interface{}) (interface{}, error)
 	recurse = func(x interface{}) (interface{}, error) {
+		if x == nil {
+			return x, nil
+		}
 		switch x.(type) {
 		case bool:
 			return x, nil
@@ -467,11 +480,16 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 			}
 			return list, nil
 		default:
-			return nil, NewInternalError(fmt.Errorf("unexpected type '%s'", reflect.TypeOf(x)))
+			return nil, NewInternalError(fmt.Errorf("unexpected type '%s'", reflect.TypeOf(x).String()))
 		}
 	}
 
-	if query, ok := action.Input.(string); ok {
+	if action.Input == nil {
+		input, err = jqObject(m, ".")
+		if err != nil {
+			return nil, err
+		}
+	} else if query, ok := action.Input.(string); ok {
 		input, err = jqObject(m, query)
 		if err != nil {
 			return nil, err

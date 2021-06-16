@@ -1,6 +1,7 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -264,14 +265,16 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 	// check for scheduled retry
 	retryData := new(foreachStateLogicRetry)
-	err = json.Unmarshal(wakedata, retryData)
+	dec := json.NewDecoder(bytes.NewReader(wakedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(retryData)
 	if err == nil {
+		instance.Log("Retrying...")
 		err = sl.doSpecific(ctx, instance, logics, retryData.Idx)
 		return
 	}
 
 	// second part
-
 	results := new(actionResultPayload)
 	err = json.Unmarshal(wakedata, results)
 	if err != nil {
@@ -285,6 +288,10 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 	for i, lid := range logics {
 
+		if lid.Complete {
+			completed++
+		}
+
 		if lid.ID == results.ActionID {
 			found = true
 			if lid.Complete {
@@ -292,7 +299,6 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 				return
 			}
 			idx = i
-			break
 		}
 
 	}
@@ -312,6 +318,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 			return
 		}
 
+		instance.Log("Scheduling retry attempt in: %v.", d)
 		err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 		return
 
