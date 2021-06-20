@@ -86,10 +86,17 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 	var err error
 	var children = make([]stateChild, 0)
 
+	sd := new(actionStateSavedata)
+	err = json.Unmarshal(savedata, sd)
+	if err != nil {
+		log.Error(err)
+		return children
+	}
+
 	if sl.state.Action.Function != "" {
 
 		var uid ksuid.KSUID
-		uid, err = ksuid.FromBytes(savedata)
+		err = uid.UnmarshalText([]byte(sd.Id))
 		if err != nil {
 			log.Error(err)
 			return children
@@ -102,7 +109,7 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 	} else {
 
-		id := string(savedata)
+		id := string(sd.Id)
 
 		children = append(children, stateChild{
 			Id:   id,
@@ -149,7 +156,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		sd := &actionStateSavedata{
 			Op:       "do",
-			Id:       string(uid.Bytes()),
+			Id:       uid.String(),
 			Attempts: attempt,
 		}
 
@@ -302,14 +309,18 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	// second part
 
 	results := new(actionResultPayload)
-	err = json.Unmarshal(wakedata, results)
+	dec = json.NewDecoder(bytes.NewReader(wakedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(results)
 	if err != nil {
 		err = NewInternalError(err)
 		return
 	}
 
 	sd := new(actionStateSavedata)
-	err = json.Unmarshal(savedata, sd)
+	dec = json.NewDecoder(bytes.NewReader(savedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(sd)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -318,7 +329,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	if sl.state.Action.Function != "" {
 
 		var uid ksuid.KSUID
-		uid, err = ksuid.FromBytes([]byte(sd.Id))
+		err = uid.UnmarshalText([]byte(sd.Id))
 		if err != nil {
 			err = NewInternalError(err)
 			return
