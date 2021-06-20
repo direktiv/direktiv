@@ -14,6 +14,7 @@ import (
 )
 
 const CommonNameRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
+const FunctionNameRegex = `^[^_-][\w\-]*[^_\-\s]$`
 const VariableNameRegex = `^[^_-][\w]*[^_-]$`
 
 type TimeoutDefinition struct {
@@ -90,13 +91,13 @@ func (o *FunctionDefinition) Validate() error {
 		return errors.New("id required")
 	}
 
-	matched, err := regexp.MatchString(VariableNameRegex, o.ID)
+	matched, err := regexp.MatchString(FunctionNameRegex, o.ID)
 	if err != nil {
 		return err
 	}
 
 	if !matched {
-		return fmt.Errorf("function id must match regex: %s", VariableNameRegex)
+		return fmt.Errorf("function id must match regex: %s", FunctionNameRegex)
 	}
 
 	if o.Image == "" {
