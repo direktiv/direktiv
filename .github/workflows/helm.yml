@@ -1,7 +1,7 @@
 name: Build Helm
 on:
   workflow_dispatch:
-  create:
+  push:
     tags:
       - v*
 jobs:

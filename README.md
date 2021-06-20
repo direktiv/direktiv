@@ -23,6 +23,10 @@ Direktiv defines a selection of intentionally primitive states, which can be str
 
 Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
 
+<p align="center">
+  <img src="assets/images/direktiv-ui.png" alt="direktiv ui">
+</p>
+
 
 ## Direktiv Architecture
 
