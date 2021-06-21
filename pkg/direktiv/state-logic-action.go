@@ -528,6 +528,11 @@ func isRetryable(code string, patterns []string) bool {
 
 	for _, pattern := range patterns {
 		// NOTE: this error should be checked in model validation
+
+		if pattern == "*" {
+			pattern = ".*"
+		}
+
 		matched, _ := regexp.MatchString(pattern, code)
 		if matched {
 			return true
