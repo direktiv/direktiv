@@ -445,7 +445,6 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 						// this happens because the function does not exist
 						kubeReq.mtx.Lock()
 						err := getKnativeFunction(fmt.Sprintf("%s-%d", ar.Workflow.Namespace, ah))
-
 						if err != nil {
 							err := addKnativeFunction(ar)
 							if err != nil {
@@ -460,6 +459,8 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 					}
 				}
 			}
+
+			time.Sleep(250 * time.Millisecond)
 
 		} else {
 			break
