@@ -445,7 +445,6 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 						// this happens because the function does not exist
 						kubeReq.mtx.Lock()
 						err := getKnativeFunction(fmt.Sprintf("%s-%d", ar.Workflow.Namespace, ah))
-
 						if err != nil {
 							err := addKnativeFunction(ar)
 							if err != nil {
@@ -460,6 +459,8 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 					}
 				}
 			}
+
+			time.Sleep(250 * time.Millisecond)
 
 		} else {
 			break
@@ -510,6 +511,70 @@ const wfCron = "wfcron"
 func (we *workflowEngine) wfCronHandler(data []byte) error {
 
 	return we.CronInvoke(string(data))
+
+}
+
+type retryMessage struct {
+	InstanceID string
+	State      string
+	Step       int
+	Data       []byte
+}
+
+const retryWakeupFunction = "retryWakeup"
+
+func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
+
+	data, _ = json.Marshal(&retryMessage{
+		InstanceID: id,
+		State:      state,
+		Step:       step,
+		Data:       data,
+	})
+
+	if d := t.Sub(time.Now()); d < time.Second*5 {
+		go func() {
+			time.Sleep(d)
+			we.retryWakeup(data)
+		}()
+		return nil
+	}
+
+	err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	return nil
+
+}
+
+func (we *workflowEngine) retryWakeup(data []byte) error {
+
+	msg := new(retryMessage)
+
+	err := json.Unmarshal(data, msg)
+	if err != nil {
+		log.Errorf("cannot handle retry wakeup: %v", err)
+		return nil
+	}
+
+	ctx, wli, err := we.loadWorkflowLogicInstance(msg.InstanceID, msg.Step)
+	if err != nil {
+		log.Errorf("cannot load workflow logic instance: %v", err)
+		return nil
+	}
+
+	wli.Log("Waking up to retry.")
+
+	savedata, err := InstanceMemory(wli.rec)
+	if err != nil {
+		return err
+	}
+
+	go wli.engine.runState(ctx, wli, savedata, []byte(msg.Data), nil)
+
+	return nil
 
 }
 
@@ -716,55 +781,6 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 }
 
-type retryMessage struct {
-	InstanceID string
-	State      string
-	Step       int
-}
-
-const retryWakeupFunction = "retryWakeup"
-
-func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time) error {
-
-	data, _ := json.Marshal(&retryMessage{
-		InstanceID: id,
-		State:      state,
-		Step:       step,
-	})
-
-	err := we.timer.addOneShot(id, retryWakeupFunction, t, data)
-	if err != nil {
-		return NewInternalError(err)
-	}
-
-	return nil
-
-}
-
-func (we *workflowEngine) retryWakeup(data []byte) error {
-
-	msg := new(retryMessage)
-
-	err := json.Unmarshal(data, msg)
-	if err != nil {
-		log.Errorf("cannot handle retry wakeup: %v", err)
-		return nil
-	}
-
-	ctx, wli, err := we.loadWorkflowLogicInstance(msg.InstanceID, msg.Step)
-	if err != nil {
-		log.Errorf("cannot load workflow logic instance: %v", err)
-		return nil
-	}
-
-	wli.Log("Retrying failed state.")
-
-	go wli.engine.runState(ctx, wli, nil, nil, nil)
-
-	return nil
-
-}
-
 const maxWorkflowSteps = 10
 
 func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition *stateTransition) error {
@@ -963,10 +979,7 @@ failure:
 
 	} else if cerr, ok := err.(*CatchableError); ok {
 
-		var hasAlreadyFailed bool
 		_ = wli.StoreData("error", cerr)
-
-	alreadyFailed:
 
 		for i, catch := range wli.logic.ErrorCatchers() {
 
@@ -998,23 +1011,6 @@ failure:
 
 			}
 
-		}
-
-		if retries := wli.logic.Retries(); retries != nil && !hasAlreadyFailed {
-			if wli.rec.Attempts < retries.MaxAttempts {
-				err = wli.Retry(ctx, retries.Delay, retries.Multiplier, cerr.Code)
-				if err != nil {
-					goto failure
-				}
-				return
-			} else {
-				wli.Log("Maximum retry attempts exceeded.")
-				if retries.Throw != "" {
-					cerr = NewCatchableError(retries.Throw, retries.Throw)
-					hasAlreadyFailed = true
-					goto alreadyFailed
-				}
-			}
 		}
 
 		err = wli.setStatus(ctx, "failed", cerr.Code, cerr.Message)

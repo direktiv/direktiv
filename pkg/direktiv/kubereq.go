@@ -350,6 +350,17 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 			log.Errorf("can not delete function: %v", err)
 		}
 
+		// wait till the service is 100 percent gone
+		// this is needed for the engine to create a new one
+		// otherwise it might be in terminated stage and can get a request
+		for {
+			err := getKnativeFunction(url)
+			log.Debugf("err while waiting: %v", err)
+			if err != nil {
+				break
+			}
+		}
+
 	}
 
 	return nil

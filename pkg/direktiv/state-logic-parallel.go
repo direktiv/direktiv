@@ -1,6 +1,7 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -41,10 +42,6 @@ func (sl *parallelStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
-func (sl *parallelStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *parallelStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -79,6 +76,84 @@ func (sl *parallelStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 }
 
+func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *workflowLogicInstance, action *model.ActionDefinition, attempt int) (logic multiactionTuple, err error) {
+
+	var inputData []byte
+	inputData, err = generateActionInput(ctx, instance, instance.data, action)
+	if err != nil {
+		return
+	}
+
+	if action.Function != "" {
+
+		// container
+
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
+
+		var fn *model.FunctionDefinition
+		fn, err = sl.workflow.GetFunction(action.Function)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
+
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
+
+		// TODO: timeout
+		ar.Container.Data = inputData
+		ar.Container.Image = fn.Image
+		ar.Container.Cmd = fn.Cmd
+		ar.Container.Size = fn.Size
+		ar.Container.Scale = fn.Scale
+
+		ar.Container.ID = fn.ID
+		ar.Container.Files = fn.Files
+
+		err = instance.engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
+		}
+
+	} else {
+
+		// subflow
+
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+		if err != nil {
+			return
+		}
+
+		logic = multiactionTuple{
+			ID:       subflowID,
+			Type:     "subflow",
+			Attempts: attempt,
+		}
+
+	}
+
+	return
+
+}
+
 func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *workflowLogicInstance, savedata []byte) error {
 
 	var err error
@@ -95,74 +170,13 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 	for _, action := range sl.state.Actions {
 
-		var inputData []byte
-		inputData, err = generateActionInput(ctx, instance, instance.data, &action)
+		var logic multiactionTuple
+		logic, err = sl.dispatchAction(ctx, instance, &action, 0)
 		if err != nil {
 			return err
 		}
 
-		if action.Function != "" {
-
-			// container
-
-			uid := ksuid.New()
-			logics = append(logics, multiactionTuple{
-				ID:   uid.String(),
-				Type: "isolate",
-			})
-
-			var fn *model.FunctionDefinition
-			fn, err = sl.workflow.GetFunction(action.Function)
-			if err != nil {
-				return NewInternalError(err)
-			}
-
-			ar := new(isolateRequest)
-			ar.ActionID = uid.String()
-			ar.Workflow.InstanceID = instance.id
-			ar.Workflow.Namespace = instance.namespace
-			ar.Workflow.State = sl.state.GetID()
-			ar.Workflow.Step = instance.step
-			ar.Workflow.Name = instance.wf.Name
-			ar.Workflow.ID = instance.wf.ID
-
-			// TODO: timeout
-			ar.Container.Data = inputData
-			ar.Container.Image = fn.Image
-			ar.Container.Cmd = fn.Cmd
-			ar.Container.Size = fn.Size
-			ar.Container.Scale = fn.Scale
-
-			ar.Container.ID = fn.ID
-			ar.Container.Files = fn.Files
-
-			err = instance.engine.doActionRequest(ctx, ar)
-			if err != nil {
-				return err
-			}
-
-		} else {
-
-			// subflow
-
-			caller := new(subflowCaller)
-			caller.InstanceID = instance.id
-			caller.State = sl.state.GetID()
-			caller.Step = instance.step
-
-			var subflowID string
-
-			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
-			if err != nil {
-				return err
-			}
-
-			logics = append(logics, multiactionTuple{
-				ID:   subflowID,
-				Type: "subflow",
-			})
-
-		}
+		logics = append(logics, logic)
 
 	}
 
@@ -181,6 +195,34 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 
 }
 
+func (sl *parallelStateLogic) doSpecific(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int) (err error) {
+
+	action := sl.state.Actions[idx]
+
+	var logic multiactionTuple
+	logic, err = sl.dispatchAction(ctx, instance, &action, logics[idx].Attempts)
+	if err != nil {
+		return
+	}
+
+	logics[idx] = logic
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return
+	}
+
+	return
+
+}
+
 func (sl *parallelStateLogic) LogJQ() string {
 	return sl.state.Log
 }
@@ -192,15 +234,26 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		return
 	}
 
-	results := new(actionResultPayload)
-	err = json.Unmarshal(wakedata, results)
+	var logics []multiactionTuple
+	err = json.Unmarshal(savedata, &logics)
 	if err != nil {
 		err = NewInternalError(err)
 		return
 	}
 
-	var logics []multiactionTuple
-	err = json.Unmarshal(savedata, &logics)
+	// check for scheduled retry
+	retryData := new(parallelStateLogicRetry)
+	dec := json.NewDecoder(bytes.NewReader(wakedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(retryData)
+	if err == nil {
+		instance.Log("Retrying...")
+		err = sl.doSpecific(ctx, instance, logics, retryData.Idx)
+		return
+	}
+
+	results := new(actionResultPayload)
+	err = json.Unmarshal(wakedata, results)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -218,8 +271,6 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 				err = NewInternalError(fmt.Errorf("action '%s' already completed", lid.ID))
 				return
 			}
-			logics[i].Complete = true
-			lid.Complete = true
 			idx = i
 		}
 
@@ -246,13 +297,21 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	switch sl.state.Mode {
 	case model.BranchModeAnd:
 
-		if completed == len(logics) {
-			ready = true
-		}
-
 		if results.ErrorCode != "" {
+
 			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+			instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+
+			var d time.Duration
+			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
+			if err != nil {
+				return
+			}
+
+			instance.Log("Scheduling retry attempt in: %v.", d)
+			err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 			return
+
 		}
 
 		if results.ErrorMessage != "" {
@@ -260,17 +319,41 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 			return
 		}
 
+		logics[idx].Complete = true
+		if logics[idx].Complete {
+			completed++
+		}
+		instance.Log("Action returned. (%d/%d)", completed, len(logics))
+		if completed == len(logics) {
+			ready = true
+		}
+
 	case model.BranchModeOr:
 
 		if results.ErrorCode != "" {
-			instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
+
+			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+			// instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
+			instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+			var d time.Duration
+			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
+			if err == nil {
+				err = sl.scheduleRetry(ctx, instance, logics, idx, d)
+				return
+			}
+
 		} else if results.ErrorMessage != "" {
-			instance.Log("Branch %d failed with an internal error: %s", idx, results.ErrorMessage)
+			instance.Log("Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
+			err = NewInternalError(errors.New(results.ErrorMessage))
+			return
 		} else {
 			ready = true
 		}
 
-		if completed == len(logics) {
+		logics[idx].Complete = true
+		completed++
+		instance.Log("Action returned. (%d/%d)", completed, len(logics))
+		if !ready && completed == len(logics) {
 			err = NewCatchableError(ErrCodeAllBranchesFailed, "all branches failed")
 			return
 		}
@@ -313,5 +396,53 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	}
 
 	return
+
+}
+
+type parallelStateLogicRetry struct {
+	Logics []multiactionTuple
+	Idx    int
+}
+
+func (r *parallelStateLogicRetry) Marshal() []byte {
+	data, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func (sl *parallelStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int, d time.Duration) error {
+
+	var err error
+
+	logics[idx].Attempts++
+	logics[idx].ID = ""
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return err
+	}
+
+	r := &parallelStateLogicRetry{
+		Idx:    idx,
+		Logics: logics,
+	}
+	data = r.Marshal()
+
+	t := time.Now().Add(d)
+
+	err = instance.engine.scheduleRetry(instance.id, sl.ID(), instance.step, t, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }

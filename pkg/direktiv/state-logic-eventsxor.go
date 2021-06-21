@@ -39,10 +39,6 @@ func (sl *eventsXorStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
-func (sl *eventsXorStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *eventsXorStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }

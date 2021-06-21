@@ -8,10 +8,10 @@ import (
 )
 
 type RetryDefinition struct {
-	MaxAttempts int     `yaml:"max_attempts"`
-	Delay       string  `yaml:"delay,omitempty"`
-	Multiplier  float64 `yaml:"multiplier,omitempty"`
-	Throw       string  `yaml:"throw,omitempty"`
+	MaxAttempts int      `yaml:"max_attempts" json:"max_attempts"`
+	Delay       string   `yaml:"delay,omitempty" json:"delay"`
+	Multiplier  float64  `yaml:"multiplier,omitempty" json:"multiplier"`
+	Codes       []string `yaml:"codes" json:"codes"`
 }
 
 func (o *RetryDefinition) Validate() error {
@@ -25,6 +25,10 @@ func (o *RetryDefinition) Validate() error {
 
 	if o.Delay != "" && !isISO8601(o.Delay) {
 		return errors.New("delay is not a ISO8601 string")
+	}
+
+	if len(o.Codes) == 0 {
+		return errors.New("retry policy requires at least one defined code")
 	}
 
 	return nil
@@ -87,11 +91,10 @@ func (o *ProduceEventDefinition) Validate() error {
 }
 
 type StateCommon struct {
-	ID      string            `yaml:"id"`
-	Type    StateType         `yaml:"type"`
-	Log     string            `yaml:"log,omitempty"`
-	Retries *RetryDefinition  `yaml:"retries,omitempty"`
-	Catch   []ErrorDefinition `yaml:"catch,omitempty"`
+	ID    string            `yaml:"id"`
+	Type  StateType         `yaml:"type"`
+	Log   string            `yaml:"log,omitempty"`
+	Catch []ErrorDefinition `yaml:"catch,omitempty"`
 }
 
 func (o *StateCommon) GetType() StateType {
@@ -106,10 +109,6 @@ func (o *StateCommon) ErrorDefinitions() []ErrorDefinition {
 	return o.Catch
 }
 
-func (o *StateCommon) RetryDefinition() *RetryDefinition {
-	return o.Retries
-}
-
 func (o *StateCommon) commonValidate() error {
 	if o.ID == "" {
 		return errors.New("id required")
@@ -119,10 +118,6 @@ func (o *StateCommon) commonValidate() error {
 		if _, err := gojq.Parse(o.Log); err != nil {
 			return fmt.Errorf("log is an invalid jq string: %v", err)
 		}
-	}
-
-	if err := o.Retries.Validate(); err != nil {
-		return err
 	}
 
 	for _, catch := range o.Catch {

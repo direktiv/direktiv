@@ -1,6 +1,7 @@
 package direktiv
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -41,10 +42,6 @@ func (sl *foreachStateLogic) Deadline() time.Time {
 	return deadlineFromString(sl.state.Timeout)
 }
 
-func (sl *foreachStateLogic) Retries() *model.RetryDefinition {
-	return sl.state.RetryDefinition()
-}
-
 func (sl *foreachStateLogic) ErrorCatchers() []model.ErrorDefinition {
 	return sl.state.ErrorDefinitions()
 }
@@ -83,117 +80,174 @@ func (sl *foreachStateLogic) LogJQ() string {
 	return sl.state.Log
 }
 
+func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInstance, inputSource interface{}, attempt int) (logic multiactionTuple, err error) {
+
+	action := sl.state.Action
+
+	var inputData []byte
+	inputData, err = generateActionInput(ctx, instance, inputSource, action)
+	if err != nil {
+		return
+	}
+
+	if action.Function != "" {
+
+		// container
+
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
+
+		var fn *model.FunctionDefinition
+		fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
+
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
+
+		// TODO: timeout
+		ar.Container.Data = inputData
+		ar.Container.Image = fn.Image
+		ar.Container.Cmd = fn.Cmd
+		ar.Container.Size = fn.Size
+		ar.Container.Scale = fn.Scale
+		ar.Container.ID = fn.ID
+		ar.Container.Files = fn.Files
+
+		err = instance.engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
+		}
+
+	} else {
+
+		// subflow
+
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		// TODO: log subflow instance IDs
+
+		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+		if err != nil {
+			return
+		}
+
+		logic = multiactionTuple{
+			ID:       subflowID,
+			Type:     "subflow",
+			Attempts: attempt,
+		}
+
+	}
+
+	return
+
+}
+
+func (sl *foreachStateLogic) doAll(ctx context.Context, instance *workflowLogicInstance) (err error) {
+
+	var array []interface{}
+	array, err = jq(instance.data, sl.state.Array)
+	if err != nil {
+		return
+	}
+
+	instance.Log("Generated %d objects to loop over.", len(array))
+
+	if len(array) > maxParallelActions {
+		err = NewUncatchableError("direktiv.limits.parallel", "instance aborted for exceeding the maximum number of parallel actions (%d)", maxParallelActions)
+		return
+	}
+
+	logics := make([]multiactionTuple, 0)
+
+	for _, inputSource := range array {
+		var logic multiactionTuple
+		logic, err = sl.do(ctx, instance, inputSource, 0)
+		if err != nil {
+			return
+		}
+		logics = append(logics, logic)
+	}
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return
+	}
+
+	return
+
+}
+
+func (sl *foreachStateLogic) doSpecific(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int) (err error) {
+
+	var array []interface{}
+	array, err = jq(instance.data, sl.state.Array)
+	if err != nil {
+		return
+	}
+
+	inputSource := array[idx]
+
+	var logic multiactionTuple
+	logic, err = sl.do(ctx, instance, inputSource, logics[idx].Attempts)
+	if err != nil {
+		return
+	}
+	logics[idx] = logic
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return
+	}
+
+	return
+
+}
+
 func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {
 
 		// first part
 
-		logics := make([]multiactionTuple, 0)
-
 		if len(savedata) != 0 {
 			err = NewInternalError(errors.New("got unexpected savedata"))
 			return
 		}
 
-		var array []interface{}
-		array, err = jq(instance.data, sl.state.Array)
-		if err != nil {
-			return
-		}
-
-		instance.Log("Generated %d objects to loop over.", len(array))
-
-		if len(array) > maxParallelActions {
-			err = NewUncatchableError("direktiv.limits.parallel", "instance aborted for exceeding the maximum number of parallel actions (%d)", maxParallelActions)
-			return
-		}
-
-		action := sl.state.Action
-
-		for _, inputSource := range array {
-
-			var inputData []byte
-			inputData, err = generateActionInput(ctx, instance, inputSource, sl.state.Action)
-			if err != nil {
-				return
-			}
-
-			if action.Function != "" {
-
-				// container
-
-				uid := ksuid.New()
-				logics = append(logics, multiactionTuple{
-					ID:   uid.String(),
-					Type: "isolate",
-				})
-
-				var fn *model.FunctionDefinition
-				fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
-				if err != nil {
-					err = NewInternalError(err)
-					return
-				}
-
-				ar := new(isolateRequest)
-				ar.ActionID = uid.String()
-				ar.Workflow.InstanceID = instance.id
-				ar.Workflow.Namespace = instance.namespace
-				ar.Workflow.State = sl.state.GetID()
-				ar.Workflow.Step = instance.step
-				ar.Workflow.Name = instance.wf.Name
-				ar.Workflow.ID = instance.wf.ID
-
-				// TODO: timeout
-				ar.Container.Data = inputData
-				ar.Container.Image = fn.Image
-				ar.Container.Cmd = fn.Cmd
-				ar.Container.Size = fn.Size
-				ar.Container.Scale = fn.Scale
-				ar.Container.ID = fn.ID
-				ar.Container.Files = fn.Files
-
-				err = instance.engine.doActionRequest(ctx, ar)
-				if err != nil {
-					return
-				}
-
-			} else {
-
-				// subflow
-
-				caller := new(subflowCaller)
-				caller.InstanceID = instance.id
-				caller.State = sl.state.GetID()
-				caller.Step = instance.step
-
-				var subflowID string
-
-				// TODO: log subflow instance IDs
-
-				subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
-				if err != nil {
-					return
-				}
-
-				logics = append(logics, multiactionTuple{
-					ID:   subflowID,
-					Type: "subflow",
-				})
-
-			}
-
-		}
-
-		var data []byte
-		data, err = json.Marshal(logics)
-		if err != nil {
-			err = NewInternalError(err)
-			return
-		}
-
-		err = instance.Save(ctx, data)
+		err = sl.doAll(ctx, instance)
 		if err != nil {
 			return
 		}
@@ -202,17 +256,27 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 	}
 
-	// second part
-
-	results := new(actionResultPayload)
-	err = json.Unmarshal(wakedata, results)
+	var logics []multiactionTuple
+	err = json.Unmarshal(savedata, &logics)
 	if err != nil {
 		err = NewInternalError(err)
 		return
 	}
 
-	var logics []multiactionTuple
-	err = json.Unmarshal(savedata, &logics)
+	// check for scheduled retry
+	retryData := new(foreachStateLogicRetry)
+	dec := json.NewDecoder(bytes.NewReader(wakedata))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(retryData)
+	if err == nil {
+		instance.Log("Retrying...")
+		err = sl.doSpecific(ctx, instance, logics, retryData.Idx)
+		return
+	}
+
+	// second part
+	results := new(actionResultPayload)
+	err = json.Unmarshal(wakedata, results)
 	if err != nil {
 		err = NewInternalError(err)
 		return
@@ -224,19 +288,17 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 
 	for i, lid := range logics {
 
+		if lid.Complete {
+			completed++
+		}
+
 		if lid.ID == results.ActionID {
 			found = true
 			if lid.Complete {
 				err = NewInternalError(fmt.Errorf("action '%s' already completed", lid.ID))
 				return
 			}
-			logics[i].Complete = true
-			lid.Complete = true
 			idx = i
-		}
-
-		if lid.Complete {
-			completed++
 		}
 
 	}
@@ -246,12 +308,20 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 		return
 	}
 
-	instance.Log("Action returned. (%d/%d)", completed, len(logics))
-
 	if results.ErrorCode != "" {
-		instance.Log("Action returned catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
+		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		var d time.Duration
+		d, err = preprocessRetry(sl.state.Action.Retries, logics[idx].Attempts, err)
+		if err != nil {
+			return
+		}
+
+		instance.Log("Scheduling retry attempt in: %v.", d)
+		err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 		return
+
 	}
 
 	if results.ErrorMessage != "" {
@@ -259,6 +329,10 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return
 	}
+
+	logics[idx].Complete = true
+	completed++
+	instance.Log("Action returned. (%d/%d)", completed, len(logics))
 
 	var x interface{}
 	err = json.Unmarshal(results.Output, &x)
@@ -308,5 +382,53 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 	}
 
 	return
+
+}
+
+type foreachStateLogicRetry struct {
+	Logics []multiactionTuple
+	Idx    int
+}
+
+func (r *foreachStateLogicRetry) Marshal() []byte {
+	data, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func (sl *foreachStateLogic) scheduleRetry(ctx context.Context, instance *workflowLogicInstance, logics []multiactionTuple, idx int, d time.Duration) error {
+
+	var err error
+
+	logics[idx].Attempts++
+	logics[idx].ID = ""
+
+	var data []byte
+	data, err = json.Marshal(logics)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	err = instance.Save(ctx, data)
+	if err != nil {
+		return err
+	}
+
+	r := &foreachStateLogicRetry{
+		Idx:    idx,
+		Logics: logics,
+	}
+	data = r.Marshal()
+
+	t := time.Now().Add(d)
+
+	err = instance.engine.scheduleRetry(instance.id, sl.ID(), instance.step, t, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }

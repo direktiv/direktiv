@@ -138,10 +138,11 @@ func (o *SchemaDefinition) Validate() error {
 }
 
 type ActionDefinition struct {
-	Function string      `yaml:"function,omitempty"`
-	Workflow string      `yaml:"workflow,omitempty"`
-	Input    interface{} `yaml:"input,omitempty"`
-	Secrets  []string    `yaml:"secrets,omitempty"`
+	Function string           `yaml:"function,omitempty"`
+	Workflow string           `yaml:"workflow,omitempty"`
+	Input    interface{}      `yaml:"input,omitempty"`
+	Secrets  []string         `yaml:"secrets,omitempty"`
+	Retries  *RetryDefinition `yaml:"retries,omitempty"`
 }
 
 func (o *ActionDefinition) Validate() error {
@@ -155,6 +156,13 @@ func (o *ActionDefinition) Validate() error {
 
 	if o.Function == "" && o.Workflow == "" {
 		return errors.New("must define atleast one function or workflow")
+	}
+
+	if o.Retries != nil {
+		err := o.Retries.Validate()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
