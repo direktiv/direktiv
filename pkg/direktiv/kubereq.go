@@ -355,6 +355,7 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 		// otherwise it might be in terminated stage and can get a request
 		for {
 			err := getKnativeFunction(url)
+			log.Debugf("err while waiting: %v", err)
 			if err != nil {
 				break
 			}
