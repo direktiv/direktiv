@@ -541,8 +541,10 @@ func isRetryable(code string, patterns []string) bool {
 func retryDelay(attempt int, delay string, multiplier float64) time.Duration {
 
 	d := time.Second * 5
-	if x, err := time.ParseDuration(delay); err == nil {
-		d = x
+	if x, err := duration.ParseISO8601(delay); err == nil {
+		t0 := time.Now()
+		t1 := x.Shift(t0)
+		d = t1.Sub(t0)
 	}
 
 	if multiplier != 0 {
