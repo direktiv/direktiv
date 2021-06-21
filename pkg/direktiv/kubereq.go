@@ -341,7 +341,7 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 		}
 
 		u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-		url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%d", namespace, ah))
+		url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%s", namespace, ah))
 
 		log.Debugf("deleting url %v", url)
 
@@ -416,7 +416,7 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
 
-	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%d", namespace, ah), ir.Container.Scale,
+	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%s", namespace, ah), ir.Container.Scale,
 		fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
 		ir.Container.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
 		kubeReq.sidecar)
@@ -473,9 +473,15 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 }
 
-func serviceToHash(ar *isolateRequest) (uint64, error) {
+func serviceToHash(ar *isolateRequest) (string, error) {
 
-	return hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
+	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
 		ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s-%s-%d", ar.Workflow.ID,
+		ar.Container.ID, h), nil
 
 }

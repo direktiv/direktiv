@@ -320,7 +320,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 }
 
 func (we *workflowEngine) doHTTPRequest(ctx context.Context,
-	ah uint64, ar *isolateRequest) {
+	ah string, ar *isolateRequest) {
 
 	// from here we need to report error as grpc because this is go-routined
 	// prepare error here in case
@@ -388,7 +388,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	ns := os.Getenv(direktivWorkflowNamespace)
 
 	// calculate address
-	addr := fmt.Sprintf("%s://%s-%d.%s",
+	addr := fmt.Sprintf("%s://%s-%s.%s",
 		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
 
 	log.Debugf("isolate request: %v", addr)
@@ -444,7 +444,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 					if _, ok := err.Err.(*net.DNSError); ok {
 						// this happens because the function does not exist
 						kubeReq.mtx.Lock()
-						err := getKnativeFunction(fmt.Sprintf("%s-%d", ar.Workflow.Namespace, ah))
+						err := getKnativeFunction(fmt.Sprintf("%s-%s", ar.Workflow.Namespace, ah))
 						if err != nil {
 							err := addKnativeFunction(ar)
 							if err != nil {
@@ -1034,7 +1034,7 @@ failure:
 		err = wli.setStatus(ctx, "crashed", code, msg)
 		if err == nil {
 			log.Errorf("Workflow failed with internal error: %s", ierr.Error())
-			wli.Log("Workflow crashed due to an internal error.")
+			wli.Log("Workflow failed with internal error: %s", ierr.Error())
 			wli.engine.freeResources(wli.rec)
 			wli.wakeCaller(ctx, nil)
 			wli.Close()

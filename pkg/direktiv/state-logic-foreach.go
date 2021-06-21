@@ -325,7 +325,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 	}
 
 	if results.ErrorMessage != "" {
-		instance.Log("Action crashed due to an internal error.")
+		instance.Log("Action crashed due to an internal error: %v", results.ErrorMessage)
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return
 	}
