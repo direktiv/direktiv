@@ -973,7 +973,12 @@ failure:
 			var matched bool
 
 			// NOTE: this error should be checked in model validation
-			matched, _ = regexp.MatchString(catch.Error, cerr.Code)
+			errRegex := catch.Error
+			if errRegex == "*" {
+				errRegex = ".*"
+			}
+
+			matched, _ = regexp.MatchString(errRegex, cerr.Code)
 
 			if matched {
 
