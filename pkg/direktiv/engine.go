@@ -398,11 +398,12 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	}
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
-	rctx, cancel := context.WithDeadline(context.Background(), deadline.Add(time.Second*60))
+	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(rctx,
-		http.MethodPost, addr,
+	log.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
 	if err != nil {
 		reportErr(err)
@@ -410,10 +411,10 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	}
 
 	// add headers
+	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
 	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
-	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
 
@@ -439,6 +440,10 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
+			if ctxErr := rctx.Err(); ctxErr != nil {
+				log.Debugf("context error in knative call")
+				return
+			}
 			if err, ok := err.(*url.Error); ok {
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {

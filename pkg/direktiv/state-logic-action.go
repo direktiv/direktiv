@@ -148,10 +148,21 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		return
 	}
 
+	// default 15 mins timeout
+	wfto := 15 * 60
+	if len(sl.state.Timeout) > 0 {
+		var to duration.Duration
+		to, err = duration.ParseISO8601(sl.state.Timeout)
+		if err != nil {
+			return
+		}
+		dur := to.Shift(time.Now()).Sub(time.Now())
+		wfto = int(dur.Seconds())
+	}
+
 	if sl.state.Action.Function != "" {
 
 		// container
-
 		uid := ksuid.New()
 
 		sd := &actionStateSavedata{
@@ -180,6 +191,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		ar.Workflow.Step = instance.step
 		ar.Workflow.Name = instance.wf.Name
 		ar.Workflow.ID = instance.wf.ID
+		ar.Workflow.Timeout = wfto
 
 		// TODO: timeout
 		ar.Container.Data = inputData
