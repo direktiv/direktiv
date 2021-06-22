@@ -373,7 +373,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	if results.ErrorMessage != "" {
 
-		instance.Log("Action crashed due to an internal error.")
+		instance.Log("Action crashed due to an internal error: %v", results.ErrorMessage)
 
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return
