@@ -51,6 +51,20 @@ spec:
         securityContext:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
+        # readinessProbe:
+        #   tcpSocket:
+        #     port: 8080
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/healthz
+            port: 8080
+            {{- if ne  .Values.uiapiCertificate "none" }}
+            scheme: HTTPS
+            {{- end }}
+          periodSeconds: 10
+          failureThreshold: 3
         resources:
           requests:
             memory: "512Mi"

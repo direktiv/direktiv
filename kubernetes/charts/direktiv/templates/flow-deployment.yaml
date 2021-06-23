@@ -33,18 +33,19 @@ spec:
       containers:
         - name: ingress
           readinessProbe:
-            exec:
+            exec: # -tls=true  -tls-no-verify
+              {{- if ne .Values.flow.certificate "none" }}
+              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666", "-tls=true", "-tls-no-verify"]
+              {{- else }}
               command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666"]
-          livenessProbe:
-            exec:
-              command: ["/bin/grpc_health_probe", "-addr=:6666", "-connect-timeout=1000ms"]
+              {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
           resources:
             requests:
               memory: "512Mi"
-              cpu: "0.5"
+              cpu: "250m"
             limits:
               memory: "8192Mi"
               cpu: "8"
@@ -106,7 +107,7 @@ spec:
           resources:
             requests:
               memory: "128Mi"
-              cpu: "0.5"
+              cpu: "100m"
             limits:
               memory: "512Mi"
               cpu: "1"

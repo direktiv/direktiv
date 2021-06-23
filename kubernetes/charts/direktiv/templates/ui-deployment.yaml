@@ -42,17 +42,20 @@ spec:
             limits:
               memory: "2048Mi"
               cpu: "2"
-          readinessProbe:
-            tcpSocket:
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          # livenessProbe:
-          #   httpGet:
-          #     path: /manifest.json
+          # readinessProbe:
+          #   tcpSocket:
           #     port: 8080
-          #   periodSeconds: 10
-          #   failureThreshold: 3
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /manifest.json
+              port: 8080
+              {{- if ne  .Values.uiapiCertificate "none" }}
+              scheme: HTTPS
+              {{- end }}
+            periodSeconds: 10
+            failureThreshold: 3
           image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
           env:
           - name: SERVE_PORT

@@ -3,7 +3,6 @@ package direktiv
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/vorteil/direktiv/pkg/health"
@@ -12,10 +11,14 @@ import (
 type healthServer struct {
 	health.UnimplementedHealthServer
 	grpc *grpc.Server
+
+	s *WorkflowServer
 }
 
-func newHealthServer() *healthServer {
-	return &healthServer{}
+func newHealthServer(s *WorkflowServer) *healthServer {
+	return &healthServer{
+		s: s,
+	}
 }
 
 func (hs *healthServer) name() string {
@@ -27,7 +30,10 @@ func (hs *healthServer) Check(ctx context.Context, in *health.HealthCheckRequest
 	var resp health.HealthCheckResponse
 	resp.Status = health.HealthCheckResponse_SERVING
 
-	log.Debugf("running health check executed")
+	_, err := hs.s.dbManager.getNamespaces(context.Background(), int(0), int(10))
+	if err != nil {
+		return nil, err
+	}
 
 	return &resp, nil
 
@@ -38,8 +44,6 @@ func (hs *healthServer) Watch(in *health.HealthCheckRequest, srv health.Health_W
 	var resp health.HealthCheckResponse
 
 	resp.Status = health.HealthCheckResponse_SERVING
-
-	log.Debugf("running health check watch executed")
 
 	err := srv.Send(&resp)
 	if err != nil {
