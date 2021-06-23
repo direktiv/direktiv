@@ -107,7 +107,7 @@ func (s *Server) prepareRoutes() {
 	// Health check
 	s.Router().HandleFunc("/api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		// responds 200 OK
-	}).Methods(http.MethodGet)
+	}).Methods(http.MethodGet).Name(RN_HealthCheck)
 
 	// Namespace ..
 	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name(RN_ListNamespaces)
