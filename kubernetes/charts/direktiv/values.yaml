@@ -5,7 +5,7 @@
 replicaCount: 1
 
 registry: "docker.io"
-pullPolicy: IfNotPresent
+pullPolicy: Always
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

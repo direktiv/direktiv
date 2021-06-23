@@ -1,0 +1,21 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-sidecar-grpc
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+spec:
+  podSelector:
+     matchExpressions:
+       - { key: serving.knative.dev/configurationGeneration, operator: Exists }
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+          - { key: serving.knative.dev/release, operator: Exists }
+    ports:
+      - port: 8890
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0

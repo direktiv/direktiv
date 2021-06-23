@@ -9,4 +9,7 @@ RUN chmod 755 /bin/direktiv
 EXPOSE 6666
 EXPOSE 7777
 
+RUN apk add shadow
+RUN /usr/sbin/groupadd -g 22222 direktivg && /usr/sbin/useradd -s /bin/sh -g 22222 -u 33333 direktivu
+
 CMD /bin/direktiv

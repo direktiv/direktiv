@@ -39,6 +39,8 @@ func (hs *healthServer) Watch(in *health.HealthCheckRequest, srv health.Health_W
 
 	resp.Status = health.HealthCheckResponse_SERVING
 
+	log.Debugf("running health check watch executed")
+
 	err := srv.Send(&resp)
 	if err != nil {
 		return err
