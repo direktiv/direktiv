@@ -3,6 +3,7 @@ package api
 // RN = Route Name
 const (
 	RN_Preflight                   = "preflight"
+	RN_HealthCheck                 = "healthCheck"
 	RN_ListNamespaces              = "listNamespaces"
 	RN_AddNamespace                = "addNamespace"
 	RN_DeleteNamespace             = "deleteNamespace"
