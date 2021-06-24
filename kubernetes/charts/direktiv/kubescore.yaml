@@ -15,3 +15,4 @@ ui:
   tag: v0.3.0
 
 withSupport: false
+useNetworkPolicies: true
