@@ -65,7 +65,6 @@ func (srv *LocalServer) initLogging() error {
 	conn := os.Getenv("DIREKTIV_DB")
 
 	log.Infof("Connecting to instance logs database.")
-	log.Debugf("Instance logs database connection string: %s", string(conn))
 
 	srv.logging, err = dblog.NewLogger(string(conn))
 	if err != nil {
@@ -81,7 +80,6 @@ func (srv *LocalServer) initPubSub() error {
 	addr := os.Getenv("DIREKTIV_DB")
 
 	log.Infof("Connecting to pub/sub service.")
-	log.Debugf("Pub/sub connection string: %s", addr)
 
 	err := direktiv.SyncSubscribeTo(addr,
 		direktiv.CancelIsolate, srv.handlePubSubCancel)
