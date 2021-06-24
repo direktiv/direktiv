@@ -7,12 +7,12 @@ metadata:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
   {{- if ne  .Values.uiapiCertificate "none" }}
   annotations:
-    projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-ui,80"
+    projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-ui,8080"
   {{- end }}
 spec:
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 8080
+      targetPort: 8080
       protocol: TCP
       name: ui
   selector:

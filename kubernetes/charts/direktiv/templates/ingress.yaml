@@ -36,7 +36,7 @@ spec:
             service:
               name: {{ include "direktiv.fullname" . }}-ui
               port:
-                number: 80
+                number: 8080
   {{- if .Values.ingress.auth.enabled }}
   - host: {{ .Values.ingress.auth.host }}
     http:

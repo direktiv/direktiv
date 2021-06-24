@@ -120,6 +120,19 @@ func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 func runHelm() {
 
+	if os.Getenv("PERSIST") != "" {
+
+		f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		if _, err := f.WriteString("supportPersist: true\n"); err != nil {
+			panic(err)
+		}
+
+	}
+
 	log.Printf("running direktiv helm\n")
 	cmd := exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
 	cmd.Dir = "/direktiv/kubernetes/charts/direktiv"
@@ -164,8 +177,13 @@ func patch(kc string) {
 
 func startingK3s() error {
 
-	log.Println("starting k3s")
-	cmd := exec.Command("k3s", "server", "--disable", "traefik", "--write-kubeconfig-mode=644")
+	log.Println("starting k3s now")
+	cmd := exec.Command("k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0", "--disable", "traefik", "--write-kubeconfig-mode=644")
+
+	if len(os.Getenv("DEBUG")) > 0 {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 
 	return cmd.Run()
 
