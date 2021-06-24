@@ -6,8 +6,8 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
   podSelector:
-     matchExpressions:
-       - { key: serving.knative.dev/configurationGeneration, operator: Exists }
+    matchLabels:
+      direktiv-app: "true"
   ingress:
   - from:
     - namespaceSelector:

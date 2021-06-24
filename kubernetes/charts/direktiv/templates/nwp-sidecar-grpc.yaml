@@ -11,7 +11,7 @@ spec:
   ingress:
   - from:
     - podSelector:
-        matchExpressions:
-          - { key: serving.knative.dev/configurationGeneration, operator: Exists }
+        matchLabels:
+          direktiv-app: "true"
     ports:
       - port: 7777
