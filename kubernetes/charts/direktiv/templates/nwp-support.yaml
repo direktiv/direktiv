@@ -14,7 +14,7 @@ spec:
         matchLabels:
           app.kubernetes.io/name: {{ include "direktiv.name" . }}
     - podSelector:
-        matchExpressions:
-          - { key: serving.knative.dev/configurationGeneration, operator: Exists }
+        matchLabels:
+          direktiv-app: "true"
     ports:
       - port: 5432
