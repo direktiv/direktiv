@@ -15,6 +15,6 @@ spec:
           app.kubernetes.io/name: {{ include "direktiv.name" . }}
     - podSelector:
         matchLabels:
-          direktiv-app: "true"
+          direktiv-app: direktiv
     ports:
       - port: 5432
