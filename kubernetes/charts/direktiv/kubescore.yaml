@@ -1,3 +1,7 @@
+
+# test with:
+# helm template -f kubescore.yaml . | kube-score score --ignore-test=networkpolicy-targets-pod -
+
 flow:
   tag: v0.3.0
 
@@ -9,5 +13,5 @@ api:
 
 ui:
   tag: v0.3.0
-  
+
 withSupport: false

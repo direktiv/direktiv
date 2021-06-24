@@ -164,8 +164,15 @@ func patch(kc string) {
 
 func startingK3s() error {
 
-	log.Println("starting k3s")
+	log.Println("starting k3s now")
 	cmd := exec.Command("k3s", "server", "--disable", "traefik", "--write-kubeconfig-mode=644")
+
+	log.Println(os.Environ())
+	if len(os.Getenv("DEBUG")) > 0 {
+
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 
 	return cmd.Run()
 
