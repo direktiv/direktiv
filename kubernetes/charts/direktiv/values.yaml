@@ -69,6 +69,8 @@ withFlow: true
 withUI: true
 withAPI: true
 
+supportPersist: false
+
 debug: false
 
 ingress:

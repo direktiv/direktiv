@@ -120,6 +120,19 @@ func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 func runHelm() {
 
+	if os.Getenv("PERSIST") != "" {
+
+		f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		if _, err := f.WriteString("supportPersist: true\n"); err != nil {
+			panic(err)
+		}
+
+	}
+
 	log.Printf("running direktiv helm\n")
 	cmd := exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
 	cmd.Dir = "/direktiv/kubernetes/charts/direktiv"

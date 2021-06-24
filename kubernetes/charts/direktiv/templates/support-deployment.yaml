@@ -24,9 +24,20 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      {{- if .Values.supportPersist }}
+      volumes:
+      - name: pg-vol
+        hostPath:
+          path: /tmp/pg
+      {{- end }}
       containers:
         - name: postgres
           image: postgres:12.6-alpine
+          {{- if .Values.supportPersist }}
+          volumeMounts:
+          - name: pg-vol
+            mountPath: /var/lib/postgresql/data
+          {{- end }}
           env:
           - name: POSTGRES_USER
             value: "direktiv"
