@@ -20,6 +20,5 @@ spec:
       - port: 8080
   egress:
   - to:
-    - podSelector:
-        matchLabels:
-          app.kubernetes.io/name: {{ include "direktiv.name" . }}
+    - ipBlock:
+        cidr: 0.0.0.0/0
