@@ -15,6 +15,12 @@ spec:
           app.kubernetes.io/name: {{ include "direktiv.name" . }}-api
     ports:
       - port: 6666
+  - from:
+    - podSelector:
+        matchLabels:
+          direktiv-app: direktiv
+    ports:
+      - port: 7777
   egress:
   - to:
     - ipBlock:
