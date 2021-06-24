@@ -7,12 +7,15 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      direktiv-app: "true"
+      direktiv-app: direktiv
   ingress:
   - from:
     - namespaceSelector:
         matchExpressions:
           - { key: serving.knative.dev/release, operator: Exists }
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: {{ include "direktiv.name" . }}
     ports:
       - port: 8890
   egress:

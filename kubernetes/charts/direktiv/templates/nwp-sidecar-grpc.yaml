@@ -12,6 +12,6 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          direktiv-app: "true"
+          direktiv-app: direktiv
     ports:
       - port: 7777
