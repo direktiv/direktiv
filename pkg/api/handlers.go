@@ -18,7 +18,7 @@ import (
 
 const (
 	// GRPCCommandTimeout : timeout for grpc function calls
-	GRPCCommandTimeout = 30 * time.Second
+	GRPCCommandTimeout = 90 * time.Second
 )
 
 type Handler struct {

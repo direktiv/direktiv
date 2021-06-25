@@ -48,6 +48,7 @@ func main() {
 
 	log.Println("installing direktiv")
 
+	runRegistry(kc)
 	applyYaml(kc)
 	patch(kc)
 	runHelm()
@@ -141,6 +142,20 @@ func runHelm() {
 
 }
 
+func runRegistry(kc string) {
+
+	// k3s needs a bit to be ready for this, so we wait
+	go func() {
+		time.Sleep(10 * time.Second)
+		log.Printf("applying registry.yaml\n")
+		cmd := exec.Command(kc, "apply", "-f", "/registry.yaml")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
+	}()
+
+}
+
 func applyYaml(kc string) {
 
 	fs := []string{"serving-crds.yaml", "serving-core.yaml", "contour.yaml", "net-contour.yaml"}
@@ -162,6 +177,13 @@ func applyYaml(kc string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
+
+	// apply config-deployment for registry
+	log.Printf("applying config-deployment.yaml\n")
+	cmd := exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
 
 }
 
