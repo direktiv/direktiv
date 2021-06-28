@@ -168,10 +168,12 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 		return NewUncatchableError("direktiv.limits.parallel", "instance aborted for exceeding the maximum number of parallel actions (%d)", maxParallelActions)
 	}
 
-	for _, action := range sl.state.Actions {
+	for i := range sl.state.Actions {
+
+		action := &sl.state.Actions[i]
 
 		var logic multiactionTuple
-		logic, err = sl.dispatchAction(ctx, instance, &action, 0)
+		logic, err = sl.dispatchAction(ctx, instance, action, 0)
 		if err != nil {
 			return err
 		}
