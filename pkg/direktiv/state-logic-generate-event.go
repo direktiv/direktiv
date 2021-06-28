@@ -89,16 +89,25 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 		if err != nil {
 			instance.Log("Unable to decode results as a base64 encoded string. Reverting to JSON.")
 		}
-		event.SetData(ctype, data)
+		err = event.SetData(ctype, data)
+		if err != nil {
+			instance.Log("Unable to set event data: %v", err)
+		}
 	}
 
 	if data == nil {
-		event.SetData("application/json", x)
+		err = event.SetData("application/json", x)
+		if err != nil {
+			instance.Log("Unable to set event data: %v", err)
+		}
 	}
 
 	for k, v := range sl.state.Event.Context {
 		instance.Log("Adding context %v: %v", k, v)
-		event.Context.SetExtension(k, v)
+		err = event.Context.SetExtension(k, v)
+		if err != nil {
+			instance.Log("Unable to set event extension: %v", err)
+		}
 	}
 
 	data, err = event.MarshalJSON()

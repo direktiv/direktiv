@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -163,7 +164,7 @@ func (worker *inboundWorker) prepOneIsolateFiles(ctx context.Context, ir *isolat
 func untarFile(tr *tar.Reader, path string) error {
 
 	pdir, _ := filepath.Split(path)
-	err := os.MkdirAll(pdir, 0777)
+	err := os.MkdirAll(pdir, 0750)
 	if err != nil {
 		return err
 	}
@@ -172,6 +173,7 @@ func untarFile(tr *tar.Reader, path string) error {
 	if err != nil {
 		return err
 	}
+	/* #nosec */
 	defer f.Close()
 
 	_, err = io.Copy(f, tr)
@@ -190,7 +192,7 @@ func untarFile(tr *tar.Reader, path string) error {
 
 func untar(dst string, r io.Reader) error {
 
-	err := os.MkdirAll(dst, 0777)
+	err := os.MkdirAll(dst, 0750)
 	if err != nil {
 		return err
 	}
@@ -198,6 +200,7 @@ func untar(dst string, r io.Reader) error {
 	tr := tar.NewReader(r)
 
 	for {
+		/* #nosec */
 		hdr, err := tr.Next()
 		if err == io.EOF {
 			break
@@ -206,6 +209,12 @@ func untar(dst string, r io.Reader) error {
 			return err
 		}
 
+		hdr.Name = filepath.Clean(hdr.Name)
+		if strings.Contains(hdr.Name, "..") {
+			return errors.New("zip-slip")
+		}
+
+		/* #nosec */
 		path := filepath.Join(dst, hdr.Name)
 
 		if hdr.Typeflag == tar.TypeReg {
@@ -214,7 +223,7 @@ func untar(dst string, r io.Reader) error {
 				return err
 			}
 		} else if hdr.Typeflag == tar.TypeDir {
-			err = os.MkdirAll(path, 0777)
+			err = os.MkdirAll(path, 0750)
 			if err != nil {
 				return err
 			}
@@ -234,6 +243,7 @@ func writeFile(dst string, r io.Reader) error {
 	if err != nil {
 		return err
 	}
+	/* #nosec */
 	defer f.Close()
 
 	_, err = io.Copy(f, r)
@@ -316,7 +326,7 @@ func (worker *inboundWorker) fileWriter(ctx context.Context, ir *isolateRequest,
 	dst = filepath.Join(dir, dst)
 	dir, _ = filepath.Split(dst)
 
-	err := os.MkdirAll(dir, 0777)
+	err := os.MkdirAll(dir, 0750)
 	if err != nil {
 		return err
 	}
@@ -357,7 +367,7 @@ func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRe
 
 	dir := worker.isolateDir(ir)
 
-	err := os.MkdirAll(dir, 0777)
+	err := os.MkdirAll(dir, 0750)
 	if err != nil {
 		return err
 	}
@@ -371,7 +381,7 @@ func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRe
 
 	subDirs := []string{"namespace", "workflow", "instance"}
 	for _, d := range subDirs {
-		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0777)
+		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0750)
 		if err != nil {
 			return fmt.Errorf("failed to prepare isolate output dirs: %v", err)
 		}
@@ -466,8 +476,16 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 				}
 				defer os.Remove(tf.Name())
 
-				end, _ := tf.Seek(0, io.SeekEnd)
-				tf.Seek(0, io.SeekStart)
+				var end int64
+				end, err = tf.Seek(0, io.SeekEnd)
+				if err != nil {
+					return err
+				}
+
+				_, err = tf.Seek(0, io.SeekStart)
+				if err != nil {
+					return err
+				}
 
 				err = worker.srv.setVar(ctx, ir, end, tf, d, f.Name())
 				if err != nil {
@@ -475,13 +493,19 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 				}
 			case mode.IsRegular():
 
+				/* #nosec */
 				v, err := os.Open(fp)
 				if err != nil {
 					return err
 				}
-				defer v.Close()
 
 				err = worker.srv.setVar(ctx, ir, f.Size(), v, d, f.Name())
+				if err != nil {
+					_ = v.Close()
+					return err
+				}
+
+				err = v.Close()
 				if err != nil {
 					return err
 				}
@@ -519,6 +543,7 @@ func tarGzDir(src string, buf io.Writer) error {
 		}
 
 		if !fi.IsDir() {
+			/* #nosec */
 			data, err := os.Open(file)
 			if err != nil {
 				return err
