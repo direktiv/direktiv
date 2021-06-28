@@ -200,6 +200,7 @@ func untar(dst string, r io.Reader) error {
 	tr := tar.NewReader(r)
 
 	for {
+		/* #nosec */
 		hdr, err := tr.Next()
 		if err == io.EOF {
 			break
