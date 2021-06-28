@@ -123,7 +123,7 @@ func runHelm() {
 
 	if os.Getenv("PERSIST") != "" {
 
-		f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 		if err != nil {
 			panic(err)
 		}
@@ -151,6 +151,7 @@ func runRegistry(kc string) {
 	go func() {
 		time.Sleep(10 * time.Second)
 		log.Printf("applying registry.yaml\n")
+		/* #nosec */
 		cmd := exec.Command(kc, "apply", "-f", "/registry.yaml")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -165,6 +166,7 @@ func applyYaml(kc string) {
 
 	for _, f := range fs {
 		log.Printf("applying %s\n", f)
+		/* #nosec */
 		cmd := exec.Command(kc, "apply", "-f", f)
 		cmd.Dir = "/direktiv/scripts/knative"
 		cmd.Run()
@@ -174,6 +176,7 @@ func applyYaml(kc string) {
 	isgcp := isGCP()
 	log.Printf("running on GCP: %v\n", isgcp)
 	if isgcp {
+		/* #nosec */
 		cmd := exec.Command(kc, "apply", "-f", "/google-dns.yaml")
 		cmd.Dir = "/"
 		cmd.Run()
@@ -183,6 +186,7 @@ func applyYaml(kc string) {
 
 	// apply config-deployment for registry
 	log.Printf("applying config-deployment.yaml\n")
+	/* #nosec */
 	cmd := exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -193,6 +197,7 @@ func applyYaml(kc string) {
 func patch(kc string) {
 
 	log.Printf("patching configmap\n")
+	/* #nosec */
 	cmd := exec.Command(kc, "patch", "configmap/config-network",
 		"--namespace", "knative-serving", "--type", "merge", "--patch",
 		"{\"data\":{\"ingress.class\":\"contour.ingress.networking.knative.dev\"}}")
@@ -222,7 +227,7 @@ func changeContour() {
 
 	output := bytes.Replace(iyaml, []byte("replicas: 2"), []byte("replicas: 1"), -1)
 
-	if err = ioutil.WriteFile("/direktiv/scripts/knative/contour.yaml", output, 0666); err != nil {
+	if err = ioutil.WriteFile("/direktiv/scripts/knative/contour.yaml", output, 0600); err != nil {
 		panic(err.Error())
 	}
 }
