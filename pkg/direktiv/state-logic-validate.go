@@ -71,7 +71,7 @@ func (sl *validateStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		return
 	}
 
-	subjectQuery := "."
+	subjectQuery := "jq(.)"
 	if sl.state.Subject != "" {
 		subjectQuery = sl.state.Subject
 	}

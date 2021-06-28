@@ -439,7 +439,7 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 	var err error
 	var input interface{}
 
-	input, err = jqObject(data, ".")
+	input, err = jqObject(data, "jq(.)")
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +456,7 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 	}
 
 	if action.Input == nil {
-		input, err = jqObject(m, ".")
+		input, err = jqObject(m, "jq(.)")
 		if err != nil {
 			return nil, err
 		}
