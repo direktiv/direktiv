@@ -377,8 +377,8 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 		// Trust the augmented cert pool in our client
 		config := &tls.Config{
-			InsecureSkipVerify: true,
-			RootCAs:            rootCAs,
+			RootCAs:    rootCAs,
+			MinVersion: tls.VersionTLS12,
 		}
 		tr.TLSClientConfig = config
 

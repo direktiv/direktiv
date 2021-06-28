@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+/* #nosec */
 const (
 	secretsConn = "DIREKTIV_SECRETS_DB"
 	secretsKey  = "DIREKTIV_SECRETS_KEY"
