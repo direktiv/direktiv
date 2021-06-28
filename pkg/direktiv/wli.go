@@ -448,10 +448,6 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 
 	m, ok := x.(map[string]interface{})
 	if !ok {
-		z, _ := json.Marshal(input)
-		fmt.Println(string(z))
-		y, _ := json.Marshal(x)
-		fmt.Println(string(y))
 		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced a non-object output")
 	}
 
