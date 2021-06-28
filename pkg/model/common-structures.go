@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/itchyny/gojq"
 	"github.com/qri-io/jsonschema"
 	"github.com/senseyeio/duration"
 )
@@ -190,15 +189,20 @@ func isJSONSchema(schema interface{}) error {
 }
 
 func validateTransformJQ(transform string) error {
-	if transform == "" {
-		return nil
-	}
-
-	if _, err := gojq.Parse(transform); err != nil {
-		return fmt.Errorf("transform is an invalid jq string: %v", err)
-	}
 
 	return nil
+
+	/*
+		if transform == "" {
+			return nil
+		}
+
+		if _, err := gojq.Parse(transform); err != nil {
+			return fmt.Errorf("transform is an invalid jq string: %v", err)
+		}
+
+		return nil
+	*/
 }
 
 func processInterfaceMap(s interface{}) (map[string]interface{}, string, error) {

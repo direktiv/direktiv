@@ -43,6 +43,12 @@ var (
 
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 
+	if query == nil {
+		var out []interface{}
+		out = append(out, data)
+		return out, nil
+	}
+
 	if s, ok := query.(string); ok && !StringQueryRequiresWrappings {
 		return jq(data, s)
 	}
@@ -54,6 +60,11 @@ func Evaluate(data, query interface{}) ([]interface{}, error) {
 func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
 
 	var out []interface{}
+
+	if query == nil {
+		out = append(out, nil)
+		return out, nil
+	}
 
 	switch query.(type) {
 	case bool:
@@ -96,6 +107,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	}
 
 	// search in string
+	var foundQueries bool
 	var stringParts []interface{}
 	begin := WrappingBegin + WrappingIncrement
 
@@ -157,6 +169,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 		var x []interface{}
 		qstr := query[len(begin) : i-1]
 		var err error
+		foundQueries = true
 		x, err = jq(data, qstr)
 		if err != nil {
 			return nil, fmt.Errorf("error running jq query beginning at offset %v: %v", offset, err)
@@ -177,7 +190,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 
 	}
 
-	if len(stringParts) == 0 {
+	if !foundQueries {
 		out = append(out, s)
 		return out, nil
 	}

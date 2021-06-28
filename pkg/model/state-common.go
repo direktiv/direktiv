@@ -2,9 +2,6 @@ package model
 
 import (
 	"errors"
-	"fmt"
-
-	"github.com/itchyny/gojq"
 )
 
 type RetryDefinition struct {
@@ -115,9 +112,11 @@ func (o *StateCommon) commonValidate() error {
 	}
 
 	if s, ok := o.Log.(string); ok && s != "" {
-		if _, err := gojq.Parse(s); err != nil {
-			return fmt.Errorf("log is an invalid jq string: %v", err)
-		}
+		/*
+			if _, err := gojq.Parse(s); err != nil {
+				return fmt.Errorf("log is an invalid jq string: %v", err)
+			}
+		*/
 	}
 
 	for _, catch := range o.Catch {
