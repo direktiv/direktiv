@@ -134,10 +134,7 @@ func (s *Server) workflowTemplate(folder, name string) ([]byte, error) {
 
 	p := filepath.Join(path, fmt.Sprintf("%s.yml", name))
 
-<<<<<<< HEAD
 	/* #nosec G304 */
-=======
->>>>>>> main
 	b, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil, err
