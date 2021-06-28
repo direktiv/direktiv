@@ -214,6 +214,7 @@ func untar(dst string, r io.Reader) error {
 			return errors.New("zip-slip")
 		}
 
+		/* #nosec */
 		path := filepath.Join(dst, hdr.Name)
 
 		if hdr.Typeflag == tar.TypeReg {
