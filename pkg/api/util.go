@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -19,6 +21,22 @@ func closeVerbose(x io.Closer, log io.Writer) {
 	if err != nil {
 		log.Write([]byte(err.Error()))
 	}
+}
+
+const filenameRegexp = `^[^\s\.\,\/\*]*$`
+
+func sanitizeFileName(str string) error {
+
+	pass, err := regexp.MatchString(filenameRegexp, str)
+	if err != nil {
+		return err
+	}
+
+	if !pass {
+		return fmt.Errorf("file name contains invalid characters ('.', '..', '*', etc.)")
+	}
+
+	return nil
 }
 
 func writeData(resp interface{}, w http.ResponseWriter) {
