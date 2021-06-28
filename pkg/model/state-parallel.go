@@ -10,7 +10,7 @@ type ParallelState struct {
 	Actions     []ActionDefinition `yaml:"actions"`
 	Mode        BranchMode         `yaml:"mode,omitempty"`
 	Timeout     string             `yaml:"timeout,omitempty"`
-	Transform   string             `yaml:"transform,omitempty"`
+	Transform   interface{}        `yaml:"transform,omitempty"`
 	Transition  string             `yaml:"transition,omitempty"`
 }
 
@@ -61,8 +61,10 @@ func (o *ParallelState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Actions == nil || len(o.Actions) == 0 {

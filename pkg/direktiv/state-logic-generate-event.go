@@ -52,7 +52,7 @@ func (sl *generateEventStateLogic) LivingChildren(savedata []byte) []stateChild 
 	return nil
 }
 
-func (sl *generateEventStateLogic) LogJQ() string {
+func (sl *generateEventStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

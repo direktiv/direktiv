@@ -6,8 +6,8 @@ import (
 
 type NoopState struct {
 	StateCommon `yaml:",inline"`
-	Transform   string `yaml:"transform,omitempty"`
-	Transition  string `yaml:"transition,omitempty"`
+	Transform   interface{} `yaml:"transform,omitempty"`
+	Transition  string      `yaml:"transition,omitempty"`
 }
 
 func (o *NoopState) GetID() string {
@@ -49,8 +49,10 @@ func (o *NoopState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {

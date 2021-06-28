@@ -223,7 +223,7 @@ func (sl *parallelStateLogic) doSpecific(ctx context.Context, instance *workflow
 
 }
 
-func (sl *parallelStateLogic) LogJQ() string {
+func (sl *parallelStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

@@ -35,7 +35,7 @@ const maxParallelActions = 10
 
 type stateTransition struct {
 	NextState string
-	Transform string
+	Transform interface{}
 }
 
 type stateChild struct {
@@ -50,7 +50,7 @@ type stateLogic interface {
 	ErrorCatchers() []model.ErrorDefinition
 	Run(ctx context.Context, instance *workflowLogicInstance, savedata, wakedata []byte) (transition *stateTransition, err error)
 	LivingChildren(savedata []byte) []stateChild
-	LogJQ() string
+	LogJQ() interface{}
 }
 
 // -------------- Helper Functions --------------
@@ -147,7 +147,7 @@ func (sl *noopStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
-func (sl *noopStateLogic) LogJQ() string {
+func (sl *noopStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

@@ -84,7 +84,6 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	if TrimWhitespaceOnQueryStrings {
 		query = strings.TrimSpace(query)
 		offset = strings.Index(s, query)
-
 	}
 
 	if !SearchInStrings {
@@ -97,17 +96,114 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	}
 
 	// search in string
-	var stringParts []string
+	var stringParts []interface{}
 	begin := WrappingBegin + WrappingIncrement
-	
-	...
+
+	for {
+		idx := strings.Index(query, begin)
+		if idx < 0 {
+			if len(query) > 0 {
+				stringParts = append(stringParts, query)
+			}
+			break
+		}
+
+		if idx > 0 {
+			stringParts = append(stringParts, query[:idx])
+			offset += idx
+			query = query[idx:]
+			idx = 0
+		}
+
+		counter := 1
+		var i int
+
+		for i = len(begin); counter > 0; i++ {
+
+			if i >= len(query) {
+				break
+			}
+
+			if len(query) >= i+len(WrappingIncrement) {
+
+				c := query[i : i+len(WrappingIncrement)]
+
+				if c == WrappingIncrement {
+					counter++
+					i += len(WrappingIncrement) - 1
+					continue
+				}
+
+			}
+
+			if len(query) >= i+len(WrappingDecrement) {
+
+				c := query[i : i+len(WrappingDecrement)]
+
+				if c == WrappingDecrement {
+					counter--
+					i += len(WrappingDecrement) - 1
+					continue
+				}
+
+			}
+
+		}
+
+		if counter > 0 {
+			return nil, fmt.Errorf("unterminated jq query beginning at offset %v", offset)
+		}
+
+		var x []interface{}
+		qstr := query[len(begin) : i-1]
+		var err error
+		x, err = jq(data, qstr)
+		if err != nil {
+			return nil, fmt.Errorf("error running jq query beginning at offset %v: %v", offset, err)
+		}
+		out = x
+
+		if len(x) == 0 {
+			return nil, fmt.Errorf("error in jq query beginning at offset %v: no results", offset)
+		}
+		if len(x) > 1 {
+			return nil, fmt.Errorf("error in jq query beginning at offset %v: more than one result", offset)
+		}
+
+		stringParts = append(stringParts, x[0])
+
+		offset += i
+		query = query[i:]
+
+	}
 
 	if len(stringParts) == 0 {
 		out = append(out, s)
 		return out, nil
 	}
 
+	if len(stringParts) == 1 {
+		return out, nil
+	}
+
+	var x []string
+	for i := range stringParts {
+		if _, ok := stringParts[i].(string); ok {
+			x = append(x, fmt.Sprintf("%v", stringParts[i]))
+		} else {
+			data, err := json.Marshal(stringParts[i])
+			if err != nil {
+				return nil, err
+			}
+			x = append(x, fmt.Sprintf("%s", data))
+		}
+	}
+
+	s = strings.Join(x, "")
+	out = make([]interface{}, 1)
+	out[0] = s
 	return out, nil
+
 }
 
 func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/vorteil/direktiv/pkg/jqer"
 	"github.com/vorteil/direktiv/pkg/varstore"
 
 	"github.com/google/uuid"
@@ -100,6 +101,13 @@ func (s *WorkflowServer) initWorkflowServer() error {
 func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 
 	ctx := context.Background()
+
+	jqer.StringQueryRequiresWrappings = true
+	jqer.TrimWhitespaceOnQueryStrings = true
+	jqer.SearchInStrings = true
+	jqer.WrappingBegin = "jq"
+	jqer.WrappingIncrement = "("
+	jqer.WrappingDecrement = ")"
 
 	var (
 		err error
@@ -228,4 +236,3 @@ func (s *WorkflowServer) Run() error {
 func init() {
 	resolver.Register(&KubeResolverBuilder{})
 }
-

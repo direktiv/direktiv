@@ -93,7 +93,7 @@ func (o *ProduceEventDefinition) Validate() error {
 type StateCommon struct {
 	ID    string            `yaml:"id"`
 	Type  StateType         `yaml:"type"`
-	Log   string            `yaml:"log,omitempty"`
+	Log   interface{}       `yaml:"log,omitempty"`
 	Catch []ErrorDefinition `yaml:"catch,omitempty"`
 }
 
@@ -114,8 +114,8 @@ func (o *StateCommon) commonValidate() error {
 		return errors.New("id required")
 	}
 
-	if o.Log != "" {
-		if _, err := gojq.Parse(o.Log); err != nil {
+	if s, ok := o.Log.(string); ok && s != "" {
+		if _, err := gojq.Parse(s); err != nil {
 			return fmt.Errorf("log is an invalid jq string: %v", err)
 		}
 	}

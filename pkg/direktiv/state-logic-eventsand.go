@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -69,11 +68,6 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *wo
 				err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': not a jq query string", k)
 				return err
 			}
-			if !strings.HasPrefix(query, "{{") || !strings.HasSuffix(query, "}}") {
-				event.Context[k] = query
-				continue
-			}
-			query = query[2 : len(query)-2]
 			var x interface{}
 			x, err = jqOne(instance.data, query)
 			if err != nil {
@@ -97,7 +91,7 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *wo
 
 }
 
-func (sl *eventsAndStateLogic) LogJQ() string {
+func (sl *eventsAndStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

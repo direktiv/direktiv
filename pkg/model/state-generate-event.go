@@ -8,7 +8,7 @@ import (
 type GenerateEventDefinition struct {
 	Type            string                 `yaml:"type"`
 	Source          string                 `yaml:"source"`
-	Data            string                 `yaml:"data"`
+	Data            interface{}            `yaml:"data"`
 	DataContentType string                 `yaml:"data_content_type,omitempty"`
 	Context         map[string]interface{} `yaml:"context,omitempty"`
 }
@@ -28,7 +28,7 @@ func (o *GenerateEventDefinition) Validate() error {
 type GenerateEventState struct {
 	StateCommon `yaml:",inline"`
 	Event       *GenerateEventDefinition `yaml:"event"`
-	Transform   string                   `yaml:"transform,omitempty"`
+	Transform   interface{}              `yaml:"transform,omitempty"`
 	Transition  string                   `yaml:"transition,omitempty"`
 }
 
@@ -71,8 +71,10 @@ func (o *GenerateEventState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Event == nil {

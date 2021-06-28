@@ -6,9 +6,9 @@ import (
 )
 
 type SwitchConditionDefinition struct {
-	Condition  string `yaml:"condition"`
-	Transform  string `yaml:"transform,omitempty"`
-	Transition string `yaml:"transition,omitempty"`
+	Condition  interface{} `yaml:"condition"`
+	Transform  interface{} `yaml:"transform,omitempty"`
+	Transition string      `yaml:"transition,omitempty"`
 }
 
 func (o *SwitchConditionDefinition) Validate() error {
@@ -16,8 +16,10 @@ func (o *SwitchConditionDefinition) Validate() error {
 		return errors.New("condition required")
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -26,7 +28,7 @@ func (o *SwitchConditionDefinition) Validate() error {
 type SwitchState struct {
 	StateCommon       `yaml:",inline"`
 	Conditions        []SwitchConditionDefinition `yaml:"conditions"`
-	DefaultTransform  string                      `yaml:"defaultTransform,omitempty"`
+	DefaultTransform  interface{}                 `yaml:"defaultTransform,omitempty"`
 	DefaultTransition string                      `yaml:"defaultTransition,omitempty"`
 }
 
@@ -87,8 +89,10 @@ func (o *SwitchState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.DefaultTransform); err != nil {
-		return fmt.Errorf("default transform: %v", err)
+	if s, ok := o.DefaultTransform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return fmt.Errorf("default transform: %v", err)
+		}
 	}
 
 	if o.Conditions == nil || len(o.Conditions) == 0 {
