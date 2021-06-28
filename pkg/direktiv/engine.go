@@ -377,8 +377,8 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 
 		// Trust the augmented cert pool in our client
 		config := &tls.Config{
-			InsecureSkipVerify: true,
-			RootCAs:            rootCAs,
+			RootCAs:    rootCAs,
+			MinVersion: tls.VersionTLS12,
 		}
 		tr.TLSClientConfig = config
 
@@ -418,8 +418,9 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
 
-	for _, f := range ar.Container.Files {
-		data, err := json.Marshal(&f)
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		data, err := json.Marshal(f)
 		if err != nil {
 			panic(err)
 		}

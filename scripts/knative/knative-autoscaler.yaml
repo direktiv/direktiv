@@ -21,7 +21,7 @@ data:
   panic-window-percentage: "10.0"
   pod-autoscaler-class: kpa.autoscaling.knative.dev
   requests-per-second-target-default: "200"
-  scale-down-delay: 0s
+  scale-down-delay: 60s
   scale-to-zero-grace-period: 30s
   scale-to-zero-pod-retention-period: 120s
   stable-window: 60s

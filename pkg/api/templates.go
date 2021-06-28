@@ -127,7 +127,9 @@ func (s *Server) workflowTemplate(folder, name string) ([]byte, error) {
 		return nil, fmt.Errorf("unknown workflow folder: '%s'", folder)
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(path, fmt.Sprintf("%s.yml", name)))
+	p := filepath.Join(path, fmt.Sprintf("%s.yml", name))
+
+	b, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +161,9 @@ func (s *Server) actionTemplate(folder, name string) ([]byte, error) {
 		return nil, fmt.Errorf("unknown actions folder: '%s'", folder)
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(path, fmt.Sprintf("%s.json", name)))
+	p := filepath.Join(path, fmt.Sprintf("%s.json", name))
+
+	b, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rung/go-safecast"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
@@ -22,8 +23,17 @@ func (h *Handler) instances(w http.ResponseWriter, r *http.Request) {
 		o = 0
 	}
 
-	limit := int32(l)
-	offset := int32(o)
+	limit, err := safecast.Int32(l)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	offset, err := safecast.Int32(o)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
@@ -109,8 +119,17 @@ func (h *Handler) instanceLogs(w http.ResponseWriter, r *http.Request) {
 		o = 0
 	}
 
-	limit := int32(l)
-	offset := int32(o)
+	limit, err := safecast.Int32(l)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	offset, err := safecast.Int32(o)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	resp, err := h.s.direktiv.GetWorkflowInstanceLogs(ctx, &ingress.GetWorkflowInstanceLogsRequest{
 		InstanceId: &iid,
