@@ -6,6 +6,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/gorilla/mux"
+	"github.com/rung/go-safecast"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
@@ -79,8 +80,17 @@ func (h *Handler) namespaceLogs(w http.ResponseWriter, r *http.Request) {
 		o = 0
 	}
 
-	limit := int32(l)
-	offset := int32(o)
+	limit, err := safecast.Int32(l)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	offset, err := safecast.Int32(o)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	resp, err := h.s.direktiv.GetNamespaceLogs(ctx, &ingress.GetNamespaceLogsRequest{
 		Namespace: &n,

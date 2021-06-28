@@ -98,7 +98,7 @@ func ConfigFromFile(cfgPath string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open config file: %s", err.Error())
 	}
-	defer r.Close()
+	defer closeVerbose(r, nil)
 
 	dec := toml.NewDecoder(r)
 	err = dec.Decode(cfg)

@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/itchyny/gojq"
+	"github.com/rung/go-safecast"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -120,7 +121,12 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 		useLogEvent = true
 	}
 
-	revision := int32(rev)
+	// revision := int32(rev)
+	revision, err := safecast.Int32(rev)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	// Read Body
 	b, err := ioutil.ReadAll(r.Body)
@@ -438,8 +444,17 @@ func (h *Handler) workflowInstances(w http.ResponseWriter, r *http.Request) {
 	wf := mux.Vars(r)["workflowTarget"]
 
 	o, l := paginationParams(r)
-	offset := int32(o)
-	limit := int32(l)
+	offset, err := safecast.Int32(o)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	limit, err := safecast.Int32(l)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()

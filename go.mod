@@ -28,6 +28,7 @@ require (
 	github.com/pelletier/go-toml v1.8.0
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/rung/go-safecast v1.0.1 // indirect
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
