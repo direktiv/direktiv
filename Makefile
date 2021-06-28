@@ -35,6 +35,7 @@ local-docker-ui: build
 		cd ${mkfile_dir_main}direktiv-ui && git pull; \
 	fi
 	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server
+
 .PHONY: docker-ui
 docker-ui:
 docker-ui: build
@@ -42,6 +43,7 @@ docker-ui: build
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
 	cd direktiv-ui && make update-containers
+
 .PHONY: docker-secrets
 docker-secrets:
 docker-secrets: build

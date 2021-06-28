@@ -1,0 +1,32 @@
+{{- if .Values.useNetworkPolicies -}}
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-sidecar-grpc
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      direktiv-app: direktiv
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+          - { key: serving.knative.dev/release, operator: Exists }
+    - namespaceSelector:
+        matchLabels:
+          networking.knative.dev/ingress-provider: contour
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: {{ include "direktiv.name" . }}
+    ports:
+      - port: 8012
+      - port: 8013
+      - port: 8022
+      - port: 9090
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+{{- end }}

@@ -21,6 +21,10 @@ spec:
       labels:
         {{- include "direktiv.selectorLabelsUI" . | nindent 8 }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -28,10 +32,34 @@ spec:
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
         - name: ui
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.25"
+            limits:
+              memory: "2048Mi"
+              cpu: "2"
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: 8080
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /manifest.json
+              port: 8080
+              {{- if ne  .Values.uiapiCertificate "none" }}
+              scheme: HTTPS
+              {{- end }}
+            periodSeconds: 10
+            failureThreshold: 3
           image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
           env:
           - name: SERVE_PORT
-            value: "80"
+            value: "8080"
           - name: SERVE_ADDRESS
             value: "0.0.0.0"
           - name: API_URL
@@ -47,7 +75,7 @@ spec:
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: ui
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
       volumes:
       {{- if ne  .Values.uiapiCertificate "none" }}

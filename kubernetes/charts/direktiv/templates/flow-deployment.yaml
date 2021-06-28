@@ -21,6 +21,10 @@ spec:
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -28,6 +32,23 @@ spec:
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
         - name: ingress
+          readinessProbe:
+            exec: # -tls=true  -tls-no-verify
+              {{- if ne .Values.flow.certificate "none" }}
+              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666", "-tls=true", "-tls-no-verify"]
+              {{- else }}
+              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666"]
+              {{- end }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "8192Mi"
+              cpu: "8"
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ["/bin/direktiv"]
@@ -80,6 +101,16 @@ spec:
           - name: DIREKTIV_SECRETS_ENDPOINT
             value:  "localhost:2610"
         - name: secrets
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "1"
           image: "{{ .Values.registry }}/{{ .Values.secrets.image }}:{{ .Values.secrets.tag | default .Chart.AppVersion }}"
           command: ["/bin/secrets"]
           args: [{{.Values.secrets.backend }}]

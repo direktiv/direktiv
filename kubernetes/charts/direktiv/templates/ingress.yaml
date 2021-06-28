@@ -9,6 +9,7 @@ metadata:
     {{- if ne .Values.ingress.certificate "none" }}
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
+    projectcontour.io/response-timeout: 120s
 spec:
   {{- if ne .Values.ingress.certificate "none" }}
   tls:
@@ -36,7 +37,7 @@ spec:
             service:
               name: {{ include "direktiv.fullname" . }}-ui
               port:
-                number: 80
+                number: 8080
   {{- if .Values.ingress.auth.enabled }}
   - host: {{ .Values.ingress.auth.host }}
     http:

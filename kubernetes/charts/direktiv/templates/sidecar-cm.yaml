@@ -17,6 +17,9 @@ data:
       "spec": {
         "template": {
           "metadata": {
+            "labels": {
+              "direktiv-app": "direktiv"
+            },
             "annotations": {
               "autoscaling.knative.dev/minScale": "%d"
             }

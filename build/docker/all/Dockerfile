@@ -20,11 +20,14 @@ COPY --from=build-env /dlapp /dlapp
 RUN chmod 755 /dlapp
 
 ADD debug.yaml /
+ADD registry.yaml /
 
 ADD google-dns.yaml /
 
 ADD server.sh /
 
 ADD default_direktiv.vcfg /
+
+ADD config-deployment.yaml /
 
 ENTRYPOINT ["/dlapp"]
