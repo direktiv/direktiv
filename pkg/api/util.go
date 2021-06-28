@@ -3,10 +3,23 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
+
+func closeVerbose(x io.Closer, log io.Writer) {
+	if log == nil {
+		log = os.Stdout
+	}
+
+	err := x.Close()
+	if err != nil {
+		log.Write([]byte(err.Error()))
+	}
+}
 
 func writeData(resp interface{}, w http.ResponseWriter) {
 	// Write Data
