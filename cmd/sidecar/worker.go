@@ -200,6 +200,7 @@ func untar(dst string, r io.Reader) error {
 	tr := tar.NewReader(r)
 
 	for {
+		/* #nosec */
 		hdr, err := tr.Next()
 		if err == io.EOF {
 			break
@@ -213,7 +214,6 @@ func untar(dst string, r io.Reader) error {
 			return errors.New("zip-slip")
 		}
 
-		/* #nosec */
 		path := filepath.Join(dst, hdr.Name)
 
 		if hdr.Typeflag == tar.TypeReg {
