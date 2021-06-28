@@ -128,12 +128,14 @@ func runHelm() {
 			panic(err)
 		}
 
-		/* #nosec */
-		defer f.Close()
 		if _, err := f.WriteString("supportPersist: true\n"); err != nil {
 			panic(err)
 		}
-		f.Close()
+
+		err = f.Close()
+		if err != nil {
+			log.Printf("can not close debug.yaml: %v", err)
+		}
 
 	}
 
