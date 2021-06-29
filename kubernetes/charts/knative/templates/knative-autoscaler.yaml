@@ -1,10 +1,9 @@
-{{- if .Values.overrideCM -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   annotations:
   labels:
-    serving.knative.dev/release: devel
+    serving.knative.dev/release: direktiv
   name: config-autoscaler
   namespace: knative-serving-{{ .Release.Name }}
 data:
@@ -27,4 +26,3 @@ data:
   scale-to-zero-pod-retention-period: 120s
   stable-window: 60s
   target-burst-capacity: "200"
-{{- end }}
