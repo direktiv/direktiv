@@ -14,12 +14,13 @@ jobs:
         repository: vorteil/direktiv  # The repository to scan.
         releases-only: false  # We know that all relevant tags have a GitHub release for them.
       id: ptag  # The step ID to refer to later.
-    - name: build helm chart
+    - name: build helm chart direktiv
       run: |
         export version=${{ steps.ptag.outputs.tag }}
         v="${version:1}"
         echo "packaging helm for $v"
         helm package --app-version=$v kubernetes/charts/direktiv/
+        helm package --app-version=$v kubernetes/charts/knative/
         helm repo index .
         ls -la
     - id: upload-file
@@ -33,4 +34,10 @@ jobs:
       with:
         credentials: ${{ secrets.GCP_BUCKET }}
         path: ./direktiv-0.1.0.tgz
+        destination: direktiv_charts/
+    - id: upload-file-tar knative
+      uses: google-github-actions/upload-cloud-storage@main
+      with:
+        credentials: ${{ secrets.GCP_BUCKET }}
+        path: ./knative-0.1.0.tgz
         destination: direktiv_charts/

@@ -40,4 +40,4 @@ data:
     # for the queue proxy sidecar container.
     # If omitted, no value is specified and the system default is used.
     queueSidecarEphemeralStorageLimit: "1024Mi"
-    queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:6cd0c234bfbf88ac75df5243c2f9213dcc9def610414c506d418f9388187b771
+    queueSidecarImage: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:e3d1d07c282bf3b4d237c719fba8cfe49547b14aefe4229daf842dd17bd58167
