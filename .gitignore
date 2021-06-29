@@ -48,3 +48,8 @@
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
 deploy*.yaml
+
+kubernetes/charts/knative/templates/contour.yaml
+kubernetes/charts/knative/templates/net-contour.yaml
+kubernetes/charts/knative/templates/serving-core.yaml
+kubernetes/charts/knative/templates/serving-crds.yaml
