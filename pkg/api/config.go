@@ -94,6 +94,8 @@ func ConfigFromEnv() (*Config, error) {
 func ConfigFromFile(cfgPath string) (*Config, error) {
 
 	cfg := new(Config)
+
+	/* #nosec G304 */
 	r, err := os.Open(cfgPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open config file: %s", err.Error())

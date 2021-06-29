@@ -34,6 +34,7 @@ const (
 )
 
 const (
+	k8sNamespaceVar      = "DIREKTIV_KUBERNETES_NAMESPACE"
 	serviceAccountPrefix = "direktiv-sa"
 	secretsPrefix        = "direktiv-secret"
 )
@@ -474,6 +475,10 @@ func sendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 }
 
+func k8sNamespace() string {
+	return os.Getenv(k8sNamespaceVar)
+}
+
 func serviceToHash(ar *isolateRequest) (string, error) {
 
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
@@ -482,7 +487,14 @@ func serviceToHash(ar *isolateRequest) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%s-%s-%d", ar.Workflow.ID,
-		ar.Container.ID, h), nil
+	suffix := fmt.Sprintf("-%d", h)
+	maxLen := 64 - len(fmt.Sprintf("%s.%s", suffix, k8sNamespace())) - (len(ar.Workflow.Namespace) + 1)
+
+	prefix := fmt.Sprintf("%s-%s", ar.Workflow.ID, ar.Container.ID)
+	if len(prefix) > maxLen {
+		prefix = prefix[:maxLen]
+	}
+
+	return fmt.Sprintf("%s%s", prefix, suffix), nil
 
 }
