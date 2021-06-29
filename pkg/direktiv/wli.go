@@ -421,7 +421,11 @@ func (wli *workflowLogicInstance) unlock() {
 }
 
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
-	return jqer.Evaluate(input, command)
+	out, err := jqer.Evaluate(input, command)
+	if err != nil {
+		return nil, NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq: %v", err)
+	}
+	return out, nil
 }
 
 func jqOne(input interface{}, command interface{}) (interface{}, error) {
