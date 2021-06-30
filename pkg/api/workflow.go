@@ -66,12 +66,18 @@ func (h *Handler) getWorkflow(w http.ResponseWriter, r *http.Request) {
 	n := mux.Vars(r)["namespace"]
 	name := mux.Vars(r)["workflowTarget"]
 
+	getRefs := false
+	if r.URL.Query().Get("get_refs") != "" {
+		getRefs = true
+	}
+
 	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
 
 	resp, err := h.s.direktiv.GetWorkflowByName(ctx, &ingress.GetWorkflowByNameRequest{
-		Namespace: &n,
-		Name:      &name,
+		Namespace:     &n,
+		Name:          &name,
+		GetReferences: &getRefs,
 	})
 
 	if err != nil {

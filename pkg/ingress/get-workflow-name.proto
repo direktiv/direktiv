@@ -9,9 +9,22 @@ import "google/protobuf/timestamp.proto";
 message GetWorkflowByNameRequest {
 	optional string namespace = 1;
 	optional string name = 2;
+	optional bool 	getReferences = 3;
 }
 
 message GetWorkflowByNameResponse {
+	message References {
+		message Secret {
+			optional string key = 1;
+		}
+		message Variable {
+			optional string key = 1;
+			optional string scope = 2;
+			repeated string operations = 3;
+		}
+		repeated Secret secrets = 1;
+		repeated Variable variables = 2;
+	}
 	optional string uid = 1;
 	optional string name = 2;
 	optional int32 revision = 3;
@@ -20,4 +33,5 @@ message GetWorkflowByNameResponse {
 	optional string description = 6;
 	optional bytes workflow = 7;
 	optional string logToEvents = 8;
+	optional References references = 9;
 }

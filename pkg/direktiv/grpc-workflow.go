@@ -256,6 +256,40 @@ func (is *ingressServer) GetWorkflowByName(ctx context.Context, in *ingress.GetW
 	resp.Workflow = wf.Workflow
 	resp.LogToEvents = &wf.LogToEvents
 
+	// get secrets and var references
+	if in.GetGetReferences() {
+		resp.References = &ingress.GetWorkflowByNameResponse_References{
+			Secrets:   make([]*ingress.GetWorkflowByNameResponse_References_Secret, 0),
+			Variables: make([]*ingress.GetWorkflowByNameResponse_References_Variable, 0),
+		}
+
+		// Load workflow
+		var workflow model.Workflow
+		err := workflow.Load(wf.Workflow)
+		if err != nil {
+			return nil, grpcDatabaseError(fmt.Errorf("invalid: %w", err), "workflow", uid)
+		}
+
+		// Get References
+		secretRefs := workflow.GetSecretReferences()
+		varRefs := workflow.GetVariableReferences()
+
+		// Set References
+		for i := range secretRefs {
+			resp.References.Secrets = append(resp.References.Secrets, &ingress.GetWorkflowByNameResponse_References_Secret{
+				Key: &secretRefs[i],
+			})
+		}
+
+		for i := range varRefs {
+			resp.References.Variables = append(resp.References.Variables, &ingress.GetWorkflowByNameResponse_References_Variable{
+				Key:        &varRefs[i].Key,
+				Scope:      &varRefs[i].Scope,
+				Operations: varRefs[i].Operation,
+			})
+		}
+	}
+
 	return &resp, nil
 
 }
@@ -281,6 +315,40 @@ func (is *ingressServer) GetWorkflowByUid(ctx context.Context, in *ingress.GetWo
 	resp.Description = &wf.Description
 	resp.Workflow = wf.Workflow
 	resp.LogToEvents = &wf.LogToEvents
+
+	// get secrets and var references
+	if in.GetGetReferences() {
+		resp.References = &ingress.GetWorkflowByUidResponse_References{
+			Secrets:   make([]*ingress.GetWorkflowByUidResponse_References_Secret, 0),
+			Variables: make([]*ingress.GetWorkflowByUidResponse_References_Variable, 0),
+		}
+
+		// Load workflow
+		var workflow model.Workflow
+		err := workflow.Load(wf.Workflow)
+		if err != nil {
+			return nil, grpcDatabaseError(fmt.Errorf("invalid: %w", err), "workflow", uid)
+		}
+
+		// Get References
+		secretRefs := workflow.GetSecretReferences()
+		varRefs := workflow.GetVariableReferences()
+
+		// Set References
+		for i := range secretRefs {
+			resp.References.Secrets = append(resp.References.Secrets, &ingress.GetWorkflowByUidResponse_References_Secret{
+				Key: &secretRefs[i],
+			})
+		}
+
+		for i := range varRefs {
+			resp.References.Variables = append(resp.References.Variables, &ingress.GetWorkflowByUidResponse_References_Variable{
+				Key:        &varRefs[i].Key,
+				Scope:      &varRefs[i].Scope,
+				Operations: varRefs[i].Operation,
+			})
+		}
+	}
 
 	return &resp, nil
 
