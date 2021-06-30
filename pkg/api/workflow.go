@@ -391,10 +391,35 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 		wait = true
 	}
 
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		ErrResponse(w, err)
-		return
+	field := ""
+	if r.URL.Query().Get("field") != "" {
+		field = r.URL.Query().Get("field")
+	}
+
+	var b []byte
+	var err error
+	if r.Method == http.MethodPost {
+		b, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+	} else {
+		// read all query fields ignore wait and field parameters
+		values := r.URL.Query()
+		values.Del("wait")
+		values.Del("field")
+
+		body := make(map[string]interface{})
+		for k := range values {
+			// append to map[string]string
+			body[k] = values.Get(k)
+		}
+		b, err = json.Marshal(&body)
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
 	}
 
 	ctx, cancel := CtxDeadline(r.Context())
@@ -413,7 +438,7 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// for wait there is special handling
-	if wait && r.URL.Query().Get("field") != "" {
+	if wait && field != "" {
 
 		err := sendContent(w, r, resp.Output)
 		if err != nil {
