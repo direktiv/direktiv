@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+  labels:
+    serving.knative.dev/release: direktiv
+  name: config-autoscaler
+  namespace: knative-serving-{{ .Release.Name }}
+data:
+  activator-capacity: "100.0"
+  allow-zero-initial-scale: "false"
+  container-concurrency-target-default: "100"
+  container-concurrency-target-percentage: "70"
+  enable-scale-to-zero: "true"
+  initial-scale: "1"
+  max-scale: "0"
+  max-scale-down-rate: "2.0"
+  max-scale-limit: "0"
+  max-scale-up-rate: "1000.0"
+  panic-threshold-percentage: "200.0"
+  panic-window-percentage: "10.0"
+  pod-autoscaler-class: kpa.autoscaling.knative.dev
+  requests-per-second-target-default: "200"
+  scale-down-delay: 60s
+  scale-to-zero-grace-period: 30s
+  scale-to-zero-pod-retention-period: 120s
+  stable-window: 60s
+  target-burst-capacity: "200"
