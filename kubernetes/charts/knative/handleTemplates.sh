@@ -25,8 +25,9 @@ sed -i 's/name: knative-serving/name: knative-serving-{{ .Release.Name }}/g' $di
 sed -i 's/namespace: knative-serving/namespace: knative-serving-{{ .Release.Name }}/g' $dir/templates/net-contour.yaml
 
 # cutting out cm for autoscaler, needs to be changed per release potentially
-# sed -i '3245,3436p ' $dir/templates/serving-core.yaml
-sed -i '3245,3436d' $dir/templates/serving-core.yaml
+sed -i '3440,3644d' $dir/templates/serving-core.yaml
 
+# delete config-network for contour changes
+sed -i '4097,4238d' $dir/templates/serving-core.yaml
 
 ed $dir/templates/serving-core.yaml < ed.script

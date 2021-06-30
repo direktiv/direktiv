@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-network
+  namespace: knative-serving-{{ .Release.Name }}
+data:
+    certificate.class: "cert-manager.certificate.networking.knative.dev"
+
+    domainTemplate: "{{.Name}}.{{.Namespace}}.{{.Domain}}"
+
+    tagTemplate: "{{.Tag}}-{{.Name}}"
+
+    autoTLS: "Disabled"
+
+    httpProtocol: "Enabled"
+
+    rolloutDuration: "0"
+
+    autocreateClusterDomainClaims: "false"
+
+    enable-mesh-pod-addressability: "false"
+
+    defaultExternalScheme: "http"
+
+    ingress.class: contour.ingress.networking.knative.dev
