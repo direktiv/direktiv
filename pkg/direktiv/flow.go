@@ -48,6 +48,10 @@ func (fs *flowServer) start(s *WorkflowServer) error {
 	})
 }
 
+func (fs *flowServer) ActionLog(ctx context.Context, in *flow.ActionLogRequest) (*emptypb.Empty, error) {
+	...
+}
+
 func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
 	log.Debugf("action response: %v", in.GetActionId())

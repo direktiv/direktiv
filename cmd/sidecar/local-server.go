@@ -15,12 +15,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/direktiv"
-	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	log "github.com/sirupsen/logrus"
-	dblog "github.com/vorteil/direktiv/pkg/dlog/db"
 )
 
 const (
@@ -30,7 +28,6 @@ const (
 type LocalServer struct {
 	end     func()
 	flow    flow.DirektivFlowClient
-	logging *dblog.Logger
 	queue   chan *inboundRequest
 	router  *mux.Router
 	stopper chan *time.Time
@@ -53,23 +50,6 @@ func (srv *LocalServer) initFlow() error {
 	}
 
 	srv.flow = flow.NewDirektivFlowClient(conn)
-
-	return nil
-
-}
-
-func (srv *LocalServer) initLogging() error {
-
-	var err error
-
-	conn := os.Getenv("DIREKTIV_DB")
-
-	log.Infof("Connecting to instance logs database.")
-
-	srv.logging, err = dblog.NewLogger(string(conn))
-	if err != nil {
-		return err
-	}
 
 	return nil
 
@@ -111,13 +91,6 @@ func (srv *LocalServer) Start() {
 	err := srv.initFlow()
 	if err != nil {
 		log.Errorf("Localhost server unable to connect to flow: %v", err)
-		Shutdown(ERROR)
-		return
-	}
-
-	err = srv.initLogging()
-	if err != nil {
-		log.Errorf("Localhost server unable to connect to instance logging: %v", err)
 		Shutdown(ERROR)
 		return
 	}
@@ -242,7 +215,10 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.logger.Info(msg)
+	srv.flow.ActionLog(
+	// req.instanceId
+	// msg
+	)
 
 	log.Debugf("Log handler for '%s' posted %d bytes.", actionId, len(msg))
 
@@ -441,7 +417,6 @@ type isolateRequest struct {
 	files      []*isolateFiles
 	errCode    string
 	errMsg     string
-	logger     dlog.Logger
 }
 
 type isolateFiles struct {
