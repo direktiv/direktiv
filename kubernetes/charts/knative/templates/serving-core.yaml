@@ -15,8 +15,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: knative-serving
+  name: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 
 ---
@@ -40,8 +41,9 @@ kind: ClusterRole
 metadata:
   # Named like this to avoid clashing with eventing's existing `addressable-resolver` role
   # (which should be identical, but isn't guaranteed to be installed alongside serving).
-  name: knative-serving-aggregated-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-aggregated-addressable-resolver
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 aggregationRule:
   clusterRoleSelectors:
@@ -52,8 +54,9 @@ rules: [] # Rules are automatically filled in by the controller manager.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-addressable-resolver
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     # Labeled to facilitate aggregated cluster roles that act on Addressables.
     duck.knative.dev/addressable: "true"
@@ -89,8 +92,9 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-namespaced-admin
+  name: knative-serving-{{ .Release.Name }}-namespaced-admin
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     serving.knative.dev/release: "v0.24.0-direktiv"
 rules:
@@ -104,8 +108,9 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-namespaced-edit
+  name: knative-serving-{{ .Release.Name }}-namespaced-edit
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     serving.knative.dev/release: "v0.24.0-direktiv"
 rules:
@@ -119,8 +124,9 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-namespaced-view
+  name: knative-serving-{{ .Release.Name }}-namespaced-view
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-view: "true"
     serving.knative.dev/release: "v0.24.0-direktiv"
 rules:
@@ -146,8 +152,9 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-core
+  name: knative-serving-{{ .Release.Name }}-core
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     serving.knative.dev/controller: "true"
 rules:
@@ -200,8 +207,9 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-podspecable-binding
+  name: knative-serving-{{ .Release.Name }}-podspecable-binding
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     # Labeled to facilitate aggregated cluster roles that act on PodSpecables.
     duck.knative.dev/podspecable: "true"
@@ -236,15 +244,17 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: controller
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-admin
+  name: knative-serving-{{ .Release.Name }}-admin
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 aggregationRule:
   clusterRoleSelectors:
@@ -255,31 +265,33 @@ rules: [] # Rules are automatically filled in by the controller manager.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-serving-controller-admin
+  name: knative-serving-{{ .Release.Name }}-controller-admin
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 subjects:
   - kind: ServiceAccount
     name: controller
-    namespace: knative-serving
+    namespace: knative-serving-{{ .Release.Name }}
 roleRef:
   kind: ClusterRole
-  name: knative-serving-admin
+  name: knative-serving-{{ .Release.Name }}-admin
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-serving-controller-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-controller-addressable-resolver
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 subjects:
   - kind: ServiceAccount
     name: controller
-    namespace: knative-serving
+    namespace: knative-serving-{{ .Release.Name }}
 roleRef:
   kind: ClusterRole
-  name: knative-serving-aggregated-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-aggregated-addressable-resolver
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -300,8 +312,11 @@ roleRef:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: images.caching.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     knative.dev/crd-install: "true"
 spec:
   group: caching.internal.knative.dev
@@ -352,8 +367,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: certificates.networking.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -410,8 +428,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: configurations.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
@@ -1115,8 +1136,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -1164,8 +1188,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: domainmappings.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -1317,8 +1344,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: ingresses.networking.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -1376,8 +1406,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: metrics.autoscaling.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -1498,8 +1531,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -1657,8 +1693,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: revisions.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -2365,8 +2404,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: routes.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
@@ -2538,8 +2580,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: serverlessservices.networking.internal.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
 spec:
@@ -2608,8 +2653,11 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    helm.sh/hook: crd-install
   name: services.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
@@ -3379,8 +3427,9 @@ apiVersion: caching.internal.knative.dev/v1alpha1
 kind: Image
 metadata:
   name: queue-proxy
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   # This is the Go import path for the binary that is containerized
@@ -3388,210 +3437,6 @@ spec:
   image: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:e3d1d07c282bf3b4d237c719fba8cfe49547b14aefe4229daf842dd17bd58167
 
 ---
-# Copyright 2018 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-autoscaler
-  namespace: knative-serving
-  labels:
-    serving.knative.dev/release: "v0.24.0-direktiv"
-  annotations:
-    knative.dev/example-checksum: "604cb513"
-data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-
-    # The Revision ContainerConcurrency field specifies the maximum number
-    # of requests the Container can handle at once. Container concurrency
-    # target percentage is how much of that maximum to use in a stable
-    # state. E.g. if a Revision specifies ContainerConcurrency of 10, then
-    # the Autoscaler will try to maintain 7 concurrent connections per pod
-    # on average.
-    # Note: this limit will be applied to container concurrency set at every
-    # level (ConfigMap, Revision Spec or Annotation).
-    # For legacy and backwards compatibility reasons, this value also accepts
-    # fractional values in (0, 1] interval (i.e. 0.7 ⇒ 70%).
-    # Thus minimal percentage value must be greater than 1.0, or it will be
-    # treated as a fraction.
-    # NOTE: that this value does not affect actual number of concurrent requests
-    #       the user container may receive, but only the average number of requests
-    #       that the revision pods will receive.
-    container-concurrency-target-percentage: "70"
-
-    # The container concurrency target default is what the Autoscaler will
-    # try to maintain when concurrency is used as the scaling metric for the
-    # Revision and the Revision specifies unlimited concurrency.
-    # When revision explicitly specifies container concurrency, that value
-    # will be used as a scaling target for autoscaler.
-    # When specifying unlimited concurrency, the autoscaler will
-    # horizontally scale the application based on this target concurrency.
-    # This is what we call "soft limit" in the documentation, i.e. it only
-    # affects number of pods and does not affect the number of requests
-    # individual pod processes.
-    # The value must be a positive number such that the value multiplied
-    # by container-concurrency-target-percentage is greater than 0.01.
-    # NOTE: that this value will be adjusted by application of
-    #       container-concurrency-target-percentage, i.e. by default
-    #       the system will target on average 70 concurrent requests
-    #       per revision pod.
-    # NOTE: Only one metric can be used for autoscaling a Revision.
-    container-concurrency-target-default: "100"
-
-    # The requests per second (RPS) target default is what the Autoscaler will
-    # try to maintain when RPS is used as the scaling metric for a Revision and
-    # the Revision specifies unlimited RPS. Even when specifying unlimited RPS,
-    # the autoscaler will horizontally scale the application based on this
-    # target RPS.
-    # Must be greater than 1.0.
-    # NOTE: Only one metric can be used for autoscaling a Revision.
-    requests-per-second-target-default: "200"
-
-    # The target burst capacity specifies the size of burst in concurrent
-    # requests that the system operator expects the system will receive.
-    # Autoscaler will try to protect the system from queueing by introducing
-    # Activator in the request path if the current spare capacity of the
-    # service is less than this setting.
-    # If this setting is 0, then Activator will be in the request path only
-    # when the revision is scaled to 0.
-    # If this setting is > 0 and container-concurrency-target-percentage is
-    # 100% or 1.0, then activator will always be in the request path.
-    # -1 denotes unlimited target-burst-capacity and activator will always
-    # be in the request path.
-    # Other negative values are invalid.
-    target-burst-capacity: "200"
-
-    # When operating in a stable mode, the autoscaler operates on the
-    # average concurrency over the stable window.
-    # Stable window must be in whole seconds.
-    stable-window: "60s"
-
-    # When observed average concurrency during the panic window reaches
-    # panic-threshold-percentage the target concurrency, the autoscaler
-    # enters panic mode. When operating in panic mode, the autoscaler
-    # scales on the average concurrency over the panic window which is
-    # panic-window-percentage of the stable-window.
-    # Must be in the [1, 100] range.
-    # When computing the panic window it will be rounded to the closest
-    # whole second, at least 1s.
-    panic-window-percentage: "10.0"
-
-    # The percentage of the container concurrency target at which to
-    # enter panic mode when reached within the panic window.
-    panic-threshold-percentage: "200.0"
-
-    # Max scale up rate limits the rate at which the autoscaler will
-    # increase pod count. It is the maximum ratio of desired pods versus
-    # observed pods.
-    # Cannot be less or equal to 1.
-    # I.e with value of 2.0 the number of pods can at most go N to 2N
-    # over single Autoscaler period (2s), but at least N to
-    # N+1, if Autoscaler needs to scale up.
-    max-scale-up-rate: "1000.0"
-
-    # Max scale down rate limits the rate at which the autoscaler will
-    # decrease pod count. It is the maximum ratio of observed pods versus
-    # desired pods.
-    # Cannot be less or equal to 1.
-    # I.e. with value of 2.0 the number of pods can at most go N to N/2
-    # over single Autoscaler evaluation period (2s), but at
-    # least N to N-1, if Autoscaler needs to scale down.
-    max-scale-down-rate: "2.0"
-
-    # Scale to zero feature flag.
-    enable-scale-to-zero: "true"
-
-    # Scale to zero grace period is the time an inactive revision is left
-    # running before it is scaled to zero (must be positive, but recommended
-    # at least a few seconds if running with mesh networking).
-    # This is the upper limit and is provided not to enforce timeout after
-    # the revision stopped receiving requests for stable window, but to
-    # ensure network reprogramming to put activator in the path has completed.
-    # If the system determines that a shorter period is satisfactory,
-    # then the system will only wait that amount of time before scaling to 0.
-    # NOTE: this period might actually be 0, if activator has been
-    # in the request path sufficiently long.
-    # If there is necessity for the last pod to linger longer use
-    # scale-to-zero-pod-retention-period flag.
-    scale-to-zero-grace-period: "30s"
-
-    # Scale to zero pod retention period defines the minimum amount
-    # of time the last pod will remain after Autoscaler has decided to
-    # scale to zero.
-    # This flag is for the situations where the pod startup is very expensive
-    # and the traffic is bursty (requiring smaller windows for fast action),
-    # but patchy.
-    # The larger of this flag and `scale-to-zero-grace-period` will effectively
-    # determine how the last pod will hang around.
-    scale-to-zero-pod-retention-period: "0s"
-
-    # pod-autoscaler-class specifies the default pod autoscaler class
-    # that should be used if none is specified. If omitted, the Knative
-    # Horizontal Pod Autoscaler (KPA) is used by default.
-    pod-autoscaler-class: "kpa.autoscaling.knative.dev"
-
-    # The capacity of a single activator task.
-    # The `unit` is one concurrent request proxied by the activator.
-    # activator-capacity must be at least 1.
-    # This value is used for computation of the Activator subset size.
-    # See the algorithm here: http://bit.ly/38XiCZ3.
-    # TODO(vagababov): tune after actual benchmarking.
-    activator-capacity: "100.0"
-
-    # initial-scale is the cluster-wide default value for the initial target
-    # scale of a revision after creation, unless overridden by the
-    # "autoscaling.knative.dev/initialScale" annotation.
-    # This value must be greater than 0 unless allow-zero-initial-scale is true.
-    initial-scale: "1"
-
-    # allow-zero-initial-scale controls whether either the cluster-wide initial-scale flag,
-    # or the "autoscaling.knative.dev/initialScale" annotation, can be set to 0.
-    allow-zero-initial-scale: "false"
-
-    # max-scale is the cluster-wide default value for the max scale of a revision,
-    # unless overridden by the "autoscaling.knative.dev/maxScale" annotation.
-    # If set to 0, the revision has no maximum scale.
-    max-scale: "0"
-
-    # scale-down-delay is the amount of time that must pass at reduced
-    # concurrency before a scale down decision is applied. This can be useful,
-    # for example, to maintain replica count and avoid a cold start penalty if
-    # more requests come in within the scale down delay period.
-    # The default, 0s, imposes no delay at all.
-    scale-down-delay: "0s"
-
-    # max-scale-limit sets the maximum permitted value for the max scale of a revision.
-    # When this is set to a positive value, a revision with a maxScale above that value
-    # (including a maxScale of "0" = unlimited) is disallowed.
-    # A value of zero (the default) allows any limit, including unlimited.
-    max-scale-limit: "0"
-
 ---
 # Copyright 2019 The Knative Authors
 #
@@ -3611,8 +3456,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-defaults
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "cdabec96"
@@ -3689,7 +3535,7 @@ data:
     # container name, if none is specified.  This field supports
     # Go templating and is supplied with the ObjectMeta of the
     # enclosing Service or Configuration, so values such as
-    # {{.Name}} are also valid.
+    # {{ "{{" }}.Name}} are also valid.
     container-name-template: "user-container"
 
     # container-concurrency specifies the maximum number
@@ -3727,6 +3573,7 @@ data:
     enable-service-links: "false"
 
 ---
+{{- if not .Values.development -}}
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -3745,8 +3592,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-deployment
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "fa67b403"
@@ -3808,6 +3656,7 @@ data:
     queueSidecarEphemeralStorageLimit: "1024Mi"
 
 ---
+{{- end }}
 # Copyright 2018 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -3826,8 +3675,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-domain
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "81552d0b"
@@ -3889,8 +3739,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-features
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "8c1f8302"
@@ -4024,8 +3875,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-gc
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "e6149382"
@@ -4122,8 +3974,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-leader-election
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "96896b00"
@@ -4182,8 +4035,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-logging
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "c68feb1b"
@@ -4242,147 +4096,6 @@ data:
     loglevel.net-nscert-controller: "info"
 
 ---
-# Copyright 2018 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-network
-  namespace: knative-serving
-  labels:
-    serving.knative.dev/release: "v0.24.0-direktiv"
-  annotations:
-    knative.dev/example-checksum: "d38faef1"
-data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-
-    # ingress.class specifies the default ingress class
-    # to use when not dictated by Route annotation.
-    #
-    # If not specified, will use the Istio ingress.
-    #
-    # Note that changing the Ingress class of an existing Route
-    # will result in undefined behavior.  Therefore it is best to only
-    # update this value during the setup of Knative, to avoid getting
-    # undefined behavior.
-    ingress.class: "istio.ingress.networking.knative.dev"
-
-    # certificate.class specifies the default Certificate class
-    # to use when not dictated by Route annotation.
-    #
-    # If not specified, will use the Cert-Manager Certificate.
-    #
-    # Note that changing the Certificate class of an existing Route
-    # will result in undefined behavior.  Therefore it is best to only
-    # update this value during the setup of Knative, to avoid getting
-    # undefined behavior.
-    certificate.class: "cert-manager.certificate.networking.knative.dev"
-
-    # domainTemplate specifies the golang text template string to use
-    # when constructing the Knative service's DNS name. The default
-    # value is "{{.Name}}.{{.Namespace}}.{{.Domain}}".
-    #
-    # Valid variables defined in the template include Name, Namespace, Domain,
-    # Labels, and Annotations. Name will be the result of the tagTemplate
-    # below, if a tag is specified for the route.
-    #
-    # Changing this value might be necessary when the extra levels in
-    # the domain name generated is problematic for wildcard certificates
-    # that only support a single level of domain name added to the
-    # certificate's domain. In those cases you might consider using a value
-    # of "{{.Name}}-{{.Namespace}}.{{.Domain}}", or removing the Namespace
-    # entirely from the template. When choosing a new value be thoughtful
-    # of the potential for conflicts - for example, when users choose to use
-    # characters such as `-` in their service, or namespace, names.
-    # {{.Annotations}} or {{.Labels}} can be used for any customization in the
-    # go template if needed.
-    # We strongly recommend keeping namespace part of the template to avoid
-    # domain name clashes:
-    # eg. '{{.Name}}-{{.Namespace}}.{{ index .Annotations "sub"}}.{{.Domain}}'
-    # and you have an annotation {"sub":"foo"}, then the generated template
-    # would be {Name}-{Namespace}.foo.{Domain}
-    domainTemplate: "{{.Name}}.{{.Namespace}}.{{.Domain}}"
-
-    # tagTemplate specifies the golang text template string to use
-    # when constructing the DNS name for "tags" within the traffic blocks
-    # of Routes and Configuration.  This is used in conjunction with the
-    # domainTemplate above to determine the full URL for the tag.
-    tagTemplate: "{{.Tag}}-{{.Name}}"
-
-    # Controls whether TLS certificates are automatically provisioned and
-    # installed in the Knative ingress to terminate external TLS connection.
-    # 1. Enabled: enabling auto-TLS feature.
-    # 2. Disabled: disabling auto-TLS feature.
-    autoTLS: "Disabled"
-
-    # Controls the behavior of the HTTP endpoint for the Knative ingress.
-    # It requires autoTLS to be enabled.
-    # 1. Enabled: The Knative ingress will be able to serve HTTP connection.
-    # 2. Disabled: The Knative ingress will reject HTTP traffic.
-    # 3. Redirected: The Knative ingress will send a 301 redirect for all
-    # http connections, asking the clients to use HTTPS.
-    httpProtocol: "Enabled"
-
-    # rolloutDuration contains the minimal duration in seconds over which the
-    # Configuration traffic targets are rolled out to the newest revision.
-    rolloutDuration: "0"
-
-    # autocreateClusterDomainClaims controls whether ClusterDomainClaims should
-    # be automatically created (and deleted) as needed when DomainMappings are
-    # reconciled.
-    #
-    # If this is "false" (the default), the cluster administrator is
-    # responsible for creating ClusterDomainClaims and delegating them to
-    # namespaces via their spec.Namespace field. This setting should be used in
-    # multitenant environments which need to control which namespace can use a
-    # particular domain name in a domain mapping.
-    #
-    # If this is "true", users are able to associate arbitrary names with their
-    # services via the DomainMapping feature.
-    autocreateClusterDomainClaims: "false"
-
-    # If true, networking plugins can add additional information to deployed
-    # applications to make their pods directly accessible via their IPs even if mesh is
-    # enabled and thus direct-addressability is usually not possible.
-    # Consumers like Knative Serving can use this setting to adjust their behavior
-    # accordingly, i.e. to drop fallback solutions for non-pod-addressable systems.
-    #
-    # NOTE: This flag is in an alpha state and is mostly here to enable internal testing
-    #       for now. Use with caution.
-    enable-mesh-pod-addressability: "false"
-
-    # Defines the scheme used for external URLs if autoTLS is not enabled.
-    # This can be used for making Knative report all URLs as "HTTPS" for example, if you're
-    # fronting Knative with an external loadbalancer that deals with TLS termination and
-    # Knative doesn't know about that otherwise.
-    defaultExternalScheme: "http"
-
 ---
 # Copyright 2018 The Knative Authors
 #
@@ -4402,8 +4115,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-observability
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "97c1d10b"
@@ -4464,7 +4178,7 @@ data:
     #   PodIP         string  // IP of the pod hosting the revision
     # }
     #
-    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{.Request.Method}}", "requestUrl": "{{js .Request.RequestURI}}", "requestSize": "{{.Request.ContentLength}}", "status": {{.Response.Code}}, "responseSize": "{{.Response.Size}}", "userAgent": "{{js .Request.UserAgent}}", "remoteIp": "{{js .Request.RemoteAddr}}", "serverIp": "{{.Revision.PodIP}}", "referer": "{{js .Request.Referer}}", "latency": "{{.Response.Latency}}s", "protocol": "{{.Request.Proto}}"}, "traceId": "{{index .Request.Header "X-B3-Traceid"}}"}'
+    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{ "{{" }}.Request.Method}}", "requestUrl": "{{ "{{" }}js .Request.RequestURI}}", "requestSize": "{{ "{{" }}.Request.ContentLength}}", "status": {{ "{{" }}.Response.Code}}, "responseSize": "{{ "{{" }}.Response.Size}}", "userAgent": "{{ "{{" }}js .Request.UserAgent}}", "remoteIp": "{{ "{{" }}js .Request.RemoteAddr}}", "serverIp": "{{ "{{" }}.Revision.PodIP}}", "referer": "{{ "{{" }}js .Request.Referer}}", "latency": "{{ "{{" }}.Response.Latency}}s", "protocol": "{{ "{{" }}.Request.Proto}}"}, "traceId": "{{ "{{" }}index .Request.Header "X-B3-Traceid"}}"}'
 
     # If true, the request logging will be enabled.
     # NB: up to and including Knative version 0.18 if logging.request-log-template is non-empty, this value
@@ -4522,8 +4236,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-tracing
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
   annotations:
     knative.dev/example-checksum: "4002b4c2"
@@ -4582,8 +4297,9 @@ apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: activator
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   minReplicas: 1
@@ -4608,8 +4324,9 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: activator-pdb
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   minAvailable: 80%
@@ -4636,8 +4353,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: activator
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   selector:
@@ -4735,8 +4453,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: activator-service
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: activator
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
@@ -4777,8 +4496,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: autoscaler
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   replicas: 1
@@ -4868,10 +4588,11 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: autoscaler
     serving.knative.dev/release: "v0.24.0-direktiv"
   name: autoscaler
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
 spec:
   ports:
     # Define metrics and profiling for them to be accessible within service meshes.
@@ -4906,8 +4627,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   selector:
@@ -4977,10 +4699,11 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: controller
     serving.knative.dev/release: "v0.24.0-direktiv"
   name: controller
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
 spec:
   ports:
     # Define metrics and profiling for them to be accessible within service meshes.
@@ -5012,8 +4735,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: domain-mapping
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   selector:
@@ -5094,8 +4818,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: domainmapping-webhook
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   selector:
@@ -5192,10 +4917,11 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     role: domainmapping-webhook
     serving.knative.dev/release: "v0.24.0-direktiv"
   name: domainmapping-webhook
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
 spec:
   ports:
     # Define metrics and profiling for them to be accessible within service meshes.
@@ -5230,8 +4956,9 @@ apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: webhook
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   minReplicas: 1
@@ -5254,8 +4981,9 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: webhook-pdb
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   minAvailable: 80%
@@ -5282,8 +5010,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: webhook
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 spec:
   selector:
@@ -5382,10 +5111,11 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     role: webhook
     serving.knative.dev/release: "v0.24.0-direktiv"
   name: webhook
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
 spec:
   ports:
     # Define metrics and profiling for them to be accessible within service meshes.
@@ -5421,13 +5151,14 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
       service:
         name: webhook
-        namespace: knative-serving
+        namespace: knative-serving-{{ .Release.Name }}
     failurePolicy: Fail
     sideEffects: None
     name: config.webhook.serving.knative.dev
@@ -5457,13 +5188,14 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
       service:
         name: webhook
-        namespace: knative-serving
+        namespace: knative-serving-{{ .Release.Name }}
     failurePolicy: Fail
     sideEffects: None
     name: webhook.serving.knative.dev
@@ -5510,13 +5242,14 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.domainmapping.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
       service:
         name: domainmapping-webhook
-        namespace: knative-serving
+        namespace: knative-serving-{{ .Release.Name }}
     failurePolicy: Fail
     sideEffects: None
     name: webhook.domainmapping.serving.knative.dev
@@ -5552,8 +5285,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: domainmapping-webhook-certs
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 # The data is populated at install time.
 
@@ -5577,13 +5311,14 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.domainmapping.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
       service:
         name: domainmapping-webhook
-        namespace: knative-serving
+        namespace: knative-serving-{{ .Release.Name }}
     failurePolicy: Fail
     sideEffects: None
     name: validation.webhook.domainmapping.serving.knative.dev
@@ -5621,13 +5356,14 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.serving.knative.dev
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
       service:
         name: webhook
-        namespace: knative-serving
+        namespace: knative-serving-{{ .Release.Name }}
     failurePolicy: Fail
     sideEffects: None
     name: validation.webhook.serving.knative.dev
@@ -5674,8 +5410,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: webhook-certs
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     serving.knative.dev/release: "v0.24.0-direktiv"
 # The data is populated at install time.
 
