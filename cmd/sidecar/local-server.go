@@ -215,10 +215,13 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	srv.flow.ActionLog(
-	// req.instanceId
-	// msg
-	)
+	_, err := srv.flow.ActionLog(req.ctx, &flow.ActionLogRequest{
+		InstanceId: &req.instanceId,
+		Msg:        []string{msg},
+	})
+	if err != nil {
+		log.Errorf("Failed to forward log to diretiv: %v.", err)
+	}
 
 	log.Debugf("Log handler for '%s' posted %d bytes.", actionId, len(msg))
 

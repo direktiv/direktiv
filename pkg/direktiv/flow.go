@@ -52,12 +52,12 @@ func (fs *flowServer) ActionLog(ctx context.Context, in *flow.ActionLogRequest) 
 
 	var resp = new(emptypb.Empty)
 
-	wf, err := fs.engine.db.getWorkflowByUid(ctx, in.GetInstanceId())
+	wi, err := fs.engine.db.getWorkflowInstance(ctx, in.GetInstanceId())
 	if err != nil {
 		return nil, err
 	}
 
-	logger, err := (*fs.engine.instanceLogger).LoggerFunc(wf.Edges.Namespace.ID, in.GetInstanceId())
+	logger, err := (*fs.engine.instanceLogger).LoggerFunc(wi.Edges.Workflow.Edges.Namespace.ID, in.GetInstanceId())
 	if err != nil {
 		return nil, err
 	}

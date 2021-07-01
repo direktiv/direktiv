@@ -726,8 +726,6 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 
 func (worker *inboundWorker) validateIsolateRequest(req *inboundRequest) *isolateRequest {
 
-	var err error
-
 	ir := new(isolateRequest)
 
 	var step string
