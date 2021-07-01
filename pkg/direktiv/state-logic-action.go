@@ -456,12 +456,12 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 	}
 
 	if action.Input == nil {
-		input, err = jq(m, "jq(.)")
+		input, err = jqOne(m, "jq(.)")
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		input, err = jq(m, action.Input)
+		input, err = jqOne(m, action.Input)
 		if err != nil {
 			return nil, err
 		}
