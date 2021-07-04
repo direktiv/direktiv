@@ -3,6 +3,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -33,6 +34,7 @@ kind: Namespace
 metadata:
   name: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: v1
@@ -41,6 +43,7 @@ metadata:
   name: contour
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: v1
@@ -49,6 +52,7 @@ metadata:
   name: envoy
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: v1
@@ -57,6 +61,7 @@ metadata:
   name: contour
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 data:
   contour.yaml: |
@@ -205,6 +210,7 @@ metadata:
   creationTimestamp: null
   name: extensionservices.projectcontour.io
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   preserveUnknownFields: false
@@ -462,6 +468,7 @@ metadata:
   creationTimestamp: null
   name: httpproxies.projectcontour.io
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   preserveUnknownFields: false
@@ -1572,6 +1579,7 @@ metadata:
   creationTimestamp: null
   name: tlscertificatedelegations.projectcontour.io
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   preserveUnknownFields: false
@@ -1761,6 +1769,7 @@ metadata:
   name: contour-certgen
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1769,6 +1778,7 @@ metadata:
   name: contour
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -1785,6 +1795,7 @@ metadata:
   name: contour-certgen
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 rules:
   - apiGroups:
@@ -1801,6 +1812,7 @@ metadata:
   name: contour-certgen-v1.14.0
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   ttlSecondsAfterFinished: 0
@@ -1842,6 +1854,7 @@ metadata:
   creationTimestamp: null
   name: knative-contour
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 rules:
   - apiGroups:
@@ -1965,6 +1978,7 @@ metadata:
   name: contour
   namespace: contour-external
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   ports:
@@ -1990,6 +2004,7 @@ metadata:
     # the original remote IP address.
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   externalTrafficPolicy: Local
@@ -2010,6 +2025,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: contour
     networking.knative.dev/ingress-provider: contour
   name: contour
@@ -2116,6 +2132,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: envoy
     networking.knative.dev/ingress-provider: contour
   name: envoy
@@ -2252,6 +2269,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -2282,6 +2300,7 @@ kind: Namespace
 metadata:
   name: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: v1
@@ -2290,6 +2309,7 @@ metadata:
   name: contour
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: v1
@@ -2298,6 +2318,7 @@ metadata:
   name: envoy
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: v1
@@ -2306,6 +2327,7 @@ metadata:
   name: contour
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 data:
   contour.yaml: |
@@ -2452,6 +2474,7 @@ metadata:
   name: contour-certgen
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2460,6 +2483,7 @@ metadata:
   name: contour
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -2476,6 +2500,7 @@ metadata:
   name: contour-certgen
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 rules:
   - apiGroups:
@@ -2492,6 +2517,7 @@ metadata:
   name: contour-certgen-v1.14.0
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   ttlSecondsAfterFinished: 0
@@ -2533,6 +2559,7 @@ metadata:
   name: contour
   namespace: contour-internal
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   ports:
@@ -2558,6 +2585,7 @@ metadata:
     # the original remote IP address.
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     networking.knative.dev/ingress-provider: contour
 spec:
   # externalTrafficPolicy: Local
@@ -2578,6 +2606,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: contour
     networking.knative.dev/ingress-provider: contour
   name: contour
@@ -2684,6 +2713,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
+    {{- include "knative.labels" . | nindent 4 }}
     app: envoy
     networking.knative.dev/ingress-provider: contour
   name: envoy

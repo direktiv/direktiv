@@ -1,8 +1,9 @@
+{{- if .Values.development -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-deployment
-  namespace: knative-serving
+  namespace: knative-serving-{{ .Release.Name }}
 
 data:
     # List of repositories for which tag to digest resolving should be skipped
@@ -41,3 +42,4 @@ data:
     # If omitted, no value is specified and the system default is used.
     queueSidecarEphemeralStorageLimit: "1024Mi"
     queueSidecarImage: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:e3d1d07c282bf3b4d237c719fba8cfe49547b14aefe4229daf842dd17bd58167
+{{- end }}

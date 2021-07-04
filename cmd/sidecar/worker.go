@@ -401,7 +401,6 @@ func (worker *inboundWorker) handleIsolateRequest(req *inboundRequest) {
 	if ir == nil {
 		return
 	}
-	defer ir.logger.Close()
 
 	ctx := req.r.Context()
 	ctx, cancel := context.WithDeadline(ctx, ir.deadline)
@@ -727,8 +726,6 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 
 func (worker *inboundWorker) validateIsolateRequest(req *inboundRequest) *isolateRequest {
 
-	var err error
-
 	ir := new(isolateRequest)
 
 	var step string
@@ -756,14 +753,6 @@ func (worker *inboundWorker) validateIsolateRequest(req *inboundRequest) *isolat
 	}
 
 	if !worker.validateFilesHeaders(req, &ir.files) {
-		return nil
-	}
-
-	ir.logger, err = worker.srv.logging.LoggerFunc(ir.namespace, ir.instanceId)
-	if err != nil {
-		code := http.StatusInternalServerError
-		msg := http.StatusText(code)
-		worker.reportValidationError(req, code, errors.New(msg))
 		return nil
 	}
 
