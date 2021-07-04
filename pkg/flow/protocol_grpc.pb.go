@@ -27,6 +27,7 @@ type DirektivFlowClient interface {
 	SetNamespaceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivFlow_SetNamespaceVariableClient, error)
 	SetWorkflowVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivFlow_SetWorkflowVariableClient, error)
 	SetInstanceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivFlow_SetInstanceVariableClient, error)
+	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type direktivFlowClient struct {
@@ -253,6 +254,15 @@ func (x *direktivFlowSetInstanceVariableClient) CloseAndRecv() (*empty.Empty, er
 	return m, nil
 }
 
+func (c *direktivFlowClient) ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/ActionLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DirektivFlowServer is the server API for DirektivFlow service.
 // All implementations must embed UnimplementedDirektivFlowServer
 // for forward compatibility
@@ -265,6 +275,7 @@ type DirektivFlowServer interface {
 	SetNamespaceVariable(DirektivFlow_SetNamespaceVariableServer) error
 	SetWorkflowVariable(DirektivFlow_SetWorkflowVariableServer) error
 	SetInstanceVariable(DirektivFlow_SetInstanceVariableServer) error
+	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedDirektivFlowServer()
 }
 
@@ -295,6 +306,9 @@ func (UnimplementedDirektivFlowServer) SetWorkflowVariable(DirektivFlow_SetWorkf
 }
 func (UnimplementedDirektivFlowServer) SetInstanceVariable(DirektivFlow_SetInstanceVariableServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetInstanceVariable not implemented")
+}
+func (UnimplementedDirektivFlowServer) ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActionLog not implemented")
 }
 func (UnimplementedDirektivFlowServer) mustEmbedUnimplementedDirektivFlowServer() {}
 
@@ -486,6 +500,24 @@ func (x *direktivFlowSetInstanceVariableServer) Recv() (*SetInstanceVariableRequ
 	return m, nil
 }
 
+func _DirektivFlow_ActionLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActionLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DirektivFlowServer).ActionLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flow.DirektivFlow/ActionLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DirektivFlowServer).ActionLog(ctx, req.(*ActionLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DirektivFlow_ServiceDesc is the grpc.ServiceDesc for DirektivFlow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -500,6 +532,10 @@ var DirektivFlow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Resume",
 			Handler:    _DirektivFlow_Resume_Handler,
+		},
+		{
+			MethodName: "ActionLog",
+			Handler:    _DirektivFlow_ActionLog_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
