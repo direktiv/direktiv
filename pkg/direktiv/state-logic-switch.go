@@ -84,7 +84,7 @@ func truth(x interface{}) bool {
 
 }
 
-func (sl *switchStateLogic) LogJQ() string {
+func (sl *switchStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

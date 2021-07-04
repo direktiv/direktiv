@@ -76,7 +76,7 @@ func (sl *foreachStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 }
 
-func (sl *foreachStateLogic) LogJQ() string {
+func (sl *foreachStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

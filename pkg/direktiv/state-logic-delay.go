@@ -57,7 +57,7 @@ func (sl *delayStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
-func (sl *delayStateLogic) LogJQ() string {
+func (sl *delayStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

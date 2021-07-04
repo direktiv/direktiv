@@ -9,7 +9,7 @@ type EventsAndState struct {
 	StateCommon `yaml:",inline"`
 	Events      []ConsumeEventDefinition `yaml:"events"`
 	Timeout     string                   `yaml:"timeout,omitempty"`
-	Transform   string                   `yaml:"transform,omitempty"`
+	Transform   interface{}              `yaml:"transform,omitempty"`
 	Transition  string                   `yaml:"transition,omitempty"`
 }
 
@@ -60,8 +60,10 @@ func (o *EventsAndState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Timeout != "" && !isISO8601(o.Timeout) {

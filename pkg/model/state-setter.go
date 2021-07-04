@@ -9,14 +9,14 @@ import (
 type SetterState struct {
 	StateCommon `yaml:",inline"`
 	Variables   []SetterDefinition `yaml:"variables"`
-	Transform   string             `yaml:"transform,omitempty"`
+	Transform   interface{}        `yaml:"transform,omitempty"`
 	Transition  string             `yaml:"transition,omitempty"`
 }
 
 type SetterDefinition struct {
-	Scope string `yaml:"scope"`
-	Key   string `yaml:"key"`
-	Value string `yaml:"value"`
+	Scope string      `yaml:"scope"`
+	Key   string      `yaml:"key"`
+	Value interface{} `yaml:"value"`
 }
 
 func (o *SetterDefinition) Validate() error {
@@ -50,8 +50,10 @@ func (o *SetterDefinition) Validate() error {
 		return errors.New(`value required`)
 	}
 
-	if err := validateTransformJQ(o.Value); err != nil {
-		return err
+	if s, ok := o.Value.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -107,8 +109,10 @@ func (o *SetterState) Validate() error {
 		}
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {

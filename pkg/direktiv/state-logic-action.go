@@ -6,10 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"reflect"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -122,7 +119,7 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 
 }
 
-func (sl *actionStateLogic) LogJQ() string {
+func (sl *actionStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
@@ -442,7 +439,7 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 	var err error
 	var input interface{}
 
-	input, err = jqObject(data, ".")
+	input, err = jqObject(data, "jq(.)")
 	if err != nil {
 		return nil, err
 	}
@@ -458,67 +455,13 @@ func generateActionInput(ctx context.Context, instance *workflowLogicInstance, d
 		return nil, err
 	}
 
-	var recurse func(x interface{}) (interface{}, error)
-	recurse = func(x interface{}) (interface{}, error) {
-		if x == nil {
-			return x, nil
-		}
-		switch x.(type) {
-		case bool:
-			return x, nil
-		case int:
-			return x, nil
-		case float64:
-			return x, nil
-		case string:
-			s := x.(string)
-			if strings.HasPrefix(s, "{{") && strings.HasSuffix(s, "}}") {
-				s = s[2 : len(s)-2]
-				z, err := jqOne(input, s)
-				if err != nil {
-					return nil, err
-				}
-				return z, nil
-			} else {
-				return s, nil
-			}
-		case map[string]interface{}:
-			var m = make(map[string]interface{})
-			for k, y := range x.(map[string]interface{}) {
-				z, err := recurse(y)
-				if err != nil {
-					return nil, err
-				}
-				m[k] = z
-			}
-			return m, nil
-		case []interface{}:
-			var list []interface{}
-			for _, y := range x.([]interface{}) {
-				z, err := recurse(y)
-				if err != nil {
-					return nil, err
-				}
-				list = append(list, z)
-			}
-			return list, nil
-		default:
-			return nil, NewInternalError(fmt.Errorf("unexpected type '%s'", reflect.TypeOf(x).String()))
-		}
-	}
-
 	if action.Input == nil {
-		input, err = jqObject(m, ".")
-		if err != nil {
-			return nil, err
-		}
-	} else if query, ok := action.Input.(string); ok {
-		input, err = jqObject(m, query)
+		input, err = jqOne(m, "jq(.)")
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		input, err = recurse(action.Input)
+		input, err = jqOne(m, action.Input)
 		if err != nil {
 			return nil, err
 		}

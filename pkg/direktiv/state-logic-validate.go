@@ -48,7 +48,7 @@ func (sl *validateStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
-func (sl *validateStateLogic) LogJQ() string {
+func (sl *validateStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
@@ -71,7 +71,7 @@ func (sl *validateStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		return
 	}
 
-	subjectQuery := "."
+	subjectQuery := "jq(.)"
 	if sl.state.Subject != "" {
 		subjectQuery = sl.state.Subject
 	}

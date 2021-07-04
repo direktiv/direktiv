@@ -48,7 +48,7 @@ func (sl *setterStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
-func (sl *setterStateLogic) LogJQ() string {
+func (sl *setterStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 

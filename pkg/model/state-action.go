@@ -11,7 +11,7 @@ type ActionState struct {
 	Action      *ActionDefinition `yaml:"action"`
 	Async       bool              `yaml:"async"`
 	Timeout     string            `yaml:"timeout,omitempty"`
-	Transform   string            `yaml:"transform,omitempty"`
+	Transform   interface{}       `yaml:"transform,omitempty"`
 	Transition  string            `yaml:"transition,omitempty"`
 }
 
@@ -62,8 +62,10 @@ func (o *ActionState) Validate() error {
 		return errors.New("timeout is not a ISO8601 string")
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	for i, errDef := range o.ErrorDefinitions() {

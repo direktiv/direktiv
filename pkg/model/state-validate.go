@@ -9,7 +9,7 @@ type ValidateState struct {
 	StateCommon `yaml:",inline"`
 	Subject     string      `yaml:"subject"`
 	Schema      interface{} `yaml:"schema"`
-	Transform   string      `yaml:"transform,omitempty"`
+	Transform   interface{} `yaml:"transform,omitempty"`
 	Transition  string      `yaml:"transition,omitempty"`
 }
 
@@ -52,8 +52,10 @@ func (o *ValidateState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Schema == nil {

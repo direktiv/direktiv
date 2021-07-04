@@ -7,9 +7,9 @@ import (
 
 type DelayState struct {
 	StateCommon `yaml:",inline"`
-	Duration    string `yaml:"duration"`
-	Transform   string `yaml:"transform,omitempty"`
-	Transition  string `yaml:"transition,omitempty"`
+	Duration    string      `yaml:"duration"`
+	Transform   interface{} `yaml:"transform,omitempty"`
+	Transition  string      `yaml:"transition,omitempty"`
 }
 
 func (o *DelayState) GetID() string {
@@ -51,8 +51,10 @@ func (o *DelayState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Duration == "" {

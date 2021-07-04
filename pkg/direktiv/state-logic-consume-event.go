@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -51,7 +50,7 @@ func (sl *consumeEventStateLogic) LivingChildren(savedata []byte) []stateChild {
 	return nil
 }
 
-func (sl *consumeEventStateLogic) LogJQ() string {
+func (sl *consumeEventStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
@@ -77,11 +76,6 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, instance *workflowLog
 				err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': not a jq query string", k)
 				return
 			}
-			if !strings.HasPrefix(query, "{{") || !strings.HasSuffix(query, "}}") {
-				event.Context[k] = query
-				continue
-			}
-			query = query[2 : len(query)-2]
 			var x interface{}
 			x, err = jqOne(instance.data, query)
 			if err != nil {
