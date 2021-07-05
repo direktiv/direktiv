@@ -1,8 +1,10 @@
 #!/bin/bash
 
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 countdown() {
-  echo "sleeping for 60 secs"
-  secs=60
+  echo "sleeping for 30 secs"
+  secs=30
   shift
   while [ $secs -gt 0 ]
   do
@@ -30,6 +32,6 @@ countdown
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-source scripts/knative/install-knative.sh
+helm install --set development=true knative $dir/../kubernetes/charts/knative
 
 countdown
