@@ -52,6 +52,15 @@ data:
                 "name": "direktiv-sidecar",
                 "env": [
                   {
+                    "name": "DIREKTIV_DB",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "{{ include "direktiv.fullname" . }}",
+                        "key": "sidecarDb"
+                      }
+                    }
+                  },
+                  {
                     "name": "DIREKTIV_DEBUG",
                     "value": "{{ .Values.debug }}"
                   },

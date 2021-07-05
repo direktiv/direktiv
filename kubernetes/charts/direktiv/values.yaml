@@ -105,6 +105,7 @@ flow:
   tag: "latest"
   exchange: "checkMe"
   sidecar: "vorteil/sidecar"
+  sidecarDb: ""
   db: ""
   protocol: "http"
   certificate: none
