@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-deployment
-  namespace: knative-serving
+  namespace: knative-serving-knative
 
 data:
     # List of repositories for which tag to digest resolving should be skipped

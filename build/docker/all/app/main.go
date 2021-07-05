@@ -139,6 +139,14 @@ func runHelm() {
 
 	}
 
+	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	addProxy(f)
+
 	log.Printf("running direktiv helm\n")
 	cmd := exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
 	cmd.Dir = "/direktiv/kubernetes/charts/direktiv"
@@ -162,18 +170,44 @@ func runRegistry(kc string) {
 
 }
 
+func addProxy(f *os.File) {
+
+	log.Printf("adding proxy settings to file: %v\n", f.Name())
+	if os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" {
+		log.Println("http proxy set")
+		f.Write([]byte(fmt.Sprintf("https_proxy: \"%v\"\n", os.Getenv("HTTPS_PROXY"))))
+		f.Write([]byte(fmt.Sprintf("http_proxy: \"%v\"\n", os.Getenv("HTTP_PROXY"))))
+		f.Write([]byte(fmt.Sprintf("no_proxy: \"%v\"\n", os.Getenv("NO_PROXY"))))
+	} else {
+		log.Println("http proxy not set")
+		f.Write([]byte("http_proxy: \"\"\n"))
+		f.Write([]byte("https_proxy: \"\"\n"))
+		f.Write([]byte("no_proxy: \"\"\n"))
+	}
+}
+
 func applyYaml(kc string) {
 
-	fs := []string{"serving-crds.yaml", "serving-core.yaml", "contour.yaml", "net-contour.yaml"}
+	log.Printf("running knative helm\n")
+	f, err := os.Create("/tmp/knative.yaml")
+	defer f.Close()
 
-	for _, f := range fs {
-		log.Printf("applying %s\n", f)
-		/* #nosec */
-		cmd := exec.Command(kc, "apply", "-f", f)
-		cmd.Dir = "/direktiv/scripts/knative"
-		cmd.Run()
-		time.Sleep(2 * time.Second)
+	if err != nil {
+		panic(err)
 	}
+
+	addProxy(f)
+
+	log.Printf("waiting another 10 seconds for k3s\n")
+	time.Sleep(10 * time.Second)
+
+	cmd := exec.Command("/helm", "install", "-f", "/tmp/knative.yaml", "knative", ".")
+	cmd.Dir = "/direktiv/kubernetes/charts/knative"
+	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	cmd.Run()
 
 	isgcp := isGCP()
 	log.Printf("running on GCP: %v\n", isgcp)
@@ -189,7 +223,7 @@ func applyYaml(kc string) {
 	// apply config-deployment for registry
 	log.Printf("applying config-deployment.yaml\n")
 	/* #nosec */
-	cmd := exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
+	cmd = exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
@@ -211,6 +245,9 @@ func startingK3s() error {
 
 	log.Println("starting k3s now")
 	cmd := exec.Command("k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0", "--disable", "traefik", "--write-kubeconfig-mode=644")
+
+	// passing env in for http_prox values
+	cmd.Env = os.Environ()
 
 	if len(os.Getenv("DEBUG")) > 0 {
 		cmd.Stdout = os.Stdout
