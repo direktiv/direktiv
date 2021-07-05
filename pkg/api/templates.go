@@ -134,7 +134,7 @@ func (s *Server) workflowTemplate(folder, name string) ([]byte, error) {
 
 	p := filepath.Join(path, fmt.Sprintf("%s.yml", name))
 
-	/* #nosec G304 */
+	/* #nosec */
 	b, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (s *Server) actionTemplate(folder, name string) ([]byte, error) {
 
 	p := filepath.Join(path, fmt.Sprintf("%s.json", name))
 
-	/* #nosec G304 */
+	/* #nosec */
 	b, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil, err

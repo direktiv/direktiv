@@ -72,7 +72,7 @@ data:
                     "valueFrom": {
                       "secretKeyRef": {
                         "name": "{{ include "direktiv.fullname" . }}",
-                        "key": "db"
+                        "key": "sidecarDb"
                       }
                     }
                   },

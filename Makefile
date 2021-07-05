@@ -69,7 +69,7 @@ docker-flow: build
 .PHONY: docker-cli
 docker-cli:
 docker-cli: build
-		cp ${mkfile_dir_main}/direkcli  ${mkfile_dir_main}/build/
+		cp ${mkfile_dir_main}/direkcli-linux  ${mkfile_dir_main}/build/
 		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
 .PHONY: docker-sidecar
@@ -89,7 +89,9 @@ build:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/secrets cmd/secrets/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/api cmd/api/main.go
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli cmd/direkcli/main.go
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli-linux cmd/direkcli/main.go
+	export CGO_LDFLAGS="-static -w -s" && GOOS=darwin go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli-darwin cmd/direkcli/main.go
+	export CGO_LDFLAGS="-static -w -s" && GOOS=windows go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli-windows.exe cmd/direkcli/main.go
 	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
 	cp ${mkfile_dir_main}/api ${mkfile_dir_main}/build/
 
