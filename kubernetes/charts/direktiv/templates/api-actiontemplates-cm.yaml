@@ -337,7 +337,8 @@ data:
             "port"    : 587
         }
     }
-  solve.json: "{\n    \"id\": \"solve\",\n    \"desc\": \"Solves the expression provided by x\",\n    \"image\": \"vorteil/solve\",\n    \"input\": {\n\t\t\"x\": \"10*3\"\n\t}\n}\n"
+  solve.json: "{\n    \"id\": \"solve\",\n    \"desc\": \"Solves the expression provided
+    by x\",\n    \"image\": \"vorteil/solve\",\n    \"input\": {\n\t\t\"x\": \"10*3\"\n\t}\n}\n"
   tweet.json: |+
     {
         "id": "tweet",
@@ -368,45 +369,8 @@ data:
     }
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-05-24T03:47:11Z"
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:data:
-        .: {}
-        f:amazon-sns.json: {}
-        f:aws-ec2-create.json: {}
-        f:aws-ec2-delete.json: {}
-        f:aws-ec2-start.json: {}
-        f:aws-ec2-stop.json: {}
-        f:awsgo.json: {}
-        f:awslog.json: {}
-        f:azgo.json: {}
-        f:azinvoke.json: {}
-        f:azlog.json: {}
-        f:azure-servicebus.json: {}
-        f:debug.json: {}
-        f:discordmsg.json: {}
-        f:gcloud-instance-create.json: {}
-        f:gcloud-instance-delete.json: {}
-        f:gcloud-instance-start.json: {}
-        f:gcloud-instance-stop.json: {}
-        f:gcloud.json: {}
-        f:gcplog.json: {}
-        f:greeting.json: {}
-        f:lambda.json: {}
-        f:request.json: {}
-        f:simplepostgresclient.json: {}
-        f:slackmsg.json: {}
-        f:smtp.json: {}
-        f:solve.json: {}
-        f:tweet.json: {}
-        f:twilio.json: {}
-    manager: kubectl-create
-    operation: Update
-    time: "2021-05-24T03:47:11Z"
+  creationTimestamp: "2021-07-05T05:11:48Z"
   name: api-actiontemplates-cm
   namespace: {{ .Release.Namespace }}
-  resourceVersion: "29663"
-  uid: 427fa5ee-4824-4299-90a2-d6f6b7ea4637
+  resourceVersion: "4050993"
+  uid: fca236ca-3d04-4452-8301-14766e53427a
