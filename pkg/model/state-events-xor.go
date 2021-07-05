@@ -7,7 +7,7 @@ import (
 
 type EventConditionDefinition struct {
 	Event      ConsumeEventDefinition `yaml:"event"`
-	Transform  string                 `yaml:"transform,omitempty"`
+	Transform  interface{}            `yaml:"transform,omitempty"`
 	Transition string                 `yaml:"transition,omitempty"`
 }
 
@@ -79,8 +79,10 @@ func (o *EventsXorState) Validate() error {
 	}
 
 	for i, event := range o.GetEvents() {
-		if err := validateTransformJQ(event.Transform); err != nil {
-			return fmt.Errorf("event[%v]: %v", i, err)
+		if s, ok := event.Transform.(string); ok {
+			if err := validateTransformJQ(s); err != nil {
+				return fmt.Errorf("event[%v]: %v", i, err)
+			}
 		}
 
 		if err := event.Event.Validate(); err != nil {

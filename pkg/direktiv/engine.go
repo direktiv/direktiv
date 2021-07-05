@@ -791,7 +791,11 @@ const maxWorkflowSteps = 10
 
 func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition *stateTransition) error {
 
-	if transition == nil || transition.Transform == "" || transition.Transform == "." {
+	if transition == nil || transition.Transform == nil {
+		return nil
+	}
+
+	if s, ok := transition.Transform.(string); ok && (s == "" || s == ".") {
 		return nil
 	}
 
@@ -924,7 +928,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 		goto failure
 	}
 
-	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != "" {
+	if lq := wli.logic.LogJQ(); len(savedata) == 0 && len(wakedata) == 0 && lq != nil {
 		var object interface{}
 		object, err = jqOne(wli.data, lq)
 		if err != nil {

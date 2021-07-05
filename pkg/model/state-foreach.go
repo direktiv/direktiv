@@ -7,10 +7,10 @@ import (
 
 type ForEachState struct {
 	StateCommon `yaml:",inline"`
-	Array       string            `yaml:"array"`
+	Array       interface{}       `yaml:"array"`
 	Action      *ActionDefinition `yaml:"action"`
 	Timeout     string            `yaml:"timeout,omitempty"`
-	Transform   string            `yaml:"transform,omitempty"`
+	Transform   interface{}       `yaml:"transform,omitempty"`
 	Transition  string            `yaml:"transition,omitempty"`
 }
 
@@ -53,8 +53,10 @@ func (o *ForEachState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Array == "" {

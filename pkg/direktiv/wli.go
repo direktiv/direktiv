@@ -11,13 +11,13 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	"github.com/itchyny/gojq"
 	hashstructure "github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/jqer"
 	"github.com/vorteil/direktiv/pkg/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -420,51 +420,15 @@ func (wli *workflowLogicInstance) unlock() {
 
 }
 
-func jq(input interface{}, command string) ([]interface{}, error) {
-
-	data, err := json.Marshal(input)
+func jq(input interface{}, command interface{}) ([]interface{}, error) {
+	out, err := jqer.Evaluate(input, command)
 	if err != nil {
-		return nil, NewInternalError(err)
+		return nil, NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq: %v", err)
 	}
-
-	var x interface{}
-
-	err = json.Unmarshal(data, &x)
-	if err != nil {
-		return nil, NewInternalError(err)
-	}
-
-	query, err := gojq.Parse(command)
-	if err != nil {
-		return nil, NewCatchableError(ErrCodeJQBadQuery, err.Error())
-	}
-
-	var output []interface{}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	iter := query.RunWithContext(ctx, x)
-
-	for i := 0; ; i++ {
-
-		v, ok := iter.Next()
-		if !ok {
-			break
-		}
-
-		if err, ok := v.(error); ok {
-			return nil, NewUncatchableError("direktiv.jq.badCommand", err.Error())
-		}
-
-		output = append(output, v)
-
-	}
-
-	return output, nil
-
+	return out, nil
 }
 
-func jqOne(input interface{}, command string) (interface{}, error) {
+func jqOne(input interface{}, command interface{}) (interface{}, error) {
 
 	output, err := jq(input, command)
 	if err != nil {
@@ -479,7 +443,7 @@ func jqOne(input interface{}, command string) (interface{}, error) {
 
 }
 
-func jqObject(input interface{}, command string) (map[string]interface{}, error) {
+func jqObject(input interface{}, command interface{}) (map[string]interface{}, error) {
 
 	x, err := jqOne(input, command)
 	if err != nil {
@@ -566,7 +530,7 @@ func (wli *workflowLogicInstance) StoreData(key string, val interface{}) error {
 
 }
 
-func (wli *workflowLogicInstance) Transform(transform string) error {
+func (wli *workflowLogicInstance) Transform(transform interface{}) error {
 
 	x, err := jqObject(wli.data, transform)
 	if err != nil {

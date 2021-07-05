@@ -9,7 +9,7 @@ type ConsumeEventState struct {
 	StateCommon `yaml:",inline"`
 	Event       *ConsumeEventDefinition `yaml:"event"`
 	Timeout     string                  `yaml:"timeout,omitempty"`
-	Transform   string                  `yaml:"transform,omitempty"`
+	Transform   interface{}             `yaml:"transform,omitempty"`
 	Transition  string                  `yaml:"transition,omitempty"`
 }
 
@@ -52,8 +52,10 @@ func (o *ConsumeEventState) Validate() error {
 		return err
 	}
 
-	if err := validateTransformJQ(o.Transform); err != nil {
-		return err
+	if s, ok := o.Transform.(string); ok {
+		if err := validateTransformJQ(s); err != nil {
+			return err
+		}
 	}
 
 	if o.Event == nil {
