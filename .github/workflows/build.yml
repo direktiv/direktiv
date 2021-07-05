@@ -80,6 +80,24 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./direkcli
-        asset_name: direkcli
+        asset_path: ./direkcli-linux
+        asset_name: direkcli-linux
+        asset_content_type: application/octet-stream
+    - name: upload vorteil cli
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./direkcli-darwin
+        asset_name: direkcli-darwin
+        asset_content_type: application/octet-stream
+    - name: upload vorteil cli
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./direkcli-windows.exe
+        asset_name: direkcli-windows.exe
         asset_content_type: application/octet-stream
