@@ -139,10 +139,11 @@ func runHelm() {
 
 	}
 
-	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
 	}
+	/* #nosec */
 	defer f.Close()
 
 	addProxy(f)
@@ -189,7 +190,11 @@ func addProxy(f *os.File) {
 func applyYaml(kc string) {
 
 	log.Printf("running knative helm\n")
+
+	/* #nosec */
 	f, err := os.Create("/tmp/knative.yaml")
+
+	/* #nosec */
 	defer f.Close()
 
 	if err != nil {
