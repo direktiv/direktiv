@@ -31,3 +31,6 @@ sed -i '3440,3644d' $dir/templates/serving-core.yaml
 sed -i '4097,4238d' $dir/templates/serving-core.yaml
 
 ed $dir/templates/serving-core.yaml < ed.script
+
+# replace replicas
+sed -i 's/replicas: 2/replicas: 1/g' $dir/templates/contour.yaml
