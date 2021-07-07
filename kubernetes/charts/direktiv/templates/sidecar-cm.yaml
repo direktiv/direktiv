@@ -25,7 +25,10 @@ data:
             }
           },
           "spec": {
-            "serviceAccountName": "%s",
+            "imagePullSecrets": [
+              %s
+            ],
+            "serviceAccountName": "{{ include "direktiv.serviceAccountName" . }}-sidecar",
             "containers": [
               {
                 "image": "%s",

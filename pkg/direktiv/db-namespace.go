@@ -41,11 +41,6 @@ func (db *dbManager) addNamespace(ctx context.Context, name string) (*ent.Namesp
 		return nil, rollback(tx, err)
 	}
 
-	err = kubernetesActionServiceAccount(name, true)
-	if err != nil {
-		return nil, rollback(tx, err)
-	}
-
 	return ns, tx.Commit()
 
 }
@@ -76,12 +71,6 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 
 	if i == 0 {
 		return &ent.NotFoundError{}
-	}
-
-	err = kubernetesActionServiceAccount(name, false)
-	if err != nil {
-		// we can still proceed
-		log.Errorf("can not delete kubernetes service account: %v", err)
 	}
 
 	// delete secrets from secrets backend
