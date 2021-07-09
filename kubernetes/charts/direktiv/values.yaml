@@ -127,3 +127,16 @@ useNetworkPolicies: false
 http_proxy: ""
 https_proxy: ""
 no_proxy: ""
+
+# if using proxy the user needs to be a valid IAM user with access to the database
+# e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
+# to to google with:
+# serviceAccount:
+#   annotations:
+#      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
+
+gcp:
+  gvisor: false
+  useSqlProxy: false
+  db_instance: ""
+  ip_private: false
