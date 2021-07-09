@@ -8,5 +8,5 @@ subjects:
   namespace: {{ .Release.Namespace }}
 roleRef:
  kind: ClusterRole
- name: {{ include "direktiv.serviceAccountName" . }}-role
+ name: {{ include "direktiv.serviceAccountName" . }}-role-cluster
  apiGroup: rbac.authorization.k8s.io
