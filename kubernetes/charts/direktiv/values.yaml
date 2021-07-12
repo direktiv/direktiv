@@ -128,6 +128,8 @@ http_proxy: ""
 https_proxy: ""
 no_proxy: ""
 
+netShape: "none"
+
 # if using proxy the user needs to be a valid IAM user with access to the database
 # e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
 # to to google with:
