@@ -443,6 +443,14 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if resp.ErrorCode != nil {
+		w.Header().Set("Direktiv_ErrorCode", *resp.ErrorCode)
+	}
+
+	if resp.ErrorMsg != nil {
+		w.Header().Set("Direktiv_ErrorMsg", *resp.ErrorMsg)
+	}
+
 	// for wait there is special handling
 	if wait && field != "" {
 
