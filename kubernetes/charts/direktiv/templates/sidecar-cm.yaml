@@ -21,6 +21,10 @@ data:
               "direktiv-app": "direktiv"
             },
             "annotations": {
+              {{- if ne  .Values.netShape "none" }}
+              "kubernetes.io/ingress-bandwidth": "{{ .Values.netShape }}",
+              "kubernetes.io/egress-bandwidth": "{{ .Values.netShape }}",
+              {{- end }}
               "autoscaling.knative.dev/minScale": "%d"
             }
           },
