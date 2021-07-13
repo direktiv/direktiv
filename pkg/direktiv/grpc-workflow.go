@@ -131,6 +131,13 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 		if err != nil {
 			return nil, fmt.Errorf("can not fetch instance id %v for wait request: %v", inst.id, err)
 		}
+
+		// passing the error codes back to caller
+		if len(wfi.ErrorCode) > 0 || len(wfi.ErrorMessage) > 0 {
+			resp.ErrorCode = &wfi.ErrorCode
+			resp.ErrorMsg = &wfi.ErrorMessage
+		}
+
 		resp.Output = []byte(wfi.Output)
 	}
 

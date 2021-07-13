@@ -12,13 +12,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 	v1 "k8s.io/api/core/v1"
-	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -34,9 +34,8 @@ const (
 )
 
 const (
-	k8sNamespaceVar      = "DIREKTIV_KUBERNETES_NAMESPACE"
-	serviceAccountPrefix = "direktiv-sa"
-	secretsPrefix        = "direktiv-secret"
+	k8sNamespaceVar = "DIREKTIV_KUBERNETES_NAMESPACE"
+	secretsPrefix   = "direktiv-secret"
 )
 
 type kubeRequest struct {
@@ -48,6 +47,31 @@ type kubeRequest struct {
 }
 
 var kubeReq = kubeRequest{}
+
+func kubernetesListRegistriesNames(namespace string) ([]string, error) {
+
+	var registries []string
+
+	clientset, kns, err := getClientSet()
+	if err != nil {
+		return registries, err
+	}
+
+	var lo metav1.ListOptions
+	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
+	if err != nil {
+		return registries, err
+	}
+
+	for _, s := range secrets.Items {
+		if s.Annotations[annotationNamespace] == namespace {
+			registries = append(registries, s.Name)
+		}
+	}
+
+	return registries, nil
+
+}
 
 func kubernetesListRegistries(namespace string) ([]string, error) {
 
@@ -72,72 +96,6 @@ func kubernetesListRegistries(namespace string) ([]string, error) {
 	}
 
 	return registries, nil
-
-}
-
-func kubernetesActionServiceAccount(name string, create bool) error {
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	log.Debugf("kubernetes service account: %s (create: %v)", name, create)
-	sa := &v1.ServiceAccount{}
-	sa.Name = fmt.Sprintf("%s-%s", serviceAccountPrefix, name)
-
-	if !create {
-		var opt metav1.GetOptions
-		sa, err = clientset.CoreV1().ServiceAccounts(kns).Get(context.Background(), sa.Name, opt)
-		if err != nil {
-			return err
-		}
-
-		for _, ps := range sa.ImagePullSecrets {
-			err = clientset.CoreV1().Secrets(kns).Delete(context.Background(), ps.Name, metav1.DeleteOptions{})
-			if err != nil {
-				// we can keep going
-				log.Errorf("can not delete secret for sa: %v", err)
-			}
-		}
-	}
-
-	// we delete the account if it is there
-	clientset.RbacV1().RoleBindings(kns).Delete(context.Background(), fmt.Sprintf("%s-binding",
-		sa.Name), metav1.DeleteOptions{})
-	err = clientset.CoreV1().ServiceAccounts(kns).Delete(context.Background(), sa.Name, metav1.DeleteOptions{})
-
-	if create {
-
-		sbj := rbac.Subject{
-			Kind:      "ServiceAccount",
-			Name:      sa.Name,
-			Namespace: kns,
-		}
-
-		rb := &rbac.RoleBinding{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("%s-binding", sa.Name),
-				Namespace: kns,
-			},
-			Subjects: []rbac.Subject{sbj},
-			RoleRef: rbac.RoleRef{
-				Kind: "Role",
-				Name: "sidecar-role",
-			},
-		}
-
-		_, err = clientset.CoreV1().ServiceAccounts(kns).Create(context.Background(), sa, metav1.CreateOptions{})
-		if err != nil {
-			log.Errorf("can not create service account: %v", err)
-			return err
-		}
-
-		_, err = clientset.RbacV1().RoleBindings(kns).Create(context.Background(), rb, metav1.CreateOptions{})
-
-	}
-
-	return err
 
 }
 
@@ -167,13 +125,7 @@ func kubernetesDeleteSecret(name, namespace string) error {
 			}
 			secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
 
-			err = clientset.CoreV1().Secrets(kns).Delete(context.Background(), secretName, metav1.DeleteOptions{})
-			if err != nil {
-				return err
-			}
-
-			// detach it from service account
-			return kubernetesSecretFromServiceAccount(namespace, secretName)
+			return clientset.CoreV1().Secrets(kns).Delete(context.Background(), secretName, metav1.DeleteOptions{})
 
 		}
 
@@ -215,75 +167,8 @@ func kubernetesAddSecret(name, namespace string, data []byte) error {
 	sa.Type = "kubernetes.io/dockerconfigjson"
 
 	_, err = clientset.CoreV1().Secrets(kns).Create(context.Background(), sa, metav1.CreateOptions{})
-	if err != nil {
-		return err
-	}
-
-	// attach to service account
-	kubernetesSecretToServiceAccount(fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
-		fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname()))
 
 	return err
-
-}
-
-// updating service account to
-func kubernetesSecretFromServiceAccount(name, secret string) error {
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	var opt metav1.GetOptions
-	sa, err := clientset.CoreV1().ServiceAccounts(kns).Get(context.Background(), fmt.Sprintf("%s-%s", serviceAccountPrefix, name), opt)
-	if err != nil {
-		return err
-	}
-
-	// iterate and skip the secret we want to remove
-	var r []v1.LocalObjectReference
-	for _, ps := range sa.ImagePullSecrets {
-		if ps.Name != secret {
-			r = append(r, ps)
-		}
-	}
-
-	sa.ImagePullSecrets = r
-
-	_, err = clientset.CoreV1().ServiceAccounts(kns).Update(context.Background(), sa, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-// updating service account to
-func kubernetesSecretToServiceAccount(name, secret string) error {
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	var opt metav1.GetOptions
-	sa, err := clientset.CoreV1().ServiceAccounts(kns).Get(context.Background(), name, opt)
-	if err != nil {
-		return err
-	}
-
-	sa.ImagePullSecrets = append(sa.ImagePullSecrets, v1.LocalObjectReference{
-		Name: secret,
-	})
-
-	_, err = clientset.CoreV1().ServiceAccounts(kns).Update(context.Background(), sa, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
 
 }
 
@@ -417,8 +302,19 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
 
+	// get imagePullSecrets
+	secrets, err := kubernetesListRegistriesNames(namespace)
+	if err != nil {
+		return err
+	}
+
+	var sstrings []string
+	for _, s := range secrets {
+		sstrings = append(sstrings, fmt.Sprintf("{ \"name\": \"%s\"}", s))
+	}
+
 	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%s", namespace, ah), ir.Container.Scale,
-		fmt.Sprintf("%s-%s", serviceAccountPrefix, namespace),
+		strings.Join(sstrings, ","),
 		ir.Container.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
 		kubeReq.sidecar)
 

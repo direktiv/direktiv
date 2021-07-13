@@ -128,6 +128,7 @@ func ReadConfig(file string) (*Config, error) {
 
 		log.Printf("read config file %s", file)
 
+		/* #nosec */
 		data, err := ioutil.ReadFile(file)
 		if err != nil {
 			return nil, err

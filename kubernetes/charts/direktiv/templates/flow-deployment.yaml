@@ -31,6 +31,22 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
+        {{- if .Values.gcp.useSqlProxy }}
+        - name: cloud-sql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.17
+          command:
+            - "/cloud_sql_proxy"
+            - "-instances={{- .Values.gcp.db_instance }}=tcp:5432"
+            {{- if .Values.gcp.ip_private }}
+            - "-ip_address_types=PRIVATE"
+            {{- end }}
+          securityContext:
+            runAsNonRoot: true
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu:    "1"
+        {{- end }}
         - name: ingress
           readinessProbe:
             exec: # -tls=true  -tls-no-verify

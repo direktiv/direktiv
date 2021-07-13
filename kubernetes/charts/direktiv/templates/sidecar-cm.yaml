@@ -21,15 +21,54 @@ data:
               "direktiv-app": "direktiv"
             },
             "annotations": {
+              {{- if ne  .Values.netShape "none" }}
+              "kubernetes.io/ingress-bandwidth": "{{ .Values.netShape }}",
+              "kubernetes.io/egress-bandwidth": "{{ .Values.netShape }}",
+              {{- end }}
               "autoscaling.knative.dev/minScale": "%d"
             }
           },
           "spec": {
-            "serviceAccountName": "%s",
+            "imagePullSecrets": [
+              %s
+            ],
+            {{- if .Values.gcp.gvisor }}
+            "runtimeClassName": "gvisor",
+            {{- end }}
+            "serviceAccountName": "{{ include "direktiv.serviceAccountName" . }}-sidecar",
             "containers": [
+            {{- if .Values.gcp.useSqlProxy }}
+             {
+                "name": "cloud-sql-proxy",
+                "image": "gcr.io/cloudsql-docker/gce-proxy:1.17",
+                "command": [
+                  "/cloud_sql_proxy",
+                  {{- if .Values.gcp.ip_private }}
+                  "-ip_address_types=PRIVATE",
+                  {{- end }}
+                  "-instances={{- .Values.gcp.db_instance }}=tcp:5432"
+                ]
+              },
+             {{- end }}
               {
                 "image": "%s",
                 "name": "direktiv-container",
+                "env": [
+                {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+                {
+                  "name": "HTTPS_PROXY",
+                  "value": "{{ .Values.http_proxy }}"
+                },
+                {
+                  "name": "HTTPS_PROXY",
+                  "value": "{{ .Values.https_proxy }}"
+                },
+                {
+                  "name": "NO_PROXY",
+                  "value": "{{ .Values.no_proxy }}"
+                }
+                {{- end }}
+                ],
                 "volumeMounts": [
                   {
                     "name": "workdir",
@@ -51,6 +90,29 @@ data:
                 "image": "%s",
                 "name": "direktiv-sidecar",
                 "env": [
+                  {
+                    "name": "DIREKTIV_DB",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "{{ include "direktiv.fullname" . }}",
+                        "key": "sidecarDb"
+                      }
+                    }
+                  },
+                  {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+                  {
+                    "name": "HTTPS_PROXY",
+                    "value": "{{ .Values.http_proxy }}"
+                  },
+                  {
+                    "name": "HTTPS_PROXY",
+                    "value": "{{ .Values.https_proxy }}"
+                  },
+                  {
+                    "name": "NO_PROXY",
+                    "value": "{{ .Values.no_proxy }}"
+                  },
+                  {{- end }}
                   {
                     "name": "DIREKTIV_DEBUG",
                     "value": "{{ .Values.debug }}"

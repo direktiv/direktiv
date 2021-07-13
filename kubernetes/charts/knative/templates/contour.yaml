@@ -2031,7 +2031,7 @@ metadata:
   name: contour
   namespace: contour-external
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -2612,7 +2612,7 @@ metadata:
   name: contour
   namespace: contour-internal
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:

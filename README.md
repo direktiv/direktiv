@@ -15,7 +15,7 @@
 
 ## What is Direktiv?
 
-**Diretiv is a serverless workflow and automation engine running on Kubernetes and Knative.**
+**Direktiv is a serverless workflow and automation engine running on Kubernetes and Knative.**
 
 Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, runs on kubernetes and executes containers as "plugins".
 
@@ -86,7 +86,8 @@ id: helloworld
 states:
 - id: hello
   type: noop
-  transform: '{ msg: ("Hello, " + .name + "!") }'
+  transform: 
+    msg: "Hello, jq(.name)!"
 ```
 
 ### Creating and Running a Workflow
@@ -101,7 +102,8 @@ id: helloworld
 states:
 - id: hello
   type: noop
-  transform: '{ msg: ("Hello, " + .name + "!") }'
+  transform: 
+    msg: "Hello, jq(.name)!"
 EOF
 $ direkcli workflows create demo helloworld.yml
 Created workflow 'helloworld'
@@ -186,13 +188,12 @@ states:
   action:
     secrets: ["GOOGLE_SERVICE_ACCOUNT_KEY"]
     function: imageCheck
-    input: '{
-      "url": ."Microsoft.Storage.BlobCreated".url,
-      "serviceAccountKey": .secrets.GOOGLE_SERVICE_ACCOUNT_KEY    
-    }'
+    input: 
+      url: jq(."Microsoft.Storage.BlobCreated".url)
+      serviceAccountKey: jq(.secrets.GOOGLE_SERVICE_ACCOUNT_KEY)
   transition: checkRatingForImage
 - id: checkRatingForImage
-  log: "."
+  log: jq(.)
   type: switch
   conditions:
   - condition: .return.safeForWork == true
@@ -203,16 +204,14 @@ states:
   action:
     function: awslambda
     secrets: ["LAMBDA_KEY", "LAMBDA_SECRET"]
-    input: '{
-      key: .secrets.LAMBDA_KEY,
-      secret: .secrets.LAMBDA_SECRET,
-      region: "ap-southeast-2",
-      function: "python-watermark",
-      body: {
-        imageurl: ."Microsoft.Storage.BlobCreated".url,
-        message: "Approved by Direktiv.io",
-      }
-    }'
+    input:
+      key: jq(.secrets.LAMBDA_KEY)
+      secret: jq(.secrets.LAMBDA_SECRET)
+      region: "ap-southeast-2"
+      function: "python-watermark"
+      body:
+        imageurl: jq(."Microsoft.Storage.BlobCreated".url)
+        message: "Approved by Direktiv.io"
   transform: '.notify = .return | del(.return)'
   transition: copyFileToSafeForWork
 - id: addWaterMarkNotApproved
@@ -220,73 +219,67 @@ states:
   action:
     function: awslambda
     secrets: ["LAMBDA_KEY", "LAMBDA_SECRET"]
-    input: '{
-      key: .secrets.LAMBDA_KEY,
-      secret: .secrets.LAMBDA_SECRET,
-      region: "ap-southeast-2",
-      function: "python-watermark",
-      body: {
-        imageurl: ."Microsoft.Storage.BlobCreated".url,
-        message: "Not approved by Direktiv.io",
-      }
-    }'
-  transform: '.notify = .return | del(.return)'
+    input:
+      key: jq(.secrets.LAMBDA_KEY)
+      secret: jq(.secrets.LAMBDA_SECRET)
+      region: "ap-southeast-2"
+      function: "python-watermark"
+      body: 
+        imageurl: jq(."Microsoft.Storage.BlobCreated".url)
+        message: "Not approved by Direktiv.io"
+  transform: 'jq(.notify = .return | del(.return))'
   transition: sendEmail
 - id: sendEmail
   type: action
-  log: "."
+  log: jq(.)
   action:
     function: send-email
     secrets: ["GMAIL_PASSWORD"]
-    input: '{
-      "from": "wilhelm.wonigkeit@vorteil.io",
-      "to": "wilhelm.wonigkeit@vorteil.io",
-      "subject": "Direktiv NSFW Image Workflow",
-      "message": "NSFW Image detected",
-      "server": "smtp.gmail.com",
-      "port": 587,
-      "password": .secrets.GMAIL_PASSWORD
-    }'
+    input:
+      from: "wilhelm.wonigkeit@vorteil.io"
+      to: "wilhelm.wonigkeit@vorteil.io"
+      subject: "Direktiv NSFW Image Workflow"
+      message: "NSFW Image detected"
+      server: "smtp.gmail.com"
+      port: 587
+      password: jq(.secrets.GMAIL_PASSWORD)
   transition: copyFileToNotSafeForWork
 - id: copyFileToNotSafeForWork
   type: action
-  log: "."
+  log: jq(.)
   action:
     secrets: ["AZ_STORAGE_ACCOUNT", "AZ_STORAGE_KEY"]
     function: azureupload
-    input: '{
-      "container": "not-safe-for-work",
-      "storage-account": .secrets.AZ_STORAGE_ACCOUNT,
-      "storage-account-key": .secrets.AZ_STORAGE_KEY,
-      "data": .notify.body,
-      "upload-name": ."Microsoft.Storage.BlobCreated".url | capture("(?<filename>[a-z.]+$)").filename
-    }'
+    input:
+      container: "not-safe-for-work"
+      "storage-account": jq(.secrets.AZ_STORAGE_ACCOUNT)
+      "storage-account-key": jq(.secrets.AZ_STORAGE_KEY)
+      data: jq(.notify.body)
+      "upload-name": jq(."Microsoft.Storage.BlobCreated".url | capture("(?<filename>[a-z.]+$)").filename)
   transition: cleanup
 - id: copyFileToSafeForWork
   type: action
-  log: "."
+  log: jq(.)
   action:
     secrets: ["AZ_STORAGE_ACCOUNT", "AZ_STORAGE_KEY"]
     function: azureupload
-    input: '{
-      "container": "safe-for-work",
-      "storage-account": .secrets.AZ_STORAGE_ACCOUNT,
-      "storage-account-key": .secrets.AZ_STORAGE_KEY,
-      "data": .notify.body,
-      "upload-name": ."Microsoft.Storage.BlobCreated".url | capture("(?<filename>[a-z.]+$)").filename
-    }'
+    input:
+      container: "safe-for-work"
+      "storage-account": jq(.secrets.AZ_STORAGE_ACCOUNT)
+      "storage-account-key": jq(.secrets.AZ_STORAGE_KEY)
+      data: jq(.notify.body)
+      "upload-name": jq(."Microsoft.Storage.BlobCreated".url | capture("(?<filename>[a-z.]+$)").filename)
   transition: cleanup
 - id: cleanup
   type: action
   action:
     secrets: ["AZ_STORAGE_ACCOUNT", "AZ_NAME", "AZ_PASSWORD", "AZ_TENANT","AZ_STORAGE_KEY"]
     function: azurecli
-    input: '{
-      "name": .secrets.AZ_NAME,
-      "password": .secrets.AZ_PASSWORD,
-      "tenant": .secrets.AZ_TENANT,
-      "command": ["storage", "blob", "delete", "--container", "processing", "--name", (."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--account-name", .secrets.AZ_STORAGE_ACCOUNT, "--account-key", .secrets.AZ_STORAGE_KEY]
-    }'
+    input:
+      name: jq(.secrets.AZ_NAME)
+      password: jq(.secrets.AZ_PASSWORD)
+      tenant: jq(.secrets.AZ_TENANT)
+      command: ["storage", "blob", "delete", "--container", "processing", "--name", jq(."Microsoft.Storage.BlobCreated".url | split("processing/")[1]), "--account-name", jq(.secrets.AZ_STORAGE_ACCOUNT), "--account-key", jq(.secrets.AZ_STORAGE_KEY)]
 ```
 
 ## Why use Direktiv?
