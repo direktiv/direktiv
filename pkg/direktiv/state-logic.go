@@ -87,7 +87,7 @@ func addSecrets(ctx context.Context, wli *workflowLogicInstance, m map[string]in
 	var err error
 
 	if len(secrets) > 0 {
-		wli.Log("Decrypting secrets.")
+		wli.Log(ctx, "Decrypting secrets.")
 
 		s := make(map[string]string)
 

@@ -202,7 +202,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		if sl.state.Async {
 
-			instance.Log("Running function '%s' in fire-and-forget mode (async).", fn.ID)
+			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", fn.ID)
 
 			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
 
@@ -227,7 +227,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		} else {
 
-			instance.Log("Sleeping until function '%s' returns.", fn.ID)
+			instance.Log(ctx, "Sleeping until function '%s' returns.", fn.ID)
 
 			err = instance.engine.doActionRequest(ctx, ar)
 			if err != nil {
@@ -254,7 +254,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 				return
 			}
 
-			instance.Log("Running subflow '%s' in fire-and-forget mode (async).", subflowID)
+			instance.Log(ctx, "Running subflow '%s' in fire-and-forget mode (async).", subflowID)
 
 			transition = &stateTransition{
 				Transform: sl.state.Transform,
@@ -270,7 +270,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 				return
 			}
 
-			instance.Log("Sleeping until subflow '%s' returns.", subflowID)
+			instance.Log(ctx, "Sleeping until subflow '%s' returns.", subflowID)
 
 			sd := &actionStateSavedata{
 				Op:       "do",
@@ -311,7 +311,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 	dec.DisallowUnknownFields()
 	err = dec.Decode(retryData)
 	if err == nil && retryData.Op == "retry" {
-		instance.Log("Retrying...")
+		instance.Log(ctx, "Retrying...")
 		return sl.do(ctx, instance, retryData.Attempts)
 	}
 
@@ -349,7 +349,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		instance.Log("Function '%s' returned.", sl.state.Action.Function)
+		instance.Log(ctx, "Function '%s' returned.", sl.state.Action.Function)
 
 	} else {
 
@@ -359,14 +359,14 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		instance.Log("Subflow '%s' returned.", id)
+		instance.Log(ctx, "Subflow '%s' returned.", id)
 
 	}
 
 	if results.ErrorCode != "" {
 
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
-		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		instance.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 		var d time.Duration
 
 		d, err = preprocessRetry(sl.state.Action.Retries, sd.Attempts, err)
@@ -374,7 +374,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-		instance.Log("Scheduling retry attempt in: %v.", d)
+		instance.Log(ctx, "Scheduling retry attempt in: %v.", d)
 		err = sl.scheduleRetry(ctx, instance, sd, d)
 		return
 
@@ -382,7 +382,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	if results.ErrorMessage != "" {
 
-		instance.Log("Action crashed due to an internal error: %v", results.ErrorMessage)
+		instance.Log(ctx, "Action crashed due to an internal error: %v", results.ErrorMessage)
 
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return

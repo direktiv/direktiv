@@ -320,7 +320,7 @@ func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 			},
 		}
 
-		wli.Log("Reporting results to calling workflow.")
+		wli.Log(ctx, "Reporting results to calling workflow.")
 
 		err = wli.engine.wakeCaller(ctx, msg)
 		if err != nil {
@@ -491,13 +491,13 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 }
 
-func (wli *workflowLogicInstance) NamespaceLog(msg string, a ...interface{}) {
+func (wli *workflowLogicInstance) NamespaceLog(ctx context.Context, msg string, a ...interface{}) {
 	s := fmt.Sprintf(msg, a...)
 
 	wli.namespaceLogger.Info(s)
 }
 
-func (wli *workflowLogicInstance) Log(msg string, a ...interface{}) {
+func (wli *workflowLogicInstance) Log(ctx context.Context, msg string, a ...interface{}) {
 	s := fmt.Sprintf(msg, a...)
 
 	wli.logger.Info(s)

@@ -87,26 +87,26 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 	if s, ok := x.(string); ok && ctype != "" && ctype != "application/json" {
 		data, err = base64.StdEncoding.DecodeString(s)
 		if err != nil {
-			instance.Log("Unable to decode results as a base64 encoded string. Reverting to JSON.")
+			instance.Log(ctx, "Unable to decode results as a base64 encoded string. Reverting to JSON.")
 		}
 		err = event.SetData(ctype, data)
 		if err != nil {
-			instance.Log("Unable to set event data: %v", err)
+			instance.Log(ctx, "Unable to set event data: %v", err)
 		}
 	}
 
 	if data == nil {
 		err = event.SetData("application/json", x)
 		if err != nil {
-			instance.Log("Unable to set event data: %v", err)
+			instance.Log(ctx, "Unable to set event data: %v", err)
 		}
 	}
 
 	for k, v := range sl.state.Event.Context {
-		instance.Log("Adding context %v: %v", k, v)
+		instance.Log(ctx, "Adding context %v: %v", k, v)
 		err = event.Context.SetExtension(k, v)
 		if err != nil {
-			instance.Log("Unable to set event extension: %v", err)
+			instance.Log(ctx, "Unable to set event extension: %v", err)
 		}
 	}
 
@@ -115,7 +115,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 		return
 	}
 
-	instance.Log("Broadcasting event: %s.", event.ID())
+	instance.Log(ctx, "Broadcasting event: %s.", event.ID())
 
 	_, err = instance.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
 		Namespace:  &instance.namespace,

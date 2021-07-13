@@ -571,7 +571,7 @@ func (we *workflowEngine) retryWakeup(data []byte) error {
 		return nil
 	}
 
-	wli.Log("Waking up to retry.")
+	wli.Log(ctx, "Waking up to retry.")
 
 	savedata, err := InstanceMemory(wli.rec)
 	if err != nil {
@@ -626,7 +626,7 @@ func (we *workflowEngine) sleepWakeup(data []byte) error {
 		return nil
 	}
 
-	wli.Log("Waking up from sleep.")
+	wli.Log(ctx, "Waking up from sleep.")
 
 	go wli.engine.runState(ctx, wli, nil, []byte(sleepWakedata), nil)
 
@@ -789,7 +789,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 
 const maxWorkflowSteps = 10
 
-func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition *stateTransition) error {
+func (we *workflowEngine) transformState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition) error {
 
 	if transition == nil || transition.Transform == nil {
 		return nil
@@ -799,7 +799,7 @@ func (we *workflowEngine) transformState(wli *workflowLogicInstance, transition 
 		return nil
 	}
 
-	wli.Log("Transforming state data.")
+	wli.Log(ctx, "Transforming state data.")
 
 	err := wli.Transform(transition.Transform)
 	if err != nil {
@@ -865,7 +865,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {
-		wli.Log("Transitioning to next state: %s (%d).", transition.NextState, wli.step+1)
+		wli.Log(ctx, "Transitioning to next state: %s (%d).", transition.NextState, wli.step+1)
 		go wli.Transition(ctx, transition.NextState, 0)
 		return
 	}
@@ -884,7 +884,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	status := "complete"
 	if wli.rec.ErrorCode != "" {
 		status = "failed"
-		wli.Log("Workflow failed with error '%s': %s", wli.rec.ErrorCode, wli.rec.ErrorMessage)
+		wli.Log(ctx, "Workflow failed with error '%s': %s", wli.rec.ErrorCode, wli.rec.ErrorMessage)
 	}
 
 	wf := wli.rec.Edges.Workflow
@@ -900,7 +900,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 	wli.rec = rec
 	log.Debugf("Workflow instance completed: %s", wli.id)
-	wli.Log("Workflow completed.")
+	wli.Log(ctx, "Workflow completed.")
 
 	wli.engine.freeResources(rec)
 	wli.wakeCaller(ctx, data)
@@ -908,18 +908,18 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 }
 
-func (we *workflowEngine) logRunState(wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
+func (we *workflowEngine) logRunState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
 	log.Debugf("Running state logic -- %s:%v (%s)", wli.id, wli.step, wli.logic.ID())
 	if len(savedata) == 0 && len(wakedata) == 0 && err == nil {
-		wli.Log("Running state logic -- %s:%v (%s)", wli.logic.ID(), wli.step, wli.logic.Type())
+		wli.Log(ctx, "Running state logic -- %s:%v (%s)", wli.logic.ID(), wli.step, wli.logic.Type())
 	}
 
 }
 
 func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
-	we.logRunState(wli, savedata, wakedata, err)
+	we.logRunState(ctx, wli, savedata, wakedata, err)
 
 	var code string
 	var transition *stateTransition
@@ -950,7 +950,7 @@ func (we *workflowEngine) runState(ctx context.Context, wli *workflowLogicInstan
 		goto failure
 	}
 
-	err = we.transformState(wli, transition)
+	err = we.transformState(ctx, wli, transition)
 	if err != nil {
 		goto failure
 	}
@@ -980,7 +980,7 @@ failure:
 			goto failure
 		}
 
-		wli.Log("Workflow failed with uncatchable error: %s", uerr.Message)
+		wli.Log(ctx, "Workflow failed with uncatchable error: %s", uerr.Message)
 
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
@@ -1005,8 +1005,8 @@ failure:
 
 			if matched {
 
-				wli.Log("State failed with error '%s': %s", cerr.Code, cerr.Message)
-				wli.Log("Error caught by error definition %d: %s", i, catch.Error)
+				wli.Log(ctx, "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				wli.Log(ctx, "Error caught by error definition %d: %s", i, catch.Error)
 
 				transition = &stateTransition{
 					Transform: "",
@@ -1029,7 +1029,7 @@ failure:
 			goto failure
 		}
 
-		wli.Log("Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
+		wli.Log(ctx, "Workflow failed with uncaught error '%s': %s", cerr.Code, cerr.Message)
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
 		wli.Close()
@@ -1044,7 +1044,7 @@ failure:
 		err = wli.setStatus(ctx, "crashed", code, msg)
 		if err == nil {
 			log.Errorf("Workflow failed with internal error: %s", ierr.Error())
-			wli.Log("Workflow failed with internal error: %s", ierr.Error())
+			wli.Log(ctx, "Workflow failed with internal error: %s", ierr.Error())
 			wli.engine.freeResources(wli.rec)
 			wli.wakeCaller(ctx, nil)
 			wli.Close()
@@ -1109,9 +1109,9 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 
 	start := wli.wf.GetStartState()
 
-	wli.NamespaceLog("Workflow '%s' has been triggered by the cron scheduler.", start.GetID())
+	wli.NamespaceLog(ctx, "Workflow '%s' has been triggered by the cron scheduler.", start.GetID())
 
-	wli.Log("Preparing workflow triggered by cron scheduler.")
+	wli.Log(ctx, "Preparing workflow triggered by cron scheduler.")
 
 	go wli.start()
 
@@ -1146,8 +1146,8 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 
 	start := wli.wf.GetStartState()
 
-	wli.NamespaceLog("Workflow '%s' has been triggered by the API.", start.GetID())
-	wli.Log("Preparing workflow triggered by API.")
+	wli.NamespaceLog(ctx, "Workflow '%s' has been triggered by the API.", start.GetID())
+	wli.Log(ctx, "Preparing workflow triggered by API.")
 
 	return wli, nil
 
@@ -1227,7 +1227,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 
 	if len(events) == 1 {
 		wli.namespaceLogger.Info(fmt.Sprintf("Workflow '%s' triggered by cloud event: '%s'", name, events[0].Type()), "source", events[0].Source(), "data", fmt.Sprintf("%s", events[0].Data()))
-		wli.Log("Preparing workflow triggered by event: %s", events[0].ID())
+		wli.Log(ctx, "Preparing workflow triggered by event: %s", events[0].ID())
 	} else {
 		var ids = make([]string, len(events))
 		var types = make([]string, len(events))
@@ -1235,8 +1235,8 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 			ids[i] = events[i].ID()
 			types[i] = events[i].Type()
 		}
-		wli.NamespaceLog("Workflow '%s' triggered by event types: %v", name, types)
-		wli.Log("Preparing workflow triggered by events: %v", ids)
+		wli.NamespaceLog(ctx, "Workflow '%s' triggered by event types: %v", name, types)
+		wli.Log(ctx, "Preparing workflow triggered by events: %v", ids)
 	}
 
 	go wli.start()
@@ -1303,8 +1303,8 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 		return "", NewInternalError(err)
 	}
 
-	wli.NamespaceLog("Workflow '%s' triggered as subflow from '%s'", name, caller.InstanceID)
-	wli.Log("Preparing workflow triggered as subflow to caller: %s", caller.InstanceID)
+	wli.NamespaceLog(ctx, "Workflow '%s' triggered as subflow from '%s'", name, caller.InstanceID)
+	wli.Log(ctx, "Preparing workflow triggered as subflow to caller: %s", caller.InstanceID)
 
 	go wli.start()
 
@@ -1401,7 +1401,7 @@ func (we *workflowEngine) listenForEvents(ctx context.Context, wli *workflowLogi
 		return err
 	}
 
-	wli.Log("Registered to receive events.")
+	wli.Log(ctx, "Registered to receive events.")
 
 	return nil
 
