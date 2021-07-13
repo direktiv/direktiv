@@ -110,7 +110,7 @@ func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 		}
 
 		if truth(x) {
-			instance.Log("Switch condition %d succeeded", i)
+			instance.Log(ctx, "Switch condition %d succeeded", i)
 			transition = &stateTransition{
 				Transform: condition.Transform,
 				NextState: condition.Transition,
@@ -120,7 +120,7 @@ func (sl *switchStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 
 	}
 
-	instance.Log("No switch conditions succeeded")
+	instance.Log(ctx, "No switch conditions succeeded")
 	transition = &stateTransition{
 		Transform: sl.state.DefaultTransform,
 		NextState: sl.state.DefaultTransition,

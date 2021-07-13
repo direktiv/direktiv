@@ -98,7 +98,7 @@ func (sl *validateStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 
 	if !result.Valid() {
 		for _, reason := range result.Errors() {
-			instance.Log("Schema validation error: %s", reason.String())
+			instance.Log(ctx, "Schema validation error: %s", reason.String())
 		}
 		err = NewCatchableError("direktiv.schema.failed", fmt.Sprintf("subject failed its JSONSchema validation: %v", err))
 		return

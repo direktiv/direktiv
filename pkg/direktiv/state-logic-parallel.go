@@ -249,7 +249,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 	dec.DisallowUnknownFields()
 	err = dec.Decode(retryData)
 	if err == nil {
-		instance.Log("Retrying...")
+		instance.Log(ctx, "Retrying...")
 		err = sl.doSpecific(ctx, instance, logics, retryData.Idx)
 		return
 	}
@@ -302,7 +302,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		if results.ErrorCode != "" {
 
 			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
-			instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+			instance.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 
 			var d time.Duration
 			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
@@ -310,7 +310,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 				return
 			}
 
-			instance.Log("Scheduling retry attempt in: %v.", d)
+			instance.Log(ctx, "Scheduling retry attempt in: %v.", d)
 			err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 			return
 
@@ -325,7 +325,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 		if logics[idx].Complete {
 			completed++
 		}
-		instance.Log("Action returned. (%d/%d)", completed, len(logics))
+		instance.Log(ctx, "Action returned. (%d/%d)", completed, len(logics))
 		if completed == len(logics) {
 			ready = true
 		}
@@ -336,7 +336,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 
 			err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
 			// instance.Log("Branch %d failed with error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
-			instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+			instance.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 			var d time.Duration
 			d, err = preprocessRetry(sl.state.Actions[idx].Retries, logics[idx].Attempts, err)
 			if err == nil {
@@ -345,7 +345,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 			}
 
 		} else if results.ErrorMessage != "" {
-			instance.Log("Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
+			instance.Log(ctx, "Branch %d crashed due to an internal error: %s", idx, results.ErrorMessage)
 			err = NewInternalError(errors.New(results.ErrorMessage))
 			return
 		} else {
@@ -354,7 +354,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, instance *workflowLogicIn
 
 		logics[idx].Complete = true
 		completed++
-		instance.Log("Action returned. (%d/%d)", completed, len(logics))
+		instance.Log(ctx, "Action returned. (%d/%d)", completed, len(logics))
 		if !ready && completed == len(logics) {
 			err = NewCatchableError(ErrCodeAllBranchesFailed, "all branches failed")
 			return

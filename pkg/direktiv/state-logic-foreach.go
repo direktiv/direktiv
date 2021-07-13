@@ -169,7 +169,7 @@ func (sl *foreachStateLogic) doAll(ctx context.Context, instance *workflowLogicI
 		return
 	}
 
-	instance.Log("Generated %d objects to loop over.", len(array))
+	instance.Log(ctx, "Generated %d objects to loop over.", len(array))
 
 	if len(array) > maxParallelActions {
 		err = NewUncatchableError("direktiv.limits.parallel", "instance aborted for exceeding the maximum number of parallel actions (%d)", maxParallelActions)
@@ -269,7 +269,7 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 	dec.DisallowUnknownFields()
 	err = dec.Decode(retryData)
 	if err == nil {
-		instance.Log("Retrying...")
+		instance.Log(ctx, "Retrying...")
 		err = sl.doSpecific(ctx, instance, logics, retryData.Idx)
 		return
 	}
@@ -311,28 +311,28 @@ func (sl *foreachStateLogic) Run(ctx context.Context, instance *workflowLogicIns
 	if results.ErrorCode != "" {
 
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
-		instance.Log("Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		instance.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 		var d time.Duration
 		d, err = preprocessRetry(sl.state.Action.Retries, logics[idx].Attempts, err)
 		if err != nil {
 			return
 		}
 
-		instance.Log("Scheduling retry attempt in: %v.", d)
+		instance.Log(ctx, "Scheduling retry attempt in: %v.", d)
 		err = sl.scheduleRetry(ctx, instance, logics, idx, d)
 		return
 
 	}
 
 	if results.ErrorMessage != "" {
-		instance.Log("Action crashed due to an internal error: %v", results.ErrorMessage)
+		instance.Log(ctx, "Action crashed due to an internal error: %v", results.ErrorMessage)
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return
 	}
 
 	logics[idx].Complete = true
 	completed++
-	instance.Log("Action returned. (%d/%d)", completed, len(logics))
+	instance.Log(ctx, "Action returned. (%d/%d)", completed, len(logics))
 
 	var x interface{}
 	err = json.Unmarshal(results.Output, &x)
