@@ -52,7 +52,7 @@ data:
                 "env": [
                 {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
                 {
-                  "name": "HTTPS_PROXY",
+                  "name": "HTTP_PROXY",
                   "value": "{{ .Values.http_proxy }}"
                 },
                 {
