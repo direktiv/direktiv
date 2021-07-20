@@ -14,7 +14,7 @@ type GetterState struct {
 }
 
 type GetterDefinition struct {
-	Scope string `yaml:"scope"`
+	Scope string `yaml:"scope,omitempty"`
 	Key   string `yaml:"key"`
 }
 

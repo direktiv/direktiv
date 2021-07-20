@@ -8,7 +8,7 @@ import (
 type GenerateEventDefinition struct {
 	Type            string                 `yaml:"type"`
 	Source          string                 `yaml:"source"`
-	Data            interface{}            `yaml:"data"`
+	Data            interface{}            `yaml:"data,omitempty"`
 	DataContentType string                 `yaml:"data_content_type,omitempty"`
 	Context         map[string]interface{} `yaml:"context,omitempty"`
 }

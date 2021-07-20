@@ -14,9 +14,9 @@ type SetterState struct {
 }
 
 type SetterDefinition struct {
-	Scope string      `yaml:"scope"`
+	Scope string      `yaml:"scope,omitempty"`
 	Key   string      `yaml:"key"`
-	Value interface{} `yaml:"value"`
+	Value interface{} `yaml:"value,omitempty"`
 }
 
 func (o *SetterDefinition) Validate() error {
