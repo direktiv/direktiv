@@ -7,7 +7,7 @@ import (
 
 type ValidateState struct {
 	StateCommon `yaml:",inline"`
-	Subject     string      `yaml:"subject"`
+	Subject     string      `yaml:"subject,omitempty"`
 	Schema      interface{} `yaml:"schema"`
 	Transform   interface{} `yaml:"transform,omitempty"`
 	Transition  string      `yaml:"transition,omitempty"`

@@ -70,8 +70,8 @@ func (o *ConsumeEventDefinition) Validate() error {
 type ProduceEventDefinition struct {
 	Type    string                 `yaml:"type,omitempty"`
 	Source  string                 `yaml:"source,omitempty"`
-	Data    string                 `yaml:"data"`
-	Context map[string]interface{} `yaml:"context"`
+	Data    string                 `yaml:"data,omitempty"`
+	Context map[string]interface{} `yaml:"context,omitempty"`
 }
 
 func (o *ProduceEventDefinition) Validate() error {
