@@ -51,15 +51,14 @@ type kubeRequest struct {
 
 var kubeReq = kubeRequest{}
 
-func addPodFunction(ir *isolateRequest, ah string) error {
+func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string, error) {
 
 	log.Infof("adding pod function %s", ah)
 
 	clientset, kns, err := getClientSet()
 	if err != nil {
-		log.Errorf("could not get client set")
-		log.Infof("adding pod ERROR %v", err)
-		return err
+		log.Errorf("could not get client set: %v", err)
+		return "", err
 	}
 
 	jobs := clientset.BatchV1().Jobs(kns)
@@ -68,27 +67,49 @@ func addPodFunction(ir *isolateRequest, ah string) error {
 
 	size, _ := resource.ParseQuantity("10Mi")
 
+	proxyEnvs := []v1.EnvVar{}
+
+	if len(os.Getenv("HTTP_PROXY")) > 0 || len(os.Getenv("HTTPS_PROXY")) > 0 {
+
+		proxyEnvs = []v1.EnvVar{
+			{
+				Name:  "HTTP_PROXY",
+				Value: os.Getenv("HTTP_PROXY"),
+			},
+			{
+				Name:  "HTTPS_PROXY",
+				Value: os.Getenv("HTTPS_PROXY"),
+			},
+			{
+				Name:  "NO_PROXY",
+				Value: os.Getenv("NO_PROXY"),
+			},
+		}
+
+	}
+
 	userContainer := v1.Container{
 		ImagePullPolicy: v1.PullAlways,
 		Name:            "direktiv-container",
-		Image:           ir.Container.Image,
+		Image:           ar.Container.Image,
 		VolumeMounts: []v1.VolumeMount{
 			{
 				Name:      "workdir",
 				MountPath: "/direktiv-data",
 			},
 		},
+		Env: proxyEnvs,
 	}
 
-	if len(ir.Container.Cmd) > 0 {
+	if len(ar.Container.Cmd) > 0 {
 		// TODO command
 		// https://github.com/kballard/go-shellquote
 	}
 
 	annotations := make(map[string]string)
-	annotations["direktiv.io/action-id"] = ir.ActionID
-	annotations["direktiv.io/instance-id"] = ir.Workflow.InstanceID
-	annotations["direktiv.io/container-id"] = ir.Container.ID
+	annotations["direktiv.io/action-id"] = ar.ActionID
+	annotations["direktiv.io/instance-id"] = ar.Workflow.InstanceID
+	annotations["direktiv.io/container-id"] = ar.Container.ID
 
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -114,7 +135,7 @@ func addPodFunction(ir *isolateRequest, ah string) error {
 						{
 							ImagePullPolicy: v1.PullAlways,
 							Name:            "init-container",
-							Image:           "localhost:5000/init-pod",
+							Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
 							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "workdir",
@@ -138,7 +159,7 @@ func addPodFunction(ir *isolateRequest, ah string) error {
 						{
 							ImagePullPolicy: v1.PullAlways,
 							Name:            "direktiv-sidecar",
-							Image:           "localhost:5000/init-pod",
+							Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
 							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "workdir",
@@ -149,6 +170,10 @@ func addPodFunction(ir *isolateRequest, ah string) error {
 								{
 									Name:  "DIREKTIV_LIFECYCLE",
 									Value: "run",
+								},
+								{
+									Name:  "DIREKTIV_FLOW_ENDPOINT",
+									Value: os.Getenv("DIREKTIV_FLOW_ENDPOINT"),
 								},
 							},
 						},
@@ -163,6 +188,7 @@ func addPodFunction(ir *isolateRequest, ah string) error {
 	j, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
 	if err != nil {
 		log.Errorf("failed to create job: %v", err)
+		return "", err
 	}
 
 	log.Debugf("creating job %v", j.ObjectMeta.Name)
@@ -195,11 +221,12 @@ func addPodFunction(ir *isolateRequest, ah string) error {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	log.Debugf("pod cluster ip: %v\n", ip)
+	if len(ip) == 0 {
+		return "", fmt.Errorf("could not create pod")
+	}
 
-	// post data
-
-	return nil
+	log.Debugf("pod cluster ip: %v", ip)
+	return ip, nil
 
 }
 

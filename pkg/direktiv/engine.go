@@ -311,7 +311,17 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
-	go addPodFunction(ar, actionHash)
+	go func(ar *isolateRequest) {
+		ip, err := addPodFunction(ctx, actionHash, ar)
+		if err != nil {
+			we.reportError(ar, err)
+			return
+		}
+
+		// post data
+		we.doHTTPRequest(ctx, actionHash, ar, ip)
+
+	}(ar)
 
 	if true {
 		return nil
@@ -319,35 +329,34 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 	// TODO: should this ctx be modified with a shorter deadline?
 
-	go we.doHTTPRequest(ctx, actionHash, ar)
+	go we.doHTTPRequest(ctx, actionHash, ar, "")
 
 	return nil
 
 }
 
-func (we *workflowEngine) doHTTPRequest(ctx context.Context,
-	ah string, ar *isolateRequest) {
-
-	// from here we need to report error as grpc because this is go-routined
-	// prepare error here in case
-	reportErr := func(err error) {
-		ec := ""
-		em := err.Error()
-		step := int32(ar.Workflow.Step)
-		r := &flow.ReportActionResultsRequest{
-			InstanceId:   &ar.Workflow.InstanceID,
-			Step:         &step,
-			ActionId:     &ar.ActionID,
-			ErrorCode:    &ec,
-			ErrorMessage: &em,
-		}
-
-		_, err = we.flowClient.ReportActionResults(context.Background(), r)
-		if err != nil {
-			log.Errorf("can not respond to flow: %v", err)
-		}
+func (we *workflowEngine) reportError(ar *isolateRequest, err error) {
+	ec := ""
+	em := err.Error()
+	step := int32(ar.Workflow.Step)
+	r := &flow.ReportActionResultsRequest{
+		InstanceId:   &ar.Workflow.InstanceID,
+		Step:         &step,
+		ActionId:     &ar.ActionID,
+		ErrorCode:    &ec,
+		ErrorMessage: &em,
 	}
 
+	_, err = we.flowClient.ReportActionResults(context.Background(), r)
+	if err != nil {
+		log.Errorf("can not respond to flow: %v", err)
+	}
+}
+
+func (we *workflowEngine) doHTTPRequest(ctx context.Context,
+	ah string, ar *isolateRequest, ip string) {
+
+	// from here we need to report error as grpc because this is go-routined
 	// NOTE: transport copied & modified from http.DefaultTransport
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -393,9 +402,13 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	// configured namespace for workflows
 	ns := os.Getenv(direktivWorkflowNamespace)
 
-	// calculate address
 	addr := fmt.Sprintf("%s://%s-%s.%s",
 		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
+
+	// calculate address
+	if len(ip) > 0 {
+		addr = fmt.Sprintf("%s://%s:8890", we.server.config.FlowAPI.Protocol, ip)
+	}
 
 	log.Debugf("isolate request: %v", addr)
 
@@ -412,7 +425,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
 	if err != nil {
-		reportErr(err)
+		we.reportError(ar, err)
 		return
 	}
 
@@ -455,12 +468,13 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 						// this happens because the function does not exist
+						// can not happen if w euse IP
 						kubeReq.mtx.Lock()
 						err := getKnativeFunction(fmt.Sprintf("%s-%s", ar.Workflow.Namespace, ah))
 						if err != nil {
 							err := addKnativeFunction(ar)
 							if err != nil {
-								reportErr(fmt.Errorf("can not create knative function %v: %v", addr, err))
+								we.reportError(ar, fmt.Errorf("can not create knative function %v: %v", addr, err))
 								return
 							}
 						}
@@ -480,16 +494,26 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	}
 
 	if err != nil {
-		reportErr(err)
+		we.reportError(ar, err)
 		return
 	}
 
 	if resp.StatusCode != 200 {
-		reportErr(fmt.Errorf("action error status: %d",
+		we.reportError(ar, fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
 
 	log.Debugf("isolate request done")
+
+	// for pod based we need to send a request to kill the init
+	if len(ip) > 0 {
+		req, err := http.NewRequestWithContext(rctx, http.MethodGet, addr, nil)
+		if err != nil {
+			we.reportError(ar, err)
+			return
+		}
+		client.Do(req)
+	}
 
 }
 

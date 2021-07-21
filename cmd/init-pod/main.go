@@ -74,12 +74,6 @@ func main() {
 						}
 						log.Printf("OUTPUTFILE: %v", string(a))
 
-						a, err = ioutil.ReadFile("/direktiv-data/log.out")
-						if err != nil {
-							log.Printf("OUTPUT FILE %v\n", err)
-						}
-						log.Printf("OUTPUTFILE: %v", string(a))
-
 						os.Exit(0)
 
 					}
@@ -146,21 +140,34 @@ func main() {
 // 	os.Exit(0)
 // }
 
+var count = 0
+
 func dataHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GOT DATA")
 
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("ERROR %v\n", err)
+	if count == 0 {
+		fmt.Println("GOT DATA IN")
+
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("ERROR %v\n", err)
+		}
+
+		f, err := os.Create("/direktiv-data/input.json")
+		if err != nil {
+			log.Printf("ERROR %v\n", err)
+		}
+		f.Write(b)
+
+		fmt.Printf("WRITTEN AS INPUT %v\n", string(b))
+
+		w.WriteHeader(200)
+		w.Write([]byte("ok"))
 	}
 
-	f, err := os.Create("/direktiv-data/input.json")
-	if err != nil {
-		log.Printf("ERROR %v\n", err)
+	if count == 1 {
+		fmt.Println("again so close")
+		os.Exit(0)
 	}
-	f.Write(b)
+	count++
 
-	fmt.Printf("WRITTEN %v\n", string(b))
-
-	os.Exit(0)
 }

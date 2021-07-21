@@ -94,6 +94,8 @@ spec:
             value: {{ .Values.logDriver }}
           - name: DIREKTIV_FLOW_SIDECAR
             value: {{ .Values.flow.sidecar }}
+          - name: DIREKTIV_FLOW_INITPOD
+            value: {{ .Values.flow.initPod }}
           - name: DIREKTIV_INGRESS_BIND
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
@@ -102,6 +104,14 @@ spec:
             value: "direktiv-kube:///{{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}:7777"
           - name: "DIREKTIV_INGRESS_ENDPOINT"
             value: "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
+          {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+          - name: "HTTP_PROXY"
+            value: "{{ .Values.http_proxy }}"
+          - name: "HTTPS_PROXY"
+            value: "{{ .Values.https_proxy }}"
+          - name: "NO_PROXY"
+            value: "{{ .Values.no_proxy }}"
+          {{- end }}
           - name: DIREKTIV_FLOW_EXCHANGE
             valueFrom:
               secretKeyRef:
