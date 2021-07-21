@@ -14,11 +14,14 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
+	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -47,6 +50,158 @@ type kubeRequest struct {
 }
 
 var kubeReq = kubeRequest{}
+
+func addPodFunction(ir *isolateRequest, ah string) error {
+
+	log.Infof("adding pod function %s", ah)
+
+	clientset, kns, err := getClientSet()
+	if err != nil {
+		log.Errorf("could not get client set")
+		log.Infof("adding pod ERROR %v", err)
+		return err
+	}
+
+	jobs := clientset.BatchV1().Jobs(kns)
+
+	var finishSeconds int32 = 60
+
+	size, _ := resource.ParseQuantity("10Mi")
+
+	userContainer := v1.Container{
+		ImagePullPolicy: v1.PullAlways,
+		Name:            "direktiv-container",
+		Image:           ir.Container.Image,
+		VolumeMounts: []v1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/direktiv-data",
+			},
+		},
+	}
+
+	if len(ir.Container.Cmd) > 0 {
+		// TODO command
+		// https://github.com/kballard/go-shellquote
+	}
+
+	annotations := make(map[string]string)
+	annotations["direktiv.io/action-id"] = ir.ActionID
+	annotations["direktiv.io/instance-id"] = ir.Workflow.InstanceID
+	annotations["direktiv.io/container-id"] = ir.Container.ID
+
+	jobSpec := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: fmt.Sprintf("%v-", ah),
+			Namespace:    kns,
+			Annotations:  annotations,
+		},
+		Spec: batchv1.JobSpec{
+			TTLSecondsAfterFinished: &finishSeconds,
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Volumes: []v1.Volume{
+						{
+							Name: "workdir",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									SizeLimit: &size,
+								},
+							},
+						},
+					},
+					InitContainers: []v1.Container{
+						{
+							ImagePullPolicy: v1.PullAlways,
+							Name:            "init-container",
+							Image:           "localhost:5000/init-pod",
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "workdir",
+									MountPath: "/direktiv-data",
+								},
+							},
+							Env: []v1.EnvVar{
+								{
+									Name:  "DIREKTIV_LIFECYCLE",
+									Value: "init",
+								},
+							},
+							Ports: []v1.ContainerPort{
+								{
+									ContainerPort: 8890,
+								},
+							},
+						},
+					},
+					Containers: []v1.Container{
+						{
+							ImagePullPolicy: v1.PullAlways,
+							Name:            "direktiv-sidecar",
+							Image:           "localhost:5000/init-pod",
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "workdir",
+									MountPath: "/direktiv-data",
+								},
+							},
+							Env: []v1.EnvVar{
+								{
+									Name:  "DIREKTIV_LIFECYCLE",
+									Value: "run",
+								},
+							},
+						},
+						userContainer,
+					},
+					RestartPolicy: v1.RestartPolicyNever,
+				},
+			},
+		},
+	}
+
+	j, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
+	if err != nil {
+		log.Errorf("failed to create job: %v", err)
+	}
+
+	log.Debugf("creating job %v", j.ObjectMeta.Name)
+
+	var ip string
+	for i := 0; i < 50; i++ {
+		podList, err := clientset.CoreV1().Pods(kns).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)})
+
+		if err != nil {
+			log.Errorf("can not get clientset for pods: %v", err)
+			continue
+		}
+
+		if len(podList.Items) == 0 {
+			log.Infof("waiting for pod: %s", j.ObjectMeta.Name)
+			continue
+		}
+
+		if len(podList.Items) > 1 {
+			log.Infof("more than one job with than name.")
+		}
+
+		pod := podList.Items[0]
+		ip = pod.Status.PodIP
+		if len(ip) > 0 {
+			break
+		}
+
+		log.Infof("waiting for pod ip: %s", j.ObjectMeta.Name)
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	log.Debugf("pod cluster ip: %v\n", ip)
+
+	// post data
+
+	return nil
+
+}
 
 func kubernetesListRegistriesNames(namespace string) ([]string, error) {
 

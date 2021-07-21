@@ -9,6 +9,7 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/fasthttp/router v1.3.10
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gogo/protobuf v1.3.2
@@ -22,6 +23,7 @@ require (
 	github.com/lib/pq v1.10.0
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.1
+	github.com/nxadm/tail v1.4.8
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/onsi/gomega v1.10.3 // indirect

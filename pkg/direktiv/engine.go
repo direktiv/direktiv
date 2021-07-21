@@ -304,14 +304,20 @@ type actionResultMessage struct {
 
 func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
 
-	// TODO: should this ctx be modified with a shorter deadline?
-
 	// generate hash name as "url"
 	actionHash, err := serviceToHash(ar)
 
 	if err != nil {
 		return NewInternalError(err)
 	}
+
+	go addPodFunction(ar, actionHash)
+
+	if true {
+		return nil
+	}
+
+	// TODO: should this ctx be modified with a shorter deadline?
 
 	go we.doHTTPRequest(ctx, actionHash, ar)
 
