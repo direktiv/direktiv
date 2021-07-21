@@ -311,21 +311,22 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
-	go func(ar *isolateRequest) {
-		ip, err := addPodFunction(ctx, actionHash, ar)
-		if err != nil {
-			we.reportError(ar, err)
-			return
-		}
-
-		// post data
-		we.doHTTPRequest(ctx, actionHash, ar, ip)
-
-	}(ar)
-
-	if true {
-		return nil
-	}
+	// pod request
+	// go func(ar *isolateRequest) {
+	// 	ip, err := addPodFunction(ctx, actionHash, ar)
+	// 	if err != nil {
+	// 		we.reportError(ar, err)
+	// 		return
+	// 	}
+	//
+	// 	// post data
+	// 	we.doHTTPRequest(ctx, actionHash, ar, ip)
+	//
+	// }(ar)
+	//
+	// if true {
+	// 	return nil
+	// }
 
 	// TODO: should this ctx be modified with a shorter deadline?
 

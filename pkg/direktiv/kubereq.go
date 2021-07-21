@@ -12,10 +12,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -105,8 +107,11 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 	}
 
 	if len(ar.Container.Cmd) > 0 {
-		// TODO command
-		// https://github.com/kballard/go-shellquote
+		args, err := shellwords.Parse(ar.Container.Cmd)
+		if err != nil {
+			return "", err
+		}
+		userContainer.Command = args
 	}
 
 	annotations := make(map[string]string)
@@ -455,6 +460,21 @@ func getKnativeFunction(svc string) error {
 	return nil
 }
 
+func cmdToCommand(s string) (string, error) {
+
+	args, err := shellwords.Parse(s)
+	if err != nil {
+		return "", err
+	}
+
+	argsQuote := []string{}
+	for _, a := range args {
+		argsQuote = append(argsQuote, strconv.Quote(a))
+	}
+
+	return strings.Join(argsQuote, ", "), nil
+}
+
 func addKnativeFunction(ir *isolateRequest) error {
 
 	log.Debugf("adding knative service")
@@ -498,10 +518,17 @@ func addKnativeFunction(ir *isolateRequest) error {
 		sstrings = append(sstrings, fmt.Sprintf("{ \"name\": \"%s\"}", s))
 	}
 
+	cmd, err := cmdToCommand(ir.Container.Cmd)
+	if err != nil {
+		return err
+	}
+
 	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%s", namespace, ah), ir.Container.Scale,
 		strings.Join(sstrings, ","),
-		ir.Container.Image, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
+		ir.Container.Image, cmd, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
 		kubeReq.sidecar)
+
+	fmt.Printf("%v\n", svc)
 
 	resp, err := sendKuberequest(http.MethodPost, u, bytes.NewBufferString(svc))
 	if err != nil {

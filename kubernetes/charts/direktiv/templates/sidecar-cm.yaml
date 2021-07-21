@@ -53,6 +53,7 @@ data:
               {
                 "image": "%s",
                 "name": "direktiv-container",
+                "command": [%s],
                 "env": [
                 {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
                 {
