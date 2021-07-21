@@ -55,6 +55,9 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 
 	log.Infof("adding pod function %s", ah)
 
+	// pullPolicy := v1.PullIfNotPresent
+	pullPolicy := v1.PullAlways
+
 	clientset, kns, err := getClientSet()
 	if err != nil {
 		log.Errorf("could not get client set: %v", err)
@@ -89,7 +92,7 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 	}
 
 	userContainer := v1.Container{
-		ImagePullPolicy: v1.PullAlways,
+		ImagePullPolicy: pullPolicy,
 		Name:            "direktiv-container",
 		Image:           ar.Container.Image,
 		VolumeMounts: []v1.VolumeMount{
@@ -133,7 +136,7 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 					},
 					InitContainers: []v1.Container{
 						{
-							ImagePullPolicy: v1.PullAlways,
+							ImagePullPolicy: pullPolicy,
 							Name:            "init-container",
 							Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
 							VolumeMounts: []v1.VolumeMount{
@@ -157,7 +160,7 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 					},
 					Containers: []v1.Container{
 						{
-							ImagePullPolicy: v1.PullAlways,
+							ImagePullPolicy: pullPolicy,
 							Name:            "direktiv-sidecar",
 							Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
 							VolumeMounts: []v1.VolumeMount{
