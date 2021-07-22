@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	entgo.io/ent v0.8.0
+	github.com/TwinProduction/go-away v1.1.4 // indirect
 	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5 // indirect
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/cloudevents/sdk-go v1.2.0
@@ -39,6 +40,7 @@ require (
 	github.com/vorteil/direktiv-apps v0.0.0-20210423031131-1bc5000144a1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
+	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
