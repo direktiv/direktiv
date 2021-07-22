@@ -20,6 +20,7 @@ type Config struct {
 		Bind string
 	}
 
+	BlockList string // path to where the blocklist for reserved words will be
 	Templates struct {
 		WorkflowTemplateDirectories []NamedDirectory
 		ActionTemplateDirectories   []NamedDirectory
@@ -130,6 +131,13 @@ func Configure() (*Config, error) {
 
 	return cfg, err
 
+}
+
+func (c *Config) hasBlockList() bool {
+	if c.BlockList == "" {
+		return false
+	}
+	return true
 }
 
 func (c *Config) hasWorkflowTemplateDefault() bool {
