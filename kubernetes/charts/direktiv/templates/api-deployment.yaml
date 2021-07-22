@@ -33,6 +33,12 @@ spec:
       - name: wf-templates
         configMap:
           name: api-wftemplates-cm
+      - name: api-blocklist
+        configMap:
+          name: api-blocklistnamespaces-cm
+          items:
+          - key: blocklist
+            path: blocklist
       - name: action-templates
         configMap:
           name: api-actiontemplates-cm
@@ -86,6 +92,9 @@ spec:
         - name: apiconf
           mountPath: "/config"
           readOnly: true
+        - name: api-blocklist
+          mountPath: /blocklist
+          subPath: "blocklist"
         - name: wf-templates
           mountPath: "/tmp/workflow-templates"
         - name: action-templates
