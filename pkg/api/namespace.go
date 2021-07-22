@@ -1,14 +1,17 @@
 package api
 
 import (
-	"io/ioutil"
-	"net/http"
-
+	"errors"
+	"fmt"
+	"github.com/TwinProduction/go-away"
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/gorilla/mux"
 	"github.com/rung/go-safecast"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +36,19 @@ func (h *Handler) addNamespace(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()
+
+	if goaway.IsProfane(n) {
+		ErrResponse(w, errors.New("no profanity allowed in namespace names"))
+		return
+	}
+
+	// check if namespace is valid
+	for _, blockWord := range h.s.blocklist {
+		if strings.ToLower(n) == blockWord {
+			ErrResponse(w, errors.New(fmt.Sprintf("namespace can not be a reserved word,  reserved words: %v", h.s.blocklist)))
+			return
+		}
+	}
 
 	resp, err := h.s.direktiv.AddNamespace(ctx, &ingress.AddNamespaceRequest{
 		Name: &n,
