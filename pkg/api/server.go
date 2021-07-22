@@ -43,19 +43,24 @@ type Server struct {
 func NewServer(cfg *Config) (*Server, error) {
 
 	r := mux.NewRouter()
-
-	// fetch blocklist
 	var bl []string
-	data, err := ioutil.ReadFile(blocklist)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(data, &bl)
-	if err != nil {
-		return nil, err
-	}
 
-	log.Infof("blocklist %s", data)
+	log.Infof("check for a blocklist")
+
+	if cfg.hasBlockList() {
+		log.Infof("contains a blocklist")
+		// fetch blocklist
+		data, err := ioutil.ReadFile(cfg.BlockList)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(data, &bl)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Infof("blocklist %s", data)
+	}
 
 	s := &Server{
 		cfg:    cfg,
@@ -76,7 +81,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		s: s,
 	}
 
-	err = s.initDirektiv()
+	err := s.initDirektiv()
 	if err != nil {
 		return nil, err
 	}
