@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  blocklist: |-
+    ["grafana", "tempo", "loki", "auth", "jaegar"]
+kind: ConfigMap
+metadata:
+  name: api-blocklistnamespaces-cm
