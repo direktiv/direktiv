@@ -833,6 +833,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
+			cancelJob(context.Background(), child.Id)
 			syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
 		case "subflow":
 			go func(id string) {
