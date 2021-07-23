@@ -164,6 +164,7 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 			TTLSecondsAfterFinished: &finishSeconds,
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
+					ServiceAccountName: "direktiv-sidecar",
 					Volumes: []v1.Volume{
 						{
 							Name: "workdir",
