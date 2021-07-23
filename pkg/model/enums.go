@@ -377,11 +377,11 @@ type FunctionType int
 
 const (
 	DefaultFunctionType FunctionType = iota
-	IsolatedContainerFunctionType
 	ReusableContainerFunctionType
+	IsolatedContainerFunctionType
 )
 
-var FunctionTypeStrings = []string{"default", "isolated", "reusable"}
+var FunctionTypeStrings = []string{"default", "reusable", "isolated"}
 
 func (a FunctionType) String() string {
 	return FunctionTypeStrings[a]

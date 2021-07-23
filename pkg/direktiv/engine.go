@@ -314,8 +314,6 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 
 	switch ar.Container.Type {
-	case model.DefaultFunctionType:
-		fallthrough
 	case model.IsolatedContainerFunctionType:
 		go func(ar *isolateRequest) {
 			ip, err := addPodFunction(ctx, actionHash, ar)
@@ -332,6 +330,8 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		if true {
 			return nil
 		}
+	case model.DefaultFunctionType:
+		fallthrough
 	case model.ReusableContainerFunctionType:
 		go we.doKnativeHTTPRequest(ctx, actionHash, ar)
 	}
