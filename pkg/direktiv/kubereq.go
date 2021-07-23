@@ -119,6 +119,41 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 	annotations["direktiv.io/instance-id"] = ar.Workflow.InstanceID
 	annotations["direktiv.io/container-id"] = ar.Container.ID
 
+	commonJobVars := []v1.EnvVar{
+		{
+			Name:  "DIREKTIV_NAMESPACE",
+			Value: ar.Workflow.Namespace,
+		},
+		{
+			Name:  "DIREKTIV_ACTIONID",
+			Value: ar.ActionID,
+		},
+		{
+			Name:  "DIREKTIV_INSTANCEID",
+			Value: ar.Workflow.InstanceID,
+		},
+		{
+			Name:  "DIREKTIV_STEP",
+			Value: fmt.Sprintf("%d", int64(ar.Workflow.Step)),
+		},
+		{
+			Name:  "DIREKTIV_FLOW_ENDPOINT",
+			Value: os.Getenv("DIREKTIV_FLOW_ENDPOINT"),
+		},
+	}
+
+	initJobVars := append(commonJobVars, v1.EnvVar{
+		Name:  "DIREKTIV_LIFECYCLE",
+		Value: "init",
+	})
+
+	sidecarJobVars := append(commonJobVars, v1.EnvVar{
+		Name:  "DIREKTIV_LIFECYCLE",
+		Value: "run",
+	})
+
+	// req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
+
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: fmt.Sprintf("%v-", ah),
@@ -150,12 +185,7 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 									MountPath: "/direktiv-data",
 								},
 							},
-							Env: []v1.EnvVar{
-								{
-									Name:  "DIREKTIV_LIFECYCLE",
-									Value: "init",
-								},
-							},
+							Env: initJobVars,
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: 8890,
@@ -174,16 +204,7 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 									MountPath: "/direktiv-data",
 								},
 							},
-							Env: []v1.EnvVar{
-								{
-									Name:  "DIREKTIV_LIFECYCLE",
-									Value: "run",
-								},
-								{
-									Name:  "DIREKTIV_FLOW_ENDPOINT",
-									Value: os.Getenv("DIREKTIV_FLOW_ENDPOINT"),
-								},
-							},
+							Env: sidecarJobVars,
 						},
 						userContainer,
 					},
@@ -405,6 +426,7 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 		ir.Workflow.Name = wf.Name
 		ir.Workflow.ID = wf.ID
 
+		ir.Container.Type = f.Type
 		ir.Container.Image = f.Image
 		ir.Container.Cmd = f.Cmd
 		ir.Container.Size = f.Size

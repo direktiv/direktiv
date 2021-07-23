@@ -118,6 +118,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 		ar.Workflow.ID = instance.wf.ID
 
 		// TODO: timeout
+		ar.Container.Type = fn.Type
 		ar.Container.Data = inputData
 		ar.Container.Image = fn.Image
 		ar.Container.Cmd = fn.Cmd

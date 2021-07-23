@@ -44,6 +44,7 @@ type isolateRequest struct {
 }
 
 type isolateContainer struct {
+	Type       model.FunctionType
 	ID         string
 	Image, Cmd string
 	Data       []byte

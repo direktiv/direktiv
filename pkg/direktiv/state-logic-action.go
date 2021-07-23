@@ -191,6 +191,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		ar.Workflow.Timeout = wfto
 
 		// TODO: timeout
+		ar.Container.Type = fn.Type
 		ar.Container.Data = inputData
 		ar.Container.Image = fn.Image
 		ar.Container.Cmd = fn.Cmd

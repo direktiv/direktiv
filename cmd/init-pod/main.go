@@ -48,6 +48,11 @@ func initialize() error {
 
 	step = int32(x)
 
+	log.Printf("DIREKTIV_ACTIONID: %s", actionId)
+	log.Printf("DIREKTIV_INSTANCEID: %s", instanceId)
+	log.Printf("DIREKTIV_NAMESPACE: %s", namespace)
+	log.Printf("DIREKTIV_STEP: %v", step)
+
 	// "Direktiv-Deadline"
 
 	err = initFlow()
