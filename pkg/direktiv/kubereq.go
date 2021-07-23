@@ -53,6 +53,10 @@ type kubeRequest struct {
 
 var kubeReq = kubeRequest{}
 
+func cancelJob(ctx context.Context, actionId string) {
+
+}
+
 func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string, error) {
 
 	log.Infof("adding pod function %s", ah)
