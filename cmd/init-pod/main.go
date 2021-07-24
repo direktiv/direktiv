@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
+	_ "github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
 )
 

@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"google.golang.org/grpc/resolver"
 )
 
 // Server ..
@@ -190,9 +189,4 @@ func (s *Server) Start() error {
 	}
 
 	return s.srv.ListenAndServe()
-}
-
-func init() {
-	// resolver.Register(&direktiv.KubeResolverBuilder{})
-	resolver.Register(direktiv.NewBuilder())
 }
