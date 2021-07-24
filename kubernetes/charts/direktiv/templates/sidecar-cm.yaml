@@ -35,7 +35,6 @@ data:
             {{- if .Values.gcp.gvisor }}
             "runtimeClassName": "gvisor",
             {{- end }}
-            "serviceAccountName": "{{ include "direktiv.serviceAccountName" . }}-sidecar",
             "containers": [
             {{- if .Values.gcp.useSqlProxy }}
              {
