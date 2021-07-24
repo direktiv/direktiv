@@ -190,6 +190,8 @@ type dnsResolver struct {
 	// has data race with replaceNetFunc (WRITE the lookup function pointers).
 	wg                   sync.WaitGroup
 	disableServiceConfig bool
+
+	addrsCount int
 }
 
 // ResolveNow invoke an immediate resolution of the target that this dnsResolver watches.
@@ -207,22 +209,25 @@ func (d *dnsResolver) Close() {
 }
 
 func (d *dnsResolver) watcher() {
-	fmt.Println("WATCHER!!!!")
+
 	defer d.wg.Done()
 	backoffIndex := 1
 	for {
 		state, err := d.lookup()
 		if err != nil {
-			fmt.Printf("ERR!!!! %v\n", err)
-			// Report error to the underlying grpc.ClientConn.
 			d.cc.ReportError(err)
 		} else {
 			d.cc.UpdateState(*state)
 		}
 
 		var timer *time.Timer
+
+		timeout := 60
+		if d.addrsCount == 0 {
+			timeout = 10
+		}
+
 		if err == nil {
-			fmt.Println("GOESINHERE")
 			// Success resolving, wait for the next ResolveNow. However, also wait 30 seconds at the very least
 			// to prevent constantly re-resolving.
 			backoffIndex = 1
@@ -234,21 +239,21 @@ func (d *dnsResolver) watcher() {
 			case <-d.rn:
 				// we round robin from the client. as soon as new pods are available we want to use them
 				// this forces an update at least every 60 secs
-			case <-time.After(60 * time.Second):
+			case <-time.After(time.Duration(timeout) * time.Second):
 			}
 		} else {
 			// Poll on an error found in DNS Resolver or an error received from ClientConn.
 			// timer = newTimer(backoff.DefaultExponential.Backoff(backoffIndex))
 			backoffIndex++
 		}
-		fmt.Printf("TIMER %+v\n", timer)
+
 		select {
 		case <-d.ctx.Done():
 			timer.Stop()
 			return
 		case <-timer.C:
 		}
-		fmt.Println("NEWRUN")
+
 	}
 }
 
@@ -353,9 +358,7 @@ func (d *dnsResolver) lookup() (*resolver.State, error) {
 		return nil, hostErr
 	}
 
-	fmt.Printf("!!!!ADDRS %v\n", addrs)
-	fmt.Printf("!!!!ADDRS %v\n", srv)
-
+	d.addrsCount = len(addrs)
 	state := resolver.State{Addresses: addrs}
 	if len(srv) > 0 {
 		state = grpclbstate.Set(state, &grpclbstate.State{BalancerAddresses: srv})
