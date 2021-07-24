@@ -10,7 +10,7 @@ data:
     {{ end }}
 
     [ingress]
-      endpoint = "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
+      endpoint = "dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666"
       {{- if ne .Values.ingress.certificate "none" }}
       tls = false
       {{- else }}

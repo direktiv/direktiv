@@ -194,4 +194,5 @@ func (s *Server) Start() error {
 
 func init() {
 	resolver.Register(&direktiv.KubeResolverBuilder{})
+	resolver.Register(direktiv.NewBuilder())
 }

@@ -8,6 +8,7 @@ require (
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
+	github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad
 	github.com/fasthttp/router v1.3.10
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-playground/universal-translator v0.17.0 // indirect

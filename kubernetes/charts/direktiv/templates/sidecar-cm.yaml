@@ -120,7 +120,7 @@ data:
                   },
                   {
                     "name": "DIREKTIV_FLOW_ENDPOINT",
-                    "value": "direktiv-kube:///{{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}:7777"
+                    "value": "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
                   }
                 ],
                 "ports": [

@@ -235,4 +235,5 @@ func (s *WorkflowServer) Run() error {
 
 func init() {
 	resolver.Register(&KubeResolverBuilder{})
+	resolver.Register(NewBuilder())
 }

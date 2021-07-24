@@ -75,7 +75,7 @@ docker-cli: build
 .PHONY: docker-init-pod
 docker-init-pod:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/init-pod/init-pod cmd/init-pod/*.go
-	docker build -t init-pod  ${mkfile_dir_main}/build/docker/init-pod/
+	docker build -t direktiv-init-pod ${mkfile_dir_main}/build/docker/init-pod/
 
 .PHONY: docker-sidecar
 docker-sidecar:
