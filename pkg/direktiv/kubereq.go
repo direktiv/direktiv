@@ -36,6 +36,14 @@ const (
 	annotationNamespace = "direktiv.io/namespace"
 	annotationURL       = "direktiv.io/url"
 	annotationURLHash   = "direktiv.io/urlhash"
+
+	httpsProxy = "HTTPS_PROXY"
+	httpProxy  = "HTTP_PROXY"
+	noProxy    = "NO_PROXY"
+
+	pullPolicy      = v1.PullAlways
+	cleanupInterval = 60
+	dbLockID        = 123456
 )
 
 const (
@@ -51,18 +59,175 @@ type kubeRequest struct {
 	mtx       sync.Mutex
 }
 
-var kubeReq = kubeRequest{}
+var (
+	gracePeriod int64 = 10
+	kubeReq           = kubeRequest{}
+)
 
-func cancelJob(ctx context.Context, actionId string) {
+func deleteJob(name string) error {
+
+	clientset, kns, err := getClientSet()
+	if err != nil {
+		return err
+	}
+
+	jobs := clientset.BatchV1().Jobs(kns)
+
+	fg := metav1.DeletePropagationBackground
+	opts := metav1.DeleteOptions{
+		PropagationPolicy:  &fg,
+		GracePeriodSeconds: &gracePeriod,
+	}
+	log.Debugf("deleting job with name %v", name)
+
+	return jobs.Delete(context.Background(), name, opts)
+
+}
+
+// TTL is beta so e.g. GKE doesn't have it anabled in 1.20 clusters
+// it is configurable to turn it off
+func completedJobsCleaner(db *dbManager) error {
+
+	log.Infof("starting pod cleaner")
+
+	clientset, kns, err := getClientSet()
+	if err != nil {
+		log.Errorf("could not get client set: %v", err)
+		return err
+	}
+
+	jobs := clientset.BatchV1().Jobs(kns)
+
+	for {
+		time.Sleep(cleanupInterval * time.Second)
+
+		lock, conn, err := db.tryLockDB(dbLockID)
+		if err != nil {
+			continue
+		}
+
+		if lock {
+
+			l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
+			if err != nil {
+				log.Errorf("can not list jobs: %v", err)
+				db.unlockDB(dbLockID, conn)
+				continue
+			}
+
+			for i := range l.Items {
+				j := l.Items[i]
+
+				// we clean up after 1 minute
+				// if nothing is runing and at least one succeeded or failed:
+				if j.Status.Active == 0 && (j.Status.Succeeded > 0 || j.Status.Failed > 0) &&
+					time.Now().After(j.Status.CompletionTime.Add(1*time.Minute)) {
+
+					err := deleteJob(j.ObjectMeta.Name)
+					if err != nil {
+						log.Errorf("could not delete job: %v", err)
+					}
+
+				}
+			}
+
+			db.unlockDB(dbLockID, conn)
+		}
+
+	}
+
+}
+
+func cancelJob(ctx context.Context, actionID string) {
+
+	clientset, kns, err := getClientSet()
+	if err != nil {
+		log.Errorf("could not get client set: %v", err)
+	}
+
+	jobs := clientset.BatchV1().Jobs(kns)
+	opts := metav1.ListOptions{LabelSelector: fmt.Sprintf("direktiv.io/action-id=%s", actionID)}
+	jl, err := jobs.List(context.Background(), opts)
+	if err != nil {
+		log.Errorf("could not list jobs: %v", err)
+	}
+
+	if len(jl.Items) > 0 {
+		for i := range jl.Items {
+			j := jl.Items[i]
+
+			err := deleteJob(j.ObjectMeta.Name)
+			if err != nil {
+				log.Errorf("could not delete job: %v", err)
+			}
+
+		}
+
+	}
+
+}
+
+func createResourceLimits(size int) v1.ResourceList {
+
+	cpu, mem := containerSizeCalc(size)
+	rl := make(v1.ResourceList)
+	c, _ := resource.ParseQuantity(fmt.Sprintf("%v", cpu))
+	rl[v1.ResourceCPU] = c
+	c, _ = resource.ParseQuantity(fmt.Sprintf("%vMiB", mem))
+	rl[v1.ResourceMemory] = c
+
+	return rl
+
+}
+
+func createUserContainer(size int, image, cmd string) (v1.Container, error) {
+
+	proxyEnvs := []v1.EnvVar{}
+
+	if len(os.Getenv(httpProxy)) > 0 || len(os.Getenv(httpsProxy)) > 0 {
+
+		proxyEnvs = []v1.EnvVar{}
+		for _, e := range []string{httpProxy, httpsProxy, noProxy} {
+			proxyEnvs = append(proxyEnvs, v1.EnvVar{
+				Name:  e,
+				Value: os.Getenv(e),
+			})
+		}
+
+	}
+
+	// Resources ResourceRequirements
+	userContainer := v1.Container{
+		ImagePullPolicy: pullPolicy,
+		Resources: v1.ResourceRequirements{
+			Limits: createResourceLimits(size),
+		},
+		Name:  "direktiv-container",
+		Image: image,
+		VolumeMounts: []v1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/direktiv-data",
+			},
+		},
+		Env: proxyEnvs,
+	}
+
+	if len(cmd) > 0 {
+		args, err := shellwords.Parse(cmd)
+		if err != nil {
+			return userContainer, err
+		}
+		userContainer.Command = args
+	}
+
+	return userContainer, nil
 
 }
 
 func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string, error) {
 
 	log.Infof("adding pod function %s", ah)
-
-	// pullPolicy := v1.PullIfNotPresent
-	pullPolicy := v1.PullAlways
 
 	clientset, kns, err := getClientSet()
 	if err != nil {
@@ -73,55 +238,18 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 	jobs := clientset.BatchV1().Jobs(kns)
 
 	var finishSeconds int32 = 60
-
 	size, _ := resource.ParseQuantity("10Mi")
 
-	proxyEnvs := []v1.EnvVar{}
-
-	if len(os.Getenv("HTTP_PROXY")) > 0 || len(os.Getenv("HTTPS_PROXY")) > 0 {
-
-		proxyEnvs = []v1.EnvVar{
-			{
-				Name:  "HTTP_PROXY",
-				Value: os.Getenv("HTTP_PROXY"),
-			},
-			{
-				Name:  "HTTPS_PROXY",
-				Value: os.Getenv("HTTPS_PROXY"),
-			},
-			{
-				Name:  "NO_PROXY",
-				Value: os.Getenv("NO_PROXY"),
-			},
-		}
-
+	userContainer, err := createUserContainer(int(ar.Container.Size),
+		ar.Container.Image, ar.Container.Cmd)
+	if err != nil {
+		log.Errorf("can not create user container: %v", err)
+		return "", err
 	}
 
-	userContainer := v1.Container{
-		ImagePullPolicy: pullPolicy,
-		Name:            "direktiv-container",
-		Image:           ar.Container.Image,
-		VolumeMounts: []v1.VolumeMount{
-			{
-				Name:      "workdir",
-				MountPath: "/direktiv-data",
-			},
-		},
-		Env: proxyEnvs,
-	}
-
-	if len(ar.Container.Cmd) > 0 {
-		args, err := shellwords.Parse(ar.Container.Cmd)
-		if err != nil {
-			return "", err
-		}
-		userContainer.Command = args
-	}
-
-	annotations := make(map[string]string)
-	annotations["direktiv.io/action-id"] = ar.ActionID
-	annotations["direktiv.io/instance-id"] = ar.Workflow.InstanceID
-	annotations["direktiv.io/container-id"] = ar.Container.ID
+	labels := make(map[string]string)
+	labels["direktiv.io/action-id"] = ar.ActionID
+	labels["direktiv.io/job"] = "true"
 
 	commonJobVars := []v1.EnvVar{
 		{
@@ -156,19 +284,33 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 		Value: "run",
 	})
 
-	// req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
+	// generate pull secrets
+	secrets, err := kubernetesListRegistriesNames(ar.Workflow.Namespace)
+	if err != nil {
+		return "", err
+	}
+
+	var lo []v1.LocalObjectReference
+	for _, s := range secrets {
+		lo = append(lo, v1.LocalObjectReference{
+			Name: s,
+		})
+	}
 
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: fmt.Sprintf("%v-", ah),
 			Namespace:    kns,
-			Annotations:  annotations,
+			Labels:       labels,
 		},
 		Spec: batchv1.JobSpec{
 			TTLSecondsAfterFinished: &finishSeconds,
 			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
 				Spec: v1.PodSpec{
-					// ServiceAccountName: "direktiv-sidecar",
+					ImagePullSecrets: lo,
 					Volumes: []v1.Volume{
 						{
 							Name: "workdir",
@@ -229,7 +371,8 @@ func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string,
 
 	var ip string
 	for i := 0; i < 50; i++ {
-		podList, err := clientset.CoreV1().Pods(kns).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)})
+		podList, err := clientset.CoreV1().Pods(kns).List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)})
 
 		if err != nil {
 			log.Errorf("can not get clientset for pods: %v", err)
@@ -502,6 +645,28 @@ func cmdToCommand(s string) (string, error) {
 	return strings.Join(argsQuote, ", "), nil
 }
 
+func containerSizeCalc(size int) (float64, int) {
+	var (
+		cpu float64
+		mem int
+	)
+
+	switch size {
+	case 1:
+		cpu = 1
+		mem = 512
+	case 2:
+		cpu = 2
+		mem = 1024
+	default:
+		cpu = 0.5
+		mem = 256
+	}
+
+	return cpu, mem
+
+}
+
 func addKnativeFunction(ir *isolateRequest) error {
 
 	log.Debugf("adding knative service")
@@ -515,22 +680,7 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 	log.Debugf("adding knative service hash %v", ah)
 
-	var (
-		cpu float64
-		mem int
-	)
-
-	switch ir.Container.Size {
-	case 1:
-		cpu = 1
-		mem = 512
-	case 2:
-		cpu = 2
-		mem = 1024
-	default:
-		cpu = 0.5
-		mem = 256
-	}
+	cpu, mem := containerSizeCalc(int(ir.Container.Size))
 
 	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
 

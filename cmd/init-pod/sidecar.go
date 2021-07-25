@@ -8,6 +8,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	tailfile "github.com/nxadm/tail"
+	_ "github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
 )
 

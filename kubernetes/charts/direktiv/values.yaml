@@ -143,3 +143,6 @@ gcp:
   useSqlProxy: false
   db_instance: ""
   ip_private: false
+
+isolates:
+  podCleaner: true
