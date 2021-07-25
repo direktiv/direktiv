@@ -126,6 +126,12 @@ spec:
             value: {{ .Release.Namespace }}
           - name: DIREKTIV_SECRETS_ENDPOINT
             value:  "localhost:2610"
+          - name: DIREKTIV_ISOLATE_PODCLEAN
+            {{- if .Values.isolates.podCleaner }}
+            value: "1"
+            {{- else }}
+            value: "0"
+            {{- end }}
         - name: secrets
           securityContext:
             readOnlyRootFilesystem: true
