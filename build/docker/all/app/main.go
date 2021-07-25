@@ -249,7 +249,9 @@ func patch(kc string) {
 func startingK3s() error {
 
 	log.Println("starting k3s now")
-	cmd := exec.Command("k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0", "--disable", "traefik", "--write-kubeconfig-mode=644")
+	cmd := exec.Command("k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
+		"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
+		"feature-gates=TTLAfterFinished=true")
 
 	// passing env in for http_prox values
 	cmd.Env = os.Environ()

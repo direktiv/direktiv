@@ -212,6 +212,11 @@ func (s *WorkflowServer) Kill() {
 // Run starts all components of direktiv
 func (s *WorkflowServer) Run() error {
 
+	// start the jobs complete cleaner if enabled
+	if s.config.Isolates.CleanupPods == 1 {
+		go completedJobsCleaner(s.dbManager)
+	}
+
 	log.Debugf("subscribing to sync queue")
 	err := s.startDatabaseListener()
 	if err != nil {

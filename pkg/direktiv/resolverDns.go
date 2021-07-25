@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ * modified DNS resolver for direktiv
  */
-
-// modified DNS resolver for direktiv
 package direktiv
 
 import (
@@ -32,6 +31,7 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	grpclbstate "google.golang.org/grpc/balancer/grpclb/state"
 	"google.golang.org/grpc/grpclog"
 
@@ -224,6 +224,7 @@ func (d *dnsResolver) watcher() {
 
 		timeout := 60
 		if d.addrsCount == 0 {
+			log.Infof("%d: servers, timeout %d", d.addrsCount, timeout)
 			timeout = 10
 		}
 
@@ -248,6 +249,7 @@ func (d *dnsResolver) watcher() {
 		}
 
 		select {
+		case <-time.After(time.Duration(timeout) * time.Second):
 		case <-d.ctx.Done():
 			timer.Stop()
 			return
