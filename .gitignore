@@ -44,7 +44,9 @@
 !*build/docker/ui
 !*build/docker/sidecar
 !*build/docker/api
+!*build/docker/init-pod
 /build/docker/sidecar/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
+*build/docker/init-pod/init-pod
 deploy*.yaml
