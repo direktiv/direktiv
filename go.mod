@@ -10,6 +10,7 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/fasthttp/router v1.3.10
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gogo/protobuf v1.3.2

@@ -180,7 +180,8 @@ func (we *workflowEngine) checkTimeoutInstances() {
 				err = we.retryWakeup(data)
 				if err != nil {
 					log.Errorf("can not kickstart workflow: %v", err)
-					we.hardCancelInstance(i.InstanceID, "direktiv.cancels.kickstart", "cancelled by failed kickstart")
+					/* #nosec */
+					_ = we.hardCancelInstance(i.InstanceID, "direktiv.cancels.kickstart", "cancelled by failed kickstart")
 				}
 			}
 		}
@@ -270,7 +271,8 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 
 	wakedata, err := json.Marshal(events)
 	if err != nil {
-		wli.Close()
+		/* #nosec */
+		_ = wli.Close()
 		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
 		log.Error(err)
 		return err
@@ -278,7 +280,8 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 
 	savedata, err := InstanceMemory(wli.rec)
 	if err != nil {
-		wli.Close()
+		/* #nosec */
+		_ = wli.Close()
 		return err
 	}
 
@@ -684,7 +687,8 @@ func (we *workflowEngine) scheduleRetry(id, state string, step int, t time.Time,
 	if d := t.Sub(time.Now()); d < time.Second*5 {
 		go func() {
 			time.Sleep(d)
-			we.retryWakeup(data)
+			/* #nosec */
+			_ = we.retryWakeup(data)
 		}()
 		return nil
 	}
@@ -834,10 +838,12 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 		switch child.Type {
 		case "isolate":
 			cancelJob(context.Background(), child.Id)
-			syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
+			/* #nosec */
+			_ = syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
 		case "subflow":
 			go func(id string) {
-				we.hardCancelInstance(id, "direktiv.cancels.parent", "cancelled by parent workflow")
+				/* #nosec */
+				_ = we.hardCancelInstance(id, "direktiv.cancels.parent", "cancelled by parent workflow")
 			}(child.Id)
 		default:
 			log.Errorf("unrecognized child type: %s", child.Type)
@@ -1021,7 +1027,8 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		log.Error(err)
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
-		wli.Close()
+		/* #nosec */
+		_ = wli.Close()
 		return
 	}
 
@@ -1048,7 +1055,8 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 	wli.engine.freeResources(rec)
 	wli.wakeCaller(ctx, data)
-	wli.Close()
+	/* #nosec */
+	_ = wli.Close()
 
 }
 
@@ -1284,7 +1292,8 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 
 	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, wli.wf.Exclusive, nil)
 	if err != nil {
-		wli.Close()
+		/* #nosec */
+		_ = wli.Close()
 		return nil, NewInternalError(err)
 	}
 
@@ -1443,7 +1452,8 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 
 	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, wli.wf.Exclusive, callerData)
 	if err != nil {
-		wli.Close()
+		/* #nosec */
+		_ = wli.Close()
 		return "", NewInternalError(err)
 	}
 

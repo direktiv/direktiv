@@ -78,7 +78,11 @@ func runAsInit() {
 		}
 
 		w.WriteHeader(200)
-		w.Write([]byte("ok"))
+		_, err = w.Write([]byte("ok"))
+		if err != nil {
+			log.Printf("Error: %v.", err)
+			return
+		}
 
 	})
 

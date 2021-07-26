@@ -42,11 +42,14 @@ func initialize() error {
 	actionId = os.Getenv("DIREKTIV_ACTIONID")
 	instanceId = os.Getenv("DIREKTIV_INSTANCEID")
 	namespace = os.Getenv("DIREKTIV_NAMESPACE")
+
+	/* #nosec */
 	x, err := strconv.Atoi(os.Getenv("DIREKTIV_STEP"))
 	if err != nil {
 		return err
 	}
 
+	/* #nosec */
 	step = int32(x)
 
 	log.Printf("DIREKTIV_ACTIONID: %s", actionId)
