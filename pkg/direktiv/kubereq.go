@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -63,6 +64,117 @@ var (
 	gracePeriod int64 = 10
 	kubeReq           = kubeRequest{}
 )
+
+var (
+	kubeCounter          = 0
+	kubeCounterDelta     = 0
+	kubeCounterTimestamp time.Time
+	kubeLockQueue        chan *kubeLockRequest
+)
+
+type kubeLockRequest struct {
+	ch chan bool
+}
+
+func initKubeLock() {
+	kubeLockQueue = make(chan *kubeLockRequest, 1024)
+	pollKubeLock()
+	go runKubeLock()
+}
+
+func pollKubeLock() {
+
+	for {
+		clientset, kns, err := getClientSet()
+		if err != nil {
+			log.Errorf("could not get client set: %v", err)
+			time.Sleep(time.Second)
+			continue
+		}
+
+		jobs := clientset.BatchV1().Jobs(kns)
+
+		l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
+		if err != nil {
+			log.Errorf("can not list jobs: %v", err)
+			time.Sleep(time.Second)
+			continue
+		}
+
+		kubeCounterTimestamp = time.Now()
+		kubeCounter = len(l.Items)
+		kubeCounterDelta = 0
+
+		log.Infof("kubelock polling discovered %v pods", kubeCounter)
+
+		return
+	}
+
+}
+
+func runKubeLock() {
+
+	for {
+		min := kubeCounterTimestamp.Add(time.Second)
+		max := kubeCounterTimestamp.Add(time.Minute)
+		if kubeCounter > 100 || kubeCounterDelta > 10 {
+			t := time.Now()
+			if !t.After(min) {
+				<-time.After(min.Sub(time.Now()))
+			}
+			pollKubeLock()
+			continue
+		}
+
+		select {
+		case r := <-kubeLockQueue:
+			kubeCounter++
+			kubeCounterDelta++
+			close(r.ch)
+		case <-time.After(max.Sub(time.Now())):
+			pollKubeLock()
+		}
+	}
+
+}
+
+func enqueueKubeLock(ch chan bool) {
+	kubeLockQueue <- &kubeLockRequest{
+		ch: ch,
+	}
+}
+
+func queueForKubeLock() (<-chan bool, error) {
+	ch := make(chan bool)
+	select {
+	case kubeLockQueue <- &kubeLockRequest{
+		ch: ch,
+	}:
+		return ch, nil
+	default:
+		close(ch)
+		return nil, errors.New("kube lock overload")
+	}
+
+}
+
+func getKubeLock(ctx context.Context) error {
+
+	ch, err := queueForKubeLock()
+	if err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ch:
+			return nil
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
+}
 
 func deleteJob(name string) error {
 
@@ -226,6 +338,11 @@ func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 }
 
 func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string, error) {
+
+	err := getKubeLock(ctx)
+	if err != nil {
+		return "", err
+	}
 
 	log.Infof("adding pod function %s", ah)
 
