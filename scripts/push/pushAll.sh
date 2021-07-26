@@ -7,3 +7,4 @@ source $dir/pushFlow.sh
 source $dir/pushSecrets.sh
 source $dir/pushSidecar.sh
 source $dir/pushUI.sh
+source $dir/pushInitPod.sh

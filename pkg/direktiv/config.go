@@ -33,6 +33,8 @@ const (
 
 	// instance logging
 	instanceLoggingDriver = "DIREKTIV_INSTANCE_LOGGING_DRIVER"
+
+	isolatePodClean = "DIREKTIV_ISOLATE_PODCLEAN"
 )
 
 // Config is the configuration for workflow and runner server
@@ -61,6 +63,10 @@ type Config struct {
 	VariablesStorage struct {
 		Driver string
 	}
+
+	Isolates struct {
+		CleanupPods int
+	} `toml:"isolates"`
 }
 
 func setIP(config *Config, env string, value *net.IP) error {
@@ -123,6 +129,8 @@ func ReadConfig(file string) (*Config, error) {
 	c.IngressAPI.Bind = fmt.Sprintf("%s:6666", localIP)
 	c.IngressAPI.Endpoint = c.IngressAPI.Bind
 
+	c.Isolates.CleanupPods = 1
+
 	// read config file if exists
 	if len(file) > 0 {
 
@@ -145,7 +153,9 @@ func ReadConfig(file string) (*Config, error) {
 	ints := []struct {
 		name  string
 		value *int
-	}{}
+	}{
+		{isolatePodClean, &c.Isolates.CleanupPods},
+	}
 
 	for _, i := range ints {
 		err := setInt(c, i.name, i.value)

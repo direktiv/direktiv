@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/resolver"
 )
 
 const (
@@ -24,6 +25,10 @@ const (
 	// TLSCA cert CA
 	TLSCA = "/etc/certs/direktiv/ca.crt"
 )
+
+func init() {
+	resolver.Register(NewBuilder())
+}
 
 var globalGRPCDialOptions []grpc.DialOption
 

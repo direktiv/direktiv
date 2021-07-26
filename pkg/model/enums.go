@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // -------------- Branch Modes --------------
@@ -360,6 +361,86 @@ func (a *StartType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	x, err := ParseStartType(s)
+	if err != nil {
+		return err
+	}
+
+	*a = x
+
+	return nil
+
+}
+
+// -------- Function Types -----------
+
+type FunctionType int
+
+const (
+	DefaultFunctionType FunctionType = iota
+	ReusableContainerFunctionType
+	IsolatedContainerFunctionType
+)
+
+var FunctionTypeStrings = []string{"default", "reusable", "isolated"}
+
+func (a FunctionType) String() string {
+	return FunctionTypeStrings[a]
+}
+
+func ParseFunctionType(s string) (FunctionType, error) {
+
+	if s == "" {
+		return FunctionType(0), nil
+	}
+
+	for i := range FunctionTypeStrings {
+		if FunctionTypeStrings[i] == s {
+			return FunctionType(i), nil
+		}
+	}
+
+	return FunctionType(0), fmt.Errorf("unrecognized function type (should be one of [%s]): %s", strings.Join(FunctionTypeStrings, ", "), s)
+
+}
+
+func (a FunctionType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.String())
+}
+
+func (a *FunctionType) UnmarshalJSON(data []byte) error {
+
+	var s string
+
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	x, err := ParseFunctionType(s)
+	if err != nil {
+		return err
+	}
+
+	*a = x
+
+	return nil
+
+}
+
+func (a FunctionType) MarshalYAML() (interface{}, error) {
+	return a.String(), nil
+}
+
+func (a *FunctionType) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var s string
+
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+
+	x, err := ParseFunctionType(s)
 	if err != nil {
 		return err
 	}

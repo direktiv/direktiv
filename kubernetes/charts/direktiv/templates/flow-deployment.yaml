@@ -94,14 +94,24 @@ spec:
             value: {{ .Values.logDriver }}
           - name: DIREKTIV_FLOW_SIDECAR
             value: {{ .Values.flow.sidecar }}
+          - name: DIREKTIV_FLOW_INITPOD
+            value: {{ .Values.flow.initPod }}
           - name: DIREKTIV_INGRESS_BIND
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
           - name: "DIREKTIV_FLOW_ENDPOINT"
-            value: "direktiv-kube:///{{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}:7777"
+            value: "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
           - name: "DIREKTIV_INGRESS_ENDPOINT"
-            value: "direktiv-kube:///{{ include "direktiv.fullname" . }}-ingress.{{ .Release.Namespace }}:6666"
+            value: "dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666"
+          {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+          - name: "HTTP_PROXY"
+            value: "{{ .Values.http_proxy }}"
+          - name: "HTTPS_PROXY"
+            value: "{{ .Values.https_proxy }}"
+          - name: "NO_PROXY"
+            value: "{{ .Values.no_proxy }}"
+          {{- end }}
           - name: DIREKTIV_FLOW_EXCHANGE
             valueFrom:
               secretKeyRef:
@@ -116,6 +126,12 @@ spec:
             value: {{ .Release.Namespace }}
           - name: DIREKTIV_SECRETS_ENDPOINT
             value:  "localhost:2610"
+          - name: DIREKTIV_ISOLATE_PODCLEAN
+            {{- if .Values.isolates.podCleaner }}
+            value: "1"
+            {{- else }}
+            value: "0"
+            {{- end }}
         - name: secrets
           securityContext:
             readOnlyRootFilesystem: true

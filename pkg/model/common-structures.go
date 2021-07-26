@@ -73,6 +73,7 @@ func (o FunctionFileDefinition) Validate() error {
 }
 
 type FunctionDefinition struct {
+	Type  FunctionType             `yaml:"type"`
 	ID    string                   `yaml:"id"`
 	Image string                   `yaml:"image"`
 	Size  Size                     `yaml:"size,omitempty"`
