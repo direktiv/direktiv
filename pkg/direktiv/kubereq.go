@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -882,6 +883,7 @@ func k8sNamespace() string {
 }
 
 func serviceToHash(ar *isolateRequest) (string, error) {
+	re := regexp.MustCompile(`[_,.;'!@#$%^&*()\s]+`)
 
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
 		ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
@@ -897,6 +899,7 @@ func serviceToHash(ar *isolateRequest) (string, error) {
 		prefix = prefix[:maxLen]
 	}
 
-	return fmt.Sprintf("%s%s", prefix, suffix), nil
+	newHash := re.ReplaceAllString(fmt.Sprintf("%s%s", prefix, suffix), "-")
+	return newHash, nil
 
 }
