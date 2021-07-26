@@ -72,6 +72,11 @@ docker-cli: build
 		cp ${mkfile_dir_main}/direkcli-linux  ${mkfile_dir_main}/build/
 		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
+.PHONY: docker-init-pod
+docker-init-pod:
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/init-pod/init-pod cmd/init-pod/*.go
+	docker build -t direktiv-init-pod ${mkfile_dir_main}/build/docker/init-pod/
+
 .PHONY: docker-sidecar
 docker-sidecar:
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/*.go
