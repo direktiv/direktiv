@@ -112,6 +112,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 		ar.Workflow.ID = instance.wf.ID
 
 		// TODO: timeout
+		ar.Container.Type = fn.Type
 		ar.Container.Data = inputData
 		ar.Container.Image = fn.Image
 		ar.Container.Cmd = fn.Cmd

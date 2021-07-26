@@ -11,7 +11,6 @@ import (
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
-	"google.golang.org/grpc/resolver"
 )
 
 const (
@@ -92,6 +91,8 @@ func (s *WorkflowServer) initWorkflowServer() error {
 
 	flowServer := newFlowServer(s.config, s.engine)
 	s.components[flowComponent] = flowServer
+
+	initKubeLock()
 
 	return nil
 
@@ -213,6 +214,11 @@ func (s *WorkflowServer) Kill() {
 // Run starts all components of direktiv
 func (s *WorkflowServer) Run() error {
 
+	// start the jobs complete cleaner if enabled
+	if s.config.Isolates.CleanupPods == 1 {
+		go completedJobsCleaner(s.dbManager)
+	}
+
 	log.Debugf("subscribing to sync queue")
 	err := s.startDatabaseListener()
 	if err != nil {
@@ -231,8 +237,4 @@ func (s *WorkflowServer) Run() error {
 
 	return nil
 
-}
-
-func init() {
-	resolver.Register(&KubeResolverBuilder{})
 }

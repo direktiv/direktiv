@@ -105,6 +105,7 @@ flow:
   tag: "latest"
   exchange: "checkMe"
   sidecar: "vorteil/sidecar"
+  initPod: "vorteil/init-pod"
   sidecarDb: ""
   db: ""
   protocol: "http"
@@ -142,3 +143,6 @@ gcp:
   useSqlProxy: false
   db_instance: ""
   ip_private: false
+
+isolates:
+  podCleaner: true

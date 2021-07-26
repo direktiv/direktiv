@@ -304,8 +304,6 @@ type actionResultMessage struct {
 
 func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
 
-	// TODO: should this ctx be modified with a shorter deadline?
-
 	// generate hash name as "url"
 	actionHash, err := serviceToHash(ar)
 
@@ -313,35 +311,180 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
-	go we.doHTTPRequest(ctx, actionHash, ar)
+	// TODO: should this ctx be modified with a shorter deadline?
+
+	switch ar.Container.Type {
+	case model.IsolatedContainerFunctionType:
+		ip, err := addPodFunction(ctx, actionHash, ar)
+		if err != nil {
+			// we.reportError(ar, err)
+			return err
+		}
+
+		go func(ar *isolateRequest) {
+			// post data
+			we.doPodHTTPRequest(ctx, actionHash, ar, ip)
+
+		}(ar)
+
+		if true {
+			return nil
+		}
+	case model.DefaultFunctionType:
+		fallthrough
+	case model.ReusableContainerFunctionType:
+		go we.doKnativeHTTPRequest(ctx, actionHash, ar)
+	}
 
 	return nil
 
 }
 
-func (we *workflowEngine) doHTTPRequest(ctx context.Context,
+func (we *workflowEngine) reportError(ar *isolateRequest, err error) {
+	ec := ""
+	em := err.Error()
+	step := int32(ar.Workflow.Step)
+	r := &flow.ReportActionResultsRequest{
+		InstanceId:   &ar.Workflow.InstanceID,
+		Step:         &step,
+		ActionId:     &ar.ActionID,
+		ErrorCode:    &ec,
+		ErrorMessage: &em,
+	}
+
+	_, err = we.flowClient.ReportActionResults(context.Background(), r)
+	if err != nil {
+		log.Errorf("can not respond to flow: %v", err)
+	}
+}
+
+func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
+	ah string, ar *isolateRequest, ip string) {
+
+	// from here we need to report error as grpc because this is go-routined
+	// NOTE: transport copied & modified from http.DefaultTransport
+	tr := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   10 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	// on https we add the cert to ca
+	if we.server.config.FlowAPI.Protocol == "https" {
+
+		rootCAs, _ := x509.SystemCertPool()
+		if rootCAs == nil {
+			rootCAs = x509.NewCertPool()
+		}
+
+		// Read in the cert file. just in case it is the same being used
+		// in the ingress
+		certs, err := ioutil.ReadFile(TLSCert)
+		if err == nil {
+			// Append our cert to the system pool if we have it
+			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+				log.Println("No certs appended, using system certs only")
+			}
+		}
+
+		// Trust the augmented cert pool in our client
+		config := &tls.Config{
+			RootCAs:    rootCAs,
+			MinVersion: tls.VersionTLS12,
+		}
+		tr.TLSClientConfig = config
+
+	}
+
+	// configured namespace for workflows
+	addr := fmt.Sprintf("%s://%s:8890", we.server.config.FlowAPI.Protocol, ip)
+
+	log.Debugf("isolate request: %v", addr)
+
+	if ar.Workflow.Timeout == 0 {
+		ar.Workflow.Timeout = 15 * 60 // 15 minutes default
+	}
+
+	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	log.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
+		bytes.NewReader(ar.Container.Data))
+	if err != nil {
+		we.reportError(ar, err)
+		return
+	}
+
+	// add headers
+
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		data, err := json.Marshal(f)
+		if err != nil {
+			panic(err)
+		}
+		str := base64.StdEncoding.EncodeToString(data)
+		req.Header.Add(DirektivFileHeader, str)
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
+
+	var (
+		resp *http.Response
+	)
+
+	resp, err = client.Do(req)
+	if err != nil {
+		if ctxErr := rctx.Err(); ctxErr != nil {
+			log.Debugf("context error in pod call")
+			return
+		}
+		we.reportError(ar, err)
+	}
+
+	if err != nil {
+		we.reportError(ar, err)
+		return
+	}
+
+	if resp.StatusCode != 200 {
+		we.reportError(ar, fmt.Errorf("action error status: %d",
+			resp.StatusCode))
+	}
+
+	log.Debugf("isolate request done")
+
+	// for pod based we need to send a request to kill the init
+	req, err = http.NewRequestWithContext(rctx, http.MethodGet, addr, nil)
+	if err != nil {
+		we.reportError(ar, err)
+		return
+	}
+	_, err = client.Do(req)
+	if err != nil {
+		// TODO: better logging & error detection
+		log.Println(err)
+	}
+
+}
+
+func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	ah string, ar *isolateRequest) {
 
 	// from here we need to report error as grpc because this is go-routined
-	// prepare error here in case
-	reportErr := func(err error) {
-		ec := ""
-		em := err.Error()
-		step := int32(ar.Workflow.Step)
-		r := &flow.ReportActionResultsRequest{
-			InstanceId:   &ar.Workflow.InstanceID,
-			Step:         &step,
-			ActionId:     &ar.ActionID,
-			ErrorCode:    &ec,
-			ErrorMessage: &em,
-		}
-
-		_, err = we.flowClient.ReportActionResults(context.Background(), r)
-		if err != nil {
-			log.Errorf("can not respond to flow: %v", err)
-		}
-	}
-
 	// NOTE: transport copied & modified from http.DefaultTransport
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -387,7 +530,6 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	// configured namespace for workflows
 	ns := os.Getenv(direktivWorkflowNamespace)
 
-	// calculate address
 	addr := fmt.Sprintf("%s://%s-%s.%s",
 		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
 
@@ -406,7 +548,7 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
 	if err != nil {
-		reportErr(err)
+		we.reportError(ar, err)
 		return
 	}
 
@@ -449,12 +591,13 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 						// this happens because the function does not exist
+						// can not happen if w euse IP
 						kubeReq.mtx.Lock()
 						err := getKnativeFunction(fmt.Sprintf("%s-%s", ar.Workflow.Namespace, ah))
 						if err != nil {
 							err := addKnativeFunction(ar)
 							if err != nil {
-								reportErr(fmt.Errorf("can not create knative function %v: %v", addr, err))
+								we.reportError(ar, fmt.Errorf("can not create knative function %v: %v", addr, err))
 								return
 							}
 						}
@@ -474,12 +617,12 @@ func (we *workflowEngine) doHTTPRequest(ctx context.Context,
 	}
 
 	if err != nil {
-		reportErr(err)
+		we.reportError(ar, err)
 		return
 	}
 
 	if resp.StatusCode != 200 {
-		reportErr(fmt.Errorf("action error status: %d",
+		we.reportError(ar, fmt.Errorf("action error status: %d",
 			resp.StatusCode))
 	}
 
@@ -690,6 +833,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
+			cancelJob(context.Background(), child.Id)
 			syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
 		case "subflow":
 			go func(id string) {

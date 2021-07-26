@@ -35,7 +35,6 @@ data:
             {{- if .Values.gcp.gvisor }}
             "runtimeClassName": "gvisor",
             {{- end }}
-            "serviceAccountName": "{{ include "direktiv.serviceAccountName" . }}-sidecar",
             "containers": [
             {{- if .Values.gcp.useSqlProxy }}
              {
@@ -53,6 +52,7 @@ data:
               {
                 "image": "%s",
                 "name": "direktiv-container",
+                "command": [%s],
                 "env": [
                 {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
                 {
@@ -119,7 +119,7 @@ data:
                   },
                   {
                     "name": "DIREKTIV_FLOW_ENDPOINT",
-                    "value": "direktiv-kube:///{{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}:7777"
+                    "value": "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
                   }
                 ],
                 "ports": [

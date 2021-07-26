@@ -5,9 +5,15 @@ metadata:
  labels:
    {{- include "direktiv.labels" . | nindent 4 }}
 rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "create", "delete"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "list", "create", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
 - apiGroups: [""]
   resources: ["services", "endpoints"]
   verbs: ["get", "list", "watch"]
