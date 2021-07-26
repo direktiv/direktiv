@@ -445,6 +445,7 @@ func chosenByPercentage(a *int) bool {
 		return true
 	}
 
+	/* #nosec */
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return r.Intn(100)+1 <= *a
 }

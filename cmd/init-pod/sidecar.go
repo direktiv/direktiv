@@ -131,10 +131,13 @@ func tail() {
 
 	for line := range t.Lines {
 		log.Printf("Container log: %v", line.Text)
-		flowClient.ActionLog(context.Background(), &flow.ActionLogRequest{
+		_, err = flowClient.ActionLog(context.Background(), &flow.ActionLogRequest{
 			InstanceId: &instanceId,
 			Msg:        []string{line.Text},
 		})
+		if err != nil {
+			log.Printf("Failed to push log: %v.", err)
+		}
 	}
 
 end:

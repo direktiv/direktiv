@@ -56,7 +56,8 @@ func APIAuthMiddleware(h http.Handler) http.Handler {
 		splitToken := strings.Split(reqToken, "apikey")
 		if len(splitToken) != 2 {
 			w.WriteHeader(401)
-			w.Write([]byte("apikey Token is malformed"))
+			/* #nosec */
+			_, _ = w.Write([]byte("apikey Token is malformed"))
 			return
 		}
 

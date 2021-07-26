@@ -266,7 +266,8 @@ func (h *Handler) createWorkflow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(retData)
+	/* #nosec */
+	_, _ = w.Write(retData)
 
 }
 

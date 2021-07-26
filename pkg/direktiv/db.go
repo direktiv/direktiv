@@ -157,7 +157,7 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 }
 
-func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
+func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) {
 
 	_, err := conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
@@ -166,6 +166,10 @@ func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) error {
 		log.Errorf("can not unlock lock %d: %v", id, err)
 	}
 
-	return conn.Close()
+	err = conn.Close()
+
+	if err != nil {
+		log.Errorf("can not close database connection %d: %v", id, err)
+	}
 
 }

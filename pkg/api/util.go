@@ -19,7 +19,8 @@ func closeVerbose(x io.Closer, log io.Writer) {
 
 	err := x.Close()
 	if err != nil {
-		log.Write([]byte(err.Error()))
+		/* #nosec */
+		_, _ = log.Write([]byte(err.Error()))
 	}
 }
 
@@ -48,7 +49,8 @@ func writeData(resp interface{}, w http.ResponseWriter) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(retData)
+	/* #nosec */
+	_, _ = w.Write(retData)
 }
 
 // CtxDeadline defines default request deadline
@@ -73,5 +75,6 @@ func ErrResponse(w http.ResponseWriter, err error) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(respCode)
-	json.NewEncoder(w).Encode(eo)
+	/* #nosec */
+	_ = json.NewEncoder(w).Encode(eo)
 }

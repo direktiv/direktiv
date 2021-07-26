@@ -357,13 +357,7 @@ func (db *dbManager) wfUnlock(rec *ent.Workflow, conn *sql.Conn) {
 		return
 	}
 
-	err = db.unlockDB(hash, conn)
-	if err != nil {
-		log.Error(NewInternalError(fmt.Errorf("Failed to unlock database mutex: %v", err)))
-		return
-	}
-
-	return
+	db.unlockDB(hash, conn)
 
 }
 
@@ -407,14 +401,9 @@ func (wli *workflowLogicInstance) unlock() {
 	delete(wli.engine.cancels, wli.id)
 	cancel()
 
-	err = wli.engine.db.unlockDB(hash, wli.lockConn)
+	wli.engine.db.unlockDB(hash, wli.lockConn)
 	wli.lockConn = nil
 	wli.engine.cancelsLock.Unlock()
-
-	if err != nil {
-		log.Error(NewInternalError(fmt.Errorf("Failed to unlock database mutex: %v", err)))
-		return
-	}
 
 	return
 

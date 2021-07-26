@@ -121,11 +121,14 @@ func prepOneIsolateFiles(ctx context.Context, f *isolateFiles) error {
 func untarFile(tr *tar.Reader, path string) error {
 
 	pdir, _ := filepath.Split(path)
+
+	/* #nosec */
 	err := os.MkdirAll(pdir, 0750)
 	if err != nil {
 		return err
 	}
 
+	/* #nosec */
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -149,6 +152,7 @@ func untarFile(tr *tar.Reader, path string) error {
 
 func untar(dst string, r io.Reader) error {
 
+	/* #nosec */
 	err := os.MkdirAll(dst, 0750)
 	if err != nil {
 		return err
@@ -180,6 +184,7 @@ func untar(dst string, r io.Reader) error {
 				return err
 			}
 		} else if hdr.Typeflag == tar.TypeDir {
+			/* #nosec */
 			err = os.MkdirAll(path, 0750)
 			if err != nil {
 				return err
@@ -196,6 +201,7 @@ func untar(dst string, r io.Reader) error {
 
 func writeFile(dst string, r io.Reader) error {
 
+	/* #nosec */
 	f, err := os.Create(dst)
 	if err != nil {
 		return err
@@ -294,6 +300,7 @@ func fileWriter(ctx context.Context, f *isolateFiles, pr *io.PipeReader) error {
 	dst = filepath.Join(dir, dst)
 	dir, _ = filepath.Split(dst)
 
+	/* #nosec */
 	err := os.MkdirAll(dir, 0750)
 	if err != nil {
 		return err
