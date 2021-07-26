@@ -315,13 +315,13 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		go func(ar *isolateRequest) {
-			ip, err := addPodFunction(ctx, actionHash, ar)
-			if err != nil {
-				we.reportError(ar, err)
-				return
-			}
+		ip, err := addPodFunction(ctx, actionHash, ar)
+		if err != nil {
+			// we.reportError(ar, err)
+			return err
+		}
 
+		go func(ar *isolateRequest) {
 			// post data
 			we.doPodHTTPRequest(ctx, actionHash, ar, ip)
 
