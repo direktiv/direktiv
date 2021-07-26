@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,6 +14,8 @@ import (
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
+
+const blocklist = "blocklist"
 
 // Server ..
 type Server struct {
@@ -30,12 +34,32 @@ type Server struct {
 
 	actionTemplateDirsPaths map[string]string
 	actionTemplateDirs      []string
+
+	blocklist []string
 }
 
 // NewServer returns new API server
 func NewServer(cfg *Config) (*Server, error) {
 
 	r := mux.NewRouter()
+	var bl []string
+
+	log.Infof("check for a blocklist")
+
+	if cfg.hasBlockList() {
+		log.Infof("contains a blocklist")
+		// fetch blocklist
+		data, err := ioutil.ReadFile(cfg.BlockList)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(data, &bl)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Infof("blocklist %s", data)
+	}
 
 	s := &Server{
 		cfg:    cfg,
@@ -44,6 +68,7 @@ func NewServer(cfg *Config) (*Server, error) {
 			Handler: r,
 			Addr:    cfg.Server.Bind,
 		},
+		blocklist:   bl,
 		reqMapMutex: sync.Mutex{},
 		reqMap:      make(map[*http.Request]*RequestStatus),
 		json: jsonpb.Marshaler{
