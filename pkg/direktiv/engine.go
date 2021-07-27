@@ -314,6 +314,11 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		return NewInternalError(err)
 	}
 
+	// Check if container scale is more than max
+	if ar.Container.Scale > we.server.config.FlowAPI.MaxScale {
+		return NewInternalError(fmt.Errorf("scale is larger than maximum allowed scale of %v", we.server.config.FlowAPI.MaxScale))
+	}
+
 	// TODO: should this ctx be modified with a shorter deadline?
 
 	switch ar.Container.Type {
