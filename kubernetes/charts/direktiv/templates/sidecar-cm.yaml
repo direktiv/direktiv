@@ -25,7 +25,8 @@ data:
               "kubernetes.io/ingress-bandwidth": "{{ .Values.netShape }}",
               "kubernetes.io/egress-bandwidth": "{{ .Values.netShape }}",
               {{- end }}
-              "autoscaling.knative.dev/minScale": "%d"
+              "autoscaling.knative.dev/minScale": "%d",
+              "autoscaling.knative.dev/maxScale": "{{ .Values.flow.maxScale }}"
             }
           },
           "spec": {
@@ -75,7 +76,7 @@ data:
                     "mountPath": "/mnt/shared"
                   }
                 ],
-    						"resources": {
+                "resources": {
                   "requests": {
                     "cpu": %f,
                     "memory": "%s"
