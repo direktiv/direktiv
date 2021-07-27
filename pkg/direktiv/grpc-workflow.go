@@ -36,6 +36,11 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
+	err = workflow.CheckFunctionsScaleInRange(is.wfServer.GetConfig().FlowAPI.MaxScale)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
+	}
+
 	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
 		workflow.Description, active, logToEvents, document, workflow.GetStartDefinition())
 	if err != nil {
@@ -154,6 +159,11 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 	var workflow model.Workflow
 	document := in.GetWorkflow()
 	err := workflow.Load(document)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
+	}
+
+	err = workflow.CheckFunctionsScaleInRange(is.wfServer.GetConfig().FlowAPI.MaxScale)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}

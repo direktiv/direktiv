@@ -46,6 +46,10 @@ type WorkflowServer struct {
 	hostname   string
 }
 
+func (s *WorkflowServer) GetConfig() Config {
+	return *s.config
+}
+
 func (s *WorkflowServer) initWorkflowServer() error {
 
 	var err error

@@ -96,6 +96,8 @@ spec:
             value: {{ .Values.flow.sidecar }}
           - name: DIREKTIV_FLOW_INITPOD
             value: {{ .Values.flow.initPod }}
+          - name: DIREKTIV_FLOW_MAX_SCALE
+            value: {{ .Values.flow.maxScale | quote }}
           - name: DIREKTIV_INGRESS_BIND
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND

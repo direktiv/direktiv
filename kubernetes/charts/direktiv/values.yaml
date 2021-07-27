@@ -110,6 +110,7 @@ flow:
   db: ""
   protocol: "http"
   certificate: none
+  maxScale: 1
 
 # ui config
 ui:
