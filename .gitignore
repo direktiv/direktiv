@@ -18,6 +18,13 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+/build/*-binary
+/build/*.md5
+/build/*.checksum 
+/build/flow 
+/build/api 
+/build/sidecar 
+/build/init-pod
 /build/apiserver
 /build/direktiv
 /build/direkcli

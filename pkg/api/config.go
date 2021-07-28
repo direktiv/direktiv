@@ -17,7 +17,7 @@ type Config struct {
 	}
 
 	Server struct {
-		Bind string
+		Bind string `json:"bind"`
 	}
 
 	BlockList string // path to where the blocklist for reserved words will be

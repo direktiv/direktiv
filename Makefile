@@ -1,122 +1,123 @@
-#
-# Makefile to build direktiv
-#
-flow_generated_files := $(shell find pkg/flow/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-health_generated_files := $(shell find pkg/health/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-ingress_generated_files := $(shell find pkg/ingress/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-secrets_generated_files := $(shell find pkg/secrets/grpc -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-hasYarn := $(shell which yarn)
+# #
+# # Makefile to build direktiv
+# #
 
-.SILENT:
+DOCKER_REPO := "localhost:5000"
+CGO_LDFLAGS := "CGO_LDFLAGS=\"-static -w -s\""
+GO_BUILD_TAGS := "osusergo,netgo"
 
-mkfile_path_main := $(abspath $(lastword $(MAKEFILE_LIST)))
-mkfile_dir_main := $(dir $(mkfile_path_main))
+.SECONDARY:
 
-# run postgres on vorteil
-.PHONY: run-postgres
-run-postgres:
-	if [ ! -f ${mkfile_dir_main}/postgres ]; then \
-		wget https://apps.vorteil.io/file/vorteil/postgres; \
-	fi
-	vorteil run --vm.ram="4096MiB" --vm.cpus="4" --vm.disk-size="+1024MiB" ${mkfile_dir_main}/postgres
+.PHONY: binaries
+binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary
 
-# protoc generation
+.PHONY: clean 
+clean:
+	rm -f build/*.md5
+	rm -f build/*.checksum 
+	rm -f build/*-binary 
+	rm -f build/api
+	rm -f build/flow 
+	rm -f build/init-pod 
+	rm -f build/secrets 
+	rm -f build/sidecar
+	if helm status direktiv; then helm uninstall direktiv; fi
+	kubectl delete --all ksvc
+	kubectl delete --all jobs
+
+.PHONY: images 
+images: image-api image-flow image-init-pod image-secrets image-sidecar
+
+.PHONY: push 
+push: push-api push-flow push-init-pod push-secrets push-sidecar
+
+.PHONE: cluster 
+cluster: push 
+	if helm status direktiv; then helm uninstall direktiv; fi
+	kubectl delete --all ksvc
+	kubectl delete --all jobs
+	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
+
+GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go') 
+DOCKER_FILES = $(shell find build/docker/ -type f)
+
+# ENT 
+
+.PHONY: ent
+ent:
+	go get entgo.io/ent
+	go generate ./ent
+	go generate ./pkg/secrets/ent/schema
+
+
+# PROTOC 
+
+PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
+
+pkg/%.pb.go: pkg/%.proto
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
+
 .PHONY: protoc
-protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(secrets_generated_files)
+protoc: ${PROTOBUF_SOURCE_FILES}
 
+# Patterns 
 
-.PHONY: local-docker-ui
-local-docker-ui:
-local-docker-ui: build
-	echo  ${mkfile_dir_main}direktiv-ui
-	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
-		git clone https://github.com/vorteil/direktiv-ui.git; \
-	else \
-		cd ${mkfile_dir_main}direktiv-ui && git pull; \
-	fi
-	cd direktiv-ui && DOCKER_REPO=localhost:5000 DOCKER_IMAGE=direktiv-ui make server
+build/%-binary: Makefile ${GO_SOURCE_FILES}
+	@echo "Building $* binary..."
+	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go
+	@cp build/$*-binary build/$*
+
+build/%.md5: build/%-binary
+	@echo "Calculating md5 checkum of $<..."
+	@md5sum $< | cut -d" " -f1 > $@
+
+build/%-docker.checksum: build/%.md5 ${DOCKER_FILES}
+	@if ! cmp --silent build/$*.md5 build/$*-docker.checksum; then echo "Building docker image for $* binary..." && cd build && docker build -t direktiv-$* -f docker/$*/Dockerfile . ; else echo "Skipping docker build due to unchanged $* binary." && touch build/$*-docker.checksum; fi
+	@cp build/$*.md5 build/$*-docker.checksum
+
+.PHONY: image-%
+image-%: build/%-docker.checksum
+	@echo "Make $@: SUCCESS"
+
+.PHONY: push-% 
+push-%: image-%
+	@docker tag direktiv-$* ${DOCKER_REPO}/$*
+	@docker push ${DOCKER_REPO}/$*
+	@echo "Make $@: SUCCESS"
+
+# UI  
 
 .PHONY: docker-ui
 docker-ui:
-docker-ui: build
 	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
 	cd direktiv-ui && make update-containers
 
-.PHONY: docker-secrets
-docker-secrets:
-docker-secrets: build
-	cp ${mkfile_dir_main}/secrets  ${mkfile_dir_main}/build/
-	cd build && docker build -t direktiv-secrets -f docker/secrets/Dockerfile .
+# Utility Rules 
 
-.PHONY: docker-all
-docker-all:
-	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
+REGEX := "localhost:5000.*"
 
-.PHONY: docker-api
-docker-api:
-docker-api: build
-	cp ${mkfile_dir_main}/api  ${mkfile_dir_main}/build/
-	cd build && docker build -t direktiv-api -f docker/api/Dockerfile .
+.PHONY: purge-images
+purge-images:
+	$(eval IMAGES := $(shell sudo k3s crictl img -o json | jq '.images[] | select (.repoDigests[] | test(${REGEX})) | .id'))
+	kubectl delete --all ksvc
+	sudo k3s crictl rmi ${IMAGES}
 
-.PHONY: docker-flow
-docker-flow:
-docker-flow: build
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
-	cd build && docker build -t direktiv-flow -f docker/flow/Dockerfile .
+.PHONY: logs-flow
+logs-flow:
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl logs -f ${FLOW_POD} ingress
 
-.PHONY: docker-cli
-docker-cli:
-docker-cli: build
-		cp ${mkfile_dir_main}/direkcli-linux  ${mkfile_dir_main}/build/
-		cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
+.PHONY: logs-secrets
+logs-secrets:
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl logs -f ${FLOW_POD} secrets
 
-.PHONY: docker-init-pod
-docker-init-pod:
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/init-pod/init-pod cmd/init-pod/*.go
-	docker build -t direktiv-init-pod ${mkfile_dir_main}/build/docker/init-pod/
-
-.PHONY: docker-sidecar
-docker-sidecar:
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/build/docker/sidecar/sidecar cmd/sidecar/*.go
-	docker build -t sidecar  ${mkfile_dir_main}/build/docker/sidecar/
-
-.PHONY: template-configmaps
-template-configmaps:
-				scripts/misc/generate-api-configmaps.sh
-
-.PHONY: build
-build:
-	go get entgo.io/ent
-	go generate ./ent
-	go generate ./pkg/secrets/ent/schema
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/secrets cmd/secrets/main.go
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/api cmd/api/main.go
-	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli-linux cmd/direkcli/main.go
-	export CGO_LDFLAGS="-static -w -s" && GOOS=darwin go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli-darwin cmd/direkcli/main.go
-	export CGO_LDFLAGS="-static -w -s" && GOOS=windows go build -tags osusergo,netgo -o ${mkfile_dir_main}direkcli-windows.exe cmd/direkcli/main.go
-	cp ${mkfile_dir_main}/direktiv  ${mkfile_dir_main}/build/
-	cp ${mkfile_dir_main}/api ${mkfile_dir_main}/build/
-
-# run as sudo because networking needs root privileges
-.PHONY: run
-run:
-	DIREKTIV_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
-	DIREKTIV_SECRETS_DB="host=$(DB) port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable" \
-	DIREKTIV_INSTANCE_LOGGING_DRIVER="database" \
-	DIREKTIV_MOCKUP=1 \
-	go run cmd/direktiv/main.go -d
-
-pkg/secrets/%.pb.go: pkg/secrets/%.proto
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
-
-pkg/flow/%.pb.go: pkg/flow/%.proto
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
-
-pkg/health/%.pb.go: pkg/health/%.proto
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
-
-pkg/ingress/%.pb.go: pkg/ingress/%.proto
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
+.PHONY: logs-api
+logs-api:
+	$(eval API_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-api") | .metadata.name'))
+	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
+	kubectl logs -f ${API_POD} api

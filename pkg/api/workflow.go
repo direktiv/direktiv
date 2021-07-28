@@ -365,13 +365,13 @@ func sendContent(w http.ResponseWriter, r *http.Request, data []byte) error {
 				return err
 			}
 
-			w.Write(buf[:n])
-
 			// here we can guess content type and set if in the first loop
 			if w.Header().Get("Content-Type") == "" {
 				mimeType := http.DetectContentType(buf[:n])
 				w.Header().Set("Content-Type", mimeType)
 			}
+
+			w.Write(buf[:n])
 
 			if err == io.EOF {
 				err = nil
