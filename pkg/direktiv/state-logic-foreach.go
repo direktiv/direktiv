@@ -171,11 +171,6 @@ func (sl *foreachStateLogic) doAll(ctx context.Context, instance *workflowLogicI
 
 	instance.Log("Generated %d objects to loop over.", len(array))
 
-	if len(array) > maxParallelActions {
-		err = NewUncatchableError("direktiv.limits.parallel", "instance aborted for exceeding the maximum number of parallel actions (%d)", maxParallelActions)
-		return
-	}
-
 	logics := make([]multiactionTuple, 0)
 
 	for _, inputSource := range array {

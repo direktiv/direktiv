@@ -1264,11 +1264,6 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 			return "", errors.New("an internal error occurred")
 		}
 
-		caller.Depth = cc.Depth + 1
-		if caller.Depth > maxSubflowDepth {
-			err = NewUncatchableError("direktiv.limits.depth", "instance aborted for exceeding the maximum subflow depth (%d)", maxSubflowDepth)
-			return "", err
-		}
 	}
 
 	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
