@@ -105,7 +105,7 @@ flow:
   tag: "latest"
   exchange: "checkMe"
   sidecar: "vorteil/sidecar"
-  initPod: "vorteil/init-pod"
+  initPod: "vorteil/direktiv-init-pod"
   sidecarDb: ""
   db: ""
   protocol: "http"
