@@ -34,6 +34,7 @@ jobs:
         make docker-cli
         make docker-all
         make docker-sidecar
+        make docker-init-pod
         echo "containers built"
         docker tag direktiv-api vorteil/api:$RV
         docker tag direktiv-api vorteil/api
@@ -47,6 +48,8 @@ jobs:
         docker tag direktiv-kube vorteil/direktiv-kube:$RV
         docker tag sidecar vorteil/sidecar:$RV
         docker tag sidecar vorteil/sidecar
+        docker tag direktiv-init-pod vorteil/direktiv-init-pod:$RV
+        docker tag direktiv-init-pod vorteil/direktiv-init-pod
         docker image list
         docker push vorteil/api:$RV
         docker push vorteil/api
@@ -60,3 +63,5 @@ jobs:
         docker push vorteil/direktiv-kube
         docker push vorteil/sidecar:$RV
         docker push vorteil/sidecar
+        docker push vorteil/direktiv-init-pod:$RV
+        docker push vorteil/direktiv-init-pod
