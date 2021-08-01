@@ -81,6 +81,14 @@ spec:
         image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.pullPolicy }}
         env:
+          - name: GRPC_MAX_SEND_SIZE_CLIENT
+            value: {{ .Values.grpc.client.maxSendSize | quote }}
+          - name: GRPC_MAX_RECEIVE_SIZE_CLIENT
+            value: {{ .Values.grpc.client.maxRecvSize | quote }}
+          - name: GRPC_MAX_SEND_SIZE_SERVER
+            value: {{ .Values.grpc.server.maxSendSize | quote }}
+          - name: GRPC_MAX_RECEIVE_SIZE_SEVER
+            value: {{ .Values.grpc.server.maxRecvSize | quote }}
           {{- if  .Values.api.key }}
           - name: DIREKTIV_API_KEY
             valueFrom:
