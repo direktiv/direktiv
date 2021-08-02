@@ -369,45 +369,7 @@ data:
     }
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-08-02T23:02:55Z"
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:data:
-        .: {}
-        f:amazon-sns.json: {}
-        f:aws-ec2-create.json: {}
-        f:aws-ec2-delete.json: {}
-        f:aws-ec2-start.json: {}
-        f:aws-ec2-stop.json: {}
-        f:awsgo.json: {}
-        f:awslog.json: {}
-        f:azgo.json: {}
-        f:azinvoke.json: {}
-        f:azlog.json: {}
-        f:azure-servicebus.json: {}
-        f:debug.json: {}
-        f:discordmsg.json: {}
-        f:gcloud-instance-create.json: {}
-        f:gcloud-instance-delete.json: {}
-        f:gcloud-instance-start.json: {}
-        f:gcloud-instance-stop.json: {}
-        f:gcloud.json: {}
-        f:gcplog.json: {}
-        f:greeting.json: {}
-        f:lambda.json: {}
-        f:request.json: {}
-        f:simplepostgresclient.json: {}
-        f:slackmsg.json: {}
-        f:smtp.json: {}
-        f:solve.json: {}
-        f:tweet.json: {}
-        f:twilio.json: {}
-    manager: kubectl-create
-    operation: Update
-    time: "2021-08-02T23:02:55Z"
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
   name: api-actiontemplates-cm
   namespace: {{ .Release.Namespace }}
-  resourceVersion: "709250"
-  uid: e4b04803-8549-49de-90cd-ec73f941a411
