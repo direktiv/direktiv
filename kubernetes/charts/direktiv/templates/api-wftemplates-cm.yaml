@@ -103,30 +103,7 @@ data:
     noop\n  transform:\n    result: \"Email is valid.\"\n"
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-08-02T23:02:54Z"
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:data:
-        .: {}
-        f:action.yml: {}
-        f:consume-event.yml: {}
-        f:delay.yml: {}
-        f:error.yml: {}
-        f:event-and.yml: {}
-        f:event-xor.yml: {}
-        f:foreach.yml: {}
-        f:generate-greeting-event.yml: {}
-        f:generate-solve-event.yml: {}
-        f:noop.yml: {}
-        f:parallel.yml: {}
-        f:switch.yml: {}
-        f:validate.yml: {}
-    manager: kubectl-create
-    operation: Update
-    time: "2021-08-02T23:02:54Z"
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
   name: api-wftemplates-cm
   namespace: {{ .Release.Namespace }}
-  resourceVersion: "709246"
-  uid: 938773a9-cfbb-4937-a4e6-1d25a1e764f1
