@@ -2044,7 +2044,7 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/scrape: "true"
+        prometheus.io/scrape: "false"
         prometheus.io/port: "8000"
       labels:
         app: contour
@@ -2148,7 +2148,7 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/scrape: "true"
+        prometheus.io/scrape: "false"
         prometheus.io/port: "8002"
         prometheus.io/path: "/stats/prometheus"
       labels:
@@ -2625,7 +2625,7 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/scrape: "true"
+        prometheus.io/scrape: "false"
         prometheus.io/port: "8000"
       labels:
         app: contour
@@ -2729,7 +2729,7 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/scrape: "true"
+        prometheus.io/scrape: "false"
         prometheus.io/port: "8002"
         prometheus.io/path: "/stats/prometheus"
       labels:

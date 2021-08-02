@@ -165,10 +165,6 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, instance *wor
 		return NewInternalError(errors.New("got unexpected savedata"))
 	}
 
-	if len(sl.state.Actions) > maxParallelActions {
-		return NewUncatchableError("direktiv.limits.parallel", "instance aborted for exceeding the maximum number of parallel actions (%d)", maxParallelActions)
-	}
-
 	for i := range sl.state.Actions {
 
 		action := &sl.state.Actions[i]

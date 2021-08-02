@@ -11,6 +11,7 @@ curl -H 'Cache-Control: no-cache' https://knative.direktiv.io/yamls/net-contour.
 sed -i 's/{{/{{ "{{" }}/g' $dir/templates/serving-core.yaml
 
 # add helm labels to contour files
+sed -i 's/prometheus.io\/scrape: "true"/prometheus.io\/scrape: "false"/g' $dir/templates/contour.yaml
 sed -i 's/^  labels:/  labels:\n    {{- include "knative.labels" . | nindent 4 }}/g' $dir/templates/contour.yaml
 sed -i 's/^  labels:/  labels:\n    {{- include "knative.labels" . | nindent 4 }}/g' $dir/templates/net-contour.yaml
 sed -i 's/^  labels:/  labels:\n    {{- include "knative.labels" . | nindent 4 }}/g' $dir/templates/serving-core.yaml
