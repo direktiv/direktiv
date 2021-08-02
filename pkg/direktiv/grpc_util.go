@@ -54,7 +54,7 @@ func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 	var sizeOptions []grpc.CallOption
 
 	// Get GRPC limits
-	if maxSendOpt, ok := loadInt(grpcRecvMsgSizeClient); ok {
+	if maxSendOpt, ok := loadInt(grpcSendMsgSizeClient); ok {
 		log.Infof("LOADED GRPC_MAX_SEND_SIZE_CLIENT - Setting MaxCallSendMsgSize to %v", maxSendOpt)
 		sizeOptions = append(sizeOptions, grpc.MaxCallSendMsgSize(maxSendOpt))
 	}
@@ -97,7 +97,7 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 	var options []grpc.ServerOption
 
 	// Get GRPC limits
-	if maxSendOpt, ok := loadInt(grpcRecvMsgSizeServer); ok {
+	if maxSendOpt, ok := loadInt(grpcSendMsgSizeServer); ok {
 		log.Infof("LOADED GRPC_MAX_SEND_SIZE_SERVER - Setting MaxSendMsgSize to %v", maxSendOpt)
 		options = append(options, grpc.MaxSendMsgSize(maxSendOpt))
 	}

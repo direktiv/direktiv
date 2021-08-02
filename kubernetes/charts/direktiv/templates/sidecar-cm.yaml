@@ -108,14 +108,6 @@ data:
                     "name": "GRPC_MAX_RECEIVE_SIZE_CLIENT",
                     "value": "{{ .Values.grpc.client.maxRecvSize}}"
                   },
-                  {
-                    "name": "GRPC_MAX_SEND_SIZE_SERVER",
-                    "value": "{{ .Values.grpc.server.maxSendSize}}"
-                  },
-                  {
-                    "name": "GRPC_MAX_RECEIVE_SIZE_SEVER",
-                    "value": "{{ .Values.grpc.server.maxRecvSize}}"
-                  },
                   {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
                   {
                     "name": "HTTPS_PROXY",
