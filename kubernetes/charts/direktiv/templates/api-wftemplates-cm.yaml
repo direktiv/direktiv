@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   action.yml: "id: action\ndescription: A simple 'action' state that sends a get request\"\nfunctions:\n-
-    id: get\n  image: vorteil/request:v2\nstates:\n- id: getter \n  type: action\n
+    id: get\n  image: vorteil/request:v6\nstates:\n- id: getter \n  type: action\n
     \ action:\n    function: get\n    input: \n      method: \"GET\"\n      url: \"https://jsonplaceholder.typicode.com/todos/1\"\n"
   consume-event.yml: |
     id: consume-event
@@ -42,13 +42,12 @@ data:
   event-and.yml: "id: event-and\nfunctions:\n- id: greeter\n  image: vorteil/greeting:v2\n-
     id: solve\n  image: vorteil/solve:v2\ndescription: A simple 'eventAnd' that waits
     for events to be received.\nstates:\n- id: event-and\n  type: eventAnd\n  timeout:
-    PT1H\n  events:\n  - event: \n      type: greetingcloudevent\n  - event: \n      type:
-    solveexpressioncloudevent\n  transition: greet\n- id: greet\n  type: action\n
-    \ action:\n    function: greeter\n    input: .greetingcloudevent\n  transform:
-    \n    greeting: jq(.return.greeting)\n    ceevent: jq(.solveexpressioncloudevent)\n
-    \ transition: solve\n- id: solve\n  type: action\n  action:\n    function: solve\n
-    \   input: jq(.ceevent)\n  transform: \n    msggreeting: jq(.greeting)\n    solvedexpression:
-    jq(.return)"
+    PT1H\n  events:\n  - type: greetingcloudevent\n  - type: solveexpressioncloudevent\n
+    \ transition: greet\n- id: greet\n  type: action\n  action:\n    function: greeter\n
+    \   input: .greetingcloudevent\n  transform: \n    greeting: jq(.return.greeting)\n
+    \   ceevent: jq(.solveexpressioncloudevent)\n  transition: solve\n- id: solve\n
+    \ type: action\n  action:\n    function: solve\n    input: jq(.ceevent)\n  transform:
+    \n    msggreeting: jq(.greeting)\n    solvedexpression: jq(.return)"
   event-xor.yml: "id: event-xor\nfunctions:\n- id: greeter\n  image: vorteil/greeting:v2\n-
     id: solve2\n  image: vorteil/solve:v2\ndescription: A simple 'eventXor' that waits
     for events to be received.\nstates:\n- id: event-xor\n  type: eventXor\n  timeout:
@@ -89,7 +88,7 @@ data:
     \ # Mode 'or' waits for the first action to be completed\n  mode: and"
   switch.yml: "id: switch\ndescription: A simple 'switch' state that checks whether
     the age provided is older than 18.\nstates:\n- id: data\n  type: noop\n  transform:\n
-    \   age: \"27\" \n  transition: check\n- id: check\n  type: switch\n  conditions:\n
+    \   age: 27\n  transition: check\n- id: check\n  type: switch\n  conditions:\n
     \ - condition: 'jq(.age > 18)'\n    transition: olderthan18\n  defaultTransition:
     youngerthan18\n- id: olderthan18\n  type: noop\n  transform: \n    result: \"You
     are older than 18.\"\n- id: youngerthan18\n  type: noop\n  transform: \n    result:
@@ -104,8 +103,30 @@ data:
     noop\n  transform:\n    result: \"Email is valid.\"\n"
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-07-05T05:11:48Z"
+  creationTimestamp: "2021-08-02T23:02:54Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:action.yml: {}
+        f:consume-event.yml: {}
+        f:delay.yml: {}
+        f:error.yml: {}
+        f:event-and.yml: {}
+        f:event-xor.yml: {}
+        f:foreach.yml: {}
+        f:generate-greeting-event.yml: {}
+        f:generate-solve-event.yml: {}
+        f:noop.yml: {}
+        f:parallel.yml: {}
+        f:switch.yml: {}
+        f:validate.yml: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2021-08-02T23:02:54Z"
   name: api-wftemplates-cm
   namespace: {{ .Release.Namespace }}
-  resourceVersion: "4050985"
-  uid: 8005b917-33df-47b8-9e9d-ae614cdd301c
+  resourceVersion: "709246"
+  uid: 938773a9-cfbb-4937-a4e6-1d25a1e764f1
