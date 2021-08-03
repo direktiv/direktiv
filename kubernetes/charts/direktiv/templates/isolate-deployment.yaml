@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-isolates
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}-isolates
+spec:
+  replicas: {{ .Values.isolates.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabels" . | nindent 6 }}-isolates
+  template:
+    metadata:
+      {{- with .Values.isolates.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "direktiv.selectorLabels" . | nindent 8 }}-isolates
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      volumes:
+        - name: config-file
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-isolate
+      containers:
+        - name: ingress
+          volumeMounts:
+          - name: config-file
+            mountPath: /etc/direktiv
+          env:
+            - name: DIREKTIV_DEBUG
+              value: "true"
+            - name: DIREKTIV_KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: "DIREKTIV_FLOW_ENDPOINT"
+              value: "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1"
+          image: "{{ .Values.registry }}/{{ .Values.isolates.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: 5555
+              protocol: TCP

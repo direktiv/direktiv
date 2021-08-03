@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/isolates/grpc";
+
+import "google/protobuf/empty.proto";
+
+import "pkg/isolates/grpc/isolates.proto";
+
+service IsolatesService {
+  rpc CreateIsolate(CreateIsolateRequest) returns (google.protobuf.Empty)  {}
+}

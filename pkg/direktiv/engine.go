@@ -310,6 +310,14 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// generate hash name as "url"
 	actionHash, err := serviceToHash(ar)
 
+	// check scope
+	split := strings.Split(ar.Container.Image, "/")
+	if strings.Contains(split[0], ":") {
+		scopeSplit := strings.Split(split[0], ":")
+		scope := scopeSplit[0]
+		log.Debugf("SCOPE %v", scope)
+	}
+
 	if err != nil {
 		return NewInternalError(err)
 	}
@@ -320,7 +328,6 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	}
 
 	// TODO: should this ctx be modified with a shorter deadline?
-
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
 		ip, err := addPodFunction(ctx, actionHash, ar)
@@ -535,11 +542,17 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	}
 
+	log.Debugf("KNATIVE2")
+
 	// configured namespace for workflows
 	ns := os.Getenv(direktivWorkflowNamespace)
 
-	addr := fmt.Sprintf("%s://%s-%s.%s",
-		we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
+	addr := fmt.Sprintf("%s://g-testme.%s",
+		we.server.config.FlowAPI.Protocol, ns)
+	// addr := fmt.Sprintf("%s://%s-%s.%s",
+	// 	we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
+
+	log.Debugf("ACTIONHASH!!!!!!!!!!!!!! %v", addr)
 
 	log.Debugf("isolate request: %v", addr)
 

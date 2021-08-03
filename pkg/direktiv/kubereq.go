@@ -709,7 +709,7 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 
 		log.Debugf("deleting url %v", url)
 
-		_, err = sendKuberequest(http.MethodDelete, url, nil)
+		_, err = SendKuberequest(http.MethodDelete, url, nil)
 		if err != nil {
 			log.Errorf("can not delete function: %v", err)
 		}
@@ -736,7 +736,7 @@ func getKnativeFunction(svc string) error {
 	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
 
 	url := fmt.Sprintf("%s/%s", u, svc)
-	resp, err := sendKuberequest(http.MethodGet, url, nil)
+	resp, err := SendKuberequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
@@ -825,7 +825,7 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 	fmt.Printf("%v\n", svc)
 
-	resp, err := sendKuberequest(http.MethodPost, u, bytes.NewBufferString(svc))
+	resp, err := SendKuberequest(http.MethodPost, u, bytes.NewBufferString(svc))
 	if err != nil {
 		log.Errorf("can not send kube request: %v", err)
 		return err
@@ -841,7 +841,7 @@ func addKnativeFunction(ir *isolateRequest) error {
 
 }
 
-func sendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
+func SendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
 
 	if kubeReq.apiConfig == nil {
 		config, err := rest.InClusterConfig()

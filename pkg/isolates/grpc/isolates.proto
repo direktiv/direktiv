@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/isolates/grpc";
+
+message BaseInfo {
+	optional string name = 1;
+	optional string namespace = 2;
+	optional string workflow = 3;
+	optional string image = 4;
+	optional string cmd = 5;
+	optional int32 size = 6;
+}
+
+message Config {
+	optional int32 minScale = 1;
+	optional string netLimit = 2;
+}
+
+message CreateIsolateRequest {
+	optional BaseInfo info = 1;
+  optional Config config = 2;
+  optional bool external = 3;
+	optional bool deleteRevisions = 4;
+}
