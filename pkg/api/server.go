@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 )
 
 const blocklist = "blocklist"
@@ -21,6 +22,7 @@ const blocklist = "blocklist"
 type Server struct {
 	cfg      *Config
 	direktiv ingress.DirektivIngressClient
+	isolates igrpc.IsolatesServiceClient
 	json     jsonpb.Marshaler
 	handler  *Handler
 	router   *mux.Router
@@ -85,6 +87,11 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
+	err = s.initIsolates()
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.initTemplateFolders()
 	if err != nil {
 		return nil, err
@@ -98,6 +105,11 @@ func NewServer(cfg *Config) (*Server, error) {
 // IngressClient returns client to backend
 func (s *Server) IngressClient() ingress.DirektivIngressClient {
 	return s.direktiv
+}
+
+// IsolatesClient returns client to backend
+func (s *Server) IsolatesClient() igrpc.IsolatesServiceClient {
+	return s.isolates
 }
 
 // Router returns mux router
@@ -120,6 +132,20 @@ func (s *Server) initDirektiv() error {
 	return nil
 }
 
+func (s *Server) initIsolates() error {
+
+	conn, err := direktiv.GetEndpointTLS(s.cfg.Isolates.Endpoint, true)
+	if err != nil {
+		log.Errorf("can not connect to direktiv isolates: %v", err)
+		return err
+	}
+
+	log.Infof("connecting to %s", s.cfg.Isolates.Endpoint)
+
+	s.isolates = igrpc.NewIsolatesServiceClient(conn)
+	return nil
+}
+
 func (s *Server) prepareRoutes() {
 
 	// Options ..
@@ -132,6 +158,9 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		// responds 200 OK
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
+
+	// Functions ..
+	s.Router().HandleFunc("/api/functions/", s.handler.listFunctions).Methods(http.MethodGet).Name(RN_ListFunctions)
 
 	// Namespace ..
 	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name(RN_ListNamespaces)

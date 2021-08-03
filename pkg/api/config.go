@@ -16,6 +16,11 @@ type Config struct {
 		TLS      bool
 	}
 
+	Isolates struct {
+		Endpoint string
+		TLS      bool
+	}
+
 	Server struct {
 		Bind string
 	}

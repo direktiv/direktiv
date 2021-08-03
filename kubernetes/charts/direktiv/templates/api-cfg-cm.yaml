@@ -11,14 +11,12 @@ data:
 
     blockList = "blocklist"
 
+    [isolates]
+      endpoint = "dns2:///{{ include "direktiv.fullname" . }}-isolates-hl.{{ .Release.Namespace }}:5555"
+
     [ingress]
       endpoint = "dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666"
-      {{- if ne .Values.ingress.certificate "none" }}
-      tls = false
-      {{- else }}
-      tls = true
-      {{- end }}
-
+      
     [server]
       bind = ":8080"
 
