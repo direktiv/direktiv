@@ -175,7 +175,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot load saved workflow definition: %v", err))
 	}
 
-	if rec.Status != "pending" && rec.Status != "running" {
+	if !rec.EndTime.IsZero() {
 		wli.unlock()
 		return ctx, nil, NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
 	}
