@@ -22,6 +22,8 @@ import (
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/isolates"
+	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -46,6 +48,9 @@ const (
 	pullPolicy      = v1.PullAlways
 	cleanupInterval = 60
 	dbLockID        = 123456
+
+	prefixNamespace = "ns:"
+	prefixGlobal    = "g:"
 )
 
 const (
@@ -667,85 +672,109 @@ func getClientSet() (*kubernetes.Clientset, string, error) {
 	return clientset, kns, nil
 }
 
-func deleteKnativeFunctions(uid string, db *dbManager) error {
+func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workflow, ns string) error {
 
-	log.Debugf("delete functions for %v", uid)
+	for _, f := range wfm.GetFunctions() {
 
-	var wf model.Workflow
+		// ignore global services
+		if strings.HasPrefix(f.Image, prefixNamespace) ||
+			strings.HasPrefix(f.Image, prefixGlobal) {
+			continue
+		}
 
-	wfdb, err := db.getWorkflowByUid(context.Background(), uid)
-	if err != nil {
-		return err
-	}
-
-	// no need to error check, it passed the save check
-	wf.Load(wfdb.Workflow)
-	namespace := wfdb.Edges.Namespace.ID
-
-	log.Debugf("delete functions for %v, %s", wfdb.Name, namespace)
-
-	for _, f := range wf.GetFunctions() {
-
-		var ir isolateRequest
-
-		ir.Workflow.Namespace = namespace
-		ir.Workflow.Name = wf.Name
-		ir.Workflow.ID = wf.ID
-
-		ir.Container.Type = f.Type
-		ir.Container.Image = f.Image
-		ir.Container.Cmd = f.Cmd
-		ir.Container.Size = f.Size
-		ir.Container.Scale = f.Scale
-		ir.Container.ID = f.ID
-
-		ah, err := serviceToHash(&ir)
+		svn, err := isolates.GenerateServiceName(ns, wfm.ID, f.ID)
 		if err != nil {
+			log.Errorf("can not create service name: %v", err)
 			return err
 		}
 
-		u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-		url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%s", namespace, ah))
+		log.Debugf("creating service %s", svn)
 
-		log.Debugf("deleting url %v", url)
+		// create services async
+		go func(fd model.FunctionDefinition,
+			model model.Workflow, name, namespace string) {
 
-		_, err = SendKuberequest(http.MethodDelete, url, nil)
-		if err != nil {
-			log.Errorf("can not delete function: %v", err)
-		}
+			sz := int32(fd.Size)
+			scale := int32(fd.Scale)
 
-		// wait till the service is 100 percent gone
-		// this is needed for the engine to create a new one
-		// otherwise it might be in terminated stage and can get a request
-		for {
-			err := getKnativeFunction(url)
-			log.Debugf("err while waiting: %v", err)
-			if err != nil {
-				break
+			cr := igrpc.CreateIsolateRequest{
+				Info: &igrpc.BaseInfo{
+					Name:      &name,
+					Namespace: &namespace,
+					Workflow:  &model.ID,
+					Image:     &fd.Image,
+					Cmd:       &fd.Cmd,
+					Size:      &sz,
+					MinScale:  &scale,
+				},
 			}
-		}
 
+			_, err := client.CreateIsolate(context.Background(), &cr)
+			if err != nil {
+				log.Errorf("can not create knative service: %v", err)
+			}
+
+		}(f, wfm, f.ID, ns)
+
+	}
+
+	return nil
+}
+
+func deleteKnativeFunctions(client igrpc.IsolatesServiceClient,
+	ns, wf, name string) error {
+
+	annotations := make(map[string]string)
+
+	if ns != "" {
+		annotations[isolates.ServiceHeaderNamespace] = ns
+	}
+
+	if wf != "" {
+		annotations[isolates.ServiceHeaderWorkflow] = wf
+	}
+
+	if name != "" {
+		annotations[isolates.ServiceHeaderName] = name
+	}
+
+	dr := igrpc.ListIsolatesRequest{
+		Annotations: annotations,
+	}
+
+	_, err := client.DeleteIsolates(context.Background(), &dr)
+	if err != nil {
+		log.Errorf("can not create knative service: %v", err)
 	}
 
 	return nil
 
 }
 
-func getKnativeFunction(svc string) error {
+func getKnativeFunction(isolateClient igrpc.IsolatesServiceClient, svn string) error {
 
-	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+	r := igrpc.GetIsolateRequest{
+		Name: &svn,
+	}
+	// GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption)
+	_, err := isolateClient.GetIsolate(context.Background(), &r)
 
-	url := fmt.Sprintf("%s/%s", u, svc)
-	resp, err := SendKuberequest(http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		log.Debugf("err %v", err)
 	}
+	// u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+	//
+	// url := fmt.Sprintf("%s/%s", u, svc)
+	// resp, err := SendKuberequest(http.MethodGet, url, nil)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// if resp.StatusCode != 200 {
+	// 	return fmt.Errorf("service does not exists")
+	// }
 
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("service does not exists")
-	}
-
-	return nil
+	return err
 }
 
 func cmdToCommand(s string) (string, error) {

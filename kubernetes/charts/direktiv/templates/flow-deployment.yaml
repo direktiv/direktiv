@@ -102,6 +102,8 @@ spec:
             value: "0.0.0.0:6666"
           - name: DIREKTIV_FLOW_BIND
             value: "0.0.0.0:7777"
+          - name: "DIREKTIV_ISOLATE_ENDPOINT"
+            value: "dns2:///{{ include "direktiv.fullname" . }}-isolates-hl.{{ .Release.Namespace }}:5555"
           - name: "DIREKTIV_FLOW_ENDPOINT"
             value: "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
           - name: "DIREKTIV_INGRESS_ENDPOINT"

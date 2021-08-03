@@ -10,17 +10,35 @@ message BaseInfo {
 	optional string workflow = 3;
 	optional string image = 4;
 	optional string cmd = 5;
-	optional int32 size = 6;
-}
 
-message Config {
-	optional int32 minScale = 1;
-	optional string netLimit = 2;
+	optional int32 size = 6;
+	optional int32 minScale = 7;
 }
 
 message CreateIsolateRequest {
 	optional BaseInfo info = 1;
-  optional Config config = 2;
-  optional bool external = 3;
-	optional bool deleteRevisions = 4;
+}
+
+
+message GetIsolateRequest {
+	optional string name = 1;
+}
+
+message GetIsolateResponse {
+	optional BaseInfo info = 1;
+}
+
+message ListIsolatesRequest {
+	map<string, string> annotations = 1;
+}
+
+message IsolateInfo {
+	optional BaseInfo info = 1;
+	optional string Status = 2;
+	optional string StatusMessage = 3;
+	optional string ServiceName = 4;
+}
+
+message ListIsolatesResponse {
+	repeated IsolateInfo isolates = 1;
 }

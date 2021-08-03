@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/isolates"
+	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"google.golang.org/grpc"
@@ -59,7 +61,8 @@ type workflowEngine struct {
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
 
-	flowClient flow.DirektivFlowClient
+	flowClient    flow.DirektivFlowClient
+	isolateClient igrpc.IsolatesServiceClient
 
 	secretsClient secretsgrpc.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
@@ -117,12 +120,19 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := GetEndpointTLS(s.config.FlowAPI.Endpoint, true)
+	conn, err := GetEndpointTLS(s.config.FlowAPI.IsolateEndpoint, true)
 	if err != nil {
 		return nil, err
 	}
 	we.grpcConns = append(we.grpcConns, conn)
+	we.isolateClient = igrpc.NewIsolatesServiceClient(conn)
 
+	// get flow client
+	conn, err = GetEndpointTLS(s.config.FlowAPI.Endpoint, true)
+	if err != nil {
+		return nil, err
+	}
+	we.grpcConns = append(we.grpcConns, conn)
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
@@ -547,9 +557,20 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	// configured namespace for workflows
 	ns := os.Getenv(direktivWorkflowNamespace)
 
-	addr := fmt.Sprintf("%s://g-testme.%s",
-		we.server.config.FlowAPI.Protocol, ns)
+	// c GenerateServiceName(ns, wf, n string)
+	svn, err := isolates.GenerateServiceName(ar.Workflow.Namespace,
+		ar.Workflow.ID, ar.Container.ID)
+	if err != nil {
+		log.Errorf("can not create service name: %v", err)
+		we.reportError(ar, err)
+	}
+
+	// h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
+	// 	ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
+
+	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FlowAPI.Protocol, svn, ns)
 	// addr := fmt.Sprintf("%s://%s-%s.%s",
+	// 	we.server.config.FlowAPI.Protocol, ns)
 	// 	we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
 
 	log.Debugf("ACTIONHASH!!!!!!!!!!!!!! %v", addr)
@@ -611,19 +632,22 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 			if err, ok := err.(*url.Error); ok {
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
-						// this happens because the function does not exist
-						// can not happen if w euse IP
-						kubeReq.mtx.Lock()
-						err := getKnativeFunction(fmt.Sprintf("%s-%s", ar.Workflow.Namespace, ah))
-						if err != nil {
-							err := addKnativeFunction(ar)
-							if err != nil {
-								we.reportError(ar, fmt.Errorf("can not create knative function %v: %v", addr, err))
-								return
-							}
-						}
-						kubeReq.mtx.Unlock()
 
+						// isolateClient
+						// this happens because the function does not exist
+						kubeReq.mtx.Lock()
+
+						getKnativeFunction(we.isolateClient, svn)
+
+						// err := getKnativeFunction(fmt.Sprintf("%s-%s", ar.Workflow.Namespace, ah))
+						// if err != nil {
+						// 	err := addKnativeFunction(ar)
+						// 	if err != nil {
+						// 		we.reportError(ar, fmt.Errorf("can not create knative function %v: %v", addr, err))
+						// 		return
+						// 	}
+						// }
+						kubeReq.mtx.Unlock()
 						time.Sleep(250 * time.Millisecond)
 						continue
 					}

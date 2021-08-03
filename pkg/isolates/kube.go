@@ -2,9 +2,9 @@ package isolates
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
@@ -13,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -32,17 +33,95 @@ const (
 	envDebug = "DIREKTIV_DEBUG"
 	envFlow  = "DIREKTIV_FLOW_ENDPOINT"
 	envDB    = "DIREKTIV_DB"
+
+	containerUser    = "direktiv-container"
+	containerSidecar = "direktiv-sidecar"
 )
 
-// pullSecrets add/list/remove
+func listIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
 
-func getServices(ns, wf string) {
+	var b []*igrpc.IsolateInfo
 
-	log.Infof("getting knative services")
-	// v1 "knative.dev/serving/pkg/apis/serving/v1"
+	if len(annotations) == 0 {
+		return b, fmt.Errorf("annotations empty")
+	}
+
+	log.Debugf("list annotations: %s", labels.Set(annotations).String())
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return b, err
+	}
+
+	lo := metav1.ListOptions{LabelSelector: labels.Set(annotations).String()}
+	l, err := cs.ServingV1().Services(ns()).List(context.Background(), lo)
+
+	if err != nil {
+		log.Errorf("error getting isolate list: %v", err)
+		return b, err
+	}
+
+	for i := range l.Items {
+
+		svc := l.Items[i]
+		n := svc.Labels[ServiceHeaderName]
+		ns := svc.Labels[ServiceHeaderNamespace]
+		wf := svc.Labels[ServiceHeaderWorkflow]
+
+		info := &igrpc.BaseInfo{}
+
+		info.Name = &n
+		info.Namespace = &ns
+		info.Workflow = &wf
+
+		var sz, scale int32
+		fmt.Sscan(svc.Annotations[ServiceHeaderSize], &sz)
+		fmt.Sscan(svc.Annotations[ServiceHeaderScale], &scale)
+
+		info.Size = &sz
+		info.MinScale = &scale
+
+		status := fmt.Sprintf("%s", corev1.ConditionUnknown)
+		var statusMsg string
+		if len(svc.Status.Conditions) > 0 {
+			condition := svc.Status.Conditions[0]
+			status = fmt.Sprintf("%s", condition.Status)
+			msg := strings.SplitAfter(condition.Message, ":")
+			if len(msg) > 1 {
+				statusMsg = msg[1]
+			}
+		}
+
+		containers := svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers
+		for a := range containers {
+			c := containers[a]
+
+			if c.Name == containerUser {
+				info.Image = &c.Image
+				cmd := strings.Join(c.Command, ", ")
+				info.Cmd = &cmd
+			}
+
+		}
+
+		svn := svc.Name
+
+		ii := &igrpc.IsolateInfo{
+			Info:          info,
+			ServiceName:   &svn,
+			Status:        &status,
+			StatusMessage: &statusMsg,
+		}
+
+		b = append(b, ii)
+
+	}
+
+	return b, nil
 }
 
-func metaSpec(net string, min, max int) metav1.ObjectMeta {
+func metaSpec(net string, min, max int, ns, wf, name string) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
 		Labels:      make(map[string]string),
@@ -58,21 +137,45 @@ func metaSpec(net string, min, max int) metav1.ObjectMeta {
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", min)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", max)
 
+	metaSpec.Labels[ServiceHeaderName] = name
+	if len(wf) > 0 {
+		metaSpec.Labels[ServiceHeaderWorkflow] = wf
+	}
+
+	if len(ns) > 0 {
+		metaSpec.Labels[ServiceHeaderNamespace] = ns
+	} else {
+		metaSpec.Labels[ServiceHeaderNamespace] = "global"
+	}
+
 	return metaSpec
 
 }
 
-func meta(name, ns string, external bool) metav1.ObjectMeta {
+func meta(svn, name, namespace, ns, wf string, scale, size int) metav1.ObjectMeta {
 
 	meta := metav1.ObjectMeta{
-		Name:      name,
-		Namespace: ns,
-		Labels:    make(map[string]string),
+		Name:        svn,
+		Namespace:   namespace,
+		Labels:      make(map[string]string),
+		Annotations: make(map[string]string),
 	}
 
-	if !external {
-		meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
+	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
+
+	meta.Labels[ServiceHeaderName] = name
+	if len(wf) > 0 {
+		meta.Labels[ServiceHeaderWorkflow] = wf
 	}
+
+	if len(ns) > 0 {
+		meta.Labels[ServiceHeaderNamespace] = ns
+	} else {
+		meta.Labels[ServiceHeaderNamespace] = "global"
+	}
+
+	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
+	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 
 	return meta
 }
@@ -142,11 +245,11 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 	}
 
 	return corev1.ResourceRequirements{
-		Limits: corev1.ResourceList{
+		Requests: corev1.ResourceList{
 			"cpu":    qcpu,
 			"memory": qmem,
 		},
-		Requests: corev1.ResourceList{
+		Limits: corev1.ResourceList{
 			"cpu":    qcpuHigh,
 			"memory": qmemHigh,
 		},
@@ -166,7 +269,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	// user container
 	uc := corev1.Container{
-		Name:      "direktiv-container",
+		Name:      containerUser,
 		Image:     img,
 		Env:       proxy,
 		Resources: res,
@@ -208,7 +311,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	// direktiv sidecar
 	ds := corev1.Container{
-		Name:  "direktiv-container",
+		Name:  containerSidecar,
 		Image: isolateConfig.Sidecar,
 		Env:   proxy,
 		Ports: []corev1.ContainerPort{
@@ -275,18 +378,18 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 func fetchServiceAPI() (*versioned.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Errorf("ERRORRORORO %v", err)
+		log.Errorf("error getting api: %v", err)
 		return nil, err
 	}
-
 	return versioned.NewForConfig(config)
-
 }
 
-func generateServiceName(info *igrpc.BaseInfo) (string, error) {
+// GenerateServiceName generates a knative name based on workflow details
+func GenerateServiceName(ns, wf, n string) (string, error) {
 
-	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", info.GetNamespace(),
-		info.GetWorkflow(), info.GetName()), hash.FormatV2, nil)
+	log.Debugf("service name: %s %s %s", ns, wf, n)
+
+	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
 	if err != nil {
 		return "", err
 	}
@@ -294,30 +397,74 @@ func generateServiceName(info *igrpc.BaseInfo) (string, error) {
 	// get scope and create name
 	// workflow
 	name := fmt.Sprintf("w-%d", h)
-	if info.GetNamespace() == "" {
+	if ns == "" {
 		// global
-		name = fmt.Sprintf("g-%s", info.GetName())
-	} else if info.GetWorkflow() == "" {
+		name = fmt.Sprintf("g-%s", n)
+	} else if wf == "" {
 		//namespace
-		name = fmt.Sprintf("ns-%s-%s", info.GetNamespace(), info.GetName())
+		name = fmt.Sprintf("ns-%s-%s", ns, n)
 	}
 
 	return name, nil
 
 }
 
-func createKnativeIsolate(info *igrpc.BaseInfo, conf *igrpc.Config, external bool) error {
+func ns() string {
+	// get namespace to deploy in
+	configNamespace := os.Getenv(envNS)
+	if len(configNamespace) == 0 {
+		configNamespace = "default"
+	}
+
+	return configNamespace
+}
+
+func getKnativeIsolate(name string) error {
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		// return &resp, err
+	}
+
+	_, err = cs.ServingV1().Services(ns()).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("error getting knative service: %v", err)
+		// return &resp, err
+	}
+
+	return nil
+
+}
+
+func deleteIsolates(annotations map[string]string) error {
+
+	if len(annotations) == 0 {
+		return fmt.Errorf("annotations empty")
+	}
+
+	log.Debugf("delete annotations: %s", labels.Set(annotations).String())
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return err
+	}
+
+	lo := metav1.ListOptions{LabelSelector: labels.Set(annotations).String()}
+	return cs.ServingV1().Services(ns()).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
+
+}
+
+func createKnativeIsolate(info *igrpc.BaseInfo) error {
 
 	var (
 		concurrency int64 = 100
 		timeoutSec  int64 = 60
 	)
 
-	if external {
-		return fmt.Errorf("external services not supported")
-	}
-
-	name, err := generateServiceName(info)
+	name, err := GenerateServiceName(info.GetNamespace(),
+		info.GetWorkflow(), info.GetName())
 	if err != nil {
 		log.Errorf("can not create service name: %v", err)
 		return err
@@ -326,15 +473,12 @@ func createKnativeIsolate(info *igrpc.BaseInfo, conf *igrpc.Config, external boo
 	log.Debugf("creating knative service %s", name)
 
 	// get namespace to deploy in
-	configNamespace := os.Getenv(envNS)
-	if len(configNamespace) == 0 {
-		configNamespace = "default"
-	}
+	configNamespace := ns()
 
 	log.Debugf("isolate namespace %s", configNamespace)
 
 	// check if min scale is not beyond max
-	min := int(conf.GetMinScale())
+	min := int(info.GetMinScale())
 	if min > isolateConfig.MaxScale {
 		min = isolateConfig.MaxScale
 	}
@@ -357,11 +501,13 @@ func createKnativeIsolate(info *igrpc.BaseInfo, conf *igrpc.Config, external boo
 			APIVersion: "serving.knative.dev/v1",
 			Kind:       "Service",
 		},
-		ObjectMeta: meta(name, configNamespace, external),
+		ObjectMeta: meta(name, info.GetName(), configNamespace,
+			info.GetNamespace(), info.GetWorkflow(), min, int(info.GetSize())),
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
-					ObjectMeta: metaSpec(isolateConfig.NetShape, min, isolateConfig.MaxScale),
+					ObjectMeta: metaSpec(isolateConfig.NetShape, min, isolateConfig.MaxScale,
+						info.GetNamespace(), info.GetWorkflow(), info.GetName()),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							Containers: containers,
@@ -374,17 +520,17 @@ func createKnativeIsolate(info *igrpc.BaseInfo, conf *igrpc.Config, external boo
 		},
 	}
 
-	if len(isolateConfig.Runtime) > 0 {
+	if len(isolateConfig.Runtime) > 0 && isolateConfig.Runtime != "default" {
 		log.Debugf("setting runtime class %v", isolateConfig.Runtime)
 		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &isolateConfig.Runtime
 	}
 
-	b, err := json.MarshalIndent(svc, "", "    ")
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	fmt.Println(string(b))
+	// b, err := json.MarshalIndent(svc, "", "    ")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return nil
+	// }
+	// fmt.Println(string(b))
 
 	// u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
 	// u := fmt.Sprintf(kubeAPIKServiceURL, "default")
@@ -415,10 +561,10 @@ func createKnativeIsolate(info *igrpc.BaseInfo, conf *igrpc.Config, external boo
 	// }
 	// //
 	// // Create(ctx context.Context, service *v1.Service, opts metav1.CreateOptions) (*v1.Service, error)
-
-	if true {
-		return nil
-	}
+	//
+	// if true {
+	// 	return nil
+	// }
 
 	cs, err := fetchServiceAPI()
 	if err != nil {

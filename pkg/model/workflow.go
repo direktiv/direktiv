@@ -273,21 +273,6 @@ func (o *Workflow) GetFunctions() []FunctionDefinition {
 	return o.Functions
 }
 
-// CheckFunctionsInRange - Iterate over defined functions and return error on first function that has a scale larger than param maxScale
-func (o *Workflow) CheckFunctionsScaleInRange(maxScale int) error {
-	if o.Functions == nil {
-		return nil
-	}
-
-	for i, f := range o.Functions {
-		if f.Scale > maxScale {
-			return fmt.Errorf("function[%v] '%s' scale cannot be more than %v", i, f.ID, maxScale)
-		}
-	}
-
-	return nil
-}
-
 func (o *Workflow) GetFunction(id string) (*FunctionDefinition, error) {
 
 	for i, fn := range o.Functions {

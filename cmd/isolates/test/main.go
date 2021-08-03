@@ -12,37 +12,37 @@ func main() {
 
 	log.Infof("run client")
 
-	external := false
-	name := "testme"
-	ns := ""
-	wf := ""
-	img := "vorteil/request:v6"
-
-	info := &igrpc.BaseInfo{
-		Name:      &name,
-		Namespace: &ns,
-		Workflow:  &wf,
-		Image:     &img,
-	}
-
-	var g int32 = 1
-	c := &igrpc.Config{
-		MinScale: &g,
-	}
+	// external := false
+	// name := "testme"
+	// ns := ""
+	// wf := ""
+	// img := "vorteil/request:v6"
+	//
+	// info := &igrpc.BaseInfo{
+	// 	Name:      &name,
+	// 	Namespace: &ns,
+	// 	Workflow:  &wf,
+	// 	Image:     &img,
+	// }
+	//
+	// var g int32 = 0
+	// c := &igrpc.Config{
+	// 	MinScale: &g,
+	// }
 
 	// Info     *BaseInfo `protobuf:"bytes,1,opt,name=info,proto3,oneof" json:"info,omitempty"`
 	// Config   *Config   `protobuf:"bytes,2,opt,name=config,proto3,oneof" json:"config,omitempty"`
 	// External *bool     `protobuf:"varint,3,opt,name=external,proto3,oneof" json:"external,omitempty"`
 
-	sr := &igrpc.CreateIsolateRequest{
-		Info:     info,
-		Config:   c,
-		External: &external,
-		// Name:      &name,
-		// External:  &external,
-		// Namespace: &ns,
-		// Workflow:  &wf,
-	}
+	// sr := &igrpc.CreateIsolateRequest{
+	// 	Info:     info,
+	// 	Config:   c,
+	// 	External: &external,
+	// 	// Name:      &name,
+	// 	// External:  &external,
+	// 	// Namespace: &ns,
+	// 	// Workflow:  &wf,
+	// }
 	// // StoreIsolate(ctx context.Context, in *StoreIsolateRequest, opts ...grpc.CallOption)
 	// Name      *string           `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
 	// Namespace *string           `protobuf:"bytes,2,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
@@ -61,13 +61,23 @@ func main() {
 
 	client := igrpc.NewIsolatesServiceClient(conn)
 
-	log.Infof("new client %v", client)
+	a := make(map[string]string)
+	a["direktiv.io/workflow"] = "dsdsdsssd"
 
-	_, err = client.CreateIsolate(context.Background(), sr)
-	// _, err = client.UpdateIsolate(context.Background(), sr)
+	g2 := igrpc.ListIsolatesRequest{
+		Annotations: a,
+	}
 
+	items, err := client.ListIsolates(context.Background(), &g2)
+	// log.Infof("new client %v", client)
+	//
+	// _, err = client.CreateIsolate(context.Background(), sr)
+	// // _, err = client.UpdateIsolate(context.Background(), sr)
+	//
 	if err != nil {
 		log.Errorf("ERR %v", err)
 	}
+
+	log.Infof("%v", items)
 
 }

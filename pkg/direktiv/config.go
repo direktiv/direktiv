@@ -29,6 +29,8 @@ const (
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
 
+	isolateEndpoint = "DIREKTIV_ISOLATE_ENDPOINT"
+
 	// DBConn database connection
 	DBConn = "DIREKTIV_DB"
 
@@ -41,12 +43,13 @@ const (
 // Config is the configuration for workflow and runner server
 type Config struct {
 	FlowAPI struct {
-		Bind     string
-		Endpoint string
-		Exchange string
-		Sidecar  string
-		Protocol string
-		MaxScale int
+		Bind            string
+		Endpoint        string
+		IsolateEndpoint string
+		Exchange        string
+		Sidecar         string
+		Protocol        string
+		MaxScale        int
 	} `toml:"flowAPI"`
 
 	IngressAPI struct {
@@ -175,7 +178,8 @@ func ReadConfig(file string) (*Config, error) {
 		{flowBind, &c.FlowAPI.Bind},
 		{flowEndpoint, &c.FlowAPI.Endpoint},
 		{ingressBind, &c.IngressAPI.Bind},
-		{ingressEndpoint, &c.IngressAPI.Endpoint},
+		{ingressEndpoint, &c.FlowAPI.Endpoint},
+		{isolateEndpoint, &c.FlowAPI.IsolateEndpoint},
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},
 		{flowProtocol, &c.FlowAPI.Protocol},

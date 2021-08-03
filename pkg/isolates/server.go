@@ -23,6 +23,15 @@ const (
 	port     = 5555
 )
 
+// Headers for knative services
+const (
+	ServiceHeaderName      = "direktiv.io/name"
+	ServiceHeaderNamespace = "direktiv.io/namespace"
+	ServiceHeaderWorkflow  = "direktiv.io/workflow"
+	ServiceHeaderSize      = "direktiv.io/size"
+	ServiceHeaderScale     = "direktiv.io/scale"
+)
+
 type isolateServer struct {
 	igrpc.UnimplementedIsolatesServiceServer
 }
@@ -80,6 +89,43 @@ func StopServer() {
 //
 // }
 
+func (is *isolateServer) DeleteIsolates(ctx context.Context,
+	in *igrpc.ListIsolatesRequest) (*emptypb.Empty, error) {
+
+	log.Debugf("deleting isolates %v", in.GetAnnotations())
+
+	err := deleteIsolates(in.GetAnnotations())
+
+	return &empty, err
+}
+
+func (is *isolateServer) ListIsolates(ctx context.Context,
+	in *igrpc.ListIsolatesRequest) (*igrpc.ListIsolatesResponse, error) {
+
+	var resp igrpc.ListIsolatesResponse
+
+	log.Debugf("list isolates %v", in.GetAnnotations())
+
+	items, err := listIsolates(in.GetAnnotations())
+	if err != nil {
+		return &resp, nil
+	}
+
+	resp.Isolates = items
+
+	return &resp, nil
+
+}
+
+func (is *isolateServer) GetIsolate(ctx context.Context,
+	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
+
+	var resp igrpc.GetIsolateResponse
+	log.Debugf("getting isolate %s", in.GetName())
+
+	return &resp, nil
+}
+
 // StoreIsolate saves or updates isolates which means creating knative services
 // baes on the provided configuration
 func (is *isolateServer) CreateIsolate(ctx context.Context,
@@ -87,12 +133,12 @@ func (is *isolateServer) CreateIsolate(ctx context.Context,
 
 	log.Infof("storing isolate %s", in.GetInfo().GetName())
 
-	if in.GetInfo() == nil || in.GetConfig() == nil {
+	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info and config can not be nil")
 	}
 
 	// create ksvc service
-	err := createKnativeIsolate(in.GetInfo(), in.GetConfig(), in.GetExternal())
+	err := createKnativeIsolate(in.GetInfo())
 	if err != nil {
 		log.Errorf("can not create knative service: %v", err)
 		return &empty, err

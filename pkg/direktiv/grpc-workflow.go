@@ -36,15 +36,17 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
-	err = workflow.CheckFunctionsScaleInRange(is.wfServer.GetConfig().FlowAPI.MaxScale)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
-	}
-
 	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
 		workflow.Description, active, logToEvents, document, workflow.GetStartDefinition())
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
+	}
+
+	// create knative services if they are not global or namespace
+	err = createKnativeFunctions(is.wfServer.engine.isolateClient, workflow, namespace)
+	if err != nil {
+		// this can be delayed till the actual call if it fails
+		log.Errorf("can not create knative functions: %v", err)
 	}
 
 	is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", wf.ID.String()))
@@ -163,11 +165,6 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
-	err = workflow.CheckFunctionsScaleInRange(is.wfServer.GetConfig().FlowAPI.MaxScale)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
-	}
-
 	var checkRevisionVal int
 	var checkRevision *int
 	if in.Revision != nil {
@@ -187,6 +184,20 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		if def.GetType() == model.StartTypeScheduled {
 			scheduled := def.(*model.ScheduledStart)
 			is.wfServer.tmManager.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, scheduled.Cron, []byte(wf.ID.String()))
+		}
+	}
+
+	// recreate knative functions
+	// knative services per workflow have no revisions, we delete and recreate them
+	fwf, _ := is.wfServer.dbManager.getWorkflowByUid(ctx, wf.ID.String())
+	if fwf != nil {
+		err = deleteKnativeFunctions(is.wfServer.engine.isolateClient, fwf.Edges.Namespace.ID, workflow.ID, "")
+		if err != nil {
+			log.Errorf("can not delete knative functions: %v", err)
+		}
+		err = createKnativeFunctions(is.wfServer.engine.isolateClient, workflow, fwf.Edges.Namespace.ID)
+		if err != nil {
+			log.Errorf("can not create knative functions: %v", err)
 		}
 	}
 

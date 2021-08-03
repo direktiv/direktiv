@@ -99,11 +99,6 @@ vaultAgent:
   tag: "latest"
   enable: false
 
-
-isolates:
-  sidecar: "vorteil/sidecar"
-  db: ""
-
 # flow config
 flow:
   image: "vorteil/flow"
@@ -137,11 +132,6 @@ no_proxy: ""
 
 netShape: "none"
 
-isolates:
-  image: "vorteil/direktiv-isolates"
-  tag: "latest"
-  replicaCount: 1
-  podAnnotations: {}
 
 # if using proxy the user needs to be a valid IAM user with access to the database
 # e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
@@ -157,4 +147,10 @@ gcp:
   ip_private: false
 
 isolates:
+  image: "vorteil/direktiv-isolates"
+  tag: "latest"
+  replicaCount: 1
+  podAnnotations: {}
   podCleaner: true
+  db: ""
+  sidecar: "vorteil/sidecar"
