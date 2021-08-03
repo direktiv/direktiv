@@ -67,8 +67,11 @@ spec:
               cpu: "8"
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
-          command: ["/bin/direktiv"]
+          command: ["/bin/direktiv", "--config", "/config/default.toml"]
           volumeMounts:
+          - name: server-config
+            mountPath: /config
+            readOnly: true
           - name: service-template
             mountPath: /etc/config
           {{- if ne .Values.flow.certificate "none" }}
@@ -88,12 +91,6 @@ spec:
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
-          - name: DIREKTIV_FLOW_PROTOCOL
-            value: {{ .Values.flow.protocol }}
-          - name: DIREKTIV_INSTANCE_LOGGING_DRIVER
-            value: {{ .Values.logDriver }}
-          - name: DIREKTIV_FLOW_SIDECAR
-            value: {{ .Values.flow.sidecar }}
           - name: DIREKTIV_FLOW_INITPOD
             value: {{ .Values.flow.initPod }}
           - name: DIREKTIV_FLOW_MAX_SCALE
@@ -108,6 +105,14 @@ spec:
             value: "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
           - name: "DIREKTIV_INGRESS_ENDPOINT"
             value: "dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666"
+          - name: GRPC_MAX_SEND_SIZE_CLIENT
+            value: {{ .Values.grpc.client.maxSendSize | quote }}
+          - name: GRPC_MAX_RECEIVE_SIZE_CLIENT
+            value: {{ .Values.grpc.client.maxRecvSize | quote }}
+          - name: GRPC_MAX_SEND_SIZE_SERVER
+            value: {{ .Values.grpc.server.maxSendSize | quote }}
+          - name: GRPC_MAX_RECEIVE_SIZE_SEVER
+            value: {{ .Values.grpc.server.maxRecvSize | quote }}
           {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
           - name: "HTTP_PROXY"
             value: "{{ .Values.http_proxy }}"
@@ -128,14 +133,6 @@ spec:
                 key: db
           - name: DIREKTIV_WFNS
             value: {{ .Release.Namespace }}
-          - name: DIREKTIV_SECRETS_ENDPOINT
-            value:  "localhost:2610"
-          - name: DIREKTIV_ISOLATE_PODCLEAN
-            {{- if .Values.isolates.podCleaner }}
-            value: "1"
-            {{- else }}
-            value: "0"
-            {{- end }}
         - name: secrets
           securityContext:
             readOnlyRootFilesystem: true
@@ -170,6 +167,14 @@ spec:
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SECRETS_BIND
             value: "127.0.0.1:2610"
+          - name: GRPC_MAX_SEND_SIZE_CLIENT
+            value: {{ .Values.grpc.client.maxSendSize | quote }}
+          - name: GRPC_MAX_RECEIVE_SIZE_CLIENT
+            value: {{ .Values.grpc.client.maxRecvSize | quote }}
+          - name: GRPC_MAX_SEND_SIZE_SERVER
+            value: {{ .Values.grpc.server.maxSendSize | quote }}
+          - name: GRPC_MAX_RECEIVE_SIZE_SEVER
+            value: {{ .Values.grpc.server.maxRecvSize | quote }}
           {{- if eq .Values.secrets.backend "db" }}
           - name: DIREKTIV_SECRETS_DB
             valueFrom:
@@ -234,6 +239,9 @@ spec:
               protocol: TCP
         {{- end}}
       volumes:
+        - name: server-config
+          configMap:
+            name: flow-cm-config
         - name: service-template
           configMap:
             name: service-template

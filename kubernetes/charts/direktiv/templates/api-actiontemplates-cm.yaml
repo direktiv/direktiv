@@ -369,8 +369,7 @@ data:
     }
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2021-07-05T05:11:48Z"
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
   name: api-actiontemplates-cm
   namespace: {{ .Release.Namespace }}
-  resourceVersion: "4050993"
-  uid: fca236ca-3d04-4452-8301-14766e53427a

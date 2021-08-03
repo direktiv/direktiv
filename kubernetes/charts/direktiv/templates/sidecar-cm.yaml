@@ -100,6 +100,14 @@ data:
                       }
                     }
                   },
+                  {
+                    "name": "GRPC_MAX_SEND_SIZE_CLIENT",
+                    "value": "{{ .Values.grpc.client.maxSendSize}}"
+                  },
+                  {
+                    "name": "GRPC_MAX_RECEIVE_SIZE_CLIENT",
+                    "value": "{{ .Values.grpc.client.maxRecvSize}}"
+                  },
                   {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
                   {
                     "name": "HTTPS_PROXY",
