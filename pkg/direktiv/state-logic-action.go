@@ -423,7 +423,24 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 		return
 	}
 
-	if sl.state.Action.Function != "" {
+	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	// TODO: expand this for more function types
+	if fn.GetType() == model.SubflowFunctionType {
+
+		id := sd.Id
+		if results.ActionID != id {
+			err = NewInternalError(errors.New("incorrect subflow action ID"))
+			return
+		}
+
+		instance.Log(ctx, "Subflow '%s' returned.", id)
+
+	} else {
 
 		var uid ksuid.KSUID
 		err = uid.UnmarshalText([]byte(sd.Id))
@@ -438,16 +455,6 @@ func (sl *actionStateLogic) Run(ctx context.Context, instance *workflowLogicInst
 		}
 
 		instance.Log(ctx, "Function '%s' returned.", sl.state.Action.Function)
-
-	} else {
-
-		id := sd.Id
-		if results.ActionID != id {
-			err = NewInternalError(errors.New("incorrect subflow action ID"))
-			return
-		}
-
-		instance.Log(ctx, "Subflow '%s' returned.", id)
 
 	}
 
