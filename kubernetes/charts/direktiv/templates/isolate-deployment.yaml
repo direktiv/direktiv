@@ -31,9 +31,19 @@ spec:
         - name: config-file
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-isolate
+        {{- if ne  .Values.flow.certificate "none" }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.flow.certificate }}
+        {{- end }}
       containers:
         - name: ingress
           volumeMounts:
+          {{- if ne .Values.flow.certificate "none" }}
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
+          {{- end }}
           - name: config-file
             mountPath: /etc/direktiv
           env:
@@ -59,3 +69,4 @@ spec:
             - name: grpc
               containerPort: 5555
               protocol: TCP
+      
