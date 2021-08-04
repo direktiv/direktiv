@@ -552,8 +552,6 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	}
 
-	log.Debugf("KNATIVE2")
-
 	// configured namespace for workflows
 	ns := os.Getenv(direktivWorkflowNamespace)
 
@@ -565,16 +563,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		we.reportError(ar, err)
 	}
 
-	// h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
-	// 	ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
-
 	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FlowAPI.Protocol, svn, ns)
-	// addr := fmt.Sprintf("%s://%s-%s.%s",
-	// 	we.server.config.FlowAPI.Protocol, ns)
-	// 	we.server.config.FlowAPI.Protocol, ar.Workflow.Namespace, ah, ns)
-
-	log.Debugf("ACTIONHASH!!!!!!!!!!!!!! %v", addr)
-
 	log.Debugf("isolate request: %v", addr)
 
 	if ar.Workflow.Timeout == 0 {
@@ -621,7 +610,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	)
 
 	// potentially dns error for a brand new service
-	for i := 0; i < 400; i++ {
+	for i := 0; i < 1000; i++ {
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -633,21 +622,16 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 
-						// isolateClient
-						// this happens because the function does not exist
-						kubeReq.mtx.Lock()
+						if !isKnativeFunction(we.isolateClient, ar.Container.ID,
+							ar.Workflow.Namespace, ar.Workflow.ID) {
+							err := createKnativeFunction(we.isolateClient, ar)
+							if err != nil {
+								log.Errorf("can not create knative function: %v", err)
+								we.reportError(ar, err)
+								return
+							}
+						}
 
-						getKnativeFunction(we.isolateClient, svn)
-
-						// err := getKnativeFunction(fmt.Sprintf("%s-%s", ar.Workflow.Namespace, ah))
-						// if err != nil {
-						// 	err := addKnativeFunction(ar)
-						// 	if err != nil {
-						// 		we.reportError(ar, fmt.Errorf("can not create knative function %v: %v", addr, err))
-						// 		return
-						// 	}
-						// }
-						kubeReq.mtx.Unlock()
 						time.Sleep(250 * time.Millisecond)
 						continue
 					}
