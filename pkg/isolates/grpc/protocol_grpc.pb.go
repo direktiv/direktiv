@@ -24,6 +24,7 @@ type IsolatesServiceClient interface {
 	DeleteIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*ListIsolatesResponse, error)
 	GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error)
+	SetIsolateTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type isolatesServiceClient struct {
@@ -79,6 +80,15 @@ func (c *isolatesServiceClient) GetIsolate(ctx context.Context, in *GetIsolateRe
 	return out, nil
 }
 
+func (c *isolatesServiceClient) SetIsolateTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/SetIsolateTraffic", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IsolatesServiceServer is the server API for IsolatesService service.
 // All implementations must embed UnimplementedIsolatesServiceServer
 // for forward compatibility
@@ -88,6 +98,7 @@ type IsolatesServiceServer interface {
 	DeleteIsolates(context.Context, *ListIsolatesRequest) (*emptypb.Empty, error)
 	ListIsolates(context.Context, *ListIsolatesRequest) (*ListIsolatesResponse, error)
 	GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error)
+	SetIsolateTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedIsolatesServiceServer()
 }
 
@@ -109,6 +120,9 @@ func (UnimplementedIsolatesServiceServer) ListIsolates(context.Context, *ListIso
 }
 func (UnimplementedIsolatesServiceServer) GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIsolate not implemented")
+}
+func (UnimplementedIsolatesServiceServer) SetIsolateTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetIsolateTraffic not implemented")
 }
 func (UnimplementedIsolatesServiceServer) mustEmbedUnimplementedIsolatesServiceServer() {}
 
@@ -213,6 +227,24 @@ func _IsolatesService_GetIsolate_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IsolatesService_SetIsolateTraffic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetTrafficRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).SetIsolateTraffic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/SetIsolateTraffic",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).SetIsolateTraffic(ctx, req.(*SetTrafficRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IsolatesService_ServiceDesc is the grpc.ServiceDesc for IsolatesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -239,6 +271,10 @@ var IsolatesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIsolate",
 			Handler:    _IsolatesService_GetIsolate_Handler,
+		},
+		{
+			MethodName: "SetIsolateTraffic",
+			Handler:    _IsolatesService_SetIsolateTraffic_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

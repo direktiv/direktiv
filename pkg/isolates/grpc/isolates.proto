@@ -67,3 +67,13 @@ message GetIsolateResponse {
 	repeated Revision revisions = 4;
 
 }
+
+message TrafficValue {
+	optional string revision = 1;
+	optional int64 percent = 2;
+}
+
+message SetTrafficRequest {
+	optional string name = 1;
+	repeated TrafficValue traffic = 2;
+}

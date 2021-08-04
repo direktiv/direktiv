@@ -13,14 +13,15 @@ type configReader struct {
 }
 
 type config struct {
-	ServiceAccount string `yaml:"service-account"`
-	SidecarDb      string `yaml:"sidecar-db"`
-	Sidecar        string `yaml:"sidecar"`
-	MaxScale       int    `yaml:"max-scale"`
-	NetShape       string `yaml:"net-shape"`
-	Concurrency    int    `yaml:"concurrency"`
-	Runtime        string `yaml:"runtime"`
-	Memory         struct {
+	ServiceAccount  string `yaml:"service-account"`
+	SidecarDb       string `yaml:"sidecar-db"`
+	Sidecar         string `yaml:"sidecar"`
+	MaxScale        int    `yaml:"max-scale"`
+	NetShape        string `yaml:"net-shape"`
+	RolloutDuration int    `yaml:"rollout-duration"`
+	Concurrency     int    `yaml:"concurrency"`
+	Runtime         string `yaml:"runtime"`
+	Memory          struct {
 		Small  int `yaml:"small"`
 		Medium int `yaml:"medium"`
 		Large  int `yaml:"large"`

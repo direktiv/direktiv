@@ -169,3 +169,16 @@ func (is *isolateServer) CreateIsolate(ctx context.Context,
 	return &empty, nil
 
 }
+
+func (is *isolateServer) SetIsolateTraffic(ctx context.Context,
+	in *igrpc.SetTrafficRequest) (*emptypb.Empty, error) {
+
+	err := trafficKnativeIsolate(in.GetName(), in.GetTraffic())
+	if err != nil {
+		log.Errorf("can not create knative service: %v", err)
+		return &empty, err
+	}
+
+	return &empty, err
+
+}

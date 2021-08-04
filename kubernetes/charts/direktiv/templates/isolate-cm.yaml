@@ -19,6 +19,9 @@ data:
       # max number of pods per service
       max-scale: 3
 
+      # rollout seconds for knative services
+      rollout-duration: 30
+
       # shaping network traffic if supported by network plugin
       net-shape: 10M
 

@@ -619,6 +619,116 @@ func (x *GetIsolateResponse) GetRevisions() []*Revision {
 	return nil
 }
 
+type TrafficValue struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Revision *string `protobuf:"bytes,1,opt,name=revision,proto3,oneof" json:"revision,omitempty"`
+	Percent  *int64  `protobuf:"varint,2,opt,name=percent,proto3,oneof" json:"percent,omitempty"`
+}
+
+func (x *TrafficValue) Reset() {
+	*x = TrafficValue{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_isolates_grpc_isolates_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TrafficValue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TrafficValue) ProtoMessage() {}
+
+func (x *TrafficValue) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_isolates_grpc_isolates_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TrafficValue.ProtoReflect.Descriptor instead.
+func (*TrafficValue) Descriptor() ([]byte, []int) {
+	return file_pkg_isolates_grpc_isolates_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *TrafficValue) GetRevision() string {
+	if x != nil && x.Revision != nil {
+		return *x.Revision
+	}
+	return ""
+}
+
+func (x *TrafficValue) GetPercent() int64 {
+	if x != nil && x.Percent != nil {
+		return *x.Percent
+	}
+	return 0
+}
+
+type SetTrafficRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name    *string         `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Traffic []*TrafficValue `protobuf:"bytes,2,rep,name=traffic,proto3" json:"traffic,omitempty"`
+}
+
+func (x *SetTrafficRequest) Reset() {
+	*x = SetTrafficRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_isolates_grpc_isolates_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetTrafficRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetTrafficRequest) ProtoMessage() {}
+
+func (x *SetTrafficRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_isolates_grpc_isolates_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetTrafficRequest.ProtoReflect.Descriptor instead.
+func (*SetTrafficRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_isolates_grpc_isolates_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *SetTrafficRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *SetTrafficRequest) GetTraffic() []*TrafficValue {
+	if x != nil {
+		return x.Traffic
+	}
+	return nil
+}
+
 var File_pkg_isolates_grpc_isolates_proto protoreflect.FileDescriptor
 
 var file_pkg_isolates_grpc_isolates_proto_rawDesc = []byte{
@@ -728,10 +838,23 @@ var file_pkg_isolates_grpc_isolates_proto_rawDesc = []byte{
 	0x69, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x09, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x73,
 	0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6e, 0x61,
 	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x42, 0x0b, 0x0a, 0x09, 0x5f, 0x77, 0x6f, 0x72, 0x6b,
-	0x66, 0x6c, 0x6f, 0x77, 0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x76, 0x6f, 0x72, 0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x69, 0x73, 0x6f, 0x6c, 0x61, 0x74, 0x65, 0x73,
-	0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x66, 0x6c, 0x6f, 0x77, 0x22, 0x67, 0x0a, 0x0c, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x12, 0x1f, 0x0a, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69,
+	0x6f, 0x6e, 0x88, 0x01, 0x01, 0x12, 0x1d, 0x0a, 0x07, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x48, 0x01, 0x52, 0x07, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e,
+	0x74, 0x88, 0x01, 0x01, 0x42, 0x0b, 0x0a, 0x09, 0x5f, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f,
+	0x6e, 0x42, 0x0a, 0x0a, 0x08, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x22, 0x63, 0x0a,
+	0x11, 0x53, 0x65, 0x74, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x48, 0x00, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x12, 0x2c, 0x0a, 0x07, 0x74,
+	0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x67,
+	0x72, 0x70, 0x63, 0x2e, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x56, 0x61, 0x6c, 0x75, 0x65,
+	0x52, 0x07, 0x74, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61,
+	0x6d, 0x65, 0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x76, 0x6f, 0x72, 0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
+	0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x69, 0x73, 0x6f, 0x6c, 0x61, 0x74, 0x65, 0x73, 0x2f, 0x67,
+	0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -746,7 +869,7 @@ func file_pkg_isolates_grpc_isolates_proto_rawDescGZIP() []byte {
 	return file_pkg_isolates_grpc_isolates_proto_rawDescData
 }
 
-var file_pkg_isolates_grpc_isolates_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_pkg_isolates_grpc_isolates_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_pkg_isolates_grpc_isolates_proto_goTypes = []interface{}{
 	(*BaseInfo)(nil),             // 0: grpc.BaseInfo
 	(*CreateIsolateRequest)(nil), // 1: grpc.CreateIsolateRequest
@@ -757,20 +880,23 @@ var file_pkg_isolates_grpc_isolates_proto_goTypes = []interface{}{
 	(*GetIsolateRequest)(nil),    // 6: grpc.GetIsolateRequest
 	(*Revision)(nil),             // 7: grpc.Revision
 	(*GetIsolateResponse)(nil),   // 8: grpc.GetIsolateResponse
-	nil,                          // 9: grpc.ListIsolatesRequest.AnnotationsEntry
+	(*TrafficValue)(nil),         // 9: grpc.TrafficValue
+	(*SetTrafficRequest)(nil),    // 10: grpc.SetTrafficRequest
+	nil,                          // 11: grpc.ListIsolatesRequest.AnnotationsEntry
 }
 var file_pkg_isolates_grpc_isolates_proto_depIdxs = []int32{
-	0, // 0: grpc.CreateIsolateRequest.info:type_name -> grpc.BaseInfo
-	9, // 1: grpc.ListIsolatesRequest.annotations:type_name -> grpc.ListIsolatesRequest.AnnotationsEntry
-	0, // 2: grpc.IsolateInfo.info:type_name -> grpc.BaseInfo
-	3, // 3: grpc.ListIsolatesResponse.isolates:type_name -> grpc.IsolateInfo
-	0, // 4: grpc.UpdateIsolateRequest.info:type_name -> grpc.BaseInfo
-	7, // 5: grpc.GetIsolateResponse.revisions:type_name -> grpc.Revision
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	0,  // 0: grpc.CreateIsolateRequest.info:type_name -> grpc.BaseInfo
+	11, // 1: grpc.ListIsolatesRequest.annotations:type_name -> grpc.ListIsolatesRequest.AnnotationsEntry
+	0,  // 2: grpc.IsolateInfo.info:type_name -> grpc.BaseInfo
+	3,  // 3: grpc.ListIsolatesResponse.isolates:type_name -> grpc.IsolateInfo
+	0,  // 4: grpc.UpdateIsolateRequest.info:type_name -> grpc.BaseInfo
+	7,  // 5: grpc.GetIsolateResponse.revisions:type_name -> grpc.Revision
+	9,  // 6: grpc.SetTrafficRequest.traffic:type_name -> grpc.TrafficValue
+	7,  // [7:7] is the sub-list for method output_type
+	7,  // [7:7] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_pkg_isolates_grpc_isolates_proto_init() }
@@ -887,6 +1013,30 @@ func file_pkg_isolates_grpc_isolates_proto_init() {
 				return nil
 			}
 		}
+		file_pkg_isolates_grpc_isolates_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TrafficValue); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_isolates_grpc_isolates_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetTrafficRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_pkg_isolates_grpc_isolates_proto_msgTypes[0].OneofWrappers = []interface{}{}
 	file_pkg_isolates_grpc_isolates_proto_msgTypes[1].OneofWrappers = []interface{}{}
@@ -895,13 +1045,15 @@ func file_pkg_isolates_grpc_isolates_proto_init() {
 	file_pkg_isolates_grpc_isolates_proto_msgTypes[6].OneofWrappers = []interface{}{}
 	file_pkg_isolates_grpc_isolates_proto_msgTypes[7].OneofWrappers = []interface{}{}
 	file_pkg_isolates_grpc_isolates_proto_msgTypes[8].OneofWrappers = []interface{}{}
+	file_pkg_isolates_grpc_isolates_proto_msgTypes[9].OneofWrappers = []interface{}{}
+	file_pkg_isolates_grpc_isolates_proto_msgTypes[10].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_isolates_grpc_isolates_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

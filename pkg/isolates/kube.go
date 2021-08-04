@@ -184,6 +184,8 @@ func meta(svn, name, namespace, ns, wf string, scale, size int) metav1.ObjectMet
 
 	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
 	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
+	meta.Annotations["serving.knative.dev/rolloutDuration"] =
+		fmt.Sprintf("%d", isolateConfig.RolloutDuration)
 
 	return meta
 }
@@ -641,8 +643,6 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		return err
 	}
 
-	// serving.knative.dev/rolloutDuration: "380s"
-
 	svc := v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -685,4 +685,47 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 	}
 
 	return nil
+}
+
+func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {
+
+	log.Debugf("setting traffic for %s", name)
+
+	if len(tv) == 0 {
+		return fmt.Errorf("no traffic defined")
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return err
+	}
+
+	tr := []v1.TrafficTarget{}
+	for i := range tv {
+		tt := v1.TrafficTarget{
+			RevisionName: tv[i].GetRevision(),
+			Percent:      tv[i].Percent,
+		}
+		tr = append(tr, tt)
+	}
+
+	var nr v1.Route
+	nr.Spec.Traffic = tr
+
+	b, err := json.MarshalIndent(nr, "", "    ")
+	if err != nil {
+		log.Errorf("error marshalling new services: %v", err)
+	}
+	fmt.Printf("%s", string(b))
+
+	_, err = cs.ServingV1().Services(ns()).Patch(context.Background(),
+		name, types.MergePatchType, b, metav1.PatchOptions{})
+
+	if err != nil {
+		log.Errorf("error setting traffic: %v", err)
+	}
+
+	return err
+
 }
