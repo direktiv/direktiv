@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/qri-io/jsonschema"
@@ -34,85 +33,6 @@ func (o *TimeoutDefinition) Validate() error {
 		return errors.New("kill is not a ISO8601 string")
 	}
 	return nil
-}
-
-type FunctionFileDefinition struct {
-	Key   string `yaml:"key" json:"key"`
-	As    string `yaml:"as,omitempty" json:"as,omitempty"`
-	Scope string `yaml:"scope,omitempty" json:"scope,omitempty"`
-	Type  string `yaml:"type,omitempty" json:"type,omitempty"`
-}
-
-func (o FunctionFileDefinition) Validate() error {
-
-	if o.Key == "" {
-		return errors.New("key required")
-	}
-
-	switch o.Scope {
-	case "":
-	case "namespace":
-	case "workflow":
-	case "instance":
-	default:
-		return errors.New("bad scope (choose 'namespace', 'workflow', or 'instance')")
-	}
-
-	switch o.Type {
-	case "":
-	case "plain":
-	case "base64":
-	case "tar":
-	case "tar.gz":
-	default:
-		return errors.New("bad type (choose 'plain', 'base64', 'tar', or 'tar.gz'")
-	}
-
-	return nil
-
-}
-
-type FunctionDefinition struct {
-	Type  FunctionType             `yaml:"type"`
-	ID    string                   `yaml:"id"`
-	Image string                   `yaml:"image"`
-	Size  Size                     `yaml:"size,omitempty"`
-	Cmd   string                   `yaml:"cmd,omitempty"`
-	Scale int                      `yaml:"scale,omitempty"`
-	Files []FunctionFileDefinition `yaml:"files,omitempty"`
-}
-
-func (o *FunctionDefinition) Validate() error {
-	if o == nil {
-		return nil
-	}
-
-	if o.ID == "" {
-		return errors.New("id required")
-	}
-
-	matched, err := regexp.MatchString(FunctionNameRegex, o.ID)
-	if err != nil {
-		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("function id must match regex: %s", FunctionNameRegex)
-	}
-
-	if o.Image == "" {
-		return errors.New("image required")
-	}
-
-	for i, f := range o.Files {
-		err := f.Validate()
-		if err != nil {
-			return fmt.Errorf("function file %d: %v", i, err)
-		}
-	}
-
-	return nil
-
 }
 
 type SchemaDefinition struct {
