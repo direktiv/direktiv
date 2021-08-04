@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -13,9 +12,12 @@ import (
 type FunctionType int
 
 const (
-	DefaultFunctionType FunctionType = iota
-	ReusableContainerFunctionType
-	IsolatedContainerFunctionType
+	DefaultFunctionType           FunctionType = iota
+	ReusableContainerFunctionType              // Old school knative
+	IsolatedContainerFunctionType              // isolated (scale field not needed)
+	// Namespace Level Knative services (no size, command or scale), image should be name of service
+	// Global Level Knative services
+	// Subflow Level (WIP)
 )
 
 var FunctionTypeStrings = []string{"unknown", "reusable", "isolated"}
@@ -92,51 +94,8 @@ func (a *FunctionType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 type FunctionDefinition interface {
 	GetID() string
-	GetType() StateType
+	GetType() FunctionType
 	Validate() error
-}
-
-type ReusableFunctionDefinition struct {
-	Type  FunctionType             `yaml:"type"`
-	ID    string                   `yaml:"id"`
-	Image string                   `yaml:"image"`
-	Size  Size                     `yaml:"size,omitempty"`
-	Cmd   string                   `yaml:"cmd,omitempty"`
-	Scale int                      `yaml:"scale,omitempty"`
-	Files []FunctionFileDefinition `yaml:"files,omitempty"`
-}
-
-func (o *FunctionDefinition) Validate() error {
-	if o == nil {
-		return nil
-	}
-
-	if o.ID == "" {
-		return errors.New("id required")
-	}
-
-	matched, err := regexp.MatchString(FunctionNameRegex, o.ID)
-	if err != nil {
-		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("function id must match regex: %s", FunctionNameRegex)
-	}
-
-	if o.Image == "" {
-		return errors.New("image required")
-	}
-
-	for i, f := range o.Files {
-		err := f.Validate()
-		if err != nil {
-			return fmt.Errorf("function file %d: %v", i, err)
-		}
-	}
-
-	return nil
-
 }
 
 type FunctionFileDefinition struct {
@@ -173,4 +132,23 @@ func (o FunctionFileDefinition) Validate() error {
 
 	return nil
 
+}
+
+// util
+func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
+	var f FunctionDefinition
+	var err error
+
+	switch ftype {
+	case ReusableContainerFunctionType.String():
+		f = new(ReusableFunctionDefinition)
+	case IsolatedContainerFunctionType.String():
+		f = new(ReusableFunctionDefinition)
+	case "":
+		err = errors.New("type required")
+	default:
+		err = errors.New("type unimplemented/unrecognized")
+	}
+
+	return f, err
 }

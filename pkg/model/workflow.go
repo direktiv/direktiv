@@ -31,28 +31,51 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 	}
 
 	// split states out from the rest
-	x, ok := m["states"]
+	iStates, ok := m["states"]
 	if !ok {
 		return errors.New("states required")
 	}
 
 	delete(m, "states")
 
+	// split states out from the rest
+	iFunctions, ok := m["functions"]
+	if !ok {
+		return errors.New("functions required")
+	}
+
+	delete(m, "functions")
+
 	if err := strictMapUnmarshal(m, &o); err != nil {
 		return fmt.Errorf("failed to decode workflow: %w", err)
 	}
 
 	// cast all states
-	list, ok := x.([]interface{})
+	sList, ok := iStates.([]interface{})
 	if !ok {
 		return errors.New("invalid type for states")
 	}
 
-	o.States = make([]State, len(list))
+	o.States = make([]State, len(sList))
 
-	for i := range list {
+	for i := range sList {
 		// insert state in workflow.states[i]
-		if err := o.unmState(list[i], i); err != nil {
+		if err := o.unmState(sList[i], i); err != nil {
+			return err
+		}
+	}
+
+	// cast all functions
+	fList, ok := iFunctions.([]interface{})
+	if !ok {
+		return errors.New("invalid type for functions")
+	}
+
+	o.Functions = make([]FunctionDefinition, len(fList))
+
+	for i := range fList {
+		// insert function in workflow.function[i]
+		if err := o.unmFunction(fList[i], i); err != nil {
 			return err
 		}
 	}
@@ -104,7 +127,7 @@ func (o *Workflow) unmState(state interface{}, sIndex int) error {
 
 	s, err := getStateFromType(stateType)
 	if err != nil {
-		err = fmt.Errorf("state[%d]: %w", sIndex, err)
+		return fmt.Errorf("state[%d]: %w", sIndex, err)
 	}
 
 	if err := strictMapUnmarshal(stateMap, &s); err != nil {
@@ -116,6 +139,31 @@ func (o *Workflow) unmState(state interface{}, sIndex int) error {
 	err = s.Validate()
 	if err != nil {
 		err = fmt.Errorf("state[%d]: %w", sIndex, err)
+	}
+
+	return err
+}
+
+func (o *Workflow) unmFunction(state interface{}, fIndex int) error {
+	fMap, fType, err := processInterfaceMap(state)
+	if err != nil {
+		return fmt.Errorf("function[%d]: %w", fIndex, err)
+	}
+
+	f, err := getFunctionDefFromType(fType)
+	if err != nil {
+		return fmt.Errorf("function[%d]: %w", fIndex, err)
+	}
+
+	if err := strictMapUnmarshal(fMap, &f); err != nil {
+		return fmt.Errorf("failed to decode function[%d]: %w", fIndex, err)
+	}
+
+	o.Functions[fIndex] = f
+
+	err = f.Validate()
+	if err != nil {
+		err = fmt.Errorf("function[%d]: %w", fIndex, err)
 	}
 
 	return err
@@ -247,7 +295,7 @@ func (o *Workflow) getFunctionMap() (map[string]FunctionDefinition, error) {
 	funcMap := make(map[string]FunctionDefinition)
 
 	for _, wfFunc := range o.GetFunctions() {
-		fID := wfFunc.ID
+		fID := wfFunc.GetID()
 		if _, ok := funcMap[fID]; ok {
 			return funcMap, fmt.Errorf("function id '%s' is used in more than one function", fID)
 		}
@@ -274,14 +322,15 @@ func (o *Workflow) GetFunctions() []FunctionDefinition {
 }
 
 // CheckFunctionsInRange - Iterate over defined functions and return error on first function that has a scale larger than param maxScale
+// Only looks at ReusableContainer scales
 func (o *Workflow) CheckFunctionsScaleInRange(maxScale int) error {
 	if o.Functions == nil {
 		return nil
 	}
 
 	for i, f := range o.Functions {
-		if f.Scale > maxScale {
-			return fmt.Errorf("function[%v] '%s' scale cannot be more than %v", i, f.ID, maxScale)
+		if f.GetType() == ReusableContainerFunctionType && f.(*ReusableFunctionDefinition).Scale > maxScale {
+			return fmt.Errorf("function[%v] '%s' scale cannot be more than %v", i, f.GetID(), maxScale)
 		}
 	}
 
