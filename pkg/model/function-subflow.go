@@ -17,7 +17,7 @@ func (o *SubflowFunctionDefinition) GetID() string {
 }
 
 func (o *SubflowFunctionDefinition) GetType() FunctionType {
-	return ReusableContainerFunctionType
+	return SubflowFunctionType
 }
 
 func (o *SubflowFunctionDefinition) Validate() error {

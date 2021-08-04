@@ -18,7 +18,7 @@ func (o *NamespacedFunctionDefinition) GetID() string {
 }
 
 func (o *NamespacedFunctionDefinition) GetType() FunctionType {
-	return ReusableContainerFunctionType
+	return NamespacedKnativeFunctionType
 }
 
 func (o *NamespacedFunctionDefinition) Validate() error {

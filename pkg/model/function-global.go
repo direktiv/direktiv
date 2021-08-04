@@ -18,7 +18,7 @@ func (o *GlobalFunctionDefinition) GetID() string {
 }
 
 func (o *GlobalFunctionDefinition) GetType() FunctionType {
-	return ReusableContainerFunctionType
+	return GlobalKnativeFunctionType
 }
 
 func (o *GlobalFunctionDefinition) Validate() error {

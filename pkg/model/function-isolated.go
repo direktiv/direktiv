@@ -20,7 +20,7 @@ func (o *IsolatedFunctionDefinition) GetID() string {
 }
 
 func (o *IsolatedFunctionDefinition) GetType() FunctionType {
-	return ReusableContainerFunctionType
+	return IsolatedContainerFunctionType
 }
 
 func (o *IsolatedFunctionDefinition) Validate() error {

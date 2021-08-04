@@ -39,10 +39,7 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 	delete(m, "states")
 
 	// split states out from the rest
-	iFunctions, ok := m["functions"]
-	if !ok {
-		return errors.New("functions required")
-	}
+	iFunctions, functionsOk := m["functions"]
 
 	delete(m, "functions")
 
@@ -65,18 +62,20 @@ func (o *Workflow) unmarshal(m map[string]interface{}) error {
 		}
 	}
 
-	// cast all functions
-	fList, ok := iFunctions.([]interface{})
-	if !ok {
-		return errors.New("invalid type for functions")
-	}
+	// cast all functions exist
+	if functionsOk {
+		fList, ok := iFunctions.([]interface{})
+		if !ok {
+			return errors.New("invalid type for functions")
+		}
 
-	o.Functions = make([]FunctionDefinition, len(fList))
+		o.Functions = make([]FunctionDefinition, len(fList))
 
-	for i := range fList {
-		// insert function in workflow.function[i]
-		if err := o.unmFunction(fList[i], i); err != nil {
-			return err
+		for i := range fList {
+			// insert function in workflow.function[i]
+			if err := o.unmFunction(fList[i], i); err != nil {
+				return err
+			}
 		}
 	}
 
