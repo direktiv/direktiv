@@ -15,8 +15,13 @@ type listFunctionsRequest struct {
 
 type functionResponseObject struct {
 	Info struct {
-		Size     int32  `json:"size"`
-		Workflow string `json:"workflow"`
+		Size      int32  `json:"size"`
+		Workflow  string `json:"workflow"`
+		MinScale  int32  `json:"minScale"`
+		Name      string `json:"name"`
+		Namespace string `json:"namespace"`
+		Image     string `json:"image"`
+		Cmd       string `json:"cmd"`
 	} `json:"info"`
 	ServiceName   string `json:"serviceName"`
 	Status        string `json:"status"`
@@ -63,7 +68,6 @@ func (h *Handler) listFunctions(w http.ResponseWriter, r *http.Request) {
 	for _, isolate := range isolates {
 
 		obj := new(functionResponseObject)
-
 		iinf := isolate.GetInfo()
 		if iinf != nil {
 			if iinf.Size != nil {
@@ -71,6 +75,21 @@ func (h *Handler) listFunctions(w http.ResponseWriter, r *http.Request) {
 			}
 			if iinf.Workflow != nil {
 				obj.Info.Workflow = *iinf.Workflow
+			}
+			if iinf.MinScale != nil {
+				obj.Info.MinScale = *iinf.MinScale
+			}
+			if iinf.Name != nil {
+				obj.Info.Name = *iinf.Name
+			}
+			if iinf.Namespace != nil {
+				obj.Info.Namespace = *iinf.Namespace
+			}
+			if iinf.Image != nil {
+				obj.Info.Image = *iinf.Image
+			}
+			if iinf.Cmd != nil {
+				obj.Info.Cmd = *iinf.Cmd
 			}
 		}
 
