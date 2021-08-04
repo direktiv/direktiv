@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -91,21 +92,35 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 
 	fnt := fn.GetType()
 	switch fnt {
-	case model.ReusableContainerFunctionType:
-	case model.IsolatedContainerFunctionType:
-	case model.NamespacedKnativeFunctionType:
-	case model.GlobalKnativeFunctionType:
 	case model.SubflowFunctionType:
-	default:
-		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
-		return
-	}
 
-	/* TODO
+		sf := fn.(*model.SubflowFunctionDefinition)
 
-	if action.Function != "" {
+		// subflow
+
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sf.Workflow, inputData)
+		if err != nil {
+			return
+		}
+
+		logic = multiactionTuple{
+			ID:       subflowID,
+			Type:     "subflow",
+			Attempts: attempt,
+		}
+
+	case model.ReusableContainerFunctionType:
 
 		// container
+
+		con := fn.(*ReusableFunctionDefinition)
 
 		uid := ksuid.New()
 		logic = multiactionTuple{
@@ -146,31 +161,59 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 			return
 		}
 
-	} else {
+	case model.IsolatedContainerFunctionType:
 
-		// subflow
+		// container
 
-		caller := new(subflowCaller)
-		caller.InstanceID = instance.id
-		caller.State = sl.state.GetID()
-		caller.Step = instance.step
+		con := fn.(*IsolatedFunctionDefinition)
 
-		var subflowID string
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
 
-		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+		var fn *model.FunctionDefinition
+		fn, err = sl.workflow.GetFunction(action.Function)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
+
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
+
+		// TODO: timeout
+		ar.Container.Type = fn.Type
+		ar.Container.Data = inputData
+		ar.Container.Image = fn.Image
+		ar.Container.Cmd = fn.Cmd
+		ar.Container.Size = fn.Size
+		ar.Container.Scale = fn.Scale
+
+		ar.Container.ID = fn.ID
+		ar.Container.Files = fn.Files
+
+		err = instance.engine.doActionRequest(ctx, ar)
 		if err != nil {
 			return
 		}
 
-		logic = multiactionTuple{
-			ID:       subflowID,
-			Type:     "subflow",
-			Attempts: attempt,
-		}
-
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
+	default:
+		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
+		return
 	}
-
-	*/
 
 	return
 
