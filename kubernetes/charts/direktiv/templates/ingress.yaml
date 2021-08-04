@@ -6,11 +6,6 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
-    {{- if ne  .Values.flow.certificate "none" }}
-    {{- if eq .Values.ingress.certificate "none" }}
-    kubernetes.io/ingress.allow-http: "true"
-    {{- end }}
-    {{- end }}
     {{- if ne .Values.ingress.certificate "none" }}
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
@@ -27,11 +22,7 @@ spec:
   {{- end }}
   rules:
   - host: {{ .Values.ingress.host }}
-    {{- if ne  .Values.flow.certificate "none" }}
     http:
-    {{- else }}
-    https:
-    {{- end }}
       paths:
         - path: /api
           pathType: Prefix
