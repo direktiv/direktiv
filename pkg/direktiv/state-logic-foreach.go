@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -90,6 +89,25 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 		return
 	}
 
+	fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	fnt := fn.GetType()
+	switch fnt {
+	case model.ReusableContainerFunctionType:
+	case model.IsolatedContainerFunctionType:
+	case model.NamespacedKnativeFunctionType:
+	case model.GlobalKnativeFunctionType:
+	case model.SubflowFunctionType:
+	default:
+		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
+		return
+	}
+
+	/* TODO
 	if action.Function != "" {
 
 		// container
@@ -157,6 +175,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 		}
 
 	}
+	*/
 
 	return
 

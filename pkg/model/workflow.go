@@ -288,11 +288,11 @@ func (o *Workflow) CheckFunctionsScaleInRange(maxScale int) error {
 	return nil
 }
 
-func (o *Workflow) GetFunction(id string) (*FunctionDefinition, error) {
+func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
 
 	for i, fn := range o.Functions {
-		if fn.ID == id {
-			return &o.Functions[i], nil
+		if fn.GetID() == id {
+			return o.Functions[i], nil
 		}
 	}
 

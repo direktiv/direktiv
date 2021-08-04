@@ -59,7 +59,6 @@ func (o *SchemaDefinition) Validate() error {
 
 type ActionDefinition struct {
 	Function string           `yaml:"function,omitempty"`
-	Workflow string           `yaml:"workflow,omitempty"`
 	Input    interface{}      `yaml:"input,omitempty"`
 	Secrets  []string         `yaml:"secrets,omitempty"`
 	Retries  *RetryDefinition `yaml:"retries,omitempty"`
@@ -70,11 +69,7 @@ func (o *ActionDefinition) Validate() error {
 		return nil
 	}
 
-	if o.Function != "" && o.Workflow != "" {
-		return errors.New("function and workflow cannot coexist")
-	}
-
-	if o.Function == "" && o.Workflow == "" {
+	if o.Function == "" {
 		return errors.New("must define atleast one function or workflow")
 	}
 

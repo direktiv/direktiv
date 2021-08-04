@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -157,6 +158,26 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		wfto = int(dur.Seconds())
 	}
 
+	fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
+
+	fnt := fn.GetType()
+	switch fnt {
+	case model.ReusableContainerFunctionType:
+	case model.IsolatedContainerFunctionType:
+	case model.NamespacedKnativeFunctionType:
+	case model.GlobalKnativeFunctionType:
+	case model.SubflowFunctionType:
+	default:
+		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
+		return
+	}
+
+	/* TODO
+
 	if sl.state.Action.Function != "" {
 
 		// container
@@ -287,6 +308,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		}
 
 	}
+	*/
 
 	return
 }
