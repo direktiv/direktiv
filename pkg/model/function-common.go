@@ -152,7 +152,7 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	case GlobalKnativeFunctionType.String():
 		f = new(GlobalFunctionDefinition)
 	case SubflowFunctionType.String():
-		f = new(SublowFunctionDefinition)
+		f = new(SubflowFunctionDefinition)
 	case "":
 		err = errors.New("type required")
 	default:

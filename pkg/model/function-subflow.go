@@ -6,21 +6,21 @@ import (
 	"regexp"
 )
 
-type SublowFunctionDefinition struct {
+type SubflowFunctionDefinition struct {
 	Type     FunctionType `yaml:"type"`
 	ID       string       `yaml:"id"`
 	Workflow string       `yaml:"workflow"`
 }
 
-func (o *SublowFunctionDefinition) GetID() string {
+func (o *SubflowFunctionDefinition) GetID() string {
 	return o.ID
 }
 
-func (o *SublowFunctionDefinition) GetType() FunctionType {
+func (o *SubflowFunctionDefinition) GetType() FunctionType {
 	return ReusableContainerFunctionType
 }
 
-func (o *SublowFunctionDefinition) Validate() error {
+func (o *SubflowFunctionDefinition) Validate() error {
 	if o == nil {
 		return nil
 	}
