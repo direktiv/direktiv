@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -97,20 +98,37 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 
 	fnt := fn.GetType()
 	switch fnt {
-	case model.ReusableContainerFunctionType:
-	case model.IsolatedContainerFunctionType:
-	case model.NamespacedKnativeFunctionType:
-	case model.GlobalKnativeFunctionType:
 	case model.SubflowFunctionType:
-	default:
-		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
-		return
-	}
 
-	/* TODO
-	if action.Function != "" {
+		sf := fn.(*model.SubflowFunctionDefinition)
+
+		// subflow
+
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		// TODO: log subflow instance IDs
+
+		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sf.Workflow, inputData)
+		if err != nil {
+			return
+		}
+
+		logic = multiactionTuple{
+			ID:       subflowID,
+			Type:     "subflow",
+			Attempts: attempt,
+		}
+
+	case model.ReusableContainerFunctionType:
 
 		// container
+
+		con := fn.(*ReusableFunctionDefinition)
 
 		uid := ksuid.New()
 		logic = multiactionTuple{
@@ -150,32 +168,56 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 			return
 		}
 
-	} else {
+	case model.IsolatedContainerFunctionType:
 
-		// subflow
+		con := fn.(*IsolatedFunctionDefinition)
 
-		caller := new(subflowCaller)
-		caller.InstanceID = instance.id
-		caller.State = sl.state.GetID()
-		caller.Step = instance.step
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
 
-		var subflowID string
+		var fn *model.FunctionDefinition
+		fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
 
-		// TODO: log subflow instance IDs
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
 
-		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+		// TODO: timeout
+		ar.Container.Type = fn.Type
+		ar.Container.Data = inputData
+		ar.Container.Image = fn.Image
+		ar.Container.Cmd = fn.Cmd
+		ar.Container.Size = fn.Size
+		ar.Container.Scale = fn.Scale
+		ar.Container.ID = fn.ID
+		ar.Container.Files = fn.Files
+
+		err = instance.engine.doActionRequest(ctx, ar)
 		if err != nil {
 			return
 		}
 
-		logic = multiactionTuple{
-			ID:       subflowID,
-			Type:     "subflow",
-			Attempts: attempt,
-		}
-
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
+	default:
+		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
+		return
 	}
-	*/
 
 	return
 

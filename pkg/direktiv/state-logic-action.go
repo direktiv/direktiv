@@ -166,21 +166,61 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 	fnt := fn.GetType()
 	switch fnt {
-	case model.ReusableContainerFunctionType:
-	case model.IsolatedContainerFunctionType:
-	case model.NamespacedKnativeFunctionType:
-	case model.GlobalKnativeFunctionType:
 	case model.SubflowFunctionType:
-	default:
-		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
-		return
-	}
+		// subflow
 
-	/* TODO
+		sf := fn.(*model.SubflowFunctionDefinition)
 
-	if sl.state.Action.Function != "" {
+		caller := new(subflowCaller)
+		caller.InstanceID = instance.id
+		caller.State = sl.state.GetID()
+		caller.Step = instance.step
+
+		var subflowID string
+
+		if sl.state.Async {
+
+			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sf.Workflow, inputData)
+			if err != nil {
+				return
+			}
+
+			instance.Log(ctx, "Running subflow '%s' in fire-and-forget mode (async).", subflowID)
+
+			transition = &stateTransition{
+				Transform: sl.state.Transform,
+				NextState: sl.state.Transition,
+			}
+
+			return
+
+		} else {
+
+			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sf.Workflow, inputData)
+			if err != nil {
+				return
+			}
+
+			instance.Log(ctx, "Sleeping until subflow '%s' returns.", subflowID)
+
+			sd := &actionStateSavedata{
+				Op:       "do",
+				Id:       subflowID,
+				Attempts: attempt,
+			}
+
+			err = instance.Save(ctx, sd.Marshal())
+			if err != nil {
+				return
+			}
+
+		}
+	case model.ReusableContainerFunctionType:
 
 		// container
+
+		con := fn.(*ReusableFunctionDefinition)
+
 		uid := ksuid.New()
 
 		sd := &actionStateSavedata{
@@ -191,13 +231,6 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		err = instance.Save(ctx, sd.Marshal())
 		if err != nil {
-			return
-		}
-
-		var fn *model.FunctionDefinition
-		fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
-		if err != nil {
-			err = NewInternalError(err)
 			return
 		}
 
@@ -212,15 +245,15 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		ar.Workflow.Timeout = wfto
 
 		// TODO: timeout
-		ar.Container.Type = fn.Type
+		ar.Container.Type = fn.GetType()
 		ar.Container.Data = inputData
-		ar.Container.Image = fn.Image
-		ar.Container.Cmd = fn.Cmd
-		ar.Container.Size = fn.Size
-		ar.Container.Scale = fn.Scale
+		ar.Container.Image = con.Image
+		ar.Container.Cmd = con.Cmd
+		ar.Container.Size = con.Size
+		ar.Container.Scale = con.Scale
 
-		ar.Container.ID = fn.ID
-		ar.Container.Files = fn.Files
+		ar.Container.ID = con.ID
+		ar.Container.Files = con.Files
 
 		if sl.state.Async {
 
@@ -258,25 +291,62 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		}
 
-	} else {
+	case model.IsolatedContainerFunctionType:
 
-		// subflow
+		// container
 
-		caller := new(subflowCaller)
-		caller.InstanceID = instance.id
-		caller.State = sl.state.GetID()
-		caller.Step = instance.step
+		con := fn.(*IsolatedFunctionDefinition)
 
-		var subflowID string
+		uid := ksuid.New()
+
+		sd := &actionStateSavedata{
+			Op:       "do",
+			Id:       uid.String(),
+			Attempts: attempt,
+		}
+
+		err = instance.Save(ctx, sd.Marshal())
+		if err != nil {
+			return
+		}
+
+		ar := new(isolateRequest)
+		ar.ActionID = uid.String()
+		ar.Workflow.InstanceID = instance.id
+		ar.Workflow.Namespace = instance.namespace
+		ar.Workflow.State = sl.state.GetID()
+		ar.Workflow.Step = instance.step
+		ar.Workflow.Name = instance.wf.Name
+		ar.Workflow.ID = instance.wf.ID
+		ar.Workflow.Timeout = wfto
+
+		// TODO: timeout
+		ar.Container.Type = fn.GetType()
+		ar.Container.Data = inputData
+		ar.Container.Image = con.Image
+		ar.Container.Cmd = con.Cmd
+		ar.Container.Size = con.Size
+
+		ar.Container.ID = con.ID
+		ar.Container.Files = con.Files
 
 		if sl.state.Async {
 
-			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
-			if err != nil {
-				return
-			}
+			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", fn.ID)
 
-			instance.Log(ctx, "Running subflow '%s' in fire-and-forget mode (async).", subflowID)
+			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
+
+				ar.Workflow.InstanceID = ""
+				ar.Workflow.Namespace = ""
+				ar.Workflow.State = ""
+				ar.Workflow.Step = 0
+
+				err = instance.engine.doActionRequest(ctx, ar)
+				if err != nil {
+					return
+				}
+
+			}(ctx, instance, ar)
 
 			transition = &stateTransition{
 				Transform: sl.state.Transform,
@@ -287,28 +357,23 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		} else {
 
-			subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sl.state.Action.Workflow, inputData)
-			if err != nil {
-				return
-			}
+			instance.Log(ctx, "Sleeping until function '%s' returns.", fn.ID)
 
-			instance.Log(ctx, "Sleeping until subflow '%s' returns.", subflowID)
-
-			sd := &actionStateSavedata{
-				Op:       "do",
-				Id:       subflowID,
-				Attempts: attempt,
-			}
-
-			err = instance.Save(ctx, sd.Marshal())
+			err = instance.engine.doActionRequest(ctx, ar)
 			if err != nil {
 				return
 			}
 
 		}
 
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
+	default:
+		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
+		return
 	}
-	*/
 
 	return
 }
