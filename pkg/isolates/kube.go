@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
@@ -36,6 +37,10 @@ const (
 
 	containerUser    = "direktiv-container"
 	containerSidecar = "direktiv-sidecar"
+)
+
+var (
+	mtx sync.Mutex
 )
 
 func listIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
@@ -571,6 +576,9 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		log.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
+
+	mtx.Lock()
+	defer mtx.Unlock()
 
 	_, err = cs.ServingV1().Services(configNamespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {

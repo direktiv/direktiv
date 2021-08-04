@@ -69,6 +69,8 @@ type kubeRequest struct {
 var (
 	gracePeriod int64 = 10
 	kubeReq           = kubeRequest{}
+
+	knativeMtx sync.Mutex
 )
 
 var (
@@ -672,6 +674,62 @@ func getClientSet() (*kubernetes.Clientset, string, error) {
 	return clientset, kns, nil
 }
 
+func isKnativeFunction(client igrpc.IsolatesServiceClient,
+	name, namespace, workflow string) bool {
+
+	// search annotations
+	a := make(map[string]string)
+	a[isolates.ServiceHeaderName] = name
+	a[isolates.ServiceHeaderNamespace] = namespace
+	a[isolates.ServiceHeaderWorkflow] = workflow
+
+	l, err := client.ListIsolates(context.Background(), &igrpc.ListIsolatesRequest{
+		Annotations: a,
+	})
+
+	if err != nil {
+		log.Errorf("can not list knative service: %v", err)
+		return false
+	}
+
+	if len(l.Isolates) > 0 {
+		return true
+	}
+
+	return false
+}
+
+func createKnativeFunction(client igrpc.IsolatesServiceClient,
+	ir *isolateRequest) error {
+
+	// svn, err := isolates.GenerateServiceName(ir.Workflow.Namespace,
+	// 	ir.Workflow.ID, ir.Container.ID)
+	// if err != nil {
+	// 	log.Errorf("can not create service name: %v", err)
+	// 	return err
+	// }
+
+	sz := int32(ir.Container.Size)
+	scale := int32(ir.Container.Scale)
+
+	cr := igrpc.CreateIsolateRequest{
+		Info: &igrpc.BaseInfo{
+			Name:      &ir.Container.ID,
+			Namespace: &ir.Workflow.Namespace,
+			Workflow:  &ir.Workflow.ID,
+			Image:     &ir.Container.Image,
+			Cmd:       &ir.Container.Cmd,
+			Size:      &sz,
+			MinScale:  &scale,
+		},
+	}
+
+	_, err := client.CreateIsolate(context.Background(), &cr)
+
+	return err
+
+}
+
 func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workflow, ns string) error {
 
 	for _, f := range wfm.GetFunctions() {
@@ -682,13 +740,13 @@ func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workfl
 			continue
 		}
 
-		svn, err := isolates.GenerateServiceName(ns, wfm.ID, f.ID)
-		if err != nil {
-			log.Errorf("can not create service name: %v", err)
-			return err
-		}
-
-		log.Debugf("creating service %s", svn)
+		// svn, err := isolates.GenerateServiceName(ns, wfm.ID, f.ID)
+		// if err != nil {
+		// 	log.Errorf("can not create service name: %v", err)
+		// 	return err
+		// }
+		//
+		// log.Debugf("creating service %s", svn)
 
 		// create services async
 		go func(fd model.FunctionDefinition,
