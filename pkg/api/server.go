@@ -160,7 +160,7 @@ func (s *Server) prepareRoutes() {
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
 
 	// Functions ..
-	s.Router().HandleFunc("/api/functions/", s.handler.listFunctions).Methods(http.MethodGet).Name(RN_ListFunctions)
+	s.Router().HandleFunc("/api/functions/", s.handler.listFunctions).Methods(http.MethodPost).Name(RN_ListFunctions)
 
 	// Namespace ..
 	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name(RN_ListNamespaces)
