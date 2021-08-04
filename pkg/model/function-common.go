@@ -15,12 +15,15 @@ const (
 	DefaultFunctionType           FunctionType = iota
 	ReusableContainerFunctionType              // Old school knative
 	IsolatedContainerFunctionType              // isolated (scale field not needed)
+	NamespacedKnativeFunctionType
+	GlobalKnativeFunctionType
+	SubflowFunctionType
 	// Namespace Level Knative services (no size, command or scale), image should be name of service
 	// Global Level Knative services
-	// Subflow Level (WIP)
+	// Subflow Level // id, workflow
 )
 
-var FunctionTypeStrings = []string{"unknown", "reusable", "isolated"}
+var FunctionTypeStrings = []string{"unknown", "reusable", "isolated", "knative-namespace", "knative-global", "subflow"}
 
 func (a FunctionType) String() string {
 	return FunctionTypeStrings[a]
@@ -143,7 +146,13 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	case ReusableContainerFunctionType.String():
 		f = new(ReusableFunctionDefinition)
 	case IsolatedContainerFunctionType.String():
-		f = new(ReusableFunctionDefinition)
+		f = new(IsolatedFunctionDefinition)
+	case NamespacedKnativeFunctionType.String():
+		f = new(NamespacedFunctionDefinition)
+	case GlobalKnativeFunctionType.String():
+		f = new(GlobalFunctionDefinition)
+	case SubflowFunctionType.String():
+		f = new(SublowFunctionDefinition)
 	case "":
 		err = errors.New("type required")
 	default:
