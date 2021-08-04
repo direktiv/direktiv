@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/isolates/grpc"
 )
 
@@ -28,14 +29,12 @@ type functionResponseObject struct {
 	StatusMessage string `json:"statusMessage"`
 }
 
-func (h *Handler) listFunctions(w http.ResponseWriter, r *http.Request) {
+func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesRequest, error) {
 
 	rb := new(listFunctionsRequest)
 	err := json.NewDecoder(r.Body).Decode(rb)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
+		return nil, err
 	}
 
 	grpcReq := new(grpc.ListIsolatesRequest)
@@ -54,6 +53,18 @@ func (h *Handler) listFunctions(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range del {
 		delete(grpcReq.Annotations, v)
+	}
+
+	return grpcReq, nil
+}
+
+func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
+
+	grpcReq, err := listRequestObjectFromHTTPRequest(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
 	}
 
 	resp, err := h.s.isolates.ListIsolates(r.Context(), grpcReq)
@@ -104,4 +115,154 @@ func (h *Handler) listFunctions(w http.ResponseWriter, r *http.Request) {
 		ErrResponse(w, err)
 		return
 	}
+}
+
+func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
+
+	grpcReq, err := listRequestObjectFromHTTPRequest(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	// returns an empty response
+	_, err = h.s.isolates.DeleteIsolates(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+}
+
+type getFunctionResponse struct {
+	Name      string                         `json:"name,omitempty"`
+	Namespace string                         `json:"namespace,omitempty"`
+	Workflow  string                         `json:"workflow,omitempty"`
+	Revisions []getFunctionResponse_Revision `json:"revisions,omitempty"`
+}
+
+type getFunctionResponse_Revision struct {
+	Name          string `json:"name,omitempty"`
+	Image         string `json:"image,omitempty"`
+	Cmd           string `json:"cmd,omitempty"`
+	Size          int32  `json:"size,omitempty"`
+	MinScale      int32  `json:"minScale,omitempty"`
+	Generation    int64  `json:"generation,omitempty"`
+	Created       int64  `json:"created,omitempty"`
+	Status        string `json:"status,omitempty"`
+	StatusMessage string `json:"statusMessage,omitempty"`
+	Traffic       int64  `json:"traffic,omitempty"`
+}
+
+func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["serviceName"]
+	grpcReq := new(grpc.GetIsolateRequest)
+	grpcReq.ServiceName = &sn
+
+	resp, err := h.s.isolates.GetIsolate(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	out := &getFunctionResponse{
+		Name:      resp.GetName(),
+		Namespace: resp.GetNamespace(),
+		Workflow:  resp.GetWorkflow(),
+		Revisions: make([]getFunctionResponse_Revision, 0),
+	}
+
+	for _, rev := range resp.GetRevisions() {
+		out.Revisions = append(out.Revisions, getFunctionResponse_Revision{
+			Name:          rev.GetName(),
+			Image:         rev.GetImage(),
+			Cmd:           rev.GetCmd(),
+			Size:          rev.GetSize(),
+			MinScale:      rev.GetMinScale(),
+			Generation:    rev.GetGeneration(),
+			Created:       rev.GetCreated(),
+			Status:        rev.GetStatus(),
+			StatusMessage: rev.GetStatusMessage(),
+			Traffic:       rev.GetTraffic(),
+		})
+	}
+
+	if err := json.NewEncoder(w).Encode(out); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+type createFunctionRequest struct {
+	Name      *string `json:"name,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
+	Workflow  *string `json:"workflow,omitempty"`
+	Image     *string `json:"image,omitempty"`
+	Cmd       *string `json:"cmd,omitempty"`
+	Size      *int32  `json:"size,omitempty"`
+	MinScale  *int32  `json:"minScale,omitempty"`
+}
+
+func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
+
+	obj := new(createFunctionRequest)
+	err := json.NewDecoder(r.Body).Decode(obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := new(grpc.CreateIsolateRequest)
+	grpcReq.Info = &grpc.BaseInfo{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+		Workflow:  obj.Workflow,
+		Image:     obj.Image,
+		Cmd:       obj.Cmd,
+		Size:      obj.Size,
+		MinScale:  obj.MinScale,
+	}
+
+	// returns an empty body
+	_, err = h.s.isolates.CreateIsolate(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+}
+
+func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
+
+	obj := new(createFunctionRequest)
+	err := json.NewDecoder(r.Body).Decode(obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	sn := mux.Vars(r)["serviceName"]
+
+	grpcReq := new(grpc.UpdateIsolateRequest)
+	grpcReq.ServiceName = &sn
+	grpcReq.Info = &grpc.BaseInfo{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+		Workflow:  obj.Workflow,
+		Image:     obj.Image,
+		Cmd:       obj.Cmd,
+		Size:      obj.Size,
+		MinScale:  obj.MinScale,
+	}
+
+	// returns an empty body
+	_, err = h.s.isolates.UpdateIsolate(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
 }
