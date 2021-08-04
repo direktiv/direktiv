@@ -47,10 +47,10 @@ spec:
         secret:
           secretName: {{ .Values.flow.certificate }}
       {{- end }}
-      {{- if ne  .Values.uiapiCertificate "none" }}
+      {{- if ne  .Values.flow.certificate "none" }}
       - name: servecerts
         secret:
-          secretName: {{ .Values.uiapiCertificate }}
+          secretName: {{ .Values.flow.certificate }}
       {{- end }}
       containers:
       - name: api
@@ -66,7 +66,7 @@ spec:
           httpGet:
             path: /api/healthz
             port: 8080
-            {{- if ne  .Values.uiapiCertificate "none" }}
+            {{- if ne  .Values.flow.certificate "none" }}
             scheme: HTTPS
             {{- end }}
           periodSeconds: 10
@@ -108,7 +108,7 @@ spec:
           mountPath: "/etc/certs/direktiv"
           readOnly: true
         {{- end }}
-        {{- if ne  .Values.uiapiCertificate "none" }}
+        {{- if ne  .Values.flow.certificate "none" }}
         - name: servecerts
           mountPath: "/etc/certs/servedirektiv"
           readOnly: true
