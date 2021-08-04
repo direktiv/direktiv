@@ -19,26 +19,51 @@ message CreateIsolateRequest {
 	optional BaseInfo info = 1;
 }
 
-
-message GetIsolateRequest {
-	optional string name = 1;
-}
-
-message GetIsolateResponse {
-	optional BaseInfo info = 1;
-}
-
 message ListIsolatesRequest {
 	map<string, string> annotations = 1;
 }
 
 message IsolateInfo {
 	optional BaseInfo info = 1;
-	optional string Status = 2;
-	optional string StatusMessage = 3;
-	optional string ServiceName = 4;
+	optional string status = 2;
+	optional string statusMessage = 3;
+	optional string serviceName = 4;
 }
 
 message ListIsolatesResponse {
 	repeated IsolateInfo isolates = 1;
+}
+
+message UpdateIsolateRequest {
+	optional BaseInfo info = 1;
+	optional string ServiceName = 2;
+}
+
+message GetIsolateRequest {
+	optional string ServiceName = 1;
+}
+
+message Revision {
+	optional string name = 1;
+	optional string image = 2;
+	optional string cmd = 3;
+	optional int32 size = 4;
+	optional int32 minScale = 5;
+
+	optional int64 generation = 6;
+	optional int64 created = 7;
+
+	optional string status = 8;
+	optional string statusMessage = 9;
+
+	optional int64 traffic = 10;
+}
+
+message GetIsolateResponse {
+	optional string name = 1;
+	optional string namespace = 2;
+	optional string workflow = 3;
+
+	repeated Revision revisions = 4;
+
 }

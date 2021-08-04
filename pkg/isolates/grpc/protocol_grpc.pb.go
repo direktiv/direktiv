@@ -19,10 +19,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IsolatesServiceClient interface {
+	UpdateIsolate(ctx context.Context, in *UpdateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateIsolate(ctx context.Context, in *CreateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error)
 	DeleteIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*ListIsolatesResponse, error)
+	GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error)
 }
 
 type isolatesServiceClient struct {
@@ -33,18 +34,18 @@ func NewIsolatesServiceClient(cc grpc.ClientConnInterface) IsolatesServiceClient
 	return &isolatesServiceClient{cc}
 }
 
-func (c *isolatesServiceClient) CreateIsolate(ctx context.Context, in *CreateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *isolatesServiceClient) UpdateIsolate(ctx context.Context, in *UpdateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/CreateIsolate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/UpdateIsolate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error) {
-	out := new(GetIsolateResponse)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/GetIsolate", in, out, opts...)
+func (c *isolatesServiceClient) CreateIsolate(ctx context.Context, in *CreateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/CreateIsolate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -69,14 +70,24 @@ func (c *isolatesServiceClient) ListIsolates(ctx context.Context, in *ListIsolat
 	return out, nil
 }
 
+func (c *isolatesServiceClient) GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error) {
+	out := new(GetIsolateResponse)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/GetIsolate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IsolatesServiceServer is the server API for IsolatesService service.
 // All implementations must embed UnimplementedIsolatesServiceServer
 // for forward compatibility
 type IsolatesServiceServer interface {
+	UpdateIsolate(context.Context, *UpdateIsolateRequest) (*emptypb.Empty, error)
 	CreateIsolate(context.Context, *CreateIsolateRequest) (*emptypb.Empty, error)
-	GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error)
 	DeleteIsolates(context.Context, *ListIsolatesRequest) (*emptypb.Empty, error)
 	ListIsolates(context.Context, *ListIsolatesRequest) (*ListIsolatesResponse, error)
+	GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error)
 	mustEmbedUnimplementedIsolatesServiceServer()
 }
 
@@ -84,17 +95,20 @@ type IsolatesServiceServer interface {
 type UnimplementedIsolatesServiceServer struct {
 }
 
+func (UnimplementedIsolatesServiceServer) UpdateIsolate(context.Context, *UpdateIsolateRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateIsolate not implemented")
+}
 func (UnimplementedIsolatesServiceServer) CreateIsolate(context.Context, *CreateIsolateRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIsolate not implemented")
-}
-func (UnimplementedIsolatesServiceServer) GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIsolate not implemented")
 }
 func (UnimplementedIsolatesServiceServer) DeleteIsolates(context.Context, *ListIsolatesRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteIsolates not implemented")
 }
 func (UnimplementedIsolatesServiceServer) ListIsolates(context.Context, *ListIsolatesRequest) (*ListIsolatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListIsolates not implemented")
+}
+func (UnimplementedIsolatesServiceServer) GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIsolate not implemented")
 }
 func (UnimplementedIsolatesServiceServer) mustEmbedUnimplementedIsolatesServiceServer() {}
 
@@ -107,6 +121,24 @@ type UnsafeIsolatesServiceServer interface {
 
 func RegisterIsolatesServiceServer(s grpc.ServiceRegistrar, srv IsolatesServiceServer) {
 	s.RegisterService(&IsolatesService_ServiceDesc, srv)
+}
+
+func _IsolatesService_UpdateIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateIsolateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).UpdateIsolate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/UpdateIsolate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).UpdateIsolate(ctx, req.(*UpdateIsolateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _IsolatesService_CreateIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -123,24 +155,6 @@ func _IsolatesService_CreateIsolate_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(IsolatesServiceServer).CreateIsolate(ctx, req.(*CreateIsolateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IsolatesService_GetIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIsolateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IsolatesServiceServer).GetIsolate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/GetIsolate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).GetIsolate(ctx, req.(*GetIsolateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -181,6 +195,24 @@ func _IsolatesService_ListIsolates_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IsolatesService_GetIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIsolateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).GetIsolate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/GetIsolate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).GetIsolate(ctx, req.(*GetIsolateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IsolatesService_ServiceDesc is the grpc.ServiceDesc for IsolatesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -189,12 +221,12 @@ var IsolatesService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*IsolatesServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateIsolate",
-			Handler:    _IsolatesService_CreateIsolate_Handler,
+			MethodName: "UpdateIsolate",
+			Handler:    _IsolatesService_UpdateIsolate_Handler,
 		},
 		{
-			MethodName: "GetIsolate",
-			Handler:    _IsolatesService_GetIsolate_Handler,
+			MethodName: "CreateIsolate",
+			Handler:    _IsolatesService_CreateIsolate_Handler,
 		},
 		{
 			MethodName: "DeleteIsolates",
@@ -203,6 +235,10 @@ var IsolatesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListIsolates",
 			Handler:    _IsolatesService_ListIsolates_Handler,
+		},
+		{
+			MethodName: "GetIsolate",
+			Handler:    _IsolatesService_GetIsolate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -2,10 +2,13 @@ package isolates
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
+	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
@@ -14,14 +17,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
+	"knative.dev/pkg/apis"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/client/clientset/versioned"
-)
-
-var (
-	kubeAPIKServiceURL         = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
-	kubeAPIKServiceURLSpecific = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services/%s"
 )
 
 const (
@@ -36,9 +36,34 @@ const (
 
 	containerUser    = "direktiv-container"
 	containerSidecar = "direktiv-sidecar"
+
+	maxRevisions = 5
+
+	generationHeader = "serving.knative.dev/configurationGeneration"
 )
 
-func listIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
+var (
+	mtx sync.Mutex
+)
+
+func conatinerFromList(containers []corev1.Container) (string, string) {
+
+	var img, cmd string
+
+	for a := range containers {
+		c := containers[a]
+
+		if c.Name == containerUser {
+			img = c.Image
+			cmd = strings.Join(c.Command, ", ")
+		}
+
+	}
+
+	return img, cmd
+}
+
+func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
 
 	var b []*igrpc.IsolateInfo
 
@@ -82,28 +107,11 @@ func listIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
 		info.Size = &sz
 		info.MinScale = &scale
 
-		status := fmt.Sprintf("%s", corev1.ConditionUnknown)
-		var statusMsg string
-		if len(svc.Status.Conditions) > 0 {
-			condition := svc.Status.Conditions[0]
-			status = fmt.Sprintf("%s", condition.Status)
-			msg := strings.SplitN(condition.Message, ":", 2)
-			if len(msg) > 1 {
-				statusMsg = msg[1]
-			}
-		}
+		status, statusMsg := statusFromCondition(svc.Status.Conditions)
 
-		containers := svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers
-		for a := range containers {
-			c := containers[a]
-
-			if c.Name == containerUser {
-				info.Image = &c.Image
-				cmd := strings.Join(c.Command, ", ")
-				info.Cmd = &cmd
-			}
-
-		}
+		img, cmd := conatinerFromList(svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
+		info.Image = &img
+		info.Cmd = &cmd
 
 		svn := svc.Name
 
@@ -327,54 +335,6 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 }
 
-// func updateServiceKube(name, ns, wf string, conf map[string]string, external bool) error {
-//
-// 	// storeServiceKube(name, ns, wf, conf, external, true)
-//
-// 	configNamespace := "default"
-// 	// netShape := "1M"
-// 	// min := "0"
-// 	// max := "3"
-//
-// 	containers := makeContainers("localhost:5000/jens:v2", "")
-//
-// 	svc := v1.Revision{
-// 		TypeMeta: metav1.TypeMeta{
-// 			APIVersion: "serving.knative.dev/v1",
-// 			Kind:       "Revision",
-// 		},
-// 		ObjectMeta: meta(name, configNamespace, external),
-// 		Spec: v1.RevisionSpec{
-// 			PodSpec: corev1.PodSpec{
-// 				Containers: containers,
-// 			},
-// 		},
-// 	}
-//
-// 	b, err := json.MarshalIndent(svc, "", "    ")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return nil
-// 	}
-// 	fmt.Println(string(b))
-//
-// 	// u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-//
-// 	u := fmt.Sprintf(kubeAPIKServiceURL, "default")
-// 	log.Debugf(">>>>>>>>>>>>>>>>>>>>>>> %v", u)
-// 	// url := fmt.Sprintf("%s/%s", u, name)
-// 	// log.Debugf(">>>>>>>>>>>>>>>>>>>>>>> %v", url)
-// 	resp, err := direktiv.SendKuberequest(http.MethodPatch, u, bytes.NewBufferString(string(b)))
-//
-// 	if err != nil {
-// 		log.Errorf("can not create knative service: %v", err)
-// 		return err
-// 	}
-// 	log.Debugf("AD %v", resp)
-//
-// 	return nil
-// }
-
 func fetchServiceAPI() (*versioned.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -419,21 +379,124 @@ func ns() string {
 	return configNamespace
 }
 
-func getKnativeIsolate(name string) error {
+func statusFromCondition(conditions []apis.Condition) (string, string) {
+	// status and status message
+	status := fmt.Sprintf("%s", corev1.ConditionUnknown)
+	var statusMsg string
+
+	for m := range conditions {
+		cond := conditions[m]
+		if cond.Type == v1.RevisionConditionReady {
+			status = fmt.Sprintf("%s", cond.Status)
+		} else if cond.Type == v1.RevisionConditionResourcesAvailable ||
+			cond.Type == v1.RevisionConditionContainerHealthy {
+			// these types can report errors
+			statusMsg = fmt.Sprintf("%s %s", statusMsg, cond.Message)
+		}
+	}
+
+	return status, strings.TrimSpace(statusMsg)
+
+}
+
+func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
+
+	var (
+		revs []*igrpc.Revision
+	)
+
+	resp := &igrpc.GetIsolateResponse{}
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		log.Errorf("error getting clientset for knative: %v", err)
-		// return &resp, err
+		return resp, err
 	}
 
-	_, err = cs.ServingV1().Services(ns()).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err := cs.ServingV1().Services(ns()).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
-		// return &resp, err
+		return resp, err
 	}
 
-	return nil
+	// traffic map
+	tm := make(map[string]*int64)
+
+	for i := range svc.Status.Traffic {
+		tt := svc.Status.Traffic[i]
+		tm[tt.RevisionName] = tt.Percent
+	}
+
+	n := svc.Labels[ServiceHeaderName]
+	namespace := svc.Labels[ServiceHeaderNamespace]
+	workflow := svc.Labels[ServiceHeaderWorkflow]
+
+	resp.Name = &n
+	resp.Namespace = &namespace
+	resp.Workflow = &workflow
+
+	rs, err := cs.ServingV1().Revisions(ns()).List(context.Background(),
+		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
+	if err != nil {
+		log.Errorf("error getting knative service: %v", err)
+		return resp, err
+	}
+
+	fn := func(rev v1.Revision) *igrpc.Revision {
+		info := &igrpc.Revision{}
+
+		// size and scale
+		var sz, scale int32
+		var gen int64
+		fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
+		fmt.Sscan(rev.Annotations[ServiceHeaderScale], &scale)
+		fmt.Sscan(rev.Labels[generationHeader], &gen)
+		info.Size = &sz
+		info.MinScale = &scale
+		info.Generation = &gen
+
+		// set status
+		status, statusMsg := statusFromCondition(rev.Status.Conditions)
+		info.Status = &status
+		info.StatusMessage = &statusMsg
+
+		img, cmd := conatinerFromList(rev.Spec.Containers)
+		info.Image = &img
+		info.Cmd = &cmd
+
+		// name
+		svn := rev.Name
+		info.Name = &svn
+
+		// creation date
+		var t int64 = rev.CreationTimestamp.Unix()
+		info.Created = &t
+
+		// set traffic
+		var p int64
+		if percent, ok := tm[rev.Name]; ok {
+			info.Traffic = percent
+		} else {
+			info.Traffic = &p
+		}
+
+		return info
+	}
+
+	// get details
+	for i := range rs.Items {
+		r := rs.Items[i]
+		info := fn(r)
+		revs = append(revs, info)
+	}
+
+	slice.Sort(revs[:], func(i, j int) bool {
+		return *revs[i].Generation > *revs[j].Generation
+	})
+
+	resp.Revisions = revs
+
+	return resp, nil
 
 }
 
@@ -454,6 +517,88 @@ func deleteIsolates(annotations map[string]string) error {
 	lo := metav1.ListOptions{LabelSelector: labels.Set(annotations).String()}
 	return cs.ServingV1().Services(ns()).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
+}
+
+func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
+
+	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
+		int(info.GetSize()))
+	if err != nil {
+		log.Errorf("can not update service: %v", err)
+		return err
+	}
+
+	spec := metav1.ObjectMeta{
+		Annotations: make(map[string]string),
+	}
+
+	spec.Annotations["autoscaling.knative.dev/minScale"] =
+		fmt.Sprintf("%d", info.GetMinScale())
+
+	svc := v1.Service{
+		Spec: v1.ServiceSpec{
+			ConfigurationSpec: v1.ConfigurationSpec{
+				Template: v1.RevisionTemplateSpec{
+					ObjectMeta: spec,
+					Spec: v1.RevisionSpec{
+						PodSpec: corev1.PodSpec{
+							Containers: containers,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	b, err := json.MarshalIndent(svc, "", "    ")
+	if err != nil {
+		log.Errorf("error marshalling new services: %v", err)
+		return nil
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return err
+	}
+
+	log.Debugf("patching service %s", svn)
+
+	_, err = cs.ServingV1().Services(ns()).Patch(context.Background(),
+		svn, types.MergePatchType, b, metav1.PatchOptions{})
+
+	if err != nil {
+		log.Errorf("can not patch service %s: %v", svn, err)
+		return err
+	}
+
+	// remove older revisions
+	rs, err := cs.ServingV1().Revisions(ns()).List(context.Background(),
+		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", svn)})
+	if err != nil {
+		log.Errorf("error getting old revisions: %v", err)
+		return err
+	}
+
+	slice.Sort(rs.Items[:], func(i, j int) bool {
+		var gen1, gen2 int64
+		fmt.Sscan(rs.Items[i].Labels[generationHeader], &gen1)
+		fmt.Sscan(rs.Items[j].Labels[generationHeader], &gen2)
+		return gen1 < gen2
+	})
+
+	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - maxRevisions))
+
+	// delete old revisions
+	for i := 0; i < (len(rs.Items) - maxRevisions); i++ {
+		log.Debugf("deleting %v", rs.Items[i].Name)
+		err := cs.ServingV1().Revisions(ns()).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
+		if err != nil {
+			log.Errorf("error deleting old revisions: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func createKnativeIsolate(info *igrpc.BaseInfo) error {
@@ -496,6 +641,8 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		return err
 	}
 
+	// serving.knative.dev/rolloutDuration: "380s"
+
 	svc := v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -525,47 +672,6 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &isolateConfig.Runtime
 	}
 
-	// b, err := json.MarshalIndent(svc, "", "    ")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return nil
-	// }
-	// fmt.Println(string(b))
-
-	// u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-	// u := fmt.Sprintf(kubeAPIKServiceURL, "default")
-
-	// if patch {
-	//
-	// 	u := fmt.Sprintf(kubeAPIKServiceURL, "default")
-	// 	log.Debugf(">>>>>>>>>>>>>>>>>>>>>>> %v", u)
-	// 	url := fmt.Sprintf("%s/%s", u, name)
-	// 	log.Debugf(">>>>>>>>>>>>>>>>>>>>>>> %v", url)
-	// 	resp, err := direktiv.SendKuberequest(http.MethodPatch, url, bytes.NewBufferString(string(b)))
-	// 	if err != nil {
-	// 		log.Errorf("can not create knative service: %v", err)
-	// 		return err
-	// 	}
-	// 	log.Debugf("PATCH %v", resp)
-	// } else {metav1.CreateOptions
-
-	// config, err := rest.InClusterConfig()
-	// if err != nil {
-	// 	log.Errorf("ERRORRORORO %v", err)
-	// 	return err
-	// }
-	// cs, err := versioned.NewForConfig(config)
-	// if err != nil {
-	// 	log.Errorf("ERRORRORORO2 %v", err)
-	// 	return err
-	// }
-	// //
-	// // Create(ctx context.Context, service *v1.Service, opts metav1.CreateOptions) (*v1.Service, error)
-	//
-	// if true {
-	// 	return nil
-	// }
-
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		log.Errorf("error getting clientset for knative: %v", err)
@@ -577,66 +683,6 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		log.Errorf("error creating knative service: %v", err)
 		return err
 	}
-
-	//
-	// svc2 := v1.Service{
-	// 	ObjectMeta: meta(name, configNamespace, external),
-	// }
-	//
-	// log.Infof("1 %v", svc2.Spec)
-	// log.Infof("2%v", svc2.Spec.ConfigurationSpec)
-	// log.Infof("3 %v", svc2.Spec.ConfigurationSpec.Template)
-	// log.Infof("4 %v", svc2.Spec.ConfigurationSpec.Template.Spec.PodSpec)
-	//
-	// svc2.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers = makeContainers("localhost:5000/jens:v1", "")
-	//
-	// svc2.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers[0].Image = "localhost:5000/jens:v1"
-	// svc2.Spec.ConfigurationSpec.Template.ObjectMeta.Annotations = make(map[string]string)
-	// svc2.Spec.ConfigurationSpec.Template.ObjectMeta.Annotations["autoscaling.knative.dev/minScale"] = "1"
-	//
-	// log.Info("???????????????????????????")
-	// b2, err := json.MarshalIndent(svc2, "", "    ")
-	// if err != nil {
-	// 	log.Errorf("ERRORRORORO4 %v", err)
-	// 	return err
-	// }
-	//
-	// fmt.Println(string(b2))
-	// svc3, err := cs.ServingV1().Services("default").Patch(context.Background(), name, types.MergePatchType, b2, metav1.PatchOptions{})
-	// if err != nil {
-	// 	log.Errorf("ERRORRORORO4 %v", err)
-	// 	return err
-	// }
-	//
-	// log.Infof("HH %v", svc3)
-	//
-	// // svc.ObjectMeta.ResourceVersion = sc.ObjectMeta.ResourceVersion
-	//
-	// // Create(ctx context.Context, service *v1.Service, opts metav1.CreateOptions) (*v1.Service, error)
-	// // sc, err = cs.ServingV1().Services("default").Update(context.Background(), &svc, metav1.UpdateOptions{})
-	// // if err != nil {
-	// // 	log.Errorf("ERRORRORORO3 %v", err)
-	// // 	return err
-	// // }
-	// // log.Debugf(">>123 %+v", sc)
-	//
-	// // cs.ServingV1().Revisions("default")
-	//
-	// l, err := cs.ServingV1().Revisions("default").List(context.Background(), metav1.ListOptions{})
-	// if err != nil {
-	// 	log.Errorf("ERRORRORORO3 %v", err)
-	// 	return err
-	// }
-	//
-	// log.Debugf(">> %+v", l)
-	// resp, err := direktiv.SendKuberequest(http.MethodPost, u, bytes.NewBufferString(string(b)))
-	// if err != nil {
-	// 	log.Errorf("can not create knative service: %v", err)
-	// 	return err
-	// }
-	// log.Debugf("AD %v", resp)
-	// }
-	// url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%s", namespace, ah))
 
 	return nil
 }

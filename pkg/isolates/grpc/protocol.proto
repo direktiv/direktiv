@@ -9,8 +9,9 @@ import "google/protobuf/empty.proto";
 import "pkg/isolates/grpc/isolates.proto";
 
 service IsolatesService {
+  rpc UpdateIsolate(UpdateIsolateRequest) returns (google.protobuf.Empty)  {}
   rpc CreateIsolate(CreateIsolateRequest) returns (google.protobuf.Empty)  {}
-  rpc GetIsolate(GetIsolateRequest) returns (GetIsolateResponse)  {}
   rpc DeleteIsolates(ListIsolatesRequest) returns (google.protobuf.Empty)  {}
   rpc ListIsolates(ListIsolatesRequest) returns (ListIsolatesResponse)  {}
+  rpc GetIsolate(GetIsolateRequest) returns (GetIsolateResponse)  {}
 }
