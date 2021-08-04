@@ -219,7 +219,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		// container
 
-		con := fn.(*ReusableFunctionDefinition)
+		con := fn.(*model.ReusableFunctionDefinition)
 
 		uid := ksuid.New()
 
@@ -257,7 +257,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		if sl.state.Async {
 
-			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", fn.ID)
+			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", con.ID)
 
 			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
 
@@ -282,7 +282,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		} else {
 
-			instance.Log(ctx, "Sleeping until function '%s' returns.", fn.ID)
+			instance.Log(ctx, "Sleeping until function '%s' returns.", con.ID)
 
 			err = instance.engine.doActionRequest(ctx, ar)
 			if err != nil {
@@ -295,7 +295,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		// container
 
-		con := fn.(*IsolatedFunctionDefinition)
+		con := fn.(*model.IsolatedFunctionDefinition)
 
 		uid := ksuid.New()
 
@@ -332,7 +332,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		if sl.state.Async {
 
-			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", fn.ID)
+			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", con.ID)
 
 			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
 
@@ -357,7 +357,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		} else {
 
-			instance.Log(ctx, "Sleeping until function '%s' returns.", fn.ID)
+			instance.Log(ctx, "Sleeping until function '%s' returns.", con.ID)
 
 			err = instance.engine.doActionRequest(ctx, ar)
 			if err != nil {

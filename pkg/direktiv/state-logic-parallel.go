@@ -120,20 +120,13 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 
 		// container
 
-		con := fn.(*ReusableFunctionDefinition)
+		con := fn.(*model.ReusableFunctionDefinition)
 
 		uid := ksuid.New()
 		logic = multiactionTuple{
 			ID:       uid.String(),
 			Type:     "isolate",
 			Attempts: attempt,
-		}
-
-		var fn *model.FunctionDefinition
-		fn, err = sl.workflow.GetFunction(action.Function)
-		if err != nil {
-			err = NewInternalError(err)
-			return
 		}
 
 		ar := new(isolateRequest)
@@ -146,15 +139,15 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 		ar.Workflow.ID = instance.wf.ID
 
 		// TODO: timeout
-		ar.Container.Type = fn.Type
+		ar.Container.Type = fn.GetType()
 		ar.Container.Data = inputData
-		ar.Container.Image = fn.Image
-		ar.Container.Cmd = fn.Cmd
-		ar.Container.Size = fn.Size
-		ar.Container.Scale = fn.Scale
+		ar.Container.Image = con.Image
+		ar.Container.Cmd = con.Cmd
+		ar.Container.Size = con.Size
+		ar.Container.Scale = con.Scale
 
-		ar.Container.ID = fn.ID
-		ar.Container.Files = fn.Files
+		ar.Container.ID = con.ID
+		ar.Container.Files = con.Files
 
 		err = instance.engine.doActionRequest(ctx, ar)
 		if err != nil {
@@ -165,20 +158,13 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 
 		// container
 
-		con := fn.(*IsolatedFunctionDefinition)
+		con := fn.(*model.IsolatedFunctionDefinition)
 
 		uid := ksuid.New()
 		logic = multiactionTuple{
 			ID:       uid.String(),
 			Type:     "isolate",
 			Attempts: attempt,
-		}
-
-		var fn *model.FunctionDefinition
-		fn, err = sl.workflow.GetFunction(action.Function)
-		if err != nil {
-			err = NewInternalError(err)
-			return
 		}
 
 		ar := new(isolateRequest)
@@ -191,15 +177,14 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 		ar.Workflow.ID = instance.wf.ID
 
 		// TODO: timeout
-		ar.Container.Type = fn.Type
+		ar.Container.Type = fn.GetType()
 		ar.Container.Data = inputData
-		ar.Container.Image = fn.Image
-		ar.Container.Cmd = fn.Cmd
-		ar.Container.Size = fn.Size
-		ar.Container.Scale = fn.Scale
+		ar.Container.Image = con.Image
+		ar.Container.Cmd = con.Cmd
+		ar.Container.Size = con.Size
 
-		ar.Container.ID = fn.ID
-		ar.Container.Files = fn.Files
+		ar.Container.ID = con.ID
+		ar.Container.Files = con.Files
 
 		err = instance.engine.doActionRequest(ctx, ar)
 		if err != nil {
