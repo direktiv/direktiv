@@ -12,46 +12,12 @@ func main() {
 
 	log.Infof("run client")
 
-	// external := false
-	// name := "testme"
-	// ns := ""
-	// wf := ""
-	// img := "vorteil/request:v6"
-	//
+	// img := "vorteil/request:v2"
+	// var sz int32 = 2
 	// info := &igrpc.BaseInfo{
-	// 	Name:      &name,
-	// 	Namespace: &ns,
-	// 	Workflow:  &wf,
-	// 	Image:     &img,
+	// 	Image: &img,
+	// 	Size:  &sz,
 	// }
-	//
-	// var g int32 = 0
-	// c := &igrpc.Config{
-	// 	MinScale: &g,
-	// }
-
-	// Info     *BaseInfo `protobuf:"bytes,1,opt,name=info,proto3,oneof" json:"info,omitempty"`
-	// Config   *Config   `protobuf:"bytes,2,opt,name=config,proto3,oneof" json:"config,omitempty"`
-	// External *bool     `protobuf:"varint,3,opt,name=external,proto3,oneof" json:"external,omitempty"`
-
-	// sr := &igrpc.CreateIsolateRequest{
-	// 	Info:     info,
-	// 	Config:   c,
-	// 	External: &external,
-	// 	// Name:      &name,
-	// 	// External:  &external,
-	// 	// Namespace: &ns,
-	// 	// Workflow:  &wf,
-	// }
-	// // StoreIsolate(ctx context.Context, in *StoreIsolateRequest, opts ...grpc.CallOption)
-	// Name      *string           `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	// Namespace *string           `protobuf:"bytes,2,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
-	// Workflow  *string           `protobuf:"bytes,3,opt,name=workflow,proto3,oneof" json:"workflow,omitempty"`
-	// Config    map[string]string `protobuf:"bytes,4,rep,name=config,proto3" json:"config,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Input     *string           `protobuf:"bytes,5,opt,name=input,proto3,oneof" json:"input,omitempty"`
-	// Output    *string           `protobuf:"bytes,6,opt,name=output,proto3,oneof" json:"output,omitempty"`
-	// External  *bool             `protobuf:"varint,7,opt,name=external,proto3,oneof" json:"external,omitempty"`
-	// Revision  *string           `protobuf:"bytes,8,opt,name=revision,proto3,oneof" json:"revision,omitempty"`
 
 	conn, err := grpc.Dial("127.0.0.1:30234", grpc.WithInsecure())
 	if err != nil {
@@ -61,23 +27,39 @@ func main() {
 
 	client := igrpc.NewIsolatesServiceClient(conn)
 
-	a := make(map[string]string)
-	a["direktiv.io/workflow"] = "dsdsdsssd"
+	svn := "w-8829097305702293016"
+	// sr := igrpc.UpdateIsolateRequest{
+	// 	Info:        info,
+	// 	ServiceName: &svn,
+	// }
+	//
+	// _, err = client.UpdateIsolate(context.Background(), &sr)
+	// if err != nil {
+	// 	log.Errorf("ERR %v", err)
+	// }
 
-	g2 := igrpc.ListIsolatesRequest{
-		Annotations: a,
-	}
-
-	items, err := client.ListIsolates(context.Background(), &g2)
+	// a := make(map[string]string)
+	// a["direktiv.io/workflow"] = "dsdsdsssd"
+	//
+	// g2 := igrpc.ListIsolatesRequest{
+	// 	Annotations: a,
+	// }
+	//
+	// _, err = client.ListIsolates(context.Background(), &g2)
 	// log.Infof("new client %v", client)
-	//
-	// _, err = client.CreateIsolate(context.Background(), sr)
-	// // _, err = client.UpdateIsolate(context.Background(), sr)
-	//
-	if err != nil {
-		log.Errorf("ERR %v", err)
-	}
 
-	log.Infof("%v", items)
+	g2 := igrpc.GetIsolateRequest{
+		ServiceName: &svn,
+	}
+	_, err = client.GetIsolate(context.Background(), &g2)
+	if err != nil {
+		log.Errorf(">> %v", err)
+	}
+	// log.Infof("new client %v", client)
+
+	// _, err = client.CreateIsolate(context.Background(), sr)
+	// _, err = client.UpdateIsolate(context.Background(), sr)
+
+	// log.Infof("%v", items)
 
 }

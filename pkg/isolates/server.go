@@ -70,24 +70,24 @@ func StopServer() {
 	}
 }
 
-// func (is *isolateServer) UpdateIsolate(ctx context.Context,
-// 	in *igrpc.CreateIsolateRequest) (*emptypb.Empty, error) {
-//
-// 	var empty = &emptypb.Empty{}
-//
-// 	// store db first
-// 	// is.StoreIsolate(ctx, in)
-//
-// 	err := updateServiceKube(in.GetName(), in.GetNamespace(), in.GetWorkflow(),
-// 		in.GetConfig(), in.GetExternal())
-// 	if err != nil {
-// 		log.Errorf("can not create knative service: %v", err)
-// 		return empty, err
-// 	}
-//
-// 	return empty, nil
-//
-// }
+func (is *isolateServer) UpdateIsolate(ctx context.Context,
+	in *igrpc.UpdateIsolateRequest) (*emptypb.Empty, error) {
+
+	log.Infof("updating isolate %s", in.GetInfo().GetName())
+
+	if in.GetInfo() == nil {
+		return &empty, fmt.Errorf("info can not be nil")
+	}
+
+	// create ksvc service
+	err := updateKnativeIsolate(in.GetServiceName(), in.GetInfo())
+	if err != nil {
+		log.Errorf("can not update knative service: %v", err)
+		return &empty, err
+	}
+
+	return &empty, nil
+}
 
 func (is *isolateServer) DeleteIsolates(ctx context.Context,
 	in *igrpc.ListIsolatesRequest) (*emptypb.Empty, error) {
@@ -99,6 +99,18 @@ func (is *isolateServer) DeleteIsolates(ctx context.Context,
 	return &empty, err
 }
 
+func (is *isolateServer) GetIsolate(ctx context.Context,
+	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
+
+	var resp igrpc.GetIsolateResponse
+
+	getKnativeIsolate(in.GetServiceName())
+
+	return &resp, nil
+
+}
+
+// ListIsolates returns isoaltes based on label filter
 func (is *isolateServer) ListIsolates(ctx context.Context,
 	in *igrpc.ListIsolatesRequest) (*igrpc.ListIsolatesResponse, error) {
 
@@ -106,7 +118,7 @@ func (is *isolateServer) ListIsolates(ctx context.Context,
 
 	log.Debugf("list isolates %v", in.GetAnnotations())
 
-	items, err := listIsolates(in.GetAnnotations())
+	items, err := listKnativeIsolates(in.GetAnnotations())
 	if err != nil {
 		return &resp, nil
 	}
@@ -117,15 +129,6 @@ func (is *isolateServer) ListIsolates(ctx context.Context,
 
 }
 
-func (is *isolateServer) GetIsolate(ctx context.Context,
-	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
-
-	var resp igrpc.GetIsolateResponse
-	log.Debugf("getting isolate %s", in.GetName())
-
-	return &resp, nil
-}
-
 // StoreIsolate saves or updates isolates which means creating knative services
 // baes on the provided configuration
 func (is *isolateServer) CreateIsolate(ctx context.Context,
@@ -134,7 +137,7 @@ func (is *isolateServer) CreateIsolate(ctx context.Context,
 	log.Infof("storing isolate %s", in.GetInfo().GetName())
 
 	if in.GetInfo() == nil {
-		return &empty, fmt.Errorf("info and config can not be nil")
+		return &empty, fmt.Errorf("info can not be nil")
 	}
 
 	// create ksvc service

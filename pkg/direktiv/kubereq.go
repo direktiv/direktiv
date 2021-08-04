@@ -809,31 +809,31 @@ func deleteKnativeFunctions(client igrpc.IsolatesServiceClient,
 
 }
 
-func getKnativeFunction(isolateClient igrpc.IsolatesServiceClient, svn string) error {
-
-	r := igrpc.GetIsolateRequest{
-		Name: &svn,
-	}
-	// GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption)
-	_, err := isolateClient.GetIsolate(context.Background(), &r)
-
-	if err != nil {
-		log.Debugf("err %v", err)
-	}
-	// u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-	//
-	// url := fmt.Sprintf("%s/%s", u, svc)
-	// resp, err := SendKuberequest(http.MethodGet, url, nil)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// if resp.StatusCode != 200 {
-	// 	return fmt.Errorf("service does not exists")
-	// }
-
-	return err
-}
+// func getKnativeFunction(isolateClient igrpc.IsolatesServiceClient, svn string) error {
+//
+// 	r := igrpc.GetIsolateRequest{
+// 		Name: &svn,
+// 	}
+// 	// GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption)
+// 	_, err := isolateClient.GetIsolate(context.Background(), &r)
+//
+// 	if err != nil {
+// 		log.Debugf("err %v", err)
+// 	}
+// 	// u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+// 	//
+// 	// url := fmt.Sprintf("%s/%s", u, svc)
+// 	// resp, err := SendKuberequest(http.MethodGet, url, nil)
+// 	// if err != nil {
+// 	// 	return err
+// 	// }
+// 	//
+// 	// if resp.StatusCode != 200 {
+// 	// 	return fmt.Errorf("service does not exists")
+// 	// }
+//
+// 	return err
+// }
 
 func cmdToCommand(s string) (string, error) {
 

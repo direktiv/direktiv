@@ -52,6 +52,7 @@ require (
 	k8s.io/api v0.19.7
 	k8s.io/apimachinery v0.19.7
 	k8s.io/client-go v0.19.7
+	knative.dev/pkg v0.0.0-20210331065221-952fdd90dbb0
 	knative.dev/serving v0.22.0
 	sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
