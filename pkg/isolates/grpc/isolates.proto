@@ -55,6 +55,8 @@ message Revision {
 
 	optional string status = 8;
 	optional string statusMessage = 9;
+
+	optional int64 traffic = 10;
 }
 
 message GetIsolateResponse {

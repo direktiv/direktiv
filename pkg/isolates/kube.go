@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
@@ -23,11 +24,6 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-var (
-	kubeAPIKServiceURL         = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
-	kubeAPIKServiceURLSpecific = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services/%s"
-)
-
 const (
 	httpsProxy = "HTTPS_PROXY"
 	httpProxy  = "HTTP_PROXY"
@@ -40,6 +36,10 @@ const (
 
 	containerUser    = "direktiv-container"
 	containerSidecar = "direktiv-sidecar"
+
+	maxRevisions = 5
+
+	generationHeader = "serving.knative.dev/configurationGeneration"
 )
 
 var (
@@ -88,8 +88,6 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 	}
 
 	for i := range l.Items {
-
-		log.Debugf("ITEM %+v", l.Items[i])
 
 		svc := l.Items[i]
 		n := svc.Labels[ServiceHeaderName]
@@ -397,30 +395,36 @@ func statusFromCondition(conditions []apis.Condition) (string, string) {
 		}
 	}
 
-	return status, statusMsg
+	return status, strings.TrimSpace(statusMsg)
 
 }
 
-func getKnativeIsolate(name string) error {
+func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 
 	var (
 		revs []*igrpc.Revision
 	)
 
-	resp := &igrpc.GetIsolateResponse{
-		Revisions: revs,
-	}
+	resp := &igrpc.GetIsolateResponse{}
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		log.Errorf("error getting clientset for knative: %v", err)
-		// return &resp, err
+		return resp, err
 	}
 
 	svc, err := cs.ServingV1().Services(ns()).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
-		// return &resp, err
+		return resp, err
+	}
+
+	// traffic map
+	tm := make(map[string]*int64)
+
+	for i := range svc.Status.Traffic {
+		tt := svc.Status.Traffic[i]
+		tm[tt.RevisionName] = tt.Percent
 	}
 
 	n := svc.Labels[ServiceHeaderName]
@@ -435,7 +439,7 @@ func getKnativeIsolate(name string) error {
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
-		// return &resp, err
+		return resp, err
 	}
 
 	fn := func(rev v1.Revision) *igrpc.Revision {
@@ -446,7 +450,7 @@ func getKnativeIsolate(name string) error {
 		var gen int64
 		fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
 		fmt.Sscan(rev.Annotations[ServiceHeaderScale], &scale)
-		fmt.Sscan(rev.Labels["serving.knative.dev/configurationGeneration"], &gen)
+		fmt.Sscan(rev.Labels[generationHeader], &gen)
 		info.Size = &sz
 		info.MinScale = &scale
 		info.Generation = &gen
@@ -468,28 +472,31 @@ func getKnativeIsolate(name string) error {
 		var t int64 = rev.CreationTimestamp.Unix()
 		info.Created = &t
 
+		// set traffic
+		var p int64
+		if percent, ok := tm[rev.Name]; ok {
+			info.Traffic = percent
+		} else {
+			info.Traffic = &p
+		}
+
 		return info
 	}
 
 	// get details
 	for i := range rs.Items {
-
 		r := rs.Items[i]
 		info := fn(r)
 		revs = append(revs, info)
-
 	}
 
-	b1, err := json.MarshalIndent(revs, "", "    ")
-	if err != nil {
-		log.Errorf("error marshalling new services: %v", err)
-		return nil
-	}
-	fmt.Printf("%s", string(b1))
+	slice.Sort(revs[:], func(i, j int) bool {
+		return *revs[i].Generation > *revs[j].Generation
+	})
 
-	// log.Debugf("GET %+v", b)
+	resp.Revisions = revs
 
-	return nil
+	return resp, nil
 
 }
 
@@ -525,7 +532,8 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 		Annotations: make(map[string]string),
 	}
 
-	spec.Annotations["autoscaling.knative.dev/minScale"] = "0"
+	spec.Annotations["autoscaling.knative.dev/minScale"] =
+		fmt.Sprintf("%d", info.GetMinScale())
 
 	svc := v1.Service{
 		Spec: v1.ServiceSpec{
@@ -554,6 +562,8 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 		return err
 	}
 
+	log.Debugf("patching service %s", svn)
+
 	_, err = cs.ServingV1().Services(ns()).Patch(context.Background(),
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
 
@@ -562,7 +572,31 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 		return err
 	}
 
-	// remove older replicas
+	// remove older revisions
+	rs, err := cs.ServingV1().Revisions(ns()).List(context.Background(),
+		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", svn)})
+	if err != nil {
+		log.Errorf("error getting old revisions: %v", err)
+		return err
+	}
+
+	slice.Sort(rs.Items[:], func(i, j int) bool {
+		var gen1, gen2 int64
+		fmt.Sscan(rs.Items[i].Labels[generationHeader], &gen1)
+		fmt.Sscan(rs.Items[j].Labels[generationHeader], &gen2)
+		return gen1 < gen2
+	})
+
+	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - maxRevisions))
+
+	// delete old revisions
+	for i := 0; i < (len(rs.Items) - maxRevisions); i++ {
+		log.Debugf("deleting %v", rs.Items[i].Name)
+		err := cs.ServingV1().Revisions(ns()).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
+		if err != nil {
+			log.Errorf("error deleting old revisions: %v", err)
+		}
+	}
 
 	return nil
 }
@@ -643,9 +677,6 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		log.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
-
-	mtx.Lock()
-	defer mtx.Unlock()
 
 	_, err = cs.ServingV1().Services(configNamespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {

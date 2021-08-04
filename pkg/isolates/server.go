@@ -89,7 +89,7 @@ func StopServer() {
 func (is *isolateServer) UpdateIsolate(ctx context.Context,
 	in *igrpc.UpdateIsolateRequest) (*emptypb.Empty, error) {
 
-	log.Infof("updating isolate %s", in.GetInfo().GetName())
+	log.Infof("updating isolate %s", in.GetServiceName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
@@ -116,13 +116,16 @@ func (is *isolateServer) DeleteIsolates(ctx context.Context,
 }
 
 func (is *isolateServer) GetIsolate(ctx context.Context,
+
 	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
 
-	var resp igrpc.GetIsolateResponse
+	var resp *igrpc.GetIsolateResponse
 
-	getKnativeIsolate(in.GetServiceName())
+	if in.GetServiceName() == "" {
+		return resp, fmt.Errorf("service name can not be nil")
+	}
 
-	return &resp, nil
+	return getKnativeIsolate(in.GetServiceName())
 
 }
 
