@@ -158,7 +158,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 		wfto = int(dur.Seconds())
 	}
 
-	fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
 	if err != nil {
 		err = NewInternalError(err)
 		return

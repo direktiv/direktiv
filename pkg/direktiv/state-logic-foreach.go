@@ -89,7 +89,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 		return
 	}
 
-	fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
 	if err != nil {
 		err = NewInternalError(err)
 		return

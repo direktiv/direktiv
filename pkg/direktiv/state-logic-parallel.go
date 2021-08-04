@@ -83,7 +83,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 		return
 	}
 
-	fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
+	fn, err := sl.workflow.GetFunction(action.Function)
 	if err != nil {
 		err = NewInternalError(err)
 		return

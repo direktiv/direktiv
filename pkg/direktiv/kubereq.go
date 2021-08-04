@@ -684,45 +684,54 @@ func deleteKnativeFunctions(uid string, db *dbManager) error {
 
 	log.Debugf("delete functions for %v, %s", wfdb.Name, namespace)
 
-	for _, f := range wf.GetFunctions() {
+	for _, fn := range wf.GetFunctions() {
 
-		var ir isolateRequest
+		fnt := fn.GetType()
+		switch fnt {
+		case model.ReusableContainerFunctionType:
 
-		ir.Workflow.Namespace = namespace
-		ir.Workflow.Name = wf.Name
-		ir.Workflow.ID = wf.ID
+			f := fn.(*model.ReusableFunctionDefinition)
 
-		ir.Container.Type = f.Type
-		ir.Container.Image = f.Image
-		ir.Container.Cmd = f.Cmd
-		ir.Container.Size = f.Size
-		ir.Container.Scale = f.Scale
-		ir.Container.ID = f.ID
+			var ir isolateRequest
 
-		ah, err := serviceToHash(&ir)
-		if err != nil {
-			return err
-		}
+			ir.Workflow.Namespace = namespace
+			ir.Workflow.Name = wf.Name
+			ir.Workflow.ID = wf.ID
 
-		u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-		url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%s", namespace, ah))
+			ir.Container.Type = f.Type
+			ir.Container.Image = f.Image
+			ir.Container.Cmd = f.Cmd
+			ir.Container.Size = f.Size
+			ir.Container.Scale = f.Scale
+			ir.Container.ID = f.ID
 
-		log.Debugf("deleting url %v", url)
-
-		_, err = sendKuberequest(http.MethodDelete, url, nil)
-		if err != nil {
-			log.Errorf("can not delete function: %v", err)
-		}
-
-		// wait till the service is 100 percent gone
-		// this is needed for the engine to create a new one
-		// otherwise it might be in terminated stage and can get a request
-		for {
-			err := getKnativeFunction(url)
-			log.Debugf("err while waiting: %v", err)
+			ah, err := serviceToHash(&ir)
 			if err != nil {
-				break
+				return err
 			}
+
+			u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+			url := fmt.Sprintf("%s/%s", u, fmt.Sprintf("%s-%s", namespace, ah))
+
+			log.Debugf("deleting url %v", url)
+
+			_, err = sendKuberequest(http.MethodDelete, url, nil)
+			if err != nil {
+				log.Errorf("can not delete function: %v", err)
+			}
+
+			// wait till the service is 100 percent gone
+			// this is needed for the engine to create a new one
+			// otherwise it might be in terminated stage and can get a request
+			for {
+				err := getKnativeFunction(url)
+				log.Debugf("err while waiting: %v", err)
+				if err != nil {
+					break
+				}
+			}
+		default:
+
 		}
 
 	}
