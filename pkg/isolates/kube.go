@@ -87,7 +87,7 @@ func listIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
 		if len(svc.Status.Conditions) > 0 {
 			condition := svc.Status.Conditions[0]
 			status = fmt.Sprintf("%s", condition.Status)
-			msg := strings.SplitAfter(condition.Message, ":")
+			msg := strings.SplitN(condition.Message, ":", 2)
 			if len(msg) > 1 {
 				statusMsg = msg[1]
 			}
