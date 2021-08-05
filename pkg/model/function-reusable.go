@@ -7,13 +7,13 @@ import (
 )
 
 type ReusableFunctionDefinition struct {
-	Type  FunctionType             `yaml:"type"`
-	ID    string                   `yaml:"id"`
-	Image string                   `yaml:"image"`
-	Size  Size                     `yaml:"size,omitempty"`
-	Cmd   string                   `yaml:"cmd,omitempty"`
-	Scale int                      `yaml:"scale,omitempty"`
-	Files []FunctionFileDefinition `yaml:"files,omitempty"`
+	Type  FunctionType             `yaml:"type" json:"type"`
+	ID    string                   `yaml:"id" json:"id"`
+	Image string                   `yaml:"image" json:"image"`
+	Size  Size                     `yaml:"size,omitempty" json:"size,omitempty"`
+	Cmd   string                   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	Scale int                      `yaml:"scale,omitempty" json:"scale,omitempty"`
+	Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 func (o *ReusableFunctionDefinition) GetID() string {

@@ -7,9 +7,9 @@ import (
 )
 
 type SubflowFunctionDefinition struct {
-	Type     FunctionType `yaml:"type"`
-	ID       string       `yaml:"id"`
-	Workflow string       `yaml:"workflow"`
+	Type     FunctionType `yaml:"type" json:"type"`
+	ID       string       `yaml:"id" json:"id"`
+	Workflow string       `yaml:"workflow" json:"workflow"`
 }
 
 func (o *SubflowFunctionDefinition) GetID() string {
