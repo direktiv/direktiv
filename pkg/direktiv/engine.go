@@ -625,7 +625,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 						if !isKnativeFunction(we.isolateClient, ar.Container.ID,
 							ar.Workflow.Namespace, ar.Workflow.ID) {
 							err := createKnativeFunction(we.isolateClient, ar)
-							if err != nil {
+							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								log.Errorf("can not create knative function: %v", err)
 								we.reportError(ar, err)
 								return

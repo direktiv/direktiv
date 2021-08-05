@@ -17,7 +17,7 @@ const (
 	EdgeWorkflows = "workflows"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
-	// WorkflowsTable is the table the holds the workflows relation/edge.
+	// WorkflowsTable is the table that holds the workflows relation/edge.
 	WorkflowsTable = "workflows"
 	// WorkflowsInverseTable is the table name for the Workflow entity.
 	// It exists in this package in order to avoid circular dependency with the "workflow" package.

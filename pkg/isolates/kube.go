@@ -644,6 +644,13 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 
 	log.Debugf("patching service %s", svn)
 
+	// lock for updates and deletes
+	l, err := kubeLock(svn)
+	if err != nil {
+		return err
+	}
+	defer kubeUnlock(l)
+
 	_, err = cs.ServingV1().Services(ns()).Patch(context.Background(),
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
 
@@ -694,6 +701,12 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		log.Errorf("can not create service name: %v", err)
 		return err
 	}
+
+	l, err := kubeLock(name)
+	if err != nil {
+		return err
+	}
+	defer kubeUnlock(l)
 
 	log.Debugf("creating knative service %s", name)
 

@@ -6,5 +6,5 @@ metadata:
    {{- include "direktiv.labels" . | nindent 4 }}
 rules:
 - apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list"]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "update"]

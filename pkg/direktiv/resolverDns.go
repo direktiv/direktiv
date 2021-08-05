@@ -222,10 +222,10 @@ func (d *dnsResolver) watcher() {
 
 		var timer *time.Timer
 
-		timeout := 60
+		timeout := 30
 		if d.addrsCount == 0 {
+			timeout = 5
 			log.Infof("%d: servers, timeout %d", d.addrsCount, timeout)
-			timeout = 10
 		}
 
 		if err == nil {
@@ -255,7 +255,6 @@ func (d *dnsResolver) watcher() {
 			return
 		case <-timer.C:
 		}
-
 	}
 }
 

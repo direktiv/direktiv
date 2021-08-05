@@ -13,7 +13,7 @@ const (
 	EdgeWorkflowevent = "workflowevent"
 	// Table holds the table name of the workfloweventswait in the database.
 	Table = "workflow_events_waits"
-	// WorkfloweventTable is the table the holds the workflowevent relation/edge.
+	// WorkfloweventTable is the table that holds the workflowevent relation/edge.
 	WorkfloweventTable = "workflow_events_waits"
 	// WorkfloweventInverseTable is the table name for the WorkflowEvents entity.
 	// It exists in this package in order to avoid circular dependency with the "workflowevents" package.

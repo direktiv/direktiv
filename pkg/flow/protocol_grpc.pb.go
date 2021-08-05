@@ -4,6 +4,8 @@ package flow
 
 import (
 	context "context"
+	"fmt"
+
 	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -40,6 +42,7 @@ func NewDirektivFlowClient(cc grpc.ClientConnInterface) DirektivFlowClient {
 
 func (c *direktivFlowClient) ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
+	fmt.Printf("CC %+v\n", c.cc)
 	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/ReportActionResults", in, out, opts...)
 	if err != nil {
 		return nil, err

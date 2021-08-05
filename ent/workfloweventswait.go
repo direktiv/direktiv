@@ -81,7 +81,6 @@ func (wew *WorkflowEventsWait) assignValues(columns []string, values []interface
 			}
 			wew.ID = int(value.Int64)
 		case workfloweventswait.FieldEvents:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field events", values[i])
 			} else if value != nil && len(*value) > 0 {

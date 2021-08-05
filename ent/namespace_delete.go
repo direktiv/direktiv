@@ -20,9 +20,9 @@ type NamespaceDelete struct {
 	mutation *NamespaceMutation
 }
 
-// Where adds a new predicate to the NamespaceDelete builder.
+// Where appends a list predicates to the NamespaceDelete builder.
 func (nd *NamespaceDelete) Where(ps ...predicate.Namespace) *NamespaceDelete {
-	nd.mutation.predicates = append(nd.mutation.predicates, ps...)
+	nd.mutation.Where(ps...)
 	return nd
 }
 
@@ -46,6 +46,9 @@ func (nd *NamespaceDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(nd.hooks) - 1; i >= 0; i-- {
+			if nd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nd.mutation); err != nil {

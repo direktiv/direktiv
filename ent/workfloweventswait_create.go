@@ -63,11 +63,17 @@ func (wewc *WorkflowEventsWaitCreate) Save(ctx context.Context) (*WorkflowEvents
 				return nil, err
 			}
 			wewc.mutation = mutation
-			node, err = wewc.sqlSave(ctx)
+			if node, err = wewc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(wewc.hooks) - 1; i >= 0; i-- {
+			if wewc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wewc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wewc.mutation); err != nil {
@@ -86,10 +92,23 @@ func (wewc *WorkflowEventsWaitCreate) SaveX(ctx context.Context) *WorkflowEvents
 	return v
 }
 
+// Exec executes the query.
+func (wewc *WorkflowEventsWaitCreate) Exec(ctx context.Context) error {
+	_, err := wewc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wewc *WorkflowEventsWaitCreate) ExecX(ctx context.Context) {
+	if err := wewc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (wewc *WorkflowEventsWaitCreate) check() error {
 	if _, ok := wewc.mutation.Events(); !ok {
-		return &ValidationError{Name: "events", err: errors.New("ent: missing required field \"events\"")}
+		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "events"`)}
 	}
 	if _, ok := wewc.mutation.WorkfloweventID(); !ok {
 		return &ValidationError{Name: "workflowevent", err: errors.New("ent: missing required edge \"workflowevent\"")}
@@ -100,8 +119,8 @@ func (wewc *WorkflowEventsWaitCreate) check() error {
 func (wewc *WorkflowEventsWaitCreate) sqlSave(ctx context.Context) (*WorkflowEventsWait, error) {
 	_node, _spec := wewc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, wewc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -180,19 +199,23 @@ func (wewcb *WorkflowEventsWaitCreateBulk) Save(ctx context.Context) ([]*Workflo
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, wewcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, wewcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, wewcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -216,4 +239,17 @@ func (wewcb *WorkflowEventsWaitCreateBulk) SaveX(ctx context.Context) []*Workflo
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (wewcb *WorkflowEventsWaitCreateBulk) Exec(ctx context.Context) error {
+	_, err := wewcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wewcb *WorkflowEventsWaitCreateBulk) ExecX(ctx context.Context) {
+	if err := wewcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -94,7 +94,7 @@ func (*WorkflowEvents) scanValues(columns []string) ([]interface{}, error) {
 		case workflowevents.FieldID, workflowevents.FieldCount:
 			values[i] = new(sql.NullInt64)
 		case workflowevents.ForeignKeys[0]: // workflow_wfevents
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case workflowevents.ForeignKeys[1]: // workflow_instance_instance
 			values[i] = new(sql.NullInt64)
 		default:
@@ -119,7 +119,6 @@ func (we *WorkflowEvents) assignValues(columns []string, values []interface{}) e
 			}
 			we.ID = int(value.Int64)
 		case workflowevents.FieldEvents:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field events", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -128,7 +127,6 @@ func (we *WorkflowEvents) assignValues(columns []string, values []interface{}) e
 				}
 			}
 		case workflowevents.FieldCorrelations:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field correlations", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -149,10 +147,11 @@ func (we *WorkflowEvents) assignValues(columns []string, values []interface{}) e
 				we.Count = int(value.Int64)
 			}
 		case workflowevents.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_wfevents", values[i])
-			} else if value != nil {
-				we.workflow_wfevents = value
+			} else if value.Valid {
+				we.workflow_wfevents = new(uuid.UUID)
+				*we.workflow_wfevents = *value.S.(*uuid.UUID)
 			}
 		case workflowevents.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {

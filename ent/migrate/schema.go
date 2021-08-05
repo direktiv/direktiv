@@ -15,10 +15,9 @@ var (
 	}
 	// NamespacesTable holds the schema information for the "namespaces" table.
 	NamespacesTable = &schema.Table{
-		Name:        "namespaces",
-		Columns:     NamespacesColumns,
-		PrimaryKey:  []*schema.Column{NamespacesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "namespaces",
+		Columns:    NamespacesColumns,
+		PrimaryKey: []*schema.Column{NamespacesColumns[0]},
 	}
 	// WorkflowsColumns holds the columns for the "workflows" table.
 	WorkflowsColumns = []*schema.Column{

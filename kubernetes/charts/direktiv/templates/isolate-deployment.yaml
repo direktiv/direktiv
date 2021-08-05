@@ -49,6 +49,8 @@ spec:
           env:
             - name: DIREKTIV_DEBUG
               value: "true"
+            - name: DIREKTIV_LOCK_CM
+              value: {{ include "direktiv.fullname" . }}-lock-cm
             - name: DIREKTIV_KUBERNETES_NAMESPACE
               value: {{ .Release.Namespace }}
             - name: "DIREKTIV_FLOW_ENDPOINT"

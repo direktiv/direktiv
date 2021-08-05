@@ -682,6 +682,7 @@ func isKnativeFunction(client igrpc.IsolatesServiceClient,
 	a[isolates.ServiceHeaderName] = name
 	a[isolates.ServiceHeaderNamespace] = namespace
 	a[isolates.ServiceHeaderWorkflow] = workflow
+	a[isolates.ServiceHeaderScope] = isolates.PrefixService
 
 	l, err := client.ListIsolates(context.Background(), &igrpc.ListIsolatesRequest{
 		Annotations: a,

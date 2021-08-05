@@ -15,7 +15,7 @@ import (
 
 var kubernetesLock *distributed_locker.DistributedLocker
 
-func initKLock() error {
+func initKubernetesLock() error {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -32,7 +32,7 @@ func initKLock() error {
 			Group:    "",
 			Version:  "v1",
 			Resource: "configmaps",
-		}, "lock-cm", os.Getenv("direktivWorkflowNamespace"),
+		}, os.Getenv("DIREKTIV_LOCK_CM"), os.Getenv("DIREKTIV_KUBERNETES_NAMESPACE"),
 	)
 
 	log.Infof("kubernetes lock created")
@@ -61,11 +61,9 @@ func kubeLock(key string) (lockgate.LockHandle, error) {
 
 }
 
-func kubeTryLock(key string) (lockgate.LockHandle, error) {
-	return lockgate.LockHandle{}, nil
-}
-
 func kubeUnlock(lock lockgate.LockHandle) {
+
+	log.Debugf("unlocking %s", lock.LockName)
 
 	err := kubernetesLock.Release(lock)
 	if err != nil {

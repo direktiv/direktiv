@@ -20,9 +20,9 @@ type WorkflowEventsWaitDelete struct {
 	mutation *WorkflowEventsWaitMutation
 }
 
-// Where adds a new predicate to the WorkflowEventsWaitDelete builder.
+// Where appends a list predicates to the WorkflowEventsWaitDelete builder.
 func (wewd *WorkflowEventsWaitDelete) Where(ps ...predicate.WorkflowEventsWait) *WorkflowEventsWaitDelete {
-	wewd.mutation.predicates = append(wewd.mutation.predicates, ps...)
+	wewd.mutation.Where(ps...)
 	return wewd
 }
 
@@ -46,6 +46,9 @@ func (wewd *WorkflowEventsWaitDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(wewd.hooks) - 1; i >= 0; i-- {
+			if wewd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wewd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wewd.mutation); err != nil {

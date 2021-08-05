@@ -22,9 +22,9 @@ type WorkflowEventsWaitUpdate struct {
 	mutation *WorkflowEventsWaitMutation
 }
 
-// Where adds a new predicate for the WorkflowEventsWaitUpdate builder.
+// Where appends a list predicates to the WorkflowEventsWaitUpdate builder.
 func (wewu *WorkflowEventsWaitUpdate) Where(ps ...predicate.WorkflowEventsWait) *WorkflowEventsWaitUpdate {
-	wewu.mutation.predicates = append(wewu.mutation.predicates, ps...)
+	wewu.mutation.Where(ps...)
 	return wewu
 }
 
@@ -82,6 +82,9 @@ func (wewu *WorkflowEventsWaitUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(wewu.hooks) - 1; i >= 0; i-- {
+			if wewu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wewu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wewu.mutation); err != nil {
@@ -184,8 +187,8 @@ func (wewu *WorkflowEventsWaitUpdate) sqlSave(ctx context.Context) (n int, err e
 	if n, err = sqlgraph.UpdateNodes(ctx, wewu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workfloweventswait.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -261,6 +264,9 @@ func (wewuo *WorkflowEventsWaitUpdateOne) Save(ctx context.Context) (*WorkflowEv
 			return node, err
 		})
 		for i := len(wewuo.hooks) - 1; i >= 0; i-- {
+			if wewuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wewuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wewuo.mutation); err != nil {
@@ -383,8 +389,8 @@ func (wewuo *WorkflowEventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *W
 	if err = sqlgraph.UpdateNode(ctx, wewuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workfloweventswait.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

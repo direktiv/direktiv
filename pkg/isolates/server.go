@@ -42,6 +42,11 @@ type isolateServer struct {
 // StartServer starts isolate grpc server
 func StartServer(echan chan error) {
 
+	err := initKubernetesLock()
+	if err != nil {
+		echan <- err
+	}
+
 	cr := newConfigReader()
 	go cr.readConfig(confFile, &isolateConfig)
 

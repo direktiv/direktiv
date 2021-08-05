@@ -3,7 +3,7 @@ module github.com/vorteil/direktiv
 go 1.15
 
 require (
-	entgo.io/ent v0.8.0
+	entgo.io/ent v0.9.0
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5 // indirect
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
@@ -16,13 +16,13 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/lib/pq v1.10.0
+	github.com/lib/pq v1.10.2
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
@@ -44,7 +44,7 @@ require (
 	github.com/vorteil/direktiv-apps v0.0.0-20210423031131-1bc5000144a1
 	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0

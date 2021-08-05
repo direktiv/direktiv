@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-config-isolate
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+
+      # name of the service account to run the pods
+      service-account: default
+
+      # db secret for pub/sub
+      sidecar-db: {{ include "direktiv.fullname" . }}-secrets-isolate
+
+      # pod sidecar name
+      sidecar: {{ .Values.isolates.sidecar }}
+
+      # max number of revisions to keep per namespace or global
+      keep-revisions: 3
+
+      # max number of pods per service
+      max-scale: 3
+
+      # rollout seconds for knative services
+      rollout-duration: 30
+
+      # shaping network traffic if supported by network plugin
+      net-shape: 10M
+
+      # default concurrency level
+      concurrency: 100
+
+      # runtime for services, e.g. gvisor
+      runtime: default
+
+      # memory/cpu value defined for different service sizes
+      memory:
+        small: 128
+        medium: 512
+        large: 1024
+      cpu:
+        small: 0.25
+        medium: 0.5
+        large: 1.0
+
+      # proxy values
+      proxy:
+        no: ""
+        https: ""
+        http: ""
+
+      # additional sidecar containers
+      additionalContainers:
+      # - name: ""
+      #   image: ""
+      #   command: ""

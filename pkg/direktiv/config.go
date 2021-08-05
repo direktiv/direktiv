@@ -109,6 +109,7 @@ func setInt(config *Config, env string, value *int) error {
 func setString(config *Config, env string, value *string) error {
 
 	v := os.Getenv(env)
+
 	if len(v) > 0 {
 		*value = v
 		log.Debugf("setting %s via env", env)
@@ -178,7 +179,7 @@ func ReadConfig(file string) (*Config, error) {
 		{flowBind, &c.FlowAPI.Bind},
 		{flowEndpoint, &c.FlowAPI.Endpoint},
 		{ingressBind, &c.IngressAPI.Bind},
-		{ingressEndpoint, &c.FlowAPI.Endpoint},
+		{ingressEndpoint, &c.IngressAPI.Endpoint},
 		{isolateEndpoint, &c.FlowAPI.IsolateEndpoint},
 		{flowExchange, &c.FlowAPI.Exchange},
 		{flowSidecar, &c.FlowAPI.Sidecar},

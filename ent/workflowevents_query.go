@@ -399,8 +399,8 @@ func (weq *WorkflowEventsQuery) GroupBy(field string, fields ...string) *Workflo
 //		Select(workflowevents.FieldEvents).
 //		Scan(ctx, &v)
 //
-func (weq *WorkflowEventsQuery) Select(field string, fields ...string) *WorkflowEventsSelect {
-	weq.fields = append([]string{field}, fields...)
+func (weq *WorkflowEventsQuery) Select(fields ...string) *WorkflowEventsSelect {
+	weq.fields = append(weq.fields, fields...)
 	return &WorkflowEventsSelect{WorkflowEventsQuery: weq}
 }
 
@@ -611,10 +611,14 @@ func (weq *WorkflowEventsQuery) querySpec() *sqlgraph.QuerySpec {
 func (weq *WorkflowEventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(weq.driver.Dialect())
 	t1 := builder.Table(workflowevents.Table)
-	selector := builder.Select(t1.Columns(workflowevents.Columns...)...).From(t1)
+	columns := weq.fields
+	if len(columns) == 0 {
+		columns = workflowevents.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if weq.sql != nil {
 		selector = weq.sql
-		selector.Select(selector.Columns(workflowevents.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range weq.predicates {
 		p(selector)
@@ -882,13 +886,24 @@ func (wegb *WorkflowEventsGroupBy) sqlScan(ctx context.Context, v interface{}) e
 }
 
 func (wegb *WorkflowEventsGroupBy) sqlQuery() *sql.Selector {
-	selector := wegb.sql
-	columns := make([]string, 0, len(wegb.fields)+len(wegb.fns))
-	columns = append(columns, wegb.fields...)
+	selector := wegb.sql.Select()
+	aggregation := make([]string, 0, len(wegb.fns))
 	for _, fn := range wegb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(wegb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(wegb.fields)+len(wegb.fns))
+		for _, f := range wegb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(wegb.fields...)...)
 }
 
 // WorkflowEventsSelect is the builder for selecting fields of WorkflowEvents entities.
@@ -1104,16 +1119,10 @@ func (wes *WorkflowEventsSelect) BoolX(ctx context.Context) bool {
 
 func (wes *WorkflowEventsSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := wes.sqlQuery().Query()
+	query, args := wes.sql.Query()
 	if err := wes.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (wes *WorkflowEventsSelect) sqlQuery() sql.Querier {
-	selector := wes.sql
-	selector.Select(selector.Columns(wes.fields...)...)
-	return selector
 }
