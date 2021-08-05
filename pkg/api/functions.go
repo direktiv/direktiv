@@ -266,3 +266,46 @@ func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+type updateServiceTrafficRequest struct {
+	Values []struct {
+		Revision string `json:"revision"`
+		Percent  int64  `json:"percent"`
+	} `json:"values"`
+}
+
+func (h *Handler) updateServiceTraffic(w http.ResponseWriter, r *http.Request) {
+
+	obj := new(updateServiceTrafficRequest)
+	err := json.NewDecoder(r.Body).Decode(obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	if obj.Values == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sn := mux.Vars(r)["serviceName"]
+	grpcReq := &grpc.SetTrafficRequest{
+		Name:    &sn,
+		Traffic: make([]*grpc.TrafficValue, 0),
+	}
+
+	for _, v := range obj.Values {
+		grpcReq.Traffic = append(grpcReq.Traffic, &grpc.TrafficValue{
+			Revision: &v.Revision,
+			Percent:  &v.Percent,
+		})
+	}
+
+	_, err = h.s.isolates.SetIsolateTraffic(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+}
