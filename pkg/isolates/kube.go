@@ -465,7 +465,8 @@ func statusFromCondition(conditions []apis.Condition) (string, string) {
 		if cond.Type == v1.RevisionConditionReady {
 			status = fmt.Sprintf("%s", cond.Status)
 		} else if cond.Type == v1.RevisionConditionResourcesAvailable ||
-			cond.Type == v1.RevisionConditionContainerHealthy {
+			cond.Type == v1.RevisionConditionContainerHealthy ||
+			cond.Type == v1.ServiceConditionConfigurationsReady {
 			// these types can report errors
 			statusMsg = fmt.Sprintf("%s %s", statusMsg, cond.Message)
 		}
