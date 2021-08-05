@@ -16,6 +16,9 @@ data:
       # pod sidecar name
       sidecar: {{ .Values.isolates.sidecar }}
 
+      # max number of revisions to keep per namespace or global
+      keep-revisions: 3
+
       # max number of pods per service
       max-scale: 3
 

@@ -37,9 +37,20 @@ const (
 	containerUser    = "direktiv-container"
 	containerSidecar = "direktiv-sidecar"
 
-	maxRevisions = 5
-
 	generationHeader = "serving.knative.dev/configurationGeneration"
+
+	prefixWorkflow  = "w"
+	prefixNamespace = "ns"
+	prefixGlobal    = "g"
+	prefixService   = "s" // unused, only if a one item list is requested
+)
+
+const (
+	serviceType   = iota
+	workflowType  = iota
+	namespaceType = iota
+	globalType    = iota
+	invalidType   = iota
 )
 
 var (
@@ -63,15 +74,81 @@ func conatinerFromList(containers []corev1.Container) (string, string) {
 	return img, cmd
 }
 
+func filterLabels(annotations map[string]string) map[string]string {
+
+	var (
+		setter uint8
+	)
+
+	// filter out invalid annotations
+	a := make(map[string]string)
+	for k, v := range annotations {
+		if strings.HasPrefix(k, "direktiv.io/") && k != ServiceHeaderScope {
+			a[k] = v
+		}
+
+		if k == ServiceHeaderName && len(v) > 0 {
+			setter = setter | 1
+		} else if k == ServiceHeaderWorkflow && len(v) > 0 {
+			setter = setter | 2
+		} else if k == ServiceHeaderNamespace && len(v) > 0 {
+			setter = setter | 4
+		}
+	}
+
+	var (
+		scope string
+		ok    bool
+	)
+	if scope, ok = annotations[ServiceHeaderScope]; !ok {
+		log.Errorf("scope not set for list")
+		return make(map[string]string)
+	}
+
+	t := invalidType
+	switch setter {
+	case 7:
+		t = serviceType
+		if scope != prefixService {
+			t = invalidType
+		}
+	case 6:
+		t = workflowType
+		if scope != prefixWorkflow {
+			t = invalidType
+		}
+	case 4:
+		t = namespaceType
+		if scope != prefixNamespace {
+			t = invalidType
+		}
+	case 0:
+		t = globalType
+		if scope != prefixGlobal {
+			t = invalidType
+		}
+	}
+
+	log.Debugf("request type: %v", setter)
+
+	if t == invalidType {
+		log.Errorf("wrong labels for search")
+		return make(map[string]string)
+	}
+
+	return a
+}
+
 func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
 
 	var b []*igrpc.IsolateInfo
 
-	if len(annotations) == 0 {
-		return b, fmt.Errorf("annotations empty")
+	filtered := filterLabels(annotations)
+	if len(filtered) == 0 {
+		return b, fmt.Errorf("request labels are invalid")
 	}
 
-	log.Debugf("list annotations: %s", labels.Set(annotations).String())
+	log.Debugf("list annotations: %s", labels.Set(filtered).String())
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
@@ -79,7 +156,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 		return b, err
 	}
 
-	lo := metav1.ListOptions{LabelSelector: labels.Set(annotations).String()}
+	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
 	l, err := cs.ServingV1().Services(ns()).List(context.Background(), lo)
 
 	if err != nil {
@@ -129,7 +206,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 	return b, nil
 }
 
-func metaSpec(net string, min, max int, ns, wf, name string) metav1.ObjectMeta {
+func metaSpec(net string, min, max int, ns, wf, name, scope string) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
 		Labels:      make(map[string]string),
@@ -150,17 +227,14 @@ func metaSpec(net string, min, max int, ns, wf, name string) metav1.ObjectMeta {
 		metaSpec.Labels[ServiceHeaderWorkflow] = wf
 	}
 
-	if len(ns) > 0 {
-		metaSpec.Labels[ServiceHeaderNamespace] = ns
-	} else {
-		metaSpec.Labels[ServiceHeaderNamespace] = "global"
-	}
+	metaSpec.Labels[ServiceHeaderNamespace] = ns
+	metaSpec.Labels[ServiceHeaderScope] = scope
 
 	return metaSpec
 
 }
 
-func meta(svn, name, namespace, ns, wf string, scale, size int) metav1.ObjectMeta {
+func meta(svn, name, namespace, ns, wf string, scale, size int, scope string) metav1.ObjectMeta {
 
 	meta := metav1.ObjectMeta{
 		Name:        svn,
@@ -176,16 +250,13 @@ func meta(svn, name, namespace, ns, wf string, scale, size int) metav1.ObjectMet
 		meta.Labels[ServiceHeaderWorkflow] = wf
 	}
 
-	if len(ns) > 0 {
-		meta.Labels[ServiceHeaderNamespace] = ns
-	} else {
-		meta.Labels[ServiceHeaderNamespace] = "global"
-	}
+	meta.Labels[ServiceHeaderNamespace] = ns
+	meta.Labels[ServiceHeaderScope] = scope
 
 	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
 	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 	meta.Annotations["serving.knative.dev/rolloutDuration"] =
-		fmt.Sprintf("%d", isolateConfig.RolloutDuration)
+		fmt.Sprintf("%ds", isolateConfig.RolloutDuration)
 
 	return meta
 }
@@ -347,27 +418,30 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 }
 
 // GenerateServiceName generates a knative name based on workflow details
-func GenerateServiceName(ns, wf, n string) (string, error) {
+func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
 	log.Debugf("service name: %s %s %s", ns, wf, n)
 
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// get scope and create name
 	// workflow
-	name := fmt.Sprintf("w-%d", h)
+	name := fmt.Sprintf("%s-%d", prefixWorkflow, h)
+	scope := "wf"
 	if ns == "" {
 		// global
-		name = fmt.Sprintf("g-%s", n)
+		name = fmt.Sprintf("%s-%s", prefixGlobal, n)
+		scope = prefixGlobal
 	} else if wf == "" {
 		//namespace
-		name = fmt.Sprintf("ns-%s-%s", ns, n)
+		scope = prefixNamespace
+		name = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, n)
 	}
 
-	return name, nil
+	return name, scope, nil
 
 }
 
@@ -502,13 +576,14 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 
 }
 
-func deleteIsolates(annotations map[string]string) error {
+func deleteKnativeIsolates(annotations map[string]string) error {
 
-	if len(annotations) == 0 {
-		return fmt.Errorf("annotations empty")
+	filtered := filterLabels(annotations)
+	if len(filtered) == 0 {
+		return fmt.Errorf("request labels are invalid")
 	}
 
-	log.Debugf("delete annotations: %s", labels.Set(annotations).String())
+	log.Debugf("delete annotations: %s", labels.Set(filtered).String())
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
@@ -516,7 +591,7 @@ func deleteIsolates(annotations map[string]string) error {
 		return err
 	}
 
-	lo := metav1.ListOptions{LabelSelector: labels.Set(annotations).String()}
+	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
 	return cs.ServingV1().Services(ns()).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
 }
@@ -589,10 +664,10 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 		return gen1 < gen2
 	})
 
-	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - maxRevisions))
+	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - isolateConfig.KeepRevisions))
 
 	// delete old revisions
-	for i := 0; i < (len(rs.Items) - maxRevisions); i++ {
+	for i := 0; i < (len(rs.Items) - isolateConfig.KeepRevisions); i++ {
 		log.Debugf("deleting %v", rs.Items[i].Name)
 		err := cs.ServingV1().Revisions(ns()).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
 		if err != nil {
@@ -610,7 +685,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		timeoutSec  int64 = 60
 	)
 
-	name, err := GenerateServiceName(info.GetNamespace(),
+	name, scope, err := GenerateServiceName(info.GetNamespace(),
 		info.GetWorkflow(), info.GetName())
 	if err != nil {
 		log.Errorf("can not create service name: %v", err)
@@ -649,12 +724,12 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 			Kind:       "Service",
 		},
 		ObjectMeta: meta(name, info.GetName(), configNamespace,
-			info.GetNamespace(), info.GetWorkflow(), min, int(info.GetSize())),
+			info.GetNamespace(), info.GetWorkflow(), min, int(info.GetSize()), scope),
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: metaSpec(isolateConfig.NetShape, min, isolateConfig.MaxScale,
-						info.GetNamespace(), info.GetWorkflow(), info.GetName()),
+						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							Containers: containers,
@@ -685,6 +760,19 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 	}
 
 	return nil
+}
+
+func deleteKnativeIsolate(name string) error {
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return err
+	}
+
+	return cs.ServingV1().Services(ns()).Delete(context.Background(),
+		name, metav1.DeleteOptions{})
+
 }
 
 func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {

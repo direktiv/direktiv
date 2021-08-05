@@ -556,7 +556,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	ns := os.Getenv(direktivWorkflowNamespace)
 
 	// c GenerateServiceName(ns, wf, n string)
-	svn, err := isolates.GenerateServiceName(ar.Workflow.Namespace,
+	svn, _, err := isolates.GenerateServiceName(ar.Workflow.Namespace,
 		ar.Workflow.ID, ar.Container.ID)
 	if err != nil {
 		log.Errorf("can not create service name: %v", err)

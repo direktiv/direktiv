@@ -16,6 +16,7 @@ type config struct {
 	ServiceAccount  string `yaml:"service-account"`
 	SidecarDb       string `yaml:"sidecar-db"`
 	Sidecar         string `yaml:"sidecar"`
+	KeepRevisions   int    `yaml:"keep-revisions"`
 	MaxScale        int    `yaml:"max-scale"`
 	NetShape        string `yaml:"net-shape"`
 	RolloutDuration int    `yaml:"rollout-duration"`

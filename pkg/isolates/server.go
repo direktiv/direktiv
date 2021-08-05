@@ -32,6 +32,7 @@ const (
 	ServiceHeaderWorkflow  = "direktiv.io/workflow"
 	ServiceHeaderSize      = "direktiv.io/size"
 	ServiceHeaderScale     = "direktiv.io/scale"
+	ServiceHeaderScope     = "direktiv.io/scope"
 )
 
 type isolateServer struct {
@@ -110,7 +111,7 @@ func (is *isolateServer) DeleteIsolates(ctx context.Context,
 
 	log.Debugf("deleting isolates %v", in.GetAnnotations())
 
-	err := deleteIsolates(in.GetAnnotations())
+	err := deleteKnativeIsolates(in.GetAnnotations())
 
 	return &empty, err
 }
@@ -139,7 +140,7 @@ func (is *isolateServer) ListIsolates(ctx context.Context,
 
 	items, err := listKnativeIsolates(in.GetAnnotations())
 	if err != nil {
-		return &resp, nil
+		return &resp, err
 	}
 
 	resp.Isolates = items
@@ -175,10 +176,23 @@ func (is *isolateServer) SetIsolateTraffic(ctx context.Context,
 
 	err := trafficKnativeIsolate(in.GetName(), in.GetTraffic())
 	if err != nil {
-		log.Errorf("can not create knative service: %v", err)
+		log.Errorf("can not set traffic: %v", err)
 		return &empty, err
 	}
 
-	return &empty, err
+	return &empty, nil
+
+}
+
+func (is *isolateServer) DeleteIsolate(ctx context.Context,
+	in *igrpc.GetIsolateRequest) (*emptypb.Empty, error) {
+
+	err := deleteKnativeIsolate(in.GetServiceName())
+	if err != nil {
+		log.Errorf("can not delete knative service: %v", err)
+		return &empty, err
+	}
+
+	return &empty, nil
 
 }

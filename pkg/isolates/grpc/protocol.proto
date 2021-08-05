@@ -14,5 +14,6 @@ service IsolatesService {
   rpc DeleteIsolates(ListIsolatesRequest) returns (google.protobuf.Empty)  {}
   rpc ListIsolates(ListIsolatesRequest) returns (ListIsolatesResponse)  {}
   rpc GetIsolate(GetIsolateRequest) returns (GetIsolateResponse)  {}
+  rpc DeleteIsolate(GetIsolateRequest) returns (google.protobuf.Empty)  {}
   rpc SetIsolateTraffic(SetTrafficRequest) returns (google.protobuf.Empty)  {}
 }
