@@ -9,6 +9,7 @@ import (
 )
 
 type listFunctionsRequest struct {
+	Scope     string `json:"scope"`
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
 	Workflow  string `json:"workflow"`
@@ -43,6 +44,7 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesReques
 	grpcReq.Annotations["direktiv.io/name"] = rb.Name
 	grpcReq.Annotations["direktiv.io/namespace"] = rb.Namespace
 	grpcReq.Annotations["direktiv.io/workflow"] = rb.Workflow
+	grpcReq.Annotations["direktiv.io/scope"] = rb.Scope
 
 	del := make([]string, 0)
 	for k, v := range grpcReq.Annotations {
