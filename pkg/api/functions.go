@@ -135,6 +135,20 @@ func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) deleteService(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["serviceName"]
+	grpcReq := new(grpc.GetIsolateRequest)
+	grpcReq.ServiceName = &sn
+
+	_, err := h.s.isolates.DeleteIsolate(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+}
+
 type getFunctionResponse struct {
 	Name      string                         `json:"name,omitempty"`
 	Namespace string                         `json:"namespace,omitempty"`
