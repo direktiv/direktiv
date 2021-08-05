@@ -317,48 +317,49 @@ type actionResultMessage struct {
 
 func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
 
-	// generate hash name as "url"
-	actionHash, err := serviceToHash(ar)
+	// // generate hash name as "url"
+	// actionHash, err := serviceToHash(ar)
+	//
+	// // check scope
+	// split := strings.Split(ar.Container.Image, "/")
+	// if strings.Contains(split[0], ":") {
+	// 	scopeSplit := strings.Split(split[0], ":")
+	// 	scope := scopeSplit[0]
+	// 	log.Debugf("SCOPE %v", scope)
+	// }
 
-	// check scope
-	split := strings.Split(ar.Container.Image, "/")
-	if strings.Contains(split[0], ":") {
-		scopeSplit := strings.Split(split[0], ":")
-		scope := scopeSplit[0]
-		log.Debugf("SCOPE %v", scope)
-	}
-
-	if err != nil {
-		return NewInternalError(err)
-	}
+	// if err != nil {
+	// 	return NewInternalError(err)
+	// }
 
 	// Check if container scale is more than max
-	if ar.Container.Scale > we.server.config.FlowAPI.MaxScale {
-		return NewInternalError(fmt.Errorf("scale is larger than maximum allowed scale of %v", we.server.config.FlowAPI.MaxScale))
-	}
+	// if ar.Container.Scale > we.server.config.FlowAPI.MaxScale {
+	// 	return NewInternalError(fmt.Errorf("scale is larger than maximum allowed scale of %v",
+	// 		we.server.config.FlowAPI.MaxScale))
+	// }
 
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		ip, err := addPodFunction(ctx, actionHash, ar)
-		if err != nil {
-			// we.reportError(ar, err)
-			return err
-		}
-
-		go func(ar *isolateRequest) {
-			// post data
-			we.doPodHTTPRequest(ctx, actionHash, ar, ip)
-
-		}(ar)
-
-		if true {
-			return nil
-		}
+		// ip, err := addPodFunction(ctx, actionHash, ar)
+		// if err != nil {
+		// 	// we.reportError(ar, err)
+		// 	return err
+		// }
+		//
+		// go func(ar *isolateRequest) {
+		// 	// post data
+		// 	we.doPodHTTPRequest(ctx, actionHash, ar, ip)
+		//
+		// }(ar)
+		//
+		// if true {
+		// 	return nil
+		// }
 	case model.DefaultFunctionType:
 		fallthrough
 	case model.ReusableContainerFunctionType:
-		go we.doKnativeHTTPRequest(ctx, actionHash, ar)
+		go we.doKnativeHTTPRequest(ctx, ar)
 	}
 
 	return nil
@@ -507,7 +508,7 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 }
 
 func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
-	ah string, ar *isolateRequest) {
+	ar *isolateRequest) {
 
 	// from here we need to report error as grpc because this is go-routined
 	// NOTE: transport copied & modified from http.DefaultTransport

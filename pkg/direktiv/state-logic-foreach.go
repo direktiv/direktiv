@@ -90,49 +90,17 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 		return
 	}
 
-	if action.Function != "" {
+	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
+	if err != nil {
+		err = NewInternalError(err)
+		return
+	}
 
-		// container
+	fnt := fn.GetType()
+	switch fnt {
+	case model.SubflowFunctionType:
 
-		uid := ksuid.New()
-		logic = multiactionTuple{
-			ID:       uid.String(),
-			Type:     "isolate",
-			Attempts: attempt,
-		}
-
-		var fn *model.FunctionDefinition
-		fn, err = sl.workflow.GetFunction(sl.state.Action.Function)
-		if err != nil {
-			err = NewInternalError(err)
-			return
-		}
-
-		ar := new(isolateRequest)
-		ar.ActionID = uid.String()
-		ar.Workflow.InstanceID = instance.id
-		ar.Workflow.Namespace = instance.namespace
-		ar.Workflow.State = sl.state.GetID()
-		ar.Workflow.Step = instance.step
-		ar.Workflow.Name = instance.wf.Name
-		ar.Workflow.ID = instance.wf.ID
-
-		// TODO: timeout
-		ar.Container.Type = fn.Type
-		ar.Container.Data = inputData
-		ar.Container.Image = fn.Image
-		ar.Container.Cmd = fn.Cmd
-		ar.Container.Size = fn.Size
-		ar.Container.Scale = fn.Scale
-		ar.Container.ID = fn.ID
-		ar.Container.Files = fn.Files
-
-		err = instance.engine.doActionRequest(ctx, ar)
-		if err != nil {
-			return
-		}
-
-	} else {
+		sf := fn.(*model.SubflowFunctionDefinition)
 
 		// subflow
 
@@ -145,7 +113,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 
 		// TODO: log subflow instance IDs
 
-		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, action.Workflow, inputData)
+		subflowID, err = instance.engine.subflowInvoke(ctx, caller, instance.rec.InvokedBy, instance.namespace, sf.Workflow, inputData)
 		if err != nil {
 			return
 		}
@@ -156,6 +124,53 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 			Attempts: attempt,
 		}
 
+	case model.ReusableContainerFunctionType:
+
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
+
+		var ar *isolateRequest
+		ar, err = instance.newIsolateRequest(sl.state.GetID(), 0, fn, inputData, uid, false)
+		if err != nil {
+			return
+		}
+
+		err = instance.engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
+		}
+
+	case model.IsolatedContainerFunctionType:
+
+		uid := ksuid.New()
+		logic = multiactionTuple{
+			ID:       uid.String(),
+			Type:     "isolate",
+			Attempts: attempt,
+		}
+
+		var ar *isolateRequest
+		ar, err = instance.newIsolateRequest(sl.state.GetID(), 0, fn, inputData, uid, false)
+		if err != nil {
+			return
+		}
+
+		err = instance.engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
+		}
+
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
+	default:
+		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
+		return
 	}
 
 	return
