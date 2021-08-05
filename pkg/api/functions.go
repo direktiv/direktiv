@@ -248,9 +248,16 @@ func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
 
 }
 
+type updateServiceRequest struct {
+	Image    *string `json:"image,omitempty"`
+	Cmd      *string `json:"cmd,omitempty"`
+	Size     *int32  `json:"size,omitempty"`
+	MinScale *int32  `json:"minScale,omitempty"`
+}
+
 func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 
-	obj := new(createFunctionRequest)
+	obj := new(updateServiceRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -263,13 +270,10 @@ func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 	grpcReq := new(grpc.UpdateIsolateRequest)
 	grpcReq.ServiceName = &sn
 	grpcReq.Info = &grpc.BaseInfo{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-		Workflow:  obj.Workflow,
-		Image:     obj.Image,
-		Cmd:       obj.Cmd,
-		Size:      obj.Size,
-		MinScale:  obj.MinScale,
+		Image:    obj.Image,
+		Cmd:      obj.Cmd,
+		Size:     obj.Size,
+		MinScale: obj.MinScale,
 	}
 
 	// returns an empty body
