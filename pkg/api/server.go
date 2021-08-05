@@ -166,6 +166,7 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
 
 	// Namespace ..
 	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name(RN_ListNamespaces)

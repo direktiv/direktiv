@@ -135,6 +135,20 @@ func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) deleteService(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["serviceName"]
+	grpcReq := new(grpc.GetIsolateRequest)
+	grpcReq.ServiceName = &sn
+
+	_, err := h.s.isolates.DeleteIsolate(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+}
+
 type getFunctionResponse struct {
 	Name      string                         `json:"name,omitempty"`
 	Namespace string                         `json:"namespace,omitempty"`
@@ -234,9 +248,16 @@ func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
 
 }
 
+type updateServiceRequest struct {
+	Image    *string `json:"image,omitempty"`
+	Cmd      *string `json:"cmd,omitempty"`
+	Size     *int32  `json:"size,omitempty"`
+	MinScale *int32  `json:"minScale,omitempty"`
+}
+
 func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 
-	obj := new(createFunctionRequest)
+	obj := new(updateServiceRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -249,13 +270,10 @@ func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 	grpcReq := new(grpc.UpdateIsolateRequest)
 	grpcReq.ServiceName = &sn
 	grpcReq.Info = &grpc.BaseInfo{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-		Workflow:  obj.Workflow,
-		Image:     obj.Image,
-		Cmd:       obj.Cmd,
-		Size:      obj.Size,
-		MinScale:  obj.MinScale,
+		Image:    obj.Image,
+		Cmd:      obj.Cmd,
+		Size:     obj.Size,
+		MinScale: obj.MinScale,
 	}
 
 	// returns an empty body
