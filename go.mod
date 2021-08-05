@@ -42,6 +42,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/valyala/fasthttp v1.22.0
 	github.com/vorteil/direktiv-apps v0.0.0-20210423031131-1bc5000144a1
+	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4
 	golang.org/x/text v0.3.6 // indirect
