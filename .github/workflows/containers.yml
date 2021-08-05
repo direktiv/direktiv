@@ -10,58 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set env
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: test version
-      run: |
-        echo ${{ env.RELEASE_VERSION }}
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_TOKEN }}
-    - name: build containers
-      run: |
-        export RV=${{ env.RELEASE_VERSION }}
-        echo "RV set to $RV"
-        if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
-        echo "RV set to $RV"
-        RV=$RV make docker-ui
-        make docker-secrets
-        make docker-flow
-        make docker-api
-        make docker-cli
-        make docker-all
-        make docker-sidecar
-        make docker-init-pod
-        echo "containers built"
-        docker tag direktiv-api vorteil/api:$RV
-        docker tag direktiv-api vorteil/api
-        docker tag direktiv-flow vorteil/flow:$RV
-        docker tag direktiv-flow vorteil/flow
-        docker tag direktiv-secrets vorteil/secrets:$RV
-        docker tag direktiv-secrets vorteil/secrets
-        docker tag direktiv-cli vorteil/direkcli:$RV
-        docker tag direktiv-cli vorteil/direkcli
-        docker tag direktiv-kube vorteil/direktiv-kube
-        docker tag direktiv-kube vorteil/direktiv-kube:$RV
-        docker tag sidecar vorteil/sidecar:$RV
-        docker tag sidecar vorteil/sidecar
-        docker tag direktiv-init-pod vorteil/direktiv-init-pod:$RV
-        docker tag direktiv-init-pod vorteil/direktiv-init-pod
-        docker image list
-        docker push vorteil/api:$RV
-        docker push vorteil/api
-        docker push vorteil/flow:$RV
-        docker push vorteil/flow
-        docker push vorteil/secrets:$RV
-        docker push vorteil/secrets
-        docker push vorteil/direkcli:$RV
-        docker push vorteil/direkcli
-        docker push vorteil/direktiv-kube:$RV
-        docker push vorteil/direktiv-kube
-        docker push vorteil/sidecar:$RV
-        docker push vorteil/sidecar
-        docker push vorteil/direktiv-init-pod:$RV
-        docker push vorteil/direktiv-init-pod
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: test version
+        run: |
+          echo ${{ env.RELEASE_VERSION }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: build containers
+        run: |
+          export RV=${{ env.RELEASE_VERSION }}
+          echo "RV set to $RV"
+          if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
+          echo "RV set to $RV"
+          RV=$RV make docker-ui
+          make push
+          make push DOCKER_REPO=vorteil RELEASE=$RV

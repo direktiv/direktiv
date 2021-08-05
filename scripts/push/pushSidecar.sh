@@ -3,7 +3,5 @@
 # call from direktiv as scripts/pushSidecar.sh
 
 set -e 
-make docker-sidecar 
-docker tag sidecar localhost:5000/sidecar
-docker push localhost:5000/sidecar
+make push-sidecar
 set +e

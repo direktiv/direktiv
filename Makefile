@@ -8,11 +8,29 @@ GO_BUILD_TAGS := "osusergo,netgo"
 
 .SECONDARY:
 
+.PHONY: help 
+help: ## Prints usage information.
+	@echo "\033[36mMakefile Help\033[0m"
+	@echo ""
+	@echo "Everything should work out-of-the-box. Just use 'make cluster'."
+	@echo ""
+	@echo 'If you need to tweak things, make a copy of scripts/dev.yaml and set your $$HELM_CONFIG environment variable to point to it. Ensure that $$DOCKER_REPO matches the registry in your $$HELM_CONFIG file, and that each 'image' in the config file references that same registry.'
+	@echo ""
+	@echo "\033[36mVariables\033[0m"
+	@printf "  %-16s %s\n" '$$DOCKER_REPO' "${DOCKER_REPO}"
+	@printf "  %-16s %s\n" '$$HELM_CONFIG' "${HELM_CONFIG}"
+	@printf "  %-16s %s\n" '$$REGEX' "${REGEX}"
+	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
+	@echo ""
+	@echo "\033[36mTargets\033[0m"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
+
 .PHONY: binaries
-binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary
+binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
+binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary 
 
 .PHONY: clean 
-clean:
+clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/*.md5
 	rm -f build/*.checksum 
 	rm -f build/*-binary 
@@ -29,14 +47,24 @@ clean:
 images: image-api image-flow image-init-pod image-secrets image-sidecar
 
 .PHONY: push 
+push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
 push: push-api push-flow push-init-pod push-secrets push-sidecar
 
-.PHONE: cluster 
+HELM_CONFIG := "scripts/dev.yaml"
+
+.PHONY: cluster 
+cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the cluster.
 cluster: push 
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete --all ksvc
 	kubectl delete --all jobs
 	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
+
+.PHONY: teardown
+teardown: ## Brings down an existing cluster.
+	if helm status direktiv; then helm uninstall direktiv; fi
+	kubectl delete --all ksvc
+	kubectl delete --all jobs
 
 GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go') 
 DOCKER_FILES = $(shell find build/docker/ -type f)
@@ -44,11 +72,10 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 # ENT 
 
 .PHONY: ent
-ent:
+ent: ## Manually regenerates ent database packages.
 	go get entgo.io/ent
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
-
 
 # PROTOC 
 
@@ -58,6 +85,7 @@ pkg/%.pb.go: pkg/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
 
 .PHONY: protoc
+protoc: ## Manually regenerates Go packages built from protobuf.
 protoc: ${PROTOBUF_SOURCE_FILES}
 
 # Patterns 
@@ -79,45 +107,52 @@ build/%-docker.checksum: build/%.md5 ${DOCKER_FILES}
 image-%: build/%-docker.checksum
 	@echo "Make $@: SUCCESS"
 
+RELEASE := ""
+RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
+
 .PHONY: push-% 
 push-%: image-%
-	@docker tag direktiv-$* ${DOCKER_REPO}/$*
-	@docker push ${DOCKER_REPO}/$*
-	@echo "Make $@: SUCCESS"
+	@docker tag direktiv-$* ${DOCKER_REPO}/$*${RELEASE_TAG}
+	@docker push ${DOCKER_REPO}/$*${RELEASE_TAG}
+	@echo "Make $@${RELEASE_TAG}: SUCCESS"
 
 # UI  
 
 .PHONY: docker-ui
-docker-ui:
+docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
-	cd direktiv-ui && make update-containers
+	if [ -z "${RELEASE}" ]; then \
+		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=direktiv-ui make server; \
+	else \
+		cd direktiv-ui && make update-containers RV=${RELEASE}; \
+	fi
 
 # Utility Rules 
 
 REGEX := "localhost:5000.*"
 
 .PHONY: purge-images
-purge-images:
+purge-images: ## Purge images from knative cache by matching $REGEX.
 	$(eval IMAGES := $(shell sudo k3s crictl img -o json | jq '.images[] | select (.repoDigests[] | test(${REGEX})) | .id'))
 	kubectl delete --all ksvc
 	sudo k3s crictl rmi ${IMAGES}
 
-.PHONY: logs-flow
-logs-flow:
+.PHONY: tail-flow
+tail-flow: ## Tail logs for currently active 'flow' container.
 	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
 	kubectl logs -f ${FLOW_POD} ingress
 
-.PHONY: logs-secrets
-logs-secrets:
+.PHONY: tail-secrets
+tail-secrets: ## Tail logs for currently active 'secrets' container.
 	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
 	kubectl logs -f ${FLOW_POD} secrets
 
-.PHONY: logs-api
-logs-api:
+.PHONY: tail-api
+tail-api: ## Tail logs for currently active 'api' container.
 	$(eval API_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-api") | .metadata.name'))
 	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
 	kubectl logs -f ${API_POD} api
