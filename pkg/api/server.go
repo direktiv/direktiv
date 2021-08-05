@@ -160,11 +160,12 @@ func (s *Server) prepareRoutes() {
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
 
 	// Functions ..
-	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodGet).Name(RN_ListServices)
+	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
+	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 
 	// Namespace ..
 	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name(RN_ListNamespaces)
