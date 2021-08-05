@@ -316,9 +316,10 @@ func (h *Handler) updateServiceTraffic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, v := range obj.Values {
+		x := v
 		grpcReq.Traffic = append(grpcReq.Traffic, &grpc.TrafficValue{
-			Revision: &v.Revision,
-			Percent:  &v.Percent,
+			Revision: &x.Revision,
+			Percent:  &x.Percent,
 		})
 	}
 
