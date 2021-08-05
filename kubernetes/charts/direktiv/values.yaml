@@ -11,6 +11,16 @@ nameOverride: ""
 fullnameOverride: ""
 logDriver: "database"
 
+
+# Set Send and Recv limits for all grpc clients and servers
+grpc:
+  server:
+    maxSendSize: "15728640"
+    maxRecvSize: "15728640"
+  client:
+    maxSendSize: "15728640"
+    maxRecvSize: "15728640"
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -105,11 +115,12 @@ flow:
   tag: "latest"
   exchange: "checkMe"
   sidecar: "vorteil/sidecar"
-  initPod: "vorteil/init-pod"
+  initPod: "vorteil/direktiv-init-pod"
   sidecarDb: ""
   db: ""
   protocol: "http"
   certificate: none
+  maxScale: 1
 
 # ui config
 ui:

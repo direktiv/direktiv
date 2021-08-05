@@ -196,11 +196,14 @@ func (s *Server) prepareRoutes() {
 
 }
 
-const tlsDir = "/etc/certs/servedirektiv"
+// const tlsDir = "/etc/certs/servedirektiv"
+const tlsDir = "/etc/certs/direktiv/"
 
 func tlsEnabled() bool {
-	_, err := os.Stat(tlsDir)
-	return !os.IsNotExist(err)
+	if _, err := os.Stat(tlsDir); err != nil {
+		return false
+	}
+	return true
 }
 
 // Start starts the API server

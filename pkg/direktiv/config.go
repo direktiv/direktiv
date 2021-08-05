@@ -24,6 +24,7 @@ const (
 	flowProtocol = "DIREKTIV_FLOW_PROTOCOL"
 	flowExchange = "DIREKTIV_FLOW_EXCHANGE"
 	flowSidecar  = "DIREKTIV_FLOW_SIDECAR"
+	flowMaxScale = "DIREKTIV_FLOW_MAX_SCALE"
 
 	ingressBind     = "DIREKTIV_INGRESS_BIND"
 	ingressEndpoint = "DIREKTIV_INGRESS_ENDPOINT"
@@ -45,6 +46,7 @@ type Config struct {
 		Exchange string
 		Sidecar  string
 		Protocol string
+		MaxScale int
 	} `toml:"flowAPI"`
 
 	IngressAPI struct {
@@ -184,6 +186,16 @@ func ReadConfig(file string) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	err := setInt(c, flowMaxScale, &c.FlowAPI.MaxScale)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.FlowAPI.MaxScale < 0 {
+		c.FlowAPI.MaxScale = 0
+		log.Debugf("setting %s out of bounds, setting to 0", flowMaxScale)
 	}
 
 	// test database is set

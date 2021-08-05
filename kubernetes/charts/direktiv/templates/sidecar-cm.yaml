@@ -25,7 +25,8 @@ data:
               "kubernetes.io/ingress-bandwidth": "{{ .Values.netShape }}",
               "kubernetes.io/egress-bandwidth": "{{ .Values.netShape }}",
               {{- end }}
-              "autoscaling.knative.dev/minScale": "%d"
+              "autoscaling.knative.dev/minScale": "%d",
+              "autoscaling.knative.dev/maxScale": "{{ .Values.flow.maxScale }}"
             }
           },
           "spec": {
@@ -75,7 +76,7 @@ data:
                     "mountPath": "/mnt/shared"
                   }
                 ],
-    						"resources": {
+                "resources": {
                   "requests": {
                     "cpu": %f,
                     "memory": "%s"
@@ -98,6 +99,14 @@ data:
                         "key": "sidecarDb"
                       }
                     }
+                  },
+                  {
+                    "name": "GRPC_MAX_SEND_SIZE_CLIENT",
+                    "value": "{{ .Values.grpc.client.maxSendSize}}"
+                  },
+                  {
+                    "name": "GRPC_MAX_RECEIVE_SIZE_CLIENT",
+                    "value": "{{ .Values.grpc.client.maxRecvSize}}"
                   },
                   {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
                   {

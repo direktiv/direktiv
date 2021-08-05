@@ -51,7 +51,7 @@ spec:
             httpGet:
               path: /manifest.json
               port: 8080
-              {{- if ne  .Values.uiapiCertificate "none" }}
+              {{- if ne  .Values.flow.certificate "none" }}
               scheme: HTTPS
               {{- end }}
             periodSeconds: 10
@@ -66,7 +66,7 @@ spec:
             value: "/api"
           - name: KEYCLOAK_URL
             value: {{ .Values.ui.keycloakUrl }}
-          {{- if ne .Values.uiapiCertificate "none" }}
+          {{- if ne .Values.flow.certificate "none" }}
           volumeMounts:
           - name: certs
             mountPath: "/etc/certs/direktiv"
@@ -78,10 +78,10 @@ spec:
               containerPort: 8080
               protocol: TCP
       volumes:
-      {{- if ne  .Values.uiapiCertificate "none" }}
+      {{- if ne  .Values.flow.certificate "none" }}
         - name: certs
           secret:
-            secretName: {{ .Values.uiapiCertificate }}
+            secretName: {{ .Values.flow.certificate }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
