@@ -784,17 +784,23 @@ func deleteKnativeFunctions(client igrpc.IsolatesServiceClient,
 
 	annotations := make(map[string]string)
 
+	scope := isolates.PrefixService
+
 	if ns != "" {
 		annotations[isolates.ServiceHeaderNamespace] = ns
+		scope = isolates.PrefixNamespace
 	}
 
 	if wf != "" {
 		annotations[isolates.ServiceHeaderWorkflow] = wf
+		scope = isolates.PrefixWorkflow
 	}
 
 	if name != "" {
 		annotations[isolates.ServiceHeaderName] = name
+		scope = isolates.PrefixService
 	}
+	annotations[isolates.ServiceHeaderScope] = scope
 
 	dr := igrpc.ListIsolatesRequest{
 		Annotations: annotations,

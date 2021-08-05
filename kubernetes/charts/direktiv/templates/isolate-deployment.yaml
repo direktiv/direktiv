@@ -26,7 +26,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-isolate
       volumes:
         - name: config-file
           configMap:
@@ -69,4 +69,3 @@ spec:
             - name: grpc
               containerPort: 5555
               protocol: TCP
-      

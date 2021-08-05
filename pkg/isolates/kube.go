@@ -38,11 +38,13 @@ const (
 	containerSidecar = "direktiv-sidecar"
 
 	generationHeader = "serving.knative.dev/configurationGeneration"
+)
 
-	prefixWorkflow  = "w"
-	prefixNamespace = "ns"
-	prefixGlobal    = "g"
-	prefixService   = "s" // unused, only if a one item list is requested
+const (
+	PrefixWorkflow  = "w"
+	PrefixNamespace = "ns"
+	PrefixGlobal    = "g"
+	PrefixService   = "s" // unused, only if a one item list is requested
 )
 
 const (
@@ -109,22 +111,22 @@ func filterLabels(annotations map[string]string) map[string]string {
 	switch setter {
 	case 7:
 		t = serviceType
-		if scope != prefixService {
+		if scope != PrefixService {
 			t = invalidType
 		}
 	case 6:
 		t = workflowType
-		if scope != prefixWorkflow {
+		if scope != PrefixWorkflow {
 			t = invalidType
 		}
 	case 4:
 		t = namespaceType
-		if scope != prefixNamespace {
+		if scope != PrefixNamespace {
 			t = invalidType
 		}
 	case 0:
 		t = globalType
-		if scope != prefixGlobal {
+		if scope != PrefixGlobal {
 			t = invalidType
 		}
 	}
@@ -429,16 +431,16 @@ func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
 	// get scope and create name
 	// workflow
-	name := fmt.Sprintf("%s-%d", prefixWorkflow, h)
+	name := fmt.Sprintf("%s-%d", PrefixWorkflow, h)
 	scope := "wf"
 	if ns == "" {
 		// global
-		name = fmt.Sprintf("%s-%s", prefixGlobal, n)
-		scope = prefixGlobal
+		name = fmt.Sprintf("%s-%s", PrefixGlobal, n)
+		scope = PrefixGlobal
 	} else if wf == "" {
 		//namespace
-		scope = prefixNamespace
-		name = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, n)
+		scope = PrefixNamespace
+		name = fmt.Sprintf("%s-%s-%s", PrefixNamespace, ns, n)
 	}
 
 	return name, scope, nil
