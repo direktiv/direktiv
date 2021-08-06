@@ -236,7 +236,7 @@ func (vw *varWriter) Close() error {
 
 func (pg *postgres) Store(ctx context.Context, key string, scope ...string) (io.WriteCloser, error) {
 
-	if ok := util.MatchesRegex(key); !ok {
+	if ok := util.MatchesVarRegex(key); !ok {
 		return nil, fmt.Errorf("variable key must match the regex pattern `%s`", util.RegexPattern)
 	}
 

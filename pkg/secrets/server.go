@@ -88,7 +88,7 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 	}
 
 	n := in.GetName()
-	if ok := util.MatchesRegex(n); !ok {
+	if ok := util.MatchesVarRegex(n); !ok {
 		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.RegexPattern)
 	}
 
