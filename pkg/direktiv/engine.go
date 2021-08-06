@@ -541,7 +541,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	}
 
 	// configured namespace for workflows
-	ns := os.Getenv(direktivWorkflowNamespace)
+	ns := os.Getenv("DIREKTIV_SERVICE_NAMESPACE")
 
 	// set service name if global/namespace
 	// otherwise generate baes on action request

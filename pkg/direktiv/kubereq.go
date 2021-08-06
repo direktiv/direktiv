@@ -1,26 +1,21 @@
 package direktiv
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	shellwords "github.com/mattn/go-shellwords"
-	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/isolates"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
@@ -619,42 +614,42 @@ func kubernetesDeleteSecret(name, namespace string) error {
 
 }
 
-func kubernetesAddSecret(name, namespace string, data []byte) error {
-
-	log.Debugf("adding secret %s (%s)", name, namespace)
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	u, err := url.Parse(name)
-	if err != nil {
-		return err
-	}
-
-	secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
-
-	kubernetesDeleteSecret(name, namespace)
-
-	sa := &v1.Secret{
-		Data: make(map[string][]byte),
-	}
-
-	sa.Annotations = make(map[string]string)
-	sa.Annotations[annotationNamespace] = namespace
-	sa.Annotations[annotationURL] = name
-	sa.Annotations[annotationURLHash] = base64.StdEncoding.EncodeToString([]byte(name))
-
-	sa.Name = secretName
-	sa.Data[".dockerconfigjson"] = data
-	sa.Type = "kubernetes.io/dockerconfigjson"
-
-	_, err = clientset.CoreV1().Secrets(kns).Create(context.Background(), sa, metav1.CreateOptions{})
-
-	return err
-
-}
+// func kubernetesAddSecret(name, namespace string, data []byte) error {
+//
+// 	log.Debugf("adding secret %s (%s)", name, namespace)
+//
+// 	clientset, kns, err := getClientSet()
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	u, err := url.Parse(name)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
+//
+// 	kubernetesDeleteSecret(name, namespace)
+//
+// 	sa := &v1.Secret{
+// 		Data: make(map[string][]byte),
+// 	}
+//
+// 	sa.Annotations = make(map[string]string)
+// 	sa.Annotations[annotationNamespace] = namespace
+// 	sa.Annotations[annotationURL] = name
+// 	sa.Annotations[annotationURLHash] = base64.StdEncoding.EncodeToString([]byte(name))
+//
+// 	sa.Name = secretName
+// 	sa.Data[".dockerconfigjson"] = data
+// 	sa.Type = "kubernetes.io/dockerconfigjson"
+//
+// 	_, err = clientset.CoreV1().Secrets(kns).Create(context.Background(), sa, metav1.CreateOptions{})
+//
+// 	return err
+//
+// }
 
 func getClientSet() (*kubernetes.Clientset, string, error) {
 	config, err := rest.InClusterConfig()
@@ -702,13 +697,6 @@ func isKnativeFunction(client igrpc.IsolatesServiceClient,
 
 func createKnativeFunction(client igrpc.IsolatesServiceClient,
 	ir *isolateRequest) error {
-
-	// svn, err := isolates.GenerateServiceName(ir.Workflow.Namespace,
-	// 	ir.Workflow.ID, ir.Container.ID)
-	// if err != nil {
-	// 	log.Errorf("can not create service name: %v", err)
-	// 	return err
-	// }
 
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
@@ -872,61 +860,61 @@ func containerSizeCalc(size int) (float64, int) {
 
 }
 
-func addKnativeFunction(ir *isolateRequest) error {
-
-	log.Debugf("adding knative service")
-
-	namespace := ir.Workflow.Namespace
-
-	ah, err := serviceToHash(ir)
-	if err != nil {
-		return err
-	}
-
-	log.Debugf("adding knative service hash %v", ah)
-
-	cpu, mem := containerSizeCalc(int(ir.Container.Size))
-
-	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
-
-	// get imagePullSecrets
-	secrets, err := kubernetesListRegistriesNames(namespace)
-	if err != nil {
-		return err
-	}
-
-	var sstrings []string
-	for _, s := range secrets {
-		sstrings = append(sstrings, fmt.Sprintf("{ \"name\": \"%s\"}", s))
-	}
-
-	cmd, err := cmdToCommand(ir.Container.Cmd)
-	if err != nil {
-		return err
-	}
-
-	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%s", namespace, ah), ir.Container.Scale,
-		strings.Join(sstrings, ","),
-		ir.Container.Image, cmd, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
-		kubeReq.sidecar)
-
-	fmt.Printf("%v\n", svc)
-
-	resp, err := SendKuberequest(http.MethodPost, u, bytes.NewBufferString(svc))
-	if err != nil {
-		log.Errorf("can not send kube request: %v", err)
-		return err
-	}
-
-	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		b, _ := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		return fmt.Errorf("can not add knative service: %v", string(b))
-	}
-
-	return nil
-
-}
+// func addKnativeFunction(ir *isolateRequest) error {
+//
+// 	log.Debugf("adding knative service")
+//
+// 	namespace := ir.Workflow.Namespace
+//
+// 	ah, err := serviceToHash(ir)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	log.Debugf("adding knative service hash %v", ah)
+//
+// 	cpu, mem := containerSizeCalc(int(ir.Container.Size))
+//
+// 	u := fmt.Sprintf(kubeAPIKServiceURL, os.Getenv(direktivWorkflowNamespace))
+//
+// 	// get imagePullSecrets
+// 	secrets, err := kubernetesListRegistriesNames(namespace)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	var sstrings []string
+// 	for _, s := range secrets {
+// 		sstrings = append(sstrings, fmt.Sprintf("{ \"name\": \"%s\"}", s))
+// 	}
+//
+// 	cmd, err := cmdToCommand(ir.Container.Cmd)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	svc := fmt.Sprintf(kubeReq.serviceTempl, fmt.Sprintf("%s-%s", namespace, ah), ir.Container.Scale,
+// 		strings.Join(sstrings, ","),
+// 		ir.Container.Image, cmd, cpu, fmt.Sprintf("%dM", mem), cpu*2, fmt.Sprintf("%dM", mem*2),
+// 		kubeReq.sidecar)
+//
+// 	fmt.Printf("%v\n", svc)
+//
+// 	resp, err := SendKuberequest(http.MethodPost, u, bytes.NewBufferString(svc))
+// 	if err != nil {
+// 		log.Errorf("can not send kube request: %v", err)
+// 		return err
+// 	}
+//
+// 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+// 		b, _ := ioutil.ReadAll(resp.Body)
+// 		defer resp.Body.Close()
+// 		return fmt.Errorf("can not add knative service: %v", string(b))
+// 	}
+//
+// 	return nil
+//
+// }
 
 func SendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
 
@@ -965,28 +953,28 @@ func SendKuberequest(method, url string, data io.Reader) (*http.Response, error)
 
 }
 
-func k8sNamespace() string {
-	return os.Getenv(k8sNamespaceVar)
-}
+// func k8sNamespace() string {
+// 	return os.Getenv(k8sNamespaceVar)
+// }
 
-func serviceToHash(ar *isolateRequest) (string, error) {
-	re := regexp.MustCompile(`[_,.;'!@#$%^&*()\s]+`)
-
-	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
-		ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
-	if err != nil {
-		return "", err
-	}
-
-	suffix := fmt.Sprintf("-%d", h)
-	maxLen := 64 - len(fmt.Sprintf("%s.%s", suffix, k8sNamespace())) - (len(ar.Workflow.Namespace) + 1)
-
-	prefix := fmt.Sprintf("%s-%s", ar.Workflow.ID, ar.Container.ID)
-	if len(prefix) > maxLen {
-		prefix = prefix[:maxLen]
-	}
-
-	newHash := re.ReplaceAllString(fmt.Sprintf("%s%s", prefix, suffix), "-")
-	return newHash, nil
-
-}
+// func serviceToHash(ar *isolateRequest) (string, error) {
+// 	re := regexp.MustCompile(`[_,.;'!@#$%^&*()\s]+`)
+//
+// 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ar.Workflow.Namespace,
+// 		ar.Workflow.ID, ar.Container.ID), hash.FormatV2, nil)
+// 	if err != nil {
+// 		return "", err
+// 	}
+//
+// 	suffix := fmt.Sprintf("-%d", h)
+// 	maxLen := 64 - len(fmt.Sprintf("%s.%s", suffix, k8sNamespace())) - (len(ar.Workflow.Namespace) + 1)
+//
+// 	prefix := fmt.Sprintf("%s-%s", ar.Workflow.ID, ar.Container.ID)
+// 	if len(prefix) > maxLen {
+// 		prefix = prefix[:maxLen]
+// 	}
+//
+// 	newHash := re.ReplaceAllString(fmt.Sprintf("%s%s", prefix, suffix), "-")
+// 	return newHash, nil
+//
+// }

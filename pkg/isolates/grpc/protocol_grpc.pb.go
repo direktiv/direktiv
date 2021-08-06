@@ -26,6 +26,9 @@ type IsolatesServiceClient interface {
 	GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error)
 	DeleteIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SetIsolateTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
+	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type isolatesServiceClient struct {
@@ -99,6 +102,33 @@ func (c *isolatesServiceClient) SetIsolateTraffic(ctx context.Context, in *SetTr
 	return out, nil
 }
 
+func (c *isolatesServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/StoreRegistry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *isolatesServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
+	out := new(GetRegistriesResponse)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/GetRegistries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *isolatesServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/DeleteRegistry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IsolatesServiceServer is the server API for IsolatesService service.
 // All implementations must embed UnimplementedIsolatesServiceServer
 // for forward compatibility
@@ -110,6 +140,9 @@ type IsolatesServiceServer interface {
 	GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error)
 	DeleteIsolate(context.Context, *GetIsolateRequest) (*emptypb.Empty, error)
 	SetIsolateTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error)
+	StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error)
+	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
+	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedIsolatesServiceServer()
 }
 
@@ -137,6 +170,15 @@ func (UnimplementedIsolatesServiceServer) DeleteIsolate(context.Context, *GetIso
 }
 func (UnimplementedIsolatesServiceServer) SetIsolateTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetIsolateTraffic not implemented")
+}
+func (UnimplementedIsolatesServiceServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
+}
+func (UnimplementedIsolatesServiceServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
+}
+func (UnimplementedIsolatesServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
 }
 func (UnimplementedIsolatesServiceServer) mustEmbedUnimplementedIsolatesServiceServer() {}
 
@@ -277,6 +319,60 @@ func _IsolatesService_SetIsolateTraffic_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IsolatesService_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StoreRegistryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).StoreRegistry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/StoreRegistry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IsolatesService_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRegistriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).GetRegistries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/GetRegistries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IsolatesService_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRegistryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).DeleteRegistry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/DeleteRegistry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IsolatesService_ServiceDesc is the grpc.ServiceDesc for IsolatesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -311,6 +407,18 @@ var IsolatesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetIsolateTraffic",
 			Handler:    _IsolatesService_SetIsolateTraffic_Handler,
+		},
+		{
+			MethodName: "StoreRegistry",
+			Handler:    _IsolatesService_StoreRegistry_Handler,
+		},
+		{
+			MethodName: "GetRegistries",
+			Handler:    _IsolatesService_GetRegistries_Handler,
+		},
+		{
+			MethodName: "DeleteRegistry",
+			Handler:    _IsolatesService_DeleteRegistry_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

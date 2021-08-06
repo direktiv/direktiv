@@ -13,6 +13,7 @@ import (
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,6 +41,7 @@ const (
 	generationHeader = "serving.knative.dev/configurationGeneration"
 )
 
+// Available prefixes for different scopes
 const (
 	PrefixWorkflow  = "w"
 	PrefixNamespace = "ns"
@@ -160,7 +162,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 	}
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
-	l, err := cs.ServingV1().Services(ns()).List(context.Background(), lo)
+	l, err := cs.ServingV1().Services(isolateConfig.Namespace).List(context.Background(), lo)
 
 	if err != nil {
 		log.Errorf("error getting isolate list: %v", err)
@@ -212,6 +214,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 func metaSpec(net string, min, max int, ns, wf, name, scope string) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
+		Namespace:   isolateConfig.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
@@ -237,11 +240,11 @@ func metaSpec(net string, min, max int, ns, wf, name, scope string) metav1.Objec
 
 }
 
-func meta(svn, name, namespace, ns, wf string, scale, size int, scope string) metav1.ObjectMeta {
+func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.ObjectMeta {
 
 	meta := metav1.ObjectMeta{
 		Name:        svn,
-		Namespace:   namespace,
+		Namespace:   isolateConfig.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
@@ -448,16 +451,6 @@ func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
 }
 
-func ns() string {
-	// get namespace to deploy in
-	configNamespace := os.Getenv(envNS)
-	if len(configNamespace) == 0 {
-		configNamespace = "default"
-	}
-
-	return configNamespace
-}
-
 func statusFromCondition(conditions []apis.Condition) (string, string) {
 	// status and status message
 	status := fmt.Sprintf("%s", corev1.ConditionUnknown)
@@ -493,7 +486,7 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		return resp, err
 	}
 
-	svc, err := cs.ServingV1().Services(ns()).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
 		return resp, err
@@ -515,7 +508,7 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 	resp.Namespace = &namespace
 	resp.Workflow = &workflow
 
-	rs, err := cs.ServingV1().Revisions(ns()).List(context.Background(),
+	rs, err := cs.ServingV1().Revisions(isolateConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
@@ -596,7 +589,7 @@ func deleteKnativeIsolates(annotations map[string]string) error {
 	}
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
-	return cs.ServingV1().Services(ns()).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
+	return cs.ServingV1().Services(isolateConfig.Namespace).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
 }
 
@@ -652,7 +645,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	}
 	defer kubeUnlock(l)
 
-	_, err = cs.ServingV1().Services(ns()).Patch(context.Background(),
+	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Patch(context.Background(),
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {
@@ -661,7 +654,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	}
 
 	// remove older revisions
-	rs, err := cs.ServingV1().Revisions(ns()).List(context.Background(),
+	rs, err := cs.ServingV1().Revisions(isolateConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", svn)})
 	if err != nil {
 		log.Errorf("error getting old revisions: %v", err)
@@ -680,7 +673,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	// delete old revisions
 	for i := 0; i < (len(rs.Items) - isolateConfig.KeepRevisions); i++ {
 		log.Debugf("deleting %v", rs.Items[i].Name)
-		err := cs.ServingV1().Revisions(ns()).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
+		err := cs.ServingV1().Revisions(isolateConfig.Namespace).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
 		if err != nil {
 			log.Errorf("error deleting old revisions: %v", err)
 		}
@@ -711,10 +704,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 
 	log.Debugf("creating knative service %s", name)
 
-	// get namespace to deploy in
-	configNamespace := ns()
-
-	log.Debugf("isolate namespace %s", configNamespace)
+	log.Debugf("isolate namespace %s", isolateConfig.Namespace)
 
 	// check if min scale is not beyond max
 	min := int(info.GetMinScale())
@@ -722,7 +712,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		min = isolateConfig.MaxScale
 	}
 
-	// TODO: gcp db, pullimagesecrets, Proxy,
+	// TODO: gcp db, pullimagesecrets
 
 	if isolateConfig.Concurrency > 0 {
 		concurrency = int64(isolateConfig.Concurrency)
@@ -740,7 +730,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 			APIVersion: "serving.knative.dev/v1",
 			Kind:       "Service",
 		},
-		ObjectMeta: meta(name, info.GetName(), configNamespace,
+		ObjectMeta: meta(name, info.GetName(),
 			info.GetNamespace(), info.GetWorkflow(), min, int(info.GetSize()), scope),
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
@@ -749,7 +739,8 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							Containers: containers,
+							ServiceAccountName: isolateConfig.ServiceAccount,
+							Containers:         containers,
 						},
 						ContainerConcurrency: &concurrency,
 						TimeoutSeconds:       &timeoutSec,
@@ -770,7 +761,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		return err
 	}
 
-	_, err = cs.ServingV1().Services(configNamespace).Create(context.Background(), &svc, metav1.CreateOptions{})
+	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {
 		log.Errorf("error creating knative service: %v", err)
 		return err
@@ -787,7 +778,7 @@ func deleteKnativeIsolate(name string) error {
 		return err
 	}
 
-	return cs.ServingV1().Services(ns()).Delete(context.Background(),
+	return cs.ServingV1().Services(isolateConfig.Namespace).Delete(context.Background(),
 		name, metav1.DeleteOptions{})
 
 }
@@ -824,7 +815,7 @@ func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {
 	}
 	fmt.Printf("%s", string(b))
 
-	_, err = cs.ServingV1().Services(ns()).Patch(context.Background(),
+	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Patch(context.Background(),
 		name, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {

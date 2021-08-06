@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package ingress;
+package grpc;
 
-option go_package = "github.com/vorteil/direktiv/pkg/ingress";
+option go_package = "github.com/vorteil/direktiv/pkg/isolates/grpc";
 
 message DeleteRegistryRequest {
 	optional string namespace = 1;

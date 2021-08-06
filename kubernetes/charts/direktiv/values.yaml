@@ -157,6 +157,7 @@ gcp:
   ip_private: false
 
 isolates:
+  namespace: direktiv-services-direktiv
   image: "vorteil/direktiv-isolates"
   tag: "latest"
   replicaCount: 1

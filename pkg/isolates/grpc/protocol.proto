@@ -6,7 +6,15 @@ option go_package = "github.com/vorteil/direktiv/pkg/isolates/grpc";
 
 import "google/protobuf/empty.proto";
 
-import "pkg/isolates/grpc/isolates.proto";
+import "pkg/isolates/grpc/registries-get.proto";
+import "pkg/isolates/grpc/registry-delete.proto";
+import "pkg/isolates/grpc/registry-store.proto";
+
+import "pkg/isolates/grpc/isolates-get.proto";
+import "pkg/isolates/grpc/isolates-create.proto";
+import "pkg/isolates/grpc/isolates-list.proto";
+import "pkg/isolates/grpc/isolates-traffic.proto";
+import "pkg/isolates/grpc/isolates-update.proto";
 
 service IsolatesService {
   rpc UpdateIsolate(UpdateIsolateRequest) returns (google.protobuf.Empty)  {}
@@ -16,4 +24,7 @@ service IsolatesService {
   rpc GetIsolate(GetIsolateRequest) returns (GetIsolateResponse)  {}
   rpc DeleteIsolate(GetIsolateRequest) returns (google.protobuf.Empty)  {}
   rpc SetIsolateTraffic(SetTrafficRequest) returns (google.protobuf.Empty)  {}
+	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
+  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
+  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 }

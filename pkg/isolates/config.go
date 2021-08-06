@@ -14,6 +14,7 @@ type configReader struct {
 
 type config struct {
 	ServiceAccount  string `yaml:"service-account"`
+	Namespace       string `yaml:"namespace"`
 	SidecarDb       string `yaml:"sidecar-db"`
 	Sidecar         string `yaml:"sidecar"`
 	KeepRevisions   int    `yaml:"keep-revisions"`
