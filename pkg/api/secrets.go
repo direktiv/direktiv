@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func (h *Handler) getSecretsOrRegistries(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +72,12 @@ func (h *Handler) createSecretOrRegistry(w http.ResponseWriter, r *http.Request)
 	switch mux.CurrentRoute(r).GetName() {
 
 	case RN_CreateSecret:
+
+		if ok := util.MatchesVarRegex(st.Name); !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(errSecretRegex.Error()))
+			return
+		}
 
 		resp, err = h.s.direktiv.StoreSecret(ctx, &ingress.StoreSecretRequest{
 			Namespace: &n,

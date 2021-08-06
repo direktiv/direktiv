@@ -10,7 +10,13 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/vorteil/direktiv/pkg/util"
 )
+
+var errNamespaceRegex = fmt.Errorf("namespace name must match the regex pattern `%s`", util.RegexPattern)
+var errWorkflowRegex = fmt.Errorf("workflow id must match the regex pattern `%s`", util.RegexPattern)
+var errSecretRegex = fmt.Errorf("secret key must match the regex pattern `%s`", util.VarRegexPattern)
 
 func closeVerbose(x io.Closer, log io.Writer) {
 	if log == nil {

@@ -2,6 +2,9 @@ package model
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type RetryDefinition struct {
@@ -109,6 +112,10 @@ func (o *StateCommon) ErrorDefinitions() []ErrorDefinition {
 func (o *StateCommon) commonValidate() error {
 	if o.ID == "" {
 		return errors.New("id required")
+	}
+
+	if ok := util.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("state id must match the regex pattern `%s`", util.RegexPattern)
 	}
 
 	if s, ok := o.Log.(string); ok && s != "" {
