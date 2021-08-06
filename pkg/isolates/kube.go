@@ -269,7 +269,6 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 	var b []*igrpc.IsolateInfo
 
 	filtered := filterLabels(annotations)
-	log.Debugf("! %v %v", annotations, filtered)
 	if len(filtered) == 0 {
 		return b, fmt.Errorf("request labels are invalid")
 	}
@@ -803,6 +802,20 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	return nil
 }
 
+func createPullSecrets(namespace string) []corev1.LocalObjectReference {
+	var lo []corev1.LocalObjectReference
+
+	secrets := listRegistriesNames(namespace)
+	for _, s := range secrets {
+		log.Debugf("adding pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
+	return lo
+}
+
 func createKnativeIsolate(info *igrpc.BaseInfo) error {
 
 	var (
@@ -860,6 +873,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
+							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),
 							ServiceAccountName: isolateConfig.ServiceAccount,
 							Containers:         containers,
 						},

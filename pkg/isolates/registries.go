@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"strings"
 
+	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -47,31 +49,14 @@ func kubernetesDeleteRegistry(name, namespace string) error {
 		return err
 	}
 
-	secrets, err := clientset.CoreV1().Secrets(isolateConfig.Namespace).
-		List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
+	fo := make(map[string]string)
+	fo[annotationNamespace] = namespace
+	h, _ := hash.Hash(fmt.Sprintf("%s", name), hash.FormatV2, nil)
+	fo[annotationURLHash] = fmt.Sprintf("%d", h)
 
-	for _, s := range secrets.Items {
-
-		if s.Annotations[annotationNamespace] == namespace &&
-			s.Annotations[annotationURL] == name {
-
-			u, err := url.Parse(name)
-			if err != nil {
-				return err
-			}
-			secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
-
-			return clientset.CoreV1().Secrets(isolateConfig.Namespace).
-				Delete(context.Background(), secretName, metav1.DeleteOptions{})
-
-		}
-
-	}
-
-	return fmt.Errorf("no registry with name %s found", name)
+	lo := metav1.ListOptions{LabelSelector: labels.Set(fo).String()}
+	return clientset.CoreV1().Secrets(isolateConfig.Namespace).
+		DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
 }
 
@@ -122,8 +107,13 @@ func (is *isolateServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegis
 		Data: make(map[string][]byte),
 	}
 
+	sa.Labels = make(map[string]string)
+	sa.Labels[annotationNamespace] = in.GetNamespace()
+
+	h, _ := hash.Hash(fmt.Sprintf("%s", in.GetName()), hash.FormatV2, nil)
+	sa.Labels[annotationURLHash] = fmt.Sprintf("%d", h)
+
 	sa.Annotations = make(map[string]string)
-	sa.Annotations[annotationNamespace] = in.GetNamespace()
 	sa.Annotations[annotationURL] = in.GetName()
 	sa.Annotations[annotationURLHash] = base64.StdEncoding.EncodeToString([]byte(in.GetName()))
 
@@ -135,6 +125,33 @@ func (is *isolateServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegis
 		sa, metav1.CreateOptions{})
 
 	return &empty, err
+
+}
+
+func listRegistriesNames(namespace string) []string {
+
+	log.Debugf("getting registries for namespace %s", namespace)
+	var registries []string
+
+	clientset, err := getClientSet()
+	if err != nil {
+		log.Errorf("can not get clientset: %v", err)
+		return registries
+	}
+
+	secrets, err := clientset.CoreV1().Secrets(isolateConfig.Namespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
+	if err != nil {
+		log.Errorf("can not list secrets: %v", err)
+		return registries
+	}
+
+	for _, s := range secrets.Items {
+		registries = append(registries, s.Name)
+	}
+
+	return registries
 
 }
 
@@ -150,20 +167,19 @@ func (is *isolateServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistr
 	}
 
 	secrets, err := clientset.CoreV1().Secrets(isolateConfig.Namespace).
-		List(context.Background(), metav1.ListOptions{})
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, in.GetNamespace())})
 	if err != nil {
 		return resp, err
 	}
 
 	for _, s := range secrets.Items {
-		if s.Annotations[annotationNamespace] == in.GetNamespace() {
-			u := s.Annotations[annotationURL]
-			h := s.Annotations[annotationURLHash]
-			resp.Registries = append(resp.Registries, &igrpc.GetRegistriesResponse_Registry{
-				Name: &u,
-				Id:   &h,
-			})
-		}
+		u := s.Annotations[annotationURL]
+		h := s.Annotations[annotationURLHash]
+		resp.Registries = append(resp.Registries, &igrpc.GetRegistriesResponse_Registry{
+			Name: &u,
+			Id:   &h,
+		})
 	}
 
 	return resp, nil
