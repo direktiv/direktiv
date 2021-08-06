@@ -177,9 +177,15 @@ func (wli *workflowLogicInstance) newIsolateRequest(stateId string, timeout int,
 		ar.Container.ID = con.ID
 		ar.Container.Files = con.Files
 	case model.NamespacedKnativeFunctionType:
-		fallthrough
+		con := fn.(*model.NamespacedFunctionDefinition)
+		ar.Container.Files = con.Files
+		ar.Container.ID = con.ID
+		ar.Container.Service = fmt.Sprintf("ns-%s-%s", wli.namespace, con.KnativeService)
 	case model.GlobalKnativeFunctionType:
-		fallthrough
+		con := fn.(*model.GlobalFunctionDefinition)
+		ar.Container.Files = con.Files
+		ar.Container.ID = con.ID
+		ar.Container.Service = fmt.Sprintf("g-%s", con.KnativeService)
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -251,6 +257,10 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 				return
 			}
 		}
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
 	case model.ReusableContainerFunctionType:
 
 		uid := ksuid.New()
@@ -334,11 +344,6 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 				return
 			}
 		}
-
-	case model.NamespacedKnativeFunctionType:
-		fallthrough
-	case model.GlobalKnativeFunctionType:
-		fallthrough
 	default:
 		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
 		return

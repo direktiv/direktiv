@@ -44,13 +44,13 @@ type isolateRequest struct {
 }
 
 type isolateContainer struct {
-	Type       model.FunctionType
-	ID         string
-	Image, Cmd string
-	Data       []byte
-	Size       model.Size
-	Scale      int
-	Files      []model.FunctionFileDefinition
+	Type                model.FunctionType
+	ID                  string
+	Image, Cmd, Service string
+	Data                []byte
+	Size                model.Size
+	Scale               int
+	Files               []model.FunctionFileDefinition
 }
 
 type isolateWorkflow struct {

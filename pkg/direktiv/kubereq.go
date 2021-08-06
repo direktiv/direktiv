@@ -735,25 +735,12 @@ func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workfl
 
 	for _, f := range wfm.GetFunctions() {
 
-		if f.GetType() != model.GlobalKnativeFunctionType {
+		// only build workflow based isolates
+		if f.GetType() != model.ReusableContainerFunctionType {
 			continue
 		}
 
 		fn := f.(*model.ReusableFunctionDefinition)
-
-		// ignore global services
-		// if strings.HasPrefix(f.Image, prefixNamespace) ||
-		// 	strings.HasPrefix(f.Image, prefixGlobal) {
-		// 	continue
-		// }
-
-		// svn, err := isolates.GenerateServiceName(ns, wfm.ID, f.ID)
-		// if err != nil {
-		// 	log.Errorf("can not create service name: %v", err)
-		// 	return err
-		// }
-		//
-		// log.Debugf("creating service %s", svn)
 
 		// create services async
 		go func(fd *model.ReusableFunctionDefinition,

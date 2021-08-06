@@ -317,27 +317,6 @@ type actionResultMessage struct {
 
 func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
 
-	// // generate hash name as "url"
-	// actionHash, err := serviceToHash(ar)
-	//
-	// // check scope
-	// split := strings.Split(ar.Container.Image, "/")
-	// if strings.Contains(split[0], ":") {
-	// 	scopeSplit := strings.Split(split[0], ":")
-	// 	scope := scopeSplit[0]
-	// 	log.Debugf("SCOPE %v", scope)
-	// }
-
-	// if err != nil {
-	// 	return NewInternalError(err)
-	// }
-
-	// Check if container scale is more than max
-	// if ar.Container.Scale > we.server.config.FlowAPI.MaxScale {
-	// 	return NewInternalError(fmt.Errorf("scale is larger than maximum allowed scale of %v",
-	// 		we.server.config.FlowAPI.MaxScale))
-	// }
-
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
@@ -357,6 +336,10 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 		// 	return nil
 		// }
 	case model.DefaultFunctionType:
+		fallthrough
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
 		fallthrough
 	case model.ReusableContainerFunctionType:
 		go we.doKnativeHTTPRequest(ctx, ar)
@@ -510,6 +493,10 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	ar *isolateRequest) {
 
+	var (
+		err error
+	)
+
 	// from here we need to report error as grpc because this is go-routined
 	// NOTE: transport copied & modified from http.DefaultTransport
 	tr := &http.Transport{
@@ -556,12 +543,16 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	// configured namespace for workflows
 	ns := os.Getenv(direktivWorkflowNamespace)
 
-	// c GenerateServiceName(ns, wf, n string)
-	svn, _, err := isolates.GenerateServiceName(ar.Workflow.Namespace,
-		ar.Workflow.ID, ar.Container.ID)
-	if err != nil {
-		log.Errorf("can not create service name: %v", err)
-		we.reportError(ar, err)
+	// set service name if global/namespace
+	// otherwise generate baes on action request
+	svn := ar.Container.Service
+	if ar.Container.Type == model.ReusableContainerFunctionType {
+		svn, _, err = isolates.GenerateServiceName(ar.Workflow.Namespace,
+			ar.Workflow.ID, ar.Container.ID)
+		if err != nil {
+			log.Errorf("can not create service name: %v", err)
+			we.reportError(ar, err)
+		}
 	}
 
 	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FlowAPI.Protocol, svn, ns)
@@ -611,6 +602,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	)
 
 	// potentially dns error for a brand new service
+	// we just loop and see if we can recreate the service
 	for i := 0; i < 1000; i++ {
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
@@ -623,8 +615,19 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 
-						if !isKnativeFunction(we.isolateClient, ar.Container.ID,
-							ar.Workflow.Namespace, ar.Workflow.ID) {
+						// we can recreate the function if it is a workflow scope function
+						// if not we can bail right here
+						if ar.Container.Type != model.ReusableContainerFunctionType {
+							we.reportError(ar,
+								fmt.Errorf("function %s does not exist on scope %v",
+									ar.Container.ID, ar.Container.Type))
+							return
+						}
+
+						// recreate if the service does not exist
+						if ar.Container.Type == model.ReusableContainerFunctionType &&
+							!isKnativeFunction(we.isolateClient, ar.Container.ID,
+								ar.Workflow.Namespace, ar.Workflow.ID) {
 							err := createKnativeFunction(we.isolateClient, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								log.Errorf("can not create knative function: %v", err)

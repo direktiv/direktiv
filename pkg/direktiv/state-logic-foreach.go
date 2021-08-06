@@ -123,7 +123,10 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 			Type:     "subflow",
 			Attempts: attempt,
 		}
-
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
 	case model.ReusableContainerFunctionType:
 
 		uid := ksuid.New()
@@ -163,11 +166,6 @@ func (sl *foreachStateLogic) do(ctx context.Context, instance *workflowLogicInst
 		if err != nil {
 			return
 		}
-
-	case model.NamespacedKnativeFunctionType:
-		fallthrough
-	case model.GlobalKnativeFunctionType:
-		fallthrough
 	default:
 		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
 		return

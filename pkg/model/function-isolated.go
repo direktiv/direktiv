@@ -7,12 +7,12 @@ import (
 )
 
 type IsolatedFunctionDefinition struct {
-	Type  FunctionType             `yaml:"type"`
-	ID    string                   `yaml:"id"`
-	Image string                   `yaml:"image"`
-	Size  Size                     `yaml:"size,omitempty"`
-	Cmd   string                   `yaml:"cmd,omitempty"`
-	Files []FunctionFileDefinition `yaml:"files,omitempty"`
+	Type  FunctionType             `yaml:"type" json:"type"`
+	ID    string                   `yaml:"id" json:"id"`
+	Image string                   `yaml:"image" json:"image"`
+	Size  Size                     `yaml:"size,omitempty" json:"size,omitempty"`
+	Cmd   string                   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 func (o *IsolatedFunctionDefinition) GetID() string {

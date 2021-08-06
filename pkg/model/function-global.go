@@ -7,10 +7,10 @@ import (
 )
 
 type GlobalFunctionDefinition struct {
-	Type           FunctionType             `yaml:"type"`
-	ID             string                   `yaml:"id"`
-	KnativeService string                   `yaml:"knative_service"`
-	Files          []FunctionFileDefinition `yaml:"files,omitempty"`
+	Type           FunctionType             `yaml:"type" json:"type"`
+	ID             string                   `yaml:"id" json:"id"`
+	KnativeService string                   `yaml:"service" json:"service"`
+	Files          []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 func (o *GlobalFunctionDefinition) GetID() string {
@@ -40,7 +40,7 @@ func (o *GlobalFunctionDefinition) Validate() error {
 	}
 
 	if o.KnativeService == "" {
-		return errors.New("knative_service required")
+		return errors.New("service required")
 	}
 
 	for i, f := range o.Files {

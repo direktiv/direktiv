@@ -85,7 +85,7 @@ func filterLabels(annotations map[string]string) map[string]string {
 	// filter out invalid annotations
 	a := make(map[string]string)
 	for k, v := range annotations {
-		if strings.HasPrefix(k, "direktiv.io/") && k != ServiceHeaderScope {
+		if strings.HasPrefix(k, "direktiv.io/") {
 			a[k] = v
 		}
 
@@ -146,6 +146,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 	var b []*igrpc.IsolateInfo
 
 	filtered := filterLabels(annotations)
+	log.Debugf("! %v %v", annotations, filtered)
 	if len(filtered) == 0 {
 		return b, fmt.Errorf("request labels are invalid")
 	}
@@ -432,7 +433,7 @@ func GenerateServiceName(ns, wf, n string) (string, string, error) {
 	// get scope and create name
 	// workflow
 	name := fmt.Sprintf("%s-%d", PrefixWorkflow, h)
-	scope := "wf"
+	scope := PrefixWorkflow
 	if ns == "" {
 		// global
 		name = fmt.Sprintf("%s-%s", PrefixGlobal, n)

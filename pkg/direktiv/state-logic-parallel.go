@@ -114,6 +114,10 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 			Attempts: attempt,
 		}
 
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
 	case model.ReusableContainerFunctionType:
 
 		uid := ksuid.New()
@@ -153,11 +157,6 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 		if err != nil {
 			return
 		}
-
-	case model.NamespacedKnativeFunctionType:
-		fallthrough
-	case model.GlobalKnativeFunctionType:
-		fallthrough
 	default:
 		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
 		return
