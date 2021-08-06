@@ -3,7 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"regexp"
+
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type NamespacedFunctionDefinition struct {
@@ -30,13 +31,8 @@ func (o *NamespacedFunctionDefinition) Validate() error {
 		return errors.New("id required")
 	}
 
-	matched, err := regexp.MatchString(FunctionNameRegex, o.ID)
-	if err != nil {
-		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("function id must match regex: %s", FunctionNameRegex)
+	if ok := util.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("function id must match regex: %s", util.RegexPattern)
 	}
 
 	if o.KnativeService == "" {

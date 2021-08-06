@@ -3,15 +3,17 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/TwinProduction/go-away"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
+	goaway "github.com/TwinProduction/go-away"
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/gorilla/mux"
 	"github.com/rung/go-safecast"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"io/ioutil"
-	"net/http"
-	"strings"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +35,11 @@ func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) addNamespace(w http.ResponseWriter, r *http.Request) {
 
 	n := mux.Vars(r)["namespace"]
+	if ok := util.MatchesRegex(n); !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errNamespaceRegex.Error()))
+		return
+	}
 
 	ctx, cancel := CtxDeadline(r.Context())
 	defer cancel()

@@ -11,10 +11,6 @@ import (
 	"github.com/senseyeio/duration"
 )
 
-const CommonNameRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
-const FunctionNameRegex = `^[^_-][\w\-]*[^_\-\s]$`
-const VariableNameRegex = `^\w+$`
-
 type TimeoutDefinition struct {
 	Interrupt string `yaml:"interrupt,omitempty"`
 	Kill      string `yaml:"kill,omitempty"`

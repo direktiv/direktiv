@@ -2,13 +2,12 @@ package direktiv
 
 import (
 	"context"
-	"regexp"
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -18,16 +17,8 @@ func (is *ingressServer) AddNamespace(ctx context.Context, in *ingress.AddNamesp
 	var resp ingress.AddNamespaceResponse
 	var name string
 	name = in.GetName()
-	regex := "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
-
-	matched, err := regexp.MatchString(regex, name)
-	if err != nil {
-		log.Errorf("%v", NewInternalError(err))
-		return nil, grpcErrInternal
-	}
-
-	if !matched {
-		return nil, status.Errorf(codes.InvalidArgument, "namespace name must match regex: %s", regex)
+	if ok := util.MatchesRegex(name); !ok {
+		return nil, fmt.Errorf("namespace name must comply with the regex pattern `%s`", util.RegexPattern)
 	}
 
 	namespace, err := is.wfServer.dbManager.addNamespace(ctx, name)

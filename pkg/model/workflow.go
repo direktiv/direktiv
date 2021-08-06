@@ -3,8 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"regexp"
 
+	"github.com/vorteil/direktiv/pkg/util"
 	"gopkg.in/yaml.v3"
 )
 
@@ -244,13 +244,9 @@ func (o *Workflow) regexValidateID() error {
 		return fmt.Errorf("workflow id required")
 	}
 
-	matched, err := regexp.MatchString(WorkflowIDRegex, o.ID)
-	if err != nil {
-		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("workflow ID must match regex: %s", WorkflowIDRegex)
+	// ensure workflow id complies with regex pattern
+	if ok := util.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("workflow id must match regex pattern `%s`", util.RegexPattern)
 	}
 
 	return nil
