@@ -35,21 +35,21 @@ const (
 	EdgeWfevents = "wfevents"
 	// Table holds the table name of the workflow in the database.
 	Table = "workflows"
-	// NamespaceTable is the table the holds the namespace relation/edge.
+	// NamespaceTable is the table that holds the namespace relation/edge.
 	NamespaceTable = "workflows"
 	// NamespaceInverseTable is the table name for the Namespace entity.
 	// It exists in this package in order to avoid circular dependency with the "namespace" package.
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_workflows"
-	// InstancesTable is the table the holds the instances relation/edge.
+	// InstancesTable is the table that holds the instances relation/edge.
 	InstancesTable = "workflow_instances"
 	// InstancesInverseTable is the table name for the WorkflowInstance entity.
 	// It exists in this package in order to avoid circular dependency with the "workflowinstance" package.
 	InstancesInverseTable = "workflow_instances"
 	// InstancesColumn is the table column denoting the instances relation/edge.
 	InstancesColumn = "workflow_instances"
-	// WfeventsTable is the table the holds the wfevents relation/edge.
+	// WfeventsTable is the table that holds the wfevents relation/edge.
 	WfeventsTable = "workflow_events"
 	// WfeventsInverseTable is the table name for the WorkflowEvents entity.
 	// It exists in this package in order to avoid circular dependency with the "workflowevents" package.

@@ -399,8 +399,8 @@ func (wq *WorkflowQuery) GroupBy(field string, fields ...string) *WorkflowGroupB
 //		Select(workflow.FieldName).
 //		Scan(ctx, &v)
 //
-func (wq *WorkflowQuery) Select(field string, fields ...string) *WorkflowSelect {
-	wq.fields = append([]string{field}, fields...)
+func (wq *WorkflowQuery) Select(fields ...string) *WorkflowSelect {
+	wq.fields = append(wq.fields, fields...)
 	return &WorkflowSelect{WorkflowQuery: wq}
 }
 
@@ -611,10 +611,14 @@ func (wq *WorkflowQuery) querySpec() *sqlgraph.QuerySpec {
 func (wq *WorkflowQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(wq.driver.Dialect())
 	t1 := builder.Table(workflow.Table)
-	selector := builder.Select(t1.Columns(workflow.Columns...)...).From(t1)
+	columns := wq.fields
+	if len(columns) == 0 {
+		columns = workflow.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if wq.sql != nil {
 		selector = wq.sql
-		selector.Select(selector.Columns(workflow.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range wq.predicates {
 		p(selector)
@@ -882,13 +886,24 @@ func (wgb *WorkflowGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (wgb *WorkflowGroupBy) sqlQuery() *sql.Selector {
-	selector := wgb.sql
-	columns := make([]string, 0, len(wgb.fields)+len(wgb.fns))
-	columns = append(columns, wgb.fields...)
+	selector := wgb.sql.Select()
+	aggregation := make([]string, 0, len(wgb.fns))
 	for _, fn := range wgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(wgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(wgb.fields)+len(wgb.fns))
+		for _, f := range wgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(wgb.fields...)...)
 }
 
 // WorkflowSelect is the builder for selecting fields of Workflow entities.
@@ -1104,16 +1119,10 @@ func (ws *WorkflowSelect) BoolX(ctx context.Context) bool {
 
 func (ws *WorkflowSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ws.sqlQuery().Query()
+	query, args := ws.sql.Query()
 	if err := ws.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ws *WorkflowSelect) sqlQuery() sql.Querier {
-	selector := ws.sql
-	selector.Select(selector.Columns(ws.fields...)...)
-	return selector
 }

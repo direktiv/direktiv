@@ -325,8 +325,8 @@ func (wewq *WorkflowEventsWaitQuery) GroupBy(field string, fields ...string) *Wo
 //		Select(workfloweventswait.FieldEvents).
 //		Scan(ctx, &v)
 //
-func (wewq *WorkflowEventsWaitQuery) Select(field string, fields ...string) *WorkflowEventsWaitSelect {
-	wewq.fields = append([]string{field}, fields...)
+func (wewq *WorkflowEventsWaitQuery) Select(fields ...string) *WorkflowEventsWaitSelect {
+	wewq.fields = append(wewq.fields, fields...)
 	return &WorkflowEventsWaitSelect{WorkflowEventsWaitQuery: wewq}
 }
 
@@ -477,10 +477,14 @@ func (wewq *WorkflowEventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
 func (wewq *WorkflowEventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(wewq.driver.Dialect())
 	t1 := builder.Table(workfloweventswait.Table)
-	selector := builder.Select(t1.Columns(workfloweventswait.Columns...)...).From(t1)
+	columns := wewq.fields
+	if len(columns) == 0 {
+		columns = workfloweventswait.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if wewq.sql != nil {
 		selector = wewq.sql
-		selector.Select(selector.Columns(workfloweventswait.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range wewq.predicates {
 		p(selector)
@@ -748,13 +752,24 @@ func (wewgb *WorkflowEventsWaitGroupBy) sqlScan(ctx context.Context, v interface
 }
 
 func (wewgb *WorkflowEventsWaitGroupBy) sqlQuery() *sql.Selector {
-	selector := wewgb.sql
-	columns := make([]string, 0, len(wewgb.fields)+len(wewgb.fns))
-	columns = append(columns, wewgb.fields...)
+	selector := wewgb.sql.Select()
+	aggregation := make([]string, 0, len(wewgb.fns))
 	for _, fn := range wewgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(wewgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(wewgb.fields)+len(wewgb.fns))
+		for _, f := range wewgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(wewgb.fields...)...)
 }
 
 // WorkflowEventsWaitSelect is the builder for selecting fields of WorkflowEventsWait entities.
@@ -970,16 +985,10 @@ func (wews *WorkflowEventsWaitSelect) BoolX(ctx context.Context) bool {
 
 func (wews *WorkflowEventsWaitSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := wews.sqlQuery().Query()
+	query, args := wews.sql.Query()
 	if err := wews.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (wews *WorkflowEventsWaitSelect) sqlQuery() sql.Querier {
-	selector := wews.sql
-	selector.Select(selector.Columns(wews.fields...)...)
-	return selector
 }
