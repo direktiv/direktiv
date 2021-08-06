@@ -8,3 +8,6 @@ rules:
 - apiGroups: ["serving.knative.dev"]
   resources: ["*"]
   verbs: ["*"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "update", "delete", "create"]

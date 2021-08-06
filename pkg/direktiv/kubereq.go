@@ -2,12 +2,8 @@ package direktiv
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -916,42 +912,42 @@ func containerSizeCalc(size int) (float64, int) {
 //
 // }
 
-func SendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
-
-	if kubeReq.apiConfig == nil {
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			return nil, err
-		}
-		rest.LoadTLSFiles(config)
-		kubeReq.apiConfig = config
-	}
-
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(kubeReq.apiConfig.CAData)
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:    caCertPool,
-				MinVersion: tls.VersionTLS12,
-			},
-		},
-	}
-
-	req, err := http.NewRequestWithContext(context.Background(), method, url, data)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization",
-		fmt.Sprintf("Bearer %s", kubeReq.apiConfig.BearerToken))
-
-	return client.Do(req)
-
-}
+// func SendKuberequest(method, url string, data io.Reader) (*http.Response, error) {
+//
+// 	if kubeReq.apiConfig == nil {
+// 		config, err := rest.InClusterConfig()
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		rest.LoadTLSFiles(config)
+// 		kubeReq.apiConfig = config
+// 	}
+//
+// 	caCertPool := x509.NewCertPool()
+// 	caCertPool.AppendCertsFromPEM(kubeReq.apiConfig.CAData)
+//
+// 	client := &http.Client{
+// 		Transport: &http.Transport{
+// 			TLSClientConfig: &tls.Config{
+// 				RootCAs:    caCertPool,
+// 				MinVersion: tls.VersionTLS12,
+// 			},
+// 		},
+// 	}
+//
+// 	req, err := http.NewRequestWithContext(context.Background(), method, url, data)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	req.Header.Add("Content-Type", "application/json")
+// 	req.Header.Add("Accept", "application/json")
+// 	req.Header.Add("Authorization",
+// 		fmt.Sprintf("Bearer %s", kubeReq.apiConfig.BearerToken))
+//
+// 	return client.Do(req)
+//
+// }
 
 // func k8sNamespace() string {
 // 	return os.Getenv(k8sNamespaceVar)
