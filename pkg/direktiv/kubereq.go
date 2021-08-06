@@ -76,35 +76,35 @@ type kubeLockRequest struct {
 }
 
 func initKubeLock() {
-	kubeLockQueue = make(chan *kubeLockRequest, 1024)
-	pollKubeLock()
-	go runKubeLock()
+	// kubeLockQueue = make(chan *kubeLockRequest, 1024)
+	// pollKubeLock()
+	// go runKubeLock()
 }
 
 func pollKubeLock() {
 
 	for {
-		clientset, kns, err := getClientSet()
-		if err != nil {
-			log.Errorf("could not get client set: %v", err)
-			time.Sleep(time.Second)
-			continue
-		}
-
-		jobs := clientset.BatchV1().Jobs(kns)
-
-		l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
-		if err != nil {
-			log.Errorf("can not list jobs: %v", err)
-			time.Sleep(time.Second)
-			continue
-		}
-
-		kubeCounterTimestamp = time.Now()
-		kubeCounter = len(l.Items)
-		kubeCounterDelta = 0
-
-		log.Infof("kubelock polling discovered %v pods", kubeCounter)
+		// clientset, kns, err := getClientSet()
+		// if err != nil {
+		// 	log.Errorf("could not get client set: %v", err)
+		// 	time.Sleep(time.Second)
+		// 	continue
+		// }
+		//
+		// jobs := clientset.BatchV1().Jobs(kns)
+		//
+		// l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
+		// if err != nil {
+		// 	log.Errorf("can not list jobs: %v", err)
+		// 	time.Sleep(time.Second)
+		// 	continue
+		// }
+		//
+		// kubeCounterTimestamp = time.Now()
+		// kubeCounter = len(l.Items)
+		// kubeCounterDelta = 0
+		//
+		// log.Infof("kubelock polling discovered %v pods", kubeCounter)
 
 		return
 	}
@@ -113,27 +113,27 @@ func pollKubeLock() {
 
 func runKubeLock() {
 
-	for {
-		min := kubeCounterTimestamp.Add(time.Second)
-		max := kubeCounterTimestamp.Add(time.Minute)
-		if kubeCounter > 100 || kubeCounterDelta > 10 {
-			t := time.Now()
-			if !t.After(min) {
-				<-time.After(min.Sub(time.Now()))
-			}
-			pollKubeLock()
-			continue
-		}
-
-		select {
-		case r := <-kubeLockQueue:
-			kubeCounter++
-			kubeCounterDelta++
-			close(r.ch)
-		case <-time.After(max.Sub(time.Now())):
-			pollKubeLock()
-		}
-	}
+	// for {
+	// min := kubeCounterTimestamp.Add(time.Second)
+	// max := kubeCounterTimestamp.Add(time.Minute)
+	// if kubeCounter > 100 || kubeCounterDelta > 10 {
+	// 	t := time.Now()
+	// 	if !t.After(min) {
+	// 		<-time.After(min.Sub(time.Now()))
+	// 	}
+	// 	pollKubeLock()
+	// 	continue
+	// }
+	//
+	// select {
+	// case r := <-kubeLockQueue:
+	// 	kubeCounter++
+	// 	kubeCounterDelta++
+	// 	close(r.ch)
+	// case <-time.After(max.Sub(time.Now())):
+	// 	pollKubeLock()
+	// }
+	// }
 
 }
 

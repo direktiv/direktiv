@@ -13,6 +13,7 @@ import (
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -41,6 +42,16 @@ const (
 	generationHeader = "serving.knative.dev/configurationGeneration"
 )
 
+// Headers for knative services
+const (
+	ServiceHeaderName      = "direktiv.io/name"
+	ServiceHeaderNamespace = "direktiv.io/namespace"
+	ServiceHeaderWorkflow  = "direktiv.io/workflow"
+	ServiceHeaderSize      = "direktiv.io/size"
+	ServiceHeaderScale     = "direktiv.io/scale"
+	ServiceHeaderScope     = "direktiv.io/scope"
+)
+
 // Available prefixes for different scopes
 const (
 	PrefixWorkflow  = "w"
@@ -61,7 +72,117 @@ var (
 	mtx sync.Mutex
 )
 
-func conatinerFromList(containers []corev1.Container) (string, string) {
+func (is *isolateServer) DeleteIsolates(ctx context.Context,
+	in *igrpc.ListIsolatesRequest) (*emptypb.Empty, error) {
+
+	log.Debugf("deleting isolates %v", in.GetAnnotations())
+
+	err := deleteKnativeIsolates(in.GetAnnotations())
+
+	return &empty, err
+}
+
+func (is *isolateServer) GetIsolate(ctx context.Context,
+
+	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
+
+	var resp *igrpc.GetIsolateResponse
+
+	if in.GetServiceName() == "" {
+		return resp, fmt.Errorf("service name can not be nil")
+	}
+
+	return getKnativeIsolate(in.GetServiceName())
+
+}
+
+// ListIsolates returns isoaltes based on label filter
+func (is *isolateServer) ListIsolates(ctx context.Context,
+	in *igrpc.ListIsolatesRequest) (*igrpc.ListIsolatesResponse, error) {
+
+	var resp igrpc.ListIsolatesResponse
+
+	log.Debugf("list isolates %v", in.GetAnnotations())
+
+	items, err := listKnativeIsolates(in.GetAnnotations())
+	if err != nil {
+		return &resp, err
+	}
+
+	resp.Isolates = items
+
+	return &resp, nil
+
+}
+
+// StoreIsolate saves or updates isolates which means creating knative services
+// baes on the provided configuration
+func (is *isolateServer) CreateIsolate(ctx context.Context,
+	in *igrpc.CreateIsolateRequest) (*emptypb.Empty, error) {
+
+	log.Infof("storing isolate %s", in.GetInfo().GetName())
+
+	if in.GetInfo() == nil {
+		return &empty, fmt.Errorf("info can not be nil")
+	}
+
+	// create ksvc service
+	err := createKnativeIsolate(in.GetInfo())
+	if err != nil {
+		log.Errorf("can not create knative service: %v", err)
+		return &empty, err
+	}
+
+	return &empty, nil
+
+}
+
+func (is *isolateServer) SetIsolateTraffic(ctx context.Context,
+	in *igrpc.SetTrafficRequest) (*emptypb.Empty, error) {
+
+	err := trafficKnativeIsolate(in.GetName(), in.GetTraffic())
+	if err != nil {
+		log.Errorf("can not set traffic: %v", err)
+		return &empty, err
+	}
+
+	return &empty, nil
+
+}
+
+func (is *isolateServer) DeleteIsolate(ctx context.Context,
+	in *igrpc.GetIsolateRequest) (*emptypb.Empty, error) {
+
+	err := deleteKnativeIsolate(in.GetServiceName())
+	if err != nil {
+		log.Errorf("can not delete knative service: %v", err)
+		return &empty, err
+	}
+
+	return &empty, nil
+
+}
+
+func (is *isolateServer) UpdateIsolate(ctx context.Context,
+	in *igrpc.UpdateIsolateRequest) (*emptypb.Empty, error) {
+
+	log.Infof("updating isolate %s", in.GetServiceName())
+
+	if in.GetInfo() == nil {
+		return &empty, fmt.Errorf("info can not be nil")
+	}
+
+	// create ksvc service
+	err := updateKnativeIsolate(in.GetServiceName(), in.GetInfo())
+	if err != nil {
+		log.Errorf("can not update knative service: %v", err)
+		return &empty, err
+	}
+
+	return &empty, nil
+}
+
+func containerFromList(containers []corev1.Container) (string, string) {
 
 	var img, cmd string
 
@@ -191,7 +312,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 
 		status, statusMsg := statusFromCondition(svc.Status.Conditions)
 
-		img, cmd := conatinerFromList(svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
+		img, cmd := containerFromList(svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
 		info.Image = &img
 		info.Cmd = &cmd
 
@@ -533,7 +654,7 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		info.Status = &status
 		info.StatusMessage = &statusMsg
 
-		img, cmd := conatinerFromList(rev.Spec.Containers)
+		img, cmd := containerFromList(rev.Spec.Containers)
 		info.Image = &img
 		info.Cmd = &cmd
 
