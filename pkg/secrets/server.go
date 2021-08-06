@@ -12,6 +12,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/secrets/handler"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 // NewServer creates a new secrets server
@@ -77,7 +78,7 @@ func (s *Server) Lifeline() chan bool {
 	return s.lifeLine
 }
 
-// StoreSecret stroes secrets in backends
+// StoreSecret stores secrets in backends
 func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
@@ -86,7 +87,12 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 		return &resp, fmt.Errorf("name, namespace and secret values are required")
 	}
 
-	err := s.handler.AddSecret(in.GetNamespace(), in.GetName(), in.GetData())
+	n := in.GetName()
+	if ok := util.MatchesRegex(n); !ok {
+		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.RegexPattern)
+	}
+
+	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData())
 
 	return &resp, err
 

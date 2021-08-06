@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type postgres struct {
@@ -232,6 +235,10 @@ func (vw *varWriter) Close() error {
 }
 
 func (pg *postgres) Store(ctx context.Context, key string, scope ...string) (io.WriteCloser, error) {
+
+	if ok := util.MatchesRegex(key); !ok {
+		return nil, fmt.Errorf("variable key must match the regex pattern `%s`", util.RegexPattern)
+	}
 
 	vw := new(varWriter)
 	vw.ctx = ctx
