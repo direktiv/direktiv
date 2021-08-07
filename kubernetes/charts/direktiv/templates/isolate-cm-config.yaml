@@ -25,6 +25,12 @@ data:
       # max number of revisions to keep per namespace or global
       keep-revisions: 3
 
+      # max number of parallel jobs per namespace
+      max-jobs: 5
+
+      # kubernetes 1.20 auto cleans up jobs, for < 1.19, should be enabled
+      pod-cleaner: {{ .Values.isolates.podCleaner }}
+
       # max number of pods per service
       max-scale: 3
 
@@ -41,7 +47,7 @@ data:
       storage: 100
 
       # runtime for services, e.g. gvisor
-      runtime: default
+      runtime: {{ .Values.isolates.runtime }}
 
       # memory/cpu value defined for different service sizes
       memory:

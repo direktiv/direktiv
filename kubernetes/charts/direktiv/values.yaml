@@ -167,3 +167,4 @@ isolates:
   podAnnotations: {}
   podCleaner: true
   podTLS: false
+  runtime: "default"

@@ -17,8 +17,10 @@ type config struct {
 	Namespace       string `yaml:"namespace"`
 	SidecarDb       string `yaml:"sidecar-db"`
 	Sidecar         string `yaml:"sidecar"`
+	PodCleaner      bool   `yaml:"pod-cleaner"`
 	InitPod         string `yaml:"init-pod"`
 	KeepRevisions   int    `yaml:"keep-revisions"`
+	MaxJobs         int    `yaml:"max-jobs"`
 	MaxScale        int    `yaml:"max-scale"`
 	NetShape        string `yaml:"net-shape"`
 	RolloutDuration int    `yaml:"rollout-duration"`

@@ -778,7 +778,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	log.Debugf("patching service %s", svn)
 
 	// lock for updates and deletes
-	l, err := kubeLock(svn)
+	l, err := kubeLock(svn, false)
 	if err != nil {
 		return err
 	}
@@ -849,7 +849,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		return err
 	}
 
-	l, err := kubeLock(name)
+	l, err := kubeLock(name, false)
 	if err != nil {
 		return err
 	}

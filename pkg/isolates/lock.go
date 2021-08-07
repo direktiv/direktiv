@@ -41,12 +41,12 @@ func initKubernetesLock() error {
 
 }
 
-func kubeLock(key string) (lockgate.LockHandle, error) {
+func kubeLock(key string, blocking bool) (lockgate.LockHandle, error) {
 
 	log.Debugf("locking %s", key)
 
 	acquired, lock, err := kubernetesLock.Acquire(key,
-		lockgate.AcquireOptions{Shared: false,
+		lockgate.AcquireOptions{Shared: false, NonBlocking: blocking,
 			Timeout: 30 * time.Second})
 
 	if err != nil {

@@ -31,6 +31,15 @@ type isolateServer struct {
 // StartServer starts isolate grpc server
 func StartServer(echan chan error) {
 
+	errChan := make(chan error)
+	go runPodRequestLimiter(errChan)
+
+	e := <-errChan
+	if e != nil {
+		echan <- e
+		return
+	}
+
 	err := initKubernetesLock()
 	if err != nil {
 		echan <- err
