@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	v1 "k8s.io/api/core/v1"
 )
 
 type configReader struct {
@@ -42,11 +43,7 @@ type config struct {
 		HTTPS string `yaml:"https"`
 		HTTP  string `yaml:"http"`
 	} `yaml:"proxy"`
-	AdditionalContainers []struct {
-		Name    string `yaml:"name"`
-		Image   string `yaml:"image"`
-		Command string `yaml:"command"`
-	} `yaml:"additionalContainers"`
+	AdditionalContainers []v1.Container `yaml:"additionalContainers"`
 }
 
 func newConfigReader() *configReader {

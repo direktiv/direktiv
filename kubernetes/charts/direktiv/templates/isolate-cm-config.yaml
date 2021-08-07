@@ -67,6 +67,6 @@ data:
 
       # additional sidecar containers
       additionalContainers:
-      # - name: ""
-      #   image: ""
-      #   command: ""
+{{- if .Values.isolates.extraContainersPod }}
+{{ toYaml .Values.isolates.extraContainersPod | indent 8}}
+{{- end }}

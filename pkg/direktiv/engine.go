@@ -317,6 +317,10 @@ type actionResultMessage struct {
 
 func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
 
+	if ar.Workflow.Timeout == 0 {
+		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
+	}
+
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
@@ -415,10 +419,6 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 	addr := fmt.Sprintf("%s://%s:8890", we.server.config.FlowAPI.Protocol, ip)
 
 	log.Debugf("isolate request: %v", addr)
-
-	if ar.Workflow.Timeout == 0 {
-		ar.Workflow.Timeout = 15 * 60 // 15 minutes default
-	}
 
 	now := time.Now()
 	deadline := now.Add(time.Duration(ar.Workflow.Timeout) * time.Second)
@@ -544,10 +544,6 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FlowAPI.Protocol, svn, ns)
 	log.Debugf("isolate request: %v", addr)
-
-	if ar.Workflow.Timeout == 0 {
-		ar.Workflow.Timeout = 15 * 60 // 15 minutes default
-	}
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)

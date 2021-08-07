@@ -48,6 +48,12 @@ func (is *ingressServer) DeleteNamespace(ctx context.Context, in *ingress.Delete
 
 	log.Debugf("Deleted namespace: %v", name)
 
+	// delete all functions
+	err = deleteKnativeFunctions(is.wfServer.engine.isolateClient, in.GetName(), "", "")
+	if err != nil {
+		log.Errorf("can not delete knative functions: %v", err)
+	}
+
 	resp.Name = &name
 
 	return &resp, nil

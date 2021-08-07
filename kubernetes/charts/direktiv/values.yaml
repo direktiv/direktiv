@@ -180,3 +180,22 @@ isolates:
 
   # runtime to use, e.g. gvisor
   runtime: "default"
+
+  debug: true
+
+  # extra container for controller pod
+  # e.g. database containers for google cloud or logging
+  extraContainersPod:
+  extraContainers:
+    # - name: cloud-sql-proxy
+    #   image: gcr.io/cloudsql-docker/gce-proxy:1.17
+    #   command:
+    #     - "/cloud_sql_proxy"
+    #     - "-instances=mygcpdb=tcp:5432"
+    #     - "-ip_address_types=PRIVATE"
+    #   securityContext:
+    #     runAsNonRoot: true
+    #   resources:
+    #     requests:
+    #       memory: "2Gi"
+    #       cpu:    "1"

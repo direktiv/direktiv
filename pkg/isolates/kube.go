@@ -519,6 +519,12 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		Image:     img,
 		Env:       proxy,
 		Resources: res,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/mnt/shared",
+			},
+		},
 	}
 
 	if len(cmd) > 0 {
@@ -528,19 +534,6 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		}
 		uc.Command = args
 	}
-
-	// add debug if there is an env
-	// if len(os.Getenv(envDebug)) > 0 {
-	// 	proxy = append(proxy, corev1.EnvVar{
-	// 		Name:  envDebug,
-	// 		Value: "true",
-	// 	})
-	// }
-	//
-	// proxy = append(proxy, corev1.EnvVar{
-	// 	Name:  envFlow,
-	// 	Value: os.Getenv(envFlow),
-	// })
 
 	// append db info
 	proxy = append(proxy, corev1.EnvVar{
@@ -560,6 +553,12 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		Name:  containerSidecar,
 		Image: isolateConfig.Sidecar,
 		Env:   proxy,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/mnt/shared",
+			},
+		},
 		Ports: []corev1.ContainerPort{
 			{
 				ContainerPort: 8890,
@@ -568,6 +567,11 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 	}
 
 	c := []corev1.Container{uc, ds}
+
+	for i := range isolateConfig.AdditionalContainers {
+		container := isolateConfig.AdditionalContainers[i]
+		c = append(c, container)
+	}
 
 	return c, nil
 
@@ -915,6 +919,14 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),
 							ServiceAccountName: isolateConfig.ServiceAccount,
 							Containers:         containers,
+							Volumes: []corev1.Volume{
+								{
+									Name: "workdir",
+									VolumeSource: corev1.VolumeSource{
+										EmptyDir: &corev1.EmptyDirVolumeSource{},
+									},
+								},
+							},
 						},
 						ContainerConcurrency: &concurrency,
 						TimeoutSeconds:       &timeoutSec,
