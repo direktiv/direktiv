@@ -18,9 +18,6 @@ const (
 	NamespacedKnativeFunctionType
 	GlobalKnativeFunctionType
 	SubflowFunctionType
-	// Namespace Level Knative services (no size, command or scale), image should be name of service
-	// Global Level Knative services
-	// Subflow Level // id, workflow
 )
 
 var FunctionTypeStrings = []string{"unknown", "reusable", "isolated", "knative-namespace", "knative-global", "subflow"}

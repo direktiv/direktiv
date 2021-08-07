@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"github.com/lib/pq"
@@ -79,13 +78,6 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 			return next.Mutate(ctx, m)
 		})
 	})
-
-	st, err := ioutil.ReadFile("/etc/config/template")
-	if err != nil {
-		return nil, err
-	}
-	kubeReq.serviceTempl = string(st)
-	kubeReq.sidecar = config.FlowAPI.Sidecar
 
 	// get secrets client
 	db.grpcConn, err = GetEndpointTLS("127.0.0.1:2610", false)

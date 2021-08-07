@@ -161,7 +161,9 @@ isolates:
   image: "vorteil/direktiv-isolates"
   tag: "latest"
   replicaCount: 1
-  podAnnotations: {}
-  podCleaner: true
   db: ""
   sidecar: "vorteil/sidecar"
+  initPod: "vorteil/direktiv-init-pod"
+  podAnnotations: {}
+  podCleaner: true
+  podTLS: false

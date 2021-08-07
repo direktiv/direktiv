@@ -320,21 +320,16 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		// ip, err := addPodFunction(ctx, actionHash, ar)
-		// if err != nil {
-		// 	// we.reportError(ar, err)
-		// 	return err
-		// }
-		//
-		// go func(ar *isolateRequest) {
-		// 	// post data
-		// 	we.doPodHTTPRequest(ctx, actionHash, ar, ip)
-		//
-		// }(ar)
-		//
-		// if true {
-		// 	return nil
-		// }
+		ip, err := addPodFunction(ctx, we.isolateClient, ar)
+		if err != nil {
+			return NewInternalError(err)
+		}
+
+		go func(ar *isolateRequest) {
+			// post data
+			we.doPodHTTPRequest(ctx, ar, ip)
+		}(ar)
+
 	case model.DefaultFunctionType:
 		fallthrough
 	case model.NamespacedKnativeFunctionType:
@@ -367,11 +362,8 @@ func (we *workflowEngine) reportError(ar *isolateRequest, err error) {
 	}
 }
 
-func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
-	ah string, ar *isolateRequest, ip string) {
+func createTransport(useTLS bool) *http.Transport {
 
-	// from here we need to report error as grpc because this is go-routined
-	// NOTE: transport copied & modified from http.DefaultTransport
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
@@ -386,9 +378,7 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	// on https we add the cert to ca
-	if we.server.config.FlowAPI.Protocol == "https" {
-
+	if useTLS {
 		rootCAs, _ := x509.SystemCertPool()
 		if rootCAs == nil {
 			rootCAs = x509.NewCertPool()
@@ -410,8 +400,16 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 			MinVersion: tls.VersionTLS12,
 		}
 		tr.TLSClientConfig = config
-
 	}
+
+	return tr
+
+}
+
+func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
+	ar *isolateRequest, ip string) {
+
+	tr := createTransport(we.server.config.FlowAPI.Protocol == "https")
 
 	// configured namespace for workflows
 	addr := fmt.Sprintf("%s://%s:8890", we.server.config.FlowAPI.Protocol, ip)
@@ -422,11 +420,12 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		ar.Workflow.Timeout = 15 * 60 // 15 minutes default
 	}
 
-	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	now := time.Now()
+	deadline := now.Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	log.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+	log.Debugf("deadline for pod request: %v", deadline.Sub(now))
 
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -435,13 +434,11 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		return
 	}
 
-	// add headers
-
 	for i := range ar.Container.Files {
 		f := &ar.Container.Files[i]
 		data, err := json.Marshal(f)
 		if err != nil {
-			panic(err)
+			we.reportError(ar, err)
 		}
 		str := base64.StdEncoding.EncodeToString(data)
 		req.Header.Add(DirektivFileHeader, str)
@@ -476,18 +473,6 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 
 	log.Debugf("isolate request done")
 
-	// for pod based we need to send a request to kill the init
-	req, err = http.NewRequestWithContext(rctx, http.MethodGet, addr, nil)
-	if err != nil {
-		we.reportError(ar, err)
-		return
-	}
-	_, err = client.Do(req)
-	if err != nil {
-		// TODO: better logging & error detection
-		log.Println(err)
-	}
-
 }
 
 func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
@@ -497,48 +482,50 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		err error
 	)
 
-	// from here we need to report error as grpc because this is go-routined
-	// NOTE: transport copied & modified from http.DefaultTransport
-	tr := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   10 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext,
-		ForceAttemptHTTP2:     true,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	}
+	tr := createTransport(we.server.config.FlowAPI.Protocol == "https")
 
-	// on https we add the cert to ca
-	if we.server.config.FlowAPI.Protocol == "https" {
-
-		rootCAs, _ := x509.SystemCertPool()
-		if rootCAs == nil {
-			rootCAs = x509.NewCertPool()
-		}
-
-		// Read in the cert file. just in case it is the same being used
-		// in the ingress
-		certs, err := ioutil.ReadFile(TLSCert)
-		if err == nil {
-			// Append our cert to the system pool if we have it
-			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-				log.Println("No certs appended, using system certs only")
-			}
-		}
-
-		// Trust the augmented cert pool in our client
-		config := &tls.Config{
-			RootCAs:    rootCAs,
-			MinVersion: tls.VersionTLS12,
-		}
-		tr.TLSClientConfig = config
-
-	}
+	// // from here we need to report error as grpc because this is go-routined
+	// // NOTE: transport copied & modified from http.DefaultTransport
+	// tr := &http.Transport{
+	// 	Proxy: http.ProxyFromEnvironment,
+	// 	DialContext: (&net.Dialer{
+	// 		Timeout:   10 * time.Second,
+	// 		KeepAlive: 30 * time.Second,
+	// 		DualStack: true,
+	// 	}).DialContext,
+	// 	ForceAttemptHTTP2:     true,
+	// 	MaxIdleConns:          100,
+	// 	IdleConnTimeout:       90 * time.Second,
+	// 	TLSHandshakeTimeout:   10 * time.Second,
+	// 	ExpectContinueTimeout: 1 * time.Second,
+	// }
+	//
+	// // on https we add the cert to ca
+	// if we.server.config.FlowAPI.Protocol == "https" {
+	//
+	// 	rootCAs, _ := x509.SystemCertPool()
+	// 	if rootCAs == nil {
+	// 		rootCAs = x509.NewCertPool()
+	// 	}
+	//
+	// 	// Read in the cert file. just in case it is the same being used
+	// 	// in the ingress
+	// 	certs, err := ioutil.ReadFile(TLSCert)
+	// 	if err == nil {
+	// 		// Append our cert to the system pool if we have it
+	// 		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+	// 			log.Println("No certs appended, using system certs only")
+	// 		}
+	// 	}
+	//
+	// 	// Trust the augmented cert pool in our client
+	// 	config := &tls.Config{
+	// 		RootCAs:    rootCAs,
+	// 		MinVersion: tls.VersionTLS12,
+	// 	}
+	// 	tr.TLSClientConfig = config
+	//
+	// }
 
 	// configured namespace for workflows
 	ns := os.Getenv("DIREKTIV_SERVICE_NAMESPACE")
@@ -867,7 +854,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			cancelJob(context.Background(), child.Id)
+			cancelJob(context.Background(), we.isolateClient, child.Id)
 			/* #nosec */
 			_ = syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
 		case "subflow":

@@ -31,7 +31,7 @@ const (
 	httpProxy  = "HTTP_PROXY"
 	noProxy    = "NO_PROXY"
 
-	envNS    = "DIREKTIV_KUBERNETES_NAMESPACE"
+	// envNS    = "DIREKTIV_KUBERNETES_NAMESPACE"
 	envDebug = "DIREKTIV_DEBUG"
 	envFlow  = "DIREKTIV_FLOW_ENDPOINT"
 	envDB    = "DIREKTIV_DB"
@@ -409,6 +409,19 @@ func proxyEnvs() []corev1.EnvVar {
 		})
 	}
 
+	// add debug if there is an env
+	if len(os.Getenv(envDebug)) > 0 {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  envDebug,
+			Value: "true",
+		})
+	}
+
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  envFlow,
+		Value: os.Getenv(envFlow),
+	})
+
 	return proxyEnvs
 }
 
@@ -451,14 +464,20 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		return corev1.ResourceRequirements{}, err
 	}
 
+	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dMi", isolateConfig.Storage))
+	if err != nil {
+		return corev1.ResourceRequirements{}, err
+	}
+
 	return corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{
 			"cpu":    qcpu,
 			"memory": qmem,
 		},
 		Limits: corev1.ResourceList{
-			"cpu":    qcpuHigh,
-			"memory": qmemHigh,
+			"cpu":               qcpuHigh,
+			"memory":            qmemHigh,
+			"ephemeral-storage": ephemeral,
 		},
 	}, nil
 
@@ -491,17 +510,17 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 	}
 
 	// add debug if there is an env
-	if len(os.Getenv(envDebug)) > 0 {
-		proxy = append(proxy, corev1.EnvVar{
-			Name:  envDebug,
-			Value: "true",
-		})
-	}
-
-	proxy = append(proxy, corev1.EnvVar{
-		Name:  envFlow,
-		Value: os.Getenv(envFlow),
-	})
+	// if len(os.Getenv(envDebug)) > 0 {
+	// 	proxy = append(proxy, corev1.EnvVar{
+	// 		Name:  envDebug,
+	// 		Value: "true",
+	// 	})
+	// }
+	//
+	// proxy = append(proxy, corev1.EnvVar{
+	// 	Name:  envFlow,
+	// 	Value: os.Getenv(envFlow),
+	// })
 
 	// append db info
 	proxy = append(proxy, corev1.EnvVar{

@@ -3,12 +3,8 @@ package direktiv
 import (
 	"context"
 	"errors"
-	"fmt"
-	"net/url"
-	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	shellwords "github.com/mattn/go-shellwords"
@@ -16,53 +12,47 @@ import (
 	"github.com/vorteil/direktiv/pkg/isolates"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
-	batchv1 "k8s.io/api/batch/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 const (
-	kubeAPIKServiceURL         = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
-	kubeAPIKServiceURLSpecific = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services/%s"
+// kubeAPIKServiceURL         = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services"
+// kubeAPIKServiceURLSpecific = "https://kubernetes.default.svc/apis/serving.knative.dev/v1/namespaces/%s/services/%s"
+//
+// annotationNamespace = "direktiv.io/namespace"
+// annotationURL       = "direktiv.io/url"
+// annotationURLHash   = "direktiv.io/urlhash"
+//
+// httpsProxy = "HTTPS_PROXY"
+// httpProxy  = "HTTP_PROXY"
+// noProxy    = "NO_PROXY"
 
-	annotationNamespace = "direktiv.io/namespace"
-	annotationURL       = "direktiv.io/url"
-	annotationURLHash   = "direktiv.io/urlhash"
-
-	httpsProxy = "HTTPS_PROXY"
-	httpProxy  = "HTTP_PROXY"
-	noProxy    = "NO_PROXY"
-
-	pullPolicy      = v1.PullAlways
-	cleanupInterval = 60
-	dbLockID        = 123456
-
-	prefixNamespace = "ns:"
-	prefixGlobal    = "g:"
+// pullPolicy      = v1.PullAlways
+// cleanupInterval = 60
+// dbLockID        = 123456
+//
+// prefixNamespace = "ns:"
+// prefixGlobal    = "g:"
 )
 
-const (
-	k8sNamespaceVar = "DIREKTIV_KUBERNETES_NAMESPACE"
-	secretsPrefix   = "direktiv-secret"
-)
+// const (
+// 	k8sNamespaceVar = "DIREKTIV_KUBERNETES_NAMESPACE"
+// 	secretsPrefix   = "direktiv-secret"
+// )
 
-type kubeRequest struct {
-	serviceTempl string
-	sidecar      string
-
-	apiConfig *rest.Config
-	mtx       sync.Mutex
-}
-
-var (
-	gracePeriod int64 = 10
-	kubeReq           = kubeRequest{}
-
-	knativeMtx sync.Mutex
-)
+// type kubeRequest struct {
+// 	serviceTempl string
+// 	sidecar      string
+//
+// 	apiConfig *rest.Config
+// 	mtx       sync.Mutex
+// }
+//
+// var (
+// 	gracePeriod int64 = 10
+// 	kubeReq           = kubeRequest{}
+//
+// 	knativeMtx sync.Mutex
+// )
 
 var (
 	kubeCounter          = 0
@@ -175,440 +165,479 @@ func getKubeLock(ctx context.Context) error {
 
 }
 
-func deleteJob(name string) error {
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	jobs := clientset.BatchV1().Jobs(kns)
-
-	fg := metav1.DeletePropagationBackground
-	opts := metav1.DeleteOptions{
-		PropagationPolicy:  &fg,
-		GracePeriodSeconds: &gracePeriod,
-	}
-	log.Debugf("deleting job with name %v", name)
-
-	return jobs.Delete(context.Background(), name, opts)
-
-}
+// func deleteJob(name string) error {
+//
+// 	return nil
+//
+// 	// clientset, kns, err := getClientSet()
+// 	// if err != nil {
+// 	// 	return err
+// 	// }
+// 	//
+// 	// jobs := clientset.BatchV1().Jobs(kns)
+// 	//
+// 	// fg := metav1.DeletePropagationBackground
+// 	// opts := metav1.DeleteOptions{
+// 	// 	PropagationPolicy:  &fg,
+// 	// 	GracePeriodSeconds: &gracePeriod,
+// 	// }
+// 	// log.Debugf("deleting job with name %v", name)
+// 	//
+// 	// return jobs.Delete(context.Background(), name, opts)
+//
+// }
 
 // TTL is beta so e.g. GKE doesn't have it anabled in 1.20 clusters
 // it is configurable to turn it off
 func completedJobsCleaner(db *dbManager) error {
-
-	log.Infof("starting pod cleaner")
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		log.Errorf("could not get client set: %v", err)
-		return err
-	}
-
-	jobs := clientset.BatchV1().Jobs(kns)
-
-	for {
-		time.Sleep(cleanupInterval * time.Second)
-
-		lock, conn, err := db.tryLockDB(dbLockID)
-		if err != nil {
-			continue
-		}
-
-		if lock {
-
-			l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
-			if err != nil {
-				log.Errorf("can not list jobs: %v", err)
-				db.unlockDB(dbLockID, conn)
-				continue
-			}
-
-			for i := range l.Items {
-				j := l.Items[i]
-
-				// we clean up after 1 minute
-				// if nothing is runing and at least one succeeded or failed:
-				if j.Status.Active == 0 && (j.Status.Succeeded > 0 || j.Status.Failed > 0) &&
-					time.Now().After(j.Status.CompletionTime.Add(1*time.Minute)) {
-
-					err := deleteJob(j.ObjectMeta.Name)
-					if err != nil {
-						log.Errorf("could not delete job: %v", err)
-					}
-
-				}
-			}
-
-			db.unlockDB(dbLockID, conn)
-		}
-
-	}
-
-}
-
-func cancelJob(ctx context.Context, actionID string) {
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		log.Errorf("could not get client set: %v", err)
-	}
-
-	jobs := clientset.BatchV1().Jobs(kns)
-	opts := metav1.ListOptions{LabelSelector: fmt.Sprintf("direktiv.io/action-id=%s", actionID)}
-	jl, err := jobs.List(context.Background(), opts)
-	if err != nil {
-		log.Errorf("could not list jobs: %v", err)
-	}
-
-	if len(jl.Items) > 0 {
-		for i := range jl.Items {
-			j := jl.Items[i]
-
-			err := deleteJob(j.ObjectMeta.Name)
-			if err != nil {
-				log.Errorf("could not delete job: %v", err)
-			}
-
-		}
-
-	}
+	return nil
+	// log.Infof("starting pod cleaner")
+	//
+	// clientset, kns, err := getClientSet()
+	// if err != nil {
+	// 	log.Errorf("could not get client set: %v", err)
+	// 	return err
+	// }
+	//
+	// jobs := clientset.BatchV1().Jobs(kns)
+	//
+	// for {
+	// 	time.Sleep(cleanupInterval * time.Second)
+	//
+	// 	lock, conn, err := db.tryLockDB(dbLockID)
+	// 	if err != nil {
+	// 		continue
+	// 	}
+	//
+	// 	if lock {
+	//
+	// 		l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
+	// 		if err != nil {
+	// 			log.Errorf("can not list jobs: %v", err)
+	// 			db.unlockDB(dbLockID, conn)
+	// 			continue
+	// 		}
+	//
+	// 		for i := range l.Items {
+	// 			j := l.Items[i]
+	//
+	// 			// we clean up after 1 minute
+	// 			// if nothing is runing and at least one succeeded or failed:
+	// 			if j.Status.Active == 0 && (j.Status.Succeeded > 0 || j.Status.Failed > 0) &&
+	// 				time.Now().After(j.Status.CompletionTime.Add(1*time.Minute)) {
+	//
+	// 				err := deleteJob(j.ObjectMeta.Name)
+	// 				if err != nil {
+	// 					log.Errorf("could not delete job: %v", err)
+	// 				}
+	//
+	// 			}
+	// 		}
+	//
+	// 		db.unlockDB(dbLockID, conn)
+	// 	}
+	//
+	// }
 
 }
 
-func createResourceLimits(size int) v1.ResourceList {
+func cancelJob(ctx context.Context, client igrpc.IsolatesServiceClient,
+	actionID string) {
 
-	cpu, mem := containerSizeCalc(size)
-	rl := make(v1.ResourceList)
-	c, _ := resource.ParseQuantity(fmt.Sprintf("%v", cpu))
-	rl[v1.ResourceCPU] = c
-	c, _ = resource.ParseQuantity(fmt.Sprintf("%vMiB", mem))
-	rl[v1.ResourceMemory] = c
+	log.Debugf("cancelling job %v", actionID)
 
-	return rl
+	cr := igrpc.CancelPodRequest{
+		ActionID: &actionID,
+	}
+
+	_, err := client.CancelIsolatePod(ctx, &cr)
+	if err != nil {
+		log.Errorf("can not cancel job %s: %v", actionID, err)
+	}
+
+	// clientset, kns, err := getClientSet()
+	// if err != nil {
+	// 	log.Errorf("could not get client set: %v", err)
+	// }
+	//
+	// jobs := clientset.BatchV1().Jobs(kns)
+	// opts := metav1.ListOptions{LabelSelector: fmt.Sprintf("direktiv.io/action-id=%s", actionID)}
+	// jl, err := jobs.List(context.Background(), opts)
+	// if err != nil {
+	// 	log.Errorf("could not list jobs: %v", err)
+	// }
+	//
+	// if len(jl.Items) > 0 {
+	// 	for i := range jl.Items {
+	// 		j := jl.Items[i]
+	//
+	// 		err := deleteJob(j.ObjectMeta.Name)
+	// 		if err != nil {
+	// 			log.Errorf("could not delete job: %v", err)
+	// 		}
+	//
+	// 	}
+	//
+	// }
 
 }
 
-func createUserContainer(size int, image, cmd string) (v1.Container, error) {
+// func createResourceLimits(size int) v1.ResourceList {
+//
+// 	cpu, mem := containerSizeCalc(size)
+// 	rl := make(v1.ResourceList)
+// 	c, _ := resource.ParseQuantity(fmt.Sprintf("%v", cpu))
+// 	rl[v1.ResourceCPU] = c
+// 	c, _ = resource.ParseQuantity(fmt.Sprintf("%vMiB", mem))
+// 	rl[v1.ResourceMemory] = c
+//
+// 	return rl
+//
+// }
 
-	proxyEnvs := []v1.EnvVar{}
+// func createUserContainer(size int, image, cmd string) (v1.Container, error) {
+//
+// 	proxyEnvs := []v1.EnvVar{}
+//
+// 	if len(os.Getenv(httpProxy)) > 0 || len(os.Getenv(httpsProxy)) > 0 {
+//
+// 		proxyEnvs = []v1.EnvVar{}
+// 		for _, e := range []string{httpProxy, httpsProxy, noProxy} {
+// 			proxyEnvs = append(proxyEnvs, v1.EnvVar{
+// 				Name:  e,
+// 				Value: os.Getenv(e),
+// 			})
+// 		}
+//
+// 	}
+//
+// 	// Resources ResourceRequirements
+// 	userContainer := v1.Container{
+// 		ImagePullPolicy: pullPolicy,
+// 		Resources: v1.ResourceRequirements{
+// 			Limits: createResourceLimits(size),
+// 		},
+// 		Name:  "direktiv-container",
+// 		Image: image,
+// 		VolumeMounts: []v1.VolumeMount{
+// 			{
+// 				Name:      "workdir",
+// 				MountPath: "/direktiv-data",
+// 			},
+// 		},
+// 		Env: proxyEnvs,
+// 	}
+//
+// 	if len(cmd) > 0 {
+// 		args, err := shellwords.Parse(cmd)
+// 		if err != nil {
+// 			return userContainer, err
+// 		}
+// 		userContainer.Command = args
+// 	}
+//
+// 	return userContainer, nil
+//
+// }
 
-	if len(os.Getenv(httpProxy)) > 0 || len(os.Getenv(httpsProxy)) > 0 {
+func addPodFunction(ctx context.Context,
+	client igrpc.IsolatesServiceClient, ir *isolateRequest) (string, error) {
 
-		proxyEnvs = []v1.EnvVar{}
-		for _, e := range []string{httpProxy, httpsProxy, noProxy} {
-			proxyEnvs = append(proxyEnvs, v1.EnvVar{
-				Name:  e,
-				Value: os.Getenv(e),
-			})
-		}
+	sz := int32(ir.Container.Size)
+	scale := int32(ir.Container.Scale)
+	step := int64(ir.Workflow.Step)
 
-	}
-
-	// Resources ResourceRequirements
-	userContainer := v1.Container{
-		ImagePullPolicy: pullPolicy,
-		Resources: v1.ResourceRequirements{
-			Limits: createResourceLimits(size),
+	cr := igrpc.CreatePodRequest{
+		Info: &igrpc.BaseInfo{
+			Name:      &ir.Container.ID,
+			Namespace: &ir.Workflow.Namespace,
+			Workflow:  &ir.Workflow.ID,
+			Image:     &ir.Container.Image,
+			Cmd:       &ir.Container.Cmd,
+			Size:      &sz,
+			MinScale:  &scale,
 		},
-		Name:  "direktiv-container",
-		Image: image,
-		VolumeMounts: []v1.VolumeMount{
-			{
-				Name:      "workdir",
-				MountPath: "/direktiv-data",
-			},
-		},
-		Env: proxyEnvs,
+		ActionID:   &ir.ActionID,
+		InstanceID: &ir.Workflow.InstanceID,
+		Step:       &step,
 	}
 
-	if len(cmd) > 0 {
-		args, err := shellwords.Parse(cmd)
-		if err != nil {
-			return userContainer, err
-		}
-		userContainer.Command = args
-	}
+	r, err := client.CreateIsolatePod(ctx, &cr)
+	return r.GetIp(), err
 
-	return userContainer, nil
+	// err := getKubeLock(ctx)
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// log.Infof("adding pod function %s", ah)
+	//
+	// clientset, kns, err := getClientSet()
+	// if err != nil {
+	// 	log.Errorf("could not get client set: %v", err)
+	// 	return "", err
+	// }
+	//
+	// jobs := clientset.BatchV1().Jobs(kns)
+	//
+	// var finishSeconds int32 = 60
+	// size, _ := resource.ParseQuantity("10Mi")
+	//
+	// userContainer, err := createUserContainer(int(ar.Container.Size),
+	// 	ar.Container.Image, ar.Container.Cmd)
+	// if err != nil {
+	// 	log.Errorf("can not create user container: %v", err)
+	// 	return "", err
+	// }
+	//
+	// labels := make(map[string]string)
+	// labels["direktiv.io/action-id"] = ar.ActionID
+	// labels["direktiv.io/job"] = "true"
+	//
+	// commonJobVars := []v1.EnvVar{
+	// 	{
+	// 		Name:  "DIREKTIV_NAMESPACE",
+	// 		Value: ar.Workflow.Namespace,
+	// 	},
+	// 	{
+	// 		Name:  "DIREKTIV_ACTIONID",
+	// 		Value: ar.ActionID,
+	// 	},
+	// 	{
+	// 		Name:  "DIREKTIV_INSTANCEID",
+	// 		Value: ar.Workflow.InstanceID,
+	// 	},
+	// 	{
+	// 		Name:  "DIREKTIV_STEP",
+	// 		Value: fmt.Sprintf("%d", int64(ar.Workflow.Step)),
+	// 	},
+	// 	{
+	// 		Name:  "DIREKTIV_FLOW_ENDPOINT",
+	// 		Value: os.Getenv("DIREKTIV_FLOW_ENDPOINT"),
+	// 	},
+	// }
+	//
+	// initJobVars := append(commonJobVars, v1.EnvVar{
+	// 	Name:  "DIREKTIV_LIFECYCLE",
+	// 	Value: "init",
+	// })
+	//
+	// sidecarJobVars := append(commonJobVars, v1.EnvVar{
+	// 	Name:  "DIREKTIV_LIFECYCLE",
+	// 	Value: "run",
+	// })
+	//
+	// // generate pull secrets
+	// secrets, err := kubernetesListRegistriesNames(ar.Workflow.Namespace)
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// var lo []v1.LocalObjectReference
+	// for _, s := range secrets {
+	// 	lo = append(lo, v1.LocalObjectReference{
+	// 		Name: s,
+	// 	})
+	// }
+	//
+	// jobSpec := &batchv1.Job{
+	// 	ObjectMeta: metav1.ObjectMeta{
+	// 		GenerateName: fmt.Sprintf("%v-", ah),
+	// 		Namespace:    kns,
+	// 		Labels:       labels,
+	// 	},
+	// 	Spec: batchv1.JobSpec{
+	// 		TTLSecondsAfterFinished: &finishSeconds,
+	// 		Template: v1.PodTemplateSpec{
+	// 			ObjectMeta: metav1.ObjectMeta{
+	// 				Labels: labels,
+	// 			},
+	// 			Spec: v1.PodSpec{
+	// 				ImagePullSecrets: lo,
+	// 				Volumes: []v1.Volume{
+	// 					{
+	// 						Name: "workdir",
+	// 						VolumeSource: v1.VolumeSource{
+	// 							EmptyDir: &v1.EmptyDirVolumeSource{
+	// 								SizeLimit: &size,
+	// 							},
+	// 						},
+	// 					},
+	// 				},
+	// 				InitContainers: []v1.Container{
+	// 					{
+	// 						ImagePullPolicy: pullPolicy,
+	// 						Name:            "init-container",
+	// 						Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
+	// 						VolumeMounts: []v1.VolumeMount{
+	// 							{
+	// 								Name:      "workdir",
+	// 								MountPath: "/direktiv-data",
+	// 							},
+	// 						},
+	// 						Env: initJobVars,
+	// 						Ports: []v1.ContainerPort{
+	// 							{
+	// 								ContainerPort: 8890,
+	// 							},
+	// 						},
+	// 					},
+	// 				},
+	// 				Containers: []v1.Container{
+	// 					{
+	// 						ImagePullPolicy: pullPolicy,
+	// 						Name:            "direktiv-sidecar",
+	// 						Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
+	// 						VolumeMounts: []v1.VolumeMount{
+	// 							{
+	// 								Name:      "workdir",
+	// 								MountPath: "/direktiv-data",
+	// 							},
+	// 						},
+	// 						Env: sidecarJobVars,
+	// 					},
+	// 					userContainer,
+	// 				},
+	// 				RestartPolicy: v1.RestartPolicyNever,
+	// 			},
+	// 		},
+	// 	},
+	// }
+	//
+	// j, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
+	// if err != nil {
+	// 	log.Errorf("failed to create job: %v", err)
+	// 	return "", err
+	// }
+	//
+	// log.Debugf("creating job %v", j.ObjectMeta.Name)
+	//
+	// var ip string
+	// for i := 0; i < 50; i++ {
+	// 	podList, err := clientset.CoreV1().Pods(kns).List(context.Background(),
+	// 		metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)})
+	//
+	// 	if err != nil {
+	// 		log.Errorf("can not get clientset for pods: %v", err)
+	// 		continue
+	// 	}
+	//
+	// 	if len(podList.Items) == 0 {
+	// 		log.Infof("waiting for pod: %s", j.ObjectMeta.Name)
+	// 		continue
+	// 	}
+	//
+	// 	if len(podList.Items) > 1 {
+	// 		log.Infof("more than one job with than name.")
+	// 	}
+	//
+	// 	pod := podList.Items[0]
+	// 	ip = pod.Status.PodIP
+	// 	if len(ip) > 0 {
+	// 		break
+	// 	}
+	//
+	// 	log.Infof("waiting for pod ip: %s", j.ObjectMeta.Name)
+	// 	time.Sleep(500 * time.Millisecond)
+	// }
+	//
+	// if len(ip) == 0 {
+	// 	return "", fmt.Errorf("could not create pod")
+	// }
+	//
+	// log.Debugf("pod cluster ip: %v", ip)
+	// return ip, nil
+
+	// return "", nil
 
 }
 
-func addPodFunction(ctx context.Context, ah string, ar *isolateRequest) (string, error) {
+// func kubernetesListRegistriesNames(namespace string) ([]string, error) {
+//
+// 	var registries []string
+//
+// 	clientset, kns, err := getClientSet()
+// 	if err != nil {
+// 		return registries, err
+// 	}
+//
+// 	var lo metav1.ListOptions
+// 	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
+// 	if err != nil {
+// 		return registries, err
+// 	}
+//
+// 	for _, s := range secrets.Items {
+// 		if s.Annotations[annotationNamespace] == namespace {
+// 			registries = append(registries, s.Name)
+// 		}
+// 	}
+//
+// 	return registries, nil
+//
+// }
 
-	err := getKubeLock(ctx)
-	if err != nil {
-		return "", err
-	}
+// func kubernetesListRegistries(namespace string) ([]string, error) {
+//
+// 	var registries []string
+//
+// 	clientset, kns, err := getClientSet()
+// 	if err != nil {
+// 		return registries, err
+// 	}
+//
+// 	var lo metav1.ListOptions
+// 	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
+// 	if err != nil {
+// 		return registries, err
+// 	}
+//
+// 	for _, s := range secrets.Items {
+// 		if s.Annotations[annotationNamespace] == namespace {
+// 			registries = append(registries, fmt.Sprintf("%s###%s",
+// 				s.Annotations[annotationURL], s.Annotations[annotationURLHash]))
+// 		}
+// 	}
+//
+// 	return registries, nil
+//
+// }
 
-	log.Infof("adding pod function %s", ah)
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		log.Errorf("could not get client set: %v", err)
-		return "", err
-	}
-
-	jobs := clientset.BatchV1().Jobs(kns)
-
-	var finishSeconds int32 = 60
-	size, _ := resource.ParseQuantity("10Mi")
-
-	userContainer, err := createUserContainer(int(ar.Container.Size),
-		ar.Container.Image, ar.Container.Cmd)
-	if err != nil {
-		log.Errorf("can not create user container: %v", err)
-		return "", err
-	}
-
-	labels := make(map[string]string)
-	labels["direktiv.io/action-id"] = ar.ActionID
-	labels["direktiv.io/job"] = "true"
-
-	commonJobVars := []v1.EnvVar{
-		{
-			Name:  "DIREKTIV_NAMESPACE",
-			Value: ar.Workflow.Namespace,
-		},
-		{
-			Name:  "DIREKTIV_ACTIONID",
-			Value: ar.ActionID,
-		},
-		{
-			Name:  "DIREKTIV_INSTANCEID",
-			Value: ar.Workflow.InstanceID,
-		},
-		{
-			Name:  "DIREKTIV_STEP",
-			Value: fmt.Sprintf("%d", int64(ar.Workflow.Step)),
-		},
-		{
-			Name:  "DIREKTIV_FLOW_ENDPOINT",
-			Value: os.Getenv("DIREKTIV_FLOW_ENDPOINT"),
-		},
-	}
-
-	initJobVars := append(commonJobVars, v1.EnvVar{
-		Name:  "DIREKTIV_LIFECYCLE",
-		Value: "init",
-	})
-
-	sidecarJobVars := append(commonJobVars, v1.EnvVar{
-		Name:  "DIREKTIV_LIFECYCLE",
-		Value: "run",
-	})
-
-	// generate pull secrets
-	secrets, err := kubernetesListRegistriesNames(ar.Workflow.Namespace)
-	if err != nil {
-		return "", err
-	}
-
-	var lo []v1.LocalObjectReference
-	for _, s := range secrets {
-		lo = append(lo, v1.LocalObjectReference{
-			Name: s,
-		})
-	}
-
-	jobSpec := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: fmt.Sprintf("%v-", ah),
-			Namespace:    kns,
-			Labels:       labels,
-		},
-		Spec: batchv1.JobSpec{
-			TTLSecondsAfterFinished: &finishSeconds,
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-				},
-				Spec: v1.PodSpec{
-					ImagePullSecrets: lo,
-					Volumes: []v1.Volume{
-						{
-							Name: "workdir",
-							VolumeSource: v1.VolumeSource{
-								EmptyDir: &v1.EmptyDirVolumeSource{
-									SizeLimit: &size,
-								},
-							},
-						},
-					},
-					InitContainers: []v1.Container{
-						{
-							ImagePullPolicy: pullPolicy,
-							Name:            "init-container",
-							Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      "workdir",
-									MountPath: "/direktiv-data",
-								},
-							},
-							Env: initJobVars,
-							Ports: []v1.ContainerPort{
-								{
-									ContainerPort: 8890,
-								},
-							},
-						},
-					},
-					Containers: []v1.Container{
-						{
-							ImagePullPolicy: pullPolicy,
-							Name:            "direktiv-sidecar",
-							Image:           os.Getenv("DIREKTIV_FLOW_INITPOD"),
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      "workdir",
-									MountPath: "/direktiv-data",
-								},
-							},
-							Env: sidecarJobVars,
-						},
-						userContainer,
-					},
-					RestartPolicy: v1.RestartPolicyNever,
-				},
-			},
-		},
-	}
-
-	j, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
-	if err != nil {
-		log.Errorf("failed to create job: %v", err)
-		return "", err
-	}
-
-	log.Debugf("creating job %v", j.ObjectMeta.Name)
-
-	var ip string
-	for i := 0; i < 50; i++ {
-		podList, err := clientset.CoreV1().Pods(kns).List(context.Background(),
-			metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)})
-
-		if err != nil {
-			log.Errorf("can not get clientset for pods: %v", err)
-			continue
-		}
-
-		if len(podList.Items) == 0 {
-			log.Infof("waiting for pod: %s", j.ObjectMeta.Name)
-			continue
-		}
-
-		if len(podList.Items) > 1 {
-			log.Infof("more than one job with than name.")
-		}
-
-		pod := podList.Items[0]
-		ip = pod.Status.PodIP
-		if len(ip) > 0 {
-			break
-		}
-
-		log.Infof("waiting for pod ip: %s", j.ObjectMeta.Name)
-		time.Sleep(500 * time.Millisecond)
-	}
-
-	if len(ip) == 0 {
-		return "", fmt.Errorf("could not create pod")
-	}
-
-	log.Debugf("pod cluster ip: %v", ip)
-	return ip, nil
-
-}
-
-func kubernetesListRegistriesNames(namespace string) ([]string, error) {
-
-	var registries []string
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return registries, err
-	}
-
-	var lo metav1.ListOptions
-	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
-	if err != nil {
-		return registries, err
-	}
-
-	for _, s := range secrets.Items {
-		if s.Annotations[annotationNamespace] == namespace {
-			registries = append(registries, s.Name)
-		}
-	}
-
-	return registries, nil
-
-}
-
-func kubernetesListRegistries(namespace string) ([]string, error) {
-
-	var registries []string
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return registries, err
-	}
-
-	var lo metav1.ListOptions
-	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
-	if err != nil {
-		return registries, err
-	}
-
-	for _, s := range secrets.Items {
-		if s.Annotations[annotationNamespace] == namespace {
-			registries = append(registries, fmt.Sprintf("%s###%s",
-				s.Annotations[annotationURL], s.Annotations[annotationURLHash]))
-		}
-	}
-
-	return registries, nil
-
-}
-
-func kubernetesDeleteSecret(name, namespace string) error {
-
-	log.Debugf("deleting secret %s (%s)", name, namespace)
-
-	clientset, kns, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	var lo metav1.ListOptions
-	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
-	if err != nil {
-		return err
-	}
-
-	for _, s := range secrets.Items {
-
-		if s.Annotations[annotationNamespace] == namespace &&
-			s.Annotations[annotationURL] == name {
-
-			u, err := url.Parse(name)
-			if err != nil {
-				return err
-			}
-			secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
-
-			return clientset.CoreV1().Secrets(kns).Delete(context.Background(), secretName, metav1.DeleteOptions{})
-
-		}
-
-	}
-
-	return fmt.Errorf("no registry with name %s found", name)
-
-}
+// func kubernetesDeleteSecret(name, namespace string) error {
+//
+// 	log.Debugf("deleting secret %s (%s)", name, namespace)
+//
+// 	clientset, kns, err := getClientSet()
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	var lo metav1.ListOptions
+// 	secrets, err := clientset.CoreV1().Secrets(kns).List(context.Background(), lo)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	for _, s := range secrets.Items {
+//
+// 		if s.Annotations[annotationNamespace] == namespace &&
+// 			s.Annotations[annotationURL] == name {
+//
+// 			u, err := url.Parse(name)
+// 			if err != nil {
+// 				return err
+// 			}
+// 			secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
+//
+// 			return clientset.CoreV1().Secrets(kns).Delete(context.Background(), secretName, metav1.DeleteOptions{})
+//
+// 		}
+//
+// 	}
+//
+// 	return fmt.Errorf("no registry with name %s found", name)
+//
+// }
 
 // func kubernetesAddSecret(name, namespace string, data []byte) error {
 //
@@ -647,23 +676,23 @@ func kubernetesDeleteSecret(name, namespace string) error {
 //
 // }
 
-func getClientSet() (*kubernetes.Clientset, string, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, "", err
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, "", err
-	}
-
-	kns := os.Getenv(direktivWorkflowNamespace)
-	if kns == "" {
-		kns = "default"
-	}
-
-	return clientset, kns, nil
-}
+// func getClientSet() (*kubernetes.Clientset, string, error) {
+// 	config, err := rest.InClusterConfig()
+// 	if err != nil {
+// 		return nil, "", err
+// 	}
+// 	clientset, err := kubernetes.NewForConfig(config)
+// 	if err != nil {
+// 		return nil, "", err
+// 	}
+//
+// 	kns := os.Getenv(direktivWorkflowNamespace)
+// 	if kns == "" {
+// 		kns = "default"
+// 	}
+//
+// 	return clientset, kns, nil
+// }
 
 func isKnativeFunction(client igrpc.IsolatesServiceClient,
 	name, namespace, workflow string) bool {

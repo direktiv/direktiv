@@ -17,11 +17,13 @@ type config struct {
 	Namespace       string `yaml:"namespace"`
 	SidecarDb       string `yaml:"sidecar-db"`
 	Sidecar         string `yaml:"sidecar"`
+	InitPod         string `yaml:"init-pod"`
 	KeepRevisions   int    `yaml:"keep-revisions"`
 	MaxScale        int    `yaml:"max-scale"`
 	NetShape        string `yaml:"net-shape"`
 	RolloutDuration int    `yaml:"rollout-duration"`
 	Concurrency     int    `yaml:"concurrency"`
+	Storage         int    `yaml:"storage"`
 	Runtime         string `yaml:"runtime"`
 	Memory          struct {
 		Small  int `yaml:"small"`

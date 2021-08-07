@@ -19,6 +19,9 @@ data:
       # pod sidecar name
       sidecar: {{ .Values.isolates.sidecar }}
 
+      # init pod name
+      init-pod: {{ .Values.isolates.initPod }}
+
       # max number of revisions to keep per namespace or global
       keep-revisions: 3
 
@@ -33,6 +36,9 @@ data:
 
       # default concurrency level
       concurrency: 100
+
+      # max ephemeral storage in MB
+      storage: 100
 
       # runtime for services, e.g. gvisor
       runtime: default
