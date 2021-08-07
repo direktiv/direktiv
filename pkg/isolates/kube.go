@@ -72,6 +72,26 @@ var (
 	mtx sync.Mutex
 )
 
+func (is *isolateServer) DeleteRevision(ctx context.Context,
+	in *igrpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
+
+	log.Debugf("delete revision %v", in.GetRevision())
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return &empty, err
+	}
+
+	err = cs.ServingV1().Revisions(isolateConfig.Namespace).
+		Delete(context.Background(), in.GetRevision(), metav1.DeleteOptions{})
+	if err != nil {
+		log.Errorf("error delete knative revision %s: %v", in.GetRevision(), err)
+		return &empty, err
+	}
+
+	return &empty, nil
+}
+
 func (is *isolateServer) DeleteIsolates(ctx context.Context,
 	in *igrpc.ListIsolatesRequest) (*emptypb.Empty, error) {
 

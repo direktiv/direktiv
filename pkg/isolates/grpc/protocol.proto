@@ -17,6 +17,7 @@ import "pkg/isolates/grpc/isolates-traffic.proto";
 import "pkg/isolates/grpc/isolates-update.proto";
 import "pkg/isolates/grpc/pod-create.proto";
 import "pkg/isolates/grpc/pod-cancel.proto";
+import "pkg/isolates/grpc/revision-delete.proto";
 
 service IsolatesService {
   rpc UpdateIsolate(UpdateIsolateRequest) returns (google.protobuf.Empty)  {}
@@ -31,4 +32,5 @@ service IsolatesService {
   rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
   rpc CreateIsolatePod(CreatePodRequest) returns (CreatePodResponse)  {}
   rpc CancelIsolatePod(CancelPodRequest) returns (google.protobuf.Empty)  {}
+  rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}
 }

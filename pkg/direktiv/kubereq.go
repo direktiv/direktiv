@@ -815,7 +815,7 @@ func deleteKnativeFunctions(client igrpc.IsolatesServiceClient,
 
 	_, err := client.DeleteIsolates(context.Background(), &dr)
 	if err != nil {
-		log.Errorf("can not create knative service: %v", err)
+		log.Errorf("can not delete knative service: %v", err)
 	}
 
 	return nil

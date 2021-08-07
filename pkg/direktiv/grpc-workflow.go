@@ -200,6 +200,9 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		// previous definition. can not have errors
 		workflowPrev.Load(fwf.Workflow)
 
+		log.Debugf("checking hash: %v %v", hashForFunctions(workflow),
+			hashForFunctions(workflowPrev))
+
 		if hashForFunctions(workflow) != hashForFunctions(workflowPrev) {
 			err = deleteKnativeFunctions(is.wfServer.engine.isolateClient, fwf.Edges.Namespace.ID, workflow.ID, "")
 			if err != nil {

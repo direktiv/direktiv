@@ -11,10 +11,6 @@ spec:
       {{- include "direktiv.selectorLabels" . | nindent 6 }}-isolates
   template:
     metadata:
-      {{- with .Values.isolates.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}-isolates
     spec:

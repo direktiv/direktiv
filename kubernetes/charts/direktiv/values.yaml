@@ -157,14 +157,26 @@ gcp:
   ip_private: false
 
 isolates:
+  # namespace to run isolates in
   namespace: direktiv-services-direktiv
+
+  # images for isolate controller, knative sidecar and init-pod
   image: "vorteil/direktiv-isolates"
   tag: "latest"
-  replicaCount: 1
-  db: ""
   sidecar: "vorteil/sidecar"
   initPod: "vorteil/direktiv-init-pod"
-  podAnnotations: {}
+
+  # number of controller replicas
+  replicaCount: 1
+
+  # database connection, required for pub/sub with flow
+  db: ""
+
+  # run pod cleaner for kubernetes < 1.20
   podCleaner: true
+
+  # run init-pod with TLS
   podTLS: false
+
+  # runtime to use, e.g. gvisor
   runtime: "default"

@@ -31,6 +31,7 @@ type IsolatesServiceClient interface {
 	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateIsolatePod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error)
 	CancelIsolatePod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type isolatesServiceClient struct {
@@ -149,6 +150,15 @@ func (c *isolatesServiceClient) CancelIsolatePod(ctx context.Context, in *Cancel
 	return out, nil
 }
 
+func (c *isolatesServiceClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/DeleteRevision", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IsolatesServiceServer is the server API for IsolatesService service.
 // All implementations must embed UnimplementedIsolatesServiceServer
 // for forward compatibility
@@ -165,6 +175,7 @@ type IsolatesServiceServer interface {
 	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error)
 	CreateIsolatePod(context.Context, *CreatePodRequest) (*CreatePodResponse, error)
 	CancelIsolatePod(context.Context, *CancelPodRequest) (*emptypb.Empty, error)
+	DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedIsolatesServiceServer()
 }
 
@@ -207,6 +218,9 @@ func (UnimplementedIsolatesServiceServer) CreateIsolatePod(context.Context, *Cre
 }
 func (UnimplementedIsolatesServiceServer) CancelIsolatePod(context.Context, *CancelPodRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelIsolatePod not implemented")
+}
+func (UnimplementedIsolatesServiceServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRevision not implemented")
 }
 func (UnimplementedIsolatesServiceServer) mustEmbedUnimplementedIsolatesServiceServer() {}
 
@@ -437,6 +451,24 @@ func _IsolatesService_CancelIsolatePod_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IsolatesService_DeleteRevision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRevisionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IsolatesServiceServer).DeleteRevision(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.IsolatesService/DeleteRevision",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IsolatesServiceServer).DeleteRevision(ctx, req.(*DeleteRevisionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IsolatesService_ServiceDesc is the grpc.ServiceDesc for IsolatesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -491,6 +523,10 @@ var IsolatesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelIsolatePod",
 			Handler:    _IsolatesService_CancelIsolatePod_Handler,
+		},
+		{
+			MethodName: "DeleteRevision",
+			Handler:    _IsolatesService_DeleteRevision_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
