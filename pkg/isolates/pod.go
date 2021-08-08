@@ -3,13 +3,13 @@ package isolates
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
 	shellwords "github.com/mattn/go-shellwords"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -23,11 +23,9 @@ const (
 
 // Pod env vars
 const (
-	PodEnvNamespace  = "DIREKTIV_NAMESPACE"
 	PodEnvActionID   = "DIREKTIV_ACTIONID"
 	PodEnvInstanceID = "DIREKTIV_INSTANCEID"
 	PodEnvStep       = "DIREKTIV_STEP"
-	PodEnvEndpoint   = "DIREKTIV_FLOW_ENDPOINT"
 )
 
 var namespaceCounter map[string]int64
@@ -173,7 +171,7 @@ func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
 
 	return []v1.EnvVar{
 		{
-			Name:  PodEnvNamespace,
+			Name:  util.DirektivNamespace,
 			Value: in.GetInfo().GetNamespace(),
 		},
 		{
@@ -189,8 +187,8 @@ func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
 			Value: fmt.Sprintf("%d", in.GetStep()),
 		},
 		{
-			Name:  PodEnvEndpoint,
-			Value: os.Getenv(PodEnvEndpoint),
+			Name:  util.DirektivFlowEndpoint,
+			Value: util.FlowEndpoint(),
 		},
 	}
 

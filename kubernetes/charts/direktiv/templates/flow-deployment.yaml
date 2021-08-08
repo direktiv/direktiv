@@ -50,18 +50,17 @@ spec:
               cpu: "8"
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
-          command: ["/bin/direktiv", "--config", "/config/default.toml"]
+          command: ["/bin/direktiv", "--config", "/etc/direktiv/flow-config.yaml"]
           volumeMounts:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
           {{- end }}
-          - name: server-config
-            mountPath: /config/default.toml
-            readOnly: true
-            subPath: default.toml
           - name: grpc-config
             mountPath: /etc/direktiv/grpc-config.yaml
             subPath: grpc-config.yaml
+          - name: flow-config
+            mountPath: /etc/direktiv/flow-config.yaml
+            subPath: flow-config.yaml
           {{- if ne .Values.flow.certificate "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
@@ -75,24 +74,12 @@ spec:
               containerPort: 7777
               protocol: TCP
           env:
-          - name: DIREKTIV_SERVICE_NAMESPACE
-            value: {{ .Values.isolates.namespace }}
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
+          - name: DIREKTIV_SERVICE_NAMESPACE
+            value: {{ .Values.isolates.namespace }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
-          - name: DIREKTIV_FLOW_MAX_SCALE
-            value: {{ .Values.flow.maxScale | quote }}
-          - name: DIREKTIV_INGRESS_BIND
-            value: "0.0.0.0:6666"
-          - name: DIREKTIV_FLOW_BIND
-            value: "0.0.0.0:7777"
-          - name: "DIREKTIV_ISOLATE_ENDPOINT"
-            value: "dns2:///{{ include "direktiv.fullname" . }}-isolates-hl.{{ .Release.Namespace }}:5555"
-          - name: "DIREKTIV_FLOW_ENDPOINT"
-            value: "dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777"
-          - name: "DIREKTIV_INGRESS_ENDPOINT"
-            value: "dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666"
           {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
           - name: "HTTP_PROXY"
             value: "{{ .Values.http_proxy }}"
@@ -156,9 +143,9 @@ spec:
         - name: grpc-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-grpc
-        - name: server-config
+        - name: flow-config
           configMap:
-            name: flow-cm-config
+            name: {{ include "direktiv.fullname" . }}-config-flow
         {{- if ne  .Values.flow.certificate "none" }}
         - name: certs
           secret:

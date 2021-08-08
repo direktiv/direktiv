@@ -25,6 +25,7 @@ import (
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/grpc"
 
 	"github.com/jinzhu/copier"
@@ -120,7 +121,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := GetEndpointTLS(s.config.FlowAPI.IsolateEndpoint, true)
+	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.isolateClient = igrpc.NewIsolatesServiceClient(conn)
 
 	// get flow client
-	conn, err = GetEndpointTLS(s.config.FlowAPI.Endpoint, true)
+	conn, err = util.GetEndpointTLS(util.FlowEndpoint(), true)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +137,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = GetEndpointTLS(secretsEndpoint, false)
+	conn, err = util.GetEndpointTLS(secretsEndpoint, false)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +145,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
 	// get ingress client
-	conn, err = GetEndpointTLS(s.config.IngressAPI.Endpoint, true)
+	conn, err = util.GetEndpointTLS(util.IngressEndpoint(), true)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +391,7 @@ func createTransport(useTLS bool) *http.Transport {
 
 		// Read in the cert file. just in case it is the same being used
 		// in the ingress
-		certs, err := ioutil.ReadFile(TLSCert)
+		certs, err := ioutil.ReadFile(util.TLSCert)
 		if err == nil {
 			// Append our cert to the system pool if we have it
 			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
@@ -413,10 +414,10 @@ func createTransport(useTLS bool) *http.Transport {
 func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 	ar *isolateRequest, ip string) {
 
-	tr := createTransport(we.server.config.FlowAPI.Protocol == "https")
+	tr := createTransport(we.server.config.IsolateProtocol == "https")
 
 	// configured namespace for workflows
-	addr := fmt.Sprintf("%s://%s:8890", we.server.config.FlowAPI.Protocol, ip)
+	addr := fmt.Sprintf("%s://%s:8890", we.server.config.IsolateProtocol, ip)
 
 	log.Debugf("isolate request: %v", addr)
 
@@ -482,53 +483,10 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		err error
 	)
 
-	tr := createTransport(we.server.config.FlowAPI.Protocol == "https")
-
-	// // from here we need to report error as grpc because this is go-routined
-	// // NOTE: transport copied & modified from http.DefaultTransport
-	// tr := &http.Transport{
-	// 	Proxy: http.ProxyFromEnvironment,
-	// 	DialContext: (&net.Dialer{
-	// 		Timeout:   10 * time.Second,
-	// 		KeepAlive: 30 * time.Second,
-	// 		DualStack: true,
-	// 	}).DialContext,
-	// 	ForceAttemptHTTP2:     true,
-	// 	MaxIdleConns:          100,
-	// 	IdleConnTimeout:       90 * time.Second,
-	// 	TLSHandshakeTimeout:   10 * time.Second,
-	// 	ExpectContinueTimeout: 1 * time.Second,
-	// }
-	//
-	// // on https we add the cert to ca
-	// if we.server.config.FlowAPI.Protocol == "https" {
-	//
-	// 	rootCAs, _ := x509.SystemCertPool()
-	// 	if rootCAs == nil {
-	// 		rootCAs = x509.NewCertPool()
-	// 	}
-	//
-	// 	// Read in the cert file. just in case it is the same being used
-	// 	// in the ingress
-	// 	certs, err := ioutil.ReadFile(TLSCert)
-	// 	if err == nil {
-	// 		// Append our cert to the system pool if we have it
-	// 		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-	// 			log.Println("No certs appended, using system certs only")
-	// 		}
-	// 	}
-	//
-	// 	// Trust the augmented cert pool in our client
-	// 	config := &tls.Config{
-	// 		RootCAs:    rootCAs,
-	// 		MinVersion: tls.VersionTLS12,
-	// 	}
-	// 	tr.TLSClientConfig = config
-	//
-	// }
+	tr := createTransport(we.server.config.IsolateProtocol == "https")
 
 	// configured namespace for workflows
-	ns := os.Getenv("DIREKTIV_SERVICE_NAMESPACE")
+	ns := os.Getenv(util.DirektivServiceNamespace)
 
 	// set service name if global/namespace
 	// otherwise generate baes on action request
@@ -542,7 +500,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		}
 	}
 
-	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FlowAPI.Protocol, svn, ns)
+	addr := fmt.Sprintf("%s://%s.%s", we.server.config.IsolateProtocol, svn, ns)
 	log.Debugf("isolate request: %v", addr)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)

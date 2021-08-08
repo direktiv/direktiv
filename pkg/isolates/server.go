@@ -8,6 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -49,9 +50,9 @@ func StartServer(echan chan error) {
 	cr := newConfigReader()
 	go cr.readConfig(confFile, &isolateConfig)
 
-	if len(os.Getenv(envFlow)) == 0 {
-		log.Errorf("grpc response is not configured (DIREKTIV_FLOW_ENDPOINT)")
-		echan <- fmt.Errorf("grpc response is not configured (DIREKTIV_FLOW_ENDPOINT)")
+	if len(util.FlowEndpoint()) == 0 {
+		log.Errorf("grpc response to flow is not configured")
+		echan <- fmt.Errorf("grpc response to flow is not configured")
 	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))

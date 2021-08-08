@@ -6,13 +6,11 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/vorteil/direktiv/pkg/direktiv"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/secrets/handler"
 	"github.com/vorteil/direktiv/pkg/util"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewServer creates a new secrets server
@@ -45,7 +43,7 @@ func (s *Server) Run() {
 
 	log.Infof("starting secret server")
 
-	direktiv.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
+	util.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
 		secretsgrpc.RegisterSecretsServiceServer(srv, s)
 	})
 

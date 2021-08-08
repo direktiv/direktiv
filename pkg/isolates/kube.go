@@ -13,8 +13,8 @@ import (
 	hash "github.com/mitchellh/hashstructure/v2"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,11 +30,6 @@ const (
 	httpsProxy = "HTTPS_PROXY"
 	httpProxy  = "HTTP_PROXY"
 	noProxy    = "NO_PROXY"
-
-	// envNS    = "DIREKTIV_KUBERNETES_NAMESPACE"
-	envDebug = "DIREKTIV_DEBUG"
-	envFlow  = "DIREKTIV_FLOW_ENDPOINT"
-	envDB    = "DIREKTIV_DB"
 
 	containerUser    = "direktiv-container"
 	containerSidecar = "direktiv-sidecar"
@@ -430,16 +425,16 @@ func proxyEnvs() []corev1.EnvVar {
 	}
 
 	// add debug if there is an env
-	if len(os.Getenv(envDebug)) > 0 {
+	if len(os.Getenv(util.DirektivDebug)) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  envDebug,
+			Name:  util.DirektivDebug,
 			Value: "true",
 		})
 	}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  envFlow,
-		Value: os.Getenv(envFlow),
+		Name:  util.DirektivFlowEndpoint,
+		Value: util.FlowEndpoint(),
 	})
 
 	return proxyEnvs
@@ -537,7 +532,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	// append db info
 	proxy = append(proxy, corev1.EnvVar{
-		Name: envDB,
+		Name: util.DBConn,
 		ValueFrom: &corev1.EnvVarSource{
 			SecretKeyRef: &corev1.SecretKeySelector{
 				LocalObjectReference: corev1.LocalObjectReference{

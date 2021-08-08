@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	entgo.io/ent v0.9.0
+	github.com/BurntSushi/toml v0.3.1
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013

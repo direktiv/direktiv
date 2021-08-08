@@ -38,7 +38,7 @@ data:
       rollout-duration: 30
 
       # shaping network traffic if supported by network plugin
-      net-shape: 10M
+      net-shape: {{ .Values.isolates.netShape }}
 
       # default concurrency level
       concurrency: 100

@@ -11,9 +11,9 @@ import (
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const blocklist = "blocklist"
@@ -119,7 +119,7 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) initDirektiv() error {
 
-	conn, err := direktiv.GetEndpointTLS(s.cfg.Ingress.Endpoint, true)
+	conn, err := util.GetEndpointTLS(s.cfg.Ingress.Endpoint, true)
 	if err != nil {
 		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
@@ -134,7 +134,7 @@ func (s *Server) initDirektiv() error {
 
 func (s *Server) initIsolates() error {
 
-	conn, err := direktiv.GetEndpointTLS(s.cfg.Isolates.Endpoint, true)
+	conn, err := util.GetEndpointTLS(s.cfg.Isolates.Endpoint, true)
 	if err != nil {
 		log.Errorf("can not connect to direktiv isolates: %v", err)
 		return err

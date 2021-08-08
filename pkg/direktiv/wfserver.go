@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq" // postgres for ent
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const (
@@ -91,10 +92,10 @@ func (s *WorkflowServer) initWorkflowServer() error {
 		return err
 	}
 
-	s.components[ingressComponent] = ingressServer
+	s.components[util.IngressComponent] = ingressServer
 
 	flowServer := newFlowServer(s.config, s.engine)
-	s.components[flowComponent] = flowServer
+	s.components[util.FlowComponent] = flowServer
 
 	return nil
 

@@ -11,6 +11,7 @@ import (
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/hook"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"github.com/vorteil/direktiv/pkg/varstore"
 	"google.golang.org/grpc"
 )
@@ -80,7 +81,7 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 	})
 
 	// get secrets client
-	db.grpcConn, err = GetEndpointTLS("127.0.0.1:2610", false)
+	db.grpcConn, err = util.GetEndpointTLS("127.0.0.1:2610", false)
 	if err != nil {
 		return nil, err
 	}

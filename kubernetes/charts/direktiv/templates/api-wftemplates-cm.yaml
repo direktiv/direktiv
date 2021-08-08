@@ -104,6 +104,6 @@ data:
 kind: ConfigMap
 metadata:
   labels:
-    {{- include "direktiv.labels" . | nindent 4 }}
+    {{ include "direktiv.labelsAPI" . | nindent 4 }}-api
   name: api-wftemplates-cm
   namespace: {{ .Release.Namespace }}

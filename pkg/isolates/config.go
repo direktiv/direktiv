@@ -3,7 +3,6 @@ package isolates
 import (
 	"io"
 	"os"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -80,15 +79,5 @@ func readAndSet(path string, target interface{}) {
 }
 
 func (cr *configReader) readConfig(path string, target interface{}) {
-
-	// initial read
 	readAndSet(path, target)
-
-	// for some reason watcher did not work on k3s
-	// that might be good enough for now
-	ticker := time.NewTicker(30 * time.Second)
-	for range ticker.C {
-		readAndSet(path, target)
-	}
-
 }

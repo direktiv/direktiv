@@ -9,8 +9,6 @@ registry: "docker.io"
 pullPolicy: Always
 imagePullSecrets: []
 
-logDriver: "database"
-
 # if using proxy the user needs to be a valid IAM user with access to the database
 # e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
 # to to google with:
@@ -21,6 +19,11 @@ serviceAccount:
   annotations: {}
   name: ""
   create: true
+
+# proxy settings
+http_proxy: ""
+https_proxy: ""
+no_proxy: ""
 
 autoscaling:
   enabled: false
@@ -37,21 +40,22 @@ withAPI: true
 
 supportPersist: false
 
+# enable debug
 debug: false
+
+useNetworkPolicies: false
 
 ingress:
   host: ""
   certificate: none
   class: "contour-external"
-  auth:
-    enabled: false
 
 # flow config
 flow:
   image: "vorteil/flow"
   tag: "latest"
   db: ""
-  protocol: "http"
+  isolateProtocol: "http"
   certificate: none
   extraContainers: []
   extraVolumeMounts:
@@ -82,29 +86,17 @@ api:
 
 uiapiCertificate: none
 
-useNetworkPolicies: false
 
-http_proxy: ""
-https_proxy: ""
-no_proxy: ""
 
-netShape: "none"
 
 # Set Send and Recv limits for all grpc clients and servers
 grpc:
   server:
-    maxSendSize: 4194304
-    maxRecvSize: 4194304
+    maxSendSize: "4194304"
+    maxRecvSize: "4194304"
   client:
-    maxSendSize: 4194304
-    maxRecvSize: 4194304
-
-
-gcp:
-  gvisor: false
-  useSqlProxy: false
-  db_instance: ""
-  ip_private: false
+    maxSendSize: "4194304"
+    maxRecvSize: "4194304"
 
 isolates:
   # namespace to run isolates in
@@ -119,6 +111,8 @@ isolates:
   # number of controller replicas
   replicaCount: 1
 
+  netShape: "10M"
+
   # database connection, required for pub/sub with flow
   db: ""
 
@@ -130,8 +124,6 @@ isolates:
 
   # runtime to use, e.g. gvisor
   runtime: "default"
-
-  debug: true
 
   # extra container for controller pod
   # e.g. database containers for google cloud or logging

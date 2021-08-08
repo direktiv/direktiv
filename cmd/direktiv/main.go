@@ -21,6 +21,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/dlog/db"
 	"github.com/vorteil/direktiv/pkg/dlog/dummy"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 var (
@@ -40,6 +41,8 @@ var rootCmd = &cobra.Command{
 			formatter.Line = true
 			logrus.SetFormatter(&formatter)
 		}
+		// read grpc configs
+		util.GRPCUnmarshalConfig()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 

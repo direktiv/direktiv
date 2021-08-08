@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/metrics/ent/metrics"
+	"github.com/vorteil/direktiv/pkg/util"
 
 	"github.com/vorteil/direktiv/pkg/metrics/ent"
 )
@@ -18,7 +19,7 @@ type Client struct {
 // NewClient ..
 func NewClient() (*Client, error) {
 
-	db, err := ent.Open("postgres", os.Getenv("DIREKTIV_DB"))
+	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/util"
 	"github.com/werf/lockgate"
 	"github.com/werf/lockgate/pkg/distributed_locker"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,12 +28,15 @@ func initKubernetesLock() error {
 		return err
 	}
 
+	log.Debugf("lock for cm %s in namespace %s",
+		os.Getenv("DIREKTIV_LOCK_CM"), os.Getenv(util.DirektivNamespace))
+
 	kubernetesLock = distributed_locker.NewKubernetesLocker(
 		dc, schema.GroupVersionResource{
 			Group:    "",
 			Version:  "v1",
 			Resource: "configmaps",
-		}, os.Getenv("DIREKTIV_LOCK_CM"), os.Getenv("DIREKTIV_KUBERNETES_NAMESPACE"),
+		}, os.Getenv("DIREKTIV_LOCK_CM"), os.Getenv(util.DirektivNamespace),
 	)
 
 	log.Infof("kubernetes lock created")

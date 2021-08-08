@@ -16,7 +16,7 @@
  *
  * modified DNS resolver for direktiv
  */
-package direktiv
+package util
 
 import (
 	"context"
