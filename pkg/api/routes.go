@@ -49,6 +49,7 @@ const (
 	RN_UpdateService               = "updateService"
 	RN_UpdateServiceTraffic        = "updateServiceTraffic"
 	RN_DeleteService               = "deleteService"
+	RN_DeleteRevision              = "deleteRevision"
 )
 
 var RouteNames = []string{
@@ -98,4 +99,5 @@ var RouteNames = []string{
 	RN_UpdateService,
 	RN_UpdateServiceTraffic,
 	RN_DeleteService,
+	RN_DeleteRevision,
 }

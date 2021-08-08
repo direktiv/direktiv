@@ -30,6 +30,10 @@ type functionResponseObject struct {
 	StatusMessage string `json:"statusMessage"`
 }
 
+func accepted(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusAccepted)
+}
+
 func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesRequest, error) {
 
 	rb := new(listFunctionsRequest)
@@ -329,4 +333,20 @@ func (h *Handler) updateServiceTraffic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (h *Handler) deleteRevision(w http.ResponseWriter, r *http.Request) {
+
+	rev := mux.Vars(r)["revision"]
+	grpcReq := &grpc.DeleteRevisionRequest{
+		Revision: &rev,
+	}
+
+	_, err := h.s.isolates.DeleteRevision(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	accepted(w)
 }
