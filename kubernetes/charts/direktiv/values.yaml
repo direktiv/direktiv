@@ -86,9 +86,6 @@ api:
 
 uiapiCertificate: none
 
-
-
-
 # Set Send and Recv limits for all grpc clients and servers
 grpc:
   server:

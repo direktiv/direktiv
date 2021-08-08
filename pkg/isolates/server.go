@@ -2,15 +2,12 @@ package isolates
 
 import (
 	"fmt"
-	"net"
-	"os"
-	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -55,33 +52,16 @@ func StartServer(echan chan error) {
 		echan <- fmt.Errorf("grpc response to flow is not configured")
 	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	err = util.GrpcStart(&grpcServer, "isolate", fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
+		igrpc.RegisterIsolatesServiceServer(srv, &isolateServer{})
+		reflection.Register(srv)
+	})
+
 	if err != nil {
-		log.Errorf("failed to listen: %v", err)
 		echan <- err
 	}
 
-	var opts []grpc.ServerOption
-	tlsPath := "/etc/certs/direktiv/"
-	tlsCert := filepath.Join(tlsPath, "tls.crt")
-	tlsKey := filepath.Join(tlsPath, "tls.key")
-
-	if _, err = os.Stat(tlsKey); err == nil {
-		log.Infof("enabling tls for %s", "isolates")
-		creds, err := credentials.NewServerTLSFromFile(tlsCert, tlsKey)
-		if err != nil {
-			log.Errorf("failed to configure tls opts: %v", err)
-			echan <- fmt.Errorf("could not load TLS keys: %s", err)
-		}
-		opts = append(opts, grpc.Creds(creds))
-	}
-
-	grpcServer = grpc.NewServer(opts...)
-	igrpc.RegisterIsolatesServiceServer(grpcServer, &isolateServer{})
-
-	if err := grpcServer.Serve(lis); err != nil {
-		echan <- err
-	}
+	select {}
 
 }
 
