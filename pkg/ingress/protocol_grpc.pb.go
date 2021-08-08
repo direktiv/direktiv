@@ -4,10 +4,10 @@ package ingress
 
 import (
 	context "context"
-	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -31,17 +31,14 @@ type DirektivIngressClient interface {
 	GetNamespaceLogs(ctx context.Context, in *GetNamespaceLogsRequest, opts ...grpc.CallOption) (*GetNamespaceLogsResponse, error)
 	GetInstancesByWorkflow(ctx context.Context, in *GetInstancesByWorkflowRequest, opts ...grpc.CallOption) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(ctx context.Context, in *GetWorkflowInstanceLogsRequest, opts ...grpc.CallOption) (*GetWorkflowInstanceLogsResponse, error)
-	CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetWorkflows(ctx context.Context, in *GetWorkflowsRequest, opts ...grpc.CallOption) (*GetWorkflowsResponse, error)
 	InvokeWorkflow(ctx context.Context, in *InvokeWorkflowRequest, opts ...grpc.CallOption) (*InvokeWorkflowResponse, error)
 	UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error)
-	BroadcastEvent(ctx context.Context, in *BroadcastEventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	BroadcastEvent(ctx context.Context, in *BroadcastEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetSecrets(ctx context.Context, in *GetSecretsRequest, opts ...grpc.CallOption) (*GetSecretsResponse, error)
-	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	StoreSecret(ctx context.Context, in *StoreSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
-	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StoreSecret(ctx context.Context, in *StoreSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	ListNamespaceVariables(ctx context.Context, in *ListNamespaceVariablesRequest, opts ...grpc.CallOption) (*ListNamespaceVariablesResponse, error)
 	ListWorkflowVariables(ctx context.Context, in *ListWorkflowVariablesRequest, opts ...grpc.CallOption) (*ListWorkflowVariablesResponse, error)
@@ -167,8 +164,8 @@ func (c *direktivIngressClient) GetWorkflowInstanceLogs(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *direktivIngressClient) CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *direktivIngressClient) CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/CancelWorkflowInstance", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -203,8 +200,8 @@ func (c *direktivIngressClient) UpdateWorkflow(ctx context.Context, in *UpdateWo
 	return out, nil
 }
 
-func (c *direktivIngressClient) BroadcastEvent(ctx context.Context, in *BroadcastEventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *direktivIngressClient) BroadcastEvent(ctx context.Context, in *BroadcastEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/BroadcastEvent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -221,8 +218,8 @@ func (c *direktivIngressClient) GetSecrets(ctx context.Context, in *GetSecretsRe
 	return out, nil
 }
 
-func (c *direktivIngressClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *direktivIngressClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/DeleteSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -230,36 +227,9 @@ func (c *direktivIngressClient) DeleteSecret(ctx context.Context, in *DeleteSecr
 	return out, nil
 }
 
-func (c *direktivIngressClient) StoreSecret(ctx context.Context, in *StoreSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *direktivIngressClient) StoreSecret(ctx context.Context, in *StoreSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/StoreSecret", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *direktivIngressClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
-	out := new(GetRegistriesResponse)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/GetRegistries", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *direktivIngressClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/DeleteRegistry", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *direktivIngressClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/StoreRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -368,7 +338,7 @@ func (c *direktivIngressClient) SetNamespaceVariable(ctx context.Context, opts .
 
 type DirektivIngress_SetNamespaceVariableClient interface {
 	Send(*SetNamespaceVariableRequest) error
-	CloseAndRecv() (*empty.Empty, error)
+	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
@@ -380,11 +350,11 @@ func (x *direktivIngressSetNamespaceVariableClient) Send(m *SetNamespaceVariable
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *direktivIngressSetNamespaceVariableClient) CloseAndRecv() (*empty.Empty, error) {
+func (x *direktivIngressSetNamespaceVariableClient) CloseAndRecv() (*emptypb.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(empty.Empty)
+	m := new(emptypb.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -402,7 +372,7 @@ func (c *direktivIngressClient) SetWorkflowVariable(ctx context.Context, opts ..
 
 type DirektivIngress_SetWorkflowVariableClient interface {
 	Send(*SetWorkflowVariableRequest) error
-	CloseAndRecv() (*empty.Empty, error)
+	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
@@ -414,11 +384,11 @@ func (x *direktivIngressSetWorkflowVariableClient) Send(m *SetWorkflowVariableRe
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *direktivIngressSetWorkflowVariableClient) CloseAndRecv() (*empty.Empty, error) {
+func (x *direktivIngressSetWorkflowVariableClient) CloseAndRecv() (*emptypb.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(empty.Empty)
+	m := new(emptypb.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -441,17 +411,14 @@ type DirektivIngressServer interface {
 	GetNamespaceLogs(context.Context, *GetNamespaceLogsRequest) (*GetNamespaceLogsResponse, error)
 	GetInstancesByWorkflow(context.Context, *GetInstancesByWorkflowRequest) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error)
-	CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*empty.Empty, error)
+	CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*emptypb.Empty, error)
 	GetWorkflows(context.Context, *GetWorkflowsRequest) (*GetWorkflowsResponse, error)
 	InvokeWorkflow(context.Context, *InvokeWorkflowRequest) (*InvokeWorkflowResponse, error)
 	UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error)
-	BroadcastEvent(context.Context, *BroadcastEventRequest) (*empty.Empty, error)
+	BroadcastEvent(context.Context, *BroadcastEventRequest) (*emptypb.Empty, error)
 	GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error)
-	DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error)
-	StoreSecret(context.Context, *StoreSecretRequest) (*empty.Empty, error)
-	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
-	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
-	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
+	DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error)
+	StoreSecret(context.Context, *StoreSecretRequest) (*emptypb.Empty, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	ListNamespaceVariables(context.Context, *ListNamespaceVariablesRequest) (*ListNamespaceVariablesResponse, error)
 	ListWorkflowVariables(context.Context, *ListWorkflowVariablesRequest) (*ListWorkflowVariablesResponse, error)
@@ -502,7 +469,7 @@ func (UnimplementedDirektivIngressServer) GetInstancesByWorkflow(context.Context
 func (UnimplementedDirektivIngressServer) GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowInstanceLogs not implemented")
 }
-func (UnimplementedDirektivIngressServer) CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*empty.Empty, error) {
+func (UnimplementedDirektivIngressServer) CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelWorkflowInstance not implemented")
 }
 func (UnimplementedDirektivIngressServer) GetWorkflows(context.Context, *GetWorkflowsRequest) (*GetWorkflowsResponse, error) {
@@ -514,26 +481,17 @@ func (UnimplementedDirektivIngressServer) InvokeWorkflow(context.Context, *Invok
 func (UnimplementedDirektivIngressServer) UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWorkflow not implemented")
 }
-func (UnimplementedDirektivIngressServer) BroadcastEvent(context.Context, *BroadcastEventRequest) (*empty.Empty, error) {
+func (UnimplementedDirektivIngressServer) BroadcastEvent(context.Context, *BroadcastEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BroadcastEvent not implemented")
 }
 func (UnimplementedDirektivIngressServer) GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecrets not implemented")
 }
-func (UnimplementedDirektivIngressServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error) {
+func (UnimplementedDirektivIngressServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
 }
-func (UnimplementedDirektivIngressServer) StoreSecret(context.Context, *StoreSecretRequest) (*empty.Empty, error) {
+func (UnimplementedDirektivIngressServer) StoreSecret(context.Context, *StoreSecretRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreSecret not implemented")
-}
-func (UnimplementedDirektivIngressServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
-}
-func (UnimplementedDirektivIngressServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
-}
-func (UnimplementedDirektivIngressServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
 }
 func (UnimplementedDirektivIngressServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
@@ -929,60 +887,6 @@ func _DirektivIngress_StoreSecret_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DirektivIngress_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRegistriesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).GetRegistries(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/GetRegistries",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DirektivIngress_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).DeleteRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/DeleteRegistry",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DirektivIngress_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DirektivIngressServer).StoreRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ingress.DirektivIngress/StoreRegistry",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DirektivIngressServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _DirektivIngress_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(WorkflowMetricsRequest)
 	if err := dec(in); err != nil {
@@ -1084,7 +988,7 @@ func _DirektivIngress_SetNamespaceVariable_Handler(srv interface{}, stream grpc.
 }
 
 type DirektivIngress_SetNamespaceVariableServer interface {
-	SendAndClose(*empty.Empty) error
+	SendAndClose(*emptypb.Empty) error
 	Recv() (*SetNamespaceVariableRequest, error)
 	grpc.ServerStream
 }
@@ -1093,7 +997,7 @@ type direktivIngressSetNamespaceVariableServer struct {
 	grpc.ServerStream
 }
 
-func (x *direktivIngressSetNamespaceVariableServer) SendAndClose(m *empty.Empty) error {
+func (x *direktivIngressSetNamespaceVariableServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1110,7 +1014,7 @@ func _DirektivIngress_SetWorkflowVariable_Handler(srv interface{}, stream grpc.S
 }
 
 type DirektivIngress_SetWorkflowVariableServer interface {
-	SendAndClose(*empty.Empty) error
+	SendAndClose(*emptypb.Empty) error
 	Recv() (*SetWorkflowVariableRequest, error)
 	grpc.ServerStream
 }
@@ -1119,7 +1023,7 @@ type direktivIngressSetWorkflowVariableServer struct {
 	grpc.ServerStream
 }
 
-func (x *direktivIngressSetWorkflowVariableServer) SendAndClose(m *empty.Empty) error {
+func (x *direktivIngressSetWorkflowVariableServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1217,18 +1121,6 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreSecret",
 			Handler:    _DirektivIngress_StoreSecret_Handler,
-		},
-		{
-			MethodName: "GetRegistries",
-			Handler:    _DirektivIngress_GetRegistries_Handler,
-		},
-		{
-			MethodName: "DeleteRegistry",
-			Handler:    _DirektivIngress_DeleteRegistry_Handler,
-		},
-		{
-			MethodName: "StoreRegistry",
-			Handler:    _DirektivIngress_StoreRegistry_Handler,
 		},
 		{
 			MethodName: "WorkflowMetrics",

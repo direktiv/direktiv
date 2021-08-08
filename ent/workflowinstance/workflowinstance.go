@@ -47,14 +47,14 @@ const (
 	EdgeInstance = "instance"
 	// Table holds the table name of the workflowinstance in the database.
 	Table = "workflow_instances"
-	// WorkflowTable is the table the holds the workflow relation/edge.
+	// WorkflowTable is the table that holds the workflow relation/edge.
 	WorkflowTable = "workflow_instances"
 	// WorkflowInverseTable is the table name for the Workflow entity.
 	// It exists in this package in order to avoid circular dependency with the "workflow" package.
 	WorkflowInverseTable = "workflows"
 	// WorkflowColumn is the table column denoting the workflow relation/edge.
 	WorkflowColumn = "workflow_instances"
-	// InstanceTable is the table the holds the instance relation/edge.
+	// InstanceTable is the table that holds the instance relation/edge.
 	InstanceTable = "workflow_events"
 	// InstanceInverseTable is the table name for the WorkflowEvents entity.
 	// It exists in this package in order to avoid circular dependency with the "workflowevents" package.

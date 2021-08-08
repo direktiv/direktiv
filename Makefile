@@ -27,7 +27,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary 
+binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/isolates-binary
 
 .PHONY: clean 
 clean: ## Deletes all build artifacts and tears down existing cluster.
@@ -44,11 +44,11 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	kubectl delete --all jobs
 
 .PHONY: images 
-images: image-api image-flow image-init-pod image-secrets image-sidecar
+images: image-api image-flow image-init-pod image-secrets image-sidecar image-isolates
 
 .PHONY: push 
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-init-pod push-secrets push-sidecar
+push: push-api push-flow push-init-pod push-secrets push-sidecar push-isolates
 
 HELM_CONFIG := "scripts/dev.yaml"
 
@@ -129,12 +129,22 @@ docker-ui: ## Manually clone and build the latest UI.
 		cd direktiv-ui && make update-containers RV=${RELEASE}; \
 	fi
 
-# All 
+# Misc 
 
 .PHONY: docker-all
 docker-all: ## Build the all-in-one image. 
 docker-all: images
 	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
+
+.PHONY: template-configmaps
+template-configmaps:
+	scripts/misc/generate-api-configmaps.sh
+
+.PHONY: docker-cli
+docker-cli:
+docker-cli: build
+	cp ${mkfile_dir_main}direkcli-linux  ${mkfile_dir_main}build/
+	cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
 # Utility Rules 
 

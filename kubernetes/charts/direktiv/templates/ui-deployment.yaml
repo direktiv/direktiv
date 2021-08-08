@@ -14,10 +14,6 @@ spec:
       {{- include "direktiv.selectorLabelsUI" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- include "direktiv.selectorLabelsUI" . | nindent 8 }}
     spec:
@@ -42,11 +38,6 @@ spec:
             limits:
               memory: "2048Mi"
               cpu: "2"
-          # readinessProbe:
-          #   tcpSocket:
-          #     port: 8080
-          #   initialDelaySeconds: 5
-          #   periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /manifest.json

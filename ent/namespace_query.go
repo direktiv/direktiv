@@ -325,8 +325,8 @@ func (nq *NamespaceQuery) GroupBy(field string, fields ...string) *NamespaceGrou
 //		Select(namespace.FieldCreated).
 //		Scan(ctx, &v)
 //
-func (nq *NamespaceQuery) Select(field string, fields ...string) *NamespaceSelect {
-	nq.fields = append([]string{field}, fields...)
+func (nq *NamespaceQuery) Select(fields ...string) *NamespaceSelect {
+	nq.fields = append(nq.fields, fields...)
 	return &NamespaceSelect{NamespaceQuery: nq}
 }
 
@@ -470,10 +470,14 @@ func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
 func (nq *NamespaceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(nq.driver.Dialect())
 	t1 := builder.Table(namespace.Table)
-	selector := builder.Select(t1.Columns(namespace.Columns...)...).From(t1)
+	columns := nq.fields
+	if len(columns) == 0 {
+		columns = namespace.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if nq.sql != nil {
 		selector = nq.sql
-		selector.Select(selector.Columns(namespace.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range nq.predicates {
 		p(selector)
@@ -741,13 +745,24 @@ func (ngb *NamespaceGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (ngb *NamespaceGroupBy) sqlQuery() *sql.Selector {
-	selector := ngb.sql
-	columns := make([]string, 0, len(ngb.fields)+len(ngb.fns))
-	columns = append(columns, ngb.fields...)
+	selector := ngb.sql.Select()
+	aggregation := make([]string, 0, len(ngb.fns))
 	for _, fn := range ngb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(ngb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(ngb.fields)+len(ngb.fns))
+		for _, f := range ngb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(ngb.fields...)...)
 }
 
 // NamespaceSelect is the builder for selecting fields of Namespace entities.
@@ -963,16 +978,10 @@ func (ns *NamespaceSelect) BoolX(ctx context.Context) bool {
 
 func (ns *NamespaceSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ns.sqlQuery().Query()
+	query, args := ns.sql.Query()
 	if err := ns.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ns *NamespaceSelect) sqlQuery() sql.Querier {
-	selector := ns.sql
-	selector.Select(selector.Columns(ns.fields...)...)
-	return selector
 }

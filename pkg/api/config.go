@@ -3,92 +3,32 @@ package api
 import (
 	"flag"
 	"fmt"
-	"os"
-	"strings"
+	"io/ioutil"
 
-	"github.com/pelletier/go-toml"
+	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/util"
+	"gopkg.in/yaml.v2"
 )
+
+// Templates ..
+type Templates struct {
+	WorkflowTemplateDirectories []NamedDirectory
+	ActionTemplateDirectories   []NamedDirectory
+}
 
 // Config ..
 type Config struct {
-	Ingress struct {
-		Endpoint string
-		TLS      bool
-	}
-
-	Server struct {
-		Bind string `json:"bind"`
-	}
-
-	BlockList string // path to where the blocklist for reserved words will be
-	Templates struct {
-		WorkflowTemplateDirectories []NamedDirectory
-		ActionTemplateDirectories   []NamedDirectory
-	}
+	BlockList string    `yaml:"blocklist"`
+	Templates Templates `yaml:"templates"`
 }
 
-const (
-	direktivAPIBind            = "DIREKTIV_API_BIND"
-	direktivAPIIngress         = "DIREKTIV_API_INGRESS"
-	direktivWFTemplateDirs     = "DIREKTIV_WF_TEMPLATES"
-	direktivActionTemplateDirs = "DIREKTIV_ACTION_TEMPLATES"
-)
+const apiBind = "0.0.0.0:8080"
 
 func configCheck(c *Config) error {
-	if c.Ingress.Endpoint == "" || c.Server.Bind == "" {
-		return fmt.Errorf("api bind or ingress endpoint not set")
+	if util.IngressEndpoint() == "" {
+		return fmt.Errorf("api ingress endpoint not set")
 	}
 	return nil
-}
-
-// ConfigFromEnv reads API configuration from env variables
-func ConfigFromEnv() (*Config, error) {
-
-	c := &Config{}
-	c.Ingress.Endpoint = os.Getenv(direktivAPIIngress)
-	c.Server.Bind = os.Getenv(direktivAPIBind)
-
-	if c.Ingress.Endpoint == "" || c.Server.Bind == "" {
-		return nil, fmt.Errorf("api bind or ingress endpoint not set")
-	}
-
-	x := os.Getenv(direktivWFTemplateDirs)
-	if x != "" {
-		c.Templates.WorkflowTemplateDirectories = make([]NamedDirectory, 0)
-		elems := strings.Split(x, ":")
-		for _, t := range elems {
-			y := strings.Split(t, "=")
-			if len(y) != 2 {
-				// invalid string, should be LABEL=PATH
-				continue
-			}
-
-			c.Templates.WorkflowTemplateDirectories = append(c.Templates.WorkflowTemplateDirectories, NamedDirectory{
-				Label:     y[0],
-				Directory: y[1],
-			})
-		}
-	}
-
-	x = os.Getenv(direktivActionTemplateDirs)
-	if x != "" {
-		c.Templates.ActionTemplateDirectories = make([]NamedDirectory, 0)
-		elems := strings.Split(x, ":")
-		for _, t := range elems {
-			y := strings.Split(t, "=")
-			if len(y) != 2 {
-				// invalid string, should be LABEL=PATH
-				continue
-			}
-
-			c.Templates.ActionTemplateDirectories = append(c.Templates.ActionTemplateDirectories, NamedDirectory{
-				Label:     y[0],
-				Directory: y[1],
-			})
-		}
-	}
-
-	return c, configCheck(c)
 }
 
 // ConfigFromFile reads API configuration from file
@@ -96,17 +36,19 @@ func ConfigFromFile(cfgPath string) (*Config, error) {
 
 	cfg := new(Config)
 
-	/* #nosec G304 */
-	r, err := os.Open(cfgPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open config file: %s", err.Error())
-	}
-	defer closeVerbose(r, nil)
+	log.Debugf("reading config %s", cfgPath)
 
-	dec := toml.NewDecoder(r)
-	err = dec.Decode(cfg)
+	/* #nosec G304 */
+	b, err := ioutil.ReadFile(cfgPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse config file contents: %s", err.Error())
+		log.Errorf("can not read config file: %v", err)
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(b, cfg)
+	if err != nil {
+		log.Errorf("can not unmarshal config file: %v", err)
+		return nil, err
 	}
 
 	return cfg, configCheck(cfg)
@@ -124,10 +66,10 @@ func Configure() (*Config, error) {
 	flag.Parse()
 
 	if cfgPath == "" {
-		cfg, err = ConfigFromEnv()
-	} else {
-		cfg, err = ConfigFromFile(cfgPath)
+		return cfg, fmt.Errorf("configuration file not provided")
 	}
+
+	cfg, err = ConfigFromFile(cfgPath)
 
 	return cfg, err
 

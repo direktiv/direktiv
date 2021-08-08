@@ -363,8 +363,8 @@ func (wiq *WorkflowInstanceQuery) GroupBy(field string, fields ...string) *Workf
 //		Select(workflowinstance.FieldInstanceID).
 //		Scan(ctx, &v)
 //
-func (wiq *WorkflowInstanceQuery) Select(field string, fields ...string) *WorkflowInstanceSelect {
-	wiq.fields = append([]string{field}, fields...)
+func (wiq *WorkflowInstanceQuery) Select(fields ...string) *WorkflowInstanceSelect {
+	wiq.fields = append(wiq.fields, fields...)
 	return &WorkflowInstanceSelect{WorkflowInstanceQuery: wiq}
 }
 
@@ -545,10 +545,14 @@ func (wiq *WorkflowInstanceQuery) querySpec() *sqlgraph.QuerySpec {
 func (wiq *WorkflowInstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(wiq.driver.Dialect())
 	t1 := builder.Table(workflowinstance.Table)
-	selector := builder.Select(t1.Columns(workflowinstance.Columns...)...).From(t1)
+	columns := wiq.fields
+	if len(columns) == 0 {
+		columns = workflowinstance.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if wiq.sql != nil {
 		selector = wiq.sql
-		selector.Select(selector.Columns(workflowinstance.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range wiq.predicates {
 		p(selector)
@@ -816,13 +820,24 @@ func (wigb *WorkflowInstanceGroupBy) sqlScan(ctx context.Context, v interface{})
 }
 
 func (wigb *WorkflowInstanceGroupBy) sqlQuery() *sql.Selector {
-	selector := wigb.sql
-	columns := make([]string, 0, len(wigb.fields)+len(wigb.fns))
-	columns = append(columns, wigb.fields...)
+	selector := wigb.sql.Select()
+	aggregation := make([]string, 0, len(wigb.fns))
 	for _, fn := range wigb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(wigb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(wigb.fields)+len(wigb.fns))
+		for _, f := range wigb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(wigb.fields...)...)
 }
 
 // WorkflowInstanceSelect is the builder for selecting fields of WorkflowInstance entities.
@@ -1038,16 +1053,10 @@ func (wis *WorkflowInstanceSelect) BoolX(ctx context.Context) bool {
 
 func (wis *WorkflowInstanceSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := wis.sqlQuery().Query()
+	query, args := wis.sql.Query()
 	if err := wis.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (wis *WorkflowInstanceSelect) sqlQuery() sql.Querier {
-	selector := wis.sql
-	selector.Select(selector.Columns(wis.fields...)...)
-	return selector
 }

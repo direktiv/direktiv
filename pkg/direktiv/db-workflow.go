@@ -98,12 +98,6 @@ func (db *dbManager) updateWorkflow(ctx context.Context, id string, revision *in
 		return nil, rollback(tx, err)
 	}
 
-	// delete functions first
-	err = deleteKnativeFunctions(id, db)
-	if err != nil {
-		log.Errorf("can not delete knative functions: %v", err)
-	}
-
 	err = db.processWorkflowEvents(ctx, tx, wf, startDefinition, wf.Active)
 	if err != nil {
 		return nil, rollback(tx, err)
@@ -142,12 +136,6 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 	err = db.deleteWorkflowInstancesByWorkflow(ctx, u)
 	if err != nil {
 		log.Errorf("can not delete workflow instances: %v", err)
-	}
-
-	// delete functions
-	err = deleteKnativeFunctions(id, db)
-	if err != nil {
-		log.Errorf("can not delete knative functions: %v", err)
 	}
 
 	// delete crons

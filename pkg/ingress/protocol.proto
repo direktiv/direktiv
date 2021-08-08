@@ -26,9 +26,6 @@ import "pkg/ingress/get-secrets.proto";
 import "pkg/ingress/delete-secret.proto";
 import "pkg/ingress/store-secret.proto";
 import "pkg/ingress/get-namespace-logs.proto";
-import "pkg/ingress/get-registries.proto";
-import "pkg/ingress/delete-registry.proto";
-import "pkg/ingress/store-registry.proto";
 import "pkg/ingress/workflow-metrics.proto";
 import "pkg/ingress/list-namespace-variables.proto";
 import "pkg/ingress/list-workflow-variables.proto";
@@ -58,9 +55,6 @@ service DirektivIngress {
 	rpc GetSecrets (GetSecretsRequest) returns (GetSecretsResponse) {}
 	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
 	rpc StoreSecret (StoreSecretRequest) returns (google.protobuf.Empty) {}
-	rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
-	rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
-	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 	rpc ListNamespaceVariables (ListNamespaceVariablesRequest) returns (ListNamespaceVariablesResponse) {}
 	rpc ListWorkflowVariables (ListWorkflowVariablesRequest) returns (ListWorkflowVariablesResponse) {}

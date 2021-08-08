@@ -11,16 +11,16 @@ import (
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 )
-
-const blocklist = "blocklist"
 
 // Server ..
 type Server struct {
 	cfg      *Config
 	direktiv ingress.DirektivIngressClient
+	isolates igrpc.IsolatesServiceClient
 	json     jsonpb.Marshaler
 	handler  *Handler
 	router   *mux.Router
@@ -66,7 +66,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		router: r,
 		srv: &http.Server{
 			Handler: r,
-			Addr:    cfg.Server.Bind,
+			Addr:    apiBind,
 		},
 		blocklist:   bl,
 		reqMapMutex: sync.Mutex{},
@@ -81,6 +81,11 @@ func NewServer(cfg *Config) (*Server, error) {
 	}
 
 	err := s.initDirektiv()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.initIsolates()
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +105,11 @@ func (s *Server) IngressClient() ingress.DirektivIngressClient {
 	return s.direktiv
 }
 
+// IsolatesClient returns client to backend
+func (s *Server) IsolatesClient() igrpc.IsolatesServiceClient {
+	return s.isolates
+}
+
 // Router returns mux router
 func (s *Server) Router() *mux.Router {
 	return s.router
@@ -107,16 +117,30 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) initDirektiv() error {
 
-	conn, err := direktiv.GetEndpointTLS(s.cfg.Ingress.Endpoint, true)
+	conn, err := util.GetEndpointTLS(util.IngressEndpoint(), true)
 	if err != nil {
 		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", s.cfg.Ingress.Endpoint)
+	log.Infof("connecting to %s", util.IngressEndpoint())
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
 
+	return nil
+}
+
+func (s *Server) initIsolates() error {
+
+	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
+	if err != nil {
+		log.Errorf("can not connect to direktiv isolates: %v", err)
+		return err
+	}
+
+	log.Infof("connecting to %s", util.IsolateEndpoint())
+
+	s.isolates = igrpc.NewIsolatesServiceClient(conn)
 	return nil
 }
 
@@ -132,6 +156,18 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		// responds 200 OK
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
+
+	// Functions ..
+	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
+	s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	s.Router().HandleFunc("/api/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
+	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
+	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
+	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
+
+	// FunctionRevisions ..
+	s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// Namespace ..
 	s.Router().HandleFunc("/api/namespaces/", s.handler.namespaces).Methods(http.MethodGet).Name(RN_ListNamespaces)
@@ -209,7 +245,7 @@ func tlsEnabled() bool {
 // Start starts the API server
 func (s *Server) Start() error {
 
-	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
+	log.Infof("Starting server - binding to %s", apiBind)
 
 	if tlsEnabled() {
 		log.Infof("api tls enabled")

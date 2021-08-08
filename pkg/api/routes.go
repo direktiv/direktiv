@@ -42,6 +42,14 @@ const (
 	RN_GetNamespaceLogs            = "getNamespaceLogs"
 	RN_SetNamespaceVariable        = "setNamespaceVariable"
 	RN_JQPlayground                = "jqPlayground"
+	RN_ListServices                = "listServices"
+	RN_DeleteServices              = "deleteServices"
+	RN_GetService                  = "getService"
+	RN_CreateService               = "createService"
+	RN_UpdateService               = "updateService"
+	RN_UpdateServiceTraffic        = "updateServiceTraffic"
+	RN_DeleteService               = "deleteService"
+	RN_DeleteRevision              = "deleteRevision"
 )
 
 var RouteNames = []string{
@@ -84,4 +92,12 @@ var RouteNames = []string{
 	RN_GetNamespaceVariable,
 	RN_SetNamespaceVariable,
 	RN_JQPlayground,
+	RN_ListServices,
+	RN_DeleteServices,
+	RN_GetService,
+	RN_CreateService,
+	RN_UpdateService,
+	RN_UpdateServiceTraffic,
+	RN_DeleteService,
+	RN_DeleteRevision,
 }

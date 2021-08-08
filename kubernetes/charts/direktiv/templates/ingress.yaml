@@ -15,9 +15,6 @@ spec:
   tls:
   - hosts:
       - {{ .Values.ingress.host }}
-      {{- if .Values.ingress.auth.enabled }}
-      - {{ .Values.ingress.auth.host }}
-      {{- end }}
     secretName: {{ .Values.ingress.certificate }}
   {{- end }}
   rules:
@@ -38,15 +35,3 @@ spec:
               name: {{ include "direktiv.fullname" . }}-ui
               port:
                 number: 8080
-  {{- if .Values.ingress.auth.enabled }}
-  - host: {{ .Values.ingress.auth.host }}
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Values.ingress.auth.service }}
-              port:
-                number: {{ .Values.ingress.auth.port }}
-  {{- end }}

@@ -3,7 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"regexp"
+
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type SetterState struct {
@@ -37,13 +38,8 @@ func (o *SetterDefinition) Validate() error {
 		return errors.New(`key required`)
 	}
 
-	matched, err := regexp.MatchString(VariableNameRegex, o.Key)
-	if err != nil {
-		return err
-	}
-
-	if !matched {
-		return fmt.Errorf("variable key must match regex: %s", VariableNameRegex)
+	if ok := util.MatchesRegex(o.Key); !ok {
+		return fmt.Errorf("variable key must match regex: %s", util.RegexPattern)
 	}
 
 	if o.Value == "" {

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/isolates/grpc";
+
+import "pkg/isolates/grpc/isolates-common.proto";
+
+message IsolateInfo {
+	optional BaseInfo info = 1;
+	optional string status = 2;
+	optional string statusMessage = 3;
+	optional string serviceName = 4;
+}
+
+message ListIsolatesResponse {
+	repeated IsolateInfo isolates = 1;
+}
+
+message ListIsolatesRequest {
+	map<string, string> annotations = 1;
+}

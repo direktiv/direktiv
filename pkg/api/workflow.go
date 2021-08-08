@@ -14,9 +14,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/itchyny/gojq"
 	"github.com/rung/go-safecast"
+	"gopkg.in/yaml.v2"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func (h *Handler) getUIDforName(ctx context.Context, ns, name string) (string, error) {
@@ -146,11 +148,29 @@ func (h *Handler) updateWorkflow(w http.ResponseWriter, r *http.Request) {
 		contentType = typeMap[0]
 	}
 
+	// check name of workflow in updated workflow yaml
+	m := make(map[string]interface{})
+
 	switch contentType {
 	case "text/yaml":
+		err = yaml.Unmarshal(b, &m)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("unable to marshal yaml body"))
+		}
 	default:
 		ErrResponse(w, fmt.Errorf("content type '%s' is not supported. supported media types: 'text/yaml'", contentType))
 		return
+	}
+
+	if x, ok := m["id"]; ok {
+		if str, ok := x.(string); ok {
+			if ok = util.MatchesRegex(str); !ok {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(errWorkflowRegex.Error()))
+				return
+			}
+		}
 	}
 
 	// Construct direktiv GRPC Request
@@ -240,6 +260,24 @@ func (h *Handler) createWorkflow(w http.ResponseWriter, r *http.Request) {
 	if contentType != "text/yaml" {
 		ErrResponse(w, fmt.Errorf("content type '%s' is not supported. supported media types: 'text/yaml'", contentType))
 		return
+	}
+
+	m := make(map[string]interface{})
+	err = yaml.Unmarshal(b, &m)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("unable to marshal yaml body"))
+		return
+	}
+
+	if x, ok := m["id"]; ok {
+		if str, ok := x.(string); ok {
+			if ok = util.MatchesRegex(str); !ok {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(errWorkflowRegex.Error()))
+				return
+			}
+		}
 	}
 
 	ctx, cancel := CtxDeadline(r.Context())

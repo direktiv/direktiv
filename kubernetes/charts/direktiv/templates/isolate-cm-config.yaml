@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-config-isolate
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  isolate-config.yaml: |
+
+      # name of the service account to run the pods
+      service-account: {{ include "direktiv.serviceAccountName" . }}-isolate-pod
+
+      # name of the namespace to use for the services/isolates
+      namespace: {{ .Values.isolates.namespace }}
+
+      # db secret for pub/sub
+      sidecar-db: {{ include "direktiv.fullname" . }}-secrets-isolate
+
+      # pod sidecar name
+      sidecar: {{ .Values.isolates.sidecar }}
+
+      # init pod name
+      init-pod: {{ .Values.isolates.initPod }}
+
+      # max number of revisions to keep per namespace or global
+      keep-revisions: 3
+
+      # max number of parallel jobs per namespace
+      max-jobs: 5
+
+      # kubernetes 1.20 auto cleans up jobs, for < 1.19, should be enabled
+      pod-cleaner: {{ .Values.isolates.podCleaner }}
+
+      # max number of pods per service
+      max-scale: 3
+
+      # rollout seconds for knative services
+      rollout-duration: 30
+
+      # shaping network traffic if supported by network plugin
+      net-shape: {{ .Values.isolates.netShape }}
+
+      # default concurrency level
+      concurrency: 100
+
+      # max ephemeral storage in MB
+      storage: 100
+
+      # runtime for services, e.g. gvisor
+      runtime: {{ .Values.isolates.runtime }}
+
+      # memory/cpu value defined for different service sizes
+      memory:
+        small: 128
+        medium: 512
+        large: 1024
+      cpu:
+        small: 0.25
+        medium: 0.5
+        large: 1.0
+
+      # proxy values
+      proxy:
+        no: ""
+        https: ""
+        http: ""
+
+      # additional sidecar containers
+      additionalContainers:
+{{- if .Values.isolates.extraContainersPod }}
+{{ toYaml .Values.isolates.extraContainersPod | indent 8}}
+{{- end }}
