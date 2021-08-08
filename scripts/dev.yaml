@@ -3,12 +3,15 @@ pullPolicy: Always
 debug: "true"
 
 secrets:
-  image: secrets
+  image: "secrets"
 flow:
-  image: flow
-  sidecar: "localhost:5000/sidecar"
-  initPod: "localhost:5000/init-pod"
+  image: "flow"
 ui:
-  image: direktiv-ui
+  image: "direktiv-ui"
 api:
-  image: api
+  image: "api"
+isolates:
+  namespace: direktiv-services-direktiv
+  image: "isolates"
+  sidecar: "localhost:5000/sidecar"
+  initPod: "localhost:5000/direktiv-init-pod"

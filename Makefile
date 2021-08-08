@@ -55,6 +55,8 @@ HELM_CONFIG := "scripts/dev.yaml"
 .PHONY: cluster 
 cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the cluster.
 cluster: push 
+	$(eval X := $(shell kubectl get namespaces | grep -c direktiv-services-direktiv))
+	if [ ${X} -eq 0 ]; then kubectl create namespace direktiv-services-direktiv; fi
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete --all ksvc
 	kubectl delete --all jobs
