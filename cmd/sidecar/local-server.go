@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	log "github.com/sirupsen/logrus"
