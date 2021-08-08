@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	log "github.com/sirupsen/logrus"
@@ -44,7 +45,7 @@ func (srv *LocalServer) initFlow() error {
 
 	log.Infof("Connecting to flow: %s.", flowAddr)
 
-	conn, err := direktiv.GetEndpointTLS(flowAddr, true)
+	conn, err := util.GetEndpointTLS(flowAddr, true)
 	if err != nil {
 		return err
 	}

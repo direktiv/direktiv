@@ -8,96 +8,96 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install Golang
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.15
-    - name: Get the version tag
-      id: get_version
-      run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_TOKEN }}
-    - name: make build
-      run: |
-        make build
-    # - name: build ui
-    #   uses: addnab/docker-run-action@v3
-    #   with:
-    #     username: ${{ secrets.DOCKER_USERNAME }}
-    #     password: ${{ secrets.DOCKER_PASSWORD }}
-    #     registry: docker.io
-    #     image: chekote/node:14.8.0-alpine
-    #     options: -v ${{ github.workspace }}:/work
-    #     run: |
-    #       echo "Building UI"
-    #       cd /work/ui/frontend
-    #       yarn install
-    #       NODE_ENV=production yarn build
-    # - name: push docker
-    #   run: |
-    #     echo "Copying Built UI Files over"
-    #     cp -r ui/frontend/build  build/docker/ui
-    #     make docker-all
-    #     docker images | grep direktiv
-    #     docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
-    #     docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
-    #     docker tag direktiv vorteil/direktiv:latest
-    #     docker push vorteil/direktiv:latest
-    # - name: create vorteil image
-    #   run: |
-    #     wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
-    #     tar -xzf vorteil_linux-x86.tar.gz
-    #     ./vorteil projects convert-container vorteil/direktiv:latest d
-    #     cp build/default_docker.vcfg d/default.vcfg
-    #     cp build/run_pg.sh d/
-    #     ./vorteil packages package -o direktiv.vorteil d
-    - name: release direktiv
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Direktiv Release ${{ steps.get_version.outputs.VERSION }}
-        draft: true
-        prerelease: false
-    # - name: upload vorteil image
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: ./direktiv.vorteil
-    #     asset_name: direktiv.vorteil
-    #     asset_content_type: application/octet-stream
-    - name: upload vorteil cli
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./direkcli-linux
-        asset_name: direkcli-linux
-        asset_content_type: application/octet-stream
-    - name: upload vorteil cli
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./direkcli-darwin
-        asset_name: direkcli-darwin
-        asset_content_type: application/octet-stream
-    - name: upload vorteil cli
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./direkcli-windows.exe
-        asset_name: direkcli-windows.exe
-        asset_content_type: application/octet-stream
+      - uses: actions/checkout@v2
+      - name: Install Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Get the version tag
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: make build
+        run: |
+          make push DOCKER_REPO=vorteil RELEASE=${{ steps.get_version.outputs.VERSION }}
+      # - name: build ui
+      #   uses: addnab/docker-run-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      #     registry: docker.io
+      #     image: chekote/node:14.8.0-alpine
+      #     options: -v ${{ github.workspace }}:/work
+      #     run: |
+      #       echo "Building UI"
+      #       cd /work/ui/frontend
+      #       yarn install
+      #       NODE_ENV=production yarn build
+      # - name: push docker
+      #   run: |
+      #     echo "Copying Built UI Files over"
+      #     cp -r ui/frontend/build  build/docker/ui
+      #     make docker-all
+      #     docker images | grep direktiv
+      #     docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
+      #     docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
+      #     docker tag direktiv vorteil/direktiv:latest
+      #     docker push vorteil/direktiv:latest
+      # - name: create vorteil image
+      #   run: |
+      #     wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
+      #     tar -xzf vorteil_linux-x86.tar.gz
+      #     ./vorteil projects convert-container vorteil/direktiv:latest d
+      #     cp build/default_docker.vcfg d/default.vcfg
+      #     cp build/run_pg.sh d/
+      #     ./vorteil packages package -o direktiv.vorteil d
+      - name: release direktiv
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Direktiv Release ${{ steps.get_version.outputs.VERSION }}
+          draft: true
+          prerelease: false
+      # - name: upload vorteil image
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./direktiv.vorteil
+      #     asset_name: direktiv.vorteil
+      #     asset_content_type: application/octet-stream
+      - name: upload vorteil cli
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./direkcli-linux
+          asset_name: direkcli-linux
+          asset_content_type: application/octet-stream
+      - name: upload vorteil cli
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./direkcli-darwin
+          asset_name: direkcli-darwin
+          asset_content_type: application/octet-stream
+      - name: upload vorteil cli
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./direkcli-windows.exe
+          asset_name: direkcli-windows.exe
+          asset_content_type: application/octet-stream

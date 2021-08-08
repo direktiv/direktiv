@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	entgo.io/ent v0.9.0
-	github.com/BurntSushi/toml v0.3.1
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
@@ -15,6 +14,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/grpc-ecosystem/grpc-gateway v1.15.0 // indirect
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
@@ -25,7 +25,6 @@ require (
 	github.com/nxadm/tail v1.4.4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.0 // indirect
-	github.com/pelletier/go-toml v1.8.0
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rung/go-safecast v1.0.1
@@ -33,7 +32,6 @@ require (
 	github.com/segmentio/ksuid v1.0.3
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/sirupsen/logrus v1.8.1
-	github.com/sisatech/toml v0.0.0-20181010232116-ca247dd35773
 	github.com/spf13/cobra v1.1.3
 	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0

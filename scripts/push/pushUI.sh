@@ -1,3 +1,4 @@
 #!/bin/bash
-
-make local-docker-ui
+set -e
+make docker-ui
+set +e
