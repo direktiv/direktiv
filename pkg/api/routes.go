@@ -50,6 +50,7 @@ const (
 	RN_UpdateServiceTraffic        = "updateServiceTraffic"
 	RN_DeleteService               = "deleteService"
 	RN_DeleteRevision              = "deleteRevision"
+	RN_GetWorkflowFunctions        = "getWorkflowFunctions"
 )
 
 var RouteNames = []string{
@@ -100,4 +101,5 @@ var RouteNames = []string{
 	RN_UpdateServiceTraffic,
 	RN_DeleteService,
 	RN_DeleteRevision,
+	RN_GetWorkflowFunctions,
 }

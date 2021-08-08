@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/vorteil/direktiv/pkg/model"
+
 	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/isolates/grpc"
 )
 
@@ -30,6 +33,18 @@ type functionResponseObject struct {
 	StatusMessage string `json:"statusMessage"`
 }
 
+const (
+	isolateServiceNameAnnotation      = "direktiv.io/name"
+	isolateServiceNamespaceAnnotation = "direktiv.io/namespace"
+	isolateServiceWorkflowAnnotation  = "direktiv.io/workflow"
+	isolateServiceScopeAnnotation     = "direktiv.io/scope"
+
+	prefixWorkflow  = "w"
+	prefixNamespace = "ns"
+	prefixGlobal    = "g"
+	prefixService   = "s"
+)
+
 func accepted(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -45,10 +60,10 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesReques
 	grpcReq := new(grpc.ListIsolatesRequest)
 	grpcReq.Annotations = make(map[string]string)
 
-	grpcReq.Annotations["direktiv.io/name"] = rb.Name
-	grpcReq.Annotations["direktiv.io/namespace"] = rb.Namespace
-	grpcReq.Annotations["direktiv.io/workflow"] = rb.Workflow
-	grpcReq.Annotations["direktiv.io/scope"] = rb.Scope
+	grpcReq.Annotations[isolateServiceNameAnnotation] = rb.Name
+	grpcReq.Annotations[isolateServiceNamespaceAnnotation] = rb.Namespace
+	grpcReq.Annotations[isolateServiceWorkflowAnnotation] = rb.Workflow
+	grpcReq.Annotations[isolateServiceScopeAnnotation] = rb.Scope
 
 	del := make([]string, 0)
 	for k, v := range grpcReq.Annotations {
@@ -64,22 +79,7 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesReques
 	return grpcReq, nil
 }
 
-func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
-
-	grpcReq, err := listRequestObjectFromHTTPRequest(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	resp, err := h.s.isolates.ListIsolates(r.Context(), grpcReq)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	isolates := resp.GetIsolates()
+func prepareIsolatesForResponse(isolates []*grpc.IsolateInfo) []*functionResponseObject {
 	out := make([]*functionResponseObject, 0)
 
 	for _, isolate := range isolates {
@@ -116,6 +116,27 @@ func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
 
 		out = append(out, obj)
 	}
+
+	return out
+}
+
+func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
+
+	grpcReq, err := listRequestObjectFromHTTPRequest(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	resp, err := h.s.isolates.ListIsolates(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	isolates := resp.GetIsolates()
+	out := prepareIsolatesForResponse(isolates)
 
 	if err := json.NewEncoder(w).Encode(out); err != nil {
 		ErrResponse(w, err)
@@ -349,4 +370,117 @@ func (h *Handler) deleteRevision(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accepted(w)
+}
+
+// /api/namespaces/{namespace}/workflows/{workflowTarget}/functions
+func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
+
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflowTarget"]
+
+	grpcReq1 := &ingress.GetWorkflowByNameRequest{
+		Namespace: &ns,
+		Name:      &wf,
+	}
+
+	resp, err := h.s.direktiv.GetWorkflowByName(r.Context(), grpcReq1)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	workflow := new(model.Workflow)
+	err = workflow.Load(resp.Workflow)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	var hasWorkflowFunctions, hasNamespaceFunctions, hasGlobalFunctions bool
+	nsFunctions := make(map[string]interface{})
+	globalFunctions := make(map[string]interface{})
+
+	allIsolates := make([]*grpc.IsolateInfo, 0)
+
+	for _, fn := range workflow.Functions {
+		switch fn.GetType() {
+		case model.DefaultFunctionType:
+			fallthrough
+		case model.IsolatedContainerFunctionType:
+			fallthrough
+		case model.SubflowFunctionType:
+			continue
+		case model.ReusableContainerFunctionType:
+			// Workflow scope
+			hasWorkflowFunctions = true
+		case model.NamespacedKnativeFunctionType:
+			// Namespace scope
+			hasNamespaceFunctions = true
+			nsFunctions[fn.GetID()] = nil
+		case model.GlobalKnativeFunctionType:
+			// Global scope
+			hasGlobalFunctions = true
+			globalFunctions[fn.GetID()] = nil
+		}
+	}
+
+	if hasWorkflowFunctions {
+		resp, err := h.s.isolates.ListIsolates(r.Context(), grpc.ListIsolatesRequest{
+			Annotations: map[string]string{
+				isolateServiceWorkflowAnnotation:  wf,
+				isolateServiceNamespaceAnnotation: ns,
+				isolateServiceScopeAnnotation:     prefixWorkflow,
+			},
+		})
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		allIsolates = append(allIsolates, resp.GetIsolates()...)
+	}
+
+	if hasNamespaceFunctions {
+		resp, err := h.s.isolates.ListIsolates(r.Context(), grpc.ListIsolatesRequest{
+			Annotations: map[string]string{
+				isolateServiceNamespaceAnnotation: ns,
+				isolateServiceScopeAnnotation:     prefixNamespace,
+			},
+		})
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		for _, fn := range resp.GetIsolates() {
+			if _, ok := nsFunctions[fn.GetInfo().GetName()]; ok {
+				allIsolates = append(allIsolates, fn)
+			}
+		}
+	}
+
+	if hasGlobalFunctions {
+		resp, err := h.s.isolates.ListIsolates(r.Context(), grpc.ListIsolatesRequest{
+			Annotations: map[string]string{
+				isolateServiceScopeAnnotation: prefixGlobal,
+			},
+		})
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		for _, fn := range resp.GetIsolates() {
+			if _, ok := globalFunctions[fn.GetInfo().GetName()]; ok {
+				allIsolates = append(allIsolates, fn)
+			}
+		}
+	}
+
+	out := prepareIsolatesForResponse(allIsolates)
+	if err := json.NewEncoder(w).Encode(out); err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
 }
