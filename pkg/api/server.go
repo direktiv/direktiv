@@ -16,8 +16,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
-const blocklist = "blocklist"
-
 // Server ..
 type Server struct {
 	cfg      *Config
@@ -68,7 +66,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		router: r,
 		srv: &http.Server{
 			Handler: r,
-			Addr:    cfg.Server.Bind,
+			Addr:    apiBind,
 		},
 		blocklist:   bl,
 		reqMapMutex: sync.Mutex{},
@@ -119,13 +117,13 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) initDirektiv() error {
 
-	conn, err := util.GetEndpointTLS(s.cfg.Ingress.Endpoint, true)
+	conn, err := util.GetEndpointTLS(util.IngressEndpoint(), true)
 	if err != nil {
 		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", s.cfg.Ingress.Endpoint)
+	log.Infof("connecting to %s", util.IngressEndpoint())
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
 
@@ -134,13 +132,13 @@ func (s *Server) initDirektiv() error {
 
 func (s *Server) initIsolates() error {
 
-	conn, err := util.GetEndpointTLS(s.cfg.Isolates.Endpoint, true)
+	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
 	if err != nil {
 		log.Errorf("can not connect to direktiv isolates: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", s.cfg.Isolates.Endpoint)
+	log.Infof("connecting to %s", util.IsolateEndpoint())
 
 	s.isolates = igrpc.NewIsolatesServiceClient(conn)
 	return nil
@@ -244,7 +242,7 @@ func tlsEnabled() bool {
 // Start starts the API server
 func (s *Server) Start() error {
 
-	log.Infof("Starting server - binding to %s", s.cfg.Server.Bind)
+	log.Infof("Starting server - binding to %s", apiBind)
 
 	if tlsEnabled() {
 		log.Infof("api tls enabled")
