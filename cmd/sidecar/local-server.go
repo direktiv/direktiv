@@ -44,7 +44,7 @@ func (srv *LocalServer) initFlow() error {
 
 	log.Infof("Connecting to flow: %s.", flowAddr)
 
-	conn, err := direktiv.GetEndpointTLS(flowAddr, true)
+	conn, err := util.GetEndpointTLS(flowAddr, true)
 	if err != nil {
 		return err
 	}

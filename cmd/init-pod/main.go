@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vorteil/direktiv/pkg/direktiv"
 	_ "github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 var (
@@ -74,7 +74,7 @@ func initFlow() error {
 
 	log.Printf("Connecting to flow: %s.", flowAddr)
 
-	conn, err := direktiv.GetEndpointTLS(flowAddr, true)
+	conn, err := util.GetEndpointTLS(flowAddr, true)
 	if err != nil {
 		return err
 	}
