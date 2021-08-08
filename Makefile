@@ -129,6 +129,13 @@ docker-ui: ## Manually clone and build the latest UI.
 		cd direktiv-ui && make update-containers RV=${RELEASE}; \
 	fi
 
+# All 
+
+.PHONY: docker-all
+docker-all: ## Build the all-in-one image. 
+docker-all: images
+	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
+
 # Utility Rules 
 
 REGEX := "localhost:5000.*"
