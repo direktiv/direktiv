@@ -6,18 +6,21 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/vorteil/direktiv/pkg/direktiv"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/secrets/handler"
+	"github.com/vorteil/direktiv/pkg/util"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewServer creates a new secrets server
 func NewServer(backend string) (*Server, error) {
 	srv := &Server{
 		lifeLine: make(chan bool),
+	}
+
+	if backend == "" {
+		backend = "db"
 	}
 
 	log.Infof("starting secret backend %s", backend)
@@ -40,7 +43,7 @@ func (s *Server) Run() {
 
 	log.Infof("starting secret server")
 
-	direktiv.GrpcStart(&s.grpc, "ingress", "127.0.0.1:2610", func(srv *grpc.Server) {
+	util.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
 		secretsgrpc.RegisterSecretsServiceServer(srv, s)
 	})
 
@@ -77,7 +80,7 @@ func (s *Server) Lifeline() chan bool {
 	return s.lifeLine
 }
 
-// StoreSecret stroes secrets in backends
+// StoreSecret stores secrets in backends
 func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRequest) (*empty.Empty, error) {
 
 	var resp emptypb.Empty
@@ -86,7 +89,12 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 		return &resp, fmt.Errorf("name, namespace and secret values are required")
 	}
 
-	err := s.handler.AddSecret(in.GetNamespace(), in.GetName(), in.GetData())
+	n := in.GetName()
+	if ok := util.MatchesVarRegex(n); !ok {
+		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.RegexPattern)
+	}
+
+	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData())
 
 	return &resp, err
 

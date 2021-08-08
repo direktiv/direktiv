@@ -14,10 +14,6 @@ spec:
       {{- include "direktiv.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
     spec:
@@ -31,21 +27,8 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-        {{- if .Values.gcp.useSqlProxy }}
-        - name: cloud-sql-proxy
-          image: gcr.io/cloudsql-docker/gce-proxy:1.17
-          command:
-            - "/cloud_sql_proxy"
-            - "-instances={{- .Values.gcp.db_instance }}=tcp:5432"
-            {{- if .Values.gcp.ip_private }}
-            - "-ip_address_types=PRIVATE"
-            {{- end }}
-          securityContext:
-            runAsNonRoot: true
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu:    "1"
+        {{- if .Values.isolates.extraContainers }}
+        {{ toYaml .Values.flow.extraContainers | indent 8}}
         {{- end }}
         - name: ingress
           readinessProbe:
@@ -67,13 +50,17 @@ spec:
               cpu: "8"
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
-          command: ["/bin/direktiv", "--config", "/config/default.toml"]
+          command: ["/bin/direktiv", "--config", "/etc/direktiv/flow-config.yaml"]
           volumeMounts:
-          - name: server-config
-            mountPath: /config
-            readOnly: true
-          - name: service-template
-            mountPath: /etc/config
+          {{- if .Values.flow.extraVolumeMounts -}}
+          {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
+          {{- end }}
+          - name: grpc-config
+            mountPath: /etc/direktiv/grpc-config.yaml
+            subPath: grpc-config.yaml
+          - name: flow-config
+            mountPath: /etc/direktiv/flow-config.yaml
+            subPath: flow-config.yaml
           {{- if ne .Values.flow.certificate "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
@@ -89,18 +76,10 @@ spec:
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
+          - name: DIREKTIV_SERVICE_NAMESPACE
+            value: {{ .Values.isolates.namespace }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
-          - name: DIREKTIV_FLOW_INITPOD
-            value: {{ .Values.flow.initPod }}
-          - name: GRPC_MAX_SEND_SIZE_CLIENT
-            value: {{ .Values.grpc.client.maxSendSize | quote }}
-          - name: GRPC_MAX_RECEIVE_SIZE_CLIENT
-            value: {{ .Values.grpc.client.maxRecvSize | quote }}
-          - name: GRPC_MAX_SEND_SIZE_SERVER
-            value: {{ .Values.grpc.server.maxSendSize | quote }}
-          - name: GRPC_MAX_RECEIVE_SIZE_SEVER
-            value: {{ .Values.grpc.server.maxRecvSize | quote }}
           {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
           - name: "HTTP_PROXY"
             value: "{{ .Values.http_proxy }}"
@@ -109,18 +88,11 @@ spec:
           - name: "NO_PROXY"
             value: "{{ .Values.no_proxy }}"
           {{- end }}
-          - name: DIREKTIV_FLOW_EXCHANGE
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}-isolate
-                key: exchangeKey
           - name: DIREKTIV_DB
             valueFrom:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
-          - name: DIREKTIV_WFNS
-            value: {{ .Release.Namespace }}
         - name: secrets
           securityContext:
             readOnlyRootFilesystem: true
@@ -134,18 +106,19 @@ spec:
               cpu: "1"
           image: "{{ .Values.registry }}/{{ .Values.secrets.image }}:{{ .Values.secrets.tag | default .Chart.AppVersion }}"
           command: ["/bin/secrets"]
-          args: [{{.Values.secrets.backend }}]
           imagePullPolicy: {{ .Values.pullPolicy }}
           volumeMounts:
+          {{- if .Values.flow.extraVolumeMounts -}}
+          {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
+          {{- end }}
+          - name: grpc-config
+            mountPath: /etc/direktiv/grpc-config.yaml
+            subPath: grpc-config.yaml
           {{- if ne  .Values.flow.certificate "none" }}
           - name: certs
             mountPath: "/etc/certs/direktiv"
             readOnly: true
           {{- end }}
-          {{- if .Values.vaultAgent.enable}}
-          - name: vault-agent-sink
-            mountPath: "/sink"
-          {{- end}}
           ports:
             - name: secrets
               containerPort: 2610
@@ -153,17 +126,6 @@ spec:
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
-          - name: DIREKTIV_SECRETS_BIND
-            value: "127.0.0.1:2610"
-          - name: GRPC_MAX_SEND_SIZE_CLIENT
-            value: {{ .Values.grpc.client.maxSendSize | quote }}
-          - name: GRPC_MAX_RECEIVE_SIZE_CLIENT
-            value: {{ .Values.grpc.client.maxRecvSize | quote }}
-          - name: GRPC_MAX_SEND_SIZE_SERVER
-            value: {{ .Values.grpc.server.maxSendSize | quote }}
-          - name: GRPC_MAX_RECEIVE_SIZE_SEVER
-            value: {{ .Values.grpc.server.maxRecvSize | quote }}
-          {{- if eq .Values.secrets.backend "db" }}
           - name: DIREKTIV_SECRETS_DB
             valueFrom:
               secretKeyRef:
@@ -174,72 +136,16 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: key
-          {{- else if eq .Values.secrets.backend "vault" }}
-          - name: DIREKTIV_SECRETS_VAULT
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsVault
-          - name: DIREKTIV_SECRETS_VAULT_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsVaultToken
-          - name: DIREKTIV_SECRETS_VAULT_TOKEN_PATH
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsVaultTokenPath
-          - name: DIREKTIV_SECRETS_VAULT_WATCH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsVaultWatchToken
-          - name: DIREKTIV_SECRETS_VAULT_PATH
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsVaultPath
-          - name: DIREKTIV_SECRETS_VAULT_SKIP_VERIFY
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: secretsVaultSkipVerify
-          {{- end}}
-        {{- if .Values.vaultAgent.enable }}
-        - name: vault-agent
-          image: "{{ .Values.registry }}/{{ .Values.vaultAgent.image }}:{{ .Values.vaultAgent.tag | default .Chart.AppVersion }}"
-          command: ["/bin/vault"]
-          args: ["agent", "-config=/config/config.hcl"]
-          imagePullPolicy: {{ .Values.pullPolicy }}
-          env:
-          - name: VAULT_SKIP_VERIFY
-            value: "true"
-          volumeMounts:
-          - name: vault-agent-config
-            mountPath: "/config"
-            readOnly: false
-          - name: vault-agent-sink
-            mountPath: "/sink"
-          ports:
-            - name: vault-agent
-              containerPort: 8100
-              protocol: TCP
-        {{- end}}
       volumes:
-        - name: server-config
-          configMap:
-            name: flow-cm-config
-        - name: service-template
-          configMap:
-            name: service-template
-        {{- if .Values.vaultAgent.enable }}
-        - name: vault-agent-config
-          configMap:
-            name: vault-agent-config
-        - name: vault-agent-sink
-          emptyDir: {}
+        {{- if .Values.flow.extraVolumes }}
+        {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}
+        - name: grpc-config
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-grpc
+        - name: flow-config
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-flow
         {{- if ne  .Values.flow.certificate "none" }}
         - name: certs
           secret:

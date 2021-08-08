@@ -11,6 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -43,7 +44,7 @@ func (fs *flowServer) name() string {
 }
 
 func (fs *flowServer) start(s *WorkflowServer) error {
-	return GrpcStart(&fs.grpc, "flow", s.config.FlowAPI.Bind, func(srv *grpc.Server) {
+	return util.GrpcStart(&fs.grpc, "flow", flowBind, func(srv *grpc.Server) {
 		flow.RegisterDirektivFlowServer(srv, fs)
 	})
 }

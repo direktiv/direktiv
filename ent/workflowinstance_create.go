@@ -257,11 +257,17 @@ func (wic *WorkflowInstanceCreate) Save(ctx context.Context) (*WorkflowInstance,
 				return nil, err
 			}
 			wic.mutation = mutation
-			node, err = wic.sqlSave(ctx)
+			if node, err = wic.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(wic.hooks) - 1; i >= 0; i-- {
+			if wic.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wic.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wic.mutation); err != nil {
@@ -280,25 +286,38 @@ func (wic *WorkflowInstanceCreate) SaveX(ctx context.Context) *WorkflowInstance 
 	return v
 }
 
+// Exec executes the query.
+func (wic *WorkflowInstanceCreate) Exec(ctx context.Context) error {
+	_, err := wic.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wic *WorkflowInstanceCreate) ExecX(ctx context.Context) {
+	if err := wic.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (wic *WorkflowInstanceCreate) check() error {
 	if _, ok := wic.mutation.InstanceID(); !ok {
-		return &ValidationError{Name: "instanceID", err: errors.New("ent: missing required field \"instanceID\"")}
+		return &ValidationError{Name: "instanceID", err: errors.New(`ent: missing required field "instanceID"`)}
 	}
 	if _, ok := wic.mutation.InvokedBy(); !ok {
-		return &ValidationError{Name: "invokedBy", err: errors.New("ent: missing required field \"invokedBy\"")}
+		return &ValidationError{Name: "invokedBy", err: errors.New(`ent: missing required field "invokedBy"`)}
 	}
 	if _, ok := wic.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New("ent: missing required field \"status\"")}
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "status"`)}
 	}
 	if _, ok := wic.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "revision"`)}
 	}
 	if _, ok := wic.mutation.BeginTime(); !ok {
-		return &ValidationError{Name: "beginTime", err: errors.New("ent: missing required field \"beginTime\"")}
+		return &ValidationError{Name: "beginTime", err: errors.New(`ent: missing required field "beginTime"`)}
 	}
 	if _, ok := wic.mutation.Input(); !ok {
-		return &ValidationError{Name: "input", err: errors.New("ent: missing required field \"input\"")}
+		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "input"`)}
 	}
 	if _, ok := wic.mutation.WorkflowID(); !ok {
 		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
@@ -309,8 +328,8 @@ func (wic *WorkflowInstanceCreate) check() error {
 func (wic *WorkflowInstanceCreate) sqlSave(ctx context.Context) (*WorkflowInstance, error) {
 	_node, _spec := wic.createSpec()
 	if err := sqlgraph.CreateNode(ctx, wic.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -536,19 +555,23 @@ func (wicb *WorkflowInstanceCreateBulk) Save(ctx context.Context) ([]*WorkflowIn
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, wicb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, wicb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, wicb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -572,4 +595,17 @@ func (wicb *WorkflowInstanceCreateBulk) SaveX(ctx context.Context) []*WorkflowIn
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (wicb *WorkflowInstanceCreateBulk) Exec(ctx context.Context) error {
+	_, err := wicb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wicb *WorkflowInstanceCreateBulk) ExecX(ctx context.Context) {
+	if err := wicb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

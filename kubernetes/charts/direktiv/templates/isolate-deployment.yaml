@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-isolates
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}-isolates
+spec:
+  replicas: {{ .Values.isolates.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabels" . | nindent 6 }}-isolates
+  template:
+    metadata:
+      labels:
+        {{- include "direktiv.selectorLabels" . | nindent 8 }}-isolates
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-isolate
+      volumes:
+        - name: grpc-config
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-grpc
+        - name: config-file
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-isolate
+        {{- if ne  .Values.flow.certificate "none" }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.flow.certificate }}
+        {{- end }}
+      containers:
+        {{- if .Values.isolates.extraContainers }}
+        {{ toYaml .Values.isolates.extraContainers | indent 8}}
+        {{- end }}
+        - name: isolate-controller
+          volumeMounts:
+          {{- if ne .Values.flow.certificate "none" }}
+          - name: certs
+            mountPath: "/etc/certs/direktiv"
+            readOnly: true
+          {{- end }}
+          - name: grpc-config
+            mountPath: /etc/direktiv/grpc-config.yaml
+            subPath: grpc-config.yaml
+          - name: config-file
+            mountPath: /etc/direktiv/isolate-config.yaml
+            subPath: isolate-config.yaml
+          env:
+            {{- if .Values.debug }}
+            - name: DIREKTIV_DEBUG
+              value: "true"
+            {{- end }}
+            - name: DIREKTIV_LOCK_CM
+              value: {{ include "direktiv.fullname" . }}-lock-cm
+            - name: DIREKTIV_NAMESPACE
+              value: {{ .Release.Namespace }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1"
+          image: "{{ .Values.registry }}/{{ .Values.isolates.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: 5555
+              protocol: TCP

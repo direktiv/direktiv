@@ -23,6 +23,7 @@
 /build/direkcli
 /build/secrets
 /build/api
+/build/isolates
 /build/alpine-*
 /apiserver
 /direktiv
@@ -34,6 +35,7 @@
 /secrets
 /api
 /direktiv-apps
+/binaries
 
 /build/docker/*
 !*build/docker/all
@@ -45,8 +47,10 @@
 !*build/docker/sidecar
 !*build/docker/api
 !*build/docker/init-pod
+!*build/docker/isolates
 /build/docker/sidecar/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
 *build/docker/init-pod/init-pod
+*build/docker/isolates/isolates
 deploy*.yaml

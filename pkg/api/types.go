@@ -34,6 +34,6 @@ type GithubFileInfo struct {
 }
 
 type NamedDirectory struct {
-	Label     string
-	Directory string
+	Label     string `yaml:"name"`
+	Directory string `yaml:"directory"`
 }

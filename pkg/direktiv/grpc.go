@@ -12,6 +12,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -62,7 +63,7 @@ func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 func (is *ingressServer) start(s *WorkflowServer) error {
 
 	// get secrets client
-	conn, err := GetEndpointTLS(secretsEndpoint, false)
+	conn, err := util.GetEndpointTLS(secretsEndpoint, false)
 	if err != nil {
 		return err
 	}
@@ -72,7 +73,7 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 	is.cronPoll()
 	go is.cronPoller()
 
-	return GrpcStart(&is.grpc, "ingress", s.config.IngressAPI.Bind, func(srv *grpc.Server) {
+	return util.GrpcStart(&is.grpc, "ingress", ingressBind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
 		log.Debugf("append health check to ingress service")

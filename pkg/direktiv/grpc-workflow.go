@@ -2,6 +2,8 @@ package direktiv
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/json"
 	"fmt"
 
 	hash "github.com/mitchellh/hashstructure/v2"
@@ -36,15 +38,17 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
 
-	err = workflow.CheckFunctionsScaleInRange(is.wfServer.GetConfig().FlowAPI.MaxScale)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
-	}
-
 	wf, err := is.wfServer.dbManager.addWorkflow(ctx, namespace, workflow.ID,
 		workflow.Description, active, logToEvents, document, workflow.GetStartDefinition())
 	if err != nil {
 		return nil, grpcDatabaseError(err, "workflow", workflow.ID)
+	}
+
+	// create knative services if they are not global or namespace
+	err = createKnativeFunctions(is.wfServer.engine.isolateClient, workflow, namespace)
+	if err != nil {
+		// this can be delayed till the actual call if it fails
+		log.Errorf("can not create knative functions: %v", err)
 	}
 
 	is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", wf.ID.String()))
@@ -150,20 +154,32 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 
 }
 
+// calculates has over functions defined in workflow
+func hashForFunctions(workflow model.Workflow) string {
+
+	csnew := md5.New()
+	for _, f := range workflow.GetFunctions() {
+		if f.GetType() != model.ReusableContainerFunctionType {
+			continue
+		}
+		fn, _ := json.Marshal(f)
+		csnew.Write(fn)
+	}
+	return fmt.Sprintf("%x", csnew.Sum(nil))
+
+}
+
 func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateWorkflowRequest) (*ingress.UpdateWorkflowResponse, error) {
 
-	var resp ingress.UpdateWorkflowResponse
+	var (
+		resp                   ingress.UpdateWorkflowResponse
+		workflow, workflowPrev model.Workflow
+	)
 
 	uid := in.GetUid()
 
-	var workflow model.Workflow
 	document := in.GetWorkflow()
 	err := workflow.Load(document)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
-	}
-
-	err = workflow.CheckFunctionsScaleInRange(is.wfServer.GetConfig().FlowAPI.MaxScale)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad workflow definition: %v", err)
 	}
@@ -173,6 +189,31 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 	if in.Revision != nil {
 		checkRevisionVal = int(in.GetRevision())
 		checkRevision = &checkRevisionVal
+	}
+
+	// knative services per workflow have no revisions, we delete and recreate them
+	// we need to get the checksum for the functions of the workflow
+	// and used it top compare against the new version.
+	fwf, _ := is.wfServer.dbManager.getWorkflowByUid(ctx, uid)
+	if fwf != nil {
+
+		// previous definition. can not have errors
+		workflowPrev.Load(fwf.Workflow)
+
+		log.Debugf("checking hash: %v %v", hashForFunctions(workflow),
+			hashForFunctions(workflowPrev))
+
+		if hashForFunctions(workflow) != hashForFunctions(workflowPrev) {
+			err = deleteKnativeFunctions(is.wfServer.engine.isolateClient, fwf.Edges.Namespace.ID, workflow.ID, "")
+			if err != nil {
+				log.Errorf("can not delete knative functions: %v", err)
+			}
+			err = createKnativeFunctions(is.wfServer.engine.isolateClient, workflow, fwf.Edges.Namespace.ID)
+			if err != nil {
+				log.Errorf("can not create knative functions: %v", err)
+			}
+		}
+
 	}
 
 	wf, err := is.wfServer.dbManager.updateWorkflow(ctx, uid, checkRevision, workflow.ID,

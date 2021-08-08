@@ -118,11 +118,17 @@ func (wec *WorkflowEventsCreate) Save(ctx context.Context) (*WorkflowEvents, err
 				return nil, err
 			}
 			wec.mutation = mutation
-			node, err = wec.sqlSave(ctx)
+			if node, err = wec.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(wec.hooks) - 1; i >= 0; i-- {
+			if wec.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wec.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wec.mutation); err != nil {
@@ -141,16 +147,29 @@ func (wec *WorkflowEventsCreate) SaveX(ctx context.Context) *WorkflowEvents {
 	return v
 }
 
+// Exec executes the query.
+func (wec *WorkflowEventsCreate) Exec(ctx context.Context) error {
+	_, err := wec.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wec *WorkflowEventsCreate) ExecX(ctx context.Context) {
+	if err := wec.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (wec *WorkflowEventsCreate) check() error {
 	if _, ok := wec.mutation.Events(); !ok {
-		return &ValidationError{Name: "events", err: errors.New("ent: missing required field \"events\"")}
+		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "events"`)}
 	}
 	if _, ok := wec.mutation.Correlations(); !ok {
-		return &ValidationError{Name: "correlations", err: errors.New("ent: missing required field \"correlations\"")}
+		return &ValidationError{Name: "correlations", err: errors.New(`ent: missing required field "correlations"`)}
 	}
 	if _, ok := wec.mutation.Count(); !ok {
-		return &ValidationError{Name: "count", err: errors.New("ent: missing required field \"count\"")}
+		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "count"`)}
 	}
 	if _, ok := wec.mutation.WorkflowID(); !ok {
 		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
@@ -161,8 +180,8 @@ func (wec *WorkflowEventsCreate) check() error {
 func (wec *WorkflowEventsCreate) sqlSave(ctx context.Context) (*WorkflowEvents, error) {
 	_node, _spec := wec.createSpec()
 	if err := sqlgraph.CreateNode(ctx, wec.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -304,19 +323,23 @@ func (wecb *WorkflowEventsCreateBulk) Save(ctx context.Context) ([]*WorkflowEven
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, wecb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, wecb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, wecb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -340,4 +363,17 @@ func (wecb *WorkflowEventsCreateBulk) SaveX(ctx context.Context) []*WorkflowEven
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (wecb *WorkflowEventsCreateBulk) Exec(ctx context.Context) error {
+	_, err := wecb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wecb *WorkflowEventsCreateBulk) ExecX(ctx context.Context) {
+	if err := wecb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

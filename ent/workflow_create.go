@@ -180,11 +180,17 @@ func (wc *WorkflowCreate) Save(ctx context.Context) (*Workflow, error) {
 				return nil, err
 			}
 			wc.mutation = mutation
-			node, err = wc.sqlSave(ctx)
+			if node, err = wc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(wc.hooks) - 1; i >= 0; i-- {
+			if wc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wc.mutation); err != nil {
@@ -201,6 +207,19 @@ func (wc *WorkflowCreate) SaveX(ctx context.Context) *Workflow {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (wc *WorkflowCreate) Exec(ctx context.Context) error {
+	_, err := wc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wc *WorkflowCreate) ExecX(ctx context.Context) {
+	if err := wc.Exec(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // defaults sets the default values of the builder before save.
@@ -230,29 +249,29 @@ func (wc *WorkflowCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (wc *WorkflowCreate) check() error {
 	if _, ok := wc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if v, ok := wc.mutation.Name(); ok {
 		if err := workflow.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "name": %w`, err)}
 		}
 	}
 	if _, ok := wc.mutation.Created(); !ok {
-		return &ValidationError{Name: "created", err: errors.New("ent: missing required field \"created\"")}
+		return &ValidationError{Name: "created", err: errors.New(`ent: missing required field "created"`)}
 	}
 	if v, ok := wc.mutation.Description(); ok {
 		if err := workflow.DescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "description", err: fmt.Errorf("ent: validator failed for field \"description\": %w", err)}
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "description": %w`, err)}
 		}
 	}
 	if _, ok := wc.mutation.Active(); !ok {
-		return &ValidationError{Name: "active", err: errors.New("ent: missing required field \"active\"")}
+		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "active"`)}
 	}
 	if _, ok := wc.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "revision"`)}
 	}
 	if _, ok := wc.mutation.Workflow(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required field \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required field "workflow"`)}
 	}
 	if _, ok := wc.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
@@ -263,8 +282,8 @@ func (wc *WorkflowCreate) check() error {
 func (wc *WorkflowCreate) sqlSave(ctx context.Context) (*Workflow, error) {
 	_node, _spec := wc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, wc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -432,17 +451,19 @@ func (wcb *WorkflowCreateBulk) Save(ctx context.Context) ([]*Workflow, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, wcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, wcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, wcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -466,4 +487,17 @@ func (wcb *WorkflowCreateBulk) SaveX(ctx context.Context) []*Workflow {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (wcb *WorkflowCreateBulk) Exec(ctx context.Context) error {
+	_, err := wcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (wcb *WorkflowCreateBulk) ExecX(ctx context.Context) {
+	if err := wcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

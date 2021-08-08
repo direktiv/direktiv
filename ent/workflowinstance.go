@@ -107,7 +107,7 @@ func (*WorkflowInstance) scanValues(columns []string) ([]interface{}, error) {
 		case workflowinstance.FieldBeginTime, workflowinstance.FieldEndTime, workflowinstance.FieldDeadline, workflowinstance.FieldStateBeginTime:
 			values[i] = new(sql.NullTime)
 		case workflowinstance.ForeignKeys[0]: // workflow_instances
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type WorkflowInstance", columns[i])
 		}
@@ -166,7 +166,6 @@ func (wi *WorkflowInstance) assignValues(columns []string, values []interface{})
 				wi.EndTime = value.Time
 			}
 		case workflowinstance.FieldFlow:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field flow", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -235,10 +234,11 @@ func (wi *WorkflowInstance) assignValues(columns []string, values []interface{})
 				wi.Controller = value.String
 			}
 		case workflowinstance.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_instances", values[i])
-			} else if value != nil {
-				wi.workflow_instances = value
+			} else if value.Valid {
+				wi.workflow_instances = new(uuid.UUID)
+				*wi.workflow_instances = *value.S.(*uuid.UUID)
 			}
 		}
 	}

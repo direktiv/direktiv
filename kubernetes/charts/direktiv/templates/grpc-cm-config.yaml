@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-config-grpc
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  grpc-config.yaml: |
+
+      # grpc send and receive values
+      max-send-client: {{ .Values.grpc.client.maxSendSize }}
+
+      max-rcv-client: {{ .Values.grpc.client.maxRecvSize }}
+
+      max-send-server: {{ .Values.grpc.server.maxSendSize }}
+
+      max-rcv-server: {{ .Values.grpc.server.maxRecvSize }}
+
+      isolate-endpoint: dns2:///{{ include "direktiv.fullname" . }}-isolates-hl.{{ .Release.Namespace }}:5555
+
+      flow-enpoint: dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777
+
+      ingress-endpoint: dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666

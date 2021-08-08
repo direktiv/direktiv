@@ -127,8 +127,8 @@ func (m *NamespaceMutation) SetID(id string) {
 	m.id = &id
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *NamespaceMutation) ID() (id string, exists bool) {
 	if m.id == nil {
 		return
@@ -198,6 +198,7 @@ func (m *NamespaceMutation) RemoveWorkflowIDs(ids ...uuid.UUID) {
 		m.removedworkflows = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
+		delete(m.workflows, ids[i])
 		m.removedworkflows[ids[i]] = struct{}{}
 	}
 }
@@ -223,6 +224,11 @@ func (m *NamespaceMutation) ResetWorkflows() {
 	m.workflows = nil
 	m.clearedworkflows = false
 	m.removedworkflows = nil
+}
+
+// Where appends a list predicates to the NamespaceMutation builder.
+func (m *NamespaceMutation) Where(ps ...predicate.Namespace) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -524,8 +530,8 @@ func (m *WorkflowMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *WorkflowMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
@@ -896,6 +902,7 @@ func (m *WorkflowMutation) RemoveInstanceIDs(ids ...int) {
 		m.removedinstances = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.instances, ids[i])
 		m.removedinstances[ids[i]] = struct{}{}
 	}
 }
@@ -949,6 +956,7 @@ func (m *WorkflowMutation) RemoveWfeventIDs(ids ...int) {
 		m.removedwfevents = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.wfevents, ids[i])
 		m.removedwfevents[ids[i]] = struct{}{}
 	}
 }
@@ -974,6 +982,11 @@ func (m *WorkflowMutation) ResetWfevents() {
 	m.wfevents = nil
 	m.clearedwfevents = false
 	m.removedwfevents = nil
+}
+
+// Where appends a list predicates to the WorkflowMutation builder.
+func (m *WorkflowMutation) Where(ps ...predicate.Workflow) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -1441,8 +1454,8 @@ func (m WorkflowEventsMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *WorkflowEventsMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -1692,6 +1705,7 @@ func (m *WorkflowEventsMutation) RemoveWfeventswaitIDs(ids ...int) {
 		m.removedwfeventswait = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.wfeventswait, ids[i])
 		m.removedwfeventswait[ids[i]] = struct{}{}
 	}
 }
@@ -1756,6 +1770,11 @@ func (m *WorkflowEventsMutation) WorkflowinstanceIDs() (ids []int) {
 func (m *WorkflowEventsMutation) ResetWorkflowinstance() {
 	m.workflowinstance = nil
 	m.clearedworkflowinstance = false
+}
+
+// Where appends a list predicates to the WorkflowEventsMutation builder.
+func (m *WorkflowEventsMutation) Where(ps ...predicate.WorkflowEvents) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -2149,8 +2168,8 @@ func (m WorkflowEventsWaitMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *WorkflowEventsWaitMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -2231,6 +2250,11 @@ func (m *WorkflowEventsWaitMutation) WorkfloweventIDs() (ids []int) {
 func (m *WorkflowEventsWaitMutation) ResetWorkflowevent() {
 	m.workflowevent = nil
 	m.clearedworkflowevent = false
+}
+
+// Where appends a list predicates to the WorkflowEventsWaitMutation builder.
+func (m *WorkflowEventsWaitMutation) Where(ps ...predicate.WorkflowEventsWait) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -2526,8 +2550,8 @@ func (m WorkflowInstanceMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *WorkflowInstanceMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -3396,6 +3420,7 @@ func (m *WorkflowInstanceMutation) RemoveInstanceIDs(ids ...int) {
 		m.removedinstance = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.instance, ids[i])
 		m.removedinstance[ids[i]] = struct{}{}
 	}
 }
@@ -3421,6 +3446,11 @@ func (m *WorkflowInstanceMutation) ResetInstance() {
 	m.instance = nil
 	m.clearedinstance = false
 	m.removedinstance = nil
+}
+
+// Where appends a list predicates to the WorkflowInstanceMutation builder.
+func (m *WorkflowInstanceMutation) Where(ps ...predicate.WorkflowInstance) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.

@@ -20,9 +20,9 @@ type WorkflowEventsDelete struct {
 	mutation *WorkflowEventsMutation
 }
 
-// Where adds a new predicate to the WorkflowEventsDelete builder.
+// Where appends a list predicates to the WorkflowEventsDelete builder.
 func (wed *WorkflowEventsDelete) Where(ps ...predicate.WorkflowEvents) *WorkflowEventsDelete {
-	wed.mutation.predicates = append(wed.mutation.predicates, ps...)
+	wed.mutation.Where(ps...)
 	return wed
 }
 
@@ -46,6 +46,9 @@ func (wed *WorkflowEventsDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(wed.hooks) - 1; i >= 0; i-- {
+			if wed.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = wed.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, wed.mutation); err != nil {

@@ -5,6 +5,7 @@ flow_generated_files := $(shell find pkg/flow/ -type f -name '*.proto' -exec sh 
 health_generated_files := $(shell find pkg/health/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 ingress_generated_files := $(shell find pkg/ingress/ -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 secrets_generated_files := $(shell find pkg/secrets/grpc -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
+isolates_generated_files := $(shell find pkg/isolates/grpc -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 hasYarn := $(shell which yarn)
 
 .SILENT:
@@ -22,7 +23,7 @@ run-postgres:
 
 # protoc generation
 .PHONY: protoc
-protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(secrets_generated_files)
+protoc: $(flow_generated_files) $(health_generated_files) $(ingress_generated_files) $(secrets_generated_files) $(isolates_generated_files)
 
 
 .PHONY: local-docker-ui
@@ -53,6 +54,12 @@ docker-secrets: build
 .PHONY: docker-all
 docker-all:
 	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
+
+.PHONY: docker-isolates
+docker-isolates:
+docker-isolates: build
+	cp ${mkfile_dir_main}/binaries/isolates  ${mkfile_dir_main}/build/
+	cd build && docker build -t direktiv-isolates -f docker/isolates/Dockerfile .
 
 .PHONY: docker-api
 docker-api:
@@ -88,9 +95,11 @@ template-configmaps:
 
 .PHONY: build
 build:
+	mkdir -p ${mkfile_dir_main}/binaries
 	go get entgo.io/ent
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
+	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/binaries/isolates cmd/isolates/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/direktiv cmd/direktiv/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/secrets cmd/secrets/main.go
 	export CGO_LDFLAGS="-static -w -s" && go build -tags osusergo,netgo -o ${mkfile_dir_main}/api cmd/api/main.go
@@ -119,4 +128,8 @@ pkg/health/%.pb.go: pkg/health/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
 
 pkg/ingress/%.pb.go: pkg/ingress/%.proto
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
+
+# -I=. -I=/usr/local/include
+pkg/isolates/grpc/%.pb.go: pkg/isolates/grpc/%.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<

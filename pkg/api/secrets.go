@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func (h *Handler) getSecretsOrRegistries(w http.ResponseWriter, r *http.Request) {
@@ -31,8 +33,8 @@ func (h *Handler) getSecretsOrRegistries(w http.ResponseWriter, r *http.Request)
 
 	case RN_ListRegistries:
 
-		var resp *ingress.GetRegistriesResponse
-		resp, err = h.s.direktiv.GetRegistries(ctx, &ingress.GetRegistriesRequest{
+		var resp *grpc.GetRegistriesResponse
+		resp, err = h.s.isolates.GetRegistries(ctx, &grpc.GetRegistriesRequest{
 			Namespace: &n,
 		})
 		data = resp
@@ -72,6 +74,12 @@ func (h *Handler) createSecretOrRegistry(w http.ResponseWriter, r *http.Request)
 
 	case RN_CreateSecret:
 
+		if ok := util.MatchesVarRegex(st.Name); !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(errSecretRegex.Error()))
+			return
+		}
+
 		resp, err = h.s.direktiv.StoreSecret(ctx, &ingress.StoreSecretRequest{
 			Namespace: &n,
 			Name:      &st.Name,
@@ -80,7 +88,7 @@ func (h *Handler) createSecretOrRegistry(w http.ResponseWriter, r *http.Request)
 
 	case RN_CreateRegistry:
 
-		resp, err = h.s.direktiv.StoreRegistry(ctx, &ingress.StoreRegistryRequest{
+		resp, err = h.s.isolates.StoreRegistry(ctx, &grpc.StoreRegistryRequest{
 			Namespace: &n,
 			Name:      &st.Name,
 			Data:      []byte(st.Data),
@@ -128,7 +136,7 @@ func (h *Handler) deleteSecretOrRegistry(w http.ResponseWriter, r *http.Request)
 
 	case RN_DeleteRegistry:
 
-		resp, err = h.s.direktiv.DeleteRegistry(ctx, &ingress.DeleteRegistryRequest{
+		resp, err = h.s.isolates.DeleteRegistry(ctx, &grpc.DeleteRegistryRequest{
 			Namespace: &n,
 			Name:      &st.Name,
 		})

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"github.com/lib/pq"
@@ -12,6 +11,7 @@ import (
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/hook"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"github.com/vorteil/direktiv/pkg/varstore"
 	"google.golang.org/grpc"
 )
@@ -80,15 +80,8 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 		})
 	})
 
-	st, err := ioutil.ReadFile("/etc/config/template")
-	if err != nil {
-		return nil, err
-	}
-	kubeReq.serviceTempl = string(st)
-	kubeReq.sidecar = config.FlowAPI.Sidecar
-
 	// get secrets client
-	db.grpcConn, err = GetEndpointTLS("127.0.0.1:2610", false)
+	db.grpcConn, err = util.GetEndpointTLS("127.0.0.1:2610", false)
 	if err != nil {
 		return nil, err
 	}
