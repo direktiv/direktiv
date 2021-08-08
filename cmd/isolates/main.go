@@ -44,6 +44,7 @@ func main() {
 		break
 	case e := <-errChan:
 		log.Errorf("can not start isolate server: %v", e)
+		os.Exit(1)
 	}
 
 	log.Infof("stopping isolate grpc server")

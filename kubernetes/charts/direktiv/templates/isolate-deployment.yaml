@@ -24,6 +24,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-isolate
       volumes:
+        - name: grpc-config
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-grpc
         - name: config-file
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-isolate
@@ -33,9 +36,9 @@ spec:
             secretName: {{ .Values.flow.certificate }}
         {{- end }}
       containers:
-{{- if .Values.isolates.extraContainers }}
-{{ toYaml .Values.isolates.extraContainers | indent 8}}
-{{- end }}
+        {{- if .Values.isolates.extraContainers }}
+        {{ toYaml .Values.isolates.extraContainers | indent 8}}
+        {{- end }}
         - name: isolate-controller
           volumeMounts:
           {{- if ne .Values.flow.certificate "none" }}
@@ -43,8 +46,12 @@ spec:
             mountPath: "/etc/certs/direktiv"
             readOnly: true
           {{- end }}
+          - name: grpc-config
+            mountPath: /etc/direktiv/grpc-config.yaml
+            subPath: grpc-config.yaml
           - name: config-file
-            mountPath: /etc/direktiv
+            mountPath: /etc/direktiv/isolate-config.yaml
+            subPath: isolate-config.yaml
           env:
             {{- if .Values.isolates.debug }}
             - name: DIREKTIV_DEBUG

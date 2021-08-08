@@ -1,64 +1,26 @@
 # Default values for direktiv.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 replicaCount: 1
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
 registry: "docker.io"
 pullPolicy: Always
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+
 logDriver: "database"
 
-
-# Set Send and Recv limits for all grpc clients and servers
-grpc:
-  server:
-    maxSendSize: "15728640"
-    maxRecvSize: "15728640"
-  client:
-    maxSendSize: "15728640"
-    maxRecvSize: "15728640"
-
+# if using proxy the user needs to be a valid IAM user with access to the database
+# e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
+# to to google with:
+# serviceAccount:
+#   annotations:
+#      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
 serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 80
-
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  create: true
 
 autoscaling:
   enabled: false
@@ -66,12 +28,6 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
 
 # support services
 withSupport: true
@@ -90,37 +46,29 @@ ingress:
   auth:
     enabled: false
 
-secrets:
-  image: "vorteil/secrets"
-  tag: "latest"
-  backend: "db"
-  db: ""
-  key: "01234567890123456789012345678912"
-  vault:
-    address:    ""
-    token:      ""
-    tokenPath:  ""
-    watchToken: false
-    path:       ""
-    skipVerify: false
-
-vaultAgent:
-  image: "vorteil/vault-agent"
-  tag: "latest"
-  enable: false
-
 # flow config
 flow:
   image: "vorteil/flow"
   tag: "latest"
-  exchange: "checkMe"
-  sidecar: "vorteil/sidecar"
-  initPod: "vorteil/direktiv-init-pod"
-  sidecarDb: ""
   db: ""
   protocol: "http"
   certificate: none
-  maxScale: 1
+  extraContainers: []
+  extraVolumeMounts:
+    # - name: service-template
+    #   mountPath: /etc/config
+  extraVolumes:
+    # - name: service-template
+    #   configMap:
+    #     name: service-template
+
+secrets:
+  image: "vorteil/secrets"
+  tag: "latest"
+  db: ""
+  key: "01234567890123456789012345678912"
+  extraVolumeMounts: []
+
 
 # ui config
 ui:
@@ -142,13 +90,15 @@ no_proxy: ""
 
 netShape: "none"
 
+# Set Send and Recv limits for all grpc clients and servers
+grpc:
+  server:
+    maxSendSize: 4194304
+    maxRecvSize: 4194304
+  client:
+    maxSendSize: 4194304
+    maxRecvSize: 4194304
 
-# if using proxy the user needs to be a valid IAM user with access to the database
-# e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
-# to to google with:
-# serviceAccount:
-#   annotations:
-#      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
 
 gcp:
   gvisor: false
@@ -185,8 +135,8 @@ isolates:
 
   # extra container for controller pod
   # e.g. database containers for google cloud or logging
-  extraContainersPod:
-  extraContainers:
+  extraContainersPod: []
+  extraContainers: []
     # - name: cloud-sql-proxy
     #   image: gcr.io/cloudsql-docker/gce-proxy:1.17
     #   command:

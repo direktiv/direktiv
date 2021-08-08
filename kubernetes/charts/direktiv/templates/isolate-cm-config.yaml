@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 data:
-  config.yaml: |
+  isolate-config.yaml: |
 
       # name of the service account to run the pods
       service-account: {{ include "direktiv.serviceAccountName" . }}-isolate-pod

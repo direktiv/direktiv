@@ -20,7 +20,7 @@ var (
 )
 
 const (
-	confFile = "/etc/direktiv/config.yaml"
+	confFile = "/etc/direktiv/isolate-config.yaml"
 	port     = 5555
 )
 
@@ -43,6 +43,7 @@ func StartServer(echan chan error) {
 	err := initKubernetesLock()
 	if err != nil {
 		echan <- err
+		return
 	}
 
 	cr := newConfigReader()

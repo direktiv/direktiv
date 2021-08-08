@@ -2,6 +2,7 @@ package direktiv
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/resolver"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -30,7 +32,20 @@ const (
 	TLSKey = "/etc/certs/direktiv/tls.key"
 	// TLSCA cert CA
 	TLSCA = "/etc/certs/direktiv/ca.crt"
+
+	grpcSettingsFile = "/etc/direktiv/grpc-config.yaml"
 )
+
+type grpConfig struct {
+	MaxSendClient int `yaml:"max-send-client"`
+	MaxRcvClient  int `yaml:"max-rcv-client"`
+	MaxSendServer int `yaml:"max-send-server"`
+	MaxRcvServer  int `yaml:"max-rcv-server"`
+
+	IsolateEndpoint string `yaml:"isolate-endpoint"`
+	FlowEnpoint     string `yaml:"flow-enpoint"`
+	IngressEndpoint string `yaml:"ingress-endpoint"`
+}
 
 func init() {
 	resolver.Register(NewBuilder())
@@ -53,15 +68,16 @@ func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 	var options []grpc.DialOption
 	var sizeOptions []grpc.CallOption
 
-	// Get GRPC limits
-	if maxSendOpt, ok := loadInt(grpcSendMsgSizeClient); ok {
-		log.Infof("LOADED GRPC_MAX_SEND_SIZE_CLIENT - Setting MaxCallSendMsgSize to %v", maxSendOpt)
-		sizeOptions = append(sizeOptions, grpc.MaxCallSendMsgSize(maxSendOpt))
-	}
-
-	if maxRecveOpt, ok := loadInt(grpcRecvMsgSizeClient); ok {
-		log.Infof("LOADED GRPC_MAX_RECEIVE_SIZE_CLIENT - Setting MaxCallRecvMsgSize to %v", maxRecveOpt)
-		sizeOptions = append(sizeOptions, grpc.MaxCallRecvMsgSize(maxRecveOpt))
+	cfgBytes, err := ioutil.ReadFile(grpcSettingsFile)
+	if err == nil {
+		var cfg grpConfig
+		err := yaml.Unmarshal(cfgBytes, &cfg)
+		if err == nil {
+			log.Infof("setting grpc client for %s send/rcv size: %v/%v",
+				endpoint, cfg.MaxSendServer, cfg.MaxRcvServer)
+			sizeOptions = append(sizeOptions, grpc.MaxCallSendMsgSize(cfg.MaxSendClient))
+			sizeOptions = append(sizeOptions, grpc.MaxCallRecvMsgSize(cfg.MaxRcvClient))
+		}
 	}
 
 	if len(sizeOptions) > 0 {
@@ -96,15 +112,16 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	var options []grpc.ServerOption
 
-	// Get GRPC limits
-	if maxSendOpt, ok := loadInt(grpcSendMsgSizeServer); ok {
-		log.Infof("LOADED GRPC_MAX_SEND_SIZE_SERVER - Setting MaxSendMsgSize to %v", maxSendOpt)
-		options = append(options, grpc.MaxSendMsgSize(maxSendOpt))
-	}
-
-	if maxRecveOpt, ok := loadInt(grpcRecvMsgSizeServer); ok {
-		log.Infof("LOADED GRPC_MAX_RECEIVE_SIZE_SERVER - Setting MaxRecvMsgSize to %v", maxRecveOpt)
-		options = append(options, grpc.MaxRecvMsgSize(maxRecveOpt))
+	cfgBytes, err := ioutil.ReadFile(grpcSettingsFile)
+	if err == nil {
+		var cfg grpConfig
+		err := yaml.Unmarshal(cfgBytes, &cfg)
+		if err == nil {
+			log.Infof("setting grpc server for %s send/rcv size: %v/%v",
+				name, cfg.MaxSendServer, cfg.MaxRcvServer)
+			options = append(options, grpc.MaxSendMsgSize(cfg.MaxSendServer))
+			options = append(options, grpc.MaxRecvMsgSize(cfg.MaxRcvServer))
+		}
 	}
 
 	// Create the TLS credentials

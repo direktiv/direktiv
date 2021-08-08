@@ -21,6 +21,10 @@ func NewServer(backend string) (*Server, error) {
 		lifeLine: make(chan bool),
 	}
 
+	if backend == "" {
+		backend = "db"
+	}
+
 	log.Infof("starting secret backend %s", backend)
 	backendType, err := handler.ParseType(backend)
 	if err != nil {
@@ -41,7 +45,7 @@ func (s *Server) Run() {
 
 	log.Infof("starting secret server")
 
-	direktiv.GrpcStart(&s.grpc, "ingress", "127.0.0.1:2610", func(srv *grpc.Server) {
+	direktiv.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
 		secretsgrpc.RegisterSecretsServiceServer(srv, s)
 	})
 

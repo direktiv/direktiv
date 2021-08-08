@@ -16,8 +16,6 @@ const (
 	// DirektivDebug enables debug on dirtektiv applications
 	DirektivDebug = "DIREKTIV_DEBUG"
 
-	direktivWorkflowNamespace = "DIREKTIV_WFNS"
-
 	// flowConfig
 	flowBind     = "DIREKTIV_FLOW_BIND"
 	flowEndpoint = "DIREKTIV_FLOW_ENDPOINT"
