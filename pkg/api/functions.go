@@ -425,7 +425,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hasWorkflowFunctions {
-		resp, err := h.s.isolates.ListIsolates(r.Context(), grpc.ListIsolatesRequest{
+		resp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
 			Annotations: map[string]string{
 				isolateServiceWorkflowAnnotation:  wf,
 				isolateServiceNamespaceAnnotation: ns,
@@ -441,7 +441,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hasNamespaceFunctions {
-		resp, err := h.s.isolates.ListIsolates(r.Context(), grpc.ListIsolatesRequest{
+		resp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
 			Annotations: map[string]string{
 				isolateServiceNamespaceAnnotation: ns,
 				isolateServiceScopeAnnotation:     prefixNamespace,
@@ -460,7 +460,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hasGlobalFunctions {
-		resp, err := h.s.isolates.ListIsolates(r.Context(), grpc.ListIsolatesRequest{
+		resp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
 			Annotations: map[string]string{
 				isolateServiceScopeAnnotation: prefixGlobal,
 			},
