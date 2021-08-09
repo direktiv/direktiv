@@ -166,8 +166,8 @@ type getFunctionResponse_Revision struct {
 	Name          string `json:"name,omitempty"`
 	Image         string `json:"image,omitempty"`
 	Cmd           string `json:"cmd,omitempty"`
-	Size          int32  `json:"size,omitempty"`
-	MinScale      int32  `json:"minScale,omitempty"`
+	Size          int32  `json:"size"`
+	MinScale      int32  `json:"minScale"`
 	Generation    int64  `json:"generation,omitempty"`
 	Created       int64  `json:"created,omitempty"`
 	Status        string `json:"status,omitempty"`
