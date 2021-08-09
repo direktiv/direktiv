@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -18,6 +19,8 @@ import (
 const (
 	IngressComponent string = "ingress"
 	FlowComponent    string = "flow"
+
+	certBase = "/etc/direktiv/certs/"
 
 	// TLSCert cert
 	TLSCert = "/etc/certs/direktiv/tls.crt"
@@ -44,10 +47,67 @@ var (
 	additionalServerOptions []grpc.ServerOption
 	additionalCallOptions   []grpc.CallOption
 	gcfg                    grpConfig
+
+	tlsComponents map[string]tlsComponent
 )
+
+// Available grpc components in direktiv
+const (
+	TLSSecretsComponent  = "secrets"
+	TLSIngressComponent  = "ingress"
+	TLSFlowComponent     = "flow"
+	TLSIsolatesComponent = "isolates"
+	TLSHttpComponent     = "http"
+)
+
+type tlsComponent struct {
+	endpoint    string
+	certificate string
+}
 
 func init() {
 	resolver.Register(NewBuilder())
+
+	GRPCUnmarshalConfig()
+	tlsComponents = make(map[string]tlsComponent)
+
+	tlsComponents[TLSSecretsComponent] = tlsComponent{
+		endpoint:    "127.0.0.1:2610",
+		certificate: filepath.Join(certBase, TLSSecretsComponent),
+	}
+	tlsComponents[TLSIngressComponent] = tlsComponent{
+		endpoint:    IngressEndpoint(),
+		certificate: filepath.Join(certBase, TLSIngressComponent),
+	}
+	tlsComponents[TLSIsolatesComponent] = tlsComponent{
+		endpoint:    IsolateEndpoint(),
+		certificate: filepath.Join(certBase, TLSIsolatesComponent),
+	}
+	tlsComponents[TLSFlowComponent] = tlsComponent{
+		endpoint:    IsolateEndpoint(),
+		certificate: filepath.Join(certBase, TLSFlowComponent),
+	}
+	tlsComponents[TLSHttpComponent] = tlsComponent{
+		endpoint:    "",
+		certificate: filepath.Join(certBase, TLSHttpComponent),
+	}
+
+}
+
+// CertsForComponent return key and cert for direktiv component
+func CertsForComponent(component string) (string, string) {
+
+	if c, ok := tlsComponents[component]; ok {
+
+		if _, err := os.Stat(filepath.Join(c.certificate, "tls.key")); err != nil {
+			return "", ""
+		}
+
+		return filepath.Join(c.certificate, "tls.key"),
+			filepath.Join(c.certificate, "tls.crt")
+	}
+
+	return "", ""
 }
 
 var (
@@ -65,7 +125,16 @@ func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
 }
 
 // GetEndpointTLS creates a grpc client
-func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
+func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
+
+	var (
+		c  tlsComponent
+		ok bool
+	)
+
+	if c, ok = tlsComponents[component]; !ok {
+		return nil, fmt.Errorf("unknown component: %s", component)
+	}
 
 	var options []grpc.DialOption
 
@@ -74,24 +143,21 @@ func GetEndpointTLS(endpoint string, rr bool) (*grpc.ClientConn, error) {
 			grpc.WithDefaultCallOptions(additionalCallOptions...))
 	}
 
-	if _, err := os.Stat(TLSCert); !os.IsNotExist(err) {
-		log.Infof("loading cert for grpc")
-		creds, err := credentials.NewClientTLSFromFile(TLSCert, "")
-		if err != nil {
-			return nil, fmt.Errorf("could not load tls cert: %s", err)
-		}
-		options = append(options, grpc.WithTransportCredentials(creds))
-	} else {
-		options = append(options, grpc.WithInsecure())
-	}
+	// if _, err := os.Stat(TLSCert); !os.IsNotExist(err) {
+	// 	log.Infof("loading cert for grpc")
+	// 	creds, err := credentials.NewClientTLSFromFile(TLSCert, "")
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("could not load tls cert: %s", err)
+	// 	}
+	// 	options = append(options, grpc.WithTransportCredentials(creds))
+	// } else {
+	options = append(options, grpc.WithInsecure())
+	// }
 
-	if rr {
-		options = append(options, grpc.WithBalancerName(roundrobin.Name))
-	}
-
+	options = append(options, grpc.WithBalancerName(roundrobin.Name))
 	options = append(options, globalGRPCDialOptions...)
 
-	return grpc.Dial(endpoint, options...)
+	return grpc.Dial(c.endpoint, options...)
 
 }
 

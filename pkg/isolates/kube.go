@@ -616,6 +616,9 @@ func statusFromCondition(conditions []apis.Condition) (string, string) {
 
 	for m := range conditions {
 		cond := conditions[m]
+
+		log.Debugf("CONDITIONS1 %v", cond)
+
 		if cond.Type == v1.RevisionConditionReady {
 			status = fmt.Sprintf("%s", cond.Status)
 		} else if cond.Type == v1.RevisionConditionResourcesAvailable ||

@@ -5,7 +5,7 @@ metadata:
   name: {{ include "direktiv.fullname" . }}-api-service
   labels:
     {{- include "direktiv.labelsAPI" . | nindent 4 }}
-  {{- if ne  .Values.flow.certificate "none" }}
+  {{- if ne  .Values.api.certificate "none" }}
   annotations:
     projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-api-service,8080"
   {{- end }}

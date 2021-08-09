@@ -6,7 +6,7 @@ RUN apk add curl
 
 RUN apk add go
 
-ADD app /app
+ADD docker/all/app /app
 
 RUN cd /app && CGO_LDFLAGS="-static -w -s"  go build  -tags osusergo,netgo  -o /dlapp /app/main.go
 
@@ -19,15 +19,15 @@ COPY --from=build-env /dlapp /dlapp
 
 RUN chmod 755 /dlapp
 
-ADD debug.yaml /
-ADD registry.yaml /
+ADD docker/all/debug.yaml /
+ADD docker/all/registry.yaml /
 
-ADD google-dns.yaml /
+ADD docker/all/google-dns.yaml /
 
-ADD server.sh /
+ADD docker/all/server.sh /
 
-ADD default_direktiv.vcfg /
+ADD docker/all/default_direktiv.vcfg /
 
-ADD config-deployment.yaml /
+ADD docker/all/config-deployment.yaml /
 
 ENTRYPOINT ["/dlapp"]

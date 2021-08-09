@@ -56,8 +56,6 @@ func ReadConfig(file string) (*Config, error) {
 	c.InstanceLogging.Driver = "database"
 	c.VariablesStorage.Driver = "database"
 
-	log.Debugf("CONGFI!!!!!!!!!!!!!!! %+v", c)
-
 	return c, nil
 
 }

@@ -20,14 +20,15 @@
 
 /build/*-binary
 /build/*.md5
-/build/*.checksum 
-/build/flow 
-/build/api 
-/build/sidecar 
+/build/*.checksum
+/build/flow
+/build/api
+/build/sidecar
 /build/init-pod
 /build/apiserver
 /build/direktiv
 /build/direkcli
+/build/direkcli-linux
 /build/secrets
 /build/api
 /build/isolates
@@ -49,12 +50,13 @@
 !*build/docker/isolate
 !*build/docker/secrets
 !*build/docker/flow
-!*build/docker/cli
+!*build/docker/direkcli
 !*build/docker/ui
 !*build/docker/sidecar
 !*build/docker/api
 !*build/docker/init-pod
 !*build/docker/isolates
+!*build/docker/tls-create
 /build/docker/sidecar/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
