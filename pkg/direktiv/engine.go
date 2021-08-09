@@ -1277,6 +1277,7 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 
 }
 
+//
 func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
 
 	ctx := context.Background()

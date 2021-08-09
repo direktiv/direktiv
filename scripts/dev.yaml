@@ -1,0 +1,17 @@
+registry: localhost:5000
+pullPolicy: Always
+debug: "true"
+
+secrets:
+  image: "secrets"
+flow:
+  image: "flow"
+ui:
+  image: "direktiv-ui"
+api:
+  image: "api"
+isolates:
+  namespace: direktiv-services-direktiv
+  image: "isolates"
+  sidecar: "localhost:5000/sidecar"
+  initPod: "localhost:5000/direktiv-init-pod"
