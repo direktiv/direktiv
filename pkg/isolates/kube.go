@@ -764,17 +764,44 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 		Annotations: make(map[string]string),
 	}
 
+	spec.Annotations["serving.knative.dev/rolloutDuration"] =
+		fmt.Sprintf("%ds", isolateConfig.RolloutDuration)
 	spec.Annotations["autoscaling.knative.dev/minScale"] =
 		fmt.Sprintf("%d", info.GetMinScale())
 
+	// move all traffic to new revision
+	var (
+		useLatest bool
+		percent   int64
+	)
+	useLatest = true
+	percent = 100
+	tr := []v1.TrafficTarget{}
+	tt := v1.TrafficTarget{
+		LatestRevision: &useLatest,
+		Percent:        &percent,
+	}
+	tr = append(tr, tt)
+
 	svc := v1.Service{
 		Spec: v1.ServiceSpec{
+			RouteSpec: v1.RouteSpec{
+				Traffic: tr,
+			},
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: spec,
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							Containers: containers,
+							Volumes: []corev1.Volume{
+								{
+									Name: "workdir",
+									VolumeSource: corev1.VolumeSource{
+										EmptyDir: &corev1.EmptyDirVolumeSource{},
+									},
+								},
+							},
 						},
 					},
 				},

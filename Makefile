@@ -8,7 +8,7 @@ GO_BUILD_TAGS := "osusergo,netgo"
 
 .SECONDARY:
 
-.PHONY: help 
+.PHONY: help
 help: ## Prints usage information.
 	@echo "\033[36mMakefile Help\033[0m"
 	@echo ""
@@ -29,32 +29,32 @@ help: ## Prints usage information.
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
 binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/isolates-binary
 
-.PHONY: clean 
+.PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/*.md5
-	rm -f build/*.checksum 
-	rm -f build/*-binary 
+	rm -f build/*.checksum
+	rm -f build/*-binary
 	rm -f build/api
-	rm -f build/flow 
-	rm -f build/init-pod 
-	rm -f build/secrets 
+	rm -f build/flow
+	rm -f build/init-pod
+	rm -f build/secrets
 	rm -f build/sidecar
 	if helm status direktiv; then helm uninstall direktiv; fi
-	kubectl delete --all ksvc
-	kubectl delete --all jobs
+	kubectl delete --all ksvc -n direktiv-services-direktiv
+	kubectl delete --all jobs -n direktiv-services-direktiv
 
-.PHONY: images 
+.PHONY: images
 images: image-api image-flow image-init-pod image-secrets image-sidecar image-isolates
 
-.PHONY: push 
+.PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
 push: push-api push-flow push-init-pod push-secrets push-sidecar push-isolates
 
 HELM_CONFIG := "scripts/dev.yaml"
 
-.PHONY: cluster 
+.PHONY: cluster
 cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the cluster.
-cluster: push 
+cluster: push
 	$(eval X := $(shell kubectl get namespaces | grep -c direktiv-services-direktiv))
 	if [ ${X} -eq 0 ]; then kubectl create namespace direktiv-services-direktiv; fi
 	if helm status direktiv; then helm uninstall direktiv; fi
@@ -68,10 +68,10 @@ teardown: ## Brings down an existing cluster.
 	kubectl delete --all ksvc
 	kubectl delete --all jobs
 
-GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go') 
+GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go')
 DOCKER_FILES = $(shell find build/docker/ -type f)
 
-# ENT 
+# ENT
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
@@ -79,7 +79,7 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./ent
 	go generate ./pkg/secrets/ent/schema
 
-# PROTOC 
+# PROTOC
 
 PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
 
@@ -90,7 +90,7 @@ pkg/%.pb.go: pkg/%.proto
 protoc: ## Manually regenerates Go packages built from protobuf.
 protoc: ${PROTOBUF_SOURCE_FILES}
 
-# Patterns 
+# Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
 	@echo "Building $* binary..."
@@ -112,13 +112,13 @@ image-%: build/%-docker.checksum
 RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 
-.PHONY: push-% 
+.PHONY: push-%
 push-%: image-%
 	@docker tag direktiv-$* ${DOCKER_REPO}/$*${RELEASE_TAG}
 	@docker push ${DOCKER_REPO}/$*${RELEASE_TAG}
 	@echo "Make $@${RELEASE_TAG}: SUCCESS"
 
-# UI  
+# UI
 
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
@@ -131,10 +131,10 @@ docker-ui: ## Manually clone and build the latest UI.
 		cd direktiv-ui && make update-containers RV=${RELEASE}; \
 	fi
 
-# Misc 
+# Misc
 
 .PHONY: docker-all
-docker-all: ## Build the all-in-one image. 
+docker-all: ## Build the all-in-one image.
 docker-all: images
 	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
 
@@ -148,7 +148,7 @@ docker-cli: build
 	cp ${mkfile_dir_main}direkcli-linux  ${mkfile_dir_main}build/
 	cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
 
-# Utility Rules 
+# Utility Rules
 
 REGEX := "localhost:5000.*"
 
