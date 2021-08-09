@@ -81,14 +81,14 @@ ent: ## Manually regenerates ent database packages.
 
 # PROTOC
 
-PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}" | sed "s/\.proto/\.pb.go/"' \;)
-
-pkg/%.pb.go: pkg/%.proto
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $<
+PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
 
 .PHONY: protoc
 protoc: ## Manually regenerates Go packages built from protobuf.
-protoc: ${PROTOBUF_SOURCE_FILES}
+protoc: 
+	for val in ${PROTOBUF_SOURCE_FILES}; do \
+		echo "Generating protobuf file $$val..."; protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
+	done
 
 # Patterns
 
