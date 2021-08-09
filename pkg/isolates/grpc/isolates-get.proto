@@ -4,6 +4,8 @@ package grpc;
 
 option go_package = "github.com/vorteil/direktiv/pkg/isolates/grpc";
 
+import "pkg/isolates/grpc/isolates-common.proto";
+
 message GetIsolateRequest {
 	optional string ServiceName = 1;
 }
@@ -19,7 +21,7 @@ message Revision {
 	optional int64 created = 7;
 
 	optional string status = 8;
-	optional string statusMessage = 9;
+  repeated Condition conditions = 9;
 
 	optional int64 traffic = 10;
 }

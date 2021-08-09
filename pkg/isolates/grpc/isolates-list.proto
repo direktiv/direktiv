@@ -9,7 +9,7 @@ import "pkg/isolates/grpc/isolates-common.proto";
 message IsolateInfo {
 	optional BaseInfo info = 1;
 	optional string status = 2;
-	optional string statusMessage = 3;
+	repeated Condition conditions = 3;
 	optional string serviceName = 4;
 }
 

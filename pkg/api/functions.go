@@ -28,9 +28,9 @@ type functionResponseObject struct {
 		Image     string `json:"image"`
 		Cmd       string `json:"cmd"`
 	} `json:"info"`
-	ServiceName   string `json:"serviceName"`
-	Status        string `json:"status"`
-	StatusMessage string `json:"statusMessage"`
+	ServiceName string            `json:"serviceName"`
+	Status      string            `json:"status"`
+	Conditions  []*grpc.Condition `json:"conditions"`
 }
 
 const (
@@ -112,7 +112,7 @@ func prepareIsolatesForResponse(isolates []*grpc.IsolateInfo) []*functionRespons
 
 		obj.ServiceName = isolate.GetServiceName()
 		obj.Status = isolate.GetStatus()
-		obj.StatusMessage = isolate.GetStatusMessage()
+		obj.Conditions = isolate.GetConditions()
 
 		out = append(out, obj)
 	}
@@ -184,16 +184,16 @@ type getFunctionResponse struct {
 }
 
 type getFunctionResponse_Revision struct {
-	Name          string `json:"name,omitempty"`
-	Image         string `json:"image,omitempty"`
-	Cmd           string `json:"cmd,omitempty"`
-	Size          int32  `json:"size,omitempty"`
-	MinScale      int32  `json:"minScale,omitempty"`
-	Generation    int64  `json:"generation,omitempty"`
-	Created       int64  `json:"created,omitempty"`
-	Status        string `json:"status,omitempty"`
-	StatusMessage string `json:"statusMessage,omitempty"`
-	Traffic       int64  `json:"traffic,omitempty"`
+	Name       string            `json:"name,omitempty"`
+	Image      string            `json:"image,omitempty"`
+	Cmd        string            `json:"cmd,omitempty"`
+	Size       int32             `json:"size,omitempty"`
+	MinScale   int32             `json:"minScale,omitempty"`
+	Generation int64             `json:"generation,omitempty"`
+	Created    int64             `json:"created,omitempty"`
+	Status     string            `json:"status,omitempty"`
+	Conditions []*grpc.Condition `json:"conditions,omitempty"`
+	Traffic    int64             `json:"traffic,omitempty"`
 }
 
 func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
@@ -217,16 +217,16 @@ func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
 
 	for _, rev := range resp.GetRevisions() {
 		out.Revisions = append(out.Revisions, getFunctionResponse_Revision{
-			Name:          rev.GetName(),
-			Image:         rev.GetImage(),
-			Cmd:           rev.GetCmd(),
-			Size:          rev.GetSize(),
-			MinScale:      rev.GetMinScale(),
-			Generation:    rev.GetGeneration(),
-			Created:       rev.GetCreated(),
-			Status:        rev.GetStatus(),
-			StatusMessage: rev.GetStatusMessage(),
-			Traffic:       rev.GetTraffic(),
+			Name:       rev.GetName(),
+			Image:      rev.GetImage(),
+			Cmd:        rev.GetCmd(),
+			Size:       rev.GetSize(),
+			MinScale:   rev.GetMinScale(),
+			Generation: rev.GetGeneration(),
+			Created:    rev.GetCreated(),
+			Status:     rev.GetStatus(),
+			Conditions: rev.GetConditions(),
+			Traffic:    rev.GetTraffic(),
 		})
 	}
 
