@@ -188,7 +188,7 @@ func (is *isolateServer) UpdateIsolate(ctx context.Context,
 	}
 
 	// create ksvc service
-	err := updateKnativeIsolate(in.GetServiceName(), in.GetInfo())
+	err := updateKnativeIsolate(in.GetServiceName(), in.GetInfo(), in.GetTrafficPercent())
 	if err != nil {
 		log.Errorf("can not update knative service: %v", err)
 		return &empty, err
@@ -761,7 +761,7 @@ func deleteKnativeIsolates(annotations map[string]string) error {
 
 }
 
-func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
+func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error {
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
@@ -779,19 +779,43 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	spec.Annotations["autoscaling.knative.dev/minScale"] =
 		fmt.Sprintf("%d", info.GetMinScale())
 
-	// move all traffic to new revision
+	// adjust traffic for new revision
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return err
+	}
+
+	// get all revisions
+
+	s, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(), svn, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("error getting knative service: %v", err)
+		return err
+	}
+
 	var (
 		useLatest bool
-		percent   int64
 	)
 	useLatest = true
-	percent = 100
+
 	tr := []v1.TrafficTarget{}
 	tt := v1.TrafficTarget{
 		LatestRevision: &useLatest,
 		Percent:        &percent,
 	}
 	tr = append(tr, tt)
+
+	for _, trafficInfo := range s.Status.Traffic {
+		if trafficInfo.Percent != nil {
+			newPercent := *trafficInfo.Percent * (100 - percent) / 100
+			fmt.Printf("setting existing traffic percent for '%s' to '%d' (was '%d')\n", trafficInfo.RevisionName, newPercent, *trafficInfo.Percent)
+			tr = append(tr, v1.TrafficTarget{
+				RevisionName: trafficInfo.RevisionName,
+				Percent:      &newPercent,
+			})
+		}
+	}
 
 	svc := v1.Service{
 		Spec: v1.ServiceSpec{
@@ -823,12 +847,6 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 	if err != nil {
 		log.Errorf("error marshalling new services: %v", err)
 		return nil
-	}
-
-	cs, err := fetchServiceAPI()
-	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
-		return err
 	}
 
 	log.Debugf("patching service %s", svn)

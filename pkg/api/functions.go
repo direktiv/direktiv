@@ -276,10 +276,11 @@ func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
 }
 
 type updateServiceRequest struct {
-	Image    *string `json:"image,omitempty"`
-	Cmd      *string `json:"cmd,omitempty"`
-	Size     *int32  `json:"size,omitempty"`
-	MinScale *int32  `json:"minScale,omitempty"`
+	Image          *string `json:"image,omitempty"`
+	Cmd            *string `json:"cmd,omitempty"`
+	Size           *int32  `json:"size,omitempty"`
+	MinScale       *int32  `json:"minScale,omitempty"`
+	TrafficPercent int64   `json:"trafficPercent"`
 }
 
 func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
@@ -302,6 +303,7 @@ func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 		Size:     obj.Size,
 		MinScale: obj.MinScale,
 	}
+	grpcReq.TrafficPercent = &obj.TrafficPercent
 
 	// returns an empty body
 	_, err = h.s.isolates.UpdateIsolate(r.Context(), grpcReq)

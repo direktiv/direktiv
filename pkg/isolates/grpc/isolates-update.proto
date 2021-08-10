@@ -9,4 +9,5 @@ import "pkg/isolates/grpc/isolates-common.proto";
 message UpdateIsolateRequest {
 	optional BaseInfo info = 1;
 	optional string ServiceName = 2;
+	optional int64 TrafficPercent = 3;
 }
