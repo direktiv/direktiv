@@ -30,6 +30,10 @@ func (o *SubflowFunctionDefinition) Validate() error {
 		return errors.New("id required")
 	}
 
+	if o.Workflow == "" {
+		return errors.New("workflow required")
+	}
+
 	if ok := util.MatchesRegex(o.ID); !ok {
 		return fmt.Errorf("function id must match regex: %s", util.RegexPattern)
 	}
