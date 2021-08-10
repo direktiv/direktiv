@@ -1,12 +1,14 @@
 apiVersion: v1
 data:
   action.yml: "id: action\ndescription: A simple 'action' state that sends a get request\"\nfunctions:\n-
-    id: get\n  image: vorteil/request:v6\nstates:\n- id: getter \n  type: action\n
-    \ action:\n    function: get\n    input: \n      method: \"GET\"\n      url: \"https://jsonplaceholder.typicode.com/todos/1\"\n"
+    id: get\n  type: reusable\n  image: vorteil/request:v6\nstates:\n- id: getter
+    \n  type: action\n  action:\n    function: get\n    input: \n      method: \"GET\"\n
+    \     url: \"https://jsonplaceholder.typicode.com/todos/1\"\n"
   consume-event.yml: |
     id: consume-event
     functions:
     - id: greeter
+      type: reusable
       image: vorteil/greeting:v2
     description: A simple 'consumeEvent' state that listens for the greetingcloudevent generated from the template 'generate-event'.
     states:
@@ -39,28 +41,29 @@ data:
     email-valid\n- id: email-not-valid\n  type: error\n  error: direktiv.schema.*\n
     \ message: \"email '.email' is not valid\"\n- id: email-valid\n  type: noop\n
     \ transform: \n    result: \"Email is valid.\"\n"
-  event-and.yml: "id: event-and\nfunctions:\n- id: greeter\n  image: vorteil/greeting:v2\n-
-    id: solve\n  image: vorteil/solve:v2\ndescription: A simple 'eventAnd' that waits
-    for events to be received.\nstates:\n- id: event-and\n  type: eventAnd\n  timeout:
-    PT1H\n  events:\n  - type: greetingcloudevent\n  - type: solveexpressioncloudevent\n
-    \ transition: greet\n- id: greet\n  type: action\n  action:\n    function: greeter\n
-    \   input: .greetingcloudevent\n  transform: \n    greeting: jq(.return.greeting)\n
-    \   ceevent: jq(.solveexpressioncloudevent)\n  transition: solve\n- id: solve\n
-    \ type: action\n  action:\n    function: solve\n    input: jq(.ceevent)\n  transform:
-    \n    msggreeting: jq(.greeting)\n    solvedexpression: jq(.return)"
-  event-xor.yml: "id: event-xor\nfunctions:\n- id: greeter\n  image: vorteil/greeting:v2\n-
-    id: solve2\n  image: vorteil/solve:v2\ndescription: A simple 'eventXor' that waits
-    for events to be received.\nstates:\n- id: event-xor\n  type: eventXor\n  timeout:
-    PT1H\n  events:\n  - event: \n      type: solveexpressioncloudevent\n    transition:
-    solve\n  - event: \n      type: greetingcloudevent\n    transition: greet\n- id:
-    greet\n  type: action\n  action:\n    function: greeter\n    input: jq(.greetingcloudevent)\n
-    \ transform: \n    greeting: jq(.return.greeting)\n- id: solve\n  type: action\n
-    \ action:\n    function: solve2\n    input: jq(.solveexpressioncloudevent)\n  transform:
-    \n    solvedexpression: jq(.return)"
+  event-and.yml: "id: event-and\nfunctions:\n- id: greeter\n  type: reusable\n  image:
+    vorteil/greeting:v2\n- id: solve\n  type: reusable\n  image: vorteil/solve:v2\ndescription:
+    A simple 'eventAnd' that waits for events to be received.\nstates:\n- id: event-and\n
+    \ type: eventAnd\n  timeout: PT1H\n  events:\n  - type: greetingcloudevent\n  -
+    type: solveexpressioncloudevent\n  transition: greet\n- id: greet\n  type: action\n
+    \ action:\n    function: greeter\n    input: .greetingcloudevent\n  transform:
+    \n    greeting: jq(.return.greeting)\n    ceevent: jq(.solveexpressioncloudevent)\n
+    \ transition: solve\n- id: solve\n  type: action\n  action:\n    function: solve\n
+    \   input: jq(.ceevent)\n  transform: \n    msggreeting: jq(.greeting)\n    solvedexpression:
+    jq(.return)"
+  event-xor.yml: "id: event-xor\nfunctions:\n- id: greeter\n  type: reusable\n  image:
+    vorteil/greeting:v2\n- id: solve2\n  type: reusable\n  image: vorteil/solve:v2\ndescription:
+    A simple 'eventXor' that waits for events to be received.\nstates:\n- id: event-xor\n
+    \ type: eventXor\n  timeout: PT1H\n  events:\n  - event: \n      type: solveexpressioncloudevent\n
+    \   transition: solve\n  - event: \n      type: greetingcloudevent\n    transition:
+    greet\n- id: greet\n  type: action\n  action:\n    function: greeter\n    input:
+    jq(.greetingcloudevent)\n  transform: \n    greeting: jq(.return.greeting)\n-
+    id: solve\n  type: action\n  action:\n    function: solve2\n    input: jq(.solveexpressioncloudevent)\n
+    \ transform: \n    solvedexpression: jq(.return)"
   foreach.yml: "id: foreach\ndescription: A simple 'foreach' state that solves expressions\nfunctions:
-    \n- id: solve\n  image: vorteil/solve:v2\nstates:\n- id: data\n  type: noop\n
-    \ transform: \n    expressions: [\"4+10\", \"15-14\", \"100*3\",\"200/2\"] \n
-    \ transition: solve\n- id: solve\n  type: foreach\n  array: 'jq(.expressions[]
+    \n- id: solve\n  type: reusable\n  image: vorteil/solve:v2\nstates:\n- id: data\n
+    \ type: noop\n  transform: \n    expressions: [\"4+10\", \"15-14\", \"100*3\",\"200/2\"]
+    \n  transition: solve\n- id: solve\n  type: foreach\n  array: 'jq(.expressions[]
     | { expression: . })'\n  action:\n    function: solve\n    input:\n      x: jq(.expression)\n
     \ transform:\n    solved: jq(.return)"
   generate-greeting-event.yml: "id: generate-greeting-event\ndescription: A simple
@@ -80,12 +83,13 @@ data:
       transform:
         result: "Hello world!"
   parallel.yml: "id: parallel\ndescription: A simple 'parallel' state workflow that
-    runs solve container to solve expressions.\nfunctions: \n- id: solve\n  image:
-    vorteil/solve:v2\nstates:\n- id: run\n  type: parallel\n  actions:\n  - function:
-    solve\n    input: \n      x: \"10*2\"\n  - function: solve\n    input:\n      x:
-    \"10%2\"\n  - function: solve\n    input:\n      x: \"10-2\"\n  - function: solve\n
-    \   input:\n      x: \"10+2\"\n  # Mode 'and' waits for all actions to be completed\n
-    \ # Mode 'or' waits for the first action to be completed\n  mode: and"
+    runs solve container to solve expressions.\nfunctions: \n- id: solve\n  type:
+    reusable\n  image: vorteil/solve:v2\nstates:\n- id: run\n  type: parallel\n  actions:\n
+    \ - function: solve\n    input: \n      x: \"10*2\"\n  - function: solve\n    input:\n
+    \     x: \"10%2\"\n  - function: solve\n    input:\n      x: \"10-2\"\n  - function:
+    solve\n    input:\n      x: \"10+2\"\n  # Mode 'and' waits for all actions to
+    be completed\n  # Mode 'or' waits for the first action to be completed\n  mode:
+    and"
   switch.yml: "id: switch\ndescription: A simple 'switch' state that checks whether
     the age provided is older than 18.\nstates:\n- id: data\n  type: noop\n  transform:\n
     \   age: 27\n  transition: check\n- id: check\n  type: switch\n  conditions:\n

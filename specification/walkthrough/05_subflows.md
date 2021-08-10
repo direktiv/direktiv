@@ -12,6 +12,7 @@ For a subflow demonstration we need to define multiple workflows.
 id: notifier
 functions:
 - id: httprequest
+  type: reusable
   image: vorteil/request
 states:
 - id: validateInput
@@ -57,6 +58,7 @@ states:
 id: worker
 functions: 
 - id: httprequest
+  type: reusable
   image: vorteil/request
 states:
 - id: do

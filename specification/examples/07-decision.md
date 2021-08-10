@@ -6,6 +6,7 @@
 id: decision
 functions:
 - id: sendRejectionEmail
+  type: reusable
   image: apps.vorteil.io/direktive-demos/reject-email
 states:
 - id: CheckApplication

@@ -8,6 +8,7 @@ Workflows wouldn't be very powerful if they were limited to just the predefined 
 id: httpget
 functions:
 - id: httprequest
+  type: reusable
   image: vorteil/request
 states:
 - id: getter 
@@ -56,6 +57,7 @@ Isolate is just a fancy term we use when we run a tiny virtual machine on Vortei
 ```yaml
 functions:
 - id: httprequest
+  type: reusable
   image: vorteil/request
 ```
 

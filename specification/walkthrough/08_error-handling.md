@@ -13,14 +13,19 @@ start:
   cron: "0 * * * *"
 functions:
 - id: select
+  type: reusable
   image: vorteil/select
 - id: insert
+  type: reusable
   image: vorteil/insert
 - id: delete
+  type: reusable
   image: vorteil/delete
 - id: cruncher
+  type: reusable
   image: vorteil/cruncher
 - id: notify
+  type: reusable
   image: vorteil/notifier
 states:
 - id: selectRows
