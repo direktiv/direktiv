@@ -44,7 +44,7 @@ func (fs *flowServer) name() string {
 }
 
 func (fs *flowServer) start(s *WorkflowServer) error {
-	return util.GrpcStart(&fs.grpc, "flow", flowBind, func(srv *grpc.Server) {
+	return util.GrpcStart(&fs.grpc, util.TLSFlowComponent, flowBind, func(srv *grpc.Server) {
 		flow.RegisterDirektivFlowServer(srv, fs)
 	})
 }

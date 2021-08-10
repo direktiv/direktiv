@@ -276,6 +276,11 @@ func filterLabels(annotations map[string]string) map[string]string {
 		return make(map[string]string)
 	}
 
+	// the search is actually on workflow scope
+	if a[ServiceHeaderScope] == PrefixService {
+		a[ServiceHeaderScope] = PrefixWorkflow
+	}
+
 	return a
 }
 
@@ -402,7 +407,7 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 	return meta
 }
 
-func proxyEnvs() []corev1.EnvVar {
+func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 
 	proxyEnvs := []corev1.EnvVar{}
 	if len(isolateConfig.Proxy.HTTP) > 0 {
@@ -428,14 +433,38 @@ func proxyEnvs() []corev1.EnvVar {
 	if len(os.Getenv(util.DirektivDebug)) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  util.DirektivDebug,
-			Value: "true",
+			Value: os.Getenv(util.DirektivDebug),
 		})
 	}
 
-	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  util.DirektivFlowEndpoint,
-		Value: util.FlowEndpoint(),
-	})
+	if withGrpc {
+
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivFlowEndpoint,
+			Value: util.FlowEndpoint(),
+		})
+
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivMaxServerRcv,
+			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxRcvServer),
+		})
+
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivMaxClientRcv,
+			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxRcvClient),
+		})
+
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivMaxServerSend,
+			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxSendServer),
+		})
+
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivMaxClientSend,
+			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxSendClient),
+		})
+
+	}
 
 	return proxyEnvs
 }
@@ -500,8 +529,6 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 
 func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
-	proxy := proxyEnvs()
-
 	res, err := generateResourceLimits(size)
 	if err != nil {
 		log.Errorf("can not parse requests limits")
@@ -512,7 +539,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 	uc := corev1.Container{
 		Name:      containerUser,
 		Image:     img,
-		Env:       proxy,
+		Env:       proxyEnvs(false),
 		Resources: res,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -529,6 +556,8 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		}
 		uc.Command = args
 	}
+
+	proxy := proxyEnvs(true)
 
 	// append db info
 	proxy = append(proxy, corev1.EnvVar{
@@ -617,6 +646,7 @@ func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Conditio
 
 	for m := range conditions {
 		cond := conditions[m]
+
 		if cond.Type == v1.RevisionConditionReady {
 			status = fmt.Sprintf("%s", cond.Status)
 		}
@@ -761,6 +791,19 @@ func deleteKnativeIsolates(annotations map[string]string) error {
 
 }
 
+func createVolumes() []corev1.Volume {
+
+	return []corev1.Volume{
+		{
+			Name: "workdir",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+	}
+
+}
+
 func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error {
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
@@ -809,7 +852,8 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 	for _, trafficInfo := range s.Status.Traffic {
 		if trafficInfo.Percent != nil {
 			newPercent := *trafficInfo.Percent * (100 - percent) / 100
-			fmt.Printf("setting existing traffic percent for '%s' to '%d' (was '%d')\n", trafficInfo.RevisionName, newPercent, *trafficInfo.Percent)
+			log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')\n",
+				trafficInfo.RevisionName, newPercent, *trafficInfo.Percent)
 			tr = append(tr, v1.TrafficTarget{
 				RevisionName: trafficInfo.RevisionName,
 				Percent:      &newPercent,
@@ -828,14 +872,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							Containers: containers,
-							Volumes: []corev1.Volume{
-								{
-									Name: "workdir",
-									VolumeSource: corev1.VolumeSource{
-										EmptyDir: &corev1.EmptyDirVolumeSource{},
-									},
-								},
-							},
+							Volumes:    createVolumes(),
 						},
 					},
 				},
@@ -969,14 +1006,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),
 							ServiceAccountName: isolateConfig.ServiceAccount,
 							Containers:         containers,
-							Volumes: []corev1.Volume{
-								{
-									Name: "workdir",
-									VolumeSource: corev1.VolumeSource{
-										EmptyDir: &corev1.EmptyDirVolumeSource{},
-									},
-								},
-							},
+							Volumes:            createVolumes(),
 						},
 						ContainerConcurrency: &concurrency,
 						TimeoutSeconds:       &timeoutSec,

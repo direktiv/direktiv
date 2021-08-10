@@ -41,14 +41,12 @@ type LocalServer struct {
 
 func (srv *LocalServer) initFlow() error {
 
-	flowAddr := os.Getenv("DIREKTIV_FLOW_ENDPOINT")
-
-	log.Infof("Connecting to flow: %s.", flowAddr)
-
-	conn, err := util.GetEndpointTLS(flowAddr, true)
+	conn, err := util.GetEndpointTLS(util.TLSFlowComponent)
 	if err != nil {
 		return err
 	}
+
+	log.Debugf(">> conn %v", conn)
 
 	srv.flow = flow.NewDirektivFlowClient(conn)
 

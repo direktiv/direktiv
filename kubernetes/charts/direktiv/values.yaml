@@ -57,6 +57,9 @@ flow:
   db: ""
   isolateProtocol: "http"
   certificate: none
+  certificates:
+    flow: none
+    ingress: none
   extraContainers: []
   extraVolumeMounts:
     # - name: service-template
@@ -77,13 +80,14 @@ secrets:
 ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
+  # certificate: direktiv-cert
+  certificate: none
 
 api:
   image: vorteil/api
   tag: "latest"
   key: ""
-
-uiapiCertificate: none
+  certificate: none
 
 # Set Send and Recv limits for all grpc clients and servers
 grpc:

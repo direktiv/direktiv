@@ -121,7 +121,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
+	conn, err := util.GetEndpointTLS(util.TLSIsolatesComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.isolateClient = igrpc.NewIsolatesServiceClient(conn)
 
 	// get flow client
-	conn, err = util.GetEndpointTLS(util.FlowEndpoint(), true)
+	conn, err = util.GetEndpointTLS(util.TLSFlowComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = util.GetEndpointTLS(secretsEndpoint, false)
+	conn, err = util.GetEndpointTLS(util.TLSSecretsComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
 	// get ingress client
-	conn, err = util.GetEndpointTLS(util.IngressEndpoint(), true)
+	conn, err = util.GetEndpointTLS(util.TLSIngressComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -544,7 +544,8 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
-	for i := 0; i < 1000; i++ {
+	// one minute wait max
+	for i := 0; i < 60; i++ {
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -577,13 +578,13 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 							}
 						}
 
-						time.Sleep(250 * time.Millisecond)
+						time.Sleep(1000 * time.Millisecond)
 						continue
 					}
 				}
 			}
 
-			time.Sleep(250 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 
 		} else {
 			break

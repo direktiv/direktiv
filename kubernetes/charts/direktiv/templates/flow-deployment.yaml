@@ -61,9 +61,14 @@ spec:
           - name: flow-config
             mountPath: /etc/direktiv/flow-config.yaml
             subPath: flow-config.yaml
-          {{- if ne .Values.flow.certificate "none" }}
-          - name: certs
-            mountPath: "/etc/certs/direktiv"
+          {{- if ne .Values.flow.certificates.flow "none" }}
+          - name: flowcerts
+            mountPath: "/etc/direktiv/certs/flow"
+            readOnly: true
+          {{- end }}
+          {{- if ne .Values.flow.certificates.ingress "none" }}
+          - name: ingresscerts
+            mountPath: "/etc/direktiv/certs/ingress"
             readOnly: true
           {{- end }}
           ports:
@@ -114,11 +119,6 @@ spec:
           - name: grpc-config
             mountPath: /etc/direktiv/grpc-config.yaml
             subPath: grpc-config.yaml
-          {{- if ne  .Values.flow.certificate "none" }}
-          - name: certs
-            mountPath: "/etc/certs/direktiv"
-            readOnly: true
-          {{- end }}
           ports:
             - name: secrets
               containerPort: 2610
@@ -146,10 +146,15 @@ spec:
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
-        {{- if ne  .Values.flow.certificate "none" }}
-        - name: certs
+        {{- if ne  .Values.flow.certificates.flow "none" }}
+        - name: flowcerts
           secret:
-            secretName: {{ .Values.flow.certificate }}
+            secretName: {{ .Values.flow.certificates.flow }}
+        {{- end }}
+        {{- if ne  .Values.flow.certificates.ingress "none" }}
+        - name: ingresscerts
+          secret:
+            secretName: {{ .Values.flow.certificates.ingress }}
         {{- end }}
       {{- with .Values.nodeSelector }}:0
 

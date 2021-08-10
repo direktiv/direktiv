@@ -45,15 +45,10 @@ spec:
       - name: action-templates
         configMap:
           name: api-actiontemplates-cm
-      {{- if ne  .Values.flow.certificate "none" }}
+      {{- if ne  .Values.api.certificate "none" }}
       - name: certs
         secret:
-          secretName: {{ .Values.flow.certificate }}
-      {{- end }}
-      {{- if ne  .Values.flow.certificate "none" }}
-      - name: servecerts
-        secret:
-          secretName: {{ .Values.flow.certificate }}
+          secretName: {{ .Values.api.certificate }}
       {{- end }}
       containers:
       - name: api
@@ -64,7 +59,7 @@ spec:
           httpGet:
             path: /api/healthz
             port: 8080
-            {{- if ne  .Values.flow.certificate "none" }}
+            {{- if ne  .Values.api.certificate "none" }}
             scheme: HTTPS
             {{- end }}
           periodSeconds: 10
@@ -100,14 +95,9 @@ spec:
           mountPath: "/tmp/workflow-templates"
         - name: action-templates
           mountPath: "/tmp/action-templates"
-        {{- if ne  .Values.flow.certificate "none" }}
+        {{- if ne  .Values.api.certificate "none" }}
         - name: certs
-          mountPath: "/etc/certs/direktiv"
-          readOnly: true
-        {{- end }}
-        {{- if ne  .Values.flow.certificate "none" }}
-        - name: servecerts
-          mountPath: "/etc/certs/servedirektiv"
+          mountPath: "/etc/direktiv/certs/http"
           readOnly: true
         {{- end }}
         ports:

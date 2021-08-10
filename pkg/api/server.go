@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -117,7 +115,7 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) initDirektiv() error {
 
-	conn, err := util.GetEndpointTLS(util.IngressEndpoint(), true)
+	conn, err := util.GetEndpointTLS(util.TLSIngressComponent)
 	if err != nil {
 		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
@@ -132,7 +130,7 @@ func (s *Server) initDirektiv() error {
 
 func (s *Server) initIsolates() error {
 
-	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
+	conn, err := util.GetEndpointTLS(util.TLSIsolatesComponent)
 	if err != nil {
 		log.Errorf("can not connect to direktiv isolates: %v", err)
 		return err
@@ -234,24 +232,15 @@ func (s *Server) prepareRoutes() {
 
 }
 
-// const tlsDir = "/etc/certs/servedirektiv"
-const tlsDir = "/etc/certs/direktiv/"
-
-func tlsEnabled() bool {
-	if _, err := os.Stat(tlsDir); err != nil {
-		return false
-	}
-	return true
-}
-
 // Start starts the API server
 func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", apiBind)
 
-	if tlsEnabled() {
+	k, c := util.CertsForComponent(util.TLSHttpComponent)
+	if len(k) > 0 {
 		log.Infof("api tls enabled")
-		return s.srv.ListenAndServeTLS(filepath.Join(tlsDir, "tls.crt"), filepath.Join(tlsDir, "tls.key"))
+		return s.srv.ListenAndServeTLS(c, k)
 	}
 
 	return s.srv.ListenAndServe()

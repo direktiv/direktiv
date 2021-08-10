@@ -27,7 +27,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/isolates-binary
+binaries: cmd/direkcli/*.go build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/isolates-binary
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
@@ -48,7 +48,7 @@ images: image-api image-flow image-init-pod image-secrets image-sidecar image-is
 
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-init-pod push-secrets push-sidecar push-isolates
+push: push-api push-flow push-init-pod push-secrets push-sidecar push-isolates push-tls-create
 
 HELM_CONFIG := "scripts/dev.yaml"
 
@@ -85,7 +85,7 @@ PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'ech
 
 .PHONY: protoc
 protoc: ## Manually regenerates Go packages built from protobuf.
-protoc: 
+protoc:
 	for val in ${PROTOBUF_SOURCE_FILES}; do \
 		echo "Generating protobuf file $$val..."; protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
 	done
@@ -93,20 +93,24 @@ protoc:
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@echo "Building $* binary..."
-	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go
-	@cp build/$*-binary build/$*
+	@if [ -d "cmd/$*" ]; then \
+		echo "Building $* binary..."; \
+		export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		cp build/$*-binary build/$*; \
+	else \
+   	touch $@; \
+	fi
 
 build/%.md5: build/%-binary
 	@echo "Calculating md5 checkum of $<..."
-	@md5sum $< | cut -d" " -f1 > $@
+	@md5sum $< build/docker/$*/Dockerfile > $@
 
 build/%-docker.checksum: build/%.md5 ${DOCKER_FILES}
 	@if ! cmp --silent build/$*.md5 build/$*-docker.checksum; then echo "Building docker image for $* binary..." && cd build && docker build -t direktiv-$* -f docker/$*/Dockerfile . ; else echo "Skipping docker build due to unchanged $* binary." && touch build/$*-docker.checksum; fi
 	@cp build/$*.md5 build/$*-docker.checksum
 
 .PHONY: image-%
-image-%: build/%-docker.checksum
+image-%: cmd/direkcli/*.go build/%-docker.checksum
 	@echo "Make $@: SUCCESS"
 
 RELEASE := ""
@@ -122,7 +126,7 @@ push-%: image-%
 
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
-	if [ ! -d ${mkfile_dir_main}direktiv-ui ]; then \
+	if [ ! -d direktiv-ui ]; then \
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
@@ -133,20 +137,17 @@ docker-ui: ## Manually clone and build the latest UI.
 
 # Misc
 
-.PHONY: docker-all
-docker-all: ## Build the all-in-one image.
-docker-all: images
-	docker build --no-cache -t direktiv-kube ${mkfile_dir_main}/build/docker/all
-
 .PHONY: template-configmaps
 template-configmaps:
 	scripts/misc/generate-api-configmaps.sh
 
-.PHONY: docker-cli
-docker-cli:
-docker-cli: build
-	cp ${mkfile_dir_main}direkcli-linux  ${mkfile_dir_main}build/
-	cd build && docker build -t direktiv-cli -f docker/cli/Dockerfile .
+cmd/direkcli/*.go:
+	@echo "Building linux cli binary...";
+	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direkcli cmd/direkcli/main.go
+	@echo "Building mac cli binary...";
+	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direkcli-darwin cmd/direkcli/main.go
+	@echo "Building linux cli binary...";
+	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direkcli-windows.exe cmd/direkcli/main.go
 
 # Utility Rules
 
@@ -175,3 +176,9 @@ tail-api: ## Tail logs for currently active 'api' container.
 	$(eval API_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-api") | .metadata.name'))
 	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
 	kubectl logs -f ${API_POD} api
+
+.PHONY: tail-isolates
+tail-isolates: ## Tail logs for currently active 'api' container.
+	$(eval ISOLATES_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-isolates") | .metadata.name'))
+	$(eval ISOLATES_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${ISOLATES_RS}) | .metadata.name'))
+	kubectl logs -f ${ISOLATES_POD} isolate-controller

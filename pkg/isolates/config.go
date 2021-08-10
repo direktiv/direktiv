@@ -27,6 +27,7 @@ type config struct {
 	Concurrency     int    `yaml:"concurrency"`
 	Storage         int    `yaml:"storage"`
 	Runtime         string `yaml:"runtime"`
+	PodSecret       string `yaml:"pod-secret"`
 	Memory          struct {
 		Small  int `yaml:"small"`
 		Medium int `yaml:"medium"`
@@ -42,6 +43,7 @@ type config struct {
 		HTTPS string `yaml:"https"`
 		HTTP  string `yaml:"http"`
 	} `yaml:"proxy"`
+	GrpcConfig           string         `yaml:"grpc-config"`
 	AdditionalContainers []v1.Container `yaml:"additionalContainers"`
 }
 
