@@ -206,10 +206,11 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	log.Debugf("%s endpoint starting at %s", name, bind)
 
-	// Create the TLS credentials
-	if _, err := os.Stat(TLSKey); !os.IsNotExist(err) {
-		log.Infof("enabling tls for %s", name)
-		creds, err := credentials.NewServerTLSFromFile(TLSCert, TLSKey)
+	// use tls if key file found
+	key, cert := CertsForComponent(name)
+	if len(key) > 0 {
+		log.Infof("enabling tls for grpc service %s", name)
+		creds, err := credentials.NewServerTLSFromFile(cert, key)
 		if err != nil {
 			return fmt.Errorf("could not load TLS keys: %s", err)
 		}
