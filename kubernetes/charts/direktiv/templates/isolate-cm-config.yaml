@@ -35,7 +35,7 @@ data:
       max-scale: 3
 
       # rollout seconds for knative services
-      rollout-duration: 30
+      rollout-duration: 300
 
       # shaping network traffic if supported by network plugin
       net-shape: {{ .Values.isolates.netShape }}

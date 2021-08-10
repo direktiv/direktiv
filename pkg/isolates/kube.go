@@ -324,7 +324,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 		info.Size = &sz
 		info.MinScale = &scale
 
-		status, statusMsg := statusFromCondition(svc.Status.Conditions)
+		status, conds := statusFromCondition(svc.Status.Conditions)
 
 		img, cmd := containerFromList(svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
 		info.Image = &img
@@ -333,10 +333,10 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 		svn := svc.Name
 
 		ii := &igrpc.IsolateInfo{
-			Info:          info,
-			ServiceName:   &svn,
-			Status:        &status,
-			StatusMessage: &statusMsg,
+			Info:        info,
+			ServiceName: &svn,
+			Status:      &status,
+			Conditions:  conds,
 		}
 
 		b = append(b, ii)
@@ -609,10 +609,11 @@ func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
 }
 
-func statusFromCondition(conditions []apis.Condition) (string, string) {
-	// status and status message
+func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Condition) {
+	// status and status messages
 	status := fmt.Sprintf("%s", corev1.ConditionUnknown)
-	var statusMsg string
+
+	var condList []*igrpc.Condition
 
 	for m := range conditions {
 		cond := conditions[m]
@@ -621,15 +622,20 @@ func statusFromCondition(conditions []apis.Condition) (string, string) {
 
 		if cond.Type == v1.RevisionConditionReady {
 			status = fmt.Sprintf("%s", cond.Status)
-		} else if cond.Type == v1.RevisionConditionResourcesAvailable ||
-			cond.Type == v1.RevisionConditionContainerHealthy ||
-			cond.Type == v1.ServiceConditionConfigurationsReady {
-			// these types can report errors
-			statusMsg = fmt.Sprintf("%s %s", statusMsg, cond.Message)
 		}
+
+		ct := string(cond.Type)
+		st := string(cond.Status)
+		c := &igrpc.Condition{
+			Name:    &ct,
+			Status:  &st,
+			Reason:  &cond.Reason,
+			Message: &cond.Message,
+		}
+		condList = append(condList, c)
 	}
 
-	return status, strings.TrimSpace(statusMsg)
+	return status, condList
 
 }
 
@@ -676,6 +682,10 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		return resp, err
 	}
 
+	// ContainerStatuses []ContainerStatus `json:"containerStatuses,omitempty"`
+	// ActualReplicas int32 `json:"actualReplicas,omitempty"`
+	// DesiredReplicas int32 `json:"desiredReplicas,omitempty"`
+
 	fn := func(rev v1.Revision) *igrpc.Revision {
 		info := &igrpc.Revision{}
 
@@ -690,9 +700,9 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		info.Generation = &gen
 
 		// set status
-		status, statusMsg := statusFromCondition(rev.Status.Conditions)
+		status, conds := statusFromCondition(rev.Status.Conditions)
 		info.Status = &status
-		info.StatusMessage = &statusMsg
+		info.Conditions = conds
 
 		img, cmd := containerFromList(rev.Spec.Containers)
 		info.Image = &img
@@ -767,17 +777,44 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo) error {
 		Annotations: make(map[string]string),
 	}
 
+	spec.Annotations["serving.knative.dev/rolloutDuration"] =
+		fmt.Sprintf("%ds", isolateConfig.RolloutDuration)
 	spec.Annotations["autoscaling.knative.dev/minScale"] =
 		fmt.Sprintf("%d", info.GetMinScale())
 
+	// move all traffic to new revision
+	var (
+		useLatest bool
+		percent   int64
+	)
+	useLatest = true
+	percent = 100
+	tr := []v1.TrafficTarget{}
+	tt := v1.TrafficTarget{
+		LatestRevision: &useLatest,
+		Percent:        &percent,
+	}
+	tr = append(tr, tt)
+
 	svc := v1.Service{
 		Spec: v1.ServiceSpec{
+			RouteSpec: v1.RouteSpec{
+				Traffic: tr,
+			},
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: spec,
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							Containers: containers,
+							Volumes: []corev1.Volume{
+								{
+									Name: "workdir",
+									VolumeSource: corev1.VolumeSource{
+										EmptyDir: &corev1.EmptyDirVolumeSource{},
+									},
+								},
+							},
 						},
 					},
 				},

@@ -164,6 +164,8 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
 
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/functions", s.handler.getWorkflowFunctions).Methods(http.MethodGet).Name(RN_GetWorkflowFunctions)
+
 	// FunctionRevisions ..
 	s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
