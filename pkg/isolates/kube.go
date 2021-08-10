@@ -77,6 +77,9 @@ func (is *isolateServer) DeleteRevision(ctx context.Context,
 		return &empty, err
 	}
 
+	// check if there is traffic on it
+	// decline if there is still traffic on it
+
 	err = cs.ServingV1().Revisions(isolateConfig.Namespace).
 		Delete(context.Background(), in.GetRevision(), metav1.DeleteOptions{})
 	if err != nil {
@@ -696,7 +699,14 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 
 	for i := range svc.Status.Traffic {
 		tt := svc.Status.Traffic[i]
-		tm[tt.RevisionName] = tt.Percent
+		// sometimes knative routes between the same revisions
+		// in this case we just add the percents
+		if p, ok := tm[tt.RevisionName]; ok {
+			newp := *p + *tt.Percent
+			tm[tt.RevisionName] = &newp
+		} else {
+			tm[tt.RevisionName] = tt.Percent
+		}
 	}
 
 	n := svc.Labels[ServiceHeaderName]

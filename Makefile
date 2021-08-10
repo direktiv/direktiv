@@ -58,14 +58,14 @@ cluster: push
 	$(eval X := $(shell kubectl get namespaces | grep -c direktiv-services-direktiv))
 	if [ ${X} -eq 0 ]; then kubectl create namespace direktiv-services-direktiv; fi
 	if helm status direktiv; then helm uninstall direktiv; fi
-	kubectl delete --all ksvc -n direktiv-services-direktiv
+	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
 	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
 
 .PHONY: teardown
 teardown: ## Brings down an existing cluster.
 	if helm status direktiv; then helm uninstall direktiv; fi
-	kubectl delete --all ksvc -n direktiv-services-direktiv
+	kubectl delete -l direktiv.io/scope=w ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
 
 GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go')
@@ -156,7 +156,7 @@ REGEX := "localhost:5000.*"
 .PHONY: purge-images
 purge-images: ## Purge images from knative cache by matching $REGEX.
 	$(eval IMAGES := $(shell sudo k3s crictl img -o json | jq '.images[] | select (.repoDigests[] | test(${REGEX})) | .id'))
-	kubectl delete --all ksvc -n direktiv-services-direktiv
+	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	sudo k3s crictl rmi ${IMAGES}
 
 .PHONY: tail-flow
