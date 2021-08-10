@@ -9,14 +9,12 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/vorteil/direktiv/pkg/secrets"
-	"github.com/vorteil/direktiv/pkg/util"
+	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {
 
 	backend := "db"
-
-	util.GRPCUnmarshalConfig()
 
 	srv, err := secrets.NewServer(backend)
 	if err != nil {

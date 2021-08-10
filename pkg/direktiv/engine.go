@@ -544,7 +544,8 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
-	for i := 0; i < 1000; i++ {
+	// one minute wait max
+	for i := 0; i < 60; i++ {
 		log.Debugf("isolate request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -577,13 +578,13 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 							}
 						}
 
-						time.Sleep(250 * time.Millisecond)
+						time.Sleep(1000 * time.Millisecond)
 						continue
 					}
 				}
 			}
 
-			time.Sleep(250 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 
 		} else {
 			break

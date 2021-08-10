@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/vorteil/direktiv/pkg/api"
-	"github.com/vorteil/direktiv/pkg/util"
+	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
 // Envrioment Value Name for Manual apikey
@@ -18,8 +18,6 @@ const API_KEY_ENV = "DIREKTIV_API_KEY"
 var apiKey = ""
 
 func main() {
-
-	util.GRPCUnmarshalConfig()
 
 	cfg, err := api.Configure()
 	if err != nil {

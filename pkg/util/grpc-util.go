@@ -32,7 +32,8 @@ const (
 	grpcSettingsFile = "/etc/direktiv/grpc-config.yaml"
 )
 
-type grpConfig struct {
+// GrpcConfig holds the information about the grpc clients and servers
+type GrpcConfig struct {
 	MaxSendClient int `yaml:"max-send-client"`
 	MaxRcvClient  int `yaml:"max-rcv-client"`
 	MaxSendServer int `yaml:"max-send-server"`
@@ -46,7 +47,7 @@ type grpConfig struct {
 var (
 	additionalServerOptions []grpc.ServerOption
 	additionalCallOptions   []grpc.CallOption
-	gcfg                    grpConfig
+	grpcCfg                 GrpcConfig
 
 	tlsComponents map[string]tlsComponent
 )
@@ -66,9 +67,11 @@ type tlsComponent struct {
 }
 
 func init() {
+
 	resolver.Register(NewBuilder())
 
-	GRPCUnmarshalConfig()
+	grpcUnmarshalConfig()
+
 	tlsComponents = make(map[string]tlsComponent)
 
 	tlsComponents[TLSSecretsComponent] = tlsComponent{
@@ -84,7 +87,7 @@ func init() {
 		certificate: filepath.Join(certBase, TLSIsolatesComponent),
 	}
 	tlsComponents[TLSFlowComponent] = tlsComponent{
-		endpoint:    IsolateEndpoint(),
+		endpoint:    FlowEndpoint(),
 		certificate: filepath.Join(certBase, TLSFlowComponent),
 	}
 	tlsComponents[TLSHttpComponent] = tlsComponent{
@@ -157,43 +160,68 @@ func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
 	options = append(options, grpc.WithBalancerName(roundrobin.Name))
 	options = append(options, globalGRPCDialOptions...)
 
+	log.Infof("dialing with %s", c.endpoint)
+
+	if len(c.endpoint) == 0 {
+		return nil, fmt.Errorf("endpoint value empty")
+	}
+
 	return grpc.Dial(c.endpoint, options...)
 
 }
 
 // IsolateEndpoint return grpc encpoint for isolate services
 func IsolateEndpoint() string {
-	return gcfg.IsolateEndpoint
+	return grpcCfg.IsolateEndpoint
 }
 
 // IngressEndpoint return grpc encpoint for ingress services
 func IngressEndpoint() string {
-	return gcfg.IngressEndpoint
+	return grpcCfg.IngressEndpoint
 }
 
 // FlowEndpoint return grpc encpoint for flow services
 func FlowEndpoint() string {
-	return gcfg.FlowEnpoint
+	return grpcCfg.FlowEnpoint
 }
 
-// GRPCUnmarshalConfig reads default grpc config file in
-func GRPCUnmarshalConfig() {
+// GrpcCfg returns the full grpc configuration
+func GrpcCfg() GrpcConfig {
+	return grpcCfg
+}
 
-	cfgBytes, err := ioutil.ReadFile(grpcSettingsFile)
-	if err != nil {
-		return
+func grpcUnmarshalConfig() {
+
+	// try to build the grpc config from envs
+	if _, err := os.Stat("/etc/direktiv/grpc-config.yaml"); os.IsNotExist(err) {
+
+		grpcCfg.FlowEnpoint = os.Getenv(DirektivFlowEndpoint)
+		grpcCfg.IsolateEndpoint = os.Getenv(DirektivIsolateEndpoint)
+		grpcCfg.IngressEndpoint = os.Getenv(DirektivIngressEndpoint)
+
+		fmt.Sscan(os.Getenv(DirektivMaxClientRcv), &grpcCfg.MaxRcvClient)
+		fmt.Sscan(os.Getenv(DirektivMaxServerRcv), &grpcCfg.MaxRcvServer)
+		fmt.Sscan(os.Getenv(DirektivMaxClientSend), &grpcCfg.MaxSendClient)
+		fmt.Sscan(os.Getenv(DirektivMaxServerSend), &grpcCfg.MaxSendServer)
+
+	} else {
+		cfgBytes, err := ioutil.ReadFile(grpcSettingsFile)
+		if err != nil {
+			return
+		}
+
+		err = yaml.Unmarshal(cfgBytes, &grpcCfg)
+		if err != nil {
+			return
+		}
 	}
 
-	err = yaml.Unmarshal(cfgBytes, &gcfg)
-	if err != nil {
-		return
-	}
-	log.Infof("setting grpc server send/rcv size: %v/%v", gcfg.MaxSendServer, gcfg.MaxRcvServer)
-	additionalServerOptions = append(additionalServerOptions, grpc.MaxSendMsgSize(gcfg.MaxSendServer))
-	additionalServerOptions = append(additionalServerOptions, grpc.MaxRecvMsgSize(gcfg.MaxRcvServer))
-	log.Infof("setting grpc client send/rcv size: %v/%v", gcfg.MaxSendClient, gcfg.MaxRcvClient)
-	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(gcfg.MaxSendClient))
-	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(gcfg.MaxRcvClient))
+	log.Infof("setting grpc server send/rcv size: %v/%v", grpcCfg.MaxSendServer, grpcCfg.MaxRcvServer)
+	additionalServerOptions = append(additionalServerOptions, grpc.MaxSendMsgSize(grpcCfg.MaxSendServer))
+	additionalServerOptions = append(additionalServerOptions, grpc.MaxRecvMsgSize(grpcCfg.MaxRcvServer))
+	log.Infof("setting grpc client send/rcv size: %v/%v", grpcCfg.MaxSendClient, grpcCfg.MaxRcvClient)
+	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(grpcCfg.MaxSendClient))
+	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(grpcCfg.MaxRcvClient))
 
 }
 

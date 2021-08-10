@@ -65,6 +65,8 @@ data:
         https: ""
         http: ""
 
+      grpc-config: {{ include "direktiv.fullname" . }}-config-grpc
+
       # additional sidecar containers
       additionalContainers:
 {{- if .Values.isolates.extraContainersPod }}

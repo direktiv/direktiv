@@ -43,6 +43,7 @@ type config struct {
 		HTTPS string `yaml:"https"`
 		HTTP  string `yaml:"http"`
 	} `yaml:"proxy"`
+	GrpcConfig           string         `yaml:"grpc-config"`
 	AdditionalContainers []v1.Container `yaml:"additionalContainers"`
 }
 

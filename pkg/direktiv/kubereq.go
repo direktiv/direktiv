@@ -62,6 +62,8 @@ func isKnativeFunction(client igrpc.IsolatesServiceClient,
 	a[isolates.ServiceHeaderWorkflow] = workflow
 	a[isolates.ServiceHeaderScope] = isolates.PrefixService
 
+	log.Debugf("knative function search: %v", a)
+
 	l, err := client.ListIsolates(context.Background(), &igrpc.ListIsolatesRequest{
 		Annotations: a,
 	})

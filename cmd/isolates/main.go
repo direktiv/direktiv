@@ -10,7 +10,7 @@ import (
 	runtime "github.com/banzaicloud/logrus-runtime-formatter"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/isolates"
-	"github.com/vorteil/direktiv/pkg/util"
+	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {
@@ -20,8 +20,6 @@ func main() {
 	}}
 	formatter.Line = true
 	log.SetFormatter(&formatter)
-
-	util.GRPCUnmarshalConfig()
 
 	log.Infof("starting isolate server")
 

@@ -57,8 +57,9 @@ flow:
   db: ""
   isolateProtocol: "http"
   certificate: none
-  flowCertificate: none
-  ingressCertificate: none
+  certificates:
+    flow: none
+    ingress: none
   extraContainers: []
   extraVolumeMounts:
     # - name: service-template

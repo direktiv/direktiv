@@ -52,10 +52,11 @@ func StartServer(echan chan error) {
 		echan <- fmt.Errorf("grpc response to flow is not configured")
 	}
 
-	err = util.GrpcStart(&grpcServer, "isolate", fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
-		igrpc.RegisterIsolatesServiceServer(srv, &isolateServer{})
-		reflection.Register(srv)
-	})
+	err = util.GrpcStart(&grpcServer, util.TLSIsolatesComponent,
+		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
+			igrpc.RegisterIsolatesServiceServer(srv, &isolateServer{})
+			reflection.Register(srv)
+		})
 
 	if err != nil {
 		echan <- err

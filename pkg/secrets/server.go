@@ -43,7 +43,7 @@ func (s *Server) Run() {
 
 	log.Infof("starting secret server")
 
-	util.GrpcStart(&s.grpc, "secrets", "127.0.0.1:2610", func(srv *grpc.Server) {
+	util.GrpcStart(&s.grpc, util.TLSSecretsComponent, "127.0.0.1:2610", func(srv *grpc.Server) {
 		secretsgrpc.RegisterSecretsServiceServer(srv, s)
 	})
 

@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
-	_ "github.com/vorteil/direktiv/pkg/direktiv"
+	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {

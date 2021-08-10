@@ -9,7 +9,6 @@ import (
 	shellwords "github.com/mattn/go-shellwords"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -144,7 +143,7 @@ func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 	userContainer := v1.Container{
 		ImagePullPolicy: pullPolicy,
 		Resources:       res,
-		Name:            "direktiv-container",
+		Name:            containerUser,
 		Image:           image,
 		VolumeMounts: []v1.VolumeMount{
 			{
@@ -152,7 +151,7 @@ func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 				MountPath: "/direktiv-data",
 			},
 		},
-		Env: proxyEnvs(),
+		Env: proxyEnvs(false),
 	}
 
 	if len(cmd) > 0 {
@@ -169,11 +168,9 @@ func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 
 func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
 
-	return []v1.EnvVar{
-		{
-			Name:  util.DirektivNamespace,
-			Value: in.GetInfo().GetNamespace(),
-		},
+	e := proxyEnvs(true)
+
+	add := []v1.EnvVar{
 		{
 			Name:  PodEnvActionID,
 			Value: in.GetActionID(),
@@ -186,11 +183,9 @@ func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
 			Name:  PodEnvStep,
 			Value: fmt.Sprintf("%d", in.GetStep()),
 		},
-		{
-			Name:  util.DirektivFlowEndpoint,
-			Value: util.FlowEndpoint(),
-		},
 	}
+
+	return append(e, add...)
 
 }
 
@@ -333,7 +328,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 					Containers: []v1.Container{
 						{
 							ImagePullPolicy: pullPolicy,
-							Name:            "direktiv-sidecar",
+							Name:            containerSidecar,
 							Image:           isolateConfig.InitPod,
 							VolumeMounts: []v1.VolumeMount{
 								{

@@ -61,12 +61,12 @@ spec:
           - name: flow-config
             mountPath: /etc/direktiv/flow-config.yaml
             subPath: flow-config.yaml
-          {{- if ne .Values.flowCertificate.certificate "none" }}
+          {{- if ne .Values.flow.certificates.flow "none" }}
           - name: flowcerts
             mountPath: "/etc/direktiv/certs/flow"
             readOnly: true
           {{- end }}
-          {{- if ne .Values.ingressCertificate.certificate "none" }}
+          {{- if ne .Values.flow.certificates.ingress "none" }}
           - name: ingresscerts
             mountPath: "/etc/direktiv/certs/ingress"
             readOnly: true
@@ -146,15 +146,15 @@ spec:
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
-        {{- if ne  .Values.flowCertificate.certificate "none" }}
+        {{- if ne  .Values.flow.certificates.flow "none" }}
         - name: flowcerts
           secret:
-            secretName: {{ .Values.flowCertificate.certificate }}
+            secretName: {{ .Values.flow.certificates.flow }}
         {{- end }}
-        {{- if ne  .Values.ingressCertificate.certificate "none" }}
+        {{- if ne  .Values.flow.certificates.ingress "none" }}
         - name: ingresscerts
           secret:
-            secretName: {{ .Values.ingressCertificate.certificate }}
+            secretName: {{ .Values.flow.certificates.ingress }}
         {{- end }}
       {{- with .Values.nodeSelector }}:0
 
