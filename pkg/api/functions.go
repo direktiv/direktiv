@@ -18,6 +18,11 @@ type listFunctionsRequest struct {
 	Workflow  string `json:"workflow"`
 }
 
+type functionResponseList struct {
+	Config   *grpc.IsolateConfig       `json:"config,omitempty"`
+	Services []*functionResponseObject `json:"services"`
+}
+
 type functionResponseObject struct {
 	Info struct {
 		Size      int32  `json:"size"`
@@ -138,7 +143,12 @@ func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
 	isolates := resp.GetIsolates()
 	out := prepareIsolatesForResponse(isolates)
 
-	if err := json.NewEncoder(w).Encode(out); err != nil {
+	l := &functionResponseList{
+		Config:   resp.GetConfig(),
+		Services: out,
+	}
+
+	if err := json.NewEncoder(w).Encode(l); err != nil {
 		ErrResponse(w, err)
 		return
 	}
@@ -180,6 +190,7 @@ type getFunctionResponse struct {
 	Name      string                         `json:"name,omitempty"`
 	Namespace string                         `json:"namespace,omitempty"`
 	Workflow  string                         `json:"workflow,omitempty"`
+	Config    *grpc.IsolateConfig            `json:"config,omitempty"`
 	Revisions []getFunctionResponse_Revision `json:"revisions,omitempty"`
 }
 
@@ -213,6 +224,7 @@ func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
 		Namespace: resp.GetNamespace(),
 		Workflow:  resp.GetWorkflow(),
 		Revisions: make([]getFunctionResponse_Revision, 0),
+		Config:    resp.GetConfig(),
 	}
 
 	for _, rev := range resp.GetRevisions() {

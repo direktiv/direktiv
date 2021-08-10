@@ -126,6 +126,11 @@ func (is *isolateServer) ListIsolates(ctx context.Context,
 
 	resp.Isolates = items
 
+	var ms = int32(isolateConfig.MaxScale)
+	resp.Config = &igrpc.IsolateConfig{
+		Maxscale: &ms,
+	}
+
 	return &resp, nil
 
 }
@@ -709,10 +714,6 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		return resp, err
 	}
 
-	// ContainerStatuses []ContainerStatus `json:"containerStatuses,omitempty"`
-	// ActualReplicas int32 `json:"actualReplicas,omitempty"`
-	// DesiredReplicas int32 `json:"desiredReplicas,omitempty"`
-
 	fn := func(rev v1.Revision) *igrpc.Revision {
 		info := &igrpc.Revision{}
 
@@ -767,6 +768,11 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 
 	resp.Revisions = revs
 
+	// add config
+	var ms = int32(isolateConfig.MaxScale)
+	resp.Config = &igrpc.IsolateConfig{
+		Maxscale: &ms,
+	}
 	return resp, nil
 
 }
@@ -831,7 +837,8 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 
 	// get all revisions
 
-	s, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(), svn, metav1.GetOptions{})
+	s, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(),
+		svn, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
 		return err

@@ -30,6 +30,6 @@ message GetIsolateResponse {
 	optional string name = 1;
 	optional string namespace = 2;
 	optional string workflow = 3;
-
-	repeated Revision revisions = 4;
+	optional IsolateConfig config = 4;
+	repeated Revision revisions = 5;
 }

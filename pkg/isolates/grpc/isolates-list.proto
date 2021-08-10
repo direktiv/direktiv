@@ -14,7 +14,8 @@ message IsolateInfo {
 }
 
 message ListIsolatesResponse {
-	repeated IsolateInfo isolates = 1;
+	optional IsolateConfig config = 1;
+	repeated IsolateInfo isolates = 2;
 }
 
 message ListIsolatesRequest {

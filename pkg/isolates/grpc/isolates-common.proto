@@ -21,3 +21,7 @@ message Condition {
 	optional string reason = 3;
 	optional string message = 4;
 }
+
+message IsolateConfig {
+	optional int32 maxscale = 1;
+}
