@@ -486,12 +486,6 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 	for _, fn := range workflow.Functions {
 		switch fn.GetType() {
-		// case model.DefaultFunctionType:
-		// 	fallthrough
-		// case model.IsolatedContainerFunctionType:
-		// 	fallthrough
-		// case model.SubflowFunctionType:
-		// 	continue
 		case model.ReusableContainerFunctionType:
 			wfFns = true
 		case model.NamespacedKnativeFunctionType:
