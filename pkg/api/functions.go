@@ -407,8 +407,22 @@ func calculateList(client igrpc.IsolatesServiceClient,
 
 	gisos := make(map[string]*grpc.IsolateInfo)
 
-	status := "False"
-	img := "does not exist"
+	imgStatus := "False"
+	imgErr := "not found"
+
+	condName := "Ready"
+	condStatus := "False"
+
+	condMessage := "Global service does not exist"
+	if len(annotations) > 1 {
+		condMessage = "Namespace service does not exist"
+	}
+
+	cond := &igrpc.Condition{
+		Name:    &condName,
+		Status:  &condStatus,
+		Message: &condMessage,
+	}
 
 	// populate the map with "error items"
 	for i := range items {
@@ -426,10 +440,13 @@ func calculateList(client igrpc.IsolatesServiceClient,
 		}
 
 		info := &grpc.IsolateInfo{
-			Status:      &status,
-			ServiceName: &svcName,
+			Status:      &imgStatus,
+			ServiceName: &li.service,
 			Info: &grpc.BaseInfo{
-				Image: &img,
+				Image: &imgErr,
+			},
+			Conditions: []*igrpc.Condition{
+				cond,
 			},
 		}
 		gisos[svcName] = info
