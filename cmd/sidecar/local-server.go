@@ -46,8 +46,6 @@ func (srv *LocalServer) initFlow() error {
 		return err
 	}
 
-	log.Debugf(">> conn %v", conn)
-
 	srv.flow = flow.NewDirektivFlowClient(conn)
 
 	return nil

@@ -1,14 +1,18 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/isolates"
 	"github.com/vorteil/direktiv/pkg/isolates/grpc"
+	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 )
 
 type listFunctionsRequest struct {
@@ -386,6 +390,71 @@ func (h *Handler) deleteRevision(w http.ResponseWriter, r *http.Request) {
 	accepted(w)
 }
 
+type serviceItem struct {
+	name, service string
+}
+
+func calculateList(client igrpc.IsolatesServiceClient,
+	items []serviceItem, annotations map[string]string) ([]*grpc.IsolateInfo, error) {
+
+	resp, err := client.ListIsolates(context.Background(),
+		&grpc.ListIsolatesRequest{
+			Annotations: annotations,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	gisos := make(map[string]*grpc.IsolateInfo)
+
+	status := "False"
+	img := "does not exist"
+
+	// populate the map with "error items"
+	for i := range items {
+		li := items[i]
+
+		ns := ""
+		if annons, ok := annotations[isolateServiceNamespaceAnnotation]; ok {
+			ns = annons
+		}
+
+		svcName, _, err := isolates.GenerateServiceName(ns, "", li.service)
+		if err != nil {
+			log.Errorf("can not generate service name: %v", err)
+			continue
+		}
+
+		info := &grpc.IsolateInfo{
+			Status:      &status,
+			ServiceName: &svcName,
+			Info: &grpc.BaseInfo{
+				Image: &img,
+			},
+		}
+		gisos[svcName] = info
+
+	}
+
+	isos := resp.GetIsolates()
+
+	for i := range isos {
+		// that item exists, we replace
+		log.Debugf("checking %v", isos[i].GetServiceName())
+		if _, ok := gisos[isos[i].GetServiceName()]; ok {
+			gisos[isos[i].GetServiceName()] = isos[i]
+		}
+	}
+
+	var retIsos []*grpc.IsolateInfo
+
+	for _, v := range gisos {
+		retIsos = append(retIsos, v)
+	}
+	return retIsos, nil
+
+}
+
 // /api/namespaces/{namespace}/workflows/{workflowTarget}/functions
 func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
@@ -410,36 +479,37 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var hasWorkflowFunctions, hasNamespaceFunctions, hasGlobalFunctions bool
-	nsFunctions := make(map[string]interface{})
-	globalFunctions := make(map[string]interface{})
+	var fnNS, fnGlobal []serviceItem
 
 	allIsolates := make([]*grpc.IsolateInfo, 0)
+	wfFns := false
 
 	for _, fn := range workflow.Functions {
 		switch fn.GetType() {
-		case model.DefaultFunctionType:
-			fallthrough
-		case model.IsolatedContainerFunctionType:
-			fallthrough
-		case model.SubflowFunctionType:
-			continue
+		// case model.DefaultFunctionType:
+		// 	fallthrough
+		// case model.IsolatedContainerFunctionType:
+		// 	fallthrough
+		// case model.SubflowFunctionType:
+		// 	continue
 		case model.ReusableContainerFunctionType:
-			// Workflow scope
-			hasWorkflowFunctions = true
+			wfFns = true
 		case model.NamespacedKnativeFunctionType:
-			// Namespace scope
-			hasNamespaceFunctions = true
-			nsFunctions[fn.GetID()] = nil
+			fnNS = append(fnNS, serviceItem{
+				name:    fn.GetID(),
+				service: fn.(*model.NamespacedFunctionDefinition).KnativeService,
+			})
 		case model.GlobalKnativeFunctionType:
-			// Global scope
-			hasGlobalFunctions = true
-			globalFunctions[fn.GetID()] = nil
+			fnGlobal = append(fnGlobal, serviceItem{
+				name:    fn.GetID(),
+				service: fn.(*model.GlobalFunctionDefinition).KnativeService,
+			})
 		}
 	}
 
-	if hasWorkflowFunctions {
-		resp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
+	// we add all workflow functions
+	if wfFns {
+		wfResp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
 			Annotations: map[string]string{
 				isolateServiceWorkflowAnnotation:  wf,
 				isolateServiceNamespaceAnnotation: ns,
@@ -450,45 +520,38 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 			ErrResponse(w, err)
 			return
 		}
-
-		allIsolates = append(allIsolates, resp.GetIsolates()...)
+		allIsolates = append(allIsolates, wfResp.GetIsolates()...)
 	}
 
-	if hasNamespaceFunctions {
-		resp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
-			Annotations: map[string]string{
+	if len(fnNS) > 0 {
+
+		i, err := calculateList(h.s.isolates, fnNS,
+			map[string]string{
 				isolateServiceNamespaceAnnotation: ns,
 				isolateServiceScopeAnnotation:     prefixNamespace,
-			},
-		})
+			})
+
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
+		allIsolates = append(allIsolates, i...)
 
-		for _, fn := range resp.GetIsolates() {
-			if _, ok := nsFunctions[fn.GetInfo().GetName()]; ok {
-				allIsolates = append(allIsolates, fn)
-			}
-		}
 	}
 
-	if hasGlobalFunctions {
-		resp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
-			Annotations: map[string]string{
+	if len(fnGlobal) > 0 {
+
+		i, err := calculateList(h.s.isolates, fnGlobal,
+			map[string]string{
 				isolateServiceScopeAnnotation: prefixGlobal,
-			},
-		})
+			})
+
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
+		allIsolates = append(allIsolates, i...)
 
-		for _, fn := range resp.GetIsolates() {
-			if _, ok := globalFunctions[fn.GetInfo().GetName()]; ok {
-				allIsolates = append(allIsolates, fn)
-			}
-		}
 	}
 
 	out := prepareIsolatesForResponse(allIsolates)

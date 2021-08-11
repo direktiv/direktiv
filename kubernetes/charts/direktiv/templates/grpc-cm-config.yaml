@@ -21,3 +21,15 @@ data:
       flow-enpoint: dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777
 
       ingress-endpoint: dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666
+
+      isolate-tls: {{ .Values.isolates.certificate }}
+
+      isolate-mtls: {{ .Values.isolates.mtls }}
+
+      ingress-tls: {{ .Values.flow.certificates.ingress }}
+
+      ingress-mtls: {{ .Values.flow.certificates.mtlsIngress }}
+
+      flow-tls: {{ .Values.flow.certificates.flow }}
+
+      flow-mtls: {{ .Values.flow.certificates.mtlsFlow }}

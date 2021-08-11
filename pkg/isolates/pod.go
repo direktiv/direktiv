@@ -9,6 +9,7 @@ import (
 	shellwords "github.com/mattn/go-shellwords"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -272,7 +273,9 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 	annotations["kubernetes.io/ingress-bandwidth"] = isolateConfig.NetShape
 	annotations["kubernetes.io/egress-bandwidth"] = isolateConfig.NetShape
 
-	initJobVars := append(commonJobVars, v1.EnvVar{
+	initJobVars := make([]v1.EnvVar, len(commonJobVars))
+	copy(initJobVars, commonJobVars)
+	initJobVars = append(initJobVars, v1.EnvVar{
 		Name:  "DIREKTIV_LIFECYCLE",
 		Value: "init",
 	})
@@ -282,6 +285,42 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 			Name:  "DIREKTIV_LIFECYCLE",
 			Value: "run",
 		})
+
+	// if flow uses tls or mtls we need the certificate
+	// needs to have the same name in direktiv's namespace as it has
+	// in the service namespace
+
+	tlsVolumeMount := v1.VolumeMount{}
+
+	volumes := []v1.Volume{
+		{
+			Name: "workdir",
+			VolumeSource: v1.VolumeSource{
+				EmptyDir: &v1.EmptyDirVolumeSource{},
+			},
+		},
+	}
+
+	volumeMounts := []v1.VolumeMount{
+		{
+			Name:      "workdir",
+			MountPath: "/direktiv-data",
+		},
+	}
+
+	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+		tlsVolume := v1.Volume{}
+		tlsVolume.Name = "flowcerts"
+		tlsVolume.Secret = &v1.SecretVolumeSource{
+			SecretName: util.GrpcCfg().FlowTLS,
+		}
+		volumes = append(volumes, tlsVolume)
+
+		tlsVolumeMount.Name = "flowcerts"
+		tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
+		tlsVolumeMount.ReadOnly = true
+		volumeMounts = append(volumeMounts, tlsVolumeMount)
+	}
 
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -298,26 +337,14 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 				},
 				Spec: v1.PodSpec{
 					ImagePullSecrets: createPullSecrets(info.GetNamespace()),
-					Volumes: []v1.Volume{
-						{
-							Name: "workdir",
-							VolumeSource: v1.VolumeSource{
-								EmptyDir: &v1.EmptyDirVolumeSource{},
-							},
-						},
-					},
+					Volumes:          volumes,
 					InitContainers: []v1.Container{
 						{
 							ImagePullPolicy: pullPolicy,
 							Name:            "init-container",
 							Image:           isolateConfig.InitPod,
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      "workdir",
-									MountPath: "/direktiv-data",
-								},
-							},
-							Env: initJobVars,
+							VolumeMounts:    volumeMounts,
+							Env:             initJobVars,
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: 8890,
@@ -330,13 +357,8 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 							ImagePullPolicy: pullPolicy,
 							Name:            containerSidecar,
 							Image:           isolateConfig.InitPod,
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      "workdir",
-									MountPath: "/direktiv-data",
-								},
-							},
-							Env: sidecarJobVars,
+							VolumeMounts:    volumeMounts,
+							Env:             sidecarJobVars,
 						},
 						userContainer,
 					},

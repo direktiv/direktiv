@@ -139,6 +139,7 @@ func (s *Server) initIsolates() error {
 	log.Infof("connecting to %s", util.IsolateEndpoint())
 
 	s.isolates = igrpc.NewIsolatesServiceClient(conn)
+
 	return nil
 }
 
@@ -237,7 +238,7 @@ func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", apiBind)
 
-	k, c := util.CertsForComponent(util.TLSHttpComponent)
+	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
 	if len(k) > 0 {
 		log.Infof("api tls enabled")
 		return s.srv.ListenAndServeTLS(c, k)

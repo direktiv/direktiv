@@ -30,10 +30,10 @@ spec:
         - name: config-file
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-isolate
-        {{- if ne  .Values.flow.certificate "none" }}
+        {{- if ne  .Values.isolates.certificate "none" }}
         - name: certs
           secret:
-            secretName: {{ .Values.flow.certificate }}
+            secretName: {{ .Values.isolates.certificate }}
         {{- end }}
       containers:
         {{- if .Values.isolates.extraContainers }}
@@ -41,9 +41,9 @@ spec:
         {{- end }}
         - name: isolate-controller
           volumeMounts:
-          {{- if ne .Values.flow.certificate "none" }}
+          {{- if ne  .Values.isolates.certificate "none" }}
           - name: certs
-            mountPath: "/etc/certs/direktiv"
+            mountPath: "/etc/direktiv/certs/isolates"
             readOnly: true
           {{- end }}
           - name: grpc-config

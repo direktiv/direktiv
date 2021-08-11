@@ -52,6 +52,11 @@ push: push-api push-flow push-init-pod push-secrets push-sidecar push-isolates p
 
 HELM_CONFIG := "scripts/dev.yaml"
 
+.PHONY: helm-reinstall
+helm-reinstall: ## Re-installes direktiv without pushing images
+	if helm status direktiv; then helm uninstall direktiv; fi
+	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
+
 .PHONY: cluster
 cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the cluster.
 cluster: push
@@ -178,7 +183,7 @@ tail-api: ## Tail logs for currently active 'api' container.
 	kubectl logs -f ${API_POD} api
 
 .PHONY: tail-isolates
-tail-isolates: ## Tail logs for currently active 'api' container.
+tail-isolates: ## Tail logs for currently active 'isolates' container.
 	$(eval ISOLATES_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-isolates") | .metadata.name'))
 	$(eval ISOLATES_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${ISOLATES_RS}) | .metadata.name'))
 	kubectl logs -f ${ISOLATES_POD} isolate-controller

@@ -50,6 +50,16 @@ spec:
         secret:
           secretName: {{ .Values.api.certificate }}
       {{- end }}
+      {{- if ne  .Values.isolates.certificate "none" }}
+      - name: isolatecerts
+        secret:
+          secretName: {{ .Values.isolates.certificate }}
+      {{- end }}
+      {{- if ne  .Values.flow.certificates.ingress "none" }}
+      - name: ingresscerts
+        secret:
+          secretName: {{ .Values.flow.certificates.ingress }}
+      {{- end }}
       containers:
       - name: api
         securityContext:
@@ -98,6 +108,16 @@ spec:
         {{- if ne  .Values.api.certificate "none" }}
         - name: certs
           mountPath: "/etc/direktiv/certs/http"
+          readOnly: true
+        {{- end }}
+        {{- if ne .Values.isolates.certificate "none" }}
+        - name: isolatecerts
+          mountPath: "/etc/direktiv/certs/isolates"
+          readOnly: true
+        {{- end }}
+        {{- if ne .Values.flow.certificates.ingress "none" }}
+        - name: ingresscerts
+          mountPath: "/etc/direktiv/certs/ingress"
           readOnly: true
         {{- end }}
         ports:

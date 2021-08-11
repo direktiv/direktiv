@@ -92,7 +92,7 @@ func addSecrets(ctx context.Context, wli *workflowLogicInstance, m map[string]in
 		s := make(map[string]string)
 
 		for _, name := range secrets {
-			var dd []byte // jens
+			var dd []byte
 			dd, err = getSecretsForInstance(ctx, wli, wli.namespace, name)
 			if err != nil {
 				return nil, err

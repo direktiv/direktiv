@@ -472,6 +472,16 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxSendClient),
 		})
 
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivFlowTLS,
+			Value: util.GrpcCfg().FlowTLS,
+		})
+
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivFlowMTLS,
+			Value: util.GrpcCfg().FlowMTLS,
+		})
+
 	}
 
 	return proxyEnvs
@@ -580,17 +590,27 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		},
 	})
 
+	vmounts := []corev1.VolumeMount{
+		{
+			Name:      "workdir",
+			MountPath: "/mnt/shared",
+		},
+	}
+
+	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+		tlsVolumeMount := corev1.VolumeMount{}
+		tlsVolumeMount.Name = "flowcerts"
+		tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
+		tlsVolumeMount.ReadOnly = true
+		vmounts = append(vmounts, tlsVolumeMount)
+	}
+
 	// direktiv sidecar
 	ds := corev1.Container{
-		Name:  containerSidecar,
-		Image: isolateConfig.Sidecar,
-		Env:   proxy,
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      "workdir",
-				MountPath: "/mnt/shared",
-			},
-		},
+		Name:         containerSidecar,
+		Image:        isolateConfig.Sidecar,
+		Env:          proxy,
+		VolumeMounts: vmounts,
 		Ports: []corev1.ContainerPort{
 			{
 				ContainerPort: 8890,
@@ -809,7 +829,7 @@ func deleteKnativeIsolates(annotations map[string]string) error {
 
 func createVolumes() []corev1.Volume {
 
-	return []corev1.Volume{
+	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
 			VolumeSource: corev1.VolumeSource{
@@ -817,6 +837,17 @@ func createVolumes() []corev1.Volume {
 			},
 		},
 	}
+
+	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+		tlsVolume := corev1.Volume{
+			Name: "flowcerts",
+		}
+		tlsVolume.Secret = &corev1.SecretVolumeSource{
+			SecretName: util.GrpcCfg().FlowTLS,
+		}
+		volumes = append(volumes, tlsVolume)
+	}
+	return volumes
 
 }
 

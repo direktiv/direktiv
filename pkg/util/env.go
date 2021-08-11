@@ -14,4 +14,7 @@ const (
 	DirektivMaxClientRcv    = "DIREKTIV_GRPC_MAX_CLIENT_RCV"
 	DirektivMaxServerSend   = "DIREKTIV_GRPC_MAX_SERVER_SEND"
 	DirektivMaxClientSend   = "DIREKTIV_GRPC_MAX_CLIENT_SEND"
+
+	DirektivFlowTLS  = "DIREKTIV_FLOW_TLS"
+	DirektivFlowMTLS = "DIREKTIV_FLOW_MTLS"
 )

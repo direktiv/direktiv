@@ -59,7 +59,13 @@ flow:
   certificate: none
   certificates:
     flow: none
+    mtlsFlow: none
+    # flow: hello-world6
+    # mtlsFlow: hello-world6
     ingress: none
+    mtlsIngress: none
+    # ingress: hello-world5
+    # mtlsIngress: hello-world5
   extraContainers: []
   extraVolumeMounts:
     # - name: service-template
@@ -105,6 +111,11 @@ isolates:
   # images for isolate controller, knative sidecar and init-pod
   image: "vorteil/isolates"
   tag: "latest"
+  certificate: none
+  mtls: none
+  # certificate: hello-world3
+  # mtls: hello-world3
+
   sidecar: "vorteil/sidecar"
   initPod: "vorteil/direktiv-init-pod"
 

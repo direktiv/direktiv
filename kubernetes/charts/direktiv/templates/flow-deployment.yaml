@@ -27,17 +27,10 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-        {{- if .Values.isolates.extraContainers }}
+        {{- if .Values.flow.extraContainers }}
         {{ toYaml .Values.flow.extraContainers | indent 8}}
         {{- end }}
         - name: ingress
-          readinessProbe:
-            exec: # -tls=true  -tls-no-verify
-              {{- if ne .Values.flow.certificate "none" }}
-              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666", "-tls=true", "-tls-no-verify"]
-              {{- else }}
-              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666"]
-              {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -69,6 +62,11 @@ spec:
           {{- if ne .Values.flow.certificates.ingress "none" }}
           - name: ingresscerts
             mountPath: "/etc/direktiv/certs/ingress"
+            readOnly: true
+          {{- end }}
+          {{- if ne .Values.isolates.certificate "none" }}
+          - name: isolatecerts
+            mountPath: "/etc/direktiv/certs/isolates"
             readOnly: true
           {{- end }}
           ports:
@@ -155,6 +153,11 @@ spec:
         - name: ingresscerts
           secret:
             secretName: {{ .Values.flow.certificates.ingress }}
+        {{- end }}
+        {{- if ne  .Values.isolates.certificate "none" }}
+        - name: isolatecerts
+          secret:
+            secretName: {{ .Values.isolates.certificate }}
         {{- end }}
       {{- with .Values.nodeSelector }}:0
 
