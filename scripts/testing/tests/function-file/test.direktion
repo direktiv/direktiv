@@ -1,0 +1,24 @@
+workflow test
+
+log("TODO")
+
+
+// need auto vars
+// const ubuntu-shell = reusable(
+//     image: "vorteil/ubuntu-shell:v1",
+//     "file": file(key: "myscript", scope: "workflow", type: "base64"),
+//     )
+
+// init-script:
+//     set(
+//         scope: "workflow", 
+//         key: "myscript", 
+//         value: "IyEvYmluL2Jhc2gKZWNobyAiaGVsbG8gd29ybGQi",
+//         )
+
+// test:
+//     call(
+//         ubuntu-shell,
+//         {script: "myscript",},
+//     )
+

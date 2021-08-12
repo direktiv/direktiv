@@ -1,0 +1,37 @@
+workflow test
+
+const request-isolate = isolate(image: "localhost:5000/isolate-requester")
+
+log("Person 1: Hmm I really need a interesting cat fact for this conference")
+
+get(scope: "namespace", key: "api")
+
+call-function:
+    call(request-isolate, {
+        method: "GET",
+        url: "jq(.var.api.catFacts)",
+    })
+
+transform(jq('. += {fact: .return.body[0].text}'))
+
+log("Person 2: Did you know, jq(.fact)")
+
+log("Person 1: Wow thats so interesting, I'm gonna save that for later")
+
+set(scope: "workflow", key: "fact", value: "jq(.fact)")
+
+sleep(duration: "PT5S")
+
+get(scope: "workflow", key: "fact")
+
+log("------ 1 Week Later At Conference ------")
+
+if jq('.fact != .var.fact') {
+    error("variable.ValueMismatch", "local 'fact' value and workflow varaible 'fact' did not match")
+    exit
+}
+
+log("Person 1: Did you know jq(.var.fact)")
+
+log("---- Laughter and applause. The End ----")
+
