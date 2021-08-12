@@ -8,5 +8,5 @@ metadata:
 data:
   flow-config.yaml: |
 
-      # protocol used to access isolates
-      isolate-protocol: {{ .Values.flow.isolateProtocol }}
+      # protocol used to access functions
+      functions-protocol: {{ .Values.flow.functionsProtocol }}

@@ -50,10 +50,10 @@ spec:
         secret:
           secretName: {{ .Values.api.certificate }}
       {{- end }}
-      {{- if ne  .Values.isolates.certificate "none" }}
-      - name: isolatecerts
+      {{- if ne  .Values.functions.certificate "none" }}
+      - name: functionscerts
         secret:
-          secretName: {{ .Values.isolates.certificate }}
+          secretName: {{ .Values.functions.certificate }}
       {{- end }}
       {{- if ne  .Values.flow.certificates.ingress "none" }}
       - name: ingresscerts
@@ -110,9 +110,9 @@ spec:
           mountPath: "/etc/direktiv/certs/http"
           readOnly: true
         {{- end }}
-        {{- if ne .Values.isolates.certificate "none" }}
-        - name: isolatecerts
-          mountPath: "/etc/direktiv/certs/isolates"
+        {{- if ne .Values.functions.certificate "none" }}
+        - name: functionscerts
+          mountPath: "/etc/direktiv/certs/functions"
           readOnly: true
         {{- end }}
         {{- if ne .Values.flow.certificates.ingress "none" }}

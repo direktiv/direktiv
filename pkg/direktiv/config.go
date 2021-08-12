@@ -16,7 +16,7 @@ const (
 
 // Config is the configuration for workflow and runner server
 type Config struct {
-	IsolateProtocol string `yaml:"isolate-protocol"`
+	FunctionsProtocol string `yaml:"functions-protocol"`
 
 	Database struct {
 		DB string

@@ -64,12 +64,12 @@ spec:
             mountPath: "/etc/direktiv/certs/ingress"
             readOnly: true
           {{- end }}
-          {{- if ne .Values.isolates.certificate "none" }}
-          - name: isolatecerts
-            mountPath: "/etc/direktiv/certs/isolates"
+          {{- if ne .Values.functions.certificate "none" }}
+          - name: functionscerts
+            mountPath: "/etc/direktiv/certs/functions"
             readOnly: true
           {{- end }}
-          {{- if eq .Values.flow.isolateProtocol "https" }}
+          {{- if eq .Values.flow.functionsProtocol "https" }}
           - name: podca
             mountPath: "/etc/direktiv/certs/ca"
             readOnly: true
@@ -85,7 +85,7 @@ spec:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SERVICE_NAMESPACE
-            value: {{ .Values.isolates.namespace }}
+            value: {{ .Values.functions.namespace }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
           {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
@@ -143,10 +143,10 @@ spec:
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}
-        {{- if eq .Values.flow.isolateProtocol "https" }}
+        {{- if eq .Values.flow.functionsProtocol "https" }}
         - name: podca
           secret:
-            secretName: {{ .Values.flow.isolateCA }}
+            secretName: {{ .Values.flow.functionsCA }}
         {{- end }}
         - name: grpc-config
           configMap:
@@ -164,10 +164,10 @@ spec:
           secret:
             secretName: {{ .Values.flow.certificates.ingress }}
         {{- end }}
-        {{- if ne  .Values.isolates.certificate "none" }}
-        - name: isolatecerts
+        {{- if ne  .Values.functions.certificate "none" }}
+        - name: functionscerts
           secret:
-            secretName: {{ .Values.isolates.certificate }}
+            secretName: {{ .Values.functions.certificate }}
         {{- end }}
       {{- with .Values.nodeSelector }}:0
 

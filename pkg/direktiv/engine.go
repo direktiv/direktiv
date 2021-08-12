@@ -121,7 +121,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := util.GetEndpointTLS(util.TLSIsolatesComponent)
+	conn, err := util.GetEndpointTLS(util.TLSFunctionsComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -414,14 +414,14 @@ func createTransport(useTLS bool) *http.Transport {
 func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 	ar *isolateRequest, hostname, ip string) {
 
-	useTLS := we.server.config.IsolateProtocol == "https"
+	useTLS := we.server.config.FunctionsProtocol == "https"
 
 	tr := createTransport(useTLS)
 
 	// configured namespace for workflows
-	addr := fmt.Sprintf("%s://%s:8890", we.server.config.IsolateProtocol, ip)
+	addr := fmt.Sprintf("%s://%s:8890", we.server.config.FunctionsProtocol, ip)
 	if useTLS {
-		addr = fmt.Sprintf("%s://%s:8890", we.server.config.IsolateProtocol, hostname)
+		addr = fmt.Sprintf("%s://%s:8890", we.server.config.FunctionsProtocol, hostname)
 	}
 
 	log.Debugf("isolate request: %v", addr)
@@ -501,7 +501,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		err error
 	)
 
-	tr := createTransport(we.server.config.IsolateProtocol == "https")
+	tr := createTransport(we.server.config.FunctionsProtocol == "https")
 
 	// configured namespace for workflows
 	ns := os.Getenv(util.DirektivServiceNamespace)
@@ -518,8 +518,8 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		}
 	}
 
-	addr := fmt.Sprintf("%s://%s.%s", we.server.config.IsolateProtocol, svn, ns)
-	log.Debugf("isolate request: %v", addr)
+	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FunctionsProtocol, svn, ns)
+	log.Debugf("function request: %v", addr)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -564,7 +564,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	// we just loop and see if we can recreate the service
 	// one minute wait max
 	for i := 0; i < 60; i++ {
-		log.Debugf("isolate request (%d): %v", i, addr)
+		log.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {

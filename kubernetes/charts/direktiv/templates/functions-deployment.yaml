@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "direktiv.fullname" . }}-isolates
+  name: {{ include "direktiv.fullname" . }}-functions
   labels:
-    {{- include "direktiv.labels" . | nindent 4 }}-isolates
+    {{- include "direktiv.labels" . | nindent 4 }}-functions
 spec:
-  replicas: {{ .Values.isolates.replicaCount }}
+  replicas: {{ .Values.functions.replicaCount }}
   selector:
     matchLabels:
-      {{- include "direktiv.selectorLabels" . | nindent 6 }}-isolates
+      {{- include "direktiv.selectorLabels" . | nindent 6 }}-functions
   template:
     metadata:
       labels:
-        {{- include "direktiv.selectorLabels" . | nindent 8 }}-isolates
+        {{- include "direktiv.selectorLabels" . | nindent 8 }}-functions
     spec:
       securityContext:
         runAsNonRoot: true
@@ -22,36 +22,36 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-isolate
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-functions
       volumes:
         - name: grpc-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-grpc
         - name: config-file
           configMap:
-            name: {{ include "direktiv.fullname" . }}-config-isolate
-        {{- if ne  .Values.isolates.certificate "none" }}
+            name: {{ include "direktiv.fullname" . }}-config-functions
+        {{- if ne  .Values.functions.certificate "none" }}
         - name: certs
           secret:
-            secretName: {{ .Values.isolates.certificate }}
+            secretName: {{ .Values.functions.certificate }}
         {{- end }}
       containers:
-        {{- if .Values.isolates.extraContainers }}
-        {{ toYaml .Values.isolates.extraContainers | indent 8}}
+        {{- if .Values.functions.extraContainers }}
+        {{ toYaml .Values.functions.extraContainers | indent 8}}
         {{- end }}
-        - name: isolate-controller
+        - name: functions-controller
           volumeMounts:
-          {{- if ne  .Values.isolates.certificate "none" }}
+          {{- if ne  .Values.functions.certificate "none" }}
           - name: certs
-            mountPath: "/etc/direktiv/certs/isolates"
+            mountPath: "/etc/direktiv/certs/functions"
             readOnly: true
           {{- end }}
           - name: grpc-config
             mountPath: /etc/direktiv/grpc-config.yaml
             subPath: grpc-config.yaml
           - name: config-file
-            mountPath: /etc/direktiv/isolate-config.yaml
-            subPath: isolate-config.yaml
+            mountPath: /etc/direktiv/functions-config.yaml
+            subPath: functions-config.yaml
           env:
             {{- if .Values.debug }}
             - name: DIREKTIV_DEBUG
@@ -71,7 +71,7 @@ spec:
             limits:
               memory: "1024Mi"
               cpu: "1"
-          image: "{{ .Values.registry }}/{{ .Values.isolates.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.registry }}/{{ .Values.functions.image }}:{{ .Values.functions.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: grpc

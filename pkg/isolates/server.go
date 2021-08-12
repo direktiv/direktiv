@@ -18,7 +18,7 @@ var (
 )
 
 const (
-	confFile = "/etc/direktiv/isolate-config.yaml"
+	confFile = "/etc/direktiv/functions-config.yaml"
 	port     = 5555
 )
 
@@ -52,7 +52,7 @@ func StartServer(echan chan error) {
 		echan <- fmt.Errorf("grpc response to flow is not configured")
 	}
 
-	err = util.GrpcStart(&grpcServer, util.TLSIsolatesComponent,
+	err = util.GrpcStart(&grpcServer, util.TLSFunctionsComponent,
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
 			igrpc.RegisterIsolatesServiceServer(srv, &isolateServer{})
 			reflection.Register(srv)

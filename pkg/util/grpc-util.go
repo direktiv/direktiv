@@ -35,12 +35,12 @@ type GrpcConfig struct {
 	MaxSendServer int `yaml:"max-send-server"`
 	MaxRcvServer  int `yaml:"max-rcv-server"`
 
-	IsolateEndpoint string `yaml:"isolate-endpoint"`
-	FlowEnpoint     string `yaml:"flow-enpoint"`
-	IngressEndpoint string `yaml:"ingress-endpoint"`
+	FunctionsEndpoint string `yaml:"functions-endpoint"`
+	FlowEnpoint       string `yaml:"flow-enpoint"`
+	IngressEndpoint   string `yaml:"ingress-endpoint"`
 
-	IsolateTLS  string `yaml:"isolate-tls"`
-	IsolateMTLS string `yaml:"isolate-mtls"`
+	FunctionsTLS  string `yaml:"functions-tls"`
+	FunctionsMTLS string `yaml:"functions-mtls"`
 
 	IngressTLS  string `yaml:"ingress-tls"`
 	IngressMTLS string `yaml:"ingress-mtls"`
@@ -59,11 +59,11 @@ var (
 
 // Available grpc components in direktiv
 const (
-	TLSSecretsComponent  = "secrets"
-	TLSIngressComponent  = "ingress"
-	TLSFlowComponent     = "flow"
-	TLSIsolatesComponent = "isolates"
-	TLSHttpComponent     = "http"
+	TLSSecretsComponent   = "secrets"
+	TLSIngressComponent   = "ingress"
+	TLSFlowComponent      = "flow"
+	TLSFunctionsComponent = "functions"
+	TLSHttpComponent      = "http"
 )
 
 type tlsComponent struct {
@@ -91,11 +91,11 @@ func init() {
 		tls:         grpcCfg.IngressTLS,
 		mtls:        grpcCfg.IngressMTLS,
 	}
-	tlsComponents[TLSIsolatesComponent] = tlsComponent{
-		endpoint:    IsolateEndpoint(),
-		certificate: filepath.Join(certBase, TLSIsolatesComponent),
-		tls:         grpcCfg.IsolateTLS,
-		mtls:        grpcCfg.IsolateMTLS,
+	tlsComponents[TLSFunctionsComponent] = tlsComponent{
+		endpoint:    FunctionsEndpoint(),
+		certificate: filepath.Join(certBase, TLSFunctionsComponent),
+		tls:         grpcCfg.FunctionsTLS,
+		mtls:        grpcCfg.FunctionsMTLS,
 	}
 	tlsComponents[TLSFlowComponent] = tlsComponent{
 		endpoint:    FlowEndpoint(),
@@ -241,8 +241,8 @@ func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
 }
 
 // IsolateEndpoint return grpc encpoint for isolate services
-func IsolateEndpoint() string {
-	return grpcCfg.IsolateEndpoint
+func FunctionsEndpoint() string {
+	return grpcCfg.FunctionsEndpoint
 }
 
 // IngressEndpoint return grpc encpoint for ingress services
@@ -266,7 +266,7 @@ func grpcUnmarshalConfig() {
 	if _, err := os.Stat("/etc/direktiv/grpc-config.yaml"); os.IsNotExist(err) {
 
 		grpcCfg.FlowEnpoint = os.Getenv(DirektivFlowEndpoint)
-		grpcCfg.IsolateEndpoint = os.Getenv(DirektivIsolateEndpoint)
+		grpcCfg.FunctionsEndpoint = os.Getenv(DirektivFunctionsEndpoint)
 		grpcCfg.IngressEndpoint = os.Getenv(DirektivIngressEndpoint)
 
 		fmt.Sscan(os.Getenv(DirektivMaxClientRcv), &grpcCfg.MaxRcvClient)

@@ -68,16 +68,16 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels isolate
+Selector labels functions
 */}}
-{{- define "direktiv.selectorLabelsIsolate" -}}
-app.kubernetes.io/name: {{ include "direktiv.name" . }}-isolate
-app.kubernetes.io/instance: {{ .Release.Name }}-isolate
+{{- define "direktiv.selectorLabelsFunctions" -}}
+app.kubernetes.io/name: {{ include "direktiv.name" . }}-functions
+app.kubernetes.io/instance: {{ .Release.Name }}-functions
 {{- end }}
 
-{{- define "direktiv.labelsIsolate" -}}
+{{- define "direktiv.labelsFunctions" -}}
 helm.sh/chart: {{ include "direktiv.chart" . }}
-{{ include "direktiv.selectorLabelsIsolate" . }}
+{{ include "direktiv.selectorLabelsFunctions" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

@@ -55,9 +55,9 @@ flow:
   image: "vorteil/flow"
   tag: "latest"
   db: ""
-  isolateProtocol: "http"
-  isolateCA: "none" # change isolate pod secret too
-  # isolateCA: "direktiv-cert3"
+  functionsProtocol: "http"
+  functionsCA: "none" # change function pod secret too
+  # functionsCA: "direktiv-cert3"
   certificates:
     flow: none
     mtlsFlow: none
@@ -105,12 +105,12 @@ grpc: #PARENT
     maxSendSize: "4194304" # SENDS1
     maxRecvSize: "4194304" # RECVS1
 
-isolates:
-  # namespace to run isolates in
+functions:
+  # namespace to run functions in
   namespace: direktiv-services-direktiv
 
-  # images for isolate controller, knative sidecar and init-pod
-  image: "vorteil/isolates"
+  # images for functions controller, knative sidecar and init-pod
+  image: "vorteil/functions"
   tag: "latest"
   certificate: none
   mtls: none

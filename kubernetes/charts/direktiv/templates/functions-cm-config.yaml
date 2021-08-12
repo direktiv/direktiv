@@ -1,29 +1,29 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "direktiv.fullname" . }}-config-isolate
+  name: {{ include "direktiv.fullname" . }}-config-functions
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 data:
-  isolate-config.yaml: |
+  functions-config.yaml: |
 
       # name of the service account to run the pods
-      service-account: {{ include "direktiv.serviceAccountName" . }}-isolate-pod
+      service-account: {{ include "direktiv.serviceAccountName" . }}-functions-pod
 
-      # name of the namespace to use for the services/isolates
-      namespace: {{ .Values.isolates.namespace }}
+      # name of the namespace to use for the services/functions
+      namespace: {{ .Values.functions.namespace }}
 
       # db secret for pub/sub
-      sidecar-db: {{ include "direktiv.fullname" . }}-secrets-isolate
+      sidecar-db: {{ include "direktiv.fullname" . }}-secrets-functions
 
       # pod sidecar name
-      sidecar: {{ .Values.isolates.sidecar }}
+      sidecar: {{ .Values.functions.sidecar }}
 
       # init pod name
-      init-pod: {{ .Values.isolates.initPodImage }}
+      init-pod: {{ .Values.functions.initPodImage }}
 
       # tls secret for init pod
-      init-pod-certificate: {{ .Values.isolates.initPodCertificate }}
+      init-pod-certificate: {{ .Values.functions.initPodCertificate }}
 
       # max number of revisions to keep per namespace or global
       keep-revisions: 3
@@ -32,7 +32,7 @@ data:
       max-jobs: 5
 
       # kubernetes 1.20 auto cleans up jobs, for < 1.19, should be enabled
-      pod-cleaner: {{ .Values.isolates.podCleaner }}
+      pod-cleaner: {{ .Values.functions.podCleaner }}
 
       # max number of pods per service
       max-scale: 3
@@ -41,7 +41,7 @@ data:
       rollout-duration: 300
 
       # shaping network traffic if supported by network plugin
-      net-shape: {{ .Values.isolates.netShape }}
+      net-shape: {{ .Values.functions.netShape }}
 
       # default concurrency level
       concurrency: 100
@@ -50,7 +50,7 @@ data:
       storage: 100
 
       # runtime for services, e.g. gvisor
-      runtime: {{ .Values.isolates.runtime }}
+      runtime: {{ .Values.functions.runtime }}
 
       # memory/cpu value defined for different service sizes
       memory:
@@ -72,6 +72,6 @@ data:
 
       # additional sidecar containers
       additionalContainers:
-{{- if .Values.isolates.extraContainersPod }}
-{{ toYaml .Values.isolates.extraContainersPod | indent 8}}
+{{- if .Values.functions.extraContainersPod }}
+{{ toYaml .Values.functions.extraContainersPod | indent 8}}
 {{- end }}

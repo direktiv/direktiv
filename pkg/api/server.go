@@ -130,13 +130,13 @@ func (s *Server) initDirektiv() error {
 
 func (s *Server) initIsolates() error {
 
-	conn, err := util.GetEndpointTLS(util.TLSIsolatesComponent)
+	conn, err := util.GetEndpointTLS(util.TLSFunctionsComponent)
 	if err != nil {
-		log.Errorf("can not connect to direktiv isolates: %v", err)
+		log.Errorf("can not connect to direktiv functions: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", util.IsolateEndpoint())
+	log.Infof("connecting to %s", util.FunctionsEndpoint())
 
 	s.isolates = igrpc.NewIsolatesServiceClient(conn)
 
