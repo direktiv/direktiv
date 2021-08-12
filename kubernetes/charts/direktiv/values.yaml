@@ -55,9 +55,9 @@ flow:
   image: "vorteil/flow"
   tag: "latest"
   db: ""
-  isolateProtocol: "https"
-  isolateCA: "direktiv-cert3"
-  certificate: none
+  isolateProtocol: "http"
+  isolateCA: "none" # change isolate pod secret too
+  # isolateCA: "direktiv-cert3"
   certificates:
     flow: none
     mtlsFlow: none
@@ -120,8 +120,8 @@ isolates:
   sidecar: "vorteil/sidecar"
 
   initPodImage:  "vorteil/direktiv-init-pod"
-    # this cert needs to be
-  initPodCertificate: direktiv-cert3
+  # initPodCertificate: direktiv-cert3
+  initPodCertificate: none
 
   # number of controller replicas
   replicaCount: 1
