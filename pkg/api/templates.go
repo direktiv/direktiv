@@ -190,11 +190,11 @@ func (h *Handler) templateFolders(w http.ResponseWriter, r *http.Request) {
 	switch mux.CurrentRoute(r).GetName() {
 	case RN_ListWorkflowTemplateFolders:
 
-		x = h.s.workflowTemplateFolders
+		x = h.s.workflowTemplateFolders()
 
 	case RN_ListActionTemplateFolders:
 
-		x = h.s.actionTemplateFolders
+		x = h.s.actionTemplateFolders()
 
 	default:
 
