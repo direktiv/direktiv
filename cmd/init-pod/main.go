@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/util"
 )
@@ -17,7 +17,6 @@ var (
 )
 
 func main() {
-
 	lifecycle := os.Getenv("DIREKTIV_LIFECYCLE")
 
 	err := initialize()

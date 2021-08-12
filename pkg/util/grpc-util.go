@@ -25,13 +25,6 @@ const (
 
 	certBase = "/etc/direktiv/certs/"
 
-	// TLSCert cert
-	TLSCert = "/etc/certs/direktiv/tls.crt"
-	// TLSKey key
-	TLSKey = "/etc/certs/direktiv/tls.key"
-	// TLSCA cert CA
-	TLSCA = "/etc/certs/direktiv/ca.crt"
-
 	grpcSettingsFile = "/etc/direktiv/grpc-config.yaml"
 )
 

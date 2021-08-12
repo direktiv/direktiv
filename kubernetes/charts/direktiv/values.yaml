@@ -56,7 +56,8 @@ flow:
   tag: "latest"
   db: ""
   isolateProtocol: "http"
-  certificate: none
+  isolateCA: "none" # change isolate pod secret too
+  # isolateCA: "direktiv-cert3"
   certificates:
     flow: none
     mtlsFlow: none
@@ -117,7 +118,10 @@ isolates:
   # mtls: hello-world3
 
   sidecar: "vorteil/sidecar"
-  initPod: "vorteil/direktiv-init-pod"
+
+  initPodImage:  "vorteil/direktiv-init-pod"
+  # initPodCertificate: direktiv-cert3
+  initPodCertificate: none
 
   # number of controller replicas
   replicaCount: 1
@@ -129,9 +133,6 @@ isolates:
 
   # run pod cleaner for kubernetes < 1.20
   podCleaner: true
-
-  # run init-pod with TLS
-  podTLS: false
 
   # runtime to use, e.g. gvisor
   runtime: "default"

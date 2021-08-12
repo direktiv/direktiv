@@ -395,7 +395,7 @@ type serviceItem struct {
 }
 
 func calculateList(client igrpc.IsolatesServiceClient,
-	items []serviceItem, annotations map[string]string) ([]*grpc.IsolateInfo, error) {
+	items []serviceItem, annotations map[string]string, ns string) ([]*grpc.IsolateInfo, error) {
 
 	resp, err := client.ListIsolates(context.Background(),
 		&grpc.ListIsolatesRequest{
@@ -409,13 +409,16 @@ func calculateList(client igrpc.IsolatesServiceClient,
 
 	imgStatus := "False"
 	imgErr := "not found"
+	imgNS := ""
 
 	condName := "Ready"
 	condStatus := "False"
 
 	condMessage := "Global service does not exist"
+
 	if len(annotations) > 1 {
 		condMessage = "Namespace service does not exist"
+		imgNS = ns
 	}
 
 	cond := &igrpc.Condition{
@@ -443,7 +446,8 @@ func calculateList(client igrpc.IsolatesServiceClient,
 			Status:      &imgStatus,
 			ServiceName: &li.service,
 			Info: &grpc.BaseInfo{
-				Image: &imgErr,
+				Image:     &imgErr,
+				Namespace: &imgNS,
 			},
 			Conditions: []*igrpc.Condition{
 				cond,
@@ -540,7 +544,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 			map[string]string{
 				isolateServiceNamespaceAnnotation: ns,
 				isolateServiceScopeAnnotation:     prefixNamespace,
-			})
+			}, ns)
 
 		if err != nil {
 			ErrResponse(w, err)
@@ -555,7 +559,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 		i, err := calculateList(h.s.isolates, fnGlobal,
 			map[string]string{
 				isolateServiceScopeAnnotation: prefixGlobal,
-			})
+			}, ns)
 
 		if err != nil {
 			ErrResponse(w, err)

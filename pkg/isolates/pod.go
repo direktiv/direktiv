@@ -3,6 +3,7 @@ package isolates
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -167,7 +168,7 @@ func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 
 }
 
-func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
+func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 
 	e := proxyEnvs(true)
 
@@ -183,6 +184,10 @@ func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
 		{
 			Name:  PodEnvStep,
 			Value: fmt.Sprintf("%d", in.GetStep()),
+		},
+		{
+			Name:  util.DirektivNamespace,
+			Value: ns,
 		},
 	}
 
@@ -267,7 +272,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 	labels[ServiceHeaderWorkflow] = info.GetName()
 	labels[ServiceHeaderNamespace] = info.GetNamespace()
 
-	commonJobVars := commonEnvs(in)
+	commonJobVars := commonEnvs(in, info.GetNamespace())
 
 	annotations := make(map[string]string)
 	annotations["kubernetes.io/ingress-bandwidth"] = isolateConfig.NetShape
@@ -309,19 +314,40 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 	}
 
 	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+
+		certName := "flowcerts"
 		tlsVolume := v1.Volume{}
-		tlsVolume.Name = "flowcerts"
+		tlsVolume.Name = certName
 		tlsVolume.Secret = &v1.SecretVolumeSource{
 			SecretName: util.GrpcCfg().FlowTLS,
 		}
 		volumes = append(volumes, tlsVolume)
 
-		tlsVolumeMount.Name = "flowcerts"
+		tlsVolumeMount.Name = certName
 		tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
 		tlsVolumeMount.ReadOnly = true
 		volumeMounts = append(volumeMounts, tlsVolumeMount)
 	}
 
+	if isolateConfig.InitPodCertificate != "none" &&
+		isolateConfig.InitPodCertificate != "" {
+
+		certName := "podcerts"
+		tlsVolume := v1.Volume{}
+		tlsVolume.Name = certName
+		tlsVolume.Secret = &v1.SecretVolumeSource{
+			SecretName: isolateConfig.InitPodCertificate,
+		}
+		volumes = append(volumes, tlsVolume)
+
+		tlsVolumeMount.Name = certName
+		tlsVolumeMount.MountPath = "/etc/direktiv/certs/http"
+		tlsVolumeMount.ReadOnly = true
+		volumeMounts = append(volumeMounts, tlsVolumeMount)
+
+	}
+
+	mountToken := false
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "direktiv-job-",
@@ -336,8 +362,9 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 					Annotations: annotations,
 				},
 				Spec: v1.PodSpec{
-					ImagePullSecrets: createPullSecrets(info.GetNamespace()),
-					Volumes:          volumes,
+					AutomountServiceAccountToken: &mountToken,
+					ImagePullSecrets:             createPullSecrets(info.GetNamespace()),
+					Volumes:                      volumes,
 					InitContainers: []v1.Container{
 						{
 							ImagePullPolicy: pullPolicy,
@@ -389,7 +416,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 		return &resp, err
 	}
 
-	waitFn := func(job string) (string, error) {
+	waitFn := func(job string) (string, string, error) {
 
 		var (
 			p  *v1.Pod
@@ -406,9 +433,13 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 
 				// as soon is reachable we break
 				pip := p.Status.PodIP
+				hostname := fmt.Sprintf("%s.%s.pod", strings.ReplaceAll(pip, ".", "-"), p.Namespace)
+
+				// 172-17-0-3.default.pod.cluster.local
+
 				if len(pip) > 0 {
-					log.Debugf("ip for pod %s", pip)
-					return pip, nil
+					log.Debugf("ip for pod %s, hostname %s", pip, hostname)
+					return pip, hostname, nil
 				}
 
 			case <-time.After(30 * time.Second):
@@ -418,19 +449,21 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 					clientset.CoreV1().Pods(isolateConfig.Namespace).Delete(context.TODO(),
 						p.Name, metav1.DeleteOptions{})
 				}
-				return "", fmt.Errorf("timeout for pod")
+				return "", "", fmt.Errorf("timeout for pod")
 			}
 		}
 
 	}
 
-	ip, err := waitFn(j.ObjectMeta.Name)
+	ip, hostname, err := waitFn(j.ObjectMeta.Name)
 	if err != nil {
 		log.Errorf("timeout for job pod creation %s", j.ObjectMeta.Name)
 		return &resp, err
 	}
 
 	resp.Ip = &ip
+	resp.Hostname = &hostname
+
 	return &resp, nil
 
 }

@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 
 	"github.com/fsnotify/fsnotify"
 	tailfile "github.com/nxadm/tail"
+	log "github.com/sirupsen/logrus"
 	_ "github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
 )

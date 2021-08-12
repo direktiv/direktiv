@@ -13,22 +13,23 @@ type configReader struct {
 }
 
 type config struct {
-	ServiceAccount  string `yaml:"service-account"`
-	Namespace       string `yaml:"namespace"`
-	SidecarDb       string `yaml:"sidecar-db"`
-	Sidecar         string `yaml:"sidecar"`
-	PodCleaner      bool   `yaml:"pod-cleaner"`
-	InitPod         string `yaml:"init-pod"`
-	KeepRevisions   int    `yaml:"keep-revisions"`
-	MaxJobs         int    `yaml:"max-jobs"`
-	MaxScale        int    `yaml:"max-scale"`
-	NetShape        string `yaml:"net-shape"`
-	RolloutDuration int    `yaml:"rollout-duration"`
-	Concurrency     int    `yaml:"concurrency"`
-	Storage         int    `yaml:"storage"`
-	Runtime         string `yaml:"runtime"`
-	PodSecret       string `yaml:"pod-secret"`
-	Memory          struct {
+	ServiceAccount     string `yaml:"service-account"`
+	Namespace          string `yaml:"namespace"`
+	SidecarDb          string `yaml:"sidecar-db"`
+	Sidecar            string `yaml:"sidecar"`
+	PodCleaner         bool   `yaml:"pod-cleaner"`
+	InitPod            string `yaml:"init-pod"`
+	InitPodCertificate string `yaml:"init-pod-certificate"`
+	KeepRevisions      int    `yaml:"keep-revisions"`
+	MaxJobs            int    `yaml:"max-jobs"`
+	MaxScale           int    `yaml:"max-scale"`
+	NetShape           string `yaml:"net-shape"`
+	RolloutDuration    int    `yaml:"rollout-duration"`
+	Concurrency        int    `yaml:"concurrency"`
+	Storage            int    `yaml:"storage"`
+	Runtime            string `yaml:"runtime"`
+	PodSecret          string `yaml:"pod-secret"`
+	Memory             struct {
 		Small  int `yaml:"small"`
 		Medium int `yaml:"medium"`
 		Large  int `yaml:"large"`
