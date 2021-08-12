@@ -1,25 +1,87 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  annotations:
+  labels:
+    serving.knative.dev/release: v0.25.0
+  {{- include "knative.labels" . | nindent 4 }}
   name: config-network
   namespace: knative-serving-{{ .Release.Name }}
 data:
-    certificate.class: "cert-manager.certificate.networking.knative.dev"
+  # ingress.class specifies the default ingress class
+  # to use when not dictated by Route annotation.
+  #
+  # If not specified, will use the Istio ingress.
+  #
+  # Note that changing the Ingress class of an existing Route
+  # will result in undefined behavior.  Therefore it is best to only
+  # update this value during the setup of Knative, to avoid getting
+  # undefined behavior.
+  ingress.class: "contour.ingress.networking.knative.dev"
 
-    domainTemplate: "{{.Name}}.{{.Namespace}}.{{.Domain}}"
+  # certificate.class specifies the default Certificate class
+  # to use when not dictated by Route annotation.
+  #
+  # If not specified, will use the Cert-Manager Certificate.
+  #
+  # Note that changing the Certificate class of an existing Route
+  # will result in undefined behavior.  Therefore it is best to only
+  # update this value during the setup of Knative, to avoid getting
+  # undefined behavior.
+  certificate.class: "cert-manager.certificate.networking.knative.dev"
 
-    tagTemplate: "{{.Tag}}-{{.Name}}"
+  domainTemplate: "{{.Name}}.{{.Namespace}}.{{.Domain}}"
 
-    autoTLS: "Disabled"
+  # tagTemplate specifies the golang text template string to use
+  # when constructing the DNS name for "tags" within the traffic blocks
+  # of Routes and Configuration.  This is used in conjunction with the
+  # domainTemplate above to determine the full URL for the tag.
+  tagTemplate: "{{.Tag}}-{{.Name}}"
 
-    httpProtocol: "Enabled"
+  # Controls whether TLS certificates are automatically provisioned and
+  # installed in the Knative ingress to terminate external TLS connection.
+  # 1. Enabled: enabling auto-TLS feature.
+  # 2. Disabled: disabling auto-TLS feature.
+  autoTLS: "Disabled"
 
-    rolloutDuration: "0"
+  # Controls the behavior of the HTTP endpoint for the Knative ingress.
+  # It requires autoTLS to be enabled.
+  # 1. Enabled: The Knative ingress will be able to serve HTTP connection.
+  # 2. Disabled: The Knative ingress will reject HTTP traffic.
+  # 3. Redirected: The Knative ingress will send a 301 redirect for all
+  # http connections, asking the clients to use HTTPS.
+  httpProtocol: "Enabled"
 
-    autocreateClusterDomainClaims: "false"
+  # rolloutDuration contains the minimal duration in seconds over which the
+  # Configuration traffic targets are rolled out to the newest revision.
+  rolloutDuration: "300"
 
-    enable-mesh-pod-addressability: "false"
+  # autocreateClusterDomainClaims controls whether ClusterDomainClaims should
+  # be automatically created (and deleted) as needed when DomainMappings are
+  # reconciled.
+  #
+  # If this is "false" (the default), the cluster administrator is
+  # responsible for creating ClusterDomainClaims and delegating them to
+  # namespaces via their spec.Namespace field. This setting should be used in
+  # multitenant environments which need to control which namespace can use a
+  # particular domain name in a domain mapping.
+  #
+  # If this is "true", users are able to associate arbitrary names with their
+  # services via the DomainMapping feature.
+  autocreateClusterDomainClaims: "false"
 
-    defaultExternalScheme: "http"
+  # If true, networking plugins can add additional information to deployed
+  # applications to make their pods directly accessible via their IPs even if mesh is
+  # enabled and thus direct-addressability is usually not possible.
+  # Consumers like Knative Serving can use this setting to adjust their behavior
+  # accordingly, i.e. to drop fallback solutions for non-pod-addressable systems.
+  #
+  # NOTE: This flag is in an alpha state and is mostly here to enable internal testing
+  #       for now. Use with caution.
+  enable-mesh-pod-addressability: "false"
 
-    ingress.class: contour.ingress.networking.knative.dev
+  # Defines the scheme used for external URLs if autoTLS is not enabled.
+  # This can be used for making Knative report all URLs as "HTTPS" for example, if you're
+  # fronting Knative with an external loadbalancer that deals with TLS termination and
+  # Knative doesn't know about that otherwise.
+  defaultExternalScheme: "http"

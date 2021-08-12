@@ -910,7 +910,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 		}
 	}
 
-	// mountToken := false
+	mountToken := false
 	svc := v1.Service{
 		Spec: v1.ServiceSpec{
 			RouteSpec: v1.RouteSpec{
@@ -921,9 +921,9 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 					ObjectMeta: spec,
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							// AutomountServiceAccountToken: &mountToken,
-							Containers: containers,
-							Volumes:    createVolumes(),
+							AutomountServiceAccountToken: &mountToken,
+							Containers:                   containers,
+							Volumes:                      createVolumes(),
 						},
 					},
 				},
@@ -1040,7 +1040,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		return err
 	}
 
-	// mountToken := false
+	mountToken := false
 	svc := v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -1055,11 +1055,11 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							// AutomountServiceAccountToken: &mountToken,
-							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),
-							ServiceAccountName: isolateConfig.ServiceAccount,
-							Containers:         containers,
-							Volumes:            createVolumes(),
+							AutomountServiceAccountToken: &mountToken,
+							ImagePullSecrets:             createPullSecrets(info.GetNamespace()),
+							ServiceAccountName:           isolateConfig.ServiceAccount,
+							Containers:                   containers,
+							Volumes:                      createVolumes(),
 						},
 						ContainerConcurrency: &concurrency,
 						TimeoutSeconds:       &timeoutSec,
