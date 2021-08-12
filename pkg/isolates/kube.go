@@ -44,7 +44,8 @@ const (
 	ServiceHeaderWorkflow  = "direktiv.io/workflow"
 	ServiceHeaderSize      = "direktiv.io/size"
 	ServiceHeaderScale     = "direktiv.io/scale"
-	ServiceHeaderScope     = "direktiv.io/scope"
+	// ServiceHeaderScale = "autoscaling.knative.dev/minScale"
+	ServiceHeaderScope = "direktiv.io/scope"
 )
 
 // Available prefixes for different scopes
@@ -750,7 +751,7 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		var sz, scale int32
 		var gen int64
 		fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
-		fmt.Sscan(rev.Annotations[ServiceHeaderScale], &scale)
+		fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
 		fmt.Sscan(rev.Labels[generationHeader], &gen)
 		info.Size = &sz
 		info.MinScale = &scale
@@ -863,6 +864,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 		Annotations: make(map[string]string),
 	}
 
+	spec.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", info.GetSize())
 	spec.Annotations["serving.knative.dev/rolloutDuration"] =
 		fmt.Sprintf("%ds", isolateConfig.RolloutDuration)
 	spec.Annotations["autoscaling.knative.dev/minScale"] =
@@ -1134,7 +1136,7 @@ func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {
 	tr := []v1.TrafficTarget{}
 	for i := range tv {
 
-		isLatest = latestRevision == tv[i].GetRevision()
+		isLatest := latestRevision == tv[i].GetRevision()
 
 		tt := v1.TrafficTarget{
 			LatestRevision: &isLatest,
@@ -1151,7 +1153,6 @@ func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {
 	if err != nil {
 		log.Errorf("error marshalling new services: %v", err)
 	}
-	fmt.Printf("%s", string(b))
 
 	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Patch(context.Background(),
 		name, types.MergePatchType, b, metav1.PatchOptions{})

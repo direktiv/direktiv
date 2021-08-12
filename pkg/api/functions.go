@@ -29,9 +29,7 @@ type functionResponseList struct {
 
 type functionResponseObject struct {
 	Info struct {
-		Size      int32  `json:"size"`
 		Workflow  string `json:"workflow"`
-		MinScale  int32  `json:"minScale"`
 		Name      string `json:"name"`
 		Namespace string `json:"namespace"`
 		Image     string `json:"image"`
@@ -96,14 +94,8 @@ func prepareIsolatesForResponse(isolates []*grpc.IsolateInfo) []*functionRespons
 		obj := new(functionResponseObject)
 		iinf := isolate.GetInfo()
 		if iinf != nil {
-			if iinf.Size != nil {
-				obj.Info.Size = *iinf.Size
-			}
 			if iinf.Workflow != nil {
 				obj.Info.Workflow = *iinf.Workflow
-			}
-			if iinf.MinScale != nil {
-				obj.Info.MinScale = *iinf.MinScale
 			}
 			if iinf.Name != nil {
 				obj.Info.Name = *iinf.Name
