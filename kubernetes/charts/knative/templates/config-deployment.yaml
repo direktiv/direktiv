@@ -1,45 +1,57 @@
-{{- if .Values.development -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-deployment
   namespace: knative-serving-{{ .Release.Name }}
+  labels:
+    serving.knative.dev/release: v0.25.0
+    {{- include "knative.labels" . | nindent 4 }}
 
 data:
-    # List of repositories for which tag to digest resolving should be skipped
-    registriesSkippingTagResolving: "kind.local,ko.local,dev.local,localhost:5000"
+  # This block is not actually functional configuration,
+  # but serves to illustrate the available configuration
+  # options and document them in a way that is accessible
+  # to users that `kubectl edit` this config map.
+  #
+  # These sample configuration options may be copied out of
+  # this example block and unindented to be in the data block
+  # to actually change the configuration.
 
-    # digestResolutionTimeout is the maximum time allowed for an image's
-    # digests to be resolved.
-    digestResolutionTimeout: "10s"
+  # List of repositories for which tag to digest resolving should be skipped
+  registriesSkippingTagResolving: "kind.local,ko.local,dev.local,localhost:5000"
 
-    # ProgressDeadline is the duration we wait for the deployment to
-    # be ready before considering it failed.
-    progressDeadline: "600s"
+  # digestResolutionTimeout is the maximum time allowed for an image's
+  # digests to be resolved.
+  digestResolutionTimeout: "10s"
 
-    # queueSidecarCPURequest is the requests.cpu to set for the queue proxy sidecar container.
-    # If omitted, a default value (currently "25m"), is used.
-    queueSidecarCPURequest: "25m"
+  # ProgressDeadline is the duration we wait for the deployment to
+  # be ready before considering it failed.
+  progressDeadline: "600s"
 
-    # queueSidecarCPULimit is the limits.cpu to set for the queue proxy sidecar container.
-    # If omitted, no value is specified and the system default is used.
-    queueSidecarCPULimit: "1000m"
-    # queueSidecarMemoryRequest is the requests.memory to set for the queue proxy container.
-    # If omitted, no value is specified and the system default is used.
-    queueSidecarMemoryRequest: "400Mi"
+  # queueSidecarCPURequest is the requests.cpu to set for the queue proxy sidecar container.
+  # If omitted, a default value (currently "25m"), is used.
+  queueSidecarCPURequest: "25m"
 
-    # queueSidecarMemoryLimit is the limits.memory to set for the queue proxy container.
-    # If omitted, no value is specified and the system default is used.
-    queueSidecarMemoryLimit: "800Mi"
+  # queueSidecarCPULimit is the limits.cpu to set for the queue proxy sidecar container.
+  # If omitted, no value is specified and the system default is used.
+  queueSidecarCPULimit: "1000m"
 
-    # queueSidecarEphemeralStorageRequest is the requests.ephemeral-storage to
-    # set for the queue proxy sidecar container.
-    # If omitted, no value is specified and the system default is used.
-    queueSidecarEphemeralStorageRequest: "512Mi"
+  # queueSidecarMemoryRequest is the requests.memory to set for the queue proxy container.
+  # If omitted, no value is specified and the system default is used.
+  queueSidecarMemoryRequest: "400Mi"
 
-    # queueSidecarEphemeralStorageLimit is the limits.ephemeral-storage to set
-    # for the queue proxy sidecar container.
-    # If omitted, no value is specified and the system default is used.
-    queueSidecarEphemeralStorageLimit: "1024Mi"
-    queueSidecarImage: gcr.io/direktiv/knative.dev/serving/cmd/queue@sha256:e3d1d07c282bf3b4d237c719fba8cfe49547b14aefe4229daf842dd17bd58167
-{{- end }}
+  # queueSidecarMemoryLimit is the limits.memory to set for the queue proxy container.
+  # If omitted, no value is specified and the system default is used.
+  queueSidecarMemoryLimit: "800Mi"
+
+  # queueSidecarEphemeralStorageRequest is the requests.ephemeral-storage to
+  # set for the queue proxy sidecar container.
+  # If omitted, no value is specified and the system default is used.
+  queueSidecarEphemeralStorageRequest: "512Mi"
+
+  # queueSidecarEphemeralStorageLimit is the limits.ephemeral-storage to set
+  # for the queue proxy sidecar container.
+  # If omitted, no value is specified and the system default is used.
+  queueSidecarEphemeralStorageLimit: "1024Mi"
+
+  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:5af97fa5e19c6fd1e04642e7cf6eb01e6982b4cfee19d8fd16649423277c2eb9
