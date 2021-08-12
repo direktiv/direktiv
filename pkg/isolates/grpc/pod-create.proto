@@ -16,4 +16,5 @@ message CreatePodRequest {
 
 message CreatePodResponse {
   optional string ip = 1;
+	optional string hostname = 2;
 }

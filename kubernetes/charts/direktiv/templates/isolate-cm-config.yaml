@@ -20,7 +20,10 @@ data:
       sidecar: {{ .Values.isolates.sidecar }}
 
       # init pod name
-      init-pod: {{ .Values.isolates.initPod }}
+      init-pod: {{ .Values.isolates.initPodImage }}
+
+      # tls secret for init pod
+      init-pod-certificate: {{ .Values.isolates.initPodCertificate }}
 
       # max number of revisions to keep per namespace or global
       keep-revisions: 3

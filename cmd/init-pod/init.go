@@ -5,12 +5,13 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sync"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func runAsInit() {
@@ -89,7 +90,14 @@ func runAsInit() {
 	srv.Addr = "0.0.0.0:8890"
 	srv.Handler = router
 
-	err := srv.ListenAndServe()
+	var err error
+	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
+	if len(k) > 0 {
+		err = srv.ListenAndServeTLS(c, k)
+	} else {
+		err = srv.ListenAndServe()
+	}
+	// err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}

@@ -325,14 +325,14 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		ip, err := addPodFunction(ctx, we.isolateClient, ar)
+		hostname, ip, err := addPodFunction(ctx, we.isolateClient, ar)
 		if err != nil {
 			return NewInternalError(err)
 		}
 
 		go func(ar *isolateRequest) {
 			// post data
-			we.doPodHTTPRequest(ctx, ar, ip)
+			we.doPodHTTPRequest(ctx, ar, hostname, ip)
 		}(ar)
 
 	case model.DefaultFunctionType:
@@ -391,11 +391,11 @@ func createTransport(useTLS bool) *http.Transport {
 
 		// Read in the cert file. just in case it is the same being used
 		// in the ingress
-		certs, err := ioutil.ReadFile(util.TLSCert)
+		certs, err := ioutil.ReadFile("/etc/direktiv/certs/ca/ca.crt")
 		if err == nil {
 			// Append our cert to the system pool if we have it
 			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-				log.Println("No certs appended, using system certs only")
+				log.Println("no certs appended, using system certs only")
 			}
 		}
 
@@ -412,12 +412,17 @@ func createTransport(useTLS bool) *http.Transport {
 }
 
 func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
-	ar *isolateRequest, ip string) {
+	ar *isolateRequest, hostname, ip string) {
 
-	tr := createTransport(we.server.config.IsolateProtocol == "https")
+	useTLS := we.server.config.IsolateProtocol == "https"
+
+	tr := createTransport(useTLS)
 
 	// configured namespace for workflows
 	addr := fmt.Sprintf("%s://%s:8890", we.server.config.IsolateProtocol, ip)
+	if useTLS {
+		addr = fmt.Sprintf("%s://%s:8890", we.server.config.IsolateProtocol, hostname)
+	}
 
 	log.Debugf("isolate request: %v", addr)
 
@@ -453,7 +458,20 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		resp *http.Response
 	)
 
-	resp, err = client.Do(req)
+	// if we use https we need to use hostname for the certs to be valid
+	// that can lead to some delays with kubernetes DNS
+	if useTLS {
+		for i := 0; i < 100; i++ {
+			resp, err = client.Do(req)
+			if err != nil && strings.Contains(err.Error(), "connection refused") {
+				time.Sleep(250 * time.Millisecond)
+				continue
+			}
+		}
+	} else {
+		resp, err = client.Do(req)
+	}
+
 	if err != nil {
 		if ctxErr := rctx.Err(); ctxErr != nil {
 			log.Debugf("context error in pod call")

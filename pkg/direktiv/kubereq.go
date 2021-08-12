@@ -26,7 +26,7 @@ func cancelJob(ctx context.Context, client igrpc.IsolatesServiceClient,
 }
 
 func addPodFunction(ctx context.Context,
-	client igrpc.IsolatesServiceClient, ir *isolateRequest) (string, error) {
+	client igrpc.IsolatesServiceClient, ir *isolateRequest) (string, string, error) {
 
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
@@ -48,7 +48,7 @@ func addPodFunction(ctx context.Context,
 	}
 
 	r, err := client.CreateIsolatePod(ctx, &cr)
-	return r.GetIp(), err
+	return r.GetHostname(), r.GetIp(), err
 
 }
 

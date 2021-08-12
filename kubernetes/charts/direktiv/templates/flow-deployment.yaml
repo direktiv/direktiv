@@ -69,6 +69,11 @@ spec:
             mountPath: "/etc/direktiv/certs/isolates"
             readOnly: true
           {{- end }}
+          {{- if eq .Values.flow.isolateProtocol "https" }}
+          - name: podca
+            mountPath: "/etc/direktiv/certs/ca"
+            readOnly: true
+          {{- end }}
           ports:
             - name: ingress
               containerPort: 6666
@@ -137,6 +142,11 @@ spec:
       volumes:
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
+        {{- end }}
+        {{- if eq .Values.flow.isolateProtocol "https" }}
+        - name: podca
+          secret:
+            secretName: {{ .Values.flow.isolateCA }}
         {{- end }}
         - name: grpc-config
           configMap:
