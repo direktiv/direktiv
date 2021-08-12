@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/isolates"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
@@ -510,7 +510,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		svn, _, err = isolates.GenerateServiceName(ar.Workflow.Namespace,
+		svn, _, err = functions.GenerateServiceName(ar.Workflow.Namespace,
 			ar.Workflow.ID, ar.Container.ID)
 		if err != nil {
 			log.Errorf("can not create service name: %v", err)

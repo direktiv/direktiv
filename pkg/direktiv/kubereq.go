@@ -4,8 +4,8 @@ import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/isolates"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -57,10 +57,10 @@ func isKnativeFunction(client igrpc.IsolatesServiceClient,
 
 	// search annotations
 	a := make(map[string]string)
-	a[isolates.ServiceHeaderName] = name
-	a[isolates.ServiceHeaderNamespace] = namespace
-	a[isolates.ServiceHeaderWorkflow] = workflow
-	a[isolates.ServiceHeaderScope] = isolates.PrefixService
+	a[functions.ServiceHeaderName] = name
+	a[functions.ServiceHeaderNamespace] = namespace
+	a[functions.ServiceHeaderWorkflow] = workflow
+	a[functions.ServiceHeaderScope] = functions.PrefixService
 
 	log.Debugf("knative function search: %v", a)
 
@@ -151,23 +151,23 @@ func deleteKnativeFunctions(client igrpc.IsolatesServiceClient,
 
 	annotations := make(map[string]string)
 
-	scope := isolates.PrefixService
+	scope := functions.PrefixService
 
 	if ns != "" {
-		annotations[isolates.ServiceHeaderNamespace] = ns
-		scope = isolates.PrefixNamespace
+		annotations[functions.ServiceHeaderNamespace] = ns
+		scope = functions.PrefixNamespace
 	}
 
 	if wf != "" {
-		annotations[isolates.ServiceHeaderWorkflow] = wf
-		scope = isolates.PrefixWorkflow
+		annotations[functions.ServiceHeaderWorkflow] = wf
+		scope = functions.PrefixWorkflow
 	}
 
 	if name != "" {
-		annotations[isolates.ServiceHeaderName] = name
-		scope = isolates.PrefixService
+		annotations[functions.ServiceHeaderName] = name
+		scope = functions.PrefixService
 	}
-	annotations[isolates.ServiceHeaderScope] = scope
+	annotations[functions.ServiceHeaderScope] = scope
 
 	dr := igrpc.ListIsolatesRequest{
 		Annotations: annotations,

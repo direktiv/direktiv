@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+
+import "google/protobuf/empty.proto";
+
+import "pkg/functions/grpc/registries-get.proto";
+import "pkg/functions/grpc/registry-delete.proto";
+import "pkg/functions/grpc/registry-store.proto";
+
+import "pkg/functions/grpc/isolates-get.proto";
+import "pkg/functions/grpc/isolates-create.proto";
+import "pkg/functions/grpc/isolates-list.proto";
+import "pkg/functions/grpc/isolates-traffic.proto";
+import "pkg/functions/grpc/isolates-update.proto";
+import "pkg/functions/grpc/pod-create.proto";
+import "pkg/functions/grpc/pod-cancel.proto";
+import "pkg/functions/grpc/revision-delete.proto";
+
+service IsolatesService {
+  rpc UpdateIsolate(UpdateIsolateRequest) returns (google.protobuf.Empty)  {}
+  rpc CreateIsolate(CreateIsolateRequest) returns (google.protobuf.Empty)  {}
+  rpc DeleteIsolates(ListIsolatesRequest) returns (google.protobuf.Empty)  {}
+  rpc ListIsolates(ListIsolatesRequest) returns (ListIsolatesResponse)  {}
+  rpc GetIsolate(GetIsolateRequest) returns (GetIsolateResponse)  {}
+  rpc DeleteIsolate(GetIsolateRequest) returns (google.protobuf.Empty)  {}
+  rpc SetIsolateTraffic(SetTrafficRequest) returns (google.protobuf.Empty)  {}
+	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
+  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
+  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
+  rpc CreateIsolatePod(CreatePodRequest) returns (CreatePodResponse)  {}
+  rpc CancelIsolatePod(CancelPodRequest) returns (google.protobuf.Empty)  {}
+  rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}
+}

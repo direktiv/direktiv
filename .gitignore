@@ -31,7 +31,7 @@
 /build/direkcli-linux
 /build/secrets
 /build/api
-/build/isolates
+/build/functions
 /build/alpine-*
 /apiserver
 /direktiv
@@ -47,7 +47,7 @@
 
 /build/docker/*
 !*build/docker/all
-!*build/docker/isolate
+!*build/docker/functions
 !*build/docker/secrets
 !*build/docker/flow
 !*build/docker/direkcli
@@ -55,11 +55,11 @@
 !*build/docker/sidecar
 !*build/docker/api
 !*build/docker/init-pod
-!*build/docker/isolates
+!*build/docker/functions
 !*build/docker/tls-create
 /build/docker/sidecar/sidecar
 *build/docker/ui/build
 *build/docker/ui/direktiv-ui
 *build/docker/init-pod/init-pod
-*build/docker/isolates/isolates
+*build/docker/functions/functions
 deploy*.yaml

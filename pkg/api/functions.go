@@ -6,13 +6,12 @@ import (
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/model"
 
 	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/isolates"
-	"github.com/vorteil/direktiv/pkg/isolates/grpc"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 )
 
 type listFunctionsRequest struct {
@@ -394,7 +393,7 @@ type serviceItem struct {
 	name, service string
 }
 
-func calculateList(client igrpc.IsolatesServiceClient,
+func calculateList(client grpc.IsolatesServiceClient,
 	items []serviceItem, annotations map[string]string, ns string) ([]*grpc.IsolateInfo, error) {
 
 	resp, err := client.ListIsolates(context.Background(),
@@ -421,7 +420,7 @@ func calculateList(client igrpc.IsolatesServiceClient,
 		imgNS = ns
 	}
 
-	cond := &igrpc.Condition{
+	cond := &grpc.Condition{
 		Name:    &condName,
 		Status:  &condStatus,
 		Message: &condMessage,
@@ -436,7 +435,7 @@ func calculateList(client igrpc.IsolatesServiceClient,
 			ns = annons
 		}
 
-		svcName, _, err := isolates.GenerateServiceName(ns, "", li.service)
+		svcName, _, err := functions.GenerateServiceName(ns, "", li.service)
 		if err != nil {
 			log.Errorf("can not generate service name: %v", err)
 			continue
@@ -449,7 +448,7 @@ func calculateList(client igrpc.IsolatesServiceClient,
 				Image:     &imgErr,
 				Namespace: &imgNS,
 			},
-			Conditions: []*igrpc.Condition{
+			Conditions: []*grpc.Condition{
 				cond,
 			},
 		}

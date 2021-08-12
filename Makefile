@@ -27,7 +27,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: cmd/direkcli/*.go build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/isolates-binary
+binaries: cmd/direkcli/*.go build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
@@ -44,11 +44,11 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	kubectl delete --all jobs -n direktiv-services-direktiv
 
 .PHONY: images
-images: image-api image-flow image-init-pod image-secrets image-sidecar image-isolates
+images: image-api image-flow image-init-pod image-secrets image-sidecar image-functions
 
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-init-pod push-secrets push-sidecar push-isolates push-tls-create
+push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions push-tls-create
 
 HELM_CONFIG := "scripts/dev.yaml"
 
@@ -182,8 +182,8 @@ tail-api: ## Tail logs for currently active 'api' container.
 	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
 	kubectl logs -f ${API_POD} api
 
-.PHONY: tail-isolates
-tail-isolates: ## Tail logs for currently active 'isolates' container.
-	$(eval ISOLATES_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-isolates") | .metadata.name'))
-	$(eval ISOLATES_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${ISOLATES_RS}) | .metadata.name'))
-	kubectl logs -f ${ISOLATES_POD} isolate-controller
+.PHONY: tail-functions
+tail-functions: ## Tail logs for currently active 'functions' container.
+	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
+	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
+	kubectl logs -f ${FUNCTIONS_POD} functions-controller

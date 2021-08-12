@@ -8,8 +8,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gorilla/mux"
 
+	"github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 

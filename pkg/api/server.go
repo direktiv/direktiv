@@ -9,8 +9,8 @@ import (
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
