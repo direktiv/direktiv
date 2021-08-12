@@ -12,7 +12,7 @@ imagePullSecrets: []
 # if using proxy the user needs to be a valid IAM user with access to the database
 # e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
 # to to google with:
-# serviceAccount:
+# ccount:
 #   annotations:
 #      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
 serviceAccount:
@@ -43,7 +43,7 @@ supportPersist: false
 # enable debug
 debug: false
 
-useNetworkPolicies: false
+useNetworkPolicies: false # enables/disables network policies2
 
 ingress:
   host: ""
@@ -55,9 +55,9 @@ flow:
   image: "vorteil/flow"
   tag: "latest"
   db: ""
-  isolateProtocol: "https"
-  isolateCA: "direktiv-cert3"
-  certificate: none
+  isolateProtocol: "http"
+  isolateCA: "none" # change isolate pod secret too
+  # isolateCA: "direktiv-cert3"
   certificates:
     flow: none
     mtlsFlow: none
@@ -97,13 +97,13 @@ api:
   certificate: none
 
 # Set Send and Recv limits for all grpc clients and servers
-grpc:
-  server:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
-  client:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
+grpc: #PARENT
+  server: # GRPC
+    maxSendSize: "4194304" # SENDS
+    maxRecvSize: "4194304" # RECVS
+  client: # CLIENT
+    maxSendSize: "4194304" # SENDS1
+    maxRecvSize: "4194304" # RECVS1
 
 isolates:
   # namespace to run isolates in
@@ -120,8 +120,8 @@ isolates:
   sidecar: "vorteil/sidecar"
 
   initPodImage:  "vorteil/direktiv-init-pod"
-    # this cert needs to be
-  initPodCertificate: direktiv-cert3
+  # initPodCertificate: direktiv-cert3
+  initPodCertificate: none
 
   # number of controller replicas
   replicaCount: 1

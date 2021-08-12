@@ -168,7 +168,7 @@ func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 
 }
 
-func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
+func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 
 	e := proxyEnvs(true)
 
@@ -185,6 +185,10 @@ func commonEnvs(in *igrpc.CreatePodRequest) []v1.EnvVar {
 			Name:  PodEnvStep,
 			Value: fmt.Sprintf("%d", in.GetStep()),
 		},
+		{
+			Name:  util.DirektivNamespace,
+			Value: ns,
+		},
 	}
 
 	return append(e, add...)
@@ -195,10 +199,6 @@ func (is *isolateServer) CancelIsolatePod(ctx context.Context,
 	in *igrpc.CancelPodRequest) (*emptypb.Empty, error) {
 
 	log.Debugf("cancel pod %v", in.GetActionID())
-
-	if true {
-		return &empty, nil
-	}
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -272,7 +272,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 	labels[ServiceHeaderWorkflow] = info.GetName()
 	labels[ServiceHeaderNamespace] = info.GetNamespace()
 
-	commonJobVars := commonEnvs(in)
+	commonJobVars := commonEnvs(in, info.GetNamespace())
 
 	annotations := make(map[string]string)
 	annotations["kubernetes.io/ingress-bandwidth"] = isolateConfig.NetShape
@@ -347,6 +347,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 
 	}
 
+	mountToken := false
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "direktiv-job-",
@@ -361,8 +362,9 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 					Annotations: annotations,
 				},
 				Spec: v1.PodSpec{
-					ImagePullSecrets: createPullSecrets(info.GetNamespace()),
-					Volumes:          volumes,
+					AutomountServiceAccountToken: &mountToken,
+					ImagePullSecrets:             createPullSecrets(info.GetNamespace()),
+					Volumes:                      volumes,
 					InitContainers: []v1.Container{
 						{
 							ImagePullPolicy: pullPolicy,

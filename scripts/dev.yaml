@@ -14,4 +14,4 @@ isolates:
   namespace: direktiv-services-direktiv
   image: "isolates"
   sidecar: "localhost:5000/sidecar"
-  initPod: "localhost:5000/direktiv-init-pod"
+  initPodImage: "localhost:5000/direktiv-init-pod"

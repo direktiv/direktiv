@@ -38,7 +38,7 @@ func (o *SetterDefinition) Validate() error {
 		return errors.New(`key required`)
 	}
 
-	if ok := util.MatchesRegex(o.Key); !ok {
+	if ok := util.MatchesVarRegex(o.Key); !ok {
 		return fmt.Errorf("variable key must match regex: %s", util.RegexPattern)
 	}
 
