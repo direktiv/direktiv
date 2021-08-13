@@ -20,7 +20,7 @@ failed=0
 
 build_isolate () {
 	isolate=$1
-	tag="localhost:5000/${isolate##*/}"
+	tag="localhost:5000/${isolate##*/}:test"
 
 	echo "isolate =========== $isolate"
 

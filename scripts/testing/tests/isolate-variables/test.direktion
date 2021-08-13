@@ -1,18 +1,28 @@
 workflow test
 
-const request-isolate = isolate(image: "localhost:5000/isolate-requester")
+// Isolated function
+const request = isolate(image: "localhost:5000/isolate-requester:test")
 
-log("Person 1: Hmm I really need a interesting cat fact for this conference")
+const validate-vars = isolate(
+    image: "localhost:5000/isolate-validate:test",
+    "file":  file(key: "instance-var", scope: "instance", type: "plain"),
+    "file":  file(key: "workflow-var", scope: "workflow", type: "plain"),
+    "file":  file(key: "namespace-var", scope: "namespace", type: "plain"),
+    "file":  file(key: "fact", scope: "workflow", type: "plain"),
+    )
+
+// Section 1: Testing variable states
+log("Person 1: Hmm I really need a interesting number fact for this conference")
 
 get(scope: "namespace", key: "api")
 
 call-function:
-    call(request-isolate, {
+    call(request, {
         method: "GET",
-        url: "jq(.var.api.catFacts)",
+        url: "jq(.var.api.numberFacts)",
     })
 
-transform(jq('. += {fact: .return.body[0].text}'))
+transform(jq('. += {fact: .return.body.text}'))
 
 log("Person 2: Did you know, jq(.fact)")
 
@@ -35,3 +45,28 @@ log("Person 1: Did you know jq(.var.fact)")
 
 log("---- Laughter and applause. The End ----")
 
+
+// Section 2: Testing isolated variables
+validate:
+    // Validate from inside container that workflow 'fact' variable from previous section has been set.
+    // Set instance-var, workflow-var and namespace-var inside isolated container. The base64 of 'fact' is added to the end of
+    // these variables to make these variables unqiue every test run.
+    call(validate-vars, {
+            "validate": [
+                {key: "fact", value: "\"jq(.var.fact)\""},
+            ],
+            "set": [
+                {key: "instance-var", scope: "instance", value: "Hello I am a instance variable. Fact b64=jq(.var.fact | @base64)"},
+                {key: "workflow-var", scope: "workflow", value: "Hello I am a workflow variable. Fact b64=jq(.var.fact | @base64)"},
+                {key: "namespace-var", scope: "namespace", value: "Hello I am a namespace variable. Fact b64=jq(.var.fact | @base64)"},
+            ],
+        })
+
+    // Validate instance-var, workflow-var and namespace-var variables from inside isolated container
+    call(validate-vars, {
+            "validate": [
+                {key: "instance-var", value: "Hello I am a instance variable. Fact b64=jq(.var.fact | @base64)"},
+                {key: "workflow-var", value: "Hello I am a workflow variable. Fact b64=jq(.var.fact | @base64)"},
+                {key: "namespace-var", value: "Hello I am a namespace variable. Fact b64=jq(.var.fact | @base64)"},
+            ],
+        })
