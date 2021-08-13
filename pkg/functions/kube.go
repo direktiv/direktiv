@@ -360,7 +360,7 @@ func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInf
 	return b, nil
 }
 
-func metaSpec(net string, min, max int, ns, wf, name, scope string) metav1.ObjectMeta {
+func metaSpec(net string, min, max int, ns, wf, name, scope string, size int) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   functionsConfig.Namespace,
@@ -384,6 +384,9 @@ func metaSpec(net string, min, max int, ns, wf, name, scope string) metav1.Objec
 
 	metaSpec.Labels[ServiceHeaderNamespace] = ns
 	metaSpec.Labels[ServiceHeaderScope] = scope
+
+	metaSpec.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", min)
+	metaSpec.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 
 	return metaSpec
 
@@ -754,6 +757,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
 		fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
 		fmt.Sscan(rev.Labels[generationHeader], &gen)
+
 		info.Size = &sz
 		info.MinScale = &scale
 		info.Generation = &gen
@@ -1055,7 +1059,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: metaSpec(functionsConfig.NetShape, min, functionsConfig.MaxScale,
-						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope),
+						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope, int(info.GetSize())),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							AutomountServiceAccountToken: &mountToken,

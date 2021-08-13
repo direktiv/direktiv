@@ -223,6 +223,7 @@ func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, rev := range resp.GetRevisions() {
+
 		out.Revisions = append(out.Revisions, getFunctionResponse_Revision{
 			Name:       rev.GetName(),
 			Image:      rev.GetImage(),
