@@ -43,7 +43,8 @@ supportPersist: false
 # enable debug
 debug: false
 
-useNetworkPolicies: false # enables/disables network policies2
+# enables/disables network policies
+useNetworkPolicies: false
 
 ingress:
   host: ""
@@ -56,17 +57,12 @@ flow:
   tag: "latest"
   db: ""
   functionsProtocol: "http"
-  functionsCA: "none" # change function pod secret too
-  # functionsCA: "direktiv-cert3"
+  functionsCA: "none"
   certificates:
     flow: none
     mtlsFlow: none
-    # flow: hello-world6
-    # mtlsFlow: hello-world6
     ingress: none
     mtlsIngress: none
-    # ingress: hello-world5
-    # mtlsIngress: hello-world5
   extraContainers: []
   extraVolumeMounts:
     # - name: service-template
@@ -87,7 +83,6 @@ secrets:
 ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
-  # certificate: direktiv-cert
   certificate: none
 
 api:
@@ -97,13 +92,13 @@ api:
   certificate: none
 
 # Set Send and Recv limits for all grpc clients and servers
-grpc: #PARENT
-  server: # GRPC
-    maxSendSize: "4194304" # SENDS
-    maxRecvSize: "4194304" # RECVS
-  client: # CLIENT
-    maxSendSize: "4194304" # SENDS1
-    maxRecvSize: "4194304" # RECVS1
+grpc:
+  server:
+    maxSendSize: "4194304"
+    maxRecvSize: "4194304"
+  client:
+    maxSendSize: "4194304"
+    maxRecvSize: "4194304"
 
 functions:
   # namespace to run functions in
@@ -114,18 +109,17 @@ functions:
   tag: "latest"
   certificate: none
   mtls: none
-  # certificate: hello-world3
-  # mtls: hello-world3
 
   sidecar: "vorteil/sidecar"
 
   initPodImage:  "vorteil/direktiv-init-pod"
-  # initPodCertificate: direktiv-cert3
+
   initPodCertificate: none
 
   # number of controller replicas
   replicaCount: 1
 
+  # allowed network traffic if supported
   netShape: "10M"
 
   # database connection, required for pub/sub with flow
