@@ -101,10 +101,17 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	return &empty, err
 }
 
+<<<<<<< HEAD:pkg/functions/kube.go
 func (is *functionsServer) GetFunction(ctx context.Context,
 	in *igrpc.GetFunctionRequest) (*igrpc.GetFunctionResponse, error) {
 
 	var resp *igrpc.GetFunctionResponse
+=======
+func (is *isolateServer) GetIsolate(ctx context.Context,
+	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
+
+	var resp *igrpc.GetIsolateResponse
+>>>>>>> 27b000ae1de9be69e637454f2030b6a57c04760b:pkg/isolates/kube.go
 
 	if in.GetServiceName() == "" {
 		return resp, fmt.Errorf("service name can not be nil")
