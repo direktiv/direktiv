@@ -142,6 +142,11 @@ docker-ui: ## Manually clone and build the latest UI.
 
 # Misc
 
+.PHONY: docker-all
+docker-all: ## Build the all-in-one image.
+docker-all:
+	docker build --no-cache -t direktiv-kube build/docker/all
+
 .PHONY: template-configmaps
 template-configmaps:
 	scripts/misc/generate-api-configmaps.sh
