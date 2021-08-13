@@ -140,9 +140,9 @@ func (sd *actionStateSavedata) Marshal() []byte {
 
 func (wli *workflowLogicInstance) newIsolateRequest(stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid ksuid.KSUID, async bool) (*isolateRequest, error) {
+	uid ksuid.KSUID, async bool) (*functionRequest, error) {
 
-	ar := new(isolateRequest)
+	ar := new(functionRequest)
 	ar.ActionID = uid.String()
 	ar.Workflow.Name = wli.wf.Name
 	ar.Workflow.ID = wli.wf.ID
@@ -276,7 +276,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 			return
 		}
 
-		var ar *isolateRequest
+		var ar *functionRequest
 		ar, err = instance.newIsolateRequest(sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async)
 		if err != nil {
 			return
@@ -284,7 +284,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		if sl.state.Async {
 			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", fn.GetID())
-			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
+			go func(ctx context.Context, instance *workflowLogicInstance, ar *functionRequest) {
 				err = instance.engine.doActionRequest(ctx, ar)
 				if err != nil {
 					return
@@ -318,7 +318,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 			return
 		}
 
-		var ar *isolateRequest
+		var ar *functionRequest
 		ar, err = instance.newIsolateRequest(sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async)
 		if err != nil {
 			return
@@ -326,7 +326,7 @@ func (sl *actionStateLogic) do(ctx context.Context, instance *workflowLogicInsta
 
 		if sl.state.Async {
 			instance.Log(ctx, "Running function '%s' in fire-and-forget mode (async).", fn.GetID())
-			go func(ctx context.Context, instance *workflowLogicInstance, ar *isolateRequest) {
+			go func(ctx context.Context, instance *workflowLogicInstance, ar *functionRequest) {
 				err = instance.engine.doActionRequest(ctx, ar)
 				if err != nil {
 					return

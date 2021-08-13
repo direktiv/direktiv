@@ -4,8 +4,8 @@ package grpc;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
-import "pkg/functions/grpc/isolates-common.proto";
+import "pkg/functions/grpc/functions-common.proto";
 
-message CreateIsolateRequest {
+message CreateFunctionRequest {
 	optional BaseInfo info = 1;
 }

@@ -62,8 +62,8 @@ type workflowEngine struct {
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
 
-	flowClient    flow.DirektivFlowClient
-	isolateClient igrpc.IsolatesServiceClient
+	flowClient      flow.DirektivFlowClient
+	functionsClient igrpc.FunctionsServiceClient
 
 	secretsClient secretsgrpc.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
@@ -126,7 +126,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 		return nil, err
 	}
 	we.grpcConns = append(we.grpcConns, conn)
-	we.isolateClient = igrpc.NewIsolatesServiceClient(conn)
+	we.functionsClient = igrpc.NewFunctionsServiceClient(conn)
 
 	// get flow client
 	conn, err = util.GetEndpointTLS(util.TLSFlowComponent)
@@ -316,7 +316,7 @@ type actionResultMessage struct {
 	Payload    actionResultPayload
 }
 
-func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
+func (we *workflowEngine) doActionRequest(ctx context.Context, ar *functionRequest) error {
 
 	if ar.Workflow.Timeout == 0 {
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
@@ -325,12 +325,12 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		hostname, ip, err := addPodFunction(ctx, we.isolateClient, ar)
+		hostname, ip, err := addPodFunction(ctx, we.functionsClient, ar)
 		if err != nil {
 			return NewInternalError(err)
 		}
 
-		go func(ar *isolateRequest) {
+		go func(ar *functionRequest) {
 			// post data
 			we.doPodHTTPRequest(ctx, ar, hostname, ip)
 		}(ar)
@@ -349,7 +349,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 }
 
-func (we *workflowEngine) reportError(ar *isolateRequest, err error) {
+func (we *workflowEngine) reportError(ar *functionRequest, err error) {
 	ec := ""
 	em := err.Error()
 	step := int32(ar.Workflow.Step)
@@ -412,7 +412,7 @@ func createTransport(useTLS bool) *http.Transport {
 }
 
 func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
-	ar *isolateRequest, hostname, ip string) {
+	ar *functionRequest, hostname, ip string) {
 
 	useTLS := we.server.config.FunctionsProtocol == "https"
 
@@ -424,7 +424,7 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		addr = fmt.Sprintf("%s://%s:8890", we.server.config.FunctionsProtocol, hostname)
 	}
 
-	log.Debugf("isolate request: %v", addr)
+	log.Debugf("function request: %v", addr)
 
 	now := time.Now()
 	deadline := now.Add(time.Duration(ar.Workflow.Timeout) * time.Second)
@@ -490,12 +490,12 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	log.Debugf("isolate request done")
+	log.Debugf("function request done")
 
 }
 
 func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
-	ar *isolateRequest) {
+	ar *functionRequest) {
 
 	var (
 		err error
@@ -586,9 +586,9 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
-							!isKnativeFunction(we.isolateClient, ar.Container.ID,
+							!isKnativeFunction(we.functionsClient, ar.Container.ID,
 								ar.Workflow.Namespace, ar.Workflow.ID) {
-							err := createKnativeFunction(we.isolateClient, ar)
+							err := createKnativeFunction(we.functionsClient, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								log.Errorf("can not create knative function: %v", err)
 								we.reportError(ar, err)
@@ -619,7 +619,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	log.Debugf("isolate request done")
+	log.Debugf("function request done")
 
 }
 
@@ -827,9 +827,9 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			cancelJob(context.Background(), we.isolateClient, child.Id)
+			cancelJob(context.Background(), we.functionsClient, child.Id)
 			/* #nosec */
-			_ = syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
+			_ = syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelFunction)
 		case "subflow":
 			go func(id string) {
 				/* #nosec */

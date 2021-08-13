@@ -67,7 +67,7 @@ var (
 	mtx sync.Mutex
 )
 
-func (is *isolateServer) DeleteRevision(ctx context.Context,
+func (is *functionsServer) DeleteRevision(ctx context.Context,
 	in *igrpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 
 	log.Debugf("delete revision %v", in.GetRevision())
@@ -80,7 +80,7 @@ func (is *isolateServer) DeleteRevision(ctx context.Context,
 	// check if there is traffic on it
 	// decline if there is still traffic on it
 
-	err = cs.ServingV1().Revisions(isolateConfig.Namespace).
+	err = cs.ServingV1().Revisions(functionsConfig.Namespace).
 		Delete(context.Background(), in.GetRevision(), metav1.DeleteOptions{})
 	if err != nil {
 		log.Errorf("error delete knative revision %s: %v", in.GetRevision(), err)
@@ -90,47 +90,46 @@ func (is *isolateServer) DeleteRevision(ctx context.Context,
 	return &empty, nil
 }
 
-func (is *isolateServer) DeleteIsolates(ctx context.Context,
-	in *igrpc.ListIsolatesRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) DeleteFunctions(ctx context.Context,
+	in *igrpc.ListFunctionsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("deleting isolates %v", in.GetAnnotations())
+	log.Debugf("deleting functionss %v", in.GetAnnotations())
 
-	err := deleteKnativeIsolates(in.GetAnnotations())
+	err := deleteKnativeFunctionss(in.GetAnnotations())
 
 	return &empty, err
 }
 
-func (is *isolateServer) GetIsolate(ctx context.Context,
+func (is *functionsServer) GetFunction(ctx context.Context,
+	in *igrpc.GetFunctionRequest) (*igrpc.GetFunctionResponse, error) {
 
-	in *igrpc.GetIsolateRequest) (*igrpc.GetIsolateResponse, error) {
-
-	var resp *igrpc.GetIsolateResponse
+	var resp *igrpc.GetFunctionResponse
 
 	if in.GetServiceName() == "" {
 		return resp, fmt.Errorf("service name can not be nil")
 	}
 
-	return getKnativeIsolate(in.GetServiceName())
+	return getKnativeFunction(in.GetServiceName())
 
 }
 
-// ListIsolates returns isoaltes based on label filter
-func (is *isolateServer) ListIsolates(ctx context.Context,
-	in *igrpc.ListIsolatesRequest) (*igrpc.ListIsolatesResponse, error) {
+// ListFunctionss returns isoaltes based on label filter
+func (is *functionsServer) ListFunctions(ctx context.Context,
+	in *igrpc.ListFunctionsRequest) (*igrpc.ListFunctionsResponse, error) {
 
-	var resp igrpc.ListIsolatesResponse
+	var resp igrpc.ListFunctionsResponse
 
-	log.Debugf("list isolates %v", in.GetAnnotations())
+	log.Debugf("list functions %v", in.GetAnnotations())
 
-	items, err := listKnativeIsolates(in.GetAnnotations())
+	items, err := listKnativeFunctionss(in.GetAnnotations())
 	if err != nil {
 		return &resp, err
 	}
 
-	resp.Isolates = items
+	resp.Functions = items
 
-	var ms = int32(isolateConfig.MaxScale)
-	resp.Config = &igrpc.IsolateConfig{
+	var ms = int32(functionsConfig.MaxScale)
+	resp.Config = &igrpc.FunctionsConfig{
 		Maxscale: &ms,
 	}
 
@@ -138,19 +137,19 @@ func (is *isolateServer) ListIsolates(ctx context.Context,
 
 }
 
-// StoreIsolate saves or updates isolates which means creating knative services
+// StoreFunctions saves or updates functionss which means creating knative services
 // baes on the provided configuration
-func (is *isolateServer) CreateIsolate(ctx context.Context,
-	in *igrpc.CreateIsolateRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) CreateFunction(ctx context.Context,
+	in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
 
-	log.Infof("storing isolate %s", in.GetInfo().GetName())
+	log.Infof("storing functions %s", in.GetInfo().GetName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
 	}
 
 	// create ksvc service
-	err := createKnativeIsolate(in.GetInfo())
+	err := createKnativeFunction(in.GetInfo())
 	if err != nil {
 		log.Errorf("can not create knative service: %v", err)
 		return &empty, err
@@ -160,10 +159,10 @@ func (is *isolateServer) CreateIsolate(ctx context.Context,
 
 }
 
-func (is *isolateServer) SetIsolateTraffic(ctx context.Context,
+func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
 	in *igrpc.SetTrafficRequest) (*emptypb.Empty, error) {
 
-	err := trafficKnativeIsolate(in.GetName(), in.GetTraffic())
+	err := trafficKnativeFunctions(in.GetName(), in.GetTraffic())
 	if err != nil {
 		log.Errorf("can not set traffic: %v", err)
 		return &empty, err
@@ -173,10 +172,10 @@ func (is *isolateServer) SetIsolateTraffic(ctx context.Context,
 
 }
 
-func (is *isolateServer) DeleteIsolate(ctx context.Context,
-	in *igrpc.GetIsolateRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) DeleteFunction(ctx context.Context,
+	in *igrpc.GetFunctionRequest) (*emptypb.Empty, error) {
 
-	err := deleteKnativeIsolate(in.GetServiceName())
+	err := deleteKnativeFunctions(in.GetServiceName())
 	if err != nil {
 		log.Errorf("can not delete knative service: %v", err)
 		return &empty, err
@@ -186,17 +185,18 @@ func (is *isolateServer) DeleteIsolate(ctx context.Context,
 
 }
 
-func (is *isolateServer) UpdateIsolate(ctx context.Context,
-	in *igrpc.UpdateIsolateRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) UpdateFunction(ctx context.Context,
+	in *igrpc.UpdateFunctionRequest) (*emptypb.Empty, error) {
 
-	log.Infof("updating isolate %s", in.GetServiceName())
+	log.Infof("updating function %s", in.GetServiceName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
 	}
 
 	// create ksvc service
-	err := updateKnativeIsolate(in.GetServiceName(), in.GetInfo(), in.GetTrafficPercent())
+	err := updateKnativeFunction(in.GetServiceName(),
+		in.GetInfo(), in.GetTrafficPercent())
 	if err != nil {
 		log.Errorf("can not update knative service: %v", err)
 		return &empty, err
@@ -292,9 +292,9 @@ func filterLabels(annotations map[string]string) map[string]string {
 	return a
 }
 
-func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, error) {
+func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInfo, error) {
 
-	var b []*igrpc.IsolateInfo
+	var b []*igrpc.FunctionsInfo
 
 	filtered := filterLabels(annotations)
 	if len(filtered) == 0 {
@@ -310,10 +310,10 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 	}
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
-	l, err := cs.ServingV1().Services(isolateConfig.Namespace).List(context.Background(), lo)
+	l, err := cs.ServingV1().Services(functionsConfig.Namespace).List(context.Background(), lo)
 
 	if err != nil {
-		log.Errorf("error getting isolate list: %v", err)
+		log.Errorf("error getting functions list: %v", err)
 		return b, err
 	}
 
@@ -345,7 +345,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 
 		svn := svc.Name
 
-		ii := &igrpc.IsolateInfo{
+		ii := &igrpc.FunctionsInfo{
 			Info:        info,
 			ServiceName: &svn,
 			Status:      &status,
@@ -362,7 +362,7 @@ func listKnativeIsolates(annotations map[string]string) ([]*igrpc.IsolateInfo, e
 func metaSpec(net string, min, max int, ns, wf, name, scope string) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
-		Namespace:   isolateConfig.Namespace,
+		Namespace:   functionsConfig.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
@@ -392,7 +392,7 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 
 	meta := metav1.ObjectMeta{
 		Name:        svn,
-		Namespace:   isolateConfig.Namespace,
+		Namespace:   functionsConfig.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
@@ -410,7 +410,7 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
 	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 	meta.Annotations["serving.knative.dev/rolloutDuration"] =
-		fmt.Sprintf("%ds", isolateConfig.RolloutDuration)
+		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 
 	return meta
 }
@@ -418,22 +418,22 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 
 	proxyEnvs := []corev1.EnvVar{}
-	if len(isolateConfig.Proxy.HTTP) > 0 {
+	if len(functionsConfig.Proxy.HTTP) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  httpProxy,
-			Value: isolateConfig.Proxy.HTTP,
+			Value: functionsConfig.Proxy.HTTP,
 		})
 	}
-	if len(isolateConfig.Proxy.HTTPS) > 0 {
+	if len(functionsConfig.Proxy.HTTPS) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  httpsProxy,
-			Value: isolateConfig.Proxy.HTTPS,
+			Value: functionsConfig.Proxy.HTTPS,
 		})
 	}
-	if len(isolateConfig.Proxy.No) > 0 {
+	if len(functionsConfig.Proxy.No) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  noProxy,
-			Value: isolateConfig.Proxy.No,
+			Value: functionsConfig.Proxy.No,
 		})
 	}
 
@@ -496,14 +496,14 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 
 	switch size {
 	case 1:
-		m = isolateConfig.Memory.Medium
-		c = isolateConfig.CPU.Medium
+		m = functionsConfig.Memory.Medium
+		c = functionsConfig.CPU.Medium
 	case 2:
-		m = isolateConfig.Memory.Large
-		c = isolateConfig.CPU.Large
+		m = functionsConfig.Memory.Large
+		c = functionsConfig.CPU.Large
 	default:
-		m = isolateConfig.Memory.Small
-		c = isolateConfig.CPU.Small
+		m = functionsConfig.Memory.Small
+		c = functionsConfig.CPU.Small
 	}
 
 	qcpu, err := resource.ParseQuantity(fmt.Sprintf("%v", c))
@@ -526,7 +526,7 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		return corev1.ResourceRequirements{}, err
 	}
 
-	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dMi", isolateConfig.Storage))
+	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dMi", functionsConfig.Storage))
 	if err != nil {
 		return corev1.ResourceRequirements{}, err
 	}
@@ -583,7 +583,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		ValueFrom: &corev1.EnvVarSource{
 			SecretKeyRef: &corev1.SecretKeySelector{
 				LocalObjectReference: corev1.LocalObjectReference{
-					Name: isolateConfig.SidecarDb,
+					Name: functionsConfig.SidecarDb,
 				},
 				Key: "db",
 			},
@@ -608,7 +608,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 	// direktiv sidecar
 	ds := corev1.Container{
 		Name:         containerSidecar,
-		Image:        isolateConfig.Sidecar,
+		Image:        functionsConfig.Sidecar,
 		Env:          proxy,
 		VolumeMounts: vmounts,
 		Ports: []corev1.ContainerPort{
@@ -620,8 +620,8 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	c := []corev1.Container{uc, ds}
 
-	for i := range isolateConfig.AdditionalContainers {
-		container := isolateConfig.AdditionalContainers[i]
+	for i := range functionsConfig.AdditionalContainers {
+		container := functionsConfig.AdditionalContainers[i]
 		c = append(c, container)
 	}
 
@@ -694,13 +694,13 @@ func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Conditio
 
 }
 
-func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
+func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 
 	var (
 		revs []*igrpc.Revision
 	)
 
-	resp := &igrpc.GetIsolateResponse{}
+	resp := &igrpc.GetFunctionResponse{}
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
@@ -708,7 +708,7 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 		return resp, err
 	}
 
-	svc, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
 		return resp, err
@@ -737,7 +737,7 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 	resp.Namespace = &namespace
 	resp.Workflow = &workflow
 
-	rs, err := cs.ServingV1().Revisions(isolateConfig.Namespace).List(context.Background(),
+	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
@@ -799,15 +799,15 @@ func getKnativeIsolate(name string) (*igrpc.GetIsolateResponse, error) {
 	resp.Revisions = revs
 
 	// add config
-	var ms = int32(isolateConfig.MaxScale)
-	resp.Config = &igrpc.IsolateConfig{
+	var ms = int32(functionsConfig.MaxScale)
+	resp.Config = &igrpc.FunctionsConfig{
 		Maxscale: &ms,
 	}
 	return resp, nil
 
 }
 
-func deleteKnativeIsolates(annotations map[string]string) error {
+func deleteKnativeFunctionss(annotations map[string]string) error {
 
 	filtered := filterLabels(annotations)
 	if len(filtered) == 0 {
@@ -823,7 +823,7 @@ func deleteKnativeIsolates(annotations map[string]string) error {
 	}
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
-	return cs.ServingV1().Services(isolateConfig.Namespace).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
+	return cs.ServingV1().Services(functionsConfig.Namespace).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
 }
 
@@ -851,7 +851,7 @@ func createVolumes() []corev1.Volume {
 
 }
 
-func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error {
+func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) error {
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
@@ -865,7 +865,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 	}
 
 	spec.Annotations["serving.knative.dev/rolloutDuration"] =
-		fmt.Sprintf("%ds", isolateConfig.RolloutDuration)
+		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 	spec.Annotations["autoscaling.knative.dev/minScale"] =
 		fmt.Sprintf("%d", info.GetMinScale())
 
@@ -878,7 +878,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 
 	// get all revisions
 
-	s, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(),
+	s, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
 		svn, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
@@ -945,7 +945,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 	}
 	defer kubeUnlock(l)
 
-	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Patch(context.Background(),
+	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Patch(context.Background(),
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {
@@ -954,7 +954,7 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 	}
 
 	// remove older revisions
-	rs, err := cs.ServingV1().Revisions(isolateConfig.Namespace).List(context.Background(),
+	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", svn)})
 	if err != nil {
 		log.Errorf("error getting old revisions: %v", err)
@@ -968,12 +968,12 @@ func updateKnativeIsolate(svn string, info *igrpc.BaseInfo, percent int64) error
 		return gen1 < gen2
 	})
 
-	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - isolateConfig.KeepRevisions))
+	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - functionsConfig.KeepRevisions))
 
 	// delete old revisions
-	for i := 0; i < (len(rs.Items) - isolateConfig.KeepRevisions); i++ {
+	for i := 0; i < (len(rs.Items) - functionsConfig.KeepRevisions); i++ {
 		log.Debugf("deleting %v", rs.Items[i].Name)
-		err := cs.ServingV1().Revisions(isolateConfig.Namespace).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
+		err := cs.ServingV1().Revisions(functionsConfig.Namespace).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
 		if err != nil {
 			log.Errorf("error deleting old revisions: %v", err)
 		}
@@ -996,7 +996,7 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 	return lo
 }
 
-func createKnativeIsolate(info *igrpc.BaseInfo) error {
+func createKnativeFunction(info *igrpc.BaseInfo) error {
 
 	var (
 		concurrency int64 = 100
@@ -1018,18 +1018,18 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 
 	log.Debugf("creating knative service %s", name)
 
-	log.Debugf("isolate namespace %s", isolateConfig.Namespace)
+	log.Debugf("functions namespace %s", functionsConfig.Namespace)
 
 	// check if min scale is not beyond max
 	min := int(info.GetMinScale())
-	if min > isolateConfig.MaxScale {
-		min = isolateConfig.MaxScale
+	if min > functionsConfig.MaxScale {
+		min = functionsConfig.MaxScale
 	}
 
 	// TODO: gcp db, pullimagesecrets
 
-	if isolateConfig.Concurrency > 0 {
-		concurrency = int64(isolateConfig.Concurrency)
+	if functionsConfig.Concurrency > 0 {
+		concurrency = int64(functionsConfig.Concurrency)
 	}
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
@@ -1050,13 +1050,13 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
-					ObjectMeta: metaSpec(isolateConfig.NetShape, min, isolateConfig.MaxScale,
+					ObjectMeta: metaSpec(functionsConfig.NetShape, min, functionsConfig.MaxScale,
 						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							AutomountServiceAccountToken: &mountToken,
 							ImagePullSecrets:             createPullSecrets(info.GetNamespace()),
-							ServiceAccountName:           isolateConfig.ServiceAccount,
+							ServiceAccountName:           functionsConfig.ServiceAccount,
 							Containers:                   containers,
 							Volumes:                      createVolumes(),
 						},
@@ -1068,9 +1068,9 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		},
 	}
 
-	if len(isolateConfig.Runtime) > 0 && isolateConfig.Runtime != "default" {
-		log.Debugf("setting runtime class %v", isolateConfig.Runtime)
-		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &isolateConfig.Runtime
+	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
+		log.Debugf("setting runtime class %v", functionsConfig.Runtime)
+		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &functionsConfig.Runtime
 	}
 
 	cs, err := fetchServiceAPI()
@@ -1079,7 +1079,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 		return err
 	}
 
-	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
+	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {
 		log.Errorf("error creating knative service: %v", err)
 		return err
@@ -1088,7 +1088,7 @@ func createKnativeIsolate(info *igrpc.BaseInfo) error {
 	return nil
 }
 
-func deleteKnativeIsolate(name string) error {
+func deleteKnativeFunctions(name string) error {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
@@ -1096,12 +1096,12 @@ func deleteKnativeIsolate(name string) error {
 		return err
 	}
 
-	return cs.ServingV1().Services(isolateConfig.Namespace).Delete(context.Background(),
+	return cs.ServingV1().Services(functionsConfig.Namespace).Delete(context.Background(),
 		name, metav1.DeleteOptions{})
 
 }
 
-func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {
+func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 	log.Debugf("setting traffic for %s", name)
 
@@ -1133,7 +1133,7 @@ func trafficKnativeIsolate(name string, tv []*igrpc.TrafficValue) error {
 	}
 	fmt.Printf("%s", string(b))
 
-	_, err = cs.ServingV1().Services(isolateConfig.Namespace).Patch(context.Background(),
+	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Patch(context.Background(),
 		name, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {

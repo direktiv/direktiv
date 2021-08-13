@@ -16,13 +16,13 @@ import (
 
 // Server ..
 type Server struct {
-	cfg      *Config
-	direktiv ingress.DirektivIngressClient
-	isolates igrpc.IsolatesServiceClient
-	json     jsonpb.Marshaler
-	handler  *Handler
-	router   *mux.Router
-	srv      *http.Server
+	cfg       *Config
+	direktiv  ingress.DirektivIngressClient
+	functions igrpc.FunctionsServiceClient
+	json      jsonpb.Marshaler
+	handler   *Handler
+	router    *mux.Router
+	srv       *http.Server
 
 	reqMapMutex sync.Mutex
 	reqMap      map[*http.Request]*RequestStatus
@@ -83,7 +83,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
-	err = s.initIsolates()
+	err = s.initFunctions()
 	if err != nil {
 		return nil, err
 	}
@@ -103,9 +103,9 @@ func (s *Server) IngressClient() ingress.DirektivIngressClient {
 	return s.direktiv
 }
 
-// IsolatesClient returns client to backend
-func (s *Server) IsolatesClient() igrpc.IsolatesServiceClient {
-	return s.isolates
+// FunctionsClient returns client to backend
+func (s *Server) FunctionsClient() igrpc.FunctionsServiceClient {
+	return s.functions
 }
 
 // Router returns mux router
@@ -128,7 +128,7 @@ func (s *Server) initDirektiv() error {
 	return nil
 }
 
-func (s *Server) initIsolates() error {
+func (s *Server) initFunctions() error {
 
 	conn, err := util.GetEndpointTLS(util.TLSFunctionsComponent)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *Server) initIsolates() error {
 
 	log.Infof("connecting to %s", util.FunctionsEndpoint())
 
-	s.isolates = igrpc.NewIsolatesServiceClient(conn)
+	s.functions = igrpc.NewFunctionsServiceClient(conn)
 
 	return nil
 }

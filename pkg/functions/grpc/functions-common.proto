@@ -22,6 +22,6 @@ message Condition {
 	optional string message = 4;
 }
 
-message IsolateConfig {
+message FunctionsConfig {
 	optional int32 maxscale = 1;
 }

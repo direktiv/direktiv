@@ -4,9 +4,9 @@ package grpc;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
-import "pkg/functions/grpc/isolates-common.proto";
+import "pkg/functions/grpc/functions-common.proto";
 
-message UpdateIsolateRequest {
+message UpdateFunctionRequest {
 	optional BaseInfo info = 1;
 	optional string ServiceName = 2;
 	optional int64 TrafficPercent = 3;

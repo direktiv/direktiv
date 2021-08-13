@@ -51,7 +51,7 @@ func runPodRequestLimiter(echan chan error) {
 		return
 	}
 
-	jobs := clientset.BatchV1().Jobs(isolateConfig.Namespace)
+	jobs := clientset.BatchV1().Jobs(functionsConfig.Namespace)
 
 	watch, err := jobs.Watch(context.Background(),
 		metav1.ListOptions{LabelSelector: "direktiv.io/job=true"},
@@ -95,7 +95,7 @@ func runPodRequestLimiter(echan chan error) {
 
 		case <-time.After(60 * time.Second):
 
-			if isolateConfig.PodCleaner {
+			if functionsConfig.PodCleaner {
 
 				log.Debugf("run pod cleaner")
 				lock, err := kubeLock("podclean", true)
@@ -111,7 +111,7 @@ func runPodRequestLimiter(echan chan error) {
 					continue
 				}
 
-				jobs := clientset.BatchV1().Jobs(isolateConfig.Namespace)
+				jobs := clientset.BatchV1().Jobs(functionsConfig.Namespace)
 
 				for i := range l.Items {
 					j := l.Items[i]
@@ -195,7 +195,7 @@ func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 
 }
 
-func (is *isolateServer) CancelIsolatePod(ctx context.Context,
+func (is *functionsServer) CancelFunctionsPod(ctx context.Context,
 	in *igrpc.CancelPodRequest) (*emptypb.Empty, error) {
 
 	log.Debugf("cancel pod %v", in.GetActionID())
@@ -206,7 +206,7 @@ func (is *isolateServer) CancelIsolatePod(ctx context.Context,
 		return &empty, err
 	}
 
-	jobs := clientset.BatchV1().Jobs(isolateConfig.Namespace)
+	jobs := clientset.BatchV1().Jobs(functionsConfig.Namespace)
 
 	fg := metav1.DeletePropagationBackground
 	var gp int64 = 30
@@ -226,7 +226,7 @@ func (is *isolateServer) CancelIsolatePod(ctx context.Context,
 
 }
 
-func (is *isolateServer) CreateIsolatePod(ctx context.Context,
+func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	in *igrpc.CreatePodRequest) (*igrpc.CreatePodResponse, error) {
 
 	log.Debugf("creating pod %v", in.GetInfo().GetName())
@@ -241,7 +241,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 		ok bool
 	)
 	if c, ok = namespaceCounter[info.GetNamespace()]; ok {
-		if c >= int64(isolateConfig.MaxJobs) {
+		if c >= int64(functionsConfig.MaxJobs) {
 			return &resp, fmt.Errorf("max job number exceeded")
 		}
 	}
@@ -255,7 +255,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 		return &resp, err
 	}
 
-	jobs := clientset.BatchV1().Jobs(isolateConfig.Namespace)
+	jobs := clientset.BatchV1().Jobs(functionsConfig.Namespace)
 
 	userContainer, err := createUserContainer(int(info.GetSize()),
 		info.GetImage(), info.GetCmd())
@@ -275,8 +275,8 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 	commonJobVars := commonEnvs(in, info.GetNamespace())
 
 	annotations := make(map[string]string)
-	annotations["kubernetes.io/ingress-bandwidth"] = isolateConfig.NetShape
-	annotations["kubernetes.io/egress-bandwidth"] = isolateConfig.NetShape
+	annotations["kubernetes.io/ingress-bandwidth"] = functionsConfig.NetShape
+	annotations["kubernetes.io/egress-bandwidth"] = functionsConfig.NetShape
 
 	initJobVars := make([]v1.EnvVar, len(commonJobVars))
 	copy(initJobVars, commonJobVars)
@@ -329,14 +329,14 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 		volumeMounts = append(volumeMounts, tlsVolumeMount)
 	}
 
-	if isolateConfig.InitPodCertificate != "none" &&
-		isolateConfig.InitPodCertificate != "" {
+	if functionsConfig.InitPodCertificate != "none" &&
+		functionsConfig.InitPodCertificate != "" {
 
 		certName := "podcerts"
 		tlsVolume := v1.Volume{}
 		tlsVolume.Name = certName
 		tlsVolume.Secret = &v1.SecretVolumeSource{
-			SecretName: isolateConfig.InitPodCertificate,
+			SecretName: functionsConfig.InitPodCertificate,
 		}
 		volumes = append(volumes, tlsVolume)
 
@@ -351,7 +351,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "direktiv-job-",
-			Namespace:    isolateConfig.Namespace,
+			Namespace:    functionsConfig.Namespace,
 			Labels:       labels,
 		},
 		Spec: batchv1.JobSpec{
@@ -369,7 +369,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 						{
 							ImagePullPolicy: pullPolicy,
 							Name:            "init-container",
-							Image:           isolateConfig.InitPod,
+							Image:           functionsConfig.InitPod,
 							VolumeMounts:    volumeMounts,
 							Env:             initJobVars,
 							Ports: []v1.ContainerPort{
@@ -383,7 +383,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 						{
 							ImagePullPolicy: pullPolicy,
 							Name:            containerSidecar,
-							Image:           isolateConfig.InitPod,
+							Image:           functionsConfig.InitPod,
 							VolumeMounts:    volumeMounts,
 							Env:             sidecarJobVars,
 						},
@@ -395,9 +395,9 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 		},
 	}
 
-	if len(isolateConfig.Runtime) > 0 && isolateConfig.Runtime != "default" {
-		log.Debugf("setting runtime class %v", isolateConfig.Runtime)
-		jobSpec.Spec.Template.Spec.RuntimeClassName = &isolateConfig.Runtime
+	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
+		log.Debugf("setting runtime class %v", functionsConfig.Runtime)
+		jobSpec.Spec.Template.Spec.RuntimeClassName = &functionsConfig.Runtime
 	}
 
 	j, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
@@ -406,7 +406,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 		return &resp, err
 	}
 
-	watch, err := clientset.CoreV1().Pods(isolateConfig.Namespace).Watch(context.Background(),
+	watch, err := clientset.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)},
 	)
 	if err != nil {
@@ -446,7 +446,7 @@ func (is *isolateServer) CreateIsolatePod(ctx context.Context,
 				jobs.Delete(context.TODO(), job, metav1.DeleteOptions{})
 				if p != nil {
 					// delete the pod too if possible
-					clientset.CoreV1().Pods(isolateConfig.Namespace).Delete(context.TODO(),
+					clientset.CoreV1().Pods(functionsConfig.Namespace).Delete(context.TODO(),
 						p.Name, metav1.DeleteOptions{})
 				}
 				return "", "", fmt.Errorf("timeout for pod")

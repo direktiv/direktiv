@@ -4,20 +4,20 @@ package grpc;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
-import "pkg/functions/grpc/isolates-common.proto";
+import "pkg/functions/grpc/functions-common.proto";
 
-message IsolateInfo {
+message FunctionsInfo {
 	optional BaseInfo info = 1;
 	optional string status = 2;
 	repeated Condition conditions = 3;
 	optional string serviceName = 4;
 }
 
-message ListIsolatesResponse {
-	optional IsolateConfig config = 1;
-	repeated IsolateInfo isolates = 2;
+message ListFunctionsResponse {
+	optional FunctionsConfig config = 1;
+	repeated FunctionsInfo functions = 2;
 }
 
-message ListIsolatesRequest {
+message ListFunctionsRequest {
 	map<string, string> annotations = 1;
 }

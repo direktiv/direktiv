@@ -4,9 +4,9 @@ package grpc;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
-import "pkg/functions/grpc/isolates-common.proto";
+import "pkg/functions/grpc/functions-common.proto";
 
-message GetIsolateRequest {
+message GetFunctionRequest {
 	optional string ServiceName = 1;
 }
 
@@ -26,10 +26,10 @@ message Revision {
 	optional int64 traffic = 10;
 }
 
-message GetIsolateResponse {
+message GetFunctionResponse {
 	optional string name = 1;
 	optional string namespace = 2;
 	optional string workflow = 3;
-	optional IsolateConfig config = 4;
+	optional FunctionsConfig config = 4;
 	repeated Revision revisions = 5;
 }

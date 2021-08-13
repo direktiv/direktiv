@@ -55,17 +55,17 @@ func kubernetesDeleteRegistry(name, namespace string) error {
 	fo[annotationURLHash] = fmt.Sprintf("%d", h)
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(fo).String()}
-	return clientset.CoreV1().Secrets(isolateConfig.Namespace).
+	return clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
 }
 
-func (is *isolateServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 	return &resp, kubernetesDeleteRegistry(in.GetName(), in.GetNamespace())
 }
 
-func (is *isolateServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegistryRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegistryRequest) (*emptypb.Empty, error) {
 
 	// create secret data, needs to be attached to service account
 	userToken := strings.SplitN(string(in.Data), ":", 2)
@@ -121,7 +121,7 @@ func (is *isolateServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegis
 	sa.Data[".dockerconfigjson"] = []byte(auth)
 	sa.Type = "kubernetes.io/dockerconfigjson"
 
-	_, err = clientset.CoreV1().Secrets(isolateConfig.Namespace).Create(context.Background(),
+	_, err = clientset.CoreV1().Secrets(functionsConfig.Namespace).Create(context.Background(),
 		sa, metav1.CreateOptions{})
 
 	return &empty, err
@@ -139,7 +139,7 @@ func listRegistriesNames(namespace string) []string {
 		return registries
 	}
 
-	secrets, err := clientset.CoreV1().Secrets(isolateConfig.Namespace).
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		List(context.Background(),
 			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
@@ -155,7 +155,7 @@ func listRegistriesNames(namespace string) []string {
 
 }
 
-func (is *isolateServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
+func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
 
 	resp := &igrpc.GetRegistriesResponse{
 		Registries: []*igrpc.GetRegistriesResponse_Registry{},
@@ -166,7 +166,7 @@ func (is *isolateServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistr
 		return resp, err
 	}
 
-	secrets, err := clientset.CoreV1().Secrets(isolateConfig.Namespace).
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		List(context.Background(),
 			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, in.GetNamespace())})
 	if err != nil {

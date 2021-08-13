@@ -17,7 +17,7 @@ const FlowSync = "flowsync"
 
 // direktiv pub/sub items
 const (
-	CancelIsolate = iota
+	CancelFunction = iota
 	CancelSubflow
 	CancelTimer
 	CancelInstanceTimers

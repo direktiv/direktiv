@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	grpcServer    *grpc.Server
-	empty         emptypb.Empty
-	isolateConfig config
+	grpcServer      *grpc.Server
+	empty           emptypb.Empty
+	functionsConfig config
 )
 
 const (
@@ -22,11 +22,11 @@ const (
 	port     = 5555
 )
 
-type isolateServer struct {
-	igrpc.UnimplementedIsolatesServiceServer
+type functionsServer struct {
+	igrpc.UnimplementedFunctionsServiceServer
 }
 
-// StartServer starts isolate grpc server
+// StartServer starts functions grpc server
 func StartServer(echan chan error) {
 
 	errChan := make(chan error)
@@ -45,7 +45,9 @@ func StartServer(echan chan error) {
 	}
 
 	cr := newConfigReader()
-	go cr.readConfig(confFile, &isolateConfig)
+
+	log.Infof("loading config file %s", confFile)
+	cr.readConfig(confFile, &functionsConfig)
 
 	if len(util.FlowEndpoint()) == 0 {
 		log.Errorf("grpc response to flow is not configured")
@@ -54,7 +56,7 @@ func StartServer(echan chan error) {
 
 	err = util.GrpcStart(&grpcServer, util.TLSFunctionsComponent,
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
-			igrpc.RegisterIsolatesServiceServer(srv, &isolateServer{})
+			igrpc.RegisterFunctionsServiceServer(srv, &functionsServer{})
 			reflection.Register(srv)
 		})
 

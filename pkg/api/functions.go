@@ -22,7 +22,7 @@ type listFunctionsRequest struct {
 }
 
 type functionResponseList struct {
-	Config   *grpc.IsolateConfig       `json:"config,omitempty"`
+	Config   *grpc.FunctionsConfig     `json:"config,omitempty"`
 	Services []*functionResponseObject `json:"services"`
 }
 
@@ -42,10 +42,10 @@ type functionResponseObject struct {
 }
 
 const (
-	isolateServiceNameAnnotation      = "direktiv.io/name"
-	isolateServiceNamespaceAnnotation = "direktiv.io/namespace"
-	isolateServiceWorkflowAnnotation  = "direktiv.io/workflow"
-	isolateServiceScopeAnnotation     = "direktiv.io/scope"
+	functionsServiceNameAnnotation      = "direktiv.io/name"
+	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
+	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
+	functionsServiceScopeAnnotation     = "direktiv.io/scope"
 
 	prefixWorkflow  = "w"
 	prefixNamespace = "ns"
@@ -57,7 +57,7 @@ func accepted(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesRequest, error) {
+func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListFunctionsRequest, error) {
 
 	rb := new(listFunctionsRequest)
 	err := json.NewDecoder(r.Body).Decode(rb)
@@ -65,13 +65,13 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesReques
 		return nil, err
 	}
 
-	grpcReq := new(grpc.ListIsolatesRequest)
+	grpcReq := new(grpc.ListFunctionsRequest)
 	grpcReq.Annotations = make(map[string]string)
 
-	grpcReq.Annotations[isolateServiceNameAnnotation] = rb.Name
-	grpcReq.Annotations[isolateServiceNamespaceAnnotation] = rb.Namespace
-	grpcReq.Annotations[isolateServiceWorkflowAnnotation] = rb.Workflow
-	grpcReq.Annotations[isolateServiceScopeAnnotation] = rb.Scope
+	grpcReq.Annotations[functionsServiceNameAnnotation] = rb.Name
+	grpcReq.Annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
+	grpcReq.Annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
+	grpcReq.Annotations[functionsServiceScopeAnnotation] = rb.Scope
 
 	del := make([]string, 0)
 	for k, v := range grpcReq.Annotations {
@@ -87,13 +87,13 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListIsolatesReques
 	return grpcReq, nil
 }
 
-func prepareIsolatesForResponse(isolates []*grpc.IsolateInfo) []*functionResponseObject {
+func prepareFunctionsForResponse(functions []*grpc.FunctionsInfo) []*functionResponseObject {
 	out := make([]*functionResponseObject, 0)
 
-	for _, isolate := range isolates {
+	for _, function := range functions {
 
 		obj := new(functionResponseObject)
-		iinf := isolate.GetInfo()
+		iinf := function.GetInfo()
 		if iinf != nil {
 			if iinf.Size != nil {
 				obj.Info.Size = *iinf.Size
@@ -118,9 +118,9 @@ func prepareIsolatesForResponse(isolates []*grpc.IsolateInfo) []*functionRespons
 			}
 		}
 
-		obj.ServiceName = isolate.GetServiceName()
-		obj.Status = isolate.GetStatus()
-		obj.Conditions = isolate.GetConditions()
+		obj.ServiceName = function.GetServiceName()
+		obj.Status = function.GetStatus()
+		obj.Conditions = function.GetConditions()
 
 		out = append(out, obj)
 	}
@@ -137,14 +137,14 @@ func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.s.isolates.ListIsolates(r.Context(), grpcReq)
+	resp, err := h.s.functions.ListFunctions(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	isolates := resp.GetIsolates()
-	out := prepareIsolatesForResponse(isolates)
+	functions := resp.GetFunctions()
+	out := prepareFunctionsForResponse(functions)
 
 	l := &functionResponseList{
 		Config:   resp.GetConfig(),
@@ -167,7 +167,7 @@ func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// returns an empty response
-	_, err = h.s.isolates.DeleteIsolates(r.Context(), grpcReq)
+	_, err = h.s.functions.DeleteFunctions(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -178,10 +178,10 @@ func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteService(w http.ResponseWriter, r *http.Request) {
 
 	sn := mux.Vars(r)["serviceName"]
-	grpcReq := new(grpc.GetIsolateRequest)
+	grpcReq := new(grpc.GetFunctionRequest)
 	grpcReq.ServiceName = &sn
 
-	_, err := h.s.isolates.DeleteIsolate(r.Context(), grpcReq)
+	_, err := h.s.functions.DeleteFunction(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -193,7 +193,7 @@ type getFunctionResponse struct {
 	Name      string                         `json:"name,omitempty"`
 	Namespace string                         `json:"namespace,omitempty"`
 	Workflow  string                         `json:"workflow,omitempty"`
-	Config    *grpc.IsolateConfig            `json:"config,omitempty"`
+	Config    *grpc.FunctionsConfig          `json:"config,omitempty"`
 	Revisions []getFunctionResponse_Revision `json:"revisions,omitempty"`
 }
 
@@ -213,10 +213,10 @@ type getFunctionResponse_Revision struct {
 func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
 
 	sn := mux.Vars(r)["serviceName"]
-	grpcReq := new(grpc.GetIsolateRequest)
+	grpcReq := new(grpc.GetFunctionRequest)
 	grpcReq.ServiceName = &sn
 
-	resp, err := h.s.isolates.GetIsolate(r.Context(), grpcReq)
+	resp, err := h.s.functions.GetFunction(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -270,7 +270,7 @@ func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	grpcReq := new(grpc.CreateIsolateRequest)
+	grpcReq := new(grpc.CreateFunctionRequest)
 	grpcReq.Info = &grpc.BaseInfo{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -282,7 +282,7 @@ func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// returns an empty body
-	_, err = h.s.isolates.CreateIsolate(r.Context(), grpcReq)
+	_, err = h.s.functions.CreateFunction(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -310,7 +310,7 @@ func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 
 	sn := mux.Vars(r)["serviceName"]
 
-	grpcReq := new(grpc.UpdateIsolateRequest)
+	grpcReq := new(grpc.UpdateFunctionRequest)
 	grpcReq.ServiceName = &sn
 	grpcReq.Info = &grpc.BaseInfo{
 		Image:    obj.Image,
@@ -321,7 +321,7 @@ func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
 	grpcReq.TrafficPercent = &obj.TrafficPercent
 
 	// returns an empty body
-	_, err = h.s.isolates.UpdateIsolate(r.Context(), grpcReq)
+	_, err = h.s.functions.UpdateFunction(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -365,7 +365,7 @@ func (h *Handler) updateServiceTraffic(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	_, err = h.s.isolates.SetIsolateTraffic(r.Context(), grpcReq)
+	_, err = h.s.functions.SetFunctionsTraffic(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -380,7 +380,7 @@ func (h *Handler) deleteRevision(w http.ResponseWriter, r *http.Request) {
 		Revision: &rev,
 	}
 
-	_, err := h.s.isolates.DeleteRevision(r.Context(), grpcReq)
+	_, err := h.s.functions.DeleteRevision(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -393,18 +393,18 @@ type serviceItem struct {
 	name, service string
 }
 
-func calculateList(client grpc.IsolatesServiceClient,
-	items []serviceItem, annotations map[string]string, ns string) ([]*grpc.IsolateInfo, error) {
+func calculateList(client grpc.FunctionsServiceClient,
+	items []serviceItem, annotations map[string]string, ns string) ([]*grpc.FunctionsInfo, error) {
 
-	resp, err := client.ListIsolates(context.Background(),
-		&grpc.ListIsolatesRequest{
+	resp, err := client.ListFunctions(context.Background(),
+		&grpc.ListFunctionsRequest{
 			Annotations: annotations,
 		})
 	if err != nil {
 		return nil, err
 	}
 
-	gisos := make(map[string]*grpc.IsolateInfo)
+	gisos := make(map[string]*grpc.FunctionsInfo)
 
 	imgStatus := "False"
 	imgErr := "not found"
@@ -431,7 +431,7 @@ func calculateList(client grpc.IsolatesServiceClient,
 		li := items[i]
 
 		ns := ""
-		if annons, ok := annotations[isolateServiceNamespaceAnnotation]; ok {
+		if annons, ok := annotations[functionsServiceNamespaceAnnotation]; ok {
 			ns = annons
 		}
 
@@ -441,7 +441,7 @@ func calculateList(client grpc.IsolatesServiceClient,
 			continue
 		}
 
-		info := &grpc.IsolateInfo{
+		info := &grpc.FunctionsInfo{
 			Status:      &imgStatus,
 			ServiceName: &li.service,
 			Info: &grpc.BaseInfo{
@@ -456,7 +456,7 @@ func calculateList(client grpc.IsolatesServiceClient,
 
 	}
 
-	isos := resp.GetIsolates()
+	isos := resp.GetFunctions()
 
 	for i := range isos {
 		// that item exists, we replace
@@ -466,7 +466,7 @@ func calculateList(client grpc.IsolatesServiceClient,
 		}
 	}
 
-	var retIsos []*grpc.IsolateInfo
+	var retIsos []*grpc.FunctionsInfo
 
 	for _, v := range gisos {
 		retIsos = append(retIsos, v)
@@ -501,7 +501,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 	var fnNS, fnGlobal []serviceItem
 
-	allIsolates := make([]*grpc.IsolateInfo, 0)
+	allFunctions := make([]*grpc.FunctionsInfo, 0)
 	wfFns := false
 
 	for _, fn := range workflow.Functions {
@@ -523,52 +523,52 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 	// we add all workflow functions
 	if wfFns {
-		wfResp, err := h.s.isolates.ListIsolates(r.Context(), &grpc.ListIsolatesRequest{
+		wfResp, err := h.s.functions.ListFunctions(r.Context(), &grpc.ListFunctionsRequest{
 			Annotations: map[string]string{
-				isolateServiceWorkflowAnnotation:  wf,
-				isolateServiceNamespaceAnnotation: ns,
-				isolateServiceScopeAnnotation:     prefixWorkflow,
+				functionsServiceWorkflowAnnotation:  wf,
+				functionsServiceNamespaceAnnotation: ns,
+				functionsServiceScopeAnnotation:     prefixWorkflow,
 			},
 		})
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
-		allIsolates = append(allIsolates, wfResp.GetIsolates()...)
+		allFunctions = append(allFunctions, wfResp.GetFunctions()...)
 	}
 
 	if len(fnNS) > 0 {
 
-		i, err := calculateList(h.s.isolates, fnNS,
+		i, err := calculateList(h.s.functions, fnNS,
 			map[string]string{
-				isolateServiceNamespaceAnnotation: ns,
-				isolateServiceScopeAnnotation:     prefixNamespace,
+				functionsServiceNamespaceAnnotation: ns,
+				functionsServiceScopeAnnotation:     prefixNamespace,
 			}, ns)
 
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
-		allIsolates = append(allIsolates, i...)
+		allFunctions = append(allFunctions, i...)
 
 	}
 
 	if len(fnGlobal) > 0 {
 
-		i, err := calculateList(h.s.isolates, fnGlobal,
+		i, err := calculateList(h.s.functions, fnGlobal,
 			map[string]string{
-				isolateServiceScopeAnnotation: prefixGlobal,
+				functionsServiceScopeAnnotation: prefixGlobal,
 			}, ns)
 
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
-		allIsolates = append(allIsolates, i...)
+		allFunctions = append(allFunctions, i...)
 
 	}
 
-	out := prepareIsolatesForResponse(allIsolates)
+	out := prepareFunctionsForResponse(allFunctions)
 	if err := json.NewEncoder(w).Encode(out); err != nil {
 		ErrResponse(w, err)
 		return

@@ -15,518 +15,518 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// IsolatesServiceClient is the client API for IsolatesService service.
+// FunctionsServiceClient is the client API for FunctionsService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type IsolatesServiceClient interface {
-	UpdateIsolate(ctx context.Context, in *UpdateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	CreateIsolate(ctx context.Context, in *CreateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ListIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*ListIsolatesResponse, error)
-	GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error)
-	DeleteIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SetIsolateTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+type FunctionsServiceClient interface {
+	UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*ListFunctionsResponse, error)
+	GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error)
+	DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
 	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	CreateIsolatePod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error)
-	CancelIsolatePod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error)
+	CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type isolatesServiceClient struct {
+type functionsServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewIsolatesServiceClient(cc grpc.ClientConnInterface) IsolatesServiceClient {
-	return &isolatesServiceClient{cc}
+func NewFunctionsServiceClient(cc grpc.ClientConnInterface) FunctionsServiceClient {
+	return &functionsServiceClient{cc}
 }
 
-func (c *isolatesServiceClient) UpdateIsolate(ctx context.Context, in *UpdateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/UpdateIsolate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/UpdateFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) CreateIsolate(ctx context.Context, in *CreateIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/CreateIsolate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/CreateFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) DeleteIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/DeleteIsolates", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteFunctions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) ListIsolates(ctx context.Context, in *ListIsolatesRequest, opts ...grpc.CallOption) (*ListIsolatesResponse, error) {
-	out := new(ListIsolatesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/ListIsolates", in, out, opts...)
+func (c *functionsServiceClient) ListFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*ListFunctionsResponse, error) {
+	out := new(ListFunctionsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ListFunctions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) GetIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*GetIsolateResponse, error) {
-	out := new(GetIsolateResponse)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/GetIsolate", in, out, opts...)
+func (c *functionsServiceClient) GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error) {
+	out := new(GetFunctionResponse)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/GetFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) DeleteIsolate(ctx context.Context, in *GetIsolateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/DeleteIsolate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) SetIsolateTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/SetIsolateTraffic", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/SetFunctionsTraffic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/StoreRegistry", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/StoreRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
+func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
 	out := new(GetRegistriesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/GetRegistries", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/GetRegistries", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/DeleteRegistry", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) CreateIsolatePod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error) {
+func (c *functionsServiceClient) CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error) {
 	out := new(CreatePodResponse)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/CreateIsolatePod", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/CreateFunctionsPod", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) CancelIsolatePod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/CancelIsolatePod", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/CancelFunctionsPod", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *isolatesServiceClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.IsolatesService/DeleteRevision", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteRevision", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// IsolatesServiceServer is the server API for IsolatesService service.
-// All implementations must embed UnimplementedIsolatesServiceServer
+// FunctionsServiceServer is the server API for FunctionsService service.
+// All implementations must embed UnimplementedFunctionsServiceServer
 // for forward compatibility
-type IsolatesServiceServer interface {
-	UpdateIsolate(context.Context, *UpdateIsolateRequest) (*emptypb.Empty, error)
-	CreateIsolate(context.Context, *CreateIsolateRequest) (*emptypb.Empty, error)
-	DeleteIsolates(context.Context, *ListIsolatesRequest) (*emptypb.Empty, error)
-	ListIsolates(context.Context, *ListIsolatesRequest) (*ListIsolatesResponse, error)
-	GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error)
-	DeleteIsolate(context.Context, *GetIsolateRequest) (*emptypb.Empty, error)
-	SetIsolateTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error)
+type FunctionsServiceServer interface {
+	UpdateFunction(context.Context, *UpdateFunctionRequest) (*emptypb.Empty, error)
+	CreateFunction(context.Context, *CreateFunctionRequest) (*emptypb.Empty, error)
+	DeleteFunctions(context.Context, *ListFunctionsRequest) (*emptypb.Empty, error)
+	ListFunctions(context.Context, *ListFunctionsRequest) (*ListFunctionsResponse, error)
+	GetFunction(context.Context, *GetFunctionRequest) (*GetFunctionResponse, error)
+	DeleteFunction(context.Context, *GetFunctionRequest) (*emptypb.Empty, error)
+	SetFunctionsTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error)
 	StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error)
 	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
 	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error)
-	CreateIsolatePod(context.Context, *CreatePodRequest) (*CreatePodResponse, error)
-	CancelIsolatePod(context.Context, *CancelPodRequest) (*emptypb.Empty, error)
+	CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error)
+	CancelFunctionsPod(context.Context, *CancelPodRequest) (*emptypb.Empty, error)
 	DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error)
-	mustEmbedUnimplementedIsolatesServiceServer()
+	mustEmbedUnimplementedFunctionsServiceServer()
 }
 
-// UnimplementedIsolatesServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedIsolatesServiceServer struct {
+// UnimplementedFunctionsServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedFunctionsServiceServer struct {
 }
 
-func (UnimplementedIsolatesServiceServer) UpdateIsolate(context.Context, *UpdateIsolateRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateIsolate not implemented")
+func (UnimplementedFunctionsServiceServer) UpdateFunction(context.Context, *UpdateFunctionRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFunction not implemented")
 }
-func (UnimplementedIsolatesServiceServer) CreateIsolate(context.Context, *CreateIsolateRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateIsolate not implemented")
+func (UnimplementedFunctionsServiceServer) CreateFunction(context.Context, *CreateFunctionRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateFunction not implemented")
 }
-func (UnimplementedIsolatesServiceServer) DeleteIsolates(context.Context, *ListIsolatesRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteIsolates not implemented")
+func (UnimplementedFunctionsServiceServer) DeleteFunctions(context.Context, *ListFunctionsRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFunctions not implemented")
 }
-func (UnimplementedIsolatesServiceServer) ListIsolates(context.Context, *ListIsolatesRequest) (*ListIsolatesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListIsolates not implemented")
+func (UnimplementedFunctionsServiceServer) ListFunctions(context.Context, *ListFunctionsRequest) (*ListFunctionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListFunctions not implemented")
 }
-func (UnimplementedIsolatesServiceServer) GetIsolate(context.Context, *GetIsolateRequest) (*GetIsolateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIsolate not implemented")
+func (UnimplementedFunctionsServiceServer) GetFunction(context.Context, *GetFunctionRequest) (*GetFunctionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFunction not implemented")
 }
-func (UnimplementedIsolatesServiceServer) DeleteIsolate(context.Context, *GetIsolateRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteIsolate not implemented")
+func (UnimplementedFunctionsServiceServer) DeleteFunction(context.Context, *GetFunctionRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFunction not implemented")
 }
-func (UnimplementedIsolatesServiceServer) SetIsolateTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetIsolateTraffic not implemented")
+func (UnimplementedFunctionsServiceServer) SetFunctionsTraffic(context.Context, *SetTrafficRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetFunctionsTraffic not implemented")
 }
-func (UnimplementedIsolatesServiceServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
 }
-func (UnimplementedIsolatesServiceServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
+func (UnimplementedFunctionsServiceServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
 }
-func (UnimplementedIsolatesServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
 }
-func (UnimplementedIsolatesServiceServer) CreateIsolatePod(context.Context, *CreatePodRequest) (*CreatePodResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateIsolatePod not implemented")
+func (UnimplementedFunctionsServiceServer) CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateFunctionsPod not implemented")
 }
-func (UnimplementedIsolatesServiceServer) CancelIsolatePod(context.Context, *CancelPodRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelIsolatePod not implemented")
+func (UnimplementedFunctionsServiceServer) CancelFunctionsPod(context.Context, *CancelPodRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelFunctionsPod not implemented")
 }
-func (UnimplementedIsolatesServiceServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRevision not implemented")
 }
-func (UnimplementedIsolatesServiceServer) mustEmbedUnimplementedIsolatesServiceServer() {}
+func (UnimplementedFunctionsServiceServer) mustEmbedUnimplementedFunctionsServiceServer() {}
 
-// UnsafeIsolatesServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to IsolatesServiceServer will
+// UnsafeFunctionsServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to FunctionsServiceServer will
 // result in compilation errors.
-type UnsafeIsolatesServiceServer interface {
-	mustEmbedUnimplementedIsolatesServiceServer()
+type UnsafeFunctionsServiceServer interface {
+	mustEmbedUnimplementedFunctionsServiceServer()
 }
 
-func RegisterIsolatesServiceServer(s grpc.ServiceRegistrar, srv IsolatesServiceServer) {
-	s.RegisterService(&IsolatesService_ServiceDesc, srv)
+func RegisterFunctionsServiceServer(s grpc.ServiceRegistrar, srv FunctionsServiceServer) {
+	s.RegisterService(&FunctionsService_ServiceDesc, srv)
 }
 
-func _IsolatesService_UpdateIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateIsolateRequest)
+func _FunctionsService_UpdateFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).UpdateIsolate(ctx, in)
+		return srv.(FunctionsServiceServer).UpdateFunction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/UpdateIsolate",
+		FullMethod: "/grpc.FunctionsService/UpdateFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).UpdateIsolate(ctx, req.(*UpdateIsolateRequest))
+		return srv.(FunctionsServiceServer).UpdateFunction(ctx, req.(*UpdateFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_CreateIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateIsolateRequest)
+func _FunctionsService_CreateFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).CreateIsolate(ctx, in)
+		return srv.(FunctionsServiceServer).CreateFunction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/CreateIsolate",
+		FullMethod: "/grpc.FunctionsService/CreateFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).CreateIsolate(ctx, req.(*CreateIsolateRequest))
+		return srv.(FunctionsServiceServer).CreateFunction(ctx, req.(*CreateFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_DeleteIsolates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListIsolatesRequest)
+func _FunctionsService_DeleteFunctions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFunctionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).DeleteIsolates(ctx, in)
+		return srv.(FunctionsServiceServer).DeleteFunctions(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/DeleteIsolates",
+		FullMethod: "/grpc.FunctionsService/DeleteFunctions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).DeleteIsolates(ctx, req.(*ListIsolatesRequest))
+		return srv.(FunctionsServiceServer).DeleteFunctions(ctx, req.(*ListFunctionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_ListIsolates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListIsolatesRequest)
+func _FunctionsService_ListFunctions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFunctionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).ListIsolates(ctx, in)
+		return srv.(FunctionsServiceServer).ListFunctions(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/ListIsolates",
+		FullMethod: "/grpc.FunctionsService/ListFunctions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).ListIsolates(ctx, req.(*ListIsolatesRequest))
+		return srv.(FunctionsServiceServer).ListFunctions(ctx, req.(*ListFunctionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_GetIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIsolateRequest)
+func _FunctionsService_GetFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).GetIsolate(ctx, in)
+		return srv.(FunctionsServiceServer).GetFunction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/GetIsolate",
+		FullMethod: "/grpc.FunctionsService/GetFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).GetIsolate(ctx, req.(*GetIsolateRequest))
+		return srv.(FunctionsServiceServer).GetFunction(ctx, req.(*GetFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_DeleteIsolate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIsolateRequest)
+func _FunctionsService_DeleteFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).DeleteIsolate(ctx, in)
+		return srv.(FunctionsServiceServer).DeleteFunction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/DeleteIsolate",
+		FullMethod: "/grpc.FunctionsService/DeleteFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).DeleteIsolate(ctx, req.(*GetIsolateRequest))
+		return srv.(FunctionsServiceServer).DeleteFunction(ctx, req.(*GetFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_SetIsolateTraffic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_SetFunctionsTraffic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetTrafficRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).SetIsolateTraffic(ctx, in)
+		return srv.(FunctionsServiceServer).SetFunctionsTraffic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/SetIsolateTraffic",
+		FullMethod: "/grpc.FunctionsService/SetFunctionsTraffic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).SetIsolateTraffic(ctx, req.(*SetTrafficRequest))
+		return srv.(FunctionsServiceServer).SetFunctionsTraffic(ctx, req.(*SetTrafficRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StoreRegistryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).StoreRegistry(ctx, in)
+		return srv.(FunctionsServiceServer).StoreRegistry(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/StoreRegistry",
+		FullMethod: "/grpc.FunctionsService/StoreRegistry",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
+		return srv.(FunctionsServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetRegistriesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).GetRegistries(ctx, in)
+		return srv.(FunctionsServiceServer).GetRegistries(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/GetRegistries",
+		FullMethod: "/grpc.FunctionsService/GetRegistries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
+		return srv.(FunctionsServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRegistryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).DeleteRegistry(ctx, in)
+		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/DeleteRegistry",
+		FullMethod: "/grpc.FunctionsService/DeleteRegistry",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
+		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_CreateIsolatePod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_CreateFunctionsPod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePodRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).CreateIsolatePod(ctx, in)
+		return srv.(FunctionsServiceServer).CreateFunctionsPod(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/CreateIsolatePod",
+		FullMethod: "/grpc.FunctionsService/CreateFunctionsPod",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).CreateIsolatePod(ctx, req.(*CreatePodRequest))
+		return srv.(FunctionsServiceServer).CreateFunctionsPod(ctx, req.(*CreatePodRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_CancelIsolatePod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_CancelFunctionsPod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CancelPodRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).CancelIsolatePod(ctx, in)
+		return srv.(FunctionsServiceServer).CancelFunctionsPod(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/CancelIsolatePod",
+		FullMethod: "/grpc.FunctionsService/CancelFunctionsPod",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).CancelIsolatePod(ctx, req.(*CancelPodRequest))
+		return srv.(FunctionsServiceServer).CancelFunctionsPod(ctx, req.(*CancelPodRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IsolatesService_DeleteRevision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FunctionsService_DeleteRevision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRevisionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IsolatesServiceServer).DeleteRevision(ctx, in)
+		return srv.(FunctionsServiceServer).DeleteRevision(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.IsolatesService/DeleteRevision",
+		FullMethod: "/grpc.FunctionsService/DeleteRevision",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IsolatesServiceServer).DeleteRevision(ctx, req.(*DeleteRevisionRequest))
+		return srv.(FunctionsServiceServer).DeleteRevision(ctx, req.(*DeleteRevisionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// IsolatesService_ServiceDesc is the grpc.ServiceDesc for IsolatesService service.
+// FunctionsService_ServiceDesc is the grpc.ServiceDesc for FunctionsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var IsolatesService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.IsolatesService",
-	HandlerType: (*IsolatesServiceServer)(nil),
+var FunctionsService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "grpc.FunctionsService",
+	HandlerType: (*FunctionsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UpdateIsolate",
-			Handler:    _IsolatesService_UpdateIsolate_Handler,
+			MethodName: "UpdateFunction",
+			Handler:    _FunctionsService_UpdateFunction_Handler,
 		},
 		{
-			MethodName: "CreateIsolate",
-			Handler:    _IsolatesService_CreateIsolate_Handler,
+			MethodName: "CreateFunction",
+			Handler:    _FunctionsService_CreateFunction_Handler,
 		},
 		{
-			MethodName: "DeleteIsolates",
-			Handler:    _IsolatesService_DeleteIsolates_Handler,
+			MethodName: "DeleteFunctions",
+			Handler:    _FunctionsService_DeleteFunctions_Handler,
 		},
 		{
-			MethodName: "ListIsolates",
-			Handler:    _IsolatesService_ListIsolates_Handler,
+			MethodName: "ListFunctions",
+			Handler:    _FunctionsService_ListFunctions_Handler,
 		},
 		{
-			MethodName: "GetIsolate",
-			Handler:    _IsolatesService_GetIsolate_Handler,
+			MethodName: "GetFunction",
+			Handler:    _FunctionsService_GetFunction_Handler,
 		},
 		{
-			MethodName: "DeleteIsolate",
-			Handler:    _IsolatesService_DeleteIsolate_Handler,
+			MethodName: "DeleteFunction",
+			Handler:    _FunctionsService_DeleteFunction_Handler,
 		},
 		{
-			MethodName: "SetIsolateTraffic",
-			Handler:    _IsolatesService_SetIsolateTraffic_Handler,
+			MethodName: "SetFunctionsTraffic",
+			Handler:    _FunctionsService_SetFunctionsTraffic_Handler,
 		},
 		{
 			MethodName: "StoreRegistry",
-			Handler:    _IsolatesService_StoreRegistry_Handler,
+			Handler:    _FunctionsService_StoreRegistry_Handler,
 		},
 		{
 			MethodName: "GetRegistries",
-			Handler:    _IsolatesService_GetRegistries_Handler,
+			Handler:    _FunctionsService_GetRegistries_Handler,
 		},
 		{
 			MethodName: "DeleteRegistry",
-			Handler:    _IsolatesService_DeleteRegistry_Handler,
+			Handler:    _FunctionsService_DeleteRegistry_Handler,
 		},
 		{
-			MethodName: "CreateIsolatePod",
-			Handler:    _IsolatesService_CreateIsolatePod_Handler,
+			MethodName: "CreateFunctionsPod",
+			Handler:    _FunctionsService_CreateFunctionsPod_Handler,
 		},
 		{
-			MethodName: "CancelIsolatePod",
-			Handler:    _IsolatesService_CancelIsolatePod_Handler,
+			MethodName: "CancelFunctionsPod",
+			Handler:    _FunctionsService_CancelFunctionsPod_Handler,
 		},
 		{
 			MethodName: "DeleteRevision",
-			Handler:    _IsolatesService_DeleteRevision_Handler,
+			Handler:    _FunctionsService_DeleteRevision_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

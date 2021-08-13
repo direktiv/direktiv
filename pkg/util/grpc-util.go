@@ -240,7 +240,7 @@ func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
 
 }
 
-// IsolateEndpoint return grpc encpoint for isolate services
+// FunctionsEndpoint return grpc encpoint for functions services
 func FunctionsEndpoint() string {
 	return grpcCfg.FunctionsEndpoint
 }

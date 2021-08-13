@@ -36,14 +36,14 @@ type ServiceResponse struct {
 	Data         interface{} `json:"data"`
 }
 
-type isolateRequest struct {
+type functionRequest struct {
 	ActionID string
 
-	Workflow  isolateWorkflow
-	Container isolateContainer
+	Workflow  functionWorkflow
+	Container functionContainer
 }
 
-type isolateContainer struct {
+type functionContainer struct {
 	Type                model.FunctionType
 	ID                  string
 	Image, Cmd, Service string
@@ -53,7 +53,7 @@ type isolateContainer struct {
 	Files               []model.FunctionFileDefinition
 }
 
-type isolateWorkflow struct {
+type functionWorkflow struct {
 	Name       string
 	ID         string
 	InstanceID string

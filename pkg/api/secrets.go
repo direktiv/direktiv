@@ -34,7 +34,7 @@ func (h *Handler) getSecretsOrRegistries(w http.ResponseWriter, r *http.Request)
 	case RN_ListRegistries:
 
 		var resp *grpc.GetRegistriesResponse
-		resp, err = h.s.isolates.GetRegistries(ctx, &grpc.GetRegistriesRequest{
+		resp, err = h.s.functions.GetRegistries(ctx, &grpc.GetRegistriesRequest{
 			Namespace: &n,
 		})
 		data = resp
@@ -88,7 +88,7 @@ func (h *Handler) createSecretOrRegistry(w http.ResponseWriter, r *http.Request)
 
 	case RN_CreateRegistry:
 
-		resp, err = h.s.isolates.StoreRegistry(ctx, &grpc.StoreRegistryRequest{
+		resp, err = h.s.functions.StoreRegistry(ctx, &grpc.StoreRegistryRequest{
 			Namespace: &n,
 			Name:      &st.Name,
 			Data:      []byte(st.Data),
@@ -136,7 +136,7 @@ func (h *Handler) deleteSecretOrRegistry(w http.ResponseWriter, r *http.Request)
 
 	case RN_DeleteRegistry:
 
-		resp, err = h.s.isolates.DeleteRegistry(ctx, &grpc.DeleteRegistryRequest{
+		resp, err = h.s.functions.DeleteRegistry(ctx, &grpc.DeleteRegistryRequest{
 			Namespace: &n,
 			Name:      &st.Name,
 		})

@@ -21,7 +21,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type isolateFiles struct {
+type functionFile struct {
 	Key   string `json:"key"`
 	As    string `json:"as"`
 	Scope string `json:"scope"`
@@ -33,7 +33,7 @@ func loadFiles(r *http.Request) error {
 	hdr := "Direktiv-Files"
 	strs := r.Header.Values(hdr)
 
-	var ifiles []*isolateFiles
+	var ifiles []*functionFile
 
 	for i, s := range strs {
 
@@ -42,7 +42,7 @@ func loadFiles(r *http.Request) error {
 			return fmt.Errorf("invalid %s [%d]: %v", hdr, i, err)
 		}
 
-		files := new(isolateFiles)
+		files := new(functionFile)
 		dec := json.NewDecoder(bytes.NewReader(data))
 		dec.DisallowUnknownFields()
 		err = dec.Decode(files)
@@ -56,7 +56,7 @@ func loadFiles(r *http.Request) error {
 
 	}
 
-	err := prepIsolateFiles(r.Context(), ifiles)
+	err := prepFunctionFiles(r.Context(), ifiles)
 	if err != nil {
 		return err
 	}
@@ -65,9 +65,9 @@ func loadFiles(r *http.Request) error {
 
 }
 
-func prepIsolateFiles(ctx context.Context, ifiles []*isolateFiles) error {
+func prepFunctionFiles(ctx context.Context, ifiles []*functionFile) error {
 
-	dir := isolateDir()
+	dir := functionDir()
 
 	err := os.MkdirAll(dir, 0750)
 	if err != nil {
@@ -75,9 +75,9 @@ func prepIsolateFiles(ctx context.Context, ifiles []*isolateFiles) error {
 	}
 
 	for i, f := range ifiles {
-		err = prepOneIsolateFiles(ctx, f)
+		err = prepOneFunctionFiles(ctx, f)
 		if err != nil {
-			return fmt.Errorf("failed to prepare isolate files %d: %v", i, err)
+			return fmt.Errorf("failed to prepare function files %d: %v", i, err)
 		}
 	}
 
@@ -85,7 +85,7 @@ func prepIsolateFiles(ctx context.Context, ifiles []*isolateFiles) error {
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0750)
 		if err != nil {
-			return fmt.Errorf("failed to prepare isolate output dirs: %v", err)
+			return fmt.Errorf("failed to prepare function output dirs: %v", err)
 		}
 	}
 
@@ -93,7 +93,7 @@ func prepIsolateFiles(ctx context.Context, ifiles []*isolateFiles) error {
 
 }
 
-func prepOneIsolateFiles(ctx context.Context, f *isolateFiles) error {
+func prepOneFunctionFiles(ctx context.Context, f *functionFile) error {
 
 	pr, pw := io.Pipe()
 
@@ -277,7 +277,7 @@ func writeAnyFile(ftype, dst string, pr io.Reader) error {
 
 }
 
-func fileReader(ctx context.Context, f *isolateFiles, pw *io.PipeWriter) error {
+func fileReader(ctx context.Context, f *functionFile, pw *io.PipeWriter) error {
 
 	err := getVar(ctx, pw, nil, f.Scope, f.Key)
 	if err != nil {
@@ -288,11 +288,11 @@ func fileReader(ctx context.Context, f *isolateFiles, pw *io.PipeWriter) error {
 
 }
 
-func fileWriter(ctx context.Context, f *isolateFiles, pr *io.PipeReader) error {
+func fileWriter(ctx context.Context, f *functionFile, pr *io.PipeReader) error {
 
 	// TODO: validate f.Type earlier so that the switch cannot get unexpected data here
 
-	dir := isolateDir()
+	dir := functionDir()
 	dst := f.Key
 	if f.As != "" {
 		dst = f.As
@@ -315,7 +315,7 @@ func fileWriter(ctx context.Context, f *isolateFiles, pr *io.PipeReader) error {
 
 }
 
-func isolateDir() string {
+func functionDir() string {
 	return "/direktiv-data/vars"
 }
 
@@ -440,7 +440,7 @@ func setOutVariables(ctx context.Context) error {
 	subDirs := []string{"namespace", "workflow", "instance"}
 	for _, d := range subDirs {
 
-		out := path.Join(isolateDir(), "out", d)
+		out := path.Join(functionDir(), "out", d)
 
 		files, err := ioutil.ReadDir(out)
 		if err != nil {
@@ -449,7 +449,7 @@ func setOutVariables(ctx context.Context) error {
 
 		for _, f := range files {
 
-			fp := path.Join(isolateDir(), "out", d, f.Name())
+			fp := path.Join(functionDir(), "out", d, f.Name())
 
 			switch mode := f.Mode(); {
 			case mode.IsDir():
