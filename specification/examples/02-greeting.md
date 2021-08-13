@@ -8,6 +8,7 @@ A simple action that uses the docker container `vorteil/greeting`. Which takes a
 id: greeting
 functions: 
 - id: greetingFunction
+  type: reusable
   image: vorteil/greeting
 states:
 - id: Greet

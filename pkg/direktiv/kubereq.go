@@ -4,12 +4,12 @@ import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/isolates"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
+	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
-func cancelJob(ctx context.Context, client igrpc.IsolatesServiceClient,
+func cancelJob(ctx context.Context, client igrpc.FunctionsServiceClient,
 	actionID string) {
 
 	log.Debugf("cancelling job %v", actionID)
@@ -18,7 +18,7 @@ func cancelJob(ctx context.Context, client igrpc.IsolatesServiceClient,
 		ActionID: &actionID,
 	}
 
-	_, err := client.CancelIsolatePod(ctx, &cr)
+	_, err := client.CancelFunctionsPod(ctx, &cr)
 	if err != nil {
 		log.Errorf("can not cancel job %s: %v", actionID, err)
 	}
@@ -26,7 +26,7 @@ func cancelJob(ctx context.Context, client igrpc.IsolatesServiceClient,
 }
 
 func addPodFunction(ctx context.Context,
-	client igrpc.IsolatesServiceClient, ir *isolateRequest) (string, error) {
+	client igrpc.FunctionsServiceClient, ir *functionRequest) (string, string, error) {
 
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
@@ -47,22 +47,24 @@ func addPodFunction(ctx context.Context,
 		Step:       &step,
 	}
 
-	r, err := client.CreateIsolatePod(ctx, &cr)
-	return r.GetIp(), err
+	r, err := client.CreateFunctionsPod(ctx, &cr)
+	return r.GetHostname(), r.GetIp(), err
 
 }
 
-func isKnativeFunction(client igrpc.IsolatesServiceClient,
+func isKnativeFunction(client igrpc.FunctionsServiceClient,
 	name, namespace, workflow string) bool {
 
 	// search annotations
 	a := make(map[string]string)
-	a[isolates.ServiceHeaderName] = name
-	a[isolates.ServiceHeaderNamespace] = namespace
-	a[isolates.ServiceHeaderWorkflow] = workflow
-	a[isolates.ServiceHeaderScope] = isolates.PrefixService
+	a[functions.ServiceHeaderName] = name
+	a[functions.ServiceHeaderNamespace] = namespace
+	a[functions.ServiceHeaderWorkflow] = workflow
+	a[functions.ServiceHeaderScope] = functions.PrefixService
 
-	l, err := client.ListIsolates(context.Background(), &igrpc.ListIsolatesRequest{
+	log.Debugf("knative function search: %v", a)
+
+	l, err := client.ListFunctions(context.Background(), &igrpc.ListFunctionsRequest{
 		Annotations: a,
 	})
 
@@ -71,20 +73,20 @@ func isKnativeFunction(client igrpc.IsolatesServiceClient,
 		return false
 	}
 
-	if len(l.Isolates) > 0 {
+	if len(l.Functions) > 0 {
 		return true
 	}
 
 	return false
 }
 
-func createKnativeFunction(client igrpc.IsolatesServiceClient,
-	ir *isolateRequest) error {
+func createKnativeFunction(client igrpc.FunctionsServiceClient,
+	ir *functionRequest) error {
 
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
 
-	cr := igrpc.CreateIsolateRequest{
+	cr := igrpc.CreateFunctionRequest{
 		Info: &igrpc.BaseInfo{
 			Name:      &ir.Container.ID,
 			Namespace: &ir.Workflow.Namespace,
@@ -96,17 +98,18 @@ func createKnativeFunction(client igrpc.IsolatesServiceClient,
 		},
 	}
 
-	_, err := client.CreateIsolate(context.Background(), &cr)
+	_, err := client.CreateFunction(context.Background(), &cr)
 
 	return err
 
 }
 
-func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workflow, ns string) error {
+func createKnativeFunctions(client igrpc.FunctionsServiceClient,
+	wfm model.Workflow, ns string) error {
 
 	for _, f := range wfm.GetFunctions() {
 
-		// only build workflow based isolates
+		// only build workflow based functions
 		if f.GetType() != model.ReusableContainerFunctionType {
 			continue
 		}
@@ -120,7 +123,7 @@ func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workfl
 			sz := int32(fd.Size)
 			scale := int32(fd.Scale)
 
-			cr := igrpc.CreateIsolateRequest{
+			cr := igrpc.CreateFunctionRequest{
 				Info: &igrpc.BaseInfo{
 					Name:      &name,
 					Namespace: &namespace,
@@ -132,7 +135,7 @@ func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workfl
 				},
 			}
 
-			_, err := client.CreateIsolate(context.Background(), &cr)
+			_, err := client.CreateFunction(context.Background(), &cr)
 			if err != nil {
 				log.Errorf("can not create knative service: %v", err)
 			}
@@ -144,34 +147,34 @@ func createKnativeFunctions(client igrpc.IsolatesServiceClient, wfm model.Workfl
 	return nil
 }
 
-func deleteKnativeFunctions(client igrpc.IsolatesServiceClient,
+func deleteKnativeFunctions(client igrpc.FunctionsServiceClient,
 	ns, wf, name string) error {
 
 	annotations := make(map[string]string)
 
-	scope := isolates.PrefixService
+	scope := functions.PrefixService
 
 	if ns != "" {
-		annotations[isolates.ServiceHeaderNamespace] = ns
-		scope = isolates.PrefixNamespace
+		annotations[functions.ServiceHeaderNamespace] = ns
+		scope = functions.PrefixNamespace
 	}
 
 	if wf != "" {
-		annotations[isolates.ServiceHeaderWorkflow] = wf
-		scope = isolates.PrefixWorkflow
+		annotations[functions.ServiceHeaderWorkflow] = wf
+		scope = functions.PrefixWorkflow
 	}
 
 	if name != "" {
-		annotations[isolates.ServiceHeaderName] = name
-		scope = isolates.PrefixService
+		annotations[functions.ServiceHeaderName] = name
+		scope = functions.PrefixService
 	}
-	annotations[isolates.ServiceHeaderScope] = scope
+	annotations[functions.ServiceHeaderScope] = scope
 
-	dr := igrpc.ListIsolatesRequest{
+	dr := igrpc.ListFunctionsRequest{
 		Annotations: annotations,
 	}
 
-	_, err := client.DeleteIsolates(context.Background(), &dr)
+	_, err := client.DeleteFunctions(context.Background(), &dr)
 	if err != nil {
 		log.Errorf("can not delete knative service: %v", err)
 	}

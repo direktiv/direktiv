@@ -1,0 +1,18 @@
+workflow test
+
+const ubuntu-shell = reusable(
+    image: "vorteil/ubuntu-shell:v1",
+    "file": file(key: "myscript", scope: "workflow", type: "plain"),
+    )
+
+test:
+    call(
+        ubuntu-shell,
+        {script: "myscript",},
+    )
+
+    if jq('.return.output != "Hello world"') {
+        error("value.mismatch", "expected bash output to be Hello world but got %s", "jq(.return)")
+        exit
+    }
+

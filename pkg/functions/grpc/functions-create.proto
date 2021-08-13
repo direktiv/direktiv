@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+
+import "pkg/functions/grpc/functions-common.proto";
+
+message CreateFunctionRequest {
+	optional BaseInfo info = 1;
+}

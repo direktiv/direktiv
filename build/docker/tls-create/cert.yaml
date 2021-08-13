@@ -1,0 +1,27 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: direktiv-cert
+  namespace: default
+spec:
+  secretName: direktiv-cert
+  dnsNames:
+  - "*.default.svc.cluster.local"
+  - "*.default"
+  issuerRef:
+    name: direktiv-ca
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: direktiv-cert
+  namespace: direktiv-services-direktiv
+spec:
+  secretName: direktiv-cert
+  dnsNames:
+  - "*.default.svc.cluster.local"
+  - "*.default"
+  issuerRef:
+    name: direktiv-ca
+    kind: ClusterIssuer

@@ -6,6 +6,7 @@
 id: eventgreeting
 functions: 
 - id: greetingFunction
+  type: reusable
   image: vorteil/greeting
 states:
 - id: Begin

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
 	"strconv"
 
-	_ "github.com/vorteil/direktiv/pkg/direktiv"
+	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/util"
 )
@@ -18,7 +17,6 @@ var (
 )
 
 func main() {
-
 	lifecycle := os.Getenv("DIREKTIV_LIFECYCLE")
 
 	err := initialize()
@@ -70,11 +68,7 @@ func initialize() error {
 
 func initFlow() error {
 
-	flowAddr := os.Getenv("DIREKTIV_FLOW_ENDPOINT")
-
-	log.Printf("Connecting to flow: %s.", flowAddr)
-
-	conn, err := util.GetEndpointTLS(flowAddr, true)
+	conn, err := util.GetEndpointTLS(util.TLSFlowComponent)
 	if err != nil {
 		return err
 	}

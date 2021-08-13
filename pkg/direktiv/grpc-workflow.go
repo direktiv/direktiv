@@ -45,7 +45,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 	}
 
 	// create knative services if they are not global or namespace
-	err = createKnativeFunctions(is.wfServer.engine.isolateClient, workflow, namespace)
+	err = createKnativeFunctions(is.wfServer.engine.functionsClient, workflow, namespace)
 	if err != nil {
 		// this can be delayed till the actual call if it fails
 		log.Errorf("can not create knative functions: %v", err)
@@ -200,15 +200,16 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		// previous definition. can not have errors
 		workflowPrev.Load(fwf.Workflow)
 
-		log.Debugf("checking hash: %v %v", hashForFunctions(workflow),
-			hashForFunctions(workflowPrev))
+		// if the functyions have changed or the workflow has been renamed
+		if workflowPrev.ID != workflow.ID ||
+			hashForFunctions(workflow) != hashForFunctions(workflowPrev) {
 
-		if hashForFunctions(workflow) != hashForFunctions(workflowPrev) {
-			err = deleteKnativeFunctions(is.wfServer.engine.isolateClient, fwf.Edges.Namespace.ID, workflow.ID, "")
+			log.Debugf("recreating knative workflows")
+			err = deleteKnativeFunctions(is.wfServer.engine.functionsClient, fwf.Edges.Namespace.ID, workflowPrev.ID, "")
 			if err != nil {
 				log.Errorf("can not delete knative functions: %v", err)
 			}
-			err = createKnativeFunctions(is.wfServer.engine.isolateClient, workflow, fwf.Edges.Namespace.ID)
+			err = createKnativeFunctions(is.wfServer.engine.functionsClient, workflow, fwf.Edges.Namespace.ID)
 			if err != nil {
 				log.Errorf("can not create knative functions: %v", err)
 			}

@@ -16,7 +16,7 @@ const (
 
 // Config is the configuration for workflow and runner server
 type Config struct {
-	IsolateProtocol string `yaml:"isolate-protocol"`
+	FunctionsProtocol string `yaml:"functions-protocol"`
 
 	Database struct {
 		DB string
@@ -55,8 +55,6 @@ func ReadConfig(file string) (*Config, error) {
 	// at the moment there is just one implementation
 	c.InstanceLogging.Driver = "database"
 	c.VariablesStorage.Driver = "database"
-
-	log.Debugf("CONGFI!!!!!!!!!!!!!!! %+v", c)
 
 	return c, nil
 

@@ -81,7 +81,7 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 	})
 
 	// get secrets client
-	db.grpcConn, err = util.GetEndpointTLS("127.0.0.1:2610", false)
+	db.grpcConn, err = util.GetEndpointTLS(util.TLSSecretsComponent)
 	if err != nil {
 		return nil, err
 	}

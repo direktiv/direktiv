@@ -10,8 +10,8 @@ ui:
   image: "direktiv-ui"
 api:
   image: "api"
-isolates:
+functions:
   namespace: direktiv-services-direktiv
-  image: "isolates"
+  image: "functions"
   sidecar: "localhost:5000/sidecar"
-  initPod: "localhost:5000/direktiv-init-pod"
+  initPodImage: "localhost:5000/direktiv-init-pod"

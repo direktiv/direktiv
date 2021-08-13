@@ -27,17 +27,10 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-        {{- if .Values.isolates.extraContainers }}
+        {{- if .Values.flow.extraContainers }}
         {{ toYaml .Values.flow.extraContainers | indent 8}}
         {{- end }}
         - name: ingress
-          readinessProbe:
-            exec: # -tls=true  -tls-no-verify
-              {{- if ne .Values.flow.certificate "none" }}
-              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666", "-tls=true", "-tls-no-verify"]
-              {{- else }}
-              command: ["/bin/grpc_health_probe", "-addr=127.0.0.1:6666"]
-              {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -61,9 +54,24 @@ spec:
           - name: flow-config
             mountPath: /etc/direktiv/flow-config.yaml
             subPath: flow-config.yaml
-          {{- if ne .Values.flow.certificate "none" }}
-          - name: certs
-            mountPath: "/etc/certs/direktiv"
+          {{- if ne .Values.flow.certificates.flow "none" }}
+          - name: flowcerts
+            mountPath: "/etc/direktiv/certs/flow"
+            readOnly: true
+          {{- end }}
+          {{- if ne .Values.flow.certificates.ingress "none" }}
+          - name: ingresscerts
+            mountPath: "/etc/direktiv/certs/ingress"
+            readOnly: true
+          {{- end }}
+          {{- if ne .Values.functions.certificate "none" }}
+          - name: functionscerts
+            mountPath: "/etc/direktiv/certs/functions"
+            readOnly: true
+          {{- end }}
+          {{- if eq .Values.flow.functionsProtocol "https" }}
+          - name: podca
+            mountPath: "/etc/direktiv/certs/ca"
             readOnly: true
           {{- end }}
           ports:
@@ -77,7 +85,7 @@ spec:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SERVICE_NAMESPACE
-            value: {{ .Values.isolates.namespace }}
+            value: {{ .Values.functions.namespace }}
           - name: DIREKTIV_KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
           {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
@@ -114,11 +122,6 @@ spec:
           - name: grpc-config
             mountPath: /etc/direktiv/grpc-config.yaml
             subPath: grpc-config.yaml
-          {{- if ne  .Values.flow.certificate "none" }}
-          - name: certs
-            mountPath: "/etc/certs/direktiv"
-            readOnly: true
-          {{- end }}
           ports:
             - name: secrets
               containerPort: 2610
@@ -140,16 +143,31 @@ spec:
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}
+        {{- if eq .Values.flow.functionsProtocol "https" }}
+        - name: podca
+          secret:
+            secretName: {{ .Values.flow.functionsCA }}
+        {{- end }}
         - name: grpc-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-grpc
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
-        {{- if ne  .Values.flow.certificate "none" }}
-        - name: certs
+        {{- if ne  .Values.flow.certificates.flow "none" }}
+        - name: flowcerts
           secret:
-            secretName: {{ .Values.flow.certificate }}
+            secretName: {{ .Values.flow.certificates.flow }}
+        {{- end }}
+        {{- if ne  .Values.flow.certificates.ingress "none" }}
+        - name: ingresscerts
+          secret:
+            secretName: {{ .Values.flow.certificates.ingress }}
+        {{- end }}
+        {{- if ne  .Values.functions.certificate "none" }}
+        - name: functionscerts
+          secret:
+            secretName: {{ .Values.functions.certificate }}
         {{- end }}
       {{- with .Values.nodeSelector }}:0
 

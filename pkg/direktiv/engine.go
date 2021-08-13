@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/isolates"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
@@ -62,8 +62,8 @@ type workflowEngine struct {
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
 
-	flowClient    flow.DirektivFlowClient
-	isolateClient igrpc.IsolatesServiceClient
+	flowClient      flow.DirektivFlowClient
+	functionsClient igrpc.FunctionsServiceClient
 
 	secretsClient secretsgrpc.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
@@ -121,15 +121,15 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	// get flow client
-	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
+	conn, err := util.GetEndpointTLS(util.TLSFunctionsComponent)
 	if err != nil {
 		return nil, err
 	}
 	we.grpcConns = append(we.grpcConns, conn)
-	we.isolateClient = igrpc.NewIsolatesServiceClient(conn)
+	we.functionsClient = igrpc.NewFunctionsServiceClient(conn)
 
 	// get flow client
-	conn, err = util.GetEndpointTLS(util.FlowEndpoint(), true)
+	conn, err = util.GetEndpointTLS(util.TLSFlowComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.flowClient = flow.NewDirektivFlowClient(conn)
 
 	// get secrets client
-	conn, err = util.GetEndpointTLS(secretsEndpoint, false)
+	conn, err = util.GetEndpointTLS(util.TLSSecretsComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.secretsClient = secretsgrpc.NewSecretsServiceClient(conn)
 
 	// get ingress client
-	conn, err = util.GetEndpointTLS(util.IngressEndpoint(), true)
+	conn, err = util.GetEndpointTLS(util.TLSIngressComponent)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +316,7 @@ type actionResultMessage struct {
 	Payload    actionResultPayload
 }
 
-func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateRequest) error {
+func (we *workflowEngine) doActionRequest(ctx context.Context, ar *functionRequest) error {
 
 	if ar.Workflow.Timeout == 0 {
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
@@ -325,14 +325,14 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		ip, err := addPodFunction(ctx, we.isolateClient, ar)
+		hostname, ip, err := addPodFunction(ctx, we.functionsClient, ar)
 		if err != nil {
 			return NewInternalError(err)
 		}
 
-		go func(ar *isolateRequest) {
+		go func(ar *functionRequest) {
 			// post data
-			we.doPodHTTPRequest(ctx, ar, ip)
+			we.doPodHTTPRequest(ctx, ar, hostname, ip)
 		}(ar)
 
 	case model.DefaultFunctionType:
@@ -349,7 +349,7 @@ func (we *workflowEngine) doActionRequest(ctx context.Context, ar *isolateReques
 
 }
 
-func (we *workflowEngine) reportError(ar *isolateRequest, err error) {
+func (we *workflowEngine) reportError(ar *functionRequest, err error) {
 	ec := ""
 	em := err.Error()
 	step := int32(ar.Workflow.Step)
@@ -391,11 +391,11 @@ func createTransport(useTLS bool) *http.Transport {
 
 		// Read in the cert file. just in case it is the same being used
 		// in the ingress
-		certs, err := ioutil.ReadFile(util.TLSCert)
+		certs, err := ioutil.ReadFile("/etc/direktiv/certs/ca/ca.crt")
 		if err == nil {
 			// Append our cert to the system pool if we have it
 			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-				log.Println("No certs appended, using system certs only")
+				log.Println("no certs appended, using system certs only")
 			}
 		}
 
@@ -412,14 +412,19 @@ func createTransport(useTLS bool) *http.Transport {
 }
 
 func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
-	ar *isolateRequest, ip string) {
+	ar *functionRequest, hostname, ip string) {
 
-	tr := createTransport(we.server.config.IsolateProtocol == "https")
+	useTLS := we.server.config.FunctionsProtocol == "https"
+
+	tr := createTransport(useTLS)
 
 	// configured namespace for workflows
-	addr := fmt.Sprintf("%s://%s:8890", we.server.config.IsolateProtocol, ip)
+	addr := fmt.Sprintf("%s://%s:8890", we.server.config.FunctionsProtocol, ip)
+	if useTLS {
+		addr = fmt.Sprintf("%s://%s:8890", we.server.config.FunctionsProtocol, hostname)
+	}
 
-	log.Debugf("isolate request: %v", addr)
+	log.Debugf("function request: %v", addr)
 
 	now := time.Now()
 	deadline := now.Add(time.Duration(ar.Workflow.Timeout) * time.Second)
@@ -453,7 +458,20 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		resp *http.Response
 	)
 
-	resp, err = client.Do(req)
+	// if we use https we need to use hostname for the certs to be valid
+	// that can lead to some delays with kubernetes DNS
+	if useTLS {
+		for i := 0; i < 100; i++ {
+			resp, err = client.Do(req)
+			if err != nil && strings.Contains(err.Error(), "connection refused") {
+				time.Sleep(250 * time.Millisecond)
+				continue
+			}
+		}
+	} else {
+		resp, err = client.Do(req)
+	}
+
 	if err != nil {
 		if ctxErr := rctx.Err(); ctxErr != nil {
 			log.Debugf("context error in pod call")
@@ -472,18 +490,18 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	log.Debugf("isolate request done")
+	log.Debugf("function request done")
 
 }
 
 func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
-	ar *isolateRequest) {
+	ar *functionRequest) {
 
 	var (
 		err error
 	)
 
-	tr := createTransport(we.server.config.IsolateProtocol == "https")
+	tr := createTransport(we.server.config.FunctionsProtocol == "https")
 
 	// configured namespace for workflows
 	ns := os.Getenv(util.DirektivServiceNamespace)
@@ -492,7 +510,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		svn, _, err = isolates.GenerateServiceName(ar.Workflow.Namespace,
+		svn, _, err = functions.GenerateServiceName(ar.Workflow.Namespace,
 			ar.Workflow.ID, ar.Container.ID)
 		if err != nil {
 			log.Errorf("can not create service name: %v", err)
@@ -500,8 +518,8 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		}
 	}
 
-	addr := fmt.Sprintf("%s://%s.%s", we.server.config.IsolateProtocol, svn, ns)
-	log.Debugf("isolate request: %v", addr)
+	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FunctionsProtocol, svn, ns)
+	log.Debugf("function request: %v", addr)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -544,8 +562,9 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
-	for i := 0; i < 1000; i++ {
-		log.Debugf("isolate request (%d): %v", i, addr)
+	// one minute wait max
+	for i := 0; i < 60; i++ {
+		log.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {
@@ -567,9 +586,9 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
-							!isKnativeFunction(we.isolateClient, ar.Container.ID,
+							!isKnativeFunction(we.functionsClient, ar.Container.ID,
 								ar.Workflow.Namespace, ar.Workflow.ID) {
-							err := createKnativeFunction(we.isolateClient, ar)
+							err := createKnativeFunction(we.functionsClient, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								log.Errorf("can not create knative function: %v", err)
 								we.reportError(ar, err)
@@ -577,13 +596,13 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 							}
 						}
 
-						time.Sleep(250 * time.Millisecond)
+						time.Sleep(1000 * time.Millisecond)
 						continue
 					}
 				}
 			}
 
-			time.Sleep(250 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 
 		} else {
 			break
@@ -600,7 +619,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	log.Debugf("isolate request done")
+	log.Debugf("function request done")
 
 }
 
@@ -808,9 +827,9 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
-			cancelJob(context.Background(), we.isolateClient, child.Id)
+			cancelJob(context.Background(), we.functionsClient, child.Id)
 			/* #nosec */
-			_ = syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelIsolate)
+			_ = syncServer(context.Background(), we.db, &we.server.id, child.Id, CancelFunction)
 		case "subflow":
 			go func(id string) {
 				/* #nosec */

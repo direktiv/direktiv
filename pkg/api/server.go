@@ -4,27 +4,25 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	igrpc "github.com/vorteil/direktiv/pkg/isolates/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
 // Server ..
 type Server struct {
-	cfg      *Config
-	direktiv ingress.DirektivIngressClient
-	isolates igrpc.IsolatesServiceClient
-	json     jsonpb.Marshaler
-	handler  *Handler
-	router   *mux.Router
-	srv      *http.Server
+	cfg       *Config
+	direktiv  ingress.DirektivIngressClient
+	functions igrpc.FunctionsServiceClient
+	json      jsonpb.Marshaler
+	handler   *Handler
+	router    *mux.Router
+	srv       *http.Server
 
 	reqMapMutex sync.Mutex
 	reqMap      map[*http.Request]*RequestStatus
@@ -85,7 +83,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, err
 	}
 
-	err = s.initIsolates()
+	err = s.initFunctions()
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +103,9 @@ func (s *Server) IngressClient() ingress.DirektivIngressClient {
 	return s.direktiv
 }
 
-// IsolatesClient returns client to backend
-func (s *Server) IsolatesClient() igrpc.IsolatesServiceClient {
-	return s.isolates
+// FunctionsClient returns client to backend
+func (s *Server) FunctionsClient() igrpc.FunctionsServiceClient {
+	return s.functions
 }
 
 // Router returns mux router
@@ -117,7 +115,7 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) initDirektiv() error {
 
-	conn, err := util.GetEndpointTLS(util.IngressEndpoint(), true)
+	conn, err := util.GetEndpointTLS(util.TLSIngressComponent)
 	if err != nil {
 		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
@@ -130,17 +128,18 @@ func (s *Server) initDirektiv() error {
 	return nil
 }
 
-func (s *Server) initIsolates() error {
+func (s *Server) initFunctions() error {
 
-	conn, err := util.GetEndpointTLS(util.IsolateEndpoint(), true)
+	conn, err := util.GetEndpointTLS(util.TLSFunctionsComponent)
 	if err != nil {
-		log.Errorf("can not connect to direktiv isolates: %v", err)
+		log.Errorf("can not connect to direktiv functions: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", util.IsolateEndpoint())
+	log.Infof("connecting to %s", util.FunctionsEndpoint())
 
-	s.isolates = igrpc.NewIsolatesServiceClient(conn)
+	s.functions = igrpc.NewFunctionsServiceClient(conn)
+
 	return nil
 }
 
@@ -165,6 +164,8 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
+
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflowTarget}/functions", s.handler.getWorkflowFunctions).Methods(http.MethodGet).Name(RN_GetWorkflowFunctions)
 
 	// FunctionRevisions ..
 	s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
@@ -232,24 +233,15 @@ func (s *Server) prepareRoutes() {
 
 }
 
-// const tlsDir = "/etc/certs/servedirektiv"
-const tlsDir = "/etc/certs/direktiv/"
-
-func tlsEnabled() bool {
-	if _, err := os.Stat(tlsDir); err != nil {
-		return false
-	}
-	return true
-}
-
 // Start starts the API server
 func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", apiBind)
 
-	if tlsEnabled() {
+	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
+	if len(k) > 0 {
 		log.Infof("api tls enabled")
-		return s.srv.ListenAndServeTLS(filepath.Join(tlsDir, "tls.crt"), filepath.Join(tlsDir, "tls.key"))
+		return s.srv.ListenAndServeTLS(c, k)
 	}
 
 	return s.srv.ListenAndServe()

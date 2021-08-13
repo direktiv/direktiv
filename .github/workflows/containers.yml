@@ -27,6 +27,5 @@ jobs:
           echo "RV set to $RV"
           if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
           echo "RV set to $RV"
-          RV=$RV make docker-ui
-          make push
+          make docker-ui DOCKER_REPO=vorteil RELEASE=$RV
           make push DOCKER_REPO=vorteil RELEASE=$RV

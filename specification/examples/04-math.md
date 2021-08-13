@@ -6,6 +6,7 @@
 id: math
 functions: 
 - id: solveMathExpressionFunction
+  type: reusable
   image: vorteil/solve
 states:
 - id: solve

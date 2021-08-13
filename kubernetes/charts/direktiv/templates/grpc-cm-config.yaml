@@ -16,8 +16,20 @@ data:
 
       max-rcv-server: {{ .Values.grpc.server.maxRecvSize }}
 
-      isolate-endpoint: dns2:///{{ include "direktiv.fullname" . }}-isolates-hl.{{ .Release.Namespace }}:5555
+      functions-endpoint: dns2:///{{ include "direktiv.fullname" . }}-functions-hl.{{ .Release.Namespace }}:5555
 
       flow-enpoint: dns2:///{{ include "direktiv.fullname" . }}-flow-hl.{{ .Release.Namespace }}:7777
 
       ingress-endpoint: dns2:///{{ include "direktiv.fullname" . }}-ingress-hl.{{ .Release.Namespace }}:6666
+
+      functions-tls: {{ .Values.functions.certificate }}
+
+      functions-mtls: {{ .Values.functions.mtls }}
+
+      ingress-tls: {{ .Values.flow.certificates.ingress }}
+
+      ingress-mtls: {{ .Values.flow.certificates.mtlsIngress }}
+
+      flow-tls: {{ .Values.flow.certificates.flow }}
+
+      flow-mtls: {{ .Values.flow.certificates.mtlsFlow }}

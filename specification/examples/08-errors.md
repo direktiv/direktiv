@@ -6,6 +6,7 @@
 id: errors
 functions:
 - id: provisionOrderFunction
+  type: reusable
   image: apps.vorteil.io/direktive-demos/provision-order
 states:
 - id: ProvisionOrder

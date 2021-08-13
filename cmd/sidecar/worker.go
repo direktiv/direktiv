@@ -67,7 +67,7 @@ func (worker *inboundWorker) run() {
 		id := req.r.Header.Get(actionIDHeader)
 		log.Debugf("Worker %d picked up request '%s'.", worker.id, id)
 
-		worker.handleIsolateRequest(req)
+		worker.handleFunctionRequest(req)
 
 	}
 
@@ -75,7 +75,7 @@ func (worker *inboundWorker) run() {
 
 }
 
-func (worker *inboundWorker) fileReader(ctx context.Context, ir *isolateRequest, f *isolateFiles, pw *io.PipeWriter) error {
+func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest, f *functionFiles, pw *io.PipeWriter) error {
 
 	err := worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
 	if err != nil {
@@ -92,7 +92,7 @@ type outcome struct {
 	errMsg  string
 }
 
-func (worker *inboundWorker) doIsolateRequest(ctx context.Context, ir *isolateRequest) (*outcome, error) {
+func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
 
 	log.Debugf("Forwarding request '%s' to service.", ir.actionId)
 
@@ -104,7 +104,7 @@ func (worker *inboundWorker) doIsolateRequest(ctx context.Context, ir *isolateRe
 	}
 
 	req.Header.Set(actionIDHeader, ir.actionId)
-	req.Header.Set("Direktiv-TempDir", worker.isolateDir(ir))
+	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -136,7 +136,7 @@ func (worker *inboundWorker) doIsolateRequest(ctx context.Context, ir *isolateRe
 
 }
 
-func (worker *inboundWorker) prepOneIsolateFiles(ctx context.Context, ir *isolateRequest, f *isolateFiles) error {
+func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *functionRequest, f *functionFiles) error {
 
 	pr, pw := io.Pipe()
 
@@ -314,11 +314,11 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 
 }
 
-func (worker *inboundWorker) fileWriter(ctx context.Context, ir *isolateRequest, f *isolateFiles, pr *io.PipeReader) error {
+func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
 
 	// TODO: validate f.Type earlier so that the switch cannot get unexpected data here
 
-	dir := worker.isolateDir(ir)
+	dir := worker.functionDir(ir)
 	dst := f.Key
 	if f.As != "" {
 		dst = f.As
@@ -340,32 +340,32 @@ func (worker *inboundWorker) fileWriter(ctx context.Context, ir *isolateRequest,
 
 }
 
-func (worker *inboundWorker) isolateDir(ir *isolateRequest) string {
+func (worker *inboundWorker) functionDir(ir *functionRequest) string {
 	return filepath.Join(sharedDir, ir.actionId)
 }
 
-func (worker *inboundWorker) cleanupIsolateRequest(ir *isolateRequest) {
-	dir := worker.isolateDir(ir)
+func (worker *inboundWorker) cleanupFunctionRequest(ir *functionRequest) {
+	dir := worker.functionDir(ir)
 	err := os.RemoveAll(dir)
 	if err != nil {
 		log.Error(err)
 	}
 }
 
-func (worker *inboundWorker) prepIsolateRequest(ctx context.Context, ir *isolateRequest) error {
+func (worker *inboundWorker) prepFunctionRequest(ctx context.Context, ir *functionRequest) error {
 
-	err := worker.prepIsolateFiles(ctx, ir)
+	err := worker.prepFunctionFiles(ctx, ir)
 	if err != nil {
-		return fmt.Errorf("failed to prepare isolate files: %v", err)
+		return fmt.Errorf("failed to prepare functions files: %v", err)
 	}
 
 	return nil
 
 }
 
-func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRequest) error {
+func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *functionRequest) error {
 
-	dir := worker.isolateDir(ir)
+	dir := worker.functionDir(ir)
 
 	err := os.MkdirAll(dir, 0750)
 	if err != nil {
@@ -373,9 +373,9 @@ func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRe
 	}
 
 	for i, f := range ir.files {
-		err = worker.prepOneIsolateFiles(ctx, ir, f)
+		err = worker.prepOneFunctionFiles(ctx, ir, f)
 		if err != nil {
-			return fmt.Errorf("failed to prepare isolate files %d: %v", i, err)
+			return fmt.Errorf("failed to prepare function files %d: %v", i, err)
 		}
 	}
 
@@ -383,7 +383,7 @@ func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRe
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0750)
 		if err != nil {
-			return fmt.Errorf("failed to prepare isolate output dirs: %v", err)
+			return fmt.Errorf("failed to prepare function output dirs: %v", err)
 		}
 	}
 
@@ -391,13 +391,13 @@ func (worker *inboundWorker) prepIsolateFiles(ctx context.Context, ir *isolateRe
 
 }
 
-func (worker *inboundWorker) handleIsolateRequest(req *inboundRequest) {
+func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	defer func() {
 		close(req.end)
 	}()
 
-	ir := worker.validateIsolateRequest(req)
+	ir := worker.validateFunctionRequest(req)
 	if ir == nil {
 		return
 	}
@@ -406,15 +406,15 @@ func (worker *inboundWorker) handleIsolateRequest(req *inboundRequest) {
 	ctx, cancel := context.WithDeadline(ctx, ir.deadline)
 	defer cancel()
 
-	defer worker.cleanupIsolateRequest(ir)
+	defer worker.cleanupFunctionRequest(ir)
 
-	err := worker.prepIsolateRequest(ctx, ir)
+	err := worker.prepFunctionRequest(ctx, ir)
 	if err != nil {
 		worker.reportSidecarError(ir, err)
 		return
 	}
 
-	// NOTE: rctx exists because we don't want to immediately cancel the isolate request if our context is cancelled
+	// NOTE: rctx exists because we don't want to immediately cancel the function request if our context is cancelled
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -428,7 +428,7 @@ func (worker *inboundWorker) handleIsolateRequest(req *inboundRequest) {
 		}
 	}()
 
-	out, err := worker.doIsolateRequest(rctx, ir)
+	out, err := worker.doFunctionRequest(rctx, ir)
 	if err != nil {
 		worker.reportSidecarError(ir, err)
 		return
@@ -445,12 +445,12 @@ func (worker *inboundWorker) handleIsolateRequest(req *inboundRequest) {
 
 }
 
-func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateRequest) error {
+func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
 
 	subDirs := []string{"namespace", "workflow", "instance"}
 	for _, d := range subDirs {
 
-		out := path.Join(worker.isolateDir(ir), "out", d)
+		out := path.Join(worker.functionDir(ir), "out", d)
 
 		files, err := ioutil.ReadDir(out)
 		if err != nil {
@@ -459,7 +459,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *isolateReq
 
 		for _, f := range files {
 
-			fp := path.Join(worker.isolateDir(ir), "out", d, f.Name())
+			fp := path.Join(worker.functionDir(ir), "out", d, f.Name())
 
 			switch mode := f.Mode(); {
 			case mode.IsDir():
@@ -569,7 +569,7 @@ func tarGzDir(src string, buf io.Writer) error {
 	return nil
 }
 
-func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *isolateRequest, out *outcome) {
+func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequest, out *outcome) {
 
 	step := int32(ir.step)
 
@@ -597,7 +597,7 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *isolateReque
 
 }
 
-func (worker *inboundWorker) reportSidecarError(ir *isolateRequest, err error) {
+func (worker *inboundWorker) reportSidecarError(ir *functionRequest, err error) {
 
 	ctx := context.Background() // TODO
 
@@ -693,7 +693,7 @@ func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
 
 }
 
-func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[]*isolateFiles) bool {
+func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[]*functionFiles) bool {
 
 	hdr := "Direktiv-Files"
 	strs := req.r.Header.Values(hdr)
@@ -705,7 +705,7 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 			return false
 		}
 
-		files := new(isolateFiles)
+		files := new(functionFiles)
 		dec := json.NewDecoder(bytes.NewReader(data))
 		dec.DisallowUnknownFields()
 		err = dec.Decode(files)
@@ -724,9 +724,9 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 
 }
 
-func (worker *inboundWorker) validateIsolateRequest(req *inboundRequest) *isolateRequest {
+func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *functionRequest {
 
-	ir := new(isolateRequest)
+	ir := new(functionRequest)
 
 	var step string
 	var deadline string

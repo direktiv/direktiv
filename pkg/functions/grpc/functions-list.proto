@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+
+import "pkg/functions/grpc/functions-common.proto";
+
+message FunctionsInfo {
+	optional BaseInfo info = 1;
+	optional string status = 2;
+	repeated Condition conditions = 3;
+	optional string serviceName = 4;
+}
+
+message ListFunctionsResponse {
+	optional FunctionsConfig config = 1;
+	repeated FunctionsInfo functions = 2;
+}
+
+message ListFunctionsRequest {
+	map<string, string> annotations = 1;
+}

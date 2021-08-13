@@ -45,15 +45,20 @@ spec:
       - name: action-templates
         configMap:
           name: api-actiontemplates-cm
-      {{- if ne  .Values.flow.certificate "none" }}
+      {{- if ne  .Values.api.certificate "none" }}
       - name: certs
         secret:
-          secretName: {{ .Values.flow.certificate }}
+          secretName: {{ .Values.api.certificate }}
       {{- end }}
-      {{- if ne  .Values.flow.certificate "none" }}
-      - name: servecerts
+      {{- if ne  .Values.functions.certificate "none" }}
+      - name: functionscerts
         secret:
-          secretName: {{ .Values.flow.certificate }}
+          secretName: {{ .Values.functions.certificate }}
+      {{- end }}
+      {{- if ne  .Values.flow.certificates.ingress "none" }}
+      - name: ingresscerts
+        secret:
+          secretName: {{ .Values.flow.certificates.ingress }}
       {{- end }}
       containers:
       - name: api
@@ -64,7 +69,7 @@ spec:
           httpGet:
             path: /api/healthz
             port: 8080
-            {{- if ne  .Values.flow.certificate "none" }}
+            {{- if ne  .Values.api.certificate "none" }}
             scheme: HTTPS
             {{- end }}
           periodSeconds: 10
@@ -100,14 +105,19 @@ spec:
           mountPath: "/tmp/workflow-templates"
         - name: action-templates
           mountPath: "/tmp/action-templates"
-        {{- if ne  .Values.flow.certificate "none" }}
+        {{- if ne  .Values.api.certificate "none" }}
         - name: certs
-          mountPath: "/etc/certs/direktiv"
+          mountPath: "/etc/direktiv/certs/http"
           readOnly: true
         {{- end }}
-        {{- if ne  .Values.flow.certificate "none" }}
-        - name: servecerts
-          mountPath: "/etc/certs/servedirektiv"
+        {{- if ne .Values.functions.certificate "none" }}
+        - name: functionscerts
+          mountPath: "/etc/direktiv/certs/functions"
+          readOnly: true
+        {{- end }}
+        {{- if ne .Values.flow.certificates.ingress "none" }}
+        - name: ingresscerts
+          mountPath: "/etc/direktiv/certs/ingress"
           readOnly: true
         {{- end }}
         ports:

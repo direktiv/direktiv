@@ -63,7 +63,7 @@ func newIngressServer(s *WorkflowServer) (*ingressServer, error) {
 func (is *ingressServer) start(s *WorkflowServer) error {
 
 	// get secrets client
-	conn, err := util.GetEndpointTLS(secretsEndpoint, false)
+	conn, err := util.GetEndpointTLS(util.TLSSecretsComponent)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 	is.cronPoll()
 	go is.cronPoller()
 
-	return util.GrpcStart(&is.grpc, "ingress", ingressBind, func(srv *grpc.Server) {
+	return util.GrpcStart(&is.grpc, util.TLSIngressComponent, ingressBind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
 		log.Debugf("append health check to ingress service")

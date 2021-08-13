@@ -172,14 +172,19 @@ start:
     type: Microsoft.Storage.BlobCreated
 functions:
 - id: imageCheck
+  type: reusable
   image: vorteil/imagerecognition:v2
 - id: awslambda
+  type: reusable
   image: vorteil/lambda:v2
 - id: send-email
+  type: reusable
   image: vorteil/smtp:v2
 - id: azureupload
+  type: reusable
   image: vorteil/azure-upload:v2
 - id: azurecli
+  type: reusable
   image: vorteil/azgo:v2
   size: large   
 states:

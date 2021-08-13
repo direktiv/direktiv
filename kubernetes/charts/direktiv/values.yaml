@@ -12,7 +12,7 @@ imagePullSecrets: []
 # if using proxy the user needs to be a valid IAM user with access to the database
 # e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
 # to to google with:
-# serviceAccount:
+# ccount:
 #   annotations:
 #      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
 serviceAccount:
@@ -43,7 +43,7 @@ supportPersist: false
 # enable debug
 debug: false
 
-useNetworkPolicies: false
+useNetworkPolicies: false # enables/disables network policies2
 
 ingress:
   host: ""
@@ -55,8 +55,18 @@ flow:
   image: "vorteil/flow"
   tag: "latest"
   db: ""
-  isolateProtocol: "http"
-  certificate: none
+  functionsProtocol: "http"
+  functionsCA: "none" # change function pod secret too
+  # functionsCA: "direktiv-cert3"
+  certificates:
+    flow: none
+    mtlsFlow: none
+    # flow: hello-world6
+    # mtlsFlow: hello-world6
+    ingress: none
+    mtlsIngress: none
+    # ingress: hello-world5
+    # mtlsIngress: hello-world5
   extraContainers: []
   extraVolumeMounts:
     # - name: service-template
@@ -77,32 +87,41 @@ secrets:
 ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
+  # certificate: direktiv-cert
+  certificate: none
 
 api:
   image: vorteil/api
   tag: "latest"
   key: ""
-
-uiapiCertificate: none
+  certificate: none
 
 # Set Send and Recv limits for all grpc clients and servers
-grpc:
-  server:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
-  client:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
+grpc: #PARENT
+  server: # GRPC
+    maxSendSize: "4194304" # SENDS
+    maxRecvSize: "4194304" # RECVS
+  client: # CLIENT
+    maxSendSize: "4194304" # SENDS1
+    maxRecvSize: "4194304" # RECVS1
 
-isolates:
-  # namespace to run isolates in
+functions:
+  # namespace to run functions in
   namespace: direktiv-services-direktiv
 
-  # images for isolate controller, knative sidecar and init-pod
-  image: "vorteil/isolates"
+  # images for functions controller, knative sidecar and init-pod
+  image: "vorteil/functions"
   tag: "latest"
+  certificate: none
+  mtls: none
+  # certificate: hello-world3
+  # mtls: hello-world3
+
   sidecar: "vorteil/sidecar"
-  initPod: "vorteil/direktiv-init-pod"
+
+  initPodImage:  "vorteil/direktiv-init-pod"
+  # initPodCertificate: direktiv-cert3
+  initPodCertificate: none
 
   # number of controller replicas
   replicaCount: 1
@@ -114,9 +133,6 @@ isolates:
 
   # run pod cleaner for kubernetes < 1.20
   podCleaner: true
-
-  # run init-pod with TLS
-  podTLS: false
 
   # runtime to use, e.g. gvisor
   runtime: "default"

@@ -1,0 +1,4 @@
+{
+    "catFacts": "https://cat-fact.herokuapp.com/facts",
+    "numberFacts": "http://numbersapi.com/random?json"
+}

@@ -24,7 +24,7 @@ type NetworkServer struct {
 func (srv *NetworkServer) Start() {
 
 	srv.router = mux.NewRouter()
-	srv.router.HandleFunc("/", srv.isolate)
+	srv.router.HandleFunc("/", srv.functions)
 
 	srv.server.Addr = "0.0.0.0:8890"
 	srv.server.Handler = srv.router
@@ -76,7 +76,7 @@ func (srv *NetworkServer) run() {
 
 }
 
-func (srv *NetworkServer) isolate(w http.ResponseWriter, r *http.Request) {
+func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 
 	req := &inboundRequest{
 		w:   w,

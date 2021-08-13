@@ -5,7 +5,7 @@ metadata:
   name: {{ include "direktiv.fullname" . }}-ui
   labels:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
-  {{- if ne  .Values.flow.certificate "none" }}
+  {{- if ne  .Values.ui.certificate "none" }}
   annotations:
     projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-ui,8080"
   {{- end }}

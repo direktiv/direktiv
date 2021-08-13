@@ -41,11 +41,7 @@ type LocalServer struct {
 
 func (srv *LocalServer) initFlow() error {
 
-	flowAddr := os.Getenv("DIREKTIV_FLOW_ENDPOINT")
-
-	log.Infof("Connecting to flow: %s.", flowAddr)
-
-	conn, err := util.GetEndpointTLS(flowAddr, true)
+	conn, err := util.GetEndpointTLS(util.TLSFlowComponent)
 	if err != nil {
 		return err
 	}
@@ -63,7 +59,7 @@ func (srv *LocalServer) initPubSub() error {
 	log.Infof("Connecting to pub/sub service.")
 
 	err := direktiv.SyncSubscribeTo(addr,
-		direktiv.CancelIsolate, srv.handlePubSubCancel)
+		direktiv.CancelFunction, srv.handlePubSubCancel)
 	if err != nil {
 		return err
 	}
@@ -79,7 +75,7 @@ func (srv *LocalServer) handlePubSubCancel(in interface{}) {
 		log.Errorf("cancel data %v not valid", in)
 		return
 	}
-	log.Infof("cancelling isolate %v", actionId)
+	log.Infof("cancelling function %v", actionId)
 
 	// TODO: do we need to find a better way to cancel requests that come late off the queue?
 
@@ -249,7 +245,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := req.ctx
-	ir := req.isolateRequest
+	ir := req.functionRequest
 
 	scope := r.URL.Query().Get("scope")
 	key := r.URL.Query().Get("key")
@@ -290,19 +286,19 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type activeRequest struct {
-	*isolateRequest
+	*functionRequest
 	cancel func()
 	ctx    context.Context
 }
 
-func (srv *LocalServer) registerActiveRequest(ir *isolateRequest, ctx context.Context, cancel func()) {
+func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.Context, cancel func()) {
 
 	srv.requestsLock.Lock()
 
 	srv.requests[ir.actionId] = &activeRequest{
-		isolateRequest: ir,
-		ctx:            ctx,
-		cancel:         cancel,
+		functionRequest: ir,
+		ctx:             ctx,
+		cancel:          cancel,
 	}
 
 	srv.requestsLock.Unlock()
@@ -337,7 +333,7 @@ func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string
 
 	log.Infof("Attempting to cancel '%s'.", actionId)
 
-	go srv.sendCancelToService(ctx, req.isolateRequest)
+	go srv.sendCancelToService(ctx, req.functionRequest)
 
 	select {
 	case <-req.ctx.Done():
@@ -348,7 +344,7 @@ func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string
 
 }
 
-func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *isolateRequest) {
+func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionRequest) {
 
 	url := "http://localhost:8080"
 
@@ -411,19 +407,19 @@ func (srv *LocalServer) run() {
 
 }
 
-type isolateRequest struct {
+type functionRequest struct {
 	actionId   string
 	instanceId string
 	namespace  string
 	step       int
 	deadline   time.Time
 	input      []byte
-	files      []*isolateFiles
+	files      []*functionFiles
 	errCode    string
 	errMsg     string
 }
 
-type isolateFiles struct {
+type functionFiles struct {
 	Key   string `json:"key"`
 	As    string `json:"as"`
 	Scope string `json:"scope"`
@@ -442,7 +438,7 @@ type varClientMsg interface {
 	GetValue() []byte
 }
 
-func (srv *LocalServer) requestVar(ctx context.Context, ir *isolateRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
+func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
 
 	// TODO: const the scopes
 	// TODO: validate scope earlier so that the switch cannot get unexpected data here
@@ -506,7 +502,7 @@ type varSetClientMsg struct {
 	ChunkSize  *int64
 }
 
-func (srv *LocalServer) setVar(ctx context.Context, ir *isolateRequest, totalSize int64, r io.Reader, scope, key string) error {
+func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key string) error {
 
 	// TODO: const the scopes
 	// TODO: validate scope earlier so that the switch cannot get unexpected data here
@@ -623,7 +619,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *isolateRequest, totalSiz
 
 }
 
-func (srv *LocalServer) getVar(ctx context.Context, ir *isolateRequest, w io.Writer, setTotalSize func(x int64), scope, key string) error {
+func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Writer, setTotalSize func(x int64), scope, key string) error {
 
 	client, recv, err := srv.requestVar(ctx, ir, scope, key)
 	if err != nil {

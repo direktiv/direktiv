@@ -127,7 +127,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 			Attempts: attempt,
 		}
 
-		var ar *isolateRequest
+		var ar *functionRequest
 		ar, err = instance.newIsolateRequest(sl.state.GetID(), 0, fn, inputData, uid, false)
 		if err != nil {
 			return
@@ -147,7 +147,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, instance *work
 			Attempts: attempt,
 		}
 
-		var ar *isolateRequest
+		var ar *functionRequest
 		ar, err = instance.newIsolateRequest(sl.state.GetID(), 0, fn, inputData, uid, false)
 		if err != nil {
 			return
