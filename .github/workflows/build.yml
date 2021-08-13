@@ -21,9 +21,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
-      - name: make build
-        run: |
-          make push DOCKER_REPO=vorteil RELEASE=${{ steps.get_version.outputs.VERSION }}
+      #- name: make build
+      #  run: |
+      #    make push DOCKER_REPO=vorteil RELEASE=${{ steps.get_version.outputs.VERSION }}
       # - name: build ui
       #   uses: addnab/docker-run-action@v3
       #   with:
@@ -74,30 +74,30 @@ jobs:
       #     asset_path: ./direktiv.vorteil
       #     asset_name: direktiv.vorteil
       #     asset_content_type: application/octet-stream
-      - name: upload vorteil cli
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./direkcli-linux
-          asset_name: direkcli-linux
-          asset_content_type: application/octet-stream
-      - name: upload vorteil cli
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./direkcli-darwin
-          asset_name: direkcli-darwin
-          asset_content_type: application/octet-stream
-      - name: upload vorteil cli
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./direkcli-windows.exe
-          asset_name: direkcli-windows.exe
-          asset_content_type: application/octet-stream
+      #- name: upload vorteil cli
+      #  uses: actions/upload-release-asset@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #    asset_path: ./direkcli-linux
+      #    asset_name: direkcli-linux
+      #    asset_content_type: application/octet-stream
+      #- name: upload vorteil cli
+      #  uses: actions/upload-release-asset@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #    asset_path: ./direkcli-darwin
+      #    asset_name: direkcli-darwin
+      #    asset_content_type: application/octet-stream
+      #- name: upload vorteil cli
+      #  uses: actions/upload-release-asset@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #    asset_path: ./direkcli-windows.exe
+      #    asset_name: direkcli-windows.exe
+      #   asset_content_type: application/octet-stream
