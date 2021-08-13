@@ -115,7 +115,7 @@ build/%-docker.checksum: build/%.md5 ${DOCKER_FILES}
 	@cp build/$*.md5 build/$*-docker.checksum
 
 .PHONY: image-%
-image-%: cmd/direkcli/*.go build/%-docker.checksum
+image-%: build/%-docker.checksum
 	@echo "Make $@: SUCCESS"
 
 RELEASE := ""
@@ -146,7 +146,8 @@ docker-ui: ## Manually clone and build the latest UI.
 template-configmaps:
 	scripts/misc/generate-api-configmaps.sh
 
-cmd/direkcli/*.go:
+.PHONY: cli
+cli:
 	@echo "Building linux cli binary...";
 	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direkcli cmd/direkcli/main.go
 	@echo "Building mac cli binary...";
