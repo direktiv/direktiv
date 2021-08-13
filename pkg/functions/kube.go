@@ -900,12 +900,14 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	for _, trafficInfo := range s.Status.Traffic {
 		if trafficInfo.Percent != nil {
 			newPercent := *trafficInfo.Percent * (100 - percent) / 100
-			log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')\n",
-				trafficInfo.RevisionName, newPercent, *trafficInfo.Percent)
-			tr = append(tr, v1.TrafficTarget{
-				RevisionName: trafficInfo.RevisionName,
-				Percent:      &newPercent,
-			})
+			if newPercent != 0 {
+				log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')\n",
+					trafficInfo.RevisionName, newPercent, *trafficInfo.Percent)
+				tr = append(tr, v1.TrafficTarget{
+					RevisionName: trafficInfo.RevisionName,
+					Percent:      &newPercent,
+				})
+			}
 		}
 	}
 
@@ -1115,11 +1117,30 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 		return err
 	}
 
+	s, err := cs.ServingV1().Services(isolateConfig.Namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("error getting service: %v", err)
+		return err
+	}
+
+	var latestRevision string
+	for _, t := range s.Status.Traffic {
+		if t.LatestRevision != nil {
+			if *t.LatestRevision {
+				latestRevision = t.RevisionName
+			}
+		}
+	}
+
 	tr := []v1.TrafficTarget{}
 	for i := range tv {
+
+		isLatest = latestRevision == tv[i].GetRevision()
+
 		tt := v1.TrafficTarget{
-			RevisionName: tv[i].GetRevision(),
-			Percent:      tv[i].Percent,
+			LatestRevision: &isLatest,
+			RevisionName:   tv[i].GetRevision(),
+			Percent:        tv[i].Percent,
 		}
 		tr = append(tr, tt)
 	}
