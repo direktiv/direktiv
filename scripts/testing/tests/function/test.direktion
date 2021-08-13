@@ -6,7 +6,7 @@
 workflow test
 
 const request-reusable = reusable(image: "vorteil/request:v6")
-const request-isolate = isolate(image: "localhost:5000/isolate-requester")
+const request-isolate = isolate(image: "localhost:5000/isolate-requester:test")
 
 call-function:
     call(request-reusable, {

@@ -33,6 +33,7 @@
 /build/api
 /build/functions
 /build/alpine-*
+/build/isolates
 /apiserver
 /direktiv
 /direkcli*
