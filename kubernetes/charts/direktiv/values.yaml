@@ -43,12 +43,8 @@ supportPersist: false
 # enable debug
 debug: false
 
-<<<<<<< HEAD
 # enables/disables network policies
 useNetworkPolicies: false
-=======
-useNetworkPolicies: false # enables/disables network policies2
->>>>>>> 2af887c3843599d9dde8ec02345eebc765681173
 
 ingress:
   host: ""
@@ -61,14 +57,6 @@ flow:
   tag: "latest"
   db: ""
   functionsProtocol: "http"
-<<<<<<< HEAD
-  functionsCA: "none"
-  certificates:
-    flow: none
-    mtlsFlow: none
-    ingress: none
-    mtlsIngress: none
-=======
   functionsCA: "none" # change function pod secret too
   # functionsCA: "direktiv-cert3"
   certificates:
@@ -80,7 +68,6 @@ flow:
     mtlsIngress: none
     # ingress: hello-world5
     # mtlsIngress: hello-world5
->>>>>>> 2af887c3843599d9dde8ec02345eebc765681173
   extraContainers: []
   extraVolumeMounts:
     # - name: service-template
@@ -101,10 +88,6 @@ secrets:
 ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
-<<<<<<< HEAD
-=======
-  # certificate: direktiv-cert
->>>>>>> 2af887c3843599d9dde8ec02345eebc765681173
   certificate: none
 
 api:
@@ -114,15 +97,6 @@ api:
   certificate: none
 
 # Set Send and Recv limits for all grpc clients and servers
-<<<<<<< HEAD
-grpc:
-  server:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
-  client:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
-=======
 grpc: #PARENT
   server: # GRPC
     maxSendSize: "4194304" # SENDS
@@ -130,7 +104,6 @@ grpc: #PARENT
   client: # CLIENT
     maxSendSize: "4194304" # SENDS1
     maxRecvSize: "4194304" # RECVS1
->>>>>>> 2af887c3843599d9dde8ec02345eebc765681173
 
 functions:
   # namespace to run functions in
@@ -141,20 +114,10 @@ functions:
   tag: "latest"
   certificate: none
   mtls: none
-<<<<<<< HEAD
-=======
-  # certificate: hello-world3
-  # mtls: hello-world3
->>>>>>> 2af887c3843599d9dde8ec02345eebc765681173
 
   sidecar: "vorteil/sidecar"
 
   initPodImage:  "vorteil/direktiv-init-pod"
-<<<<<<< HEAD
-
-=======
-  # initPodCertificate: direktiv-cert3
->>>>>>> 2af887c3843599d9dde8ec02345eebc765681173
   initPodCertificate: none
 
   # number of controller replicas
