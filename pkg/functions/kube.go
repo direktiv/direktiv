@@ -1145,9 +1145,13 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 		tt := v1.TrafficTarget{
 			LatestRevision: &isLatest,
-			RevisionName:   tv[i].GetRevision(),
 			Percent:        tv[i].Percent,
 		}
+
+		if !isLatest {
+			tt.RevisionName = tv[i].GetRevision()
+		}
+
 		tr = append(tr, tt)
 	}
 
