@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -80,6 +81,16 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListFunctionsReque
 
 	for _, v := range del {
 		delete(grpcReq.Annotations, v)
+	}
+
+	// Handle if this was reached via the namespaced route
+	ns := mux.Vars(r)["namespace"]
+	if ns != "" {
+		if grpcReq.Annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
+		}
+
+		grpcReq.Annotations[functionsServiceNamespaceAnnotation] = ns
 	}
 
 	return grpcReq, nil
