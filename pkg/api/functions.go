@@ -123,6 +123,16 @@ func watchRequestObjectFromHTTPRequest(r *http.Request) (*grpc.FunctionsWatchReq
 		delete(grpcReq.Annotations, v)
 	}
 
+	// Handle if this was reached via the namespaced route
+	ns := mux.Vars(r)["namespace"]
+	if ns != "" {
+		if grpcReq.Annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
+		}
+
+		grpcReq.Annotations[functionsServiceNamespaceAnnotation] = ns
+	}
+
 	return grpcReq, nil
 }
 
@@ -635,6 +645,12 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		//TODO: done
 	}()
 
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
 	for {
 		resp, err := client.Recv()
 		if err != nil {
@@ -648,5 +664,7 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 			ErrResponse(w, err)
 			return
 		}
+
+		flusher.Flush()
 	}
 }
