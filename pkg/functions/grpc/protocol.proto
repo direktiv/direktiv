@@ -12,6 +12,7 @@ import "pkg/functions/grpc/registry-store.proto";
 
 import "pkg/functions/grpc/functions-get.proto";
 import "pkg/functions/grpc/functions-create.proto";
+import "pkg/functions/grpc/functions-watch.proto";
 import "pkg/functions/grpc/functions-list.proto";
 import "pkg/functions/grpc/functions-traffic.proto";
 import "pkg/functions/grpc/functions-update.proto";
@@ -33,4 +34,5 @@ service FunctionsService {
   rpc CreateFunctionsPod(CreatePodRequest) returns (CreatePodResponse)  {}
   rpc CancelFunctionsPod(CancelPodRequest) returns (google.protobuf.Empty)  {}
   rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}
+  rpc WatchFunctions(FunctionsWatchRequest) returns (stream FunctionsWatchResponse)  {}
 }

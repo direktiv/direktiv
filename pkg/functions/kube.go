@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
@@ -158,6 +159,83 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 
 	return &empty, nil
 
+}
+
+func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
+
+	annotations := in.GetAnnotations()
+
+	filtered := filterLabels(annotations)
+	if len(filtered) == 0 {
+		return fmt.Errorf("request labels are invalid")
+	}
+
+	labels := metav1.ListOptions{
+		LabelSelector: labels.Set(filtered).String(),
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	watch, err := cs.ServingV1().Services(functionsConfig.Namespace).Watch(context.Background(), labels)
+	if err != nil {
+		return fmt.Errorf("could start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watch.ResultChan():
+			s, ok := event.Object.(*v1.Service)
+			if !ok {
+				continue
+			}
+
+			mtx.Lock()
+			resp := new(igrpc.FunctionsWatchResponse)
+
+			var sz, scale int32
+			fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
+			fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
+			status, conds := statusFromCondition(s.Status.Conditions)
+			img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
+			n := s.Labels[ServiceHeaderName]
+			ns := s.Labels[ServiceHeaderNamespace]
+			wf := s.Labels[ServiceHeaderWorkflow]
+
+			info := &igrpc.BaseInfo{}
+			info.Name = &n
+			info.Namespace = &ns
+			info.Workflow = &wf
+			info.Size = &sz
+			info.MinScale = &scale
+			info.Image = &img
+			info.Cmd = &cmd
+
+			resp.Event = (*string)(&event.Type)
+			resp.Function = &igrpc.FunctionsInfo{
+				Info:       info,
+				Status:     &status,
+				Conditions: conds,
+			}
+			if err != nil {
+				return fmt.Errorf("failed json: %v", err)
+			}
+
+			err = out.Send(resp)
+			if err != nil {
+				return fmt.Errorf("failed to send event: %v", err)
+			}
+
+			mtx.Unlock()
+		case <-time.After(1 * time.Hour):
+			return fmt.Errorf("server event timed out")
+		case <-out.Context().Done():
+			log.Debug("CONNECTION CLOSED!!!!!!!!!!!!!!!!!!!!!!!")
+			return nil
+		}
+	}
 }
 
 func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,

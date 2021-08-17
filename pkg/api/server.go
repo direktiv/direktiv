@@ -158,6 +158,7 @@ func (s *Server) prepareRoutes() {
 
 	// Functions ..
 	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
+	s.Router().HandleFunc("/api/functions/watch/", s.handler.watchFunctions).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
@@ -230,7 +231,6 @@ func (s *Server) prepareRoutes() {
 
 	// jq Playground ...
 	s.Router().HandleFunc("/api/jq-playground", s.handler.jqPlayground).Methods(http.MethodPost).Name(RN_JQPlayground)
-
 }
 
 // Start starts the API server

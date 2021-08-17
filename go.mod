@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	entgo.io/ent v0.9.0
+	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
@@ -33,6 +34,7 @@ require (
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.3
+	github.com/vorteil/direktiv-apps/pkg v0.0.0-20210802230159-3c773c116635
 	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect

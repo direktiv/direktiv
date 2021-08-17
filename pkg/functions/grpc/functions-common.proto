@@ -25,3 +25,10 @@ message Condition {
 message FunctionsConfig {
 	optional int32 maxscale = 1;
 }
+
+message FunctionsInfo {
+	optional BaseInfo info = 1;
+	optional string status = 2;
+	repeated Condition conditions = 3;
+	optional string serviceName = 4;
+}

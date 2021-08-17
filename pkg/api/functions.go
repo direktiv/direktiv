@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -64,6 +65,36 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListFunctionsReque
 	}
 
 	grpcReq := new(grpc.ListFunctionsRequest)
+	grpcReq.Annotations = make(map[string]string)
+
+	grpcReq.Annotations[functionsServiceNameAnnotation] = rb.Name
+	grpcReq.Annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
+	grpcReq.Annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
+	grpcReq.Annotations[functionsServiceScopeAnnotation] = rb.Scope
+
+	del := make([]string, 0)
+	for k, v := range grpcReq.Annotations {
+		if v == "" {
+			del = append(del, k)
+		}
+	}
+
+	for _, v := range del {
+		delete(grpcReq.Annotations, v)
+	}
+
+	return grpcReq, nil
+}
+
+func watchRequestObjectFromHTTPRequest(r *http.Request) (*grpc.FunctionsWatchRequest, error) {
+
+	rb := new(listFunctionsRequest)
+	err := json.NewDecoder(r.Body).Decode(rb)
+	if err != nil {
+		return nil, err
+	}
+
+	grpcReq := new(grpc.FunctionsWatchRequest)
 	grpcReq.Annotations = make(map[string]string)
 
 	grpcReq.Annotations[functionsServiceNameAnnotation] = rb.Name
@@ -567,4 +598,45 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
+
+	grpcReq, err := watchRequestObjectFromHTTPRequest(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	client, err := h.s.functions.WatchFunctions(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		fmt.Println("Writing event")
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			ErrResponse(w, err)
+			return
+		}
+	}
 }
