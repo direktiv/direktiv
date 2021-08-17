@@ -44,10 +44,11 @@ supportPersist: false
 debug: false
 
 networkPolicies:
-  enabled: true
-  db: 192.168.0.0/16
-  serviceCidr: 10.43.0.0/16
-  podCidr: 10.42.0.0/16
+  enabled: false
+  # cidr for communication
+  db: 0.0.0.0/0
+  serviceCidr: 0.0.0.0/0
+  podCidr: 0.0.0.0/0
 
 ingress:
   host: ""
