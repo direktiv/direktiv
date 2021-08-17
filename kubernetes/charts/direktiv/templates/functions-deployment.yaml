@@ -8,11 +8,11 @@ spec:
   replicas: {{ .Values.functions.replicaCount }}
   selector:
     matchLabels:
-      {{- include "direktiv.selectorLabels" . | nindent 6 }}-functions
+      {{- include "direktiv.selectorLabelsFunctions" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "direktiv.selectorLabels" . | nindent 8 }}-functions
+        {{- include "direktiv.selectorLabelsFunctions" . | nindent 8 }}
     spec:
       securityContext:
         runAsNonRoot: true

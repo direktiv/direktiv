@@ -1,5 +1,5 @@
 pullPolicy: Always
 debug: "true"
 
-isolates:
+functions:
   podCleaner: false

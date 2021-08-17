@@ -266,6 +266,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 
 	labels := make(map[string]string)
 	labels["direktiv.io/action-id"] = in.GetActionID()
+	labels["direktiv-app"] = "direktiv"
 	labels["direktiv.io/job"] = "true"
 
 	labels[ServiceHeaderName] = info.GetName()
