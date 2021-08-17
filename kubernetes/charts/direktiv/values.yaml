@@ -43,7 +43,12 @@ supportPersist: false
 # enable debug
 debug: false
 
-useNetworkPolicies: false # enables/disables network policies2
+networkPolicies:
+  enabled: false
+  # cidr for communication
+  db: 0.0.0.0/0
+  serviceCidr: 0.0.0.0/0
+  podCidr: 0.0.0.0/0
 
 ingress:
   host: ""

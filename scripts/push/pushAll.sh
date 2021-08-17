@@ -7,5 +7,5 @@ source $dir/pushFlow.sh
 source $dir/pushSecrets.sh
 source $dir/pushSidecar.sh
 source $dir/pushInitPod.sh
-source $dir/pushIsolate.sh
+source $dir/pushFunctions.sh
 source $dir/pushUI.sh

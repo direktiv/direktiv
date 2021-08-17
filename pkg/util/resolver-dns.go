@@ -225,7 +225,7 @@ func (d *dnsResolver) watcher() {
 		timeout := 30
 		if d.addrsCount == 0 {
 			timeout = 5
-			log.Infof("%d: servers, timeout %d", d.addrsCount, timeout)
+			log.Infof("%d servers, timeout %d, %v:%v", d.addrsCount, timeout, d.host, d.port)
 		}
 
 		if err == nil {
