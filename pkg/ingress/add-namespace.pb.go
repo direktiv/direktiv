@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -73,8 +73,8 @@ type AddNamespaceResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name      *string                `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=createdAt,proto3,oneof" json:"createdAt,omitempty"`
+	Name      *string              `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	CreatedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=createdAt,proto3,oneof" json:"createdAt,omitempty"`
 }
 
 func (x *AddNamespaceResponse) Reset() {
@@ -116,7 +116,7 @@ func (x *AddNamespaceResponse) GetName() string {
 	return ""
 }
 
-func (x *AddNamespaceResponse) GetCreatedAt() *timestamppb.Timestamp {
+func (x *AddNamespaceResponse) GetCreatedAt() *timestamp.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
@@ -162,9 +162,9 @@ func file_pkg_ingress_add_namespace_proto_rawDescGZIP() []byte {
 
 var file_pkg_ingress_add_namespace_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_pkg_ingress_add_namespace_proto_goTypes = []interface{}{
-	(*AddNamespaceRequest)(nil),   // 0: ingress.AddNamespaceRequest
-	(*AddNamespaceResponse)(nil),  // 1: ingress.AddNamespaceResponse
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(*AddNamespaceRequest)(nil),  // 0: ingress.AddNamespaceRequest
+	(*AddNamespaceResponse)(nil), // 1: ingress.AddNamespaceResponse
+	(*timestamp.Timestamp)(nil),  // 2: google.protobuf.Timestamp
 }
 var file_pkg_ingress_add_namespace_proto_depIdxs = []int32{
 	2, // 0: ingress.AddNamespaceResponse.createdAt:type_name -> google.protobuf.Timestamp

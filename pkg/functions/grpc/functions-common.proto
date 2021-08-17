@@ -32,3 +32,10 @@ message FunctionsInfo {
 	repeated Condition conditions = 3;
 	optional string serviceName = 4;
 }
+
+message PodsInfo {
+	optional string name = 1;
+	optional string status = 2;
+	optional string serviceName = 3;
+	optional string serviceRevision = 4;
+}

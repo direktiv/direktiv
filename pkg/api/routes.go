@@ -44,6 +44,8 @@ const (
 	RN_JQPlayground                = "jqPlayground"
 	RN_ListServices                = "listServices"
 	RN_WatchServices               = "watchServices"
+	RN_WatchPods                   = "watchPods"
+	RN_ListPods                    = "listPods"
 	RN_DeleteServices              = "deleteServices"
 	RN_GetService                  = "getService"
 	RN_CreateService               = "createService"
@@ -104,4 +106,6 @@ var RouteNames = []string{
 	RN_DeleteService,
 	RN_DeleteRevision,
 	RN_GetWorkflowFunctions,
+	RN_WatchPods,
+	RN_ListPods,
 }

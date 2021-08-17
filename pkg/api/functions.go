@@ -70,6 +70,7 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
 	annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
 	annotations[functionsServiceScopeAnnotation] = rb.Scope
+	annotations[functionsServiceAppAnnotation] = rb.App
 
 	del := make([]string, 0)
 	for k, v := range annotations {
@@ -596,11 +597,89 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	grpcReq := grpc.FunctionsWatchRequest{
+	grpcReq := grpc.WatchFunctionsRequest{
 		Annotations: a,
 	}
 
 	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		fmt.Println("Writing event")
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		flusher.Flush()
+	}
+}
+
+func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
+
+	a, err := getFunctionAnnotations(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := grpc.ListPodsRequest{
+		Annotations: a,
+	}
+
+	resp, err := h.s.functions.ListPods(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		ErrResponse(w, err)
+		return
+	}
+}
+
+func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
+
+	a, err := getFunctionAnnotations(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := grpc.WatchPodsRequest{
+		Annotations: a,
+	}
+
+	client, err := h.s.functions.WatchPods(r.Context(), &grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return

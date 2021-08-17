@@ -159,6 +159,8 @@ func (s *Server) prepareRoutes() {
 	// Functions ..
 	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/functions/watch/", s.handler.watchFunctions).Methods(http.MethodPost).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
+	s.Router().HandleFunc("/api/functions/pods/watch/", s.handler.watchPods).Methods(http.MethodPost).Name(RN_WatchPods)
 	s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
@@ -169,6 +171,8 @@ func (s *Server) prepareRoutes() {
 
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/watch/", s.handler.watchFunctions).Methods(http.MethodPost).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/pods/watch/", s.handler.watchPods).Methods(http.MethodPost).Name(RN_WatchPods)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)

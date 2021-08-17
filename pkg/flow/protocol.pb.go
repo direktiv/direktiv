@@ -7,9 +7,9 @@
 package flow
 
 import (
+	empty "github.com/golang/protobuf/ptypes/empty"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 )
 
@@ -110,7 +110,7 @@ var file_pkg_flow_protocol_proto_goTypes = []interface{}{
 	(*SetWorkflowVariableRequest)(nil),   // 6: flow.SetWorkflowVariableRequest
 	(*SetInstanceVariableRequest)(nil),   // 7: flow.SetInstanceVariableRequest
 	(*ActionLogRequest)(nil),             // 8: flow.ActionLogRequest
-	(*emptypb.Empty)(nil),                // 9: google.protobuf.Empty
+	(*empty.Empty)(nil),                  // 9: google.protobuf.Empty
 	(*GetNamespaceVariableResponse)(nil), // 10: flow.GetNamespaceVariableResponse
 	(*GetWorkflowVariableResponse)(nil),  // 11: flow.GetWorkflowVariableResponse
 	(*GetInstanceVariableResponse)(nil),  // 12: flow.GetInstanceVariableResponse

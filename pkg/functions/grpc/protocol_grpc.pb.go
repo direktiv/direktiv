@@ -32,7 +32,9 @@ type FunctionsServiceClient interface {
 	CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error)
 	CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	WatchFunctions(ctx context.Context, in *FunctionsWatchRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
+	WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
+	WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error)
+	ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error)
 }
 
 type functionsServiceClient struct {
@@ -160,7 +162,7 @@ func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *DeleteR
 	return out, nil
 }
 
-func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *FunctionsWatchRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error) {
+func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[0], "/grpc.FunctionsService/WatchFunctions", opts...)
 	if err != nil {
 		return nil, err
@@ -176,7 +178,7 @@ func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *Functio
 }
 
 type FunctionsService_WatchFunctionsClient interface {
-	Recv() (*FunctionsWatchResponse, error)
+	Recv() (*WatchFunctionsResponse, error)
 	grpc.ClientStream
 }
 
@@ -184,12 +186,53 @@ type functionsServiceWatchFunctionsClient struct {
 	grpc.ClientStream
 }
 
-func (x *functionsServiceWatchFunctionsClient) Recv() (*FunctionsWatchResponse, error) {
-	m := new(FunctionsWatchResponse)
+func (x *functionsServiceWatchFunctionsClient) Recv() (*WatchFunctionsResponse, error) {
+	m := new(WatchFunctionsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *functionsServiceClient) WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[1], "/grpc.FunctionsService/WatchPods", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &functionsServiceWatchPodsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type FunctionsService_WatchPodsClient interface {
+	Recv() (*WatchPodsResponse, error)
+	grpc.ClientStream
+}
+
+type functionsServiceWatchPodsClient struct {
+	grpc.ClientStream
+}
+
+func (x *functionsServiceWatchPodsClient) Recv() (*WatchPodsResponse, error) {
+	m := new(WatchPodsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error) {
+	out := new(ListPodsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ListPods", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // FunctionsServiceServer is the server API for FunctionsService service.
@@ -209,7 +252,9 @@ type FunctionsServiceServer interface {
 	CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error)
 	CancelFunctionsPod(context.Context, *CancelPodRequest) (*empty.Empty, error)
 	DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error)
-	WatchFunctions(*FunctionsWatchRequest, FunctionsService_WatchFunctionsServer) error
+	WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error
+	WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error
+	ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error)
 	mustEmbedUnimplementedFunctionsServiceServer()
 }
 
@@ -256,8 +301,14 @@ func (UnimplementedFunctionsServiceServer) CancelFunctionsPod(context.Context, *
 func (UnimplementedFunctionsServiceServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRevision not implemented")
 }
-func (UnimplementedFunctionsServiceServer) WatchFunctions(*FunctionsWatchRequest, FunctionsService_WatchFunctionsServer) error {
+func (UnimplementedFunctionsServiceServer) WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchFunctions not implemented")
+}
+func (UnimplementedFunctionsServiceServer) WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchPods not implemented")
+}
+func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPods not implemented")
 }
 func (UnimplementedFunctionsServiceServer) mustEmbedUnimplementedFunctionsServiceServer() {}
 
@@ -507,7 +558,7 @@ func _FunctionsService_DeleteRevision_Handler(srv interface{}, ctx context.Conte
 }
 
 func _FunctionsService_WatchFunctions_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(FunctionsWatchRequest)
+	m := new(WatchFunctionsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -515,7 +566,7 @@ func _FunctionsService_WatchFunctions_Handler(srv interface{}, stream grpc.Serve
 }
 
 type FunctionsService_WatchFunctionsServer interface {
-	Send(*FunctionsWatchResponse) error
+	Send(*WatchFunctionsResponse) error
 	grpc.ServerStream
 }
 
@@ -523,8 +574,47 @@ type functionsServiceWatchFunctionsServer struct {
 	grpc.ServerStream
 }
 
-func (x *functionsServiceWatchFunctionsServer) Send(m *FunctionsWatchResponse) error {
+func (x *functionsServiceWatchFunctionsServer) Send(m *WatchFunctionsResponse) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _FunctionsService_WatchPods_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchPodsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FunctionsServiceServer).WatchPods(m, &functionsServiceWatchPodsServer{stream})
+}
+
+type FunctionsService_WatchPodsServer interface {
+	Send(*WatchPodsResponse) error
+	grpc.ServerStream
+}
+
+type functionsServiceWatchPodsServer struct {
+	grpc.ServerStream
+}
+
+func (x *functionsServiceWatchPodsServer) Send(m *WatchPodsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPodsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).ListPods(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.FunctionsService/ListPods",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).ListPods(ctx, req.(*ListPodsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // FunctionsService_ServiceDesc is the grpc.ServiceDesc for FunctionsService service.
@@ -586,11 +676,20 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteRevision",
 			Handler:    _FunctionsService_DeleteRevision_Handler,
 		},
+		{
+			MethodName: "ListPods",
+			Handler:    _FunctionsService_ListPods_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "WatchFunctions",
 			Handler:       _FunctionsService_WatchFunctions_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "WatchPods",
+			Handler:       _FunctionsService_WatchPods_Handler,
 			ServerStreams: true,
 		},
 	},

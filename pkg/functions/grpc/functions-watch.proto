@@ -6,11 +6,11 @@ option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message FunctionsWatchRequest {
+message WatchFunctionsRequest {
 	map<string, string> annotations = 1;
 }
 
-message FunctionsWatchResponse {
+message WatchFunctionsResponse {
 	optional string event = 1;
 	optional FunctionsInfo function = 2;
 }

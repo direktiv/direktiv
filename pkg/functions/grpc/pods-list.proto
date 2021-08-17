@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+
+import "pkg/functions/grpc/functions-common.proto";
+
+message ListPodsResponse {
+	repeated PodsInfo pods = 2;
+}
+
+message ListPodsRequest {
+	map<string, string> annotations = 1;
+}

@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	empty "github.com/golang/protobuf/ptypes/empty"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 )
 
@@ -287,7 +287,7 @@ var file_pkg_ingress_protocol_proto_goTypes = []interface{}{
 	(*GetNamespaceLogsResponse)(nil),        // 36: ingress.GetNamespaceLogsResponse
 	(*GetInstancesByWorkflowResponse)(nil),  // 37: ingress.GetInstancesByWorkflowResponse
 	(*GetWorkflowInstanceLogsResponse)(nil), // 38: ingress.GetWorkflowInstanceLogsResponse
-	(*emptypb.Empty)(nil),                   // 39: google.protobuf.Empty
+	(*empty.Empty)(nil),                     // 39: google.protobuf.Empty
 	(*GetWorkflowsResponse)(nil),            // 40: ingress.GetWorkflowsResponse
 	(*InvokeWorkflowResponse)(nil),          // 41: ingress.InvokeWorkflowResponse
 	(*UpdateWorkflowResponse)(nil),          // 42: ingress.UpdateWorkflowResponse

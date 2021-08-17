@@ -4,10 +4,10 @@ package flow
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,15 +19,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DirektivFlowClient interface {
-	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Resume(ctx context.Context, in *ResumeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Resume(ctx context.Context, in *ResumeRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (DirektivFlow_GetNamespaceVariableClient, error)
 	GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (DirektivFlow_GetWorkflowVariableClient, error)
 	GetInstanceVariable(ctx context.Context, in *GetInstanceVariableRequest, opts ...grpc.CallOption) (DirektivFlow_GetInstanceVariableClient, error)
 	SetNamespaceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivFlow_SetNamespaceVariableClient, error)
 	SetWorkflowVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivFlow_SetWorkflowVariableClient, error)
 	SetInstanceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivFlow_SetInstanceVariableClient, error)
-	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type direktivFlowClient struct {
@@ -38,8 +38,8 @@ func NewDirektivFlowClient(cc grpc.ClientConnInterface) DirektivFlowClient {
 	return &direktivFlowClient{cc}
 }
 
-func (c *direktivFlowClient) ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *direktivFlowClient) ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/ReportActionResults", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -47,8 +47,8 @@ func (c *direktivFlowClient) ReportActionResults(ctx context.Context, in *Report
 	return out, nil
 }
 
-func (c *direktivFlowClient) Resume(ctx context.Context, in *ResumeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *direktivFlowClient) Resume(ctx context.Context, in *ResumeRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/Resume", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func (c *direktivFlowClient) SetNamespaceVariable(ctx context.Context, opts ...g
 
 type DirektivFlow_SetNamespaceVariableClient interface {
 	Send(*SetNamespaceVariableRequest) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	CloseAndRecv() (*empty.Empty, error)
 	grpc.ClientStream
 }
 
@@ -175,11 +175,11 @@ func (x *direktivFlowSetNamespaceVariableClient) Send(m *SetNamespaceVariableReq
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *direktivFlowSetNamespaceVariableClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *direktivFlowSetNamespaceVariableClient) CloseAndRecv() (*empty.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(emptypb.Empty)
+	m := new(empty.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (c *direktivFlowClient) SetWorkflowVariable(ctx context.Context, opts ...gr
 
 type DirektivFlow_SetWorkflowVariableClient interface {
 	Send(*SetWorkflowVariableRequest) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	CloseAndRecv() (*empty.Empty, error)
 	grpc.ClientStream
 }
 
@@ -209,11 +209,11 @@ func (x *direktivFlowSetWorkflowVariableClient) Send(m *SetWorkflowVariableReque
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *direktivFlowSetWorkflowVariableClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *direktivFlowSetWorkflowVariableClient) CloseAndRecv() (*empty.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(emptypb.Empty)
+	m := new(empty.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func (c *direktivFlowClient) SetInstanceVariable(ctx context.Context, opts ...gr
 
 type DirektivFlow_SetInstanceVariableClient interface {
 	Send(*SetInstanceVariableRequest) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	CloseAndRecv() (*empty.Empty, error)
 	grpc.ClientStream
 }
 
@@ -243,19 +243,19 @@ func (x *direktivFlowSetInstanceVariableClient) Send(m *SetInstanceVariableReque
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *direktivFlowSetInstanceVariableClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *direktivFlowSetInstanceVariableClient) CloseAndRecv() (*empty.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(emptypb.Empty)
+	m := new(empty.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *direktivFlowClient) ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *direktivFlowClient) ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/flow.DirektivFlow/ActionLog", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -267,15 +267,15 @@ func (c *direktivFlowClient) ActionLog(ctx context.Context, in *ActionLogRequest
 // All implementations must embed UnimplementedDirektivFlowServer
 // for forward compatibility
 type DirektivFlowServer interface {
-	ReportActionResults(context.Context, *ReportActionResultsRequest) (*emptypb.Empty, error)
-	Resume(context.Context, *ResumeRequest) (*emptypb.Empty, error)
+	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
+	Resume(context.Context, *ResumeRequest) (*empty.Empty, error)
 	GetNamespaceVariable(*GetNamespaceVariableRequest, DirektivFlow_GetNamespaceVariableServer) error
 	GetWorkflowVariable(*GetWorkflowVariableRequest, DirektivFlow_GetWorkflowVariableServer) error
 	GetInstanceVariable(*GetInstanceVariableRequest, DirektivFlow_GetInstanceVariableServer) error
 	SetNamespaceVariable(DirektivFlow_SetNamespaceVariableServer) error
 	SetWorkflowVariable(DirektivFlow_SetWorkflowVariableServer) error
 	SetInstanceVariable(DirektivFlow_SetInstanceVariableServer) error
-	ActionLog(context.Context, *ActionLogRequest) (*emptypb.Empty, error)
+	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedDirektivFlowServer()
 }
 
@@ -283,10 +283,10 @@ type DirektivFlowServer interface {
 type UnimplementedDirektivFlowServer struct {
 }
 
-func (UnimplementedDirektivFlowServer) ReportActionResults(context.Context, *ReportActionResultsRequest) (*emptypb.Empty, error) {
+func (UnimplementedDirektivFlowServer) ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReportActionResults not implemented")
 }
-func (UnimplementedDirektivFlowServer) Resume(context.Context, *ResumeRequest) (*emptypb.Empty, error) {
+func (UnimplementedDirektivFlowServer) Resume(context.Context, *ResumeRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Resume not implemented")
 }
 func (UnimplementedDirektivFlowServer) GetNamespaceVariable(*GetNamespaceVariableRequest, DirektivFlow_GetNamespaceVariableServer) error {
@@ -307,7 +307,7 @@ func (UnimplementedDirektivFlowServer) SetWorkflowVariable(DirektivFlow_SetWorkf
 func (UnimplementedDirektivFlowServer) SetInstanceVariable(DirektivFlow_SetInstanceVariableServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetInstanceVariable not implemented")
 }
-func (UnimplementedDirektivFlowServer) ActionLog(context.Context, *ActionLogRequest) (*emptypb.Empty, error) {
+func (UnimplementedDirektivFlowServer) ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActionLog not implemented")
 }
 func (UnimplementedDirektivFlowServer) mustEmbedUnimplementedDirektivFlowServer() {}
@@ -427,7 +427,7 @@ func _DirektivFlow_SetNamespaceVariable_Handler(srv interface{}, stream grpc.Ser
 }
 
 type DirektivFlow_SetNamespaceVariableServer interface {
-	SendAndClose(*emptypb.Empty) error
+	SendAndClose(*empty.Empty) error
 	Recv() (*SetNamespaceVariableRequest, error)
 	grpc.ServerStream
 }
@@ -436,7 +436,7 @@ type direktivFlowSetNamespaceVariableServer struct {
 	grpc.ServerStream
 }
 
-func (x *direktivFlowSetNamespaceVariableServer) SendAndClose(m *emptypb.Empty) error {
+func (x *direktivFlowSetNamespaceVariableServer) SendAndClose(m *empty.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -453,7 +453,7 @@ func _DirektivFlow_SetWorkflowVariable_Handler(srv interface{}, stream grpc.Serv
 }
 
 type DirektivFlow_SetWorkflowVariableServer interface {
-	SendAndClose(*emptypb.Empty) error
+	SendAndClose(*empty.Empty) error
 	Recv() (*SetWorkflowVariableRequest, error)
 	grpc.ServerStream
 }
@@ -462,7 +462,7 @@ type direktivFlowSetWorkflowVariableServer struct {
 	grpc.ServerStream
 }
 
-func (x *direktivFlowSetWorkflowVariableServer) SendAndClose(m *emptypb.Empty) error {
+func (x *direktivFlowSetWorkflowVariableServer) SendAndClose(m *empty.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -479,7 +479,7 @@ func _DirektivFlow_SetInstanceVariable_Handler(srv interface{}, stream grpc.Serv
 }
 
 type DirektivFlow_SetInstanceVariableServer interface {
-	SendAndClose(*emptypb.Empty) error
+	SendAndClose(*empty.Empty) error
 	Recv() (*SetInstanceVariableRequest, error)
 	grpc.ServerStream
 }
@@ -488,7 +488,7 @@ type direktivFlowSetInstanceVariableServer struct {
 	grpc.ServerStream
 }
 
-func (x *direktivFlowSetInstanceVariableServer) SendAndClose(m *emptypb.Empty) error {
+func (x *direktivFlowSetInstanceVariableServer) SendAndClose(m *empty.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 

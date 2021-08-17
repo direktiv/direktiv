@@ -115,6 +115,85 @@ func (is *functionsServer) GetFunction(ctx context.Context,
 
 }
 
+// ListPods returns pods based on label filter
+func (is *functionsServer) ListPods(ctx context.Context,
+	in *igrpc.ListPodsRequest) (*igrpc.ListPodsResponse, error) {
+
+	var resp igrpc.ListPodsResponse
+
+	log.Debugf("list pods %v", in.GetAnnotations())
+
+	items, err := listPods(in.GetAnnotations())
+	if err != nil {
+		return &resp, err
+	}
+
+	resp.Pods = items
+	return &resp, nil
+}
+
+func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
+
+	annotations := in.GetAnnotations()
+
+	filtered := filterLabels(annotations)
+	if len(filtered) == 0 {
+		return fmt.Errorf("request labels are invalid")
+	}
+
+	labels := metav1.ListOptions{
+		LabelSelector: labels.Set(filtered).String(),
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), labels)
+	if err != nil {
+		return fmt.Errorf("could start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watch.ResultChan():
+			p, ok := event.Object.(*corev1.Pod)
+			if !ok {
+				continue
+			}
+
+			svc := p.Labels["serving.knative.dev/service"]
+			srev := p.Labels["serving.knative.dev/revision"]
+
+			pod := igrpc.PodsInfo{
+				Name:            &p.Name,
+				Status:          (*string)(&p.Status.Phase),
+				ServiceName:     &svc,
+				ServiceRevision: &srev,
+			}
+
+			mtx.Lock()
+			resp := igrpc.WatchPodsResponse{
+				Event: (*string)(&event.Type),
+				Pod:   &pod,
+			}
+
+			err = out.Send(&resp)
+			if err != nil {
+				return fmt.Errorf("failed to send event: %v", err)
+			}
+
+			mtx.Unlock()
+		case <-time.After(1 * time.Hour):
+			return fmt.Errorf("server event timed out")
+		case <-out.Context().Done():
+			log.Debug("server event connection closed")
+			return nil
+		}
+	}
+}
+
 // ListFunctionss returns isoaltes based on label filter
 func (is *functionsServer) ListFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*igrpc.ListFunctionsResponse, error) {
@@ -161,7 +240,7 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 
 }
 
-func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
+func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
 
 	annotations := in.GetAnnotations()
 
@@ -194,7 +273,7 @@ func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchRequest, out i
 
 			mtx.Lock()
 			status, conds := statusFromCondition(s.Status.Conditions)
-			resp := igrpc.FunctionsWatchResponse{
+			resp := igrpc.WatchFunctionsResponse{
 				Event: (*string)(&event.Type),
 				Function: &igrpc.FunctionsInfo{
 					Info:       serviceBaseInfo(s),
@@ -408,6 +487,49 @@ func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInf
 			ServiceName: &svc.Name,
 			Status:      &status,
 			Conditions:  conds,
+		}
+
+		b = append(b, ii)
+	}
+
+	return b, nil
+}
+
+func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
+
+	var b []*igrpc.PodsInfo
+
+	filtered := filterLabels(annotations)
+	if len(filtered) == 0 {
+		return b, fmt.Errorf("request labels are invalid")
+	}
+
+	log.Debugf("list annotations: %s", labels.Set(filtered).String())
+
+	cs, err := getClientSet()
+	if err != nil {
+		log.Errorf("error getting clientset for knative: %v", err)
+		return b, err
+	}
+
+	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
+	l, err := cs.CoreV1().Pods(functionsConfig.Namespace).List(context.Background(), lo)
+
+	if err != nil {
+		log.Errorf("error getting functions list: %v", err)
+		return b, err
+	}
+
+	for i := range l.Items {
+
+		pod := l.Items[i]
+		sn := pod.Labels["serving.knative.dev/service"]
+		sr := pod.Labels["serving.knative.dev/revision"]
+		ii := &igrpc.PodsInfo{
+			Name:            &pod.Name,
+			Status:          (*string)(&pod.Status.Phase),
+			ServiceName:     &sn,
+			ServiceRevision: &sr,
 		}
 
 		b = append(b, ii)
