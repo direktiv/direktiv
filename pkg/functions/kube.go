@@ -193,37 +193,17 @@ func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchRequest, out i
 			}
 
 			mtx.Lock()
-			resp := new(igrpc.FunctionsWatchResponse)
-
-			var sz, scale int32
-			fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
-			fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
 			status, conds := statusFromCondition(s.Status.Conditions)
-			img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
-			n := s.Labels[ServiceHeaderName]
-			ns := s.Labels[ServiceHeaderNamespace]
-			wf := s.Labels[ServiceHeaderWorkflow]
-
-			info := &igrpc.BaseInfo{}
-			info.Name = &n
-			info.Namespace = &ns
-			info.Workflow = &wf
-			info.Size = &sz
-			info.MinScale = &scale
-			info.Image = &img
-			info.Cmd = &cmd
-
-			resp.Event = (*string)(&event.Type)
-			resp.Function = &igrpc.FunctionsInfo{
-				Info:       info,
-				Status:     &status,
-				Conditions: conds,
-			}
-			if err != nil {
-				return fmt.Errorf("failed json: %v", err)
+			resp := igrpc.FunctionsWatchResponse{
+				Event: (*string)(&event.Type),
+				Function: &igrpc.FunctionsInfo{
+					Info:       serviceBaseInfo(s),
+					Status:     &status,
+					Conditions: conds,
+				},
 			}
 
-			err = out.Send(resp)
+			err = out.Send(&resp)
 			if err != nil {
 				return fmt.Errorf("failed to send event: %v", err)
 			}
@@ -232,7 +212,7 @@ func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchRequest, out i
 		case <-time.After(1 * time.Hour):
 			return fmt.Errorf("server event timed out")
 		case <-out.Context().Done():
-			log.Debug("CONNECTION CLOSED!!!!!!!!!!!!!!!!!!!!!!!")
+			log.Debug("server event connection closed")
 			return nil
 		}
 	}
@@ -299,6 +279,28 @@ func containerFromList(containers []corev1.Container) (string, string) {
 	}
 
 	return img, cmd
+}
+
+func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
+
+	var sz, scale int32
+	fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
+	fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
+	n := s.Labels[ServiceHeaderName]
+	ns := s.Labels[ServiceHeaderNamespace]
+	wf := s.Labels[ServiceHeaderWorkflow]
+	img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
+
+	info := &igrpc.BaseInfo{}
+	info.Name = &n
+	info.Namespace = &ns
+	info.Workflow = &wf
+	info.Size = &sz
+	info.MinScale = &scale
+	info.Image = &img
+	info.Cmd = &cmd
+
+	return info
 }
 
 func filterLabels(annotations map[string]string) map[string]string {
@@ -399,40 +401,16 @@ func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInf
 	for i := range l.Items {
 
 		svc := l.Items[i]
-		n := svc.Labels[ServiceHeaderName]
-		ns := svc.Labels[ServiceHeaderNamespace]
-		wf := svc.Labels[ServiceHeaderWorkflow]
-
-		info := &igrpc.BaseInfo{}
-
-		info.Name = &n
-		info.Namespace = &ns
-		info.Workflow = &wf
-
-		var sz, scale int32
-		fmt.Sscan(svc.Annotations[ServiceHeaderSize], &sz)
-		fmt.Sscan(svc.Annotations[ServiceHeaderScale], &scale)
-
-		info.Size = &sz
-		info.MinScale = &scale
-
 		status, conds := statusFromCondition(svc.Status.Conditions)
 
-		img, cmd := containerFromList(svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
-		info.Image = &img
-		info.Cmd = &cmd
-
-		svn := svc.Name
-
 		ii := &igrpc.FunctionsInfo{
-			Info:        info,
-			ServiceName: &svn,
+			Info:        serviceBaseInfo(&svc),
+			ServiceName: &svc.Name,
 			Status:      &status,
 			Conditions:  conds,
 		}
 
 		b = append(b, ii)
-
 	}
 
 	return b, nil

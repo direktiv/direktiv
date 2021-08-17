@@ -15,7 +15,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/ingress"
 )
 
-type listFunctionsRequest struct {
+type functionAnnotationsRequest struct {
 	Scope     string `json:"scope"`
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
@@ -56,84 +56,43 @@ func accepted(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListFunctionsRequest, error) {
+func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
-	rb := new(listFunctionsRequest)
+	rb := new(functionAnnotationsRequest)
 	err := json.NewDecoder(r.Body).Decode(rb)
 	if err != nil {
 		return nil, err
 	}
 
-	grpcReq := new(grpc.ListFunctionsRequest)
-	grpcReq.Annotations = make(map[string]string)
+	annotations := make(map[string]string)
 
-	grpcReq.Annotations[functionsServiceNameAnnotation] = rb.Name
-	grpcReq.Annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
-	grpcReq.Annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
-	grpcReq.Annotations[functionsServiceScopeAnnotation] = rb.Scope
+	annotations[functionsServiceNameAnnotation] = rb.Name
+	annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
+	annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
+	annotations[functionsServiceScopeAnnotation] = rb.Scope
 
 	del := make([]string, 0)
-	for k, v := range grpcReq.Annotations {
+	for k, v := range annotations {
 		if v == "" {
 			del = append(del, k)
 		}
 	}
 
 	for _, v := range del {
-		delete(grpcReq.Annotations, v)
+		delete(annotations, v)
 	}
 
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
-		if grpcReq.Annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
 			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
 		}
 
-		grpcReq.Annotations[functionsServiceNamespaceAnnotation] = ns
+		annotations[functionsServiceNamespaceAnnotation] = ns
 	}
 
-	return grpcReq, nil
-}
-
-func watchRequestObjectFromHTTPRequest(r *http.Request) (*grpc.FunctionsWatchRequest, error) {
-
-	rb := new(listFunctionsRequest)
-	err := json.NewDecoder(r.Body).Decode(rb)
-	if err != nil {
-		return nil, err
-	}
-
-	grpcReq := new(grpc.FunctionsWatchRequest)
-	grpcReq.Annotations = make(map[string]string)
-
-	grpcReq.Annotations[functionsServiceNameAnnotation] = rb.Name
-	grpcReq.Annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
-	grpcReq.Annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
-	grpcReq.Annotations[functionsServiceScopeAnnotation] = rb.Scope
-
-	del := make([]string, 0)
-	for k, v := range grpcReq.Annotations {
-		if v == "" {
-			del = append(del, k)
-		}
-	}
-
-	for _, v := range del {
-		delete(grpcReq.Annotations, v)
-	}
-
-	// Handle if this was reached via the namespaced route
-	ns := mux.Vars(r)["namespace"]
-	if ns != "" {
-		if grpcReq.Annotations[functionsServiceScopeAnnotation] == prefixGlobal {
-			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
-		}
-
-		grpcReq.Annotations[functionsServiceNamespaceAnnotation] = ns
-	}
-
-	return grpcReq, nil
+	return annotations, nil
 }
 
 func prepareFunctionsForResponse(functions []*grpc.FunctionsInfo) []*functionResponseObject {
@@ -173,14 +132,18 @@ func prepareFunctionsForResponse(functions []*grpc.FunctionsInfo) []*functionRes
 
 func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
 
-	grpcReq, err := listRequestObjectFromHTTPRequest(r)
+	a, err := getFunctionAnnotations(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	resp, err := h.s.functions.ListFunctions(r.Context(), grpcReq)
+	grpcReq := grpc.ListFunctionsRequest{
+		Annotations: a,
+	}
+
+	resp, err := h.s.functions.ListFunctions(r.Context(), &grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -202,15 +165,19 @@ func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
 
-	grpcReq, err := listRequestObjectFromHTTPRequest(r)
+	a, err := getFunctionAnnotations(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
+	grpcReq := grpc.ListFunctionsRequest{
+		Annotations: a,
+	}
+
 	// returns an empty response
-	_, err = h.s.functions.DeleteFunctions(r.Context(), grpcReq)
+	_, err = h.s.functions.DeleteFunctions(r.Context(), &grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -622,14 +589,18 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 
-	grpcReq, err := watchRequestObjectFromHTTPRequest(r)
+	a, err := getFunctionAnnotations(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	client, err := h.s.functions.WatchFunctions(r.Context(), grpcReq)
+	grpcReq := grpc.FunctionsWatchRequest{
+		Annotations: a,
+	}
+
+	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
