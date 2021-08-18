@@ -688,13 +688,15 @@ func (h *Handler) watchFunctionsV2(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println("Writing event")
-
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			fmt.Println("HELLO3")
-			ErrResponse(w, err)
+		b, err := json.Marshal(resp.Event)
+		if err != nil {
+			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
 			return
 		}
+
+		w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+		w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
+		fmt.Println("Writing event")
 
 		flusher.Flush()
 	}
@@ -726,6 +728,59 @@ func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
+
+	a, err := getFunctionAnnotations(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := grpc.WatchPodsRequest{
+		Annotations: a,
+	}
+
+	client, err := h.s.functions.WatchPods(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		fmt.Println("Writing event")
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			ErrResponse(w, err)
+			return
+		}
+
+		flusher.Flush()
+	}
+}
+
+func (h *Handler) watchPodsV2(w http.ResponseWriter, r *http.Request) {
 
 	a, err := getFunctionAnnotations(r)
 	if err != nil {
