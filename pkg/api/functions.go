@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -67,12 +68,6 @@ func accepted(w http.ResponseWriter) {
 
 func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
-	rb := new(functionAnnotationsRequest)
-	err := json.NewDecoder(r.Body).Decode(rb)
-	if err != nil {
-		return nil, err
-	}
-
 	annotations := make(map[string]string)
 
 	// Get function labels from url queries
@@ -82,12 +77,17 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		}
 	}
 
-	annotations[functionsServiceNameAnnotation] = rb.Name
-	annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
-	annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
-	annotations[functionsServiceScopeAnnotation] = rb.Scope
-
-	// load query params
+	// Get functions from body
+	rb := new(functionAnnotationsRequest)
+	err := json.NewDecoder(r.Body).Decode(rb)
+	if err != nil && err != io.EOF {
+		return nil, err
+	} else {
+		annotations[functionsServiceNameAnnotation] = rb.Name
+		annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
+		annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
+		annotations[functionsServiceScopeAnnotation] = rb.Scope
+	}
 
 	del := make([]string, 0)
 	for k, v := range annotations {
@@ -108,6 +108,7 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		}
 
 		annotations[functionsServiceNamespaceAnnotation] = ns
+		annotations[functionsServiceScopeAnnotation] = prefixNamespace
 	}
 
 	svc := mux.Vars(r)["serviceName"]
@@ -728,23 +729,26 @@ func (h *Handler) watchFunctionsV2(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 
+	fmt.Println("jon 1")
 	a, err := getFunctionAnnotations(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
-
+	fmt.Println("jon 2")
 	grpcReq := grpc.WatchFunctionsRequest{
 		Annotations: a,
 	}
+
+	fmt.Println("jon 3")
 
 	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
-
+	fmt.Println("jon 4")
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -754,7 +758,7 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 		<-client.Context().Done()
 		//TODO: done
 	}()
-
+	fmt.Println("jon 5")
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		ErrResponse(w, fmt.Errorf("streaming unsupported"))
@@ -766,18 +770,21 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		for {
+			fmt.Println("jon 6")
 			resp, err := client.Recv()
 			if err != nil {
 				errch <- fmt.Errorf("client failed: %w", err)
 				return
 			}
 
+			fmt.Println("jon 7")
 			b, err := json.Marshal(resp)
 			if err != nil {
 				errch <- fmt.Errorf("got bad data: %w", err)
 				return
 			}
 
+			fmt.Println("jon 8")
 			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
 			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
 			if err != nil {
@@ -785,12 +792,15 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			fmt.Println("jon 9")
 			flusher.Flush()
 			httpOk = true
 		}
 	}()
 
+	fmt.Println("jon 10")
 	err = <-errch
+	fmt.Printf("err = +%v", err)
 	if !httpOk {
 		ErrResponse(w, err)
 	}
