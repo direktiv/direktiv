@@ -750,31 +750,44 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		fmt.Println("HELLO1")
 		ErrResponse(w, fmt.Errorf("streaming unsupported"))
 		return
 	}
 
-	for {
-		resp, err := client.Recv()
-		if err != nil {
-			fmt.Println("HELLO2")
-			ErrResponse(w, err)
-			return
+	var httpOk bool
+	errch := make(chan error)
+
+	go func() {
+		for {
+			resp, err := client.Recv()
+			if err != nil {
+				errch <- fmt.Errorf("client failed: %w", err)
+				return
+			}
+
+			b, err := json.Marshal(resp)
+			if err != nil {
+				errch <- fmt.Errorf("got bad data: %w", err)
+				return
+			}
+
+			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
+			if err != nil {
+				errch <- fmt.Errorf("failed to write data: %w", err)
+				return
+			}
+
+			flusher.Flush()
+			httpOk = true
 		}
+	}()
 
-		b, err := json.Marshal(resp.Event)
-		if err != nil {
-			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
-			return
-		}
-
-		w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
-		w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
-		fmt.Println("Writing event")
-
-		flusher.Flush()
+	err = <-errch
+	if !httpOk {
+		ErrResponse(w, err)
 	}
+
 }
 
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
@@ -890,20 +903,38 @@ func (h *Handler) watchPodsV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for {
-		resp, err := client.Recv()
-		if err != nil {
-			ErrResponse(w, err)
-			return
+	var httpOk bool
+	errch := make(chan error)
+
+	go func() {
+		for {
+			resp, err := client.Recv()
+			if err != nil {
+				errch <- fmt.Errorf("client failed: %w", err)
+				return
+			}
+
+			b, err := json.Marshal(resp)
+			if err != nil {
+				errch <- fmt.Errorf("got bad data: %w", err)
+				return
+			}
+
+			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
+			if err != nil {
+				errch <- fmt.Errorf("failed to write data: %w", err)
+				return
+			}
+
+			flusher.Flush()
+			httpOk = true
 		}
+	}()
 
-		fmt.Println("Writing event")
-
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			ErrResponse(w, err)
-			return
-		}
-
-		flusher.Flush()
+	err = <-errch
+	if !httpOk {
+		ErrResponse(w, err)
 	}
+
 }
