@@ -631,13 +631,15 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println("Writing event")
-
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			fmt.Println("HELLO3")
-			ErrResponse(w, err)
+		b, err := json.Marshal(resp.Event)
+		if err != nil {
+			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
 			return
 		}
+
+		w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+		w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
+		fmt.Println("Writing event")
 
 		flusher.Flush()
 	}
