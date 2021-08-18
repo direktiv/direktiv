@@ -70,7 +70,6 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
 	annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
 	annotations[functionsServiceScopeAnnotation] = rb.Scope
-	annotations[functionsServiceAppAnnotation] = rb.App
 
 	del := make([]string, 0)
 	for k, v := range annotations {
@@ -619,6 +618,7 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
+		fmt.Println("HELLO1")
 		ErrResponse(w, fmt.Errorf("streaming unsupported"))
 		return
 	}
@@ -626,6 +626,7 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 	for {
 		resp, err := client.Recv()
 		if err != nil {
+			fmt.Println("HELLO2")
 			ErrResponse(w, err)
 			return
 		}
@@ -633,6 +634,62 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Writing event")
 
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			fmt.Println("HELLO3")
+			ErrResponse(w, err)
+			return
+		}
+
+		flusher.Flush()
+	}
+}
+
+func (h *Handler) watchFunctionsV2(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	ns := mux.Vars(r)["namespace"]
+
+	annotations[functionsServiceNamespaceAnnotation] = ns
+	annotations[functionsServiceScopeAnnotation] = "ns"
+
+	grpcReq := grpc.WatchFunctionsRequest{
+		Annotations: annotations,
+	}
+
+	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		fmt.Println("HELLO1")
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			fmt.Println("HELLO2")
+			ErrResponse(w, err)
+			return
+		}
+
+		fmt.Println("Writing event")
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			fmt.Println("HELLO3")
 			ErrResponse(w, err)
 			return
 		}
