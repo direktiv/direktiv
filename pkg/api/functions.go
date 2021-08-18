@@ -52,6 +52,13 @@ const (
 	prefixService   = "s"
 )
 
+var functionsQueryLabelMapping = map[string]string{
+	"scope":     functionsServiceScopeAnnotation,
+	"name":      functionsServiceNameAnnotation,
+	"namespace": functionsServiceNamespaceAnnotation,
+	"workflow":  functionsServiceWorkflowAnnotation,
+}
+
 func accepted(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -66,10 +73,19 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
 	annotations := make(map[string]string)
 
+	// Get function labels from url queries
+	for k, v := range r.URL.Query() {
+		if aLabel, ok := functionsQueryLabelMapping[k]; ok && len(v) > 0 {
+			annotations[aLabel] = v[0]
+		}
+	}
+
 	annotations[functionsServiceNameAnnotation] = rb.Name
 	annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
 	annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
 	annotations[functionsServiceScopeAnnotation] = rb.Scope
+
+	// load query params
 
 	del := make([]string, 0)
 	for k, v := range annotations {
@@ -655,6 +671,65 @@ func (h *Handler) watchFunctionsV2(w http.ResponseWriter, r *http.Request) {
 
 	grpcReq := grpc.WatchFunctionsRequest{
 		Annotations: annotations,
+	}
+
+	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		fmt.Println("HELLO1")
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			fmt.Println("HELLO2")
+			ErrResponse(w, err)
+			return
+		}
+
+		b, err := json.Marshal(resp.Function)
+		if err != nil {
+			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
+			return
+		}
+
+		// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+		fmt.Printf("writing: %s", fmt.Sprintf("event: %s\ndata: %s\n\n", *resp.Event, string(b)))
+		w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
+		fmt.Println("Writing event")
+
+		flusher.Flush()
+	}
+}
+
+func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
+
+	a, err := getFunctionAnnotations(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := grpc.WatchFunctionsRequest{
+		Annotations: a,
 	}
 
 	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
