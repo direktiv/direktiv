@@ -704,7 +704,7 @@ func (h *Handler) watchFunctionsV2(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		b, err := json.Marshal(resp.Function)
+		b, err := json.Marshal(resp)
 		if err != nil {
 			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
 			return
