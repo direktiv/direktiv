@@ -276,9 +276,10 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 			resp := igrpc.WatchFunctionsResponse{
 				Event: (*string)(&event.Type),
 				Function: &igrpc.FunctionsInfo{
-					Info:       serviceBaseInfo(s),
-					Status:     &status,
-					Conditions: conds,
+					Info:        serviceBaseInfo(s),
+					Status:      &status,
+					Conditions:  conds,
+					ServiceName: &s.Name,
 				},
 			}
 
