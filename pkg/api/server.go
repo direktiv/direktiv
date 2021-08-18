@@ -159,6 +159,8 @@ func (s *Server) prepareRoutes() {
 	// Watch
 	s.Router().HandleFunc("/api/watch/functions/", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
 	s.Router().HandleFunc("/api/watch/functions/pods/", s.handler.watchPodsV2).Methods(http.MethodGet).Name(RN_WatchPods)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/", s.handler.WatchRevisions).Methods(http.MethodGet).Name(RN_WatchPods)
 
 	// Functions ..
 	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)

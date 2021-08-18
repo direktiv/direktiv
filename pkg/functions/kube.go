@@ -283,6 +283,111 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 				},
 			}
 
+			// traffic map
+			tm := make(map[string]*int64)
+			for i := range s.Status.Traffic {
+				tt := s.Status.Traffic[i]
+				// sometimes knative routes between the same revisions
+				// in this case we just add the percents
+				if p, ok := tm[tt.RevisionName]; ok {
+					newp := *p + *tt.Percent
+					tm[tt.RevisionName] = &newp
+				} else {
+					tm[tt.RevisionName] = tt.Percent
+				}
+			}
+
+			resp.Traffic = make([]*igrpc.Traffic, 0)
+			for r, p := range tm {
+				resp.Traffic = append(resp.Traffic, &igrpc.Traffic{RevisionName: &r, Traffic: p})
+			}
+
+			err = out.Send(&resp)
+			if err != nil {
+				return fmt.Errorf("failed to send event: %v", err)
+			}
+
+			mtx.Unlock()
+		case <-time.After(1 * time.Hour):
+			return fmt.Errorf("server event timed out")
+		case <-out.Context().Done():
+			log.Debug("server event connection closed")
+			return nil
+		}
+	}
+}
+
+func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
+
+	if in.GetServiceName() == "" {
+		return fmt.Errorf("service name can not be nil")
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	l := map[string]string{
+		"serving.knative.dev/service": *in.ServiceName,
+	}
+
+	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+		LabelSelector: labels.Set(l).String(),
+	})
+
+	if err != nil {
+		return fmt.Errorf("could start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watch.ResultChan():
+			rev, ok := event.Object.(*v1.Revision)
+			if !ok {
+				continue
+			}
+
+			info := &igrpc.Revision{}
+
+			// size and scale
+			var sz, scale int32
+			var gen int64
+			fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
+			fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
+			fmt.Sscan(rev.Labels[generationHeader], &gen)
+
+			info.Size = &sz
+			info.MinScale = &scale
+			info.Generation = &gen
+
+			// set status
+			status, conds := statusFromCondition(rev.Status.Conditions)
+			info.Status = &status
+			info.Conditions = conds
+
+			img, cmd := containerFromList(rev.Spec.Containers)
+			info.Image = &img
+			info.Cmd = &cmd
+
+			// name
+			svn := rev.Name
+			info.Name = &svn
+
+			// replicas
+			info.ActualReplicas = int64(rev.Status.ActualReplicas)
+			info.DesiredReplicas = int64(rev.Status.DesiredReplicas)
+
+			// creation date
+			var t int64 = rev.CreationTimestamp.Unix()
+			info.Created = &t
+
+			mtx.Lock()
+			resp := igrpc.WatchRevisionsResponse{
+				Event:    (*string)(&event.Type),
+				Revision: info,
+			}
+
 			err = out.Send(&resp)
 			if err != nil {
 				return fmt.Errorf("failed to send event: %v", err)
@@ -953,6 +1058,10 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		// name
 		svn := rev.Name
 		info.Name = &svn
+
+		// replicas
+		info.ActualReplicas = int64(rev.Status.ActualReplicas)
+		info.DesiredReplicas = int64(rev.Status.DesiredReplicas)
 
 		// creation date
 		var t int64 = rev.CreationTimestamp.Unix()

@@ -34,6 +34,7 @@ type FunctionsServiceClient interface {
 	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
 	WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error)
+	WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error)
 	ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error)
 }
 
@@ -226,6 +227,38 @@ func (x *functionsServiceWatchPodsClient) Recv() (*WatchPodsResponse, error) {
 	return m, nil
 }
 
+func (c *functionsServiceClient) WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[2], "/grpc.FunctionsService/WatchRevisions", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &functionsServiceWatchRevisionsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type FunctionsService_WatchRevisionsClient interface {
+	Recv() (*WatchRevisionsResponse, error)
+	grpc.ClientStream
+}
+
+type functionsServiceWatchRevisionsClient struct {
+	grpc.ClientStream
+}
+
+func (x *functionsServiceWatchRevisionsClient) Recv() (*WatchRevisionsResponse, error) {
+	m := new(WatchRevisionsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error) {
 	out := new(ListPodsResponse)
 	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ListPods", in, out, opts...)
@@ -254,6 +287,7 @@ type FunctionsServiceServer interface {
 	DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error)
 	WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error
 	WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error
+	WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error
 	ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error)
 	mustEmbedUnimplementedFunctionsServiceServer()
 }
@@ -306,6 +340,9 @@ func (UnimplementedFunctionsServiceServer) WatchFunctions(*WatchFunctionsRequest
 }
 func (UnimplementedFunctionsServiceServer) WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchPods not implemented")
+}
+func (UnimplementedFunctionsServiceServer) WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchRevisions not implemented")
 }
 func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPods not implemented")
@@ -599,6 +636,27 @@ func (x *functionsServiceWatchPodsServer) Send(m *WatchPodsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _FunctionsService_WatchRevisions_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchRevisionsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FunctionsServiceServer).WatchRevisions(m, &functionsServiceWatchRevisionsServer{stream})
+}
+
+type FunctionsService_WatchRevisionsServer interface {
+	Send(*WatchRevisionsResponse) error
+	grpc.ServerStream
+}
+
+type functionsServiceWatchRevisionsServer struct {
+	grpc.ServerStream
+}
+
+func (x *functionsServiceWatchRevisionsServer) Send(m *WatchRevisionsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPodsRequest)
 	if err := dec(in); err != nil {
@@ -690,6 +748,11 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "WatchPods",
 			Handler:       _FunctionsService_WatchPods_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "WatchRevisions",
+			Handler:       _FunctionsService_WatchRevisions_Handler,
 			ServerStreams: true,
 		},
 	},

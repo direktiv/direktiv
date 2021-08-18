@@ -45,6 +45,7 @@ const (
 	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
 	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
 	functionsServiceScopeAnnotation     = "direktiv.io/scope"
+	functionsServiceKnativeName         = "serving.knative.dev/service"
 
 	prefixWorkflow  = "w"
 	prefixNamespace = "ns"
@@ -57,6 +58,7 @@ var functionsQueryLabelMapping = map[string]string{
 	"name":      functionsServiceNameAnnotation,
 	"namespace": functionsServiceNamespaceAnnotation,
 	"workflow":  functionsServiceWorkflowAnnotation,
+	"service":   functionsServiceKnativeName,
 }
 
 func accepted(w http.ResponseWriter) {
@@ -106,6 +108,11 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		}
 
 		annotations[functionsServiceNamespaceAnnotation] = ns
+	}
+
+	svc := mux.Vars(r)["serviceName"]
+	if svc != "" {
+		annotations[functionsServiceKnativeName] = svc
 	}
 
 	return annotations, nil
@@ -733,6 +740,70 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
+	var httpOk bool
+	errch := make(chan error)
+
+	go func() {
+		for {
+			resp, err := client.Recv()
+			if err != nil {
+				errch <- fmt.Errorf("client failed: %w", err)
+				return
+			}
+
+			b, err := json.Marshal(resp)
+			if err != nil {
+				errch <- fmt.Errorf("got bad data: %w", err)
+				return
+			}
+
+			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
+			if err != nil {
+				errch <- fmt.Errorf("failed to write data: %w", err)
+				return
+			}
+
+			flusher.Flush()
+			httpOk = true
+		}
+	}()
+
+	err = <-errch
+	if !httpOk {
+		ErrResponse(w, err)
+	}
+
+}
+
+func (h *Handler) WatchRevisions(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["serviceName"]
+	grpcReq := new(grpc.WatchRevisionsRequest)
+	grpcReq.ServiceName = &sn
+
+	client, err := h.s.functions.WatchRevisions(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return

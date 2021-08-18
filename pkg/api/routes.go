@@ -44,6 +44,7 @@ const (
 	RN_JQPlayground                = "jqPlayground"
 	RN_ListServices                = "listServices"
 	RN_WatchServices               = "watchServices"
+	RN_WatchRevisions              = "watchRevisions"
 	RN_WatchPods                   = "watchPods"
 	RN_ListPods                    = "listPods"
 	RN_DeleteServices              = "deleteServices"
@@ -108,4 +109,5 @@ var RouteNames = []string{
 	RN_GetWorkflowFunctions,
 	RN_WatchPods,
 	RN_ListPods,
+	RN_WatchRevisions,
 }

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.26.0
 // 	protoc        v3.17.3
-// source: pkg/functions/grpc/pods-watch.proto
+// source: pkg/functions/grpc/watch-pods.proto
 
 package grpc
 
@@ -32,7 +32,7 @@ type WatchPodsResponse struct {
 func (x *WatchPodsResponse) Reset() {
 	*x = WatchPodsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_functions_grpc_pods_watch_proto_msgTypes[0]
+		mi := &file_pkg_functions_grpc_watch_pods_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45,7 +45,7 @@ func (x *WatchPodsResponse) String() string {
 func (*WatchPodsResponse) ProtoMessage() {}
 
 func (x *WatchPodsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_functions_grpc_pods_watch_proto_msgTypes[0]
+	mi := &file_pkg_functions_grpc_watch_pods_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +58,7 @@ func (x *WatchPodsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchPodsResponse.ProtoReflect.Descriptor instead.
 func (*WatchPodsResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_functions_grpc_pods_watch_proto_rawDescGZIP(), []int{0}
+	return file_pkg_functions_grpc_watch_pods_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *WatchPodsResponse) GetEvent() string {
@@ -86,7 +86,7 @@ type WatchPodsRequest struct {
 func (x *WatchPodsRequest) Reset() {
 	*x = WatchPodsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_functions_grpc_pods_watch_proto_msgTypes[1]
+		mi := &file_pkg_functions_grpc_watch_pods_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -99,7 +99,7 @@ func (x *WatchPodsRequest) String() string {
 func (*WatchPodsRequest) ProtoMessage() {}
 
 func (x *WatchPodsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_functions_grpc_pods_watch_proto_msgTypes[1]
+	mi := &file_pkg_functions_grpc_watch_pods_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,7 +112,7 @@ func (x *WatchPodsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchPodsRequest.ProtoReflect.Descriptor instead.
 func (*WatchPodsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_functions_grpc_pods_watch_proto_rawDescGZIP(), []int{1}
+	return file_pkg_functions_grpc_watch_pods_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *WatchPodsRequest) GetAnnotations() map[string]string {
@@ -122,11 +122,11 @@ func (x *WatchPodsRequest) GetAnnotations() map[string]string {
 	return nil
 }
 
-var File_pkg_functions_grpc_pods_watch_proto protoreflect.FileDescriptor
+var File_pkg_functions_grpc_watch_pods_proto protoreflect.FileDescriptor
 
-var file_pkg_functions_grpc_pods_watch_proto_rawDesc = []byte{
+var file_pkg_functions_grpc_watch_pods_proto_rawDesc = []byte{
 	0x0a, 0x23, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f,
-	0x67, 0x72, 0x70, 0x63, 0x2f, 0x70, 0x6f, 0x64, 0x73, 0x2d, 0x77, 0x61, 0x74, 0x63, 0x68, 0x2e,
+	0x67, 0x72, 0x70, 0x63, 0x2f, 0x77, 0x61, 0x74, 0x63, 0x68, 0x2d, 0x70, 0x6f, 0x64, 0x73, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x67, 0x72, 0x70, 0x63, 0x1a, 0x29, 0x70, 0x6b, 0x67,
 	0x2f, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f,
 	0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2d, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
@@ -154,25 +154,25 @@ var file_pkg_functions_grpc_pods_watch_proto_rawDesc = []byte{
 }
 
 var (
-	file_pkg_functions_grpc_pods_watch_proto_rawDescOnce sync.Once
-	file_pkg_functions_grpc_pods_watch_proto_rawDescData = file_pkg_functions_grpc_pods_watch_proto_rawDesc
+	file_pkg_functions_grpc_watch_pods_proto_rawDescOnce sync.Once
+	file_pkg_functions_grpc_watch_pods_proto_rawDescData = file_pkg_functions_grpc_watch_pods_proto_rawDesc
 )
 
-func file_pkg_functions_grpc_pods_watch_proto_rawDescGZIP() []byte {
-	file_pkg_functions_grpc_pods_watch_proto_rawDescOnce.Do(func() {
-		file_pkg_functions_grpc_pods_watch_proto_rawDescData = protoimpl.X.CompressGZIP(file_pkg_functions_grpc_pods_watch_proto_rawDescData)
+func file_pkg_functions_grpc_watch_pods_proto_rawDescGZIP() []byte {
+	file_pkg_functions_grpc_watch_pods_proto_rawDescOnce.Do(func() {
+		file_pkg_functions_grpc_watch_pods_proto_rawDescData = protoimpl.X.CompressGZIP(file_pkg_functions_grpc_watch_pods_proto_rawDescData)
 	})
-	return file_pkg_functions_grpc_pods_watch_proto_rawDescData
+	return file_pkg_functions_grpc_watch_pods_proto_rawDescData
 }
 
-var file_pkg_functions_grpc_pods_watch_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_pkg_functions_grpc_pods_watch_proto_goTypes = []interface{}{
+var file_pkg_functions_grpc_watch_pods_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_pkg_functions_grpc_watch_pods_proto_goTypes = []interface{}{
 	(*WatchPodsResponse)(nil), // 0: grpc.WatchPodsResponse
 	(*WatchPodsRequest)(nil),  // 1: grpc.WatchPodsRequest
 	nil,                       // 2: grpc.WatchPodsRequest.AnnotationsEntry
 	(*PodsInfo)(nil),          // 3: grpc.PodsInfo
 }
-var file_pkg_functions_grpc_pods_watch_proto_depIdxs = []int32{
+var file_pkg_functions_grpc_watch_pods_proto_depIdxs = []int32{
 	3, // 0: grpc.WatchPodsResponse.pod:type_name -> grpc.PodsInfo
 	2, // 1: grpc.WatchPodsRequest.annotations:type_name -> grpc.WatchPodsRequest.AnnotationsEntry
 	2, // [2:2] is the sub-list for method output_type
@@ -182,14 +182,14 @@ var file_pkg_functions_grpc_pods_watch_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_pkg_functions_grpc_pods_watch_proto_init() }
-func file_pkg_functions_grpc_pods_watch_proto_init() {
-	if File_pkg_functions_grpc_pods_watch_proto != nil {
+func init() { file_pkg_functions_grpc_watch_pods_proto_init() }
+func file_pkg_functions_grpc_watch_pods_proto_init() {
+	if File_pkg_functions_grpc_watch_pods_proto != nil {
 		return
 	}
 	file_pkg_functions_grpc_functions_common_proto_init()
 	if !protoimpl.UnsafeEnabled {
-		file_pkg_functions_grpc_pods_watch_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_functions_grpc_watch_pods_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WatchPodsResponse); i {
 			case 0:
 				return &v.state
@@ -201,7 +201,7 @@ func file_pkg_functions_grpc_pods_watch_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_functions_grpc_pods_watch_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_functions_grpc_watch_pods_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WatchPodsRequest); i {
 			case 0:
 				return &v.state
@@ -214,23 +214,23 @@ func file_pkg_functions_grpc_pods_watch_proto_init() {
 			}
 		}
 	}
-	file_pkg_functions_grpc_pods_watch_proto_msgTypes[0].OneofWrappers = []interface{}{}
+	file_pkg_functions_grpc_watch_pods_proto_msgTypes[0].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_pkg_functions_grpc_pods_watch_proto_rawDesc,
+			RawDescriptor: file_pkg_functions_grpc_watch_pods_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_pkg_functions_grpc_pods_watch_proto_goTypes,
-		DependencyIndexes: file_pkg_functions_grpc_pods_watch_proto_depIdxs,
-		MessageInfos:      file_pkg_functions_grpc_pods_watch_proto_msgTypes,
+		GoTypes:           file_pkg_functions_grpc_watch_pods_proto_goTypes,
+		DependencyIndexes: file_pkg_functions_grpc_watch_pods_proto_depIdxs,
+		MessageInfos:      file_pkg_functions_grpc_watch_pods_proto_msgTypes,
 	}.Build()
-	File_pkg_functions_grpc_pods_watch_proto = out.File
-	file_pkg_functions_grpc_pods_watch_proto_rawDesc = nil
-	file_pkg_functions_grpc_pods_watch_proto_goTypes = nil
-	file_pkg_functions_grpc_pods_watch_proto_depIdxs = nil
+	File_pkg_functions_grpc_watch_pods_proto = out.File
+	file_pkg_functions_grpc_watch_pods_proto_rawDesc = nil
+	file_pkg_functions_grpc_watch_pods_proto_goTypes = nil
+	file_pkg_functions_grpc_watch_pods_proto_depIdxs = nil
 }
