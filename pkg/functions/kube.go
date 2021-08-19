@@ -296,15 +296,28 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 				if p, ok := tm[tt.RevisionName]; ok {
 					newp := *p + *tt.Percent
 					tm[tt.RevisionName] = &newp
+					log.Debugf("!!!!!!!! tt.RevisionName newp = %s", tt.RevisionName)
 				} else {
 					tm[tt.RevisionName] = tt.Percent
+					log.Debugf("!!!!!!!! tt.RevisionName = %s", tt.RevisionName)
+
 				}
 			}
 
+			log.Debugf("!!!!!!!! tm  = %v", tm)
+
 			resp.Traffic = make([]*igrpc.Traffic, 0)
 			for r, p := range tm {
-				resp.Traffic = append(resp.Traffic, &igrpc.Traffic{RevisionName: &r, Traffic: p})
+				name := r
+				t := new(igrpc.Traffic)
+				t.RevisionName = &name
+				t.Traffic = p
+
+				log.Debugf("!!!!!ss!!! t  = %v", t)
+				resp.Traffic = append(resp.Traffic, t)
 			}
+
+			log.Debugf("!!!!!!!! resp.Traffic  = %v", resp.Traffic)
 
 			err = out.Send(&resp)
 			if err != nil {
