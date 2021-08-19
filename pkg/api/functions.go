@@ -71,21 +71,56 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
 	// Get function labels from url queries
 	for k, v := range r.URL.Query() {
+		fmt.Printf("k = %v\n", k)
+		fmt.Printf("v = %v\n", v)
+		fmt.Printf("functionsQueryLabelMapping[k] = %s\n", functionsQueryLabelMapping[k])
 		if aLabel, ok := functionsQueryLabelMapping[k]; ok && len(v) > 0 {
 			annotations[aLabel] = v[0]
 		}
 	}
+
+	fmt.Printf("annotations ?????????? = %v", annotations)
 
 	// Get functions from body
 	rb := new(functionAnnotationsRequest)
 	err := json.NewDecoder(r.Body).Decode(rb)
 	if err != nil && err != io.EOF {
 		return nil, err
-	} else {
+	} else if err == nil {
 		annotations[functionsServiceNameAnnotation] = rb.Name
 		annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
 		annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
 		annotations[functionsServiceScopeAnnotation] = rb.Scope
+	}
+
+	// Split serviceName
+	svc := mux.Vars(r)["serviceName"]
+	if svc != "" {
+		fmt.Printf("svc ======= %v\n", svc)
+		if strings.Count(svc, "-") < 2 {
+			return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
+		}
+
+		firstInd := strings.Index(svc, "-")
+		lastInd := strings.LastIndex(svc, "-")
+		annotations[functionsServiceNamespaceAnnotation] = svc[firstInd+1 : lastInd]
+		annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
+		annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
+
+	}
+
+	// Handle if this was reached via the namespaced route
+	ns := mux.Vars(r)["namespace"]
+	if ns != "" {
+		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
+		}
+
+		annotations[functionsServiceNamespaceAnnotation] = ns
+
+		if annotations[functionsServiceScopeAnnotation] == "" {
+			annotations[functionsServiceScopeAnnotation] = prefixNamespace
+		}
 	}
 
 	del := make([]string, 0)
@@ -97,31 +132,6 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
 	for _, v := range del {
 		delete(annotations, v)
-	}
-
-	// Handle if this was reached via the namespaced route
-	ns := mux.Vars(r)["namespace"]
-	if ns != "" {
-		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
-			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
-		}
-
-		annotations[functionsServiceNamespaceAnnotation] = ns
-	}
-
-	// Split serviceName
-	svc := mux.Vars(r)["serviceName"]
-	if svc != "" {
-		if strings.Count(svc, "-") < 2 {
-			return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
-		}
-
-		firstInd := strings.Index(svc, "-")
-		lastInd := strings.LastIndex(svc, "-")
-		annotations[functionsServiceNamespaceAnnotation] = svc[firstInd+1 : lastInd]
-		annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
-		annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
-
 	}
 
 	fmt.Printf("annotations !!!!!!!!!!!! = %v", annotations)
