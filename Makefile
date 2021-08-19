@@ -145,6 +145,7 @@ docker-ui: ## Manually clone and build the latest UI.
 .PHONY: docker-all
 docker-all: ## Build the all-in-one image.
 docker-all:
+	cp -Rf kubernetes build/docker/all
 	docker build --no-cache -t direktiv-kube build/docker/all
 
 .PHONY: template-configmaps

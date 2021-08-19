@@ -19,7 +19,7 @@ jobs:
       run: |
         wget https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.11.0_linux_amd64
         chmod 755 kube-score_1.11.0_linux_amd64
-        helm template -f kubernetes/charts/direktiv/kubescore.yaml kubernetes/charts/direktiv/ | ./kube-score_1.11.0_linux_amd64 score --ignore-test=networkpolicy-targets-pod -
+        helm template -f kubernetes/charts/direktiv/kubescore.yaml kubernetes/charts/direktiv/ | ./kube-score_1.11.0_linux_amd64 score --ignore-test=--ignore-test=networkpolicy-targets-pod,pod-networkpolicy,pod-probes -
         export version=${{ steps.ptag.outputs.tag }}
         v="${version:1}"
         echo "packaging helm for $v"
