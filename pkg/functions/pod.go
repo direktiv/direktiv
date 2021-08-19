@@ -67,6 +67,8 @@ func runPodRequestLimiter(echan chan error) {
 	for {
 		select {
 		case event := <-watch.ResultChan():
+
+			log.Debugf("job update")
 			j, ok := event.Object.(*batchv1.Job)
 			if !ok {
 				continue
@@ -92,6 +94,7 @@ func runPodRequestLimiter(echan chan error) {
 			}
 
 			mtx.Unlock()
+			log.Debugf("job update done")
 
 		case <-time.After(60 * time.Second):
 
@@ -104,7 +107,8 @@ func runPodRequestLimiter(echan chan error) {
 					continue
 				}
 
-				l, err := jobs.List(context.Background(), metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
+				l, err := jobs.List(context.Background(),
+					metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
 				if err != nil {
 					kubeUnlock(lock)
 					log.Errorf("can not list jobs: %v", err)
@@ -135,6 +139,8 @@ func runPodRequestLimiter(echan chan error) {
 }
 
 func createUserContainer(size int, image, cmd string) (v1.Container, error) {
+
+	log.Debugf("create user container")
 
 	res, err := generateResourceLimits(size)
 	if err != nil {

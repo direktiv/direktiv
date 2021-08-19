@@ -117,7 +117,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("deleting functionss %v", in.GetAnnotations())
+	log.Debugf("deleting functions %v", in.GetAnnotations())
 
 	err := deleteKnativeFunctionss(in.GetAnnotations())
 
@@ -126,6 +126,8 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 
 func (is *functionsServer) GetFunction(ctx context.Context,
 	in *igrpc.GetFunctionRequest) (*igrpc.GetFunctionResponse, error) {
+
+	log.Debugf("get function %v", in.GetServiceName())
 
 	var resp *igrpc.GetFunctionResponse
 
@@ -145,7 +147,7 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 
 	log.Debugf("list functions %v", in.GetAnnotations())
 
-	items, err := listKnativeFunctionss(in.GetAnnotations())
+	items, err := listKnativeFunctions(in.GetAnnotations())
 	if err != nil {
 		return &resp, err
 	}
@@ -316,7 +318,7 @@ func filterLabels(annotations map[string]string) map[string]string {
 	return a
 }
 
-func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInfo, error) {
+func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo, error) {
 
 	var b []*igrpc.FunctionsInfo
 
@@ -340,6 +342,8 @@ func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInf
 		log.Errorf("error getting functions list: %v", err)
 		return b, err
 	}
+
+	log.Debugf("%d functions", len(l.Items))
 
 	for i := range l.Items {
 
@@ -379,6 +383,8 @@ func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInf
 		b = append(b, ii)
 
 	}
+
+	log.Debugf("list done")
 
 	return b, nil
 }
@@ -883,6 +889,8 @@ func createVolumes() []corev1.Volume {
 }
 
 func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) error {
+
+	log.Debugf("update knative function %s", svn)
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
