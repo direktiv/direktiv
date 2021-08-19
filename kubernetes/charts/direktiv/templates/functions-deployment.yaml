@@ -36,9 +36,9 @@ spec:
             secretName: {{ .Values.functions.certificate }}
         {{- end }}
       containers:
-        {{- if .Values.functions.extraContainers }}
-        {{ toYaml .Values.functions.extraContainers | indent 8}}
-        {{- end }}
+{{- if .Values.functions.extraContainers }}
+{{ toYaml .Values.functions.extraContainers | indent 8}}
+{{- end }}
         - name: functions-controller
           volumeMounts:
           {{- if ne  .Values.functions.certificate "none" }}

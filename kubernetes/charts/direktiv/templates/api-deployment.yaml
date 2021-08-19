@@ -61,67 +61,70 @@ spec:
           secretName: {{ .Values.flow.certificates.ingress }}
       {{- end }}
       containers:
-      - name: api
-        securityContext:
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-        readinessProbe:
-          httpGet:
-            path: /api/healthz
-            port: 8080
-            {{- if ne  .Values.api.certificate "none" }}
-            scheme: HTTPS
+{{- if .Values.api.extraContainers }}
+{{ toYaml .Values.api.extraContainers | indent 8 }}
+{{- end }}
+        - name: api
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          readinessProbe:
+            httpGet:
+              path: /api/healthz
+              port: 8080
+              {{- if ne  .Values.api.certificate "none" }}
+              scheme: HTTPS
+              {{- end }}
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "0.25"
+            limits:
+              memory: "2048Mi"
+              cpu: "2"
+          image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+            {{- if  .Values.api.key }}
+            - name: DIREKTIV_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "direktiv.fullname" . }}
+                  key: apiKey
             {{- end }}
-          periodSeconds: 10
-          failureThreshold: 3
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "0.25"
-          limits:
-            memory: "2048Mi"
-            cpu: "2"
-        image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.pullPolicy }}
-        env:
-          {{- if  .Values.api.key }}
-          - name: DIREKTIV_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: apiKey
+          volumeMounts:
+          - name: grpc-config
+            mountPath: /etc/direktiv/grpc-config.yaml
+            subPath: grpc-config.yaml
+          - name: apiconf
+            mountPath: "/config"
+            readOnly: true
+          - name: api-blocklist
+            mountPath: /blocklist
+            subPath: "blocklist"
+          - name: wf-templates
+            mountPath: "/tmp/workflow-templates"
+          - name: action-templates
+            mountPath: "/tmp/action-templates"
+          {{- if ne  .Values.api.certificate "none" }}
+          - name: certs
+            mountPath: "/etc/direktiv/certs/http"
+            readOnly: true
           {{- end }}
-        volumeMounts:
-        - name: grpc-config
-          mountPath: /etc/direktiv/grpc-config.yaml
-          subPath: grpc-config.yaml
-        - name: apiconf
-          mountPath: "/config"
-          readOnly: true
-        - name: api-blocklist
-          mountPath: /blocklist
-          subPath: "blocklist"
-        - name: wf-templates
-          mountPath: "/tmp/workflow-templates"
-        - name: action-templates
-          mountPath: "/tmp/action-templates"
-        {{- if ne  .Values.api.certificate "none" }}
-        - name: certs
-          mountPath: "/etc/direktiv/certs/http"
-          readOnly: true
-        {{- end }}
-        {{- if ne .Values.functions.certificate "none" }}
-        - name: functionscerts
-          mountPath: "/etc/direktiv/certs/functions"
-          readOnly: true
-        {{- end }}
-        {{- if ne .Values.flow.certificates.ingress "none" }}
-        - name: ingresscerts
-          mountPath: "/etc/direktiv/certs/ingress"
-          readOnly: true
-        {{- end }}
-        ports:
-        - containerPort: 8080
+          {{- if ne .Values.functions.certificate "none" }}
+          - name: functionscerts
+            mountPath: "/etc/direktiv/certs/functions"
+            readOnly: true
+          {{- end }}
+          {{- if ne .Values.flow.certificates.ingress "none" }}
+          - name: ingresscerts
+            mountPath: "/etc/direktiv/certs/ingress"
+            readOnly: true
+          {{- end }}
+          ports:
+          - containerPort: 8080
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

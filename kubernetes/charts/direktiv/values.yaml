@@ -87,14 +87,15 @@ secrets:
 ui:
   image: "vorteil/direktiv-ui"
   tag: "latest"
-  # certificate: direktiv-cert
   certificate: none
+  extraContainers: []
 
 api:
   image: vorteil/api
   tag: "latest"
   key: ""
   certificate: none
+  extraContainers: []
 
 # Set Send and Recv limits for all grpc clients and servers
 grpc:
