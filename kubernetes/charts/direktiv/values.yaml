@@ -58,7 +58,7 @@ ingress:
 # flow config
 flow:
   image: "vorteil/flow"
-  tag: "latest"
+  tag: ""
   db: ""
   functionsProtocol: "http"
   functionsCA: "none" # change function pod secret too
@@ -78,7 +78,7 @@ flow:
 
 secrets:
   image: "vorteil/secrets"
-  tag: "latest"
+  tag: ""
   db: ""
   key: "01234567890123456789012345678912"
   extraVolumeMounts: []
@@ -86,13 +86,13 @@ secrets:
 # ui config
 ui:
   image: "vorteil/direktiv-ui"
-  tag: "latest"
+  tag: ""
   certificate: none
   extraContainers: []
 
 api:
   image: vorteil/api
-  tag: "latest"
+  tag: ""
   key: ""
   certificate: none
   extraContainers: []
@@ -112,7 +112,7 @@ functions:
 
   # images for functions controller, knative sidecar and init-pod
   image: "vorteil/functions"
-  tag: "latest"
+  tag: ""
   certificate: none
   mtls: none
 
