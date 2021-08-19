@@ -46,6 +46,7 @@ const (
 	RN_WatchServices               = "watchServices"
 	RN_WatchRevisions              = "watchRevisions"
 	RN_WatchPods                   = "watchPods"
+	RN_WatchLogs                   = "watchLogs"
 	RN_ListPods                    = "listPods"
 	RN_DeleteServices              = "deleteServices"
 	RN_GetService                  = "getService"
@@ -73,6 +74,7 @@ var RouteNames = []string{
 	RN_GetWorkflowMetrics,
 	RN_ListWorkflows,
 	RN_GetWorkflow,
+	RN_WatchLogs,
 	RN_UpdateWorkflow,
 	RN_ToggleWorkflow,
 	RN_CreateWorkflow,

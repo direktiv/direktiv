@@ -157,29 +157,27 @@ func (s *Server) prepareRoutes() {
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
 
 	// Watch
-	s.Router().HandleFunc("/api/watch/functions/", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
-	s.Router().HandleFunc("/api/watch/functions/{serviceName}", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
-	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/", s.handler.WatchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
-	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}", s.handler.WatchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
+	s.Router().HandleFunc("/api/watch/functions/", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
 
-	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}/pods/", s.handler.watchPodsV2).Methods(http.MethodGet).Name(RN_WatchPods)
-	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}/pods/{podName}/logs/", s.handler.watchLogs).Methods(http.MethodGet).Name(RN_WatchPods)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}/pods/", s.handler.watchPods).Methods(http.MethodGet).Name(RN_WatchPods)
+	s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}/pods/{podName}/logs/", s.handler.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/", s.handler.WatchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/{revisionName}", s.handler.WatchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/{revisionName}", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
 
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/{revisionName}/pods/", s.handler.watchPodsV2).Methods(http.MethodGet).Name(RN_WatchPods)
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/{revisionName}/pods/{podName}/logs/", s.handler.watchLogs).Methods(http.MethodGet).Name(RN_WatchPods)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/{revisionName}/pods/", s.handler.watchPods).Methods(http.MethodGet).Name(RN_WatchPods)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/functions/{serviceName}/revisions/{revisionName}/pods/{podName}/logs/", s.handler.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
-	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/workflows/{workflowTarget}/functions/", s.handler.watchFunctionsV3).Methods(http.MethodGet).Name(RN_WatchServices)
+	s.Router().HandleFunc("/api/watch/namespaces/{namespace}/workflows/{workflowTarget}/functions/", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)
 
 	// Functions ..
 	s.Router().HandleFunc("/api/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
-	s.Router().HandleFunc("/api/functions/watch/", s.handler.watchFunctions).Methods(http.MethodPost).Name(RN_WatchServices)
 	s.Router().HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
-	s.Router().HandleFunc("/api/functions/pods/watch/", s.handler.watchPods).Methods(http.MethodPost).Name(RN_WatchPods)
 	s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
@@ -189,10 +187,7 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/watch/", s.handler.watchFunctions).Methods(http.MethodPost).Name(RN_WatchServices)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/watch/", s.handler.watchFunctionsV2).Methods(http.MethodGet).Name(RN_WatchServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
-	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/pods/watch/", s.handler.watchPods).Methods(http.MethodPost).Name(RN_WatchPods)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
