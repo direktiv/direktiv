@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
@@ -100,6 +101,21 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		delete(annotations, v)
 	}
 
+	// Split serviceName
+	svc := mux.Vars(r)["serviceName"]
+	if svc != "" {
+		if strings.Count(svc, "-") < 2 {
+			return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
+		}
+
+		firstInd := strings.Index(svc, "-")
+		lastInd := strings.LastIndex(svc, "-")
+		annotations[functionsServiceNamespaceAnnotation] = svc[firstInd+1 : lastInd]
+		annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
+		annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
+
+	}
+
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
@@ -108,13 +124,9 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		}
 
 		annotations[functionsServiceNamespaceAnnotation] = ns
-		annotations[functionsServiceScopeAnnotation] = prefixNamespace
 	}
 
-	svc := mux.Vars(r)["serviceName"]
-	if svc != "" {
-		annotations[functionsServiceKnativeName] = svc
-	}
+	fmt.Printf("annotations !!!!!!!!!!!! = %v", annotations)
 
 	return annotations, nil
 }
@@ -736,7 +748,7 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	fmt.Println("jon 2")
+	fmt.Printf("jon 2 === %v\n", a)
 	grpcReq := grpc.WatchFunctionsRequest{
 		Annotations: a,
 	}
@@ -785,7 +797,7 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 			}
 
 			fmt.Println("jon 8")
-			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+			w.Write([]byte(fmt.Sprintf("event: +%v", resp)))
 			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
 			if err != nil {
 				errch <- fmt.Errorf("failed to write data: %w", err)

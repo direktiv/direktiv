@@ -249,6 +249,10 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 		return fmt.Errorf("request labels are invalid")
 	}
 
+	log.Debugf("WatchFunctions !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	log.Debugf("filtered = %v", filtered)
+	log.Debugf("annotations = %v", annotations)
+
 	labels := metav1.ListOptions{
 		LabelSelector: labels.Set(filtered).String(),
 	}
@@ -519,6 +523,8 @@ func filterLabels(annotations map[string]string) map[string]string {
 		return make(map[string]string)
 	}
 
+	log.Debugf("scope = %s", scope)
+
 	t := invalidType
 	switch setter {
 	case 7:
@@ -529,6 +535,11 @@ func filterLabels(annotations map[string]string) map[string]string {
 	case 6:
 		t = workflowType
 		if scope != PrefixWorkflow {
+			t = invalidType
+		}
+	case 5:
+		t = namespaceType
+		if scope != PrefixNamespace {
 			t = invalidType
 		}
 	case 4:
