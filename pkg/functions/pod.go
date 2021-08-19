@@ -31,7 +31,20 @@ const (
 
 var namespaceCounter map[string]int64
 
-func runPodRequestLimiter(echan chan error) {
+func runPodRequestLimiter() {
+
+	// watchers timeout after 30 mins
+	// this just restarts them after 5 secs
+	for {
+		if err := runRequestLimiterLoop(); err != nil {
+			log.Errorf("error running rate limiter loop: %v", err)
+		}
+		time.Sleep(5 * time.Second)
+	}
+
+}
+
+func runRequestLimiterLoop() error {
 
 	namespaceCounter = make(map[string]int64)
 	var mtx sync.Mutex
@@ -47,8 +60,7 @@ func runPodRequestLimiter(echan chan error) {
 	clientset, err := getClientSet()
 	if err != nil {
 		log.Errorf("could not get client set: %v", err)
-		echan <- err
-		return
+		return err
 	}
 
 	jobs := clientset.BatchV1().Jobs(functionsConfig.Namespace)
@@ -58,11 +70,8 @@ func runPodRequestLimiter(echan chan error) {
 	)
 	if err != nil {
 		log.Errorf("can not create job watcher: %v", err)
-		echan <- err
-		return
+		return err
 	}
-
-	echan <- nil
 
 	for {
 		select {
@@ -70,8 +79,9 @@ func runPodRequestLimiter(echan chan error) {
 
 			log.Debugf("job update")
 			j, ok := event.Object.(*batchv1.Job)
+
 			if !ok {
-				continue
+				return fmt.Errorf("watcher timed out")
 			}
 
 			mtx.Lock()
@@ -434,8 +444,9 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 			select {
 			case event := <-watch.ResultChan():
 				p, ok = event.Object.(*v1.Pod)
+
 				if !ok {
-					continue
+					return "", "", fmt.Errorf("watcher timed out")
 				}
 
 				// as soon is reachable we break
