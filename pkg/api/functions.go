@@ -97,16 +97,27 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	svc := mux.Vars(r)["serviceName"]
 	if svc != "" {
 		fmt.Printf("svc ======= %v\n", svc)
-		if strings.Count(svc, "-") < 2 {
-			return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
+
+		// Split namespaced service name
+		if strings.HasPrefix(svc, prefixNamespace) {
+			if strings.Count(svc, "-") < 2 {
+				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
+			}
+
+			firstInd := strings.Index(svc, "-")
+			lastInd := strings.LastIndex(svc, "-")
+			annotations[functionsServiceNamespaceAnnotation] = svc[firstInd+1 : lastInd]
+			annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
+			annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
+		} else {
+			if strings.Count(svc, "-") < 1 {
+				return nil, fmt.Errorf("service name is incorrect format, does not include scope")
+			}
+
+			firstInd := strings.Index(svc, "-")
+			annotations[functionsServiceNameAnnotation] = svc[firstInd+1:]
+			annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
 		}
-
-		firstInd := strings.Index(svc, "-")
-		lastInd := strings.LastIndex(svc, "-")
-		annotations[functionsServiceNamespaceAnnotation] = svc[firstInd+1 : lastInd]
-		annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
-		annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
-
 	}
 
 	// Handle if this was reached via the workflow route
