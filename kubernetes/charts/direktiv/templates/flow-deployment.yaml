@@ -27,9 +27,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-        {{- if .Values.flow.extraContainers }}
-        {{ toYaml .Values.flow.extraContainers | indent 8}}
-        {{- end }}
+{{- if .Values.flow.extraContainers }}
+{{ toYaml .Values.flow.extraContainers | indent 8}}
+{{- end }}
         - name: ingress
           securityContext:
             readOnlyRootFilesystem: true

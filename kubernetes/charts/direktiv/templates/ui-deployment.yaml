@@ -27,6 +27,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
+{{- if .Values.ui.extraContainers }}
+{{ toYaml .Values.ui.extraContainers | indent 8 }}
+{{- end }}
         - name: ui
           securityContext:
             readOnlyRootFilesystem: true
