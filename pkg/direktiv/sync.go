@@ -52,7 +52,10 @@ func SyncSubscribeTo(dbConnString string, topic int,
 
 	go func(l *pq.Listener) {
 
-		defer l.UnlistenAll()
+		defer func() {
+			l.UnlistenAll()
+			l.Close()
+		}()
 
 		for {
 
@@ -103,7 +106,10 @@ func syncAPIWait(dbConnString string, channel string, w chan bool) error {
 
 	w <- true
 
-	defer listener.UnlistenAll()
+	defer func() {
+		listener.UnlistenAll()
+		listener.Close()
+	}()
 
 	for {
 
@@ -150,7 +156,10 @@ func (s *WorkflowServer) startDatabaseListener() error {
 
 	go func(l *pq.Listener) {
 
-		defer l.UnlistenAll()
+		defer func() {
+			l.UnlistenAll()
+			l.Close()
+		}()
 
 		for {
 
