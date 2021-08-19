@@ -47,7 +47,6 @@ const (
 	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
 	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
 	functionsServiceScopeAnnotation     = "direktiv.io/scope"
-	functionsServiceKnativeName         = "serving.knative.dev/service"
 
 	prefixWorkflow  = "w"
 	prefixNamespace = "ns"
@@ -60,7 +59,6 @@ var functionsQueryLabelMapping = map[string]string{
 	"name":      functionsServiceNameAnnotation,
 	"namespace": functionsServiceNamespaceAnnotation,
 	"workflow":  functionsServiceWorkflowAnnotation,
-	"service":   functionsServiceKnativeName,
 }
 
 func accepted(w http.ResponseWriter) {
@@ -101,6 +99,16 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		delete(annotations, v)
 	}
 
+	// Handle if this was reached via the namespaced route
+	ns := mux.Vars(r)["namespace"]
+	if ns != "" {
+		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
+		}
+
+		annotations[functionsServiceNamespaceAnnotation] = ns
+	}
+
 	// Split serviceName
 	svc := mux.Vars(r)["serviceName"]
 	if svc != "" {
@@ -114,16 +122,6 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 		annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
 		annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
 
-	}
-
-	// Handle if this was reached via the namespaced route
-	ns := mux.Vars(r)["namespace"]
-	if ns != "" {
-		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
-			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
-		}
-
-		annotations[functionsServiceNamespaceAnnotation] = ns
 	}
 
 	fmt.Printf("annotations !!!!!!!!!!!! = %v", annotations)
@@ -777,45 +775,57 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var httpOk bool
-	errch := make(chan error)
+	// var httpOk bool
+	// errch := make(chan error)
 
-	go func() {
-		for {
-			fmt.Println("jon 6")
-			resp, err := client.Recv()
-			if err != nil {
-				errch <- fmt.Errorf("client failed: %w", err)
-				return
-			}
+	for {
+		fmt.Println("jon 6")
+		resp, err := client.Recv()
+		if err != nil {
+			fmt.Printf("Im blocked1, err = %v", err)
 
-			fmt.Println("jon 7")
-			b, err := json.Marshal(resp)
-			if err != nil {
-				errch <- fmt.Errorf("got bad data: %w", err)
-				return
-			}
+			// errch <- fmt.Errorf("client failed: %w", err)
+			ErrResponse(w, err)
+			fmt.Printf("Im blocked 1!!!, err = %v", err)
 
-			fmt.Println("jon 8")
-			w.Write([]byte(fmt.Sprintf("event: +%v", resp)))
-			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
-			if err != nil {
-				errch <- fmt.Errorf("failed to write data: %w", err)
-				return
-			}
-
-			fmt.Println("jon 9")
-			flusher.Flush()
-			httpOk = true
+			return
 		}
-	}()
 
-	fmt.Println("jon 10")
-	err = <-errch
-	fmt.Printf("err = +%v", err)
-	if !httpOk {
-		ErrResponse(w, err)
+		fmt.Println("jon 7")
+		b, err := json.Marshal(resp)
+		if err != nil {
+			fmt.Printf("Im blocked2, err = %v", err)
+
+			// errch <- fmt.Errorf("got bad data: %w", err)
+			ErrResponse(w, err)
+			fmt.Printf("Im blocked2 !!!, err = %v", err)
+
+			return
+		}
+
+		fmt.Println("jon 8")
+		// w.Write([]byte(fmt.Sprintf("event: +%v", resp)))
+		fmt.Printf("WRITING ======= %s", fmt.Sprintf("data: %s", string(b)))
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
+		if err != nil {
+			fmt.Printf("Im blocked3, err = %v", err)
+			// errch <- fmt.Errorf("failed to write data: %w", err)
+			ErrResponse(w, err)
+			fmt.Printf("Im blocked 3!!!, err = %v", err)
+			return
+		}
+
+		fmt.Println("jon 9")
+		flusher.Flush()
+		// httpOk = true
 	}
+
+	// fmt.Println("jon 10")
+	// err = <-errch
+	// fmt.Printf("err = +%v", err)
+	// if !httpOk {
+	// 	ErrResponse(w, err)
+	// }
 
 }
 
@@ -847,39 +857,42 @@ func (h *Handler) WatchRevisions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var httpOk bool
-	errch := make(chan error)
+	// var httpOk bool
+	// errch := make(chan error)
 
-	go func() {
-		for {
-			resp, err := client.Recv()
-			if err != nil {
-				errch <- fmt.Errorf("client failed: %w", err)
-				return
-			}
-
-			b, err := json.Marshal(resp)
-			if err != nil {
-				errch <- fmt.Errorf("got bad data: %w", err)
-				return
-			}
-
-			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
-			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
-			if err != nil {
-				errch <- fmt.Errorf("failed to write data: %w", err)
-				return
-			}
-
-			flusher.Flush()
-			httpOk = true
+	// go func() {
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			// errch <- fmt.Errorf("client failed: %w", err)
+			ErrResponse(w, err)
+			return
 		}
-	}()
 
-	err = <-errch
-	if !httpOk {
-		ErrResponse(w, err)
+		b, err := json.Marshal(resp)
+		if err != nil {
+			// errch <- fmt.Errorf("got bad data: %w", err)
+			ErrResponse(w, err)
+			return
+		}
+
+		// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
+		if err != nil {
+			// errch <- fmt.Errorf("failed to write data: %w", err)
+			ErrResponse(w, err)
+			return
+		}
+
+		flusher.Flush()
+		// httpOk = true
 	}
+	// }()
+
+	// err = <-errch
+	// if !httpOk {
+	// ErrResponse(w, err)
+	// }
 
 }
 
@@ -1014,7 +1027,7 @@ func (h *Handler) watchPodsV2(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
-			_, err = w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
+			_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 			if err != nil {
 				errch <- fmt.Errorf("failed to write data: %w", err)
 				return
