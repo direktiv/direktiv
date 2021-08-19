@@ -71,15 +71,10 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
 	// Get function labels from url queries
 	for k, v := range r.URL.Query() {
-		fmt.Printf("k = %v\n", k)
-		fmt.Printf("v = %v\n", v)
-		fmt.Printf("functionsQueryLabelMapping[k] = %s\n", functionsQueryLabelMapping[k])
 		if aLabel, ok := functionsQueryLabelMapping[k]; ok && len(v) > 0 {
 			annotations[aLabel] = v[0]
 		}
 	}
-
-	fmt.Printf("annotations ?????????? = %v", annotations)
 
 	// Get functions from body
 	rb := new(functionAnnotationsRequest)
@@ -684,7 +679,6 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		fmt.Println("HELLO1")
 		ErrResponse(w, fmt.Errorf("streaming unsupported"))
 		return
 	}
@@ -692,7 +686,7 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 	for {
 		resp, err := client.Recv()
 		if err != nil {
-			fmt.Println("HELLO2")
+			fmt.Println("superfluos breaks")
 			ErrResponse(w, err)
 			return
 		}
@@ -864,8 +858,11 @@ func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) WatchRevisions(w http.ResponseWriter, r *http.Request) {
 
 	sn := mux.Vars(r)["serviceName"]
+	rn := mux.Vars(r)["revisionName"]
+
 	grpcReq := new(grpc.WatchRevisionsRequest)
 	grpcReq.ServiceName = &sn
+	grpcReq.RevisionName = &rn
 
 	client, err := h.s.functions.WatchRevisions(r.Context(), grpcReq)
 	if err != nil {
@@ -928,6 +925,66 @@ func (h *Handler) WatchRevisions(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["podName"]
+	grpcReq := new(grpc.WatchLogsRequest)
+	grpcReq.PodName = &sn
+
+	client, err := h.s.functions.WatchLogs(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		ErrResponse(w, fmt.Errorf("streaming unsupported"))
+		return
+	}
+
+	// var httpOk bool
+	// errch := make(chan error)
+
+	// go func() {
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			// errch <- fmt.Errorf("client failed: %w", err)
+			ErrResponse(w, err)
+			return
+		}
+
+		// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(*resp.Data))))
+		if err != nil {
+			// errch <- fmt.Errorf("failed to write data: %w", err)
+			ErrResponse(w, err)
+			return
+		}
+
+		flusher.Flush()
+		// httpOk = true
+	}
+	// }()
+
+	// err = <-errch
+	// if !httpOk {
+	// ErrResponse(w, err)
+	// }
+
+}
+
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
 
 	a, err := getFunctionAnnotations(r)
@@ -954,19 +1011,14 @@ func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
+	sn := mux.Vars(r)["serviceName"]
+	rn := mux.Vars(r)["revisionName"]
 
-	a, err := getFunctionAnnotations(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
+	grpcReq := new(grpc.WatchPodsRequest)
+	grpcReq.ServiceName = &sn
+	grpcReq.RevisionName = &rn
 
-	grpcReq := grpc.WatchPodsRequest{
-		Annotations: a,
-	}
-
-	client, err := h.s.functions.WatchPods(r.Context(), &grpcReq)
+	client, err := h.s.functions.WatchPods(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -1008,18 +1060,14 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) watchPodsV2(w http.ResponseWriter, r *http.Request) {
 
-	a, err := getFunctionAnnotations(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
+	sn := mux.Vars(r)["serviceName"]
+	rn := mux.Vars(r)["revisionName"]
 
-	grpcReq := grpc.WatchPodsRequest{
-		Annotations: a,
-	}
+	grpcReq := new(grpc.WatchPodsRequest)
+	grpcReq.ServiceName = &sn
+	grpcReq.RevisionName = &rn
 
-	client, err := h.s.functions.WatchPods(r.Context(), &grpcReq)
+	client, err := h.s.functions.WatchPods(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return

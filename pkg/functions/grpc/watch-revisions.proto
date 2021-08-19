@@ -8,6 +8,7 @@ import "pkg/functions/grpc/functions-common.proto";
 
 message WatchRevisionsRequest {
 	optional string ServiceName = 1;
+	optional string RevisionName = 2;
 }
 
 message WatchRevisionsResponse {

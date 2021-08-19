@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+
+
+message WatchLogsRequest {
+	optional string PodName = 1;
+}
+
+message WatchLogsResponse {
+	optional string data = 1;
+}

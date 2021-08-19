@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -135,15 +136,8 @@ func (is *functionsServer) ListPods(ctx context.Context,
 
 func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
 
-	annotations := in.GetAnnotations()
-
-	filtered := filterLabels(annotations)
-	if len(filtered) == 0 {
-		return fmt.Errorf("request labels are invalid")
-	}
-
-	labels := metav1.ListOptions{
-		LabelSelector: labels.Set(filtered).String(),
+	if in.GetServiceName() == "" {
+		return fmt.Errorf("service name can not be nil")
 	}
 
 	cs, err := getClientSet()
@@ -151,7 +145,17 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 		return fmt.Errorf("could not create fetch client: %v", err)
 	}
 
-	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), labels)
+	l := map[string]string{
+		"serving.knative.dev/service": *in.ServiceName,
+	}
+
+	if in.GetRevisionName() != "" {
+		l["serving.knative.dev/revision"] = *in.RevisionName
+	}
+
+	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+		LabelSelector: labels.Set(l).String(),
+	})
 	if err != nil {
 		return fmt.Errorf("could start watcher: %v", err)
 	}
@@ -174,7 +178,6 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 				ServiceRevision: &srev,
 			}
 
-			mtx.Lock()
 			resp := igrpc.WatchPodsResponse{
 				Event: (*string)(&event.Type),
 				Pod:   &pod,
@@ -185,7 +188,6 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 				return fmt.Errorf("failed to send event: %v", err)
 			}
 
-			mtx.Unlock()
 		case <-time.After(1 * time.Hour):
 			return fmt.Errorf("server event timed out")
 		case <-out.Context().Done():
@@ -276,7 +278,6 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 				continue
 			}
 
-			mtx.Lock()
 			status, conds := statusFromCondition(s.Status.Conditions)
 			resp := igrpc.WatchFunctionsResponse{
 				Event: (*string)(&event.Type),
@@ -334,7 +335,6 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 				return fmt.Errorf("failed to send event: %v", err)
 			}
 
-			mtx.Unlock()
 		case <-time.After(1 * time.Hour):
 			return fmt.Errorf("server event timed out")
 		case <-out.Context().Done():
@@ -345,6 +345,8 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 }
 
 func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
+
+	var filterRevision bool
 
 	if in.GetServiceName() == "" {
 		return fmt.Errorf("service name can not be nil")
@@ -358,6 +360,12 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 	l := map[string]string{
 		"serving.knative.dev/service": *in.ServiceName,
 	}
+
+	if in.GetRevisionName() != "" {
+		filterRevision = true
+	}
+
+	log.Debugf("!!!! labels  = %v", l)
 
 	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: labels.Set(l).String(),
@@ -373,6 +381,8 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 			rev, ok := event.Object.(*v1.Revision)
 			if !ok {
 				continue
+			} else if filterRevision && rev.Name != *in.RevisionName {
+				continue // skip
 			}
 
 			info := &igrpc.Revision{}
@@ -409,7 +419,6 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 			var t int64 = rev.CreationTimestamp.Unix()
 			info.Created = &t
 
-			mtx.Lock()
 			resp := igrpc.WatchRevisionsResponse{
 				Event:    (*string)(&event.Type),
 				Revision: info,
@@ -420,7 +429,6 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 				return fmt.Errorf("failed to send event: %v", err)
 			}
 
-			mtx.Unlock()
 		case <-time.After(1 * time.Hour):
 			return fmt.Errorf("server event timed out")
 		case <-out.Context().Done():
@@ -428,6 +436,54 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 			return nil
 		}
 	}
+}
+
+func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
+
+	if in.GetPodName() == "" {
+		return fmt.Errorf("pod name can not be nil")
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	req := cs.CoreV1().Pods(functionsConfig.Namespace).GetLogs(*in.PodName, &corev1.PodLogOptions{
+		Container: "direktiv-sidecar",
+		Follow:    true,
+	})
+
+	plogs, err := req.Stream(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not get logs: %v", err)
+	}
+	defer plogs.Close()
+
+	for {
+		buf := make([]byte, 2000)
+		numBytes, err := plogs.Read(buf)
+		if numBytes == 0 {
+			continue
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		message := string(buf[:numBytes])
+		resp := igrpc.WatchLogsResponse{
+			Data: &message,
+		}
+
+		err = out.Send(&resp)
+		if err != nil {
+			return fmt.Errorf("failed to send event: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
