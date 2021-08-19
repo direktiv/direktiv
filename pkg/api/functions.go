@@ -109,6 +109,17 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
 	}
 
+	// Handle if this was reached via the workflow route
+	wf := mux.Vars(r)["workflowTarget"]
+	if wf != "" {
+		if annotations[functionsServiceScopeAnnotation] != "" && annotations[functionsServiceScopeAnnotation] != prefixWorkflow {
+			return nil, fmt.Errorf("this route is for workflow-scoped requests")
+		}
+
+		annotations[functionsServiceWorkflowAnnotation] = wf
+		annotations[functionsServiceScopeAnnotation] = prefixWorkflow
+	}
+
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
