@@ -9,6 +9,7 @@ import "pkg/functions/grpc/functions-common.proto";
 message Traffic {
 	optional string revisionName = 1;
 	optional int64 traffic = 2;
+	optional int64 generation = 3;
 }
 
 

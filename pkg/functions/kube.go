@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -312,10 +313,19 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 				t := new(igrpc.Traffic)
 				t.RevisionName = &name
 				t.Traffic = p
+				i, e := strconv.ParseInt(name[strings.LastIndex(name, "-")+1:], 10, 64)
+				if e != nil {
+					log.Errorf("!!!!!!!!!!!!!!!!!!!!!!! BAD GEN = %v", e)
+				}
+				t.Generation = &i
 
 				log.Debugf("!!!!!ss!!! t  = %v", t)
 				resp.Traffic = append(resp.Traffic, t)
 			}
+
+			slice.Sort(resp.Traffic[:], func(i, j int) bool {
+				return *resp.Traffic[i].Generation > *resp.Traffic[j].Generation
+			})
 
 			log.Debugf("!!!!!!!! resp.Traffic  = %v", resp.Traffic)
 
