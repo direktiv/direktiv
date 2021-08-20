@@ -101,3 +101,17 @@ func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
 
 	flusher.Flush()
 }
+
+func setupSEEWriter(w http.ResponseWriter) (http.Flusher, error) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return flusher, fmt.Errorf("streaming unsupported")
+	}
+
+	return flusher, nil
+}
