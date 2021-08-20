@@ -693,7 +693,8 @@ func filterLabels(annotations map[string]string) map[string]string {
 
 	log.Debugf("request type: %v", setter)
 
-	if t == invalidType {
+	// Skip invalid check if only scope and name are given
+	if setter != 1 && t == invalidType {
 		log.Errorf("wrong labels for search")
 		return make(map[string]string)
 	}
