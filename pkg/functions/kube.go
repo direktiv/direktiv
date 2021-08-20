@@ -502,7 +502,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 	}
 
 	req := cs.CoreV1().Pods(functionsConfig.Namespace).GetLogs(*in.PodName, &corev1.PodLogOptions{
-		Container: "direktiv-sidecar",
+		Container: "direktiv-container",
 		Follow:    true,
 	})
 

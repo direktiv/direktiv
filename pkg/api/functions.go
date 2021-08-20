@@ -788,7 +788,6 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 			select {
 			case <-time.After(15 * time.Second):
 				m.Lock()
-				fmt.Println("!!!!!!!!!! hearbeat")
 				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
 				if err != nil {
 					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
@@ -890,7 +889,6 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 			select {
 			case <-time.After(15 * time.Second):
 				m.Lock()
-				fmt.Println("!!!!!!!!!! hearbeat")
 				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
 				if err != nil {
 					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
