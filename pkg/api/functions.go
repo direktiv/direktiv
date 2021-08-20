@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
@@ -779,9 +781,27 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var m sync.Mutex
+
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			select {
+			case <-time.After(15 * time.Second):
+				m.Lock()
+				fmt.Println("!!!!!!!!!! hearbeat")
+				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
+				if err != nil {
+					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
+					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+				}
+
+				flusher.Flush()
+				m.Unlock()
+			case <-client.Context().Done():
+				//TODO: done
+				return
+			}
+		}
 	}()
 
 	for {
@@ -792,6 +812,7 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		m.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(*resp.Data))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
@@ -800,6 +821,7 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		}
 
 		flusher.Flush()
+		m.Unlock()
 	}
 }
 
@@ -861,6 +883,29 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		//TODO: done
 	}()
 
+	var m sync.Mutex
+
+	go func() {
+		for {
+			select {
+			case <-time.After(15 * time.Second):
+				m.Lock()
+				fmt.Println("!!!!!!!!!! hearbeat")
+				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
+				if err != nil {
+					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
+					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+				}
+
+				flusher.Flush()
+				m.Unlock()
+			case <-client.Context().Done():
+				//TODO: done
+				return
+			}
+		}
+	}()
+
 	for {
 		resp, err := client.Recv()
 		if err != nil {
@@ -876,6 +921,7 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		m.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
@@ -884,6 +930,7 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		}
 
 		flusher.Flush()
+		m.Unlock()
 	}
 
 }
