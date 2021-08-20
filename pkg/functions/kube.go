@@ -460,6 +460,12 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 	}
 	defer plogs.Close()
 
+	// Make sure stream is closed if client disconnects
+	go func() {
+		<-out.Context().Done()
+		plogs.Close()
+	}()
+
 	for {
 		buf := make([]byte, 2000)
 		numBytes, err := plogs.Read(buf)
