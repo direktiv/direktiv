@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
@@ -71,15 +73,10 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 
 	// Get function labels from url queries
 	for k, v := range r.URL.Query() {
-		fmt.Printf("k = %v\n", k)
-		fmt.Printf("v = %v\n", v)
-		fmt.Printf("functionsQueryLabelMapping[k] = %s\n", functionsQueryLabelMapping[k])
 		if aLabel, ok := functionsQueryLabelMapping[k]; ok && len(v) > 0 {
 			annotations[aLabel] = v[0]
 		}
 	}
-
-	fmt.Printf("annotations ?????????? = %v", annotations)
 
 	// Get functions from body
 	rb := new(functionAnnotationsRequest)
@@ -96,8 +93,6 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	// Split serviceName
 	svc := mux.Vars(r)["serviceName"]
 	if svc != "" {
-		fmt.Printf("svc ======= %v\n", svc)
-
 		// Split namespaced service name
 		if strings.HasPrefix(svc, prefixNamespace) {
 			if strings.Count(svc, "-") < 2 {
@@ -155,8 +150,6 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	for _, v := range del {
 		delete(annotations, v)
 	}
-
-	fmt.Printf("annotations !!!!!!!!!!!! = %v", annotations)
 
 	return annotations, nil
 }
@@ -672,200 +665,58 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	go func() {
-		<-client.Context().Done()
-		//TODO: done
-	}()
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		fmt.Println("HELLO1")
-		ErrResponse(w, fmt.Errorf("streaming unsupported"))
-		return
-	}
-
-	for {
-		resp, err := client.Recv()
-		if err != nil {
-			fmt.Println("HELLO2")
-			ErrResponse(w, err)
-			return
-		}
-
-		b, err := json.Marshal(resp.Event)
-		if err != nil {
-			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
-			return
-		}
-
-		w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
-		w.Write([]byte(fmt.Sprintf("data: %s", string(b))))
-		fmt.Println("Writing event")
-
-		flusher.Flush()
-	}
-}
-
-func (h *Handler) watchFunctionsV2(w http.ResponseWriter, r *http.Request) {
-
-	annotations := make(map[string]string)
-	ns := mux.Vars(r)["namespace"]
-
-	annotations[functionsServiceNamespaceAnnotation] = ns
-	annotations[functionsServiceScopeAnnotation] = "ns"
-
-	grpcReq := grpc.WatchFunctionsRequest{
-		Annotations: annotations,
-	}
-
-	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
+	defer client.CloseSend()
+	flusher, err := setupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	go func() {
 		<-client.Context().Done()
 		//TODO: done
 	}()
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		fmt.Println("HELLO1")
-		ErrResponse(w, fmt.Errorf("streaming unsupported"))
-		return
-	}
-
 	for {
 		resp, err := client.Recv()
 		if err != nil {
-			fmt.Println("HELLO2")
-			ErrResponse(w, err)
+			ErrSSEResponse(w, flusher, err)
+			log.Error(fmt.Errorf("client failed to recieve: %w", err))
 			return
 		}
 
 		b, err := json.Marshal(resp)
 		if err != nil {
-			ErrResponse(w, fmt.Errorf("got bad data: %w", err))
+			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
+			log.Error(fmt.Errorf("client recieved bad data: %w", err))
 			return
 		}
 
-		// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
-		fmt.Printf("writing: %s", fmt.Sprintf("event: %s\ndata: %s\n\n", *resp.Event, string(b)))
-		w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		fmt.Println("Writing event")
-
-		flusher.Flush()
-	}
-}
-
-func (h *Handler) watchFunctionsV3(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("jon 1")
-	a, err := getFunctionAnnotations(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	fmt.Printf("jon 2 === %v\n", a)
-	grpcReq := grpc.WatchFunctionsRequest{
-		Annotations: a,
-	}
-
-	fmt.Println("jon 3")
-
-	client, err := h.s.functions.WatchFunctions(r.Context(), &grpcReq)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-	fmt.Println("jon 4")
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	go func() {
-		<-client.Context().Done()
-		//TODO: done
-	}()
-	fmt.Println("jon 5")
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		ErrResponse(w, fmt.Errorf("streaming unsupported"))
-		return
-	}
-
-	// var httpOk bool
-	// errch := make(chan error)
-
-	for {
-		fmt.Println("jon 6")
-		resp, err := client.Recv()
-		if err != nil {
-			fmt.Printf("Im blocked1, err = %v", err)
-
-			// errch <- fmt.Errorf("client failed: %w", err)
-			ErrResponse(w, err)
-			fmt.Printf("Im blocked 1!!!, err = %v", err)
-
-			return
-		}
-
-		fmt.Println("jon 7")
-		b, err := json.Marshal(resp)
-		if err != nil {
-			fmt.Printf("Im blocked2, err = %v", err)
-
-			// errch <- fmt.Errorf("got bad data: %w", err)
-			ErrResponse(w, err)
-			fmt.Printf("Im blocked2 !!!, err = %v", err)
-
-			return
-		}
-
-		fmt.Println("jon 8")
-		// w.Write([]byte(fmt.Sprintf("event: +%v", resp)))
-		fmt.Printf("WRITING ======= %s", fmt.Sprintf("data: %s", string(b)))
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
-			fmt.Printf("Im blocked3, err = %v", err)
-			// errch <- fmt.Errorf("failed to write data: %w", err)
-			ErrResponse(w, err)
-			fmt.Printf("Im blocked 3!!!, err = %v", err)
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
 			return
 		}
 
-		fmt.Println("jon 9")
 		flusher.Flush()
-		// httpOk = true
 	}
-
-	// fmt.Println("jon 10")
-	// err = <-errch
-	// fmt.Printf("err = +%v", err)
-	// if !httpOk {
-	// 	ErrResponse(w, err)
-	// }
-
 }
 
-func (h *Handler) WatchRevisions(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
 
 	sn := mux.Vars(r)["serviceName"]
+	rn := mux.Vars(r)["revisionName"]
+
+	// Append prefixNamespace if in namespace route and not
+	ns := mux.Vars(r)["namespace"]
+	if ns != "" && !strings.HasPrefix(sn, prefixNamespace+"-") {
+		sn = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, sn)
+	}
+
 	grpcReq := new(grpc.WatchRevisionsRequest)
 	grpcReq.ServiceName = &sn
+	grpcReq.RevisionName = &rn
 
 	client, err := h.s.functions.WatchRevisions(r.Context(), grpcReq)
 	if err != nil {
@@ -873,59 +724,104 @@ func (h *Handler) WatchRevisions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	defer client.CloseSend()
+	flusher, err := setupSEEWriter(w)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	go func() {
 		<-client.Context().Done()
 		//TODO: done
 	}()
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		ErrResponse(w, fmt.Errorf("streaming unsupported"))
-		return
-	}
-
-	// var httpOk bool
-	// errch := make(chan error)
-
-	// go func() {
 	for {
 		resp, err := client.Recv()
 		if err != nil {
-			// errch <- fmt.Errorf("client failed: %w", err)
-			ErrResponse(w, err)
+			ErrSSEResponse(w, flusher, err)
+			log.Error(fmt.Errorf("client failed to recieve: %w", err))
 			return
 		}
 
 		b, err := json.Marshal(resp)
 		if err != nil {
-			// errch <- fmt.Errorf("got bad data: %w", err)
-			ErrResponse(w, err)
+			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
+			log.Error(fmt.Errorf("client recieved bad data: %w", err))
 			return
 		}
 
-		// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
-			// errch <- fmt.Errorf("failed to write data: %w", err)
-			ErrResponse(w, err)
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
 			return
 		}
 
 		flusher.Flush()
-		// httpOk = true
 	}
-	// }()
+}
 
-	// err = <-errch
-	// if !httpOk {
-	// ErrResponse(w, err)
-	// }
+func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
+	sn := mux.Vars(r)["podName"]
+	grpcReq := new(grpc.WatchLogsRequest)
+	grpcReq.PodName = &sn
+
+	client, err := h.s.functions.WatchLogs(r.Context(), grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	defer client.CloseSend()
+	flusher, err := setupSEEWriter(w)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	var m sync.Mutex
+
+	go func() {
+		for {
+			select {
+			case <-time.After(15 * time.Second):
+				m.Lock()
+				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
+				if err != nil {
+					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
+					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+				}
+
+				flusher.Flush()
+				m.Unlock()
+			case <-client.Context().Done():
+				//TODO: done
+				return
+			}
+		}
+	}()
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			ErrSSEResponse(w, flusher, err)
+			log.Error(fmt.Errorf("client failed to recieve: %w", err))
+			return
+		}
+
+		m.Lock()
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(*resp.Data))))
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
+			return
+		}
+
+		flusher.Flush()
+		m.Unlock()
+	}
 }
 
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
@@ -955,124 +851,84 @@ func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 
-	a, err := getFunctionAnnotations(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
+	sn := mux.Vars(r)["serviceName"]
+	rn := mux.Vars(r)["revisionName"]
+
+	// Append prefixNamespace if in namespace route and not found
+	ns := mux.Vars(r)["namespace"]
+	if ns != "" && !strings.HasPrefix(sn, prefixNamespace+"-") {
+		sn = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, sn)
 	}
 
-	grpcReq := grpc.WatchPodsRequest{
-		Annotations: a,
-	}
+	grpcReq := new(grpc.WatchPodsRequest)
+	grpcReq.ServiceName = &sn
+	grpcReq.RevisionName = &rn
 
-	client, err := h.s.functions.WatchPods(r.Context(), &grpcReq)
+	client, err := h.s.functions.WatchPods(r.Context(), grpcReq)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	defer client.CloseSend()
+	flusher, err := setupSEEWriter(w)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	go func() {
 		<-client.Context().Done()
 		//TODO: done
 	}()
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		ErrResponse(w, fmt.Errorf("streaming unsupported"))
-		return
-	}
+	var m sync.Mutex
+
+	go func() {
+		for {
+			select {
+			case <-time.After(15 * time.Second):
+				m.Lock()
+				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
+				if err != nil {
+					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
+					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+				}
+
+				flusher.Flush()
+				m.Unlock()
+			case <-client.Context().Done():
+				//TODO: done
+				return
+			}
+		}
+	}()
 
 	for {
 		resp, err := client.Recv()
 		if err != nil {
-			ErrResponse(w, err)
+			ErrSSEResponse(w, flusher, err)
+			log.Error(fmt.Errorf("client failed to recieve: %w", err))
 			return
 		}
 
-		fmt.Println("Writing event")
+		b, err := json.Marshal(resp)
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
+			log.Error(fmt.Errorf("client recieved bad data: %w", err))
+			return
+		}
 
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			ErrResponse(w, err)
+		m.Lock()
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
 			return
 		}
 
 		flusher.Flush()
-	}
-}
-
-func (h *Handler) watchPodsV2(w http.ResponseWriter, r *http.Request) {
-
-	a, err := getFunctionAnnotations(r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	grpcReq := grpc.WatchPodsRequest{
-		Annotations: a,
-	}
-
-	client, err := h.s.functions.WatchPods(r.Context(), &grpcReq)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	go func() {
-		<-client.Context().Done()
-		//TODO: done
-	}()
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		ErrResponse(w, fmt.Errorf("streaming unsupported"))
-		return
-	}
-
-	var httpOk bool
-	errch := make(chan error)
-
-	go func() {
-		for {
-			resp, err := client.Recv()
-			if err != nil {
-				errch <- fmt.Errorf("client failed: %w", err)
-				return
-			}
-
-			b, err := json.Marshal(resp)
-			if err != nil {
-				errch <- fmt.Errorf("got bad data: %w", err)
-				return
-			}
-
-			// w.Write([]byte(fmt.Sprintf("event: %s", *resp.Event)))
-			_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-			if err != nil {
-				errch <- fmt.Errorf("failed to write data: %w", err)
-				return
-			}
-
-			flusher.Flush()
-			httpOk = true
-		}
-	}()
-
-	err = <-errch
-	if !httpOk {
-		ErrResponse(w, err)
+		m.Unlock()
 	}
 
 }

@@ -35,6 +35,7 @@ type FunctionsServiceClient interface {
 	WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
 	WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error)
 	WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error)
+	WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error)
 	ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error)
 }
 
@@ -259,6 +260,38 @@ func (x *functionsServiceWatchRevisionsClient) Recv() (*WatchRevisionsResponse, 
 	return m, nil
 }
 
+func (c *functionsServiceClient) WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[3], "/grpc.FunctionsService/WatchLogs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &functionsServiceWatchLogsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type FunctionsService_WatchLogsClient interface {
+	Recv() (*WatchLogsResponse, error)
+	grpc.ClientStream
+}
+
+type functionsServiceWatchLogsClient struct {
+	grpc.ClientStream
+}
+
+func (x *functionsServiceWatchLogsClient) Recv() (*WatchLogsResponse, error) {
+	m := new(WatchLogsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error) {
 	out := new(ListPodsResponse)
 	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ListPods", in, out, opts...)
@@ -288,6 +321,7 @@ type FunctionsServiceServer interface {
 	WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error
 	WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error
 	WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error
+	WatchLogs(*WatchLogsRequest, FunctionsService_WatchLogsServer) error
 	ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error)
 	mustEmbedUnimplementedFunctionsServiceServer()
 }
@@ -343,6 +377,9 @@ func (UnimplementedFunctionsServiceServer) WatchPods(*WatchPodsRequest, Function
 }
 func (UnimplementedFunctionsServiceServer) WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchRevisions not implemented")
+}
+func (UnimplementedFunctionsServiceServer) WatchLogs(*WatchLogsRequest, FunctionsService_WatchLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchLogs not implemented")
 }
 func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPods not implemented")
@@ -657,6 +694,27 @@ func (x *functionsServiceWatchRevisionsServer) Send(m *WatchRevisionsResponse) e
 	return x.ServerStream.SendMsg(m)
 }
 
+func _FunctionsService_WatchLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchLogsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FunctionsServiceServer).WatchLogs(m, &functionsServiceWatchLogsServer{stream})
+}
+
+type FunctionsService_WatchLogsServer interface {
+	Send(*WatchLogsResponse) error
+	grpc.ServerStream
+}
+
+type functionsServiceWatchLogsServer struct {
+	grpc.ServerStream
+}
+
+func (x *functionsServiceWatchLogsServer) Send(m *WatchLogsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPodsRequest)
 	if err := dec(in); err != nil {
@@ -753,6 +811,11 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "WatchRevisions",
 			Handler:       _FunctionsService_WatchRevisions_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "WatchLogs",
+			Handler:       _FunctionsService_WatchLogs_Handler,
 			ServerStreams: true,
 		},
 	},

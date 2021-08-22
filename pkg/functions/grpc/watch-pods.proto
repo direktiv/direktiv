@@ -12,5 +12,6 @@ message WatchPodsResponse {
 }
 
 message WatchPodsRequest {
-	map<string, string> annotations = 1;
+	optional string ServiceName = 1;
+	optional string RevisionName = 2;
 }

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
@@ -83,4 +84,34 @@ func ErrResponse(w http.ResponseWriter, err error) {
 	w.WriteHeader(respCode)
 	/* #nosec */
 	_ = json.NewEncoder(w).Encode(eo)
+}
+
+func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
+	eo := GenerateErrObject(err)
+
+	b, err := json.Marshal(eo)
+	if err != nil {
+		log.Errorf("FAILED to marshal sse error: %v", eo)
+	}
+
+	_, err = w.Write([]byte(fmt.Sprintf("event: error\ndata: %s\n\n", string(b))))
+	if err != nil {
+		log.Errorf("FAILED to write sse error: %s", string(b))
+	}
+
+	flusher.Flush()
+}
+
+func setupSEEWriter(w http.ResponseWriter) (http.Flusher, error) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return flusher, fmt.Errorf("streaming unsupported")
+	}
+
+	return flusher, nil
 }
