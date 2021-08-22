@@ -157,14 +157,19 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 // calculates has over functions defined in workflow
 func hashForFunctions(workflow model.Workflow) string {
 
+	if workflow.GetFunctions() == nil {
+		return ""
+	}
+
 	csnew := md5.New()
 	for _, f := range workflow.GetFunctions() {
-		if f.GetType() != model.ReusableContainerFunctionType {
+		if f == nil || f.GetType() != model.ReusableContainerFunctionType {
 			continue
 		}
 		fn, _ := json.Marshal(f)
 		csnew.Write(fn)
 	}
+
 	return fmt.Sprintf("%x", csnew.Sum(nil))
 
 }
