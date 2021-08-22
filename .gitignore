@@ -63,4 +63,5 @@
 *build/docker/ui/direktiv-ui
 *build/docker/init-pod/init-pod
 *build/docker/functions/functions
+build/docker/all/kubernetes
 deploy*.yaml

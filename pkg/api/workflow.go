@@ -382,10 +382,21 @@ func sendContent(w http.ResponseWriter, r *http.Request, data []byte) error {
 
 		s, ok := v.(string)
 
-		// if there is no such a field in the jq search
+		// if it is not a string, it is json
 		if !ok {
-			return fmt.Errorf("field not a string or null")
+			w.Header().Set("Content-Type", "application/json")
+
+			b, err := json.Marshal(v)
+			if err != nil {
+				return fmt.Errorf("can not return field: %v", err)
+			}
+
+			// return json
+			_, err = w.Write(b)
+			return err
+
 		}
+
 		decoder := base64.NewDecoder(base64.StdEncoding, strings.NewReader(s))
 
 		buf := make([]byte, 16384)
@@ -457,14 +468,18 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 
 		body := make(map[string]interface{})
 		for k := range values {
-			// append to map[string]string
-			body[k] = values.Get(k)
+			if len(values[k]) > 1 {
+				body[k] = values[k]
+			} else {
+				body[k] = values.Get(k)
+			}
 		}
 		b, err = json.Marshal(&body)
 		if err != nil {
 			ErrResponse(w, err)
 			return
 		}
+
 	}
 
 	ctx, cancel := CtxDeadline(r.Context())

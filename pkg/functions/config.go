@@ -53,6 +53,8 @@ func newConfigReader() *configReader {
 }
 
 func readAndSet(path string, target interface{}) {
+
+	log.Debugf("reading config %s", path)
 	file, err := os.Open(path)
 	if err != nil {
 		log.Errorf("can not open config file: %v", err)

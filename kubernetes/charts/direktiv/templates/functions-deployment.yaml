@@ -8,11 +8,11 @@ spec:
   replicas: {{ .Values.functions.replicaCount }}
   selector:
     matchLabels:
-      {{- include "direktiv.selectorLabels" . | nindent 6 }}-functions
+      {{- include "direktiv.selectorLabelsFunctions" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "direktiv.selectorLabels" . | nindent 8 }}-functions
+        {{- include "direktiv.selectorLabelsFunctions" . | nindent 8 }}
     spec:
       securityContext:
         runAsNonRoot: true
@@ -36,9 +36,9 @@ spec:
             secretName: {{ .Values.functions.certificate }}
         {{- end }}
       containers:
-        {{- if .Values.functions.extraContainers }}
-        {{ toYaml .Values.functions.extraContainers | indent 8}}
-        {{- end }}
+{{- if .Values.functions.extraContainers }}
+{{ toYaml .Values.functions.extraContainers | indent 8}}
+{{- end }}
         - name: functions-controller
           volumeMounts:
           {{- if ne  .Values.functions.certificate "none" }}

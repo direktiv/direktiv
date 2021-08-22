@@ -48,7 +48,7 @@ images: image-api image-flow image-init-pod image-secrets image-sidecar image-fu
 
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions push-tls-create
+push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions
 
 HELM_CONFIG := "scripts/dev.yaml"
 
@@ -143,8 +143,9 @@ docker-ui: ## Manually clone and build the latest UI.
 # Misc
 
 .PHONY: docker-all
-docker-all: ## Build the all-in-one image. 
-docker-all: 
+docker-all: ## Build the all-in-one image.
+docker-all:
+	cp -Rf kubernetes build/docker/all
 	docker build --no-cache -t direktiv-kube build/docker/all
 
 .PHONY: template-configmaps

@@ -131,7 +131,7 @@ data:
   # but patchy.
   # The larger of this flag and `scale-to-zero-grace-period` will effectively
   # determine how the last pod will hang around.
-  scale-to-zero-pod-retention-period: "0s"
+  scale-to-zero-pod-retention-period: "120s"
 
   # pod-autoscaler-class specifies the default pod autoscaler class
   # that should be used if none is specified. If omitted, the Knative
@@ -159,7 +159,7 @@ data:
   # max-scale is the cluster-wide default value for the max scale of a revision,
   # unless overridden by the "autoscaling.knative.dev/maxScale" annotation.
   # If set to 0, the revision has no maximum scale.
-  max-scale: "0"
+  max-scale: "10"
 
   # scale-down-delay is the amount of time that must pass at reduced
   # concurrency before a scale down decision is applied. This can be useful,

@@ -2,23 +2,29 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: nwp-api
+  name: nwp-functions
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "direktiv.name" . }}-api
+      app.kubernetes.io/instance: {{ include "direktiv.name" . }}-functions
   policyTypes:
     - Ingress
     - Egress
   ingress:
     - from:
-        - namespaceSelector:
+        - podSelector:
             matchLabels:
-              networking.knative.dev/ingress-provider: contour
+              app.kubernetes.io/name: {{ include "direktiv.name" . }}
       ports:
-        - port: 8080
+        - port: 5555
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "direktiv.name" . }}-api
+      ports:
+        - port: 5555
   egress:
     - to:
         - namespaceSelector: {}
@@ -28,18 +34,6 @@ spec:
       ports:
         - port: 53
           protocol: UDP
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: {{ include "direktiv.fullname" . }}
-      ports:
-        - port: 6666
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: {{ include "direktiv.name" . }}-functions
-      ports:
-        - port: 5555
     {{- if .Values.withSupport }}
     - to:
         - podSelector:
@@ -55,4 +49,13 @@ spec:
       ports:
         - port: 5432
     {{- end }}
+    - to:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicies.podCidr }}
+        - ipBlock:
+            cidr: {{ .Values.networkPolicies.serviceCidr }}
+      ports:
+        - port: 443
+        - port: 8080
+        - port: 80
 {{- end }}

@@ -62,8 +62,8 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 	}
 
 	udb := db.dbEnt.DB()
-	udb.SetMaxIdleConns(10)
-	udb.SetMaxOpenConns(10)
+	udb.SetMaxIdleConns(64)
+	udb.SetMaxOpenConns(32)
 
 	// Run the auto migration tool.
 	if err := db.dbEnt.Schema.Create(db.ctx); err != nil {

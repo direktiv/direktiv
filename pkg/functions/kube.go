@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -82,6 +83,28 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 
 	// check if there is traffic on it
 	// decline if there is still traffic on it
+	r, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Get(context.Background(),
+		in.GetRevision(), metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("error getting revision for %v: %v", in.GetRevision(), err)
+		return &empty, err
+	}
+
+	svcName := r.Labels["serving.knative.dev/configuration"]
+	resp, err := getKnativeFunction(svcName)
+	if err != nil {
+		log.Errorf("error getting svc for %v: %v", svcName, err)
+		return &empty, err
+	}
+
+	for i := range resp.Revisions {
+		rr := resp.Revisions[i]
+		if rr.Name != nil && rr.GetName() == in.GetRevision() && rr.GetTraffic() > 0 {
+			log.Errorf("revisions with traffic can not be deleted")
+			return &empty, fmt.Errorf("revision %s still has traffic assigned: %d%%",
+				in.GetRevision(), rr.GetTraffic())
+		}
+	}
 
 	err = cs.ServingV1().Revisions(functionsConfig.Namespace).
 		Delete(context.Background(), in.GetRevision(), metav1.DeleteOptions{})
@@ -96,7 +119,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("deleting functionss %v", in.GetAnnotations())
+	log.Debugf("deleting functions %v", in.GetAnnotations())
 
 	err := deleteKnativeFunctionss(in.GetAnnotations())
 
@@ -105,6 +128,8 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 
 func (is *functionsServer) GetFunction(ctx context.Context,
 	in *igrpc.GetFunctionRequest) (*igrpc.GetFunctionResponse, error) {
+
+	log.Debugf("get function %v", in.GetServiceName())
 
 	var resp *igrpc.GetFunctionResponse
 
@@ -203,7 +228,7 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 
 	log.Debugf("list functions %v", in.GetAnnotations())
 
-	items, err := listKnativeFunctionss(in.GetAnnotations())
+	items, err := listKnativeFunctions(in.GetAnnotations())
 	if err != nil {
 		return &resp, err
 	}
@@ -592,7 +617,7 @@ func filterLabels(annotations map[string]string) map[string]string {
 	return a
 }
 
-func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInfo, error) {
+func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo, error) {
 
 	var b []*igrpc.FunctionsInfo
 
@@ -616,6 +641,8 @@ func listKnativeFunctionss(annotations map[string]string) ([]*igrpc.FunctionsInf
 		log.Errorf("error getting functions list: %v", err)
 		return b, err
 	}
+
+	log.Debugf("%d functions", len(l.Items))
 
 	for i := range l.Items {
 
@@ -675,6 +702,8 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 		b = append(b, ii)
 	}
 
+	log.Debugf("list done")
+
 	return b, nil
 }
 
@@ -731,6 +760,8 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 
 	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
 	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
+
+	// crashes knative sometimes
 	meta.Annotations["serving.knative.dev/rolloutDuration"] =
 		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 
@@ -1030,7 +1061,8 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		return resp, err
 	}
 
-	svc, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(), name, metav1.GetOptions{})
+	svc, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
+		name, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting knative service: %v", err)
 		return resp, err
@@ -1180,6 +1212,8 @@ func createVolumes() []corev1.Volume {
 
 func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) error {
 
+	log.Debugf("update knative function %s", svn)
+
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
 	if err != nil {
@@ -1213,10 +1247,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 		return err
 	}
 
-	var (
-		useLatest bool
-	)
-	useLatest = true
+	useLatest := true
 
 	tr := []v1.TrafficTarget{}
 	tt := v1.TrafficTarget{
@@ -1227,13 +1258,15 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 
 	for _, trafficInfo := range s.Status.Traffic {
 		if trafficInfo.Percent != nil {
-			newPercent := *trafficInfo.Percent * (100 - percent) / 100
+			newPercent := math.Round(float64(*trafficInfo.Percent) *
+				(100.0 - float64(percent)) / 100.0)
 			if newPercent != 0 {
-				log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')\n",
-					trafficInfo.RevisionName, newPercent, *trafficInfo.Percent)
+				p := int64(newPercent)
+				log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')",
+					trafficInfo.RevisionName, p, *trafficInfo.Percent)
 				tr = append(tr, v1.TrafficTarget{
 					RevisionName: trafficInfo.RevisionName,
-					Percent:      &newPercent,
+					Percent:      &p,
 				})
 			}
 		}
@@ -1445,36 +1478,57 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 		return err
 	}
 
-	s, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(), name, metav1.GetOptions{})
+	r, err := getKnativeFunction(name)
 	if err != nil {
 		log.Errorf("error getting service: %v", err)
 		return err
 	}
 
-	var latestRevision string
-	for _, t := range s.Status.Traffic {
-		if t.LatestRevision != nil {
-			if *t.LatestRevision {
-				latestRevision = t.RevisionName
+	latestRevision := ""
+
+	// should not happen
+	if len(r.Revisions) > 0 {
+		latestRevision = r.Revisions[0].GetName()
+	}
+
+	// check if that rev exists
+	revExists := func(revs []*igrpc.Revision, name string) bool {
+		for a := range revs {
+			if revs[a].GetName() == name {
+				return true
 			}
 		}
+		return false
 	}
+
+	log.Debugf("latest revision name: %s", latestRevision)
 
 	tr := []v1.TrafficTarget{}
 	for i := range tv {
 
+		if !revExists(r.Revisions, tv[i].GetRevision()) {
+			return fmt.Errorf("unknown revision %s", tv[i].GetRevision())
+		}
+
 		isLatest := latestRevision == tv[i].GetRevision()
 
-		tt := v1.TrafficTarget{
-			LatestRevision: &isLatest,
-			Percent:        tv[i].Percent,
-		}
+		log.Debugf("check revision: %s, %v", tv[i].GetRevision(), isLatest)
 
-		if !isLatest {
-			tt.RevisionName = tv[i].GetRevision()
-		}
+		if tv[i].GetPercent() > 0 {
+			tt := v1.TrafficTarget{
+				LatestRevision: &isLatest,
+				Percent:        tv[i].Percent,
+			}
 
-		tr = append(tr, tt)
+			log.Debugf("setting traffic %v: %v",
+				tv[i].GetRevision(), tv[i].GetPercent())
+
+			if !isLatest {
+				tt.RevisionName = tv[i].GetRevision()
+			}
+
+			tr = append(tr, tt)
+		}
 	}
 
 	var nr v1.Route
