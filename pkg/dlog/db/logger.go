@@ -13,6 +13,7 @@ import (
 	"github.com/inconshreveable/log15"
 	"github.com/vorteil/direktiv/pkg/api"
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Logger struct {
@@ -46,7 +47,7 @@ func (l *Logger) CloseConnection() error {
 	return l.db.Close()
 }
 
-// HOOOKERS!!!!!!!!!!! //
+// Testing !!!!!!!!!!! //
 
 type Broker struct {
 	stopCh    chan struct{}
@@ -100,11 +101,24 @@ func (b *Broker) Unsubscribe(msgCh chan interface{}) {
 	b.unsubCh <- msgCh
 }
 
-func (b *Broker) Publish(msg, time, level interface{}) error {
-	data, err := json.Marshal(map[string]interface{}{
-		"msg":  msg,
-		"lvl":  level,
-		"time": time,
+type logEntry struct {
+	Message   interface{}       `json:"message"`
+	Level     interface{}       `json:"level"`
+	Timestamp interface{}       `json:"timestamp"`
+	Ctx       map[string]string `json:"context"`
+}
+
+type logTimestamp struct {
+	Seconds interface{} `json:"seconds"`
+	Nano    interface{} `json:"nanos"`
+}
+
+func (b *Broker) Publish(msg, level interface{}, timestamp int64, ctx map[string]string) error {
+	data, err := json.Marshal(logEntry{
+		Message:   msg,
+		Level:     level,
+		Timestamp: timestamppb.New(time.Unix(0, timestamp)),
+		Ctx:       ctx,
 	})
 
 	if err != nil {
@@ -119,7 +133,7 @@ func NewLogger(database string) (*Logger, error) {
 	l := new(Logger)
 	err := l.Connect(database)
 	l.router = mux.NewRouter()
-	l.router.HandleFunc("/logging/{namespace}/{workflowTarget}/{id}", l.dispatchLogs)
+	l.router.HandleFunc("/logging/{namespace}/{workflowTarget}/{id}", l.dispatchLogs).Methods(http.MethodGet, http.MethodHead)
 	l.server = &http.Server{
 		Handler:      l.router,
 		Addr:         ":7979",
@@ -139,20 +153,29 @@ func (l *Logger) dispatchLogs(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	instance := fmt.Sprintf("%s/%s/%s", ns, wf, id)
 
+	broker, ok := l.brokers[instance]
+	if !ok {
+		// FIXME: ERROR NOT WORKING!!!@!@
+		err := fmt.Errorf("instance '%s' not found", instance)
+		fmt.Printf("dispatch logs api failed: %s\n", err.Error())
+		api.ErrResponse(w, err)
+		return
+	}
+
+	previousLogs, err := l.QueryLogs(context.Background(), instance, 10000, 0)
+	if err != nil {
+		// TODO
+		api.ErrResponse(w, err)
+	}
+
 	flusher, err := api.SetupSEEWriter(w)
 	if err != nil {
 		api.ErrResponse(w, err)
 		return
 	}
 
-	broker, ok := l.brokers[instance]
-	if !ok {
-		// FIXME: ERROR NOT WORKING!!!@!@
-		err := fmt.Errorf("instance '%s' not found", instance)
-		fmt.Printf("dispatch logs api failed: %s\n", err.Error())
-		// api.ErrResponse(w, err)
-		api.ErrSSEResponse(w, flusher, err)
-		return
+	if r.Method == http.MethodGet {
+
 	}
 
 	msgCh := broker.Subscribe()
@@ -163,30 +186,23 @@ func (l *Logger) dispatchLogs(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	previousLogs, err := l.QueryLogs(context.Background(), instance, 10000, 0)
-	if err != nil {
-		// TODO
-		panic(err)
-	}
-
 	// Send Previous logs
 	for _, pLog := range previousLogs.Logs {
 		fmt.Printf("pLog = %s\n", pLog.Message)
-		pData, err := json.Marshal(map[string]interface{}{
-			"msg":  pLog.Message,
-			"lvl":  pLog.Level,
-			"time": pLog.Timestamp,
+		pData, err := json.Marshal(logEntry{
+			Message:   pLog.Message,
+			Level:     pLog.Context,
+			Timestamp: timestamppb.New(time.Unix(0, pLog.Timestamp)),
+			Ctx:       pLog.Context,
 		})
-
 		if err != nil {
-			// TODO
-			panic(err)
+			api.ErrSSEResponse(w, flusher, fmt.Errorf("could not process previous log: %w", err))
+			continue
 		}
 
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", pData)))
 		if err != nil {
-			// TODO
-			panic(err)
+			api.ErrSSEResponse(w, flusher, fmt.Errorf("could not write previous log: %w", err))
 		}
 	}
 	flusher.Flush()
@@ -199,7 +215,7 @@ func (l *Logger) dispatchLogs(w http.ResponseWriter, r *http.Request) {
 			// fmt.Printf("WRITING DATA !!!  = %s\n", fmt.Sprintf("data: %s\n\n", msgData))
 			_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", msgData)))
 			if err != nil {
-				w.Write([]byte(fmt.Sprintf("event: error\ndata: %s\n\n", err)))
+				api.ErrSSEResponse(w, flusher, fmt.Errorf("could not write log: %w", err))
 				return
 			}
 
@@ -208,7 +224,7 @@ func (l *Logger) dispatchLogs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// HOOOKERS!!!!!!!!!!! //
+// Testing !!!!!!!!!!! //
 
 type dbLogger struct {
 	log15.Logger

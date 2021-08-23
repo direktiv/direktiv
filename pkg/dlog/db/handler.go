@@ -124,7 +124,7 @@ func (h *Handler) dispatcher() {
 
 		for i, msg := range h.queuedLogs {
 
-			ctxMap := make(map[string]interface{}, 0)
+			ctxMap := make(map[string]string, 0)
 			for i, c := range msg.Ctx {
 				if i%2 == 1 {
 					ctxMap[fmt.Sprintf("%s", msg.Ctx[i-1])] = fmt.Sprintf("%v", c)
@@ -141,7 +141,7 @@ func (h *Handler) dispatcher() {
 				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
 				vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
 
-				err = h.broker.Publish(msg.Msg, msg.Time.UnixNano(), msg.Lvl)
+				err = h.broker.Publish(msg.Msg, msg.Lvl, msg.Time.UnixNano(), ctxMap)
 				if err != nil {
 					fmt.Printf("(todo: improve this log!!!) %s\n", err.Error())
 				}
