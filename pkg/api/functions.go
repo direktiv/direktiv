@@ -782,10 +782,17 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var m sync.Mutex
+	done := make(chan bool)
 
 	go func() {
 		for {
 			select {
+			case <-done:
+				//TODO: done
+				return
+			case <-client.Context().Done():
+				//TODO: done
+				return
 			case <-time.After(15 * time.Second):
 				m.Lock()
 				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
@@ -796,9 +803,6 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
 				flusher.Flush()
 				m.Unlock()
-			case <-client.Context().Done():
-				//TODO: done
-				return
 			}
 		}
 	}()
@@ -808,7 +812,7 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
 			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			return
+			break
 		}
 
 		m.Lock()
@@ -816,12 +820,14 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
+			break
 		}
 
 		flusher.Flush()
 		m.Unlock()
 	}
+
+	done <- true
 }
 
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
@@ -883,10 +889,17 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	var m sync.Mutex
+	done := make(chan bool)
 
 	go func() {
 		for {
 			select {
+			case <-done:
+				//TODO: done
+				return
+			case <-client.Context().Done():
+				//TODO: done
+				return
 			case <-time.After(15 * time.Second):
 				m.Lock()
 				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
@@ -897,9 +910,6 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 
 				flusher.Flush()
 				m.Unlock()
-			case <-client.Context().Done():
-				//TODO: done
-				return
 			}
 		}
 	}()
@@ -909,26 +919,28 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
 			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			return
+			break
 		}
 
 		b, err := json.Marshal(resp)
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
 			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
+			break
 		}
 
+		// fmt.Printf("IM GONNA PRINT NOW: %s\n", fmt.Sprintf("data: %s\n\n", string(b)))
 		m.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
+			break
 		}
 
 		flusher.Flush()
 		m.Unlock()
 	}
 
+	done <- true
 }
