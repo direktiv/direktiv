@@ -1029,6 +1029,8 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		wli.Log(ctx, "Workflow failed with error '%s': %s", wli.rec.ErrorCode, wli.rec.ErrorMessage)
 	}
 
+	reportMetricEnd(wli.namespace, wli.wf.ID, status)
+
 	wf := wli.rec.Edges.Workflow
 	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus(status).Save(ctx)
 	if err != nil {

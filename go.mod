@@ -25,6 +25,7 @@ require (
 	github.com/nxadm/tail v1.4.4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.0 // indirect
+	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rung/go-safecast v1.0.1
@@ -37,10 +38,10 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+	golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.36.0
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0-rc.1
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.19.7

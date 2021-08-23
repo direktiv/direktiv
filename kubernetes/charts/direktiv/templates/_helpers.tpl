@@ -119,6 +119,24 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Selector labels prometheus
+*/}}
+{{- define "direktiv.selectorLabelsPrometheus" -}}
+app.kubernetes.io/name: {{ include "direktiv.name" . }}-prometheus
+app.kubernetes.io/instance: {{ .Release.Name }}-prometheus
+{{- end }}
+
+{{- define "direktiv.labelsPrometheus" -}}
+helm.sh/chart: {{ include "direktiv.chart" . }}
+{{ include "direktiv.selectorLabelsPrometheus" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "direktiv.serviceAccountName" -}}

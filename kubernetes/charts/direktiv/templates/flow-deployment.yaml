@@ -14,6 +14,10 @@ spec:
       {{- include "direktiv.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        "prometheus.io/path": "/metrics"
+        "prometheus.io/port": "2112"
+        "prometheus.io/scrape": "true"
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
     spec:
@@ -80,6 +84,9 @@ spec:
               protocol: TCP
             - name: flow
               containerPort: 7777
+              protocol: TCP
+            - name: metrics
+              containerPort: 2112
               protocol: TCP
           env:
           - name: DIREKTIV_DEBUG

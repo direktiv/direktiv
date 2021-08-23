@@ -113,6 +113,8 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}
 
+	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
+
 	log.Debugf("Invoked workflow %s/%s: %s", namespace, workflow, inst.id)
 
 	resp.InstanceId = &inst.id
