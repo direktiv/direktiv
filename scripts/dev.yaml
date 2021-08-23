@@ -4,14 +4,24 @@ debug: "true"
 
 secrets:
   image: "secrets"
+  tag: "latest"
+
 flow:
   image: "flow"
+  tag: "latest"
+
 ui:
   image: "direktiv-ui"
+  tag: "latest"
+
 api:
   image: "api"
+  tag: "latest"
+
 functions:
   namespace: direktiv-services-direktiv
   image: "functions"
+  tag: "latest"
   sidecar: "localhost:5000/sidecar"
   initPodImage: "localhost:5000/direktiv-init-pod"
+
