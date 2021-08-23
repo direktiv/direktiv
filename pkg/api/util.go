@@ -80,10 +80,21 @@ func ErrResponse(w http.ResponseWriter, err error) {
 	eo := GenerateErrObject(err)
 	respCode := ConvertGRPCStatusCodeToHTTPCode(eo.Code)
 
+	fmt.Printf("!!! writing error = %v, code = %v \n", eo, respCode)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(respCode)
 	/* #nosec */
 	_ = json.NewEncoder(w).Encode(eo)
+}
+
+func ErrHEADResponse(w http.ResponseWriter, err error) {
+	eo := GenerateErrObject(err)
+	respCode := ConvertGRPCStatusCodeToHTTPCode(eo.Code)
+
+	w.Header().Set("error", eo.Message)
+
+	w.WriteHeader(respCode)
 }
 
 func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {

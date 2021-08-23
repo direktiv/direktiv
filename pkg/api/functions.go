@@ -957,6 +957,17 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp, err := http.Head(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
+	if err != nil {
+		ErrResponse(w, fmt.Errorf("failed to connect: %w", err))
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		ErrResponse(w, fmt.Errorf("could not watch logs: %s", resp.Header.Get("error")))
+		return
+	}
+
 	events := make(chan *sse.Event)
 	client := sse.NewClient(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
 	err = client.SubscribeChan("", events)

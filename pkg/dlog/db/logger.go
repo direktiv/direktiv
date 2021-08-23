@@ -49,68 +49,11 @@ func (l *Logger) CloseConnection() error {
 
 // Testing !!!!!!!!!!! //
 
-type Broker struct {
-	stopCh    chan struct{}
-	publishCh chan interface{}
-	subCh     chan chan interface{}
-	unsubCh   chan chan interface{}
-	handler   *Handler
-}
-
-func NewBroker() *Broker {
-	return &Broker{
-		stopCh:    make(chan struct{}),
-		publishCh: make(chan interface{}, 1),
-		subCh:     make(chan chan interface{}, 1),
-		unsubCh:   make(chan chan interface{}, 1),
-	}
-}
-
-func (b *Broker) Start() {
-	subs := map[chan interface{}]struct{}{}
-	for {
-		select {
-		case <-b.stopCh:
-			return
-		case msgCh := <-b.subCh:
-			subs[msgCh] = struct{}{}
-		case msgCh := <-b.unsubCh:
-			delete(subs, msgCh)
-		case msg := <-b.publishCh:
-			for msgCh := range subs {
-				select {
-				case msgCh <- msg:
-				default:
-				}
-			}
-		}
-	}
-}
-
-func (b *Broker) Stop() {
-	close(b.stopCh)
-}
-
-func (b *Broker) Subscribe() chan interface{} {
-	msgCh := make(chan interface{}, 5)
-	b.subCh <- msgCh
-	return msgCh
-}
-
-func (b *Broker) Unsubscribe(msgCh chan interface{}) {
-	b.unsubCh <- msgCh
-}
-
 type logEntry struct {
 	Message   interface{}       `json:"message"`
 	Level     interface{}       `json:"level"`
 	Timestamp interface{}       `json:"timestamp"`
 	Ctx       map[string]string `json:"context"`
-}
-
-type logTimestamp struct {
-	Seconds interface{} `json:"seconds"`
-	Nano    interface{} `json:"nanos"`
 }
 
 func (b *Broker) Publish(msg, level interface{}, timestamp int64, ctx map[string]string) error {
@@ -158,24 +101,25 @@ func (l *Logger) dispatchLogs(w http.ResponseWriter, r *http.Request) {
 		// FIXME: ERROR NOT WORKING!!!@!@
 		err := fmt.Errorf("instance '%s' not found", instance)
 		fmt.Printf("dispatch logs api failed: %s\n", err.Error())
-		api.ErrResponse(w, err)
+		api.ErrHEADResponse(w, err)
 		return
 	}
 
 	previousLogs, err := l.QueryLogs(context.Background(), instance, 10000, 0)
 	if err != nil {
 		// TODO
-		api.ErrResponse(w, err)
+		api.ErrHEADResponse(w, err)
 	}
 
 	flusher, err := api.SetupSEEWriter(w)
 	if err != nil {
-		api.ErrResponse(w, err)
+		api.ErrHEADResponse(w, err)
 		return
 	}
 
-	if r.Method == http.MethodGet {
-
+	if r.Method == http.MethodHead {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 
 	msgCh := broker.Subscribe()
