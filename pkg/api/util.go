@@ -102,7 +102,16 @@ func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
 	flusher.Flush()
 }
 
-func setupSEEWriter(w http.ResponseWriter) (http.Flusher, error) {
+func ErrSSEResponseSimple(w http.ResponseWriter, flusher http.Flusher, data []byte) {
+	_, err := w.Write([]byte(fmt.Sprintf("event: error\ndata: %s\n\n", string(data))))
+	if err != nil {
+		log.Errorf("FAILED to write sse error: %s", string(data))
+	}
+
+	flusher.Flush()
+}
+
+func SetupSEEWriter(w http.ResponseWriter) (http.Flusher, error) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")

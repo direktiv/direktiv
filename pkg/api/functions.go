@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/r3labs/sse"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -666,7 +667,7 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -725,7 +726,7 @@ func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -775,7 +776,7 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -877,7 +878,7 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -943,4 +944,49 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	done <- true
+}
+
+func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflowTarget"]
+	id := mux.Vars(r)["id"]
+
+	flusher, err := SetupSEEWriter(w)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	events := make(chan *sse.Event)
+	client := sse.NewClient(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
+	err = client.SubscribeChan("", events)
+	if err != nil {
+		fmt.Printf("got error = %s\n", err)
+	}
+	defer client.Unsubscribe(events)
+
+	for {
+		select {
+		case <-r.Context().Done():
+			return
+		case e := <-events:
+			fmt.Printf("got event: %s\n", string(e.Event))
+			fmt.Printf("Attempting to print= %s\n", fmt.Sprintf("data: %s\n\n", string(e.Data)))
+
+			if string(e.Event) == "error" {
+				ErrSSEResponse(w, flusher, fmt.Errorf(string(e.Data)))
+				return
+			}
+
+			_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(e.Data))))
+			if err != nil {
+				ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+				log.Error(fmt.Errorf("client failed to write data: %w", err))
+				return
+			}
+
+			flusher.Flush()
+		}
+	}
+
 }

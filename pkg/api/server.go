@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -121,6 +122,8 @@ func (s *Server) initDirektiv() error {
 		return err
 	}
 
+	fmt.Println("util.TLSIngressComponent  === " + util.TLSIngressComponent)
+
 	log.Infof("connecting to %s", util.IngressEndpoint())
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
@@ -155,6 +158,9 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		// responds 200 OK
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
+
+	//Testing
+	s.Router().HandleFunc("/api/watch/instance/{namespace}/{workflowTarget}/{id}", s.handler.watchInstanceLogs).Methods(http.MethodGet).Name(RN_WatchServices)
 
 	// Watch
 	s.Router().HandleFunc("/api/watch/functions/", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)

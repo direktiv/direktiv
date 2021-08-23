@@ -19,6 +19,7 @@ type Handler struct {
 	logQueue   chan *log15.Record
 	queuedLogs []log15.Record
 	closed     chan bool
+	broker     *Broker
 }
 
 type HandlerArgs struct {
@@ -26,6 +27,7 @@ type HandlerArgs struct {
 	InsertFrequencyMilliSeconds int
 	Namespace                   string
 	InstanceID                  string
+	Broker                      *Broker
 }
 
 func NewHandler(args *HandlerArgs) (*Handler, error) {
@@ -34,6 +36,10 @@ func NewHandler(args *HandlerArgs) (*Handler, error) {
 
 	out.args = args
 	out.db = args.Driver
+	if args.Broker != nil {
+		out.broker = args.Broker
+		out.broker.handler = out
+	}
 
 	return out.init()
 }
@@ -134,6 +140,11 @@ func (h *Handler) dispatcher() {
 			if h.args.InstanceID != "" {
 				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
 				vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
+
+				err = h.broker.Publish(msg.Msg, msg.Time.UnixNano(), msg.Lvl)
+				if err != nil {
+					fmt.Printf("(todo: improve this log!!!) %s\n", err.Error())
+				}
 			} else {
 				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d,  $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5))
 				vals = append(vals, h.args.Namespace, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
