@@ -105,6 +105,9 @@ func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInst
 
 	for {
 		select {
+		case <-out.Context().Done():
+			log.Debug("watcher server event connection closed")
+			return nil
 		case event := <-logChannel:
 			l, ok := event.(dlog.LogEntry)
 			if !ok {

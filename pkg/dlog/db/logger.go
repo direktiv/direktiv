@@ -58,9 +58,9 @@ func (l *Logger) StreamLogs(ctx context.Context, instance string) (chan interfac
 	ch := broker.Subscribe()
 
 	go func(ch chan interface{}) {
-		fmt.Printf("IM DONE!!!!!!\n")
 		<-ctx.Done()
-		broker.Unsubscribe(ch)
+		fmt.Printf("IM DONE!!!!!!\n")
+		broker.Unsubscribe(ch) //FIXME: Not working
 	}(ch)
 
 	return ch, nil

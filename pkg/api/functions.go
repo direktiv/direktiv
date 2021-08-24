@@ -677,30 +677,36 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		//TODO: done
 	}()
 
+	// Create Heartbeat
+	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
+	go heartbeat.Start(client.Context())
+
 	for {
 		resp, err := client.Recv()
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
 			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			return
+			break
 		}
 
 		b, err := json.Marshal(resp)
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
 			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
+			break
 		}
 
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
+			break
 		}
 
 		flusher.Flush()
 	}
+
+	heartbeat.Done <- true
 }
 
 func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
@@ -736,30 +742,38 @@ func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
 		//TODO: done
 	}()
 
+	// Create Heartbeat
+	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
+	go heartbeat.Start(client.Context())
+
 	for {
 		resp, err := client.Recv()
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
 			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			return
+			break
 		}
 
 		b, err := json.Marshal(resp)
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
 			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
+			break
 		}
 
+		heartbeat.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
+			break
 		}
 
 		flusher.Flush()
+		heartbeat.Unlock()
 	}
+
+	heartbeat.Done <- true
 }
 
 func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
@@ -781,31 +795,9 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var m sync.Mutex
-	done := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case <-done:
-				//TODO: done
-				return
-			case <-client.Context().Done():
-				//TODO: done
-				return
-			case <-time.After(15 * time.Second):
-				m.Lock()
-				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
-				if err != nil {
-					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
-					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
-				}
-
-				flusher.Flush()
-				m.Unlock()
-			}
-		}
-	}()
+	// Create Heartbeat
+	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
+	go heartbeat.Start(client.Context())
 
 	for {
 		resp, err := client.Recv()
@@ -815,7 +807,7 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		m.Lock()
+		heartbeat.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(*resp.Data))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
@@ -824,10 +816,51 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		}
 
 		flusher.Flush()
-		m.Unlock()
+		heartbeat.Unlock()
 	}
 
-	done <- true
+	heartbeat.Done <- true
+
+}
+
+type sseHeartbeat struct {
+	sync.Mutex
+	Done     chan bool
+	interval time.Duration
+	flusher  http.Flusher
+	w        http.ResponseWriter
+}
+
+func newSSEHeartbeat(interval time.Duration, flusher http.Flusher, w http.ResponseWriter) *sseHeartbeat {
+	return &sseHeartbeat{
+		Done:     make(chan bool),
+		interval: interval,
+		flusher:  flusher,
+		w:        w,
+	}
+}
+
+func (hb *sseHeartbeat) Start(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			//TODO: done
+			return
+		case <-hb.Done:
+			//TODO: done
+			return
+		case <-time.After(hb.interval):
+			hb.Lock()
+			_, err := hb.w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
+			if err != nil {
+				ErrSSEResponse(hb.w, hb.flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
+				log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+			}
+
+			hb.flusher.Flush()
+			hb.Unlock()
+		}
+	}
 }
 
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
@@ -888,31 +921,9 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		//TODO: done
 	}()
 
-	var m sync.Mutex
-	done := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case <-done:
-				//TODO: done
-				return
-			case <-client.Context().Done():
-				//TODO: done
-				return
-			case <-time.After(15 * time.Second):
-				m.Lock()
-				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
-				if err != nil {
-					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
-					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
-				}
-
-				flusher.Flush()
-				m.Unlock()
-			}
-		}
-	}()
+	// Create Heartbeat
+	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
+	go heartbeat.Start(client.Context())
 
 	for {
 		resp, err := client.Recv()
@@ -930,7 +941,7 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// fmt.Printf("IM GONNA PRINT NOW: %s\n", fmt.Sprintf("data: %s\n\n", string(b)))
-		m.Lock()
+		heartbeat.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
@@ -939,10 +950,10 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		}
 
 		flusher.Flush()
-		m.Unlock()
+		heartbeat.Unlock()
 	}
 
-	done <- true
+	heartbeat.Done <- true
 }
 
 func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
@@ -1032,82 +1043,36 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 		//TODO: done
 	}()
 
+	// Create Heartbeat
+	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
+	go heartbeat.Start(client.Context())
+
 	for {
 		resp, err := client.Recv()
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
 			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			return
+			break
 		}
 
 		b, err := json.Marshal(resp)
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
 			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
+			break
 		}
 
+		heartbeat.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
+			break
 		}
+		heartbeat.Unlock()
 
 		flusher.Flush()
 	}
 
-	// ns := mux.Vars(r)["namespace"]
-	// wf := mux.Vars(r)["workflowTarget"]
-	// id := mux.Vars(r)["id"]
-
-	// flusher, err := SetupSEEWriter(w)
-	// if err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
-
-	// resp, err := http.Head(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
-	// if err != nil {
-	// 	ErrResponse(w, fmt.Errorf("failed to connect: %w", err))
-	// 	return
-	// }
-
-	// if resp.StatusCode != http.StatusOK {
-	// 	ErrResponse(w, fmt.Errorf("could not watch logs: %s", resp.Header.Get("error")))
-	// 	return
-	// }
-
-	// events := make(chan *sse.Event)
-	// client := sse.NewClient(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
-	// err = client.SubscribeChan("", events)
-	// if err != nil {
-	// 	fmt.Printf("got error = %s\n", err)
-	// }
-	// defer client.Unsubscribe(events)
-
-	// for {
-	// 	select {
-	// 	case <-r.Context().Done():
-	// 		return
-	// 	case e := <-events:
-	// 		fmt.Printf("got event: %s\n", string(e.Event))
-	// 		fmt.Printf("Attempting to print= %s\n", fmt.Sprintf("data: %s\n\n", string(e.Data)))
-
-	// 		if string(e.Event) == "error" {
-	// 			ErrSSEResponse(w, flusher, fmt.Errorf(string(e.Data)))
-	// 			return
-	// 		}
-
-	// 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(e.Data))))
-	// 		if err != nil {
-	// 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-	// 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-	// 			return
-	// 		}
-
-	// 		flusher.Flush()
-	// 	}
-	// }
-
+	heartbeat.Done <- true
 }
