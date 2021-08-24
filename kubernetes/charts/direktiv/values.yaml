@@ -60,6 +60,11 @@ flow:
   image: "vorteil/flow"
   tag: ""
   db: ""
+  prometheus:
+    enabled: true
+    port: 2112
+    path: /metrics
+    scrape: true
   functionsProtocol: "http"
   functionsCA: "none" # change function pod secret too
   certificates:

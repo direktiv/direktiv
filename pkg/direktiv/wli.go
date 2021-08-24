@@ -277,7 +277,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 	wf := wli.rec.Edges.Workflow
 
 	if wli.rec.ErrorCode == "" {
-		// reportMetricEnd(wli.namespace, wli.wf.ID, status)
+		reportMetricEnd(wli.namespace, wli.wf.ID, status)
 		wli.rec, err = wli.rec.Update().
 			SetStatus(status).
 			SetEndTime(time.Now()).

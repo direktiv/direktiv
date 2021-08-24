@@ -15,9 +15,11 @@ spec:
   template:
     metadata:
       annotations:
-        "prometheus.io/path": "/metrics"
-        "prometheus.io/port": "2112"
-        "prometheus.io/scrape": "true"
+        {{- if .Values.flow.prometheus.enabled }}
+        "prometheus.io/path": {{ .Values.flow.prometheus.path | default "/metrics" }}
+        "prometheus.io/port": {{ .Values.flow.prometheus.port | default 2112 | quote }}
+        "prometheus.io/scrape": {{ .Values.flow.prometheus.scrape | default true | quote }}
+        {{- end }}
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
     spec:
