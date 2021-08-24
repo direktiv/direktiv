@@ -44,8 +44,8 @@ var (
 		[]string{"namespace", "workflow", "tenant"},
 	)
 
-	metricsWfDuration = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
+	metricsWfDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
 			Namespace: "direktiv",
 			Subsystem: "workflows",
 			Name:      "total_milliseconds",
@@ -68,7 +68,7 @@ func reportMetricEnd(namespace, workflow, status string, t time.Time) {
 
 	if t != empty {
 		ms := now.Sub(t).Milliseconds()
-		metricsWfDuration.WithLabelValues(namespace, workflow, namespace).Add(float64(ms))
+		metricsWfDuration.WithLabelValues(namespace, workflow, namespace).Observe(float64(ms))
 	}
 }
 

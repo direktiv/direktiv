@@ -171,10 +171,12 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-invoked", s.handler.getNamespaceMetrics_WorkflowsInvoked).Methods(http.MethodGet).Name("namespaceWorkflowsInvoked")
 	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-successful", s.handler.getNamespaceMetrics_WorkflowsSuccessful).Methods(http.MethodGet).Name("namespaceWorkflowsSuccessful")
 	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-failed", s.handler.getNamespaceMetrics_WorkflowsFailed).Methods(http.MethodGet).Name("namespaceWorkflowsFailed")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-milliseconds", s.handler.getNamespaceMetrics_WorkflowsMilliseconds).Methods(http.MethodGet).Name("namespaceWorkflowsMS")
 
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/invoked", s.handler.getWorkflowMetrics_Invoked).Methods(http.MethodGet).Name("metricsWorkflowInvoked")
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/successful", s.handler.getWorkflowMetrics_Successful).Methods(http.MethodGet).Name("metricsWorkflowSuccessful")
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/failed", s.handler.getWorkflowMetrics_Failed).Methods(http.MethodGet).Name("metricsWorkflowFailed")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/milliseconds", s.handler.getWorkflowMetrics_Milliseconds).Methods(http.MethodGet).Name("metricsWorkflowMS")
 
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)

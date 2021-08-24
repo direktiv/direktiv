@@ -62,6 +62,17 @@ func (h *Handler) getNamespaceMetrics_WorkflowsFailed(w http.ResponseWriter, r *
 	writeJSONResponse(w, out)
 }
 
+func (h *Handler) getNamespaceMetrics_WorkflowsMilliseconds(w http.ResponseWriter, r *http.Request) {
+
+	out, err := h.queryPrometheus(fmt.Sprintf(`direktiv_workflows_total_milliseconds_sum{namespace="%s"}`, mux.Vars(r)["namespace"]), time.Now())
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	writeJSONResponse(w, out)
+}
+
 func (h *Handler) getWorkflowMetrics_Invoked(w http.ResponseWriter, r *http.Request) {
 	out, err := h.queryPrometheus(fmt.Sprintf(`direktiv_workflows_invoked_total{namespace="%s", workflow="%s"}`, mux.Vars(r)["namespace"], mux.Vars(r)["workflow"]), time.Now())
 	if err != nil {
@@ -84,6 +95,17 @@ func (h *Handler) getWorkflowMetrics_Successful(w http.ResponseWriter, r *http.R
 
 func (h *Handler) getWorkflowMetrics_Failed(w http.ResponseWriter, r *http.Request) {
 	out, err := h.queryPrometheus(fmt.Sprintf(`direktiv_workflows_failed_total{namespace="%s", workflow="%s"}`, mux.Vars(r)["namespace"], mux.Vars(r)["workflow"]), time.Now())
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	writeJSONResponse(w, out)
+}
+
+func (h *Handler) getWorkflowMetrics_Milliseconds(w http.ResponseWriter, r *http.Request) {
+
+	out, err := h.queryPrometheus(fmt.Sprintf(`direktiv_workflows_total_milliseconds_sum{namespace="%s", workflow="%s"}`, mux.Vars(r)["namespace"], mux.Vars(r)["workflow"]), time.Now())
 	if err != nil {
 		ErrResponse(w, err)
 		return
