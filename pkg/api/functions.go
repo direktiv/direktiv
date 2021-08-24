@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/r3labs/sse"
 	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -947,9 +946,27 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
+
 	ns := mux.Vars(r)["namespace"]
 	wf := mux.Vars(r)["workflowTarget"]
 	id := mux.Vars(r)["id"]
+	iid := fmt.Sprintf("%s/%s/%s", ns, wf, id)
+
+	ctx, cancel := CtxDeadline(r.Context())
+	defer cancel()
+
+	offset := int32(0)
+	limit := int32(1000)
+
+	resp, err := h.s.direktiv.GetWorkflowInstanceLogs(ctx, &ingress.GetWorkflowInstanceLogsRequest{
+		InstanceId: &iid,
+		Limit:      &limit,
+		Offset:     &offset,
+	})
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
 	flusher, err := SetupSEEWriter(w)
 	if err != nil {
@@ -957,47 +974,119 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := http.Head(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
-	if err != nil {
-		ErrResponse(w, fmt.Errorf("failed to connect: %w", err))
-		return
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		ErrResponse(w, fmt.Errorf("could not watch logs: %s", resp.Header.Get("error")))
-		return
-	}
-
-	events := make(chan *sse.Event)
-	client := sse.NewClient(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
-	err = client.SubscribeChan("", events)
-	if err != nil {
-		fmt.Printf("got error = %s\n", err)
-	}
-	defer client.Unsubscribe(events)
-
-	for {
-		select {
-		case <-r.Context().Done():
+	// Send previous logs
+	previousLogs := resp.GetWorkflowInstanceLogs()
+	for i := range previousLogs {
+		b, err := json.Marshal(previousLogs[i])
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
+			log.Error(fmt.Errorf("client recieved bad data: %w", err))
 			return
-		case e := <-events:
-			fmt.Printf("got event: %s\n", string(e.Event))
-			fmt.Printf("Attempting to print= %s\n", fmt.Sprintf("data: %s\n\n", string(e.Data)))
+		}
 
-			if string(e.Event) == "error" {
-				ErrSSEResponse(w, flusher, fmt.Errorf(string(e.Data)))
-				return
-			}
-
-			_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(e.Data))))
-			if err != nil {
-				ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-				log.Error(fmt.Errorf("client failed to write data: %w", err))
-				return
-			}
-
-			flusher.Flush()
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
+			return
 		}
 	}
+
+	grpcReq := new(ingress.WatchWorkflowInstanceLogsRequest)
+	grpcReq.InstanceId = &iid
+
+	client, err := h.s.direktiv.WatchWorkflowInstanceLogs(r.Context(), grpcReq)
+	if err != nil {
+		// Broker does not exists
+		if len(previousLogs) == 0 {
+			ErrResponse(w, err)
+		}
+		return
+	}
+
+	defer client.CloseSend()
+
+	go func() {
+		<-client.Context().Done()
+		//TODO: done
+	}()
+
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			ErrSSEResponse(w, flusher, err)
+			log.Error(fmt.Errorf("client failed to recieve: %w", err))
+			return
+		}
+
+		b, err := json.Marshal(resp)
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
+			log.Error(fmt.Errorf("client recieved bad data: %w", err))
+			return
+		}
+
+		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
+			return
+		}
+
+		flusher.Flush()
+	}
+
+	// ns := mux.Vars(r)["namespace"]
+	// wf := mux.Vars(r)["workflowTarget"]
+	// id := mux.Vars(r)["id"]
+
+	// flusher, err := SetupSEEWriter(w)
+	// if err != nil {
+	// 	ErrResponse(w, err)
+	// 	return
+	// }
+
+	// resp, err := http.Head(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
+	// if err != nil {
+	// 	ErrResponse(w, fmt.Errorf("failed to connect: %w", err))
+	// 	return
+	// }
+
+	// if resp.StatusCode != http.StatusOK {
+	// 	ErrResponse(w, fmt.Errorf("could not watch logs: %s", resp.Header.Get("error")))
+	// 	return
+	// }
+
+	// events := make(chan *sse.Event)
+	// client := sse.NewClient(fmt.Sprintf("http://direktiv-ingress-hl.default:7979/logging/%s/%s/%s", ns, wf, id))
+	// err = client.SubscribeChan("", events)
+	// if err != nil {
+	// 	fmt.Printf("got error = %s\n", err)
+	// }
+	// defer client.Unsubscribe(events)
+
+	// for {
+	// 	select {
+	// 	case <-r.Context().Done():
+	// 		return
+	// 	case e := <-events:
+	// 		fmt.Printf("got event: %s\n", string(e.Event))
+	// 		fmt.Printf("Attempting to print= %s\n", fmt.Sprintf("data: %s\n\n", string(e.Data)))
+
+	// 		if string(e.Event) == "error" {
+	// 			ErrSSEResponse(w, flusher, fmt.Errorf(string(e.Data)))
+	// 			return
+	// 		}
+
+	// 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(e.Data))))
+	// 		if err != nil {
+	// 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+	// 			log.Error(fmt.Errorf("client failed to write data: %w", err))
+	// 			return
+	// 		}
+
+	// 		flusher.Flush()
+	// 	}
+	// }
 
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/inconshreveable/log15"
+	"github.com/vorteil/direktiv/pkg/dlog"
 )
 
 type Handler struct {
@@ -19,7 +20,7 @@ type Handler struct {
 	logQueue   chan *log15.Record
 	queuedLogs []log15.Record
 	closed     chan bool
-	broker     *Broker
+	broker     *dlog.Broker
 }
 
 type HandlerArgs struct {
@@ -27,7 +28,7 @@ type HandlerArgs struct {
 	InsertFrequencyMilliSeconds int
 	Namespace                   string
 	InstanceID                  string
-	Broker                      *Broker
+	Broker                      *dlog.Broker
 }
 
 func NewHandler(args *HandlerArgs) (*Handler, error) {
@@ -36,10 +37,7 @@ func NewHandler(args *HandlerArgs) (*Handler, error) {
 
 	out.args = args
 	out.db = args.Driver
-	if args.Broker != nil {
-		out.broker = args.Broker
-		out.broker.handler = out
-	}
+	out.broker = args.Broker
 
 	return out.init()
 }
@@ -140,8 +138,12 @@ func (h *Handler) dispatcher() {
 			if h.args.InstanceID != "" {
 				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
 				vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
-
-				err = h.broker.Publish(msg.Msg, msg.Lvl, msg.Time.UnixNano(), ctxMap)
+				err = h.broker.Publish(dlog.LogEntry{
+					Level:     msg.Lvl.String(),
+					Timestamp: msg.Time.UnixNano(),
+					Message:   msg.Msg,
+					Context:   ctxMap,
+				})
 				if err != nil {
 					fmt.Printf("(todo: improve this log!!!) %s\n", err.Error())
 				}
