@@ -11,10 +11,9 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/varstore"
 
-	runtime "github.com/banzaicloud/logrus-runtime-formatter"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
@@ -32,16 +31,6 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "direktiv",
 	Short: "direktiv is a serverless, container workflow engine.",
-	PreRun: func(cmd *cobra.Command, args []string) {
-		if debug || os.Getenv("DIREKTIV_DEBUG") == "true" {
-			logrus.SetLevel(logrus.DebugLevel)
-			formatter := runtime.Formatter{ChildFormatter: &logrus.TextFormatter{
-				FullTimestamp: true,
-			}}
-			formatter.Line = true
-			logrus.SetFormatter(&formatter)
-		}
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		defer func() {
@@ -50,7 +39,7 @@ var rootCmd = &cobra.Command{
 			if err == nil {
 				// this is a vorteil machine, so we press poweroff
 				if strings.Contains(string(pv), "#vorteil") {
-					logrus.Printf("vorteil machine, powering off")
+					log.Printf("vorteil machine, powering off")
 
 					if err := exec.Command("/sbin/poweroff").Run(); err != nil {
 						fmt.Println("error shutting down:", err)
@@ -61,10 +50,15 @@ var rootCmd = &cobra.Command{
 
 		}()
 
+		l, err := dlog.ApplicationLogger("flow")
+		if err != nil {
+			log.Fatalf("can not get logger: %v", err)
+		}
+		l.Info("starting direktiv flow component")
+
 		c, err := direktiv.ReadConfig(configFile)
 		if err != nil {
-			logrus.Errorf("Failed to initialize server: %v", err)
-			os.Exit(1)
+			log.Fatalf("Failed to initialize server: %v", err)
 		}
 
 		server, err := direktiv.NewWorkflowServer(c)
@@ -76,16 +70,15 @@ var rootCmd = &cobra.Command{
 
 		switch c.InstanceLogging.Driver {
 		case "database":
-			logrus.Info("creating logger type database")
-			l, err := db.NewLogger(c.Database.DB)
+			l.Info("creating logger type database")
+			dl, err := db.NewLogger(c.Database.DB)
 			if err != nil {
-				logrus.Error(err)
-				os.Exit(1)
+				log.Fatalf(err.Error())
 			}
-			defer l.CloseConnection()
-			logger = l
+			defer dl.CloseConnection()
+			logger = dl
 		default:
-			logrus.Info("creating logger type default")
+			l.Info("creating logger type default")
 			logger, _ = dummy.NewLogger()
 		}
 
@@ -104,7 +97,7 @@ var rootCmd = &cobra.Command{
 			}
 			defer vstore.Close()
 		default:
-			logrus.Error(errors.New("unsupported variables storage driver"))
+			l.Error(errors.New("unsupported variables storage driver"))
 			os.Exit(1)
 		}
 
@@ -128,7 +121,7 @@ var rootCmd = &cobra.Command{
 
 		<-server.Lifeline()
 
-		log.Printf("server stopped\n")
+		l.Infof("server stopped\n")
 
 		return
 

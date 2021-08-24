@@ -12,7 +12,6 @@ import (
 
 	"github.com/segmentio/ksuid"
 	"github.com/senseyeio/duration"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -55,7 +54,7 @@ func (sl *actionStateLogic) Deadline() time.Time {
 		dur, err := duration.ParseISO8601(sl.state.Timeout)
 		if err != nil {
 			// NOTE: validation should prevent this from ever happening
-			log.Errorf("Got an invalid ISO8601 timeout: %v", err)
+			appLog.Errorf("Got an invalid ISO8601 timeout: %v", err)
 		} else {
 			now := time.Now()
 			later := dur.Shift(now)
@@ -87,7 +86,7 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 	sd := new(actionStateSavedata)
 	err = json.Unmarshal(savedata, sd)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 		return children
 	}
 
@@ -96,7 +95,7 @@ func (sl *actionStateLogic) LivingChildren(savedata []byte) []stateChild {
 		var uid ksuid.KSUID
 		err = uid.UnmarshalText([]byte(sd.Id))
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 			return children
 		}
 

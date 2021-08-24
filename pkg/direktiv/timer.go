@@ -8,7 +8,6 @@ import (
 	"time"
 
 	cron "github.com/robfig/cron/v3"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
@@ -91,11 +90,11 @@ func (tm *timerManager) disableTimer(ti *timerItem) error {
 
 func (tm *timerManager) executeFunction(ti *timerItem) {
 
-	log.Debugf("execute timer %s", ti.name)
+	appLog.Debugf("execute timer %s", ti.name)
 
 	err := ti.fn(ti.data)
 	if err != nil {
-		log.Errorf("can not run function for %s: %v", ti.name, err)
+		appLog.Errorf("can not run function for %s: %v", ti.name, err)
 	}
 
 	if ti.timerType == timerTypeOneShot {
@@ -107,7 +106,7 @@ func (tm *timerManager) executeFunction(ti *timerItem) {
 func (tm *timerManager) newTimerItem(name, fn string, data []byte, time *time.Time,
 	pattern string) (*timerItem, error) {
 
-	log.Debugf("adding new timer item %s", name)
+	appLog.Debugf("adding new timer item %s", name)
 
 	tm.mtx.Lock()
 	defer tm.mtx.Unlock()
@@ -162,7 +161,7 @@ func newTimerManager(s *WorkflowServer) (*timerManager, error) {
 // registerFunction adds functions which can be executed by one-shots or crons
 func (tm *timerManager) registerFunction(name string, fn func([]byte) error) error {
 
-	log.Debugf("adding timer function %s", name)
+	appLog.Debugf("adding timer function %s", name)
 	if _, ok := tm.fns[name]; ok {
 		return fmt.Errorf("function already exists")
 	}
@@ -175,7 +174,7 @@ func (tm *timerManager) registerFunction(name string, fn func([]byte) error) err
 // stopTimers stops crons and one-shots
 func (tm *timerManager) stopTimers() {
 
-	log.Debugf("stopping timers")
+	appLog.Debugf("stopping timers")
 
 	// stop all crons and clean
 	ctx := tm.cron.Stop()
@@ -185,7 +184,7 @@ func (tm *timerManager) stopTimers() {
 		tm.disableTimer(ti)
 	}
 
-	log.Debugf("timers stopped")
+	appLog.Debugf("timers stopped")
 
 }
 
@@ -198,7 +197,7 @@ func (tm *timerManager) addCron(name, fn, pattern string, data []byte) error {
 		"data":    data,
 	}, AddCron)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
 	return tm.addCronNoBroadcast(name, fn, pattern, data)
@@ -225,11 +224,11 @@ func (tm *timerManager) addCronNoBroadcast(name, fn, pattern string, data []byte
 			tm.executeFunction(ti)
 		})
 		if err != nil {
-			log.Errorf("can not add cron function: %v", err)
+			appLog.Errorf("can not add cron function: %v", err)
 			return fmt.Errorf("can not enable timer %s: %v", name, err)
 		}
 		ti.cron.cronID = id
-		log.Debugf("added cron %s at %s", ti.name, ti.cron.pattern)
+		appLog.Debugf("added cron %s at %s", ti.name, ti.cron.pattern)
 		return nil
 	}(ti)
 
@@ -259,7 +258,7 @@ func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byt
 			tm.executeFunction(ti)
 		})
 		ti.oneshot.timer = timer
-		log.Debugf("firing one-shot in %v", duration)
+		appLog.Debugf("firing one-shot in %v", duration)
 
 		return nil
 	}(ti, duration)
@@ -270,11 +269,11 @@ func (tm *timerManager) addOneShot(name, fn string, timeos time.Time, data []byt
 
 func (tm *timerManager) deleteTimersForInstance(name string) error {
 
-	log.Debugf("deleting timers for instance %s", name)
+	appLog.Debugf("deleting timers for instance %s", name)
 
 	err := syncServer(tm.server.dbManager.ctx, tm.server.dbManager, &tm.server.id, name, CancelInstanceTimers)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
 	return tm.deleteTimersForInstanceNoBroadcast(name)
@@ -283,7 +282,7 @@ func (tm *timerManager) deleteTimersForInstance(name string) error {
 
 func (tm *timerManager) deleteTimersForInstanceNoBroadcast(name string) error {
 
-	log.Debugf("deleting timers for instance %s", name)
+	appLog.Debugf("deleting timers for instance %s", name)
 
 	var keys []string
 
@@ -331,7 +330,7 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 		req["timerId"] = name
 		err = publishToHostname(tm.server.engine.db, oldController, req)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 		return nil
 	}
@@ -345,7 +344,7 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 	if ti, ok := tm.timers[name]; ok {
 		key, err = tm.prepDisableTimer(ti)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 	}
 
@@ -357,7 +356,7 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 		// broadcast timer delete
 		err := syncServer(tm.server.dbManager.ctx, tm.server.dbManager, &tm.server.id, name, CancelTimer)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 	}
 
@@ -366,7 +365,7 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 
 // cron job delete old namespace logs every 2 hrs
 func (tm *timerManager) cleanNamespaceRecords(data []byte) error {
-	log.Debugf("deleting old namespace records/logs")
+	appLog.Debugf("deleting old namespace records/logs")
 	ctx := context.Background()
 
 	namespaces, err := tm.server.dbManager.dbEnt.Namespace.Query().All(ctx)
@@ -383,13 +382,13 @@ func (tm *timerManager) cleanNamespaceRecords(data []byte) error {
 		}
 	}
 
-	log.Debugf("delete namespaces logs from %v namespaces", len(namespaces))
+	appLog.Debugf("delete namespaces logs from %v namespaces", len(namespaces))
 	return nil
 }
 
 // cron job to delete old instance records / logs
 func (tm *timerManager) cleanInstanceRecords(data []byte) error {
-	log.Debugf("deleting old instance records/logs")
+	appLog.Debugf("deleting old instance records/logs")
 	ctx := context.Background()
 
 	// search db for instances where "endTime" > defined lifespan
@@ -415,7 +414,7 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 			}
 		}
 	}
-	log.Debugf("deleted %d instance records", len(wfis))
+	appLog.Debugf("deleted %d instance records", len(wfis))
 
 	return nil
 }
@@ -423,4 +422,3 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 func (tm *timerManager) deleteCronForWorkflow(id string) error {
 	return tm.deleteTimerByName("", "", fmt.Sprintf("cron:%s", id))
 }
-

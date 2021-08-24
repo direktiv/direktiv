@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	hash "github.com/mitchellh/hashstructure/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	"google.golang.org/grpc/codes"
@@ -48,7 +47,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 	err = createKnativeFunctions(is.wfServer.engine.functionsClient, workflow, namespace)
 	if err != nil {
 		// this can be delayed till the actual call if it fails
-		log.Errorf("can not create knative functions: %v", err)
+		appLog.Errorf("can not create knative functions: %v", err)
 	}
 
 	is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", wf.ID.String()))
@@ -63,7 +62,7 @@ func (is *ingressServer) AddWorkflow(ctx context.Context, in *ingress.AddWorkflo
 	uid := wf.ID.String()
 	revision := int32(wf.Revision)
 
-	log.Debugf("Added workflow %s/%s: %s", namespace, workflow.ID, uid)
+	appLog.Debugf("Added workflow %s/%s: %s", namespace, workflow.ID, uid)
 
 	resp.Uid = &uid
 	resp.Id = &wf.Name
@@ -89,10 +88,10 @@ func (is *ingressServer) DeleteWorkflow(ctx context.Context, in *ingress.DeleteW
 
 	err = is.wfServer.tmManager.deleteTimerByName("", "", fmt.Sprintf("cron:%s", uid))
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
-	log.Debugf("Deleted workflow: %s", uid)
+	appLog.Debugf("Deleted workflow: %s", uid)
 
 	resp.Uid = &uid
 
@@ -113,7 +112,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 		return nil, grpcDatabaseError(err, "instance", fmt.Sprintf("%s/%s", namespace, workflow))
 	}
 
-	log.Debugf("Invoked workflow %s/%s: %s", namespace, workflow, inst.id)
+	appLog.Debugf("Invoked workflow %s/%s: %s", namespace, workflow, inst.id)
 
 	resp.InstanceId = &inst.id
 
@@ -131,9 +130,9 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	go inst.start()
 
 	if in.GetWait() {
-		log.Debugf("waiting for response %v", inst.id)
+		appLog.Debugf("waiting for response %v", inst.id)
 		<-done
-		log.Debugf("got response %v", inst.id)
+		appLog.Debugf("got response %v", inst.id)
 
 		// query results here
 		wfi, err := is.wfServer.dbManager.getWorkflowInstance(ctx, inst.id)
@@ -209,14 +208,14 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 		if workflowPrev.ID != workflow.ID ||
 			hashForFunctions(workflow) != hashForFunctions(workflowPrev) {
 
-			log.Debugf("recreating knative workflows")
+			appLog.Debugf("recreating knative workflows")
 			err = deleteKnativeFunctions(is.wfServer.engine.functionsClient, fwf.Edges.Namespace.ID, workflowPrev.ID, "")
 			if err != nil {
-				log.Errorf("can not delete knative functions: %v", err)
+				appLog.Errorf("can not delete knative functions: %v", err)
 			}
 			err = createKnativeFunctions(is.wfServer.engine.functionsClient, workflow, fwf.Edges.Namespace.ID)
 			if err != nil {
-				log.Errorf("can not create knative functions: %v", err)
+				appLog.Errorf("can not create knative functions: %v", err)
 			}
 		}
 
@@ -239,7 +238,7 @@ func (is *ingressServer) UpdateWorkflow(ctx context.Context, in *ingress.UpdateW
 
 	revision := int32(wf.Revision)
 
-	log.Debugf("Updated workflow: %s", uid)
+	appLog.Debugf("Updated workflow: %s", uid)
 
 	resp.Uid = &uid
 	resp.Id = &wf.Name

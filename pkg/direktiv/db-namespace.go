@@ -7,8 +7,6 @@ import (
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/namespace"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (db *dbManager) getNamespace(name string) (*ent.Namespace, error) {
@@ -50,13 +48,13 @@ func (db *dbManager) deleteNamespace(ctx context.Context, name string) error {
 	// delete all workflows
 	wfs, err := db.getWorkflows(ctx, name, 0, 0)
 	if err != nil {
-		log.Errorf("can not get workflows for namespace %s", name)
+		appLog.Errorf("can not get workflows for namespace %s", name)
 	}
 
 	for _, w := range wfs {
 		err := db.deleteWorkflow(ctx, w.ID.String())
 		if err != nil {
-			log.Errorf("can not delete workflow %s from namespace %s", w.Name, name)
+			appLog.Errorf("can not delete workflow %s from namespace %s", w.Name, name)
 		}
 	}
 

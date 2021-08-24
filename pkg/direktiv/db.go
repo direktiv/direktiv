@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/lib/pq"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/hook"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
@@ -53,11 +52,11 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 		ctx: ctx,
 	}
 
-	log.Debugf("connecting db")
+	appLog.Debugf("connecting db")
 
 	db.dbEnt, err = ent.Open("postgres", conn)
 	if err != nil {
-		log.Errorf("can not connect to db: %v", err)
+		appLog.Errorf("can not connect to db: %v", err)
 		return nil, err
 	}
 
@@ -67,7 +66,7 @@ func newDBManager(ctx context.Context, conn string, config *Config) (*dbManager,
 
 	// Run the auto migration tool.
 	if err := db.dbEnt.Schema.Create(db.ctx); err != nil {
-		log.Errorf("failed creating schema resources: %v", err)
+		appLog.Errorf("failed creating schema resources: %v", err)
 		return nil, err
 	}
 
@@ -138,7 +137,7 @@ func (db *dbManager) lockDB(id uint64, wait int) (*sql.Conn, error) {
 
 	if err, ok := err.(*pq.Error); ok {
 
-		log.Debugf("db lock failed: %v", err)
+		appLog.Debugf("db lock failed: %v", err)
 		if err.Code == "57014" {
 			return conn, fmt.Errorf("canceled query")
 		}
@@ -156,13 +155,13 @@ func (db *dbManager) unlockDB(id uint64, conn *sql.Conn) {
 		"SELECT pg_advisory_unlock($1)", int64(id))
 
 	if err != nil {
-		log.Errorf("can not unlock lock %d: %v", id, err)
+		appLog.Errorf("can not unlock lock %d: %v", id, err)
 	}
 
 	err = conn.Close()
 
 	if err != nil {
-		log.Errorf("can not close database connection %d: %v", id, err)
+		appLog.Errorf("can not close database connection %d: %v", id, err)
 	}
 
 }

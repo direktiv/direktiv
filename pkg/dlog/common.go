@@ -28,9 +28,8 @@ type LogEntry struct {
 }
 
 type QueryReponse struct {
-	Count  int `json:"count"`
-	Limit  int `json:"limit,omitempty"`
-	Offset int `json:"offset"`
-	// Data   []map[string]interface{} `json:"data"`
-	Logs []LogEntry `json:"data"`
+	Count  int        `json:"count"`
+	Limit  int        `json:"limit,omitempty"`
+	Offset int        `json:"offset"`
+	Logs   []LogEntry `json:"data"`
 }

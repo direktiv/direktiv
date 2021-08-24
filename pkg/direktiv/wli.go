@@ -13,12 +13,12 @@ import (
 	"github.com/google/uuid"
 	hashstructure "github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/jqer"
 	"github.com/vorteil/direktiv/pkg/model"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -38,6 +38,9 @@ type workflowLogicInstance struct {
 	logic           stateLogic
 	logger          dlog.Logger
 	namespaceLogger dlog.Logger
+
+	zapLogger          *zap.SugaredLogger
+	zapNamespaceLogger *zap.Logger
 }
 
 func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
@@ -99,6 +102,8 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 		return nil, NewInternalError(err)
 	}
 
+	wli.zapNamespaceLogger = fnLog.Desugar().With(zap.String("namespace", namespace))
+
 	return wli, nil
 
 }
@@ -107,11 +112,11 @@ func (wli *workflowLogicInstance) start() {
 
 	ctx, err := wli.lock(time.Second * 5)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 		return
 	}
 
-	log.Debugf("Starting workflow %v", wli.id)
+	appLog.Debugf("Starting workflow %v", wli.id)
 	start := wli.wf.GetStartState()
 	wli.Transition(ctx, start.GetID(), 0)
 
@@ -153,6 +158,8 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 		wli.unlock()
 		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize namespace logger: %v", err))
 	}
+
+	wli.zapNamespaceLogger = fnLog.Desugar().With(zap.String("namespace", qns.ID))
 
 	wli.logger, err = (*we.instanceLogger).LoggerFunc(qns.ID, wli.id)
 	if err != nil {
@@ -304,7 +311,7 @@ func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 		caller := new(subflowCaller)
 		err := json.Unmarshal([]byte(wli.rec.InvokedBy), caller)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 			return
 		}
 
@@ -324,7 +331,7 @@ func (wli *workflowLogicInstance) wakeCaller(ctx context.Context, data []byte) {
 
 		err = wli.engine.wakeCaller(ctx, msg)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 			return
 		}
 
@@ -353,7 +360,7 @@ func (db *dbManager) wfUnlock(rec *ent.Workflow, conn *sql.Conn) {
 
 	hash, err := hashstructure.Hash(rec.ID, hashstructure.FormatV2, nil)
 	if err != nil {
-		log.Error(NewInternalError(err))
+		appLog.Error(NewInternalError(err))
 		return
 	}
 
@@ -392,7 +399,7 @@ func (wli *workflowLogicInstance) unlock() {
 
 	hash, err := hashstructure.Hash(wli.id, hashstructure.FormatV2, nil)
 	if err != nil {
-		log.Error(NewInternalError(err))
+		appLog.Error(NewInternalError(err))
 		return
 	}
 
@@ -465,7 +472,7 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 		event.SetData("application/json", s)
 		data, err := event.MarshalJSON()
 		if err != nil {
-			log.Errorf("failed to marshal UserLog cloudevent: %v", err)
+			appLog.Errorf("failed to marshal UserLog cloudevent: %v", err)
 			return
 		}
 		_, err = wli.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
@@ -473,7 +480,7 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 			Cloudevent: data,
 		})
 		if err != nil {
-			log.Errorf("failed to broadcast cloudevent: %v", err)
+			appLog.Errorf("failed to broadcast cloudevent: %v", err)
 			return
 		}
 	}
@@ -484,6 +491,7 @@ func (wli *workflowLogicInstance) NamespaceLog(ctx context.Context, msg string, 
 	s := fmt.Sprintf(msg, a...)
 
 	wli.namespaceLogger.Info(s)
+	wli.zapNamespaceLogger.Info(s)
 }
 
 func (wli *workflowLogicInstance) Log(ctx context.Context, msg string, a ...interface{}) {
@@ -563,12 +571,12 @@ func (wli *workflowLogicInstance) scheduleTimeout(oldController string, t time.T
 
 	data, err := json.Marshal(args)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
 	err = wli.engine.timer.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
 }
@@ -594,7 +602,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 			if s != "" {
 				d, err := duration.ParseISO8601(s)
 				if err != nil {
-					log.Error(err)
+					appLog.Error(err)
 					wli.Close()
 					return
 				}
@@ -605,7 +613,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 			if s != "" {
 				d, err := duration.ParseISO8601(s)
 				if err != nil {
-					log.Error(err)
+					appLog.Error(err)
 					wli.Close()
 					return
 				}
@@ -618,7 +626,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 
 	if len(wli.rec.Flow) != wli.step {
 		err := errors.New("workflow logic instance aborted for being tardy")
-		log.Error(err)
+		appLog.Error(err)
 		wli.Close()
 		return
 	}
@@ -626,7 +634,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 	data, err := json.Marshal(wli.data)
 	if err != nil {
 		err = fmt.Errorf("engine cannot marshal state data for storage: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		wli.Close()
 		return
 	}
@@ -639,7 +647,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 	state, exists := states[nextState]
 	if !exists {
 		err = fmt.Errorf("workflow cannot resolve transition: %s", nextState)
-		log.Error(err)
+		appLog.Error(err)
 		wli.Close()
 		return
 	}
@@ -647,7 +655,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 	init, exists := wli.engine.stateLogics[state.GetType()]
 	if !exists {
 		err = fmt.Errorf("engine cannot resolve state type: %s", state.GetType().String())
-		log.Error(err)
+		appLog.Error(err)
 		wli.Close()
 		return
 	}
@@ -655,7 +663,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 	stateLogic, err := init(wli.wf, state)
 	if err != nil {
 		err = fmt.Errorf("cannot initialize state logic: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		wli.Close()
 		return
 	}
@@ -680,7 +688,7 @@ func (wli *workflowLogicInstance) Transition(ctx context.Context, nextState stri
 		SetStateData(string(data)).
 		Save(ctx)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 		wli.Close()
 		return
 	}
@@ -702,7 +710,7 @@ func InstanceMemory(rec *ent.WorkflowInstance) ([]byte, error) {
 	savedata, err := base64.StdEncoding.DecodeString(rec.Memory)
 	if err != nil {
 		err = fmt.Errorf("cannot decode the savedata: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		return nil, err
 	}
 

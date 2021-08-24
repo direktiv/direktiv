@@ -12,7 +12,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/model"
 
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 func (db *dbManager) addWorkflow(ctx context.Context, ns, name, description string, active bool,
@@ -135,13 +134,13 @@ func (db *dbManager) deleteWorkflow(ctx context.Context, id string) error {
 	// delete all workflow instances
 	err = db.deleteWorkflowInstancesByWorkflow(ctx, u)
 	if err != nil {
-		log.Errorf("can not delete workflow instances: %v", err)
+		appLog.Errorf("can not delete workflow instances: %v", err)
 	}
 
 	// delete crons
 	err = db.tm.deleteCronForWorkflow(id)
 	if err != nil {
-		log.Errorf("Can not delete cron for workflow: %v", id)
+		appLog.Errorf("Can not delete cron for workflow: %v", id)
 	}
 
 	i, err := db.dbEnt.Workflow.Delete().

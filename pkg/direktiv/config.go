@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/util"
 	"gopkg.in/yaml.v2"
 )
@@ -36,7 +35,7 @@ func ReadConfig(file string) (*Config, error) {
 
 	c := new(Config)
 
-	log.Debugf("reading config %s", file)
+	appLog.Debugf("reading config %s", file)
 
 	/* #nosec */
 	data, err := ioutil.ReadFile(file)

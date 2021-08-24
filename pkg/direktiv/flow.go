@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/grpc"
@@ -76,7 +75,7 @@ func (fs *flowServer) ActionLog(ctx context.Context, in *flow.ActionLogRequest) 
 
 func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("action response: %v", in.GetActionId())
+	appLog.Debugf("action response: %v", in.GetActionId())
 
 	var resp emptypb.Empty
 
@@ -94,7 +93,7 @@ func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportAc
 	if err != nil {
 		wli.Close()
 		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		return nil, err
 	}
 

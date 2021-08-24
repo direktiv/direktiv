@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -14,7 +13,7 @@ func (is *ingressServer) CancelWorkflowInstance(ctx context.Context, in *ingress
 
 	err := is.wfServer.engine.hardCancelInstance(in.GetId(), "direktiv.cancels.api", "cancelled by api request")
 	if err != nil {
-		log.Errorf("error cancelling instance: %v", err)
+		appLog.Errorf("error cancelling instance: %v", err)
 	}
 	return &emptypb.Empty{}, nil
 

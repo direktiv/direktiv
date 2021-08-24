@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/schema"
 )
@@ -64,7 +63,7 @@ func grpcDatabaseError(err error, otype, oval string) error {
 		return err
 	}
 
-	log.Errorf("%v", NewInternalErrorWithDepth(err, 2))
+	appLog.Errorf("%v", NewInternalErrorWithDepth(err, 2))
 
 	err = grpcErrInternal
 

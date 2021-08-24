@@ -5,12 +5,14 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/url"
 	"os"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/dlog"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
@@ -22,10 +24,15 @@ import (
 const (
 	IngressComponent string = "ingress"
 	FlowComponent    string = "flow"
+	LogComponent     string = "log"
 
 	certBase = "/etc/direktiv/certs/"
 
 	grpcSettingsFile = "/etc/direktiv/grpc-config.yaml"
+)
+
+var (
+	appLog *zap.SugaredLogger
 )
 
 // GrpcConfig holds the information about the grpc clients and servers
@@ -74,6 +81,12 @@ type tlsComponent struct {
 }
 
 func init() {
+
+	var err error
+	appLog, err = dlog.ApplicationLogger("grpc")
+	if err != nil {
+		log.Fatalf("can not init app logs: %v", err)
+	}
 
 	resolver.Register(NewBuilder())
 
@@ -145,7 +158,8 @@ func getTransport(cert, key, cacert,
 
 	certificate, err := tls.LoadX509KeyPair(cert, key)
 	if err != nil {
-		log.Errorf("could not load client key pair: %s", err)
+
+		appLog.Errorf("could not load client key pair: %s", err)
 		return nil, err
 	}
 
@@ -153,19 +167,19 @@ func getTransport(cert, key, cacert,
 	certPool := x509.NewCertPool()
 	ca, err := ioutil.ReadFile(cacert)
 	if err != nil {
-		log.Errorf("could not read ca certificate: %s", err)
+		appLog.Errorf("could not read ca certificate: %s", err)
 		return nil, err
 	}
 
 	// Append the certificates from the CA
 	if ok := certPool.AppendCertsFromPEM(ca); !ok {
-		log.Errorf("failed to append ca certs: %v", err)
+		appLog.Errorf("failed to append ca certs: %v", err)
 		return nil, err
 	}
 
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		log.Errorf("can not parse endpoint url: %v", err)
+		appLog.Errorf("can not parse endpoint url: %v", err)
 		return nil, err
 	}
 
@@ -205,10 +219,10 @@ func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
 	key, cert, cacert := CertsForComponent(component)
 	if c.mtls != "none" && c.mtls != "" {
 
-		log.Infof("using mtls for %s", component)
+		appLog.Infof("using mtls for %s", component)
 		creds, err := getTransport(cert, key, cacert, c.endpoint, false)
 		if err != nil {
-			log.Errorf("could get transport: %v", err)
+			appLog.Errorf("could get transport: %v", err)
 			return nil, err
 		}
 
@@ -216,7 +230,7 @@ func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
 
 	} else if c.tls != "none" && c.tls != "" {
 
-		log.Infof("using tls for %s", component)
+		appLog.Infof("using tls for %s", component)
 		creds, err := credentials.NewClientTLSFromFile(cacert, "")
 		if err != nil {
 			return nil, fmt.Errorf("could not load ca cert: %s", err)
@@ -230,7 +244,7 @@ func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
 	options = append(options, grpc.WithBalancerName(roundrobin.Name))
 	options = append(options, globalGRPCDialOptions...)
 
-	log.Infof("dialing with %s", c.endpoint)
+	appLog.Infof("dialing with %s", c.endpoint)
 
 	if len(c.endpoint) == 0 {
 		return nil, fmt.Errorf("endpoint value empty")
@@ -289,10 +303,10 @@ func grpcUnmarshalConfig() {
 		}
 	}
 
-	log.Infof("setting grpc server send/rcv size: %v/%v", grpcCfg.MaxSendServer, grpcCfg.MaxRcvServer)
+	appLog.Infof("setting grpc server send/rcv size: %v/%v", grpcCfg.MaxSendServer, grpcCfg.MaxRcvServer)
 	additionalServerOptions = append(additionalServerOptions, grpc.MaxSendMsgSize(grpcCfg.MaxSendServer))
 	additionalServerOptions = append(additionalServerOptions, grpc.MaxRecvMsgSize(grpcCfg.MaxRcvServer))
-	log.Infof("setting grpc client send/rcv size: %v/%v", grpcCfg.MaxSendClient, grpcCfg.MaxRcvClient)
+	appLog.Infof("setting grpc client send/rcv size: %v/%v", grpcCfg.MaxSendClient, grpcCfg.MaxRcvClient)
 	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(grpcCfg.MaxSendClient))
 	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(grpcCfg.MaxRcvClient))
 
@@ -314,17 +328,17 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 		return fmt.Errorf("unknown component: %s", name)
 	}
 
-	log.Debugf("%s endpoint starting at %s", name, bind)
+	appLog.Debugf("%s endpoint starting at %s", name, bind)
 
 	// use tls/mtls
 	key, cert, cacert := CertsForComponent(name)
 	if c.mtls != "none" && c.mtls != "" {
 
-		log.Infof("enabling mtls for grpc service %s", name)
+		appLog.Infof("enabling mtls for grpc service %s", name)
 
 		creds, err := getTransport(cert, key, cacert, c.endpoint, true)
 		if err != nil {
-			log.Errorf("can not create grpc server: %v", err)
+			appLog.Errorf("can not create grpc server: %v", err)
 			return err
 		}
 
@@ -332,7 +346,7 @@ func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.
 
 	} else if c.tls != "none" && c.tls != "" {
 
-		log.Infof("enabling tls for grpc service %s", name)
+		appLog.Infof("enabling tls for grpc service %s", name)
 		creds, err := credentials.NewServerTLSFromFile(cert, key)
 		if err != nil {
 			return fmt.Errorf("could not load TLS keys: %s", err)

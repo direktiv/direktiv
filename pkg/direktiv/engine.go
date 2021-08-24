@@ -33,7 +33,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -174,10 +173,10 @@ func (we *workflowEngine) checkTimeoutInstances() {
 	for {
 		select {
 		case <-ticker.C:
-			log.Debugf("run expired worklflow thread")
+			appLog.Debugf("run expired worklflow thread")
 			in, err := we.db.getWorkflowInstanceExpired(context.Background())
 			if err != nil {
-				log.Errorf("can not get expired workflows: %v", err)
+				appLog.Errorf("can not get expired workflows: %v", err)
 				continue
 			}
 			for _, i := range in {
@@ -187,10 +186,10 @@ func (we *workflowEngine) checkTimeoutInstances() {
 					Step:       len(i.Flow),
 				})
 
-				log.Debugf("rescheduling workflow %v", i.InstanceID)
+				appLog.Debugf("rescheduling workflow %v", i.InstanceID)
 				err = we.retryWakeup(data)
 				if err != nil {
-					log.Errorf("can not kickstart workflow: %v", err)
+					appLog.Errorf("can not kickstart workflow: %v", err)
 					/* #nosec */
 					_ = we.hardCancelInstance(i.InstanceID, "direktiv.cancels.kickstart", "cancelled by failed kickstart")
 				}
@@ -206,7 +205,7 @@ func (we *workflowEngine) localCancel(id string) {
 	if err == nil {
 		err = we.timer.deleteTimerByName(rec.Controller, we.server.hostname, id)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 	}
 
@@ -276,7 +275,7 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 	ctx, wli, err := we.loadWorkflowLogicInstance(sig.InstanceID, sig.Step)
 	if err != nil {
 		err = fmt.Errorf("cannot load workflow logic instance: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		return err
 	}
 
@@ -285,7 +284,7 @@ func (we *workflowEngine) wakeEventsWaiter(signature []byte, events []*cloudeven
 		/* #nosec */
 		_ = wli.Close()
 		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		return err
 	}
 
@@ -363,7 +362,7 @@ func (we *workflowEngine) reportError(ar *functionRequest, err error) {
 
 	_, err = we.flowClient.ReportActionResults(context.Background(), r)
 	if err != nil {
-		log.Errorf("can not respond to flow: %v", err)
+		appLog.Errorf("can not respond to flow: %v", err)
 	}
 }
 
@@ -395,7 +394,7 @@ func createTransport(useTLS bool) *http.Transport {
 		if err == nil {
 			// Append our cert to the system pool if we have it
 			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-				log.Println("no certs appended, using system certs only")
+				appLog.Warnf("no certs appended, using system certs only")
 			}
 		}
 
@@ -424,14 +423,14 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 		addr = fmt.Sprintf("%s://%s:8890", we.server.config.FunctionsProtocol, hostname)
 	}
 
-	log.Debugf("function request: %v", addr)
+	appLog.Debugf("function request: %v", addr)
 
 	now := time.Now()
 	deadline := now.Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	log.Debugf("deadline for pod request: %v", deadline.Sub(now))
+	appLog.Debugf("deadline for pod request: %v", deadline.Sub(now))
 
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -474,7 +473,7 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 
 	if err != nil {
 		if ctxErr := rctx.Err(); ctxErr != nil {
-			log.Debugf("context error in pod call")
+			appLog.Debugf("context error in pod call")
 			return
 		}
 		we.reportError(ar, err)
@@ -490,7 +489,7 @@ func (we *workflowEngine) doPodHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	log.Debugf("function request done")
+	appLog.Debugf("function request done")
 
 }
 
@@ -513,19 +512,19 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 		svn, _, err = functions.GenerateServiceName(ar.Workflow.Namespace,
 			ar.Workflow.ID, ar.Container.ID)
 		if err != nil {
-			log.Errorf("can not create service name: %v", err)
+			appLog.Errorf("can not create service name: %v", err)
 			we.reportError(ar, err)
 		}
 	}
 
 	addr := fmt.Sprintf("%s://%s.%s", we.server.config.FunctionsProtocol, svn, ns)
-	log.Debugf("function request: %v", addr)
+	appLog.Debugf("function request: %v", addr)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	log.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+	appLog.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
 
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -564,14 +563,14 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 	// we just loop and see if we can recreate the service
 	// one minute wait max
 	for i := 0; i < 60; i++ {
-		log.Debugf("functions request (%d): %v", i, addr)
+		appLog.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {
-				log.Debugf("context error in knative call")
+				appLog.Debugf("context error in knative call")
 				return
 			}
-			log.Debugf("error in request: %v", err)
+			appLog.Debugf("error in request: %v", err)
 			if err, ok := err.(*url.Error); ok {
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
@@ -591,7 +590,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 								ar.Workflow.Namespace, ar.Workflow.ID) {
 							err := createKnativeFunction(we.functionsClient, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
-								log.Errorf("can not create knative function: %v", err)
+								appLog.Errorf("can not create knative function: %v", err)
 								we.reportError(ar, err)
 								return
 							}
@@ -620,7 +619,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	log.Debugf("function request done")
+	appLog.Debugf("function request done")
 
 }
 
@@ -699,13 +698,13 @@ func (we *workflowEngine) retryWakeup(data []byte) error {
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
-		log.Errorf("cannot handle retry wakeup: %v", err)
+		appLog.Errorf("cannot handle retry wakeup: %v", err)
 		return nil
 	}
 
 	ctx, wli, err := we.loadWorkflowLogicInstance(msg.InstanceID, msg.Step)
 	if err != nil {
-		log.Errorf("cannot load workflow logic instance: %v", err)
+		appLog.Errorf("cannot load workflow logic instance: %v", err)
 		return nil
 	}
 
@@ -754,13 +753,13 @@ func (we *workflowEngine) sleepWakeup(data []byte) error {
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
-		log.Errorf("cannot handle sleep wakeup: %v", err)
+		appLog.Errorf("cannot handle sleep wakeup: %v", err)
 		return nil
 	}
 
 	ctx, wli, err := we.loadWorkflowLogicInstance(msg.InstanceID, msg.Step)
 	if err != nil {
-		log.Errorf("cannot load workflow logic instance: %v", err)
+		appLog.Errorf("cannot load workflow logic instance: %v", err)
 		return nil
 	}
 
@@ -837,7 +836,7 @@ func (we *workflowEngine) cancelChildren(logic stateLogic, savedata []byte) {
 				_ = we.hardCancelInstance(id, "direktiv.cancels.parent", "cancelled by parent workflow")
 			}(child.Id)
 		default:
-			log.Errorf("unrecognized child type: %s", child.Type)
+			appLog.Errorf("unrecognized child type: %s", child.Type)
 		}
 	}
 
@@ -860,9 +859,9 @@ func (we *workflowEngine) freeResources(rec *ent.WorkflowInstance) {
 
 	err := we.timer.deleteTimersForInstance(rec.InstanceID)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
-	log.Debugf("deleted timers for instance %v", rec.InstanceID)
+	appLog.Debugf("deleted timers for instance %v", rec.InstanceID)
 
 	we.clearEventListeners(rec)
 
@@ -906,7 +905,7 @@ func (we *workflowEngine) cancelInstance(instanceId, code, message string, soft 
 	ctx, wli, err := we.loadWorkflowLogicInstance(instanceId, -1)
 	if err != nil {
 		err = fmt.Errorf("cannot load workflow logic instance: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		return err
 	}
 
@@ -991,7 +990,7 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 
 	err := we.metricsClient.InsertRecord(args)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
 }
@@ -1015,7 +1014,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	data, err := json.Marshal(wli.data)
 	if err != nil {
 		err = fmt.Errorf("engine cannot marshal state data for storage: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
 		/* #nosec */
@@ -1032,7 +1031,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	wf := wli.rec.Edges.Workflow
 	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus(status).Save(ctx)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
 		wli.Close()
@@ -1041,7 +1040,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	rec.Edges.Workflow = wf
 
 	wli.rec = rec
-	log.Debugf("Workflow instance completed: %s", wli.id)
+	appLog.Debugf("Workflow instance completed: %s", wli.id)
 	wli.Log(ctx, "Workflow completed.")
 
 	wli.engine.freeResources(rec)
@@ -1053,7 +1052,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 
 func (we *workflowEngine) logRunState(ctx context.Context, wli *workflowLogicInstance, savedata, wakedata []byte, err error) {
 
-	log.Debugf("Running state logic -- %s:%v (%s)", wli.id, wli.step, wli.logic.ID())
+	appLog.Debugf("Running state logic -- %s:%v (%s)", wli.id, wli.step, wli.logic.ID())
 	if len(savedata) == 0 && len(wakedata) == 0 && err == nil {
 		wli.Log(ctx, "Running state logic -- %s:%v (%s)", wli.logic.ID(), wli.step, wli.logic.Type())
 	}
@@ -1186,7 +1185,7 @@ failure:
 		var err error
 		err = wli.setStatus(ctx, "crashed", code, msg)
 		if err == nil {
-			log.Errorf("Workflow failed with internal error: %s", ierr.Error())
+			appLog.Errorf("Workflow failed with internal error: %s", ierr.Error())
 			wli.Log(ctx, "Workflow failed with internal error: %s", ierr.Error())
 			wli.engine.freeResources(wli.rec)
 			wli.wakeCaller(ctx, nil)
@@ -1194,14 +1193,14 @@ failure:
 			return
 		}
 
-		log.Errorf("Workflow failed with internal error and the database couldn't be updated: %s", ierr.Error())
+		appLog.Errorf("Workflow failed with internal error and the database couldn't be updated: %s", ierr.Error())
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
 		wli.Close()
 		return
 
 	} else {
-		log.Errorf("Unwrapped error detected: %v", err)
+		appLog.Errorf("Unwrapped error detected: %v", err)
 		wli.engine.freeResources(wli.rec)
 		wli.wakeCaller(ctx, nil)
 		wli.Close()
@@ -1229,7 +1228,7 @@ func (we *workflowEngine) CronInvoke(uid string) error {
 	wli, err := we.newWorkflowLogicInstance(ctx, ns.ID, wf.Name, []byte("{}"))
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
-			log.Errorf("Internal error on CronInvoke: %v", err)
+			appLog.Errorf("Internal error on CronInvoke: %v", err)
 			return errors.New("an internal error occurred")
 		} else {
 			return err
@@ -1269,7 +1268,7 @@ func (we *workflowEngine) PrepareInvoke(ctx context.Context, namespace, name str
 	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
-			log.Errorf("Internal error on DirectInvoke: %v", err)
+			appLog.Errorf("Internal error on DirectInvoke: %v", err)
 			return nil, errors.New("an internal error occurred")
 		}
 
@@ -1304,13 +1303,13 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 
 	wf, err := we.db.getWorkflowByID(workflowID)
 	if err != nil {
-		log.Errorf("Internal error on EventsInvoke: %v", err)
+		appLog.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
 	ns, err := wf.QueryNamespace().Only(ctx)
 	if err != nil {
-		log.Errorf("Internal error on EventsInvoke: %v", err)
+		appLog.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
@@ -1335,7 +1334,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 
 	input, err = json.Marshal(m)
 	if err != nil {
-		log.Errorf("Internal error on EventsInvoke: %v", err)
+		appLog.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
@@ -1344,7 +1343,7 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 
 	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
 	if err != nil {
-		log.Errorf("Internal error on EventsInvoke: %v", err)
+		appLog.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
@@ -1359,14 +1358,14 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 	case model.StartTypeEventsXor:
 	default:
 		wli.Close()
-		log.Errorf("cannot event invoke workflows with '%s' starts", stype)
+		appLog.Errorf("cannot event invoke workflows with '%s' starts", stype)
 		return
 	}
 
 	wli.rec, err = we.db.addWorkflowInstance(ctx, namespace, name, wli.id, string(wli.startData), false, wli.wf.Exclusive, nil)
 	if err != nil {
 		wli.Close()
-		log.Errorf("Internal error on EventsInvoke: %v", err)
+		appLog.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
@@ -1405,7 +1404,7 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 		cc := new(subflowCaller)
 		err = json.Unmarshal([]byte(callersCaller), cc)
 		if err != nil {
-			log.Errorf("Internal error on subflowInvoke: %v", err)
+			appLog.Errorf("Internal error on subflowInvoke: %v", err)
 			return "", errors.New("an internal error occurred")
 		}
 
@@ -1419,7 +1418,7 @@ func (we *workflowEngine) subflowInvoke(ctx context.Context, caller *subflowCall
 	wli, err := we.newWorkflowLogicInstance(ctx, namespace, name, input)
 	if err != nil {
 		if _, ok := err.(*InternalError); ok {
-			log.Errorf("Internal error on subflowInvoke: %v", err)
+			appLog.Errorf("Internal error on subflowInvoke: %v", err)
 			return "", errors.New("an internal error occurred")
 		} else {
 			return "", err
