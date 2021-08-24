@@ -696,6 +696,7 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
+		heartbeat.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
@@ -704,6 +705,8 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		}
 
 		flusher.Flush()
+
+		heartbeat.Unlock()
 	}
 
 	heartbeat.Done <- true

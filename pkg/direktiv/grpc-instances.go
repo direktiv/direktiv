@@ -97,8 +97,10 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 }
 
 func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInstanceLogsRequest, out ingress.DirektivIngress_WatchWorkflowInstanceLogsServer) error {
+	ctx, done := context.WithCancel(context.Background())
+	defer done()
 
-	logChannel, err := is.wfServer.instanceLogger.StreamLogs(context.Background(), in.GetInstanceId())
+	logChannel, err := is.wfServer.instanceLogger.StreamLogs(ctx, in.GetInstanceId())
 	if err != nil {
 		return err
 	}
@@ -128,9 +130,6 @@ func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInst
 			}
 		}
 	}
-
-	return nil
-
 }
 
 func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress.GetInstancesByWorkflowRequest) (*ingress.GetInstancesByWorkflowResponse, error) {
