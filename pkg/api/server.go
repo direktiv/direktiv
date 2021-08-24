@@ -8,6 +8,7 @@ import (
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
+	prometheus "github.com/prometheus/client_golang/api"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -33,7 +34,8 @@ type Server struct {
 	actionTemplateDirsPaths map[string]string
 	actionTemplateDirs      []string
 
-	blocklist []string
+	blocklist  []string
+	prometheus prometheus.Client
 }
 
 // NewServer returns new API server
@@ -166,6 +168,14 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
 	s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-invoked", s.handler.getNamespaceMetrics_WorkflowsInvoked).Methods(http.MethodGet).Name("namespaceWorkflowsInvoked")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-successful", s.handler.getNamespaceMetrics_WorkflowsSuccessful).Methods(http.MethodGet).Name("namespaceWorkflowsSuccessful")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-failed", s.handler.getNamespaceMetrics_WorkflowsFailed).Methods(http.MethodGet).Name("namespaceWorkflowsFailed")
+
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/invoked", s.handler.getWorkflowMetrics_Invoked).Methods(http.MethodGet).Name("metricsWorkflowInvoked")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/successful", s.handler.getWorkflowMetrics_Successful).Methods(http.MethodGet).Name("metricsWorkflowSuccessful")
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/failed", s.handler.getWorkflowMetrics_Failed).Methods(http.MethodGet).Name("metricsWorkflowFailed")
+
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
@@ -244,6 +254,14 @@ func (s *Server) prepareRoutes() {
 func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", apiBind)
+
+	var err error
+	s.prometheus, err = prometheus.NewClient(prometheus.Config{
+		Address: "http://direktiv-prometheus-service.default:9090",
+	})
+	if err != nil {
+		return err
+	}
 
 	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
 	if len(k) > 0 {
