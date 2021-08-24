@@ -3,6 +3,7 @@ package direktiv
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -42,9 +43,21 @@ var (
 		},
 		[]string{"namespace", "workflow", "tenant"},
 	)
+
+	metricsWfDuration = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: "direktiv",
+			Subsystem: "workflows",
+			Name:      "total_milliseconds",
+			Help:      "Total time workflow has been actively executing.",
+		}, []string{"namespace", "workflow", "tenant"},
+	)
 )
 
-func reportMetricEnd(namespace, workflow, status string) {
+func reportMetricEnd(namespace, workflow, status string, t time.Time) {
+
+	now := time.Now()
+	empty := time.Time{}
 
 	log.Debugf("reporting workflow %v/%v: %v", namespace, workflow, status)
 	if status == "failed" {
@@ -53,6 +66,10 @@ func reportMetricEnd(namespace, workflow, status string) {
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()
 	}
 
+	if t != empty {
+		ms := now.Sub(t).Milliseconds()
+		metricsWfDuration.WithLabelValues(namespace, workflow, namespace).Add(float64(ms))
+	}
 }
 
 func setupPrometheusEndpoint() {
@@ -62,6 +79,7 @@ func setupPrometheusEndpoint() {
 	prometheus.MustRegister(metricsWfInvoked)
 	prometheus.MustRegister(metricsWfSuccess)
 	prometheus.MustRegister(metricsWfFail)
+	prometheus.MustRegister(metricsWfDuration)
 	prometheus.Unregister(prometheus.NewGoCollector())
 	prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
