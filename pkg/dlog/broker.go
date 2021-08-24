@@ -1,41 +1,50 @@
 package dlog
 
+import "sync"
+
 type BrokerManager struct {
 	brokerMap map[string]*Broker
+	sync.Mutex
 }
 
-func (l *BrokerManager) SetBroker(instance string) (*Broker, bool) {
+func (bm *BrokerManager) SetBroker(instance string) (*Broker, bool) {
 
 	// Create Broker if it doest exist
-	if _, ok := l.brokerMap[instance]; !ok {
-		l.brokerMap[instance] = newBroker()
-		go l.brokerMap[instance].Start()
-		return l.brokerMap[instance], true
+	if _, ok := bm.brokerMap[instance]; !ok {
+		bm.Lock()
+		bm.brokerMap[instance] = newBroker()
+		go bm.brokerMap[instance].Start()
+		bm.Unlock()
+		return bm.brokerMap[instance], true
 	}
 
-	return l.brokerMap[instance], false
+	return bm.brokerMap[instance], false
 
 }
 
-func (l *BrokerManager) GetBroker(instance string) (*Broker, bool) {
-
-	if b, ok := l.brokerMap[instance]; ok {
-		return b, true
-	}
-
-	return nil, false
-
+func (bm *BrokerManager) GetBroker(instance string) (*Broker, bool) {
+	b, ok := bm.brokerMap[instance]
+	return b, ok
 }
 
-func (l *BrokerManager) DeleteBroker(instance string) bool {
+func (bm *BrokerManager) DeleteBroker(instance string) bool {
 
-	// Create Broker if it doest exist
-	if _, ok := l.brokerMap[instance]; ok {
-		delete(l.brokerMap, instance)
+	// Delete Broker if it exist
+	if _, ok := bm.brokerMap[instance]; ok {
+		bm.Lock()
+		delete(bm.brokerMap, instance)
+		bm.Unlock()
 		return true
 	}
 
 	return false
+}
+
+// Publish to broker instance, if instance does not exists, it will get created
+func (bm *BrokerManager) Publish(instance string, entry LogEntry) error {
+	b, _ := bm.SetBroker(instance)
+	b.publishCh <- entry
+	return nil
 }
 
 func NewBrokerManager() *BrokerManager {

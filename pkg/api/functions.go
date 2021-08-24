@@ -958,6 +958,16 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 	offset := int32(0)
 	limit := int32(1000)
 
+	// Get Instance
+	respI, err := h.s.direktiv.GetWorkflowInstance(ctx, &ingress.GetWorkflowInstanceRequest{
+		Id: &iid,
+	})
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	// Get Previous Instance Logs
 	resp, err := h.s.direktiv.GetWorkflowInstanceLogs(ctx, &ingress.GetWorkflowInstanceLogsRequest{
 		InstanceId: &iid,
 		Limit:      &limit,
@@ -991,11 +1001,24 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	flusher.Flush()
+
+	// If instance is finished dont start watching
+	if respI.EndTime != nil {
+		_, err = w.Write([]byte("data: {\"exit\": 0, \"reason\":\"instance has finished\"}\n\n"))
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
+			return
+		}
+		return
+	}
 
 	grpcReq := new(ingress.WatchWorkflowInstanceLogsRequest)
 	grpcReq.InstanceId = &iid
 
 	client, err := h.s.direktiv.WatchWorkflowInstanceLogs(r.Context(), grpcReq)
+	defer client.CloseSend()
 	if err != nil {
 		// Broker does not exists
 		if len(previousLogs) == 0 {
@@ -1003,8 +1026,6 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
-	defer client.CloseSend()
 
 	go func() {
 		<-client.Context().Done()

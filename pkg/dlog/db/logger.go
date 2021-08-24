@@ -55,7 +55,15 @@ func (l *Logger) StreamLogs(ctx context.Context, instance string) (chan interfac
 		return nil, fmt.Errorf("instance '%s' not found", instance)
 	}
 
-	return broker.Subscribe(), nil
+	ch := broker.Subscribe()
+
+	go func(ch chan interface{}) {
+		fmt.Printf("IM DONE!!!!!!\n")
+		<-ctx.Done()
+		broker.Unsubscribe(ch)
+	}(ch)
+
+	return ch, nil
 }
 
 // Testing !!!!!!!!!!! //
@@ -92,14 +100,12 @@ func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 	lg := new(dbLogger)
 	lg.Logger = log15.New()
 
-	broker, _ := l.brokerManager.SetBroker(instance)
-
 	h, err := NewHandler(&HandlerArgs{
 		Driver:                      l.db,
 		Namespace:                   namespace,
 		InstanceID:                  instance,
 		InsertFrequencyMilliSeconds: 250,
-		Broker:                      broker,
+		BrokerManager:               l.brokerManager,
 	})
 	if err != nil {
 		return nil, err
