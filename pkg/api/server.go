@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -75,8 +74,6 @@ func NewServer(cfg *Config) (*Server, error) {
 		},
 	}
 
-	s.srv.SetKeepAlivesEnabled(true)
-
 	s.handler = &Handler{
 		s: s,
 	}
@@ -123,8 +120,6 @@ func (s *Server) initDirektiv() error {
 		log.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
 	}
-
-	fmt.Println("util.TLSIngressComponent  === " + util.TLSIngressComponent)
 
 	log.Infof("connecting to %s", util.IngressEndpoint())
 

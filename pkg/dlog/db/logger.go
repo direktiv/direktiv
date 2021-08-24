@@ -40,8 +40,6 @@ func (l *Logger) CloseConnection() error {
 	return l.db.Close()
 }
 
-// Testing !!!!!!!!!!! //
-
 func NewLogger(database string) (*Logger, error) {
 	l := new(Logger)
 	err := l.Connect(database)
@@ -65,8 +63,6 @@ func (l *Logger) StreamLogs(ctx context.Context, instance string) (chan interfac
 
 	return ch, nil
 }
-
-// Testing !!!!!!!!!!! //
 
 type dbLogger struct {
 	log15.Logger

@@ -666,8 +666,6 @@ func filterLabels(annotations map[string]string) map[string]string {
 		return make(map[string]string)
 	}
 
-	log.Debugf("scope = %s", scope)
-
 	t := invalidType
 	switch setter {
 	case 7:
