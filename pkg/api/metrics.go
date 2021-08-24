@@ -12,6 +12,10 @@ import (
 
 func (h *Handler) queryPrometheus(str string, t time.Time) (map[string]interface{}, error) {
 
+	if !h.s.prometheusEnabled {
+		return nil, fmt.Errorf("missing prometheus configuration")
+	}
+
 	v1API := v1.NewAPI(h.s.prometheus)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

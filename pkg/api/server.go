@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -13,6 +14,10 @@ import (
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/util"
+)
+
+const (
+	PROMETHEUS_ADDR_ENV = "PROMETHEUS_ADDR"
 )
 
 // Server ..
@@ -34,8 +39,9 @@ type Server struct {
 	actionTemplateDirsPaths map[string]string
 	actionTemplateDirs      []string
 
-	blocklist  []string
-	prometheus prometheus.Client
+	blocklist         []string
+	prometheusEnabled bool
+	prometheus        prometheus.Client
 }
 
 // NewServer returns new API server
@@ -258,11 +264,16 @@ func (s *Server) Start() error {
 	log.Infof("Starting server - binding to %s", apiBind)
 
 	var err error
-	s.prometheus, err = prometheus.NewClient(prometheus.Config{
-		Address: "http://direktiv-prometheus-service.default:9090",
-	})
-	if err != nil {
-		return err
+
+	if os.Getenv(PROMETHEUS_ADDR_ENV) != "" {
+		s.prometheus, err = prometheus.NewClient(prometheus.Config{
+			Address: "http://direktiv-prometheus-service.default:9090",
+		})
+		if err != nil {
+			return err
+		}
+
+		s.prometheusEnabled = true
 	}
 
 	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)

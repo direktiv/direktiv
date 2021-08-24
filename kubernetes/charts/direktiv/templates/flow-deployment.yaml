@@ -15,10 +15,10 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if .Values.flow.prometheus.enabled }}
-        "prometheus.io/path": {{ .Values.flow.prometheus.path | default "/metrics" }}
-        "prometheus.io/port": {{ .Values.flow.prometheus.port | default 2112 | quote }}
-        "prometheus.io/scrape": {{ .Values.flow.prometheus.scrape | default true | quote }}
+        {{- if .Values.prometheus.enabled }}
+        {{- with .Values.prometheus.targetAnnotations}}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         {{- end }}
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
