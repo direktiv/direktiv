@@ -75,6 +75,8 @@ func NewServer(cfg *Config) (*Server, error) {
 		},
 	}
 
+	s.srv.SetKeepAlivesEnabled(true)
+
 	s.handler = &Handler{
 		s: s,
 	}

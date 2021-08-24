@@ -88,14 +88,7 @@ func ErrResponse(w http.ResponseWriter, err error) {
 	_ = json.NewEncoder(w).Encode(eo)
 }
 
-func ErrHEADResponse(w http.ResponseWriter, err error) {
-	eo := GenerateErrObject(err)
-	respCode := ConvertGRPCStatusCodeToHTTPCode(eo.Code)
-
-	w.Header().Set("error", eo.Message)
-
-	w.WriteHeader(respCode)
-}
+// SSE Util functions
 
 func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
 	eo := GenerateErrObject(err)
@@ -123,10 +116,11 @@ func ErrSSEResponseSimple(w http.ResponseWriter, flusher http.Flusher, data []by
 }
 
 func SetupSEEWriter(w http.ResponseWriter) (http.Flusher, error) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -134,4 +128,37 @@ func SetupSEEWriter(w http.ResponseWriter) (http.Flusher, error) {
 	}
 
 	return flusher, nil
+}
+
+func WriteSSEJSONData(w http.ResponseWriter, flusher http.Flusher, data interface{}) error {
+	b, err := json.Marshal(data)
+	if err != nil {
+		err = fmt.Errorf("client recieved bad data: %w", err)
+		log.Error(err)
+		return err
+	}
+
+	return WriteSSEData(w, flusher, b)
+}
+
+func WriteSSEData(w http.ResponseWriter, flusher http.Flusher, data []byte) error {
+	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(data))))
+	if err != nil {
+		err = fmt.Errorf("client failed to write data: %w", err)
+		log.Error(err)
+		return err
+	}
+
+	flusher.Flush()
+	return nil
+}
+
+func SendSSEHeartbeat(w http.ResponseWriter, flusher http.Flusher) {
+	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
+	if err != nil {
+		ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
+		log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+	}
+
+	flusher.Flush()
 }

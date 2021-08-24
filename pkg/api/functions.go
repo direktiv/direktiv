@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -665,55 +664,52 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer client.CloseSend()
 	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
 	}()
 
-	// Create Heartbeat
-	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
-	go heartbeat.Start(client.Context())
-
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+			heartbeat.Stop()
+			return
 		}
-
-		b, err := json.Marshal(resp)
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			break
-		}
-
-		heartbeat.Lock()
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
-		}
-
-		flusher.Flush()
-
-		heartbeat.Unlock()
 	}
-
-	heartbeat.Done <- true
 }
 
 func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
-
 	sn := mux.Vars(r)["serviceName"]
 	rn := mux.Vars(r)["revisionName"]
 
@@ -740,43 +736,43 @@ func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
 	}()
 
-	// Create Heartbeat
-	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
-	go heartbeat.Start(client.Context())
-
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+			heartbeat.Stop()
+			return
 		}
-
-		b, err := json.Marshal(resp)
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			break
-		}
-
-		heartbeat.Lock()
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
-		}
-
-		flusher.Flush()
-		heartbeat.Unlock()
 	}
-
-	heartbeat.Done <- true
 }
 
 func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
@@ -798,72 +794,45 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create Heartbeat
-	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
-	go heartbeat.Start(client.Context())
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
 
-	for {
-		resp, err := client.Recv()
-		if err != nil {
-			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+	// Start watcher client stream channels
+	dataCh := make(chan string)
+	errorCh := make(chan error)
+	go func() {
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+
+				dataCh <- *data.Data
+			}
 		}
+	}()
 
-		heartbeat.Lock()
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(*resp.Data))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
-		}
-
-		flusher.Flush()
-		heartbeat.Unlock()
-	}
-
-	heartbeat.Done <- true
-
-}
-
-type sseHeartbeat struct {
-	sync.Mutex
-	Done     chan bool
-	interval time.Duration
-	flusher  http.Flusher
-	w        http.ResponseWriter
-}
-
-func newSSEHeartbeat(interval time.Duration, flusher http.Flusher, w http.ResponseWriter) *sseHeartbeat {
-	return &sseHeartbeat{
-		Done:     make(chan bool),
-		interval: interval,
-		flusher:  flusher,
-		w:        w,
-	}
-}
-
-func (hb *sseHeartbeat) Start(ctx context.Context) {
 	for {
 		select {
-		case <-ctx.Done():
-			//TODO: done
-			return
-		case <-hb.Done:
-			//TODO: done
-			return
-		case <-time.After(hb.interval):
-			hb.Lock()
-			_, err := hb.w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
-			if err != nil {
-				ErrSSEResponse(hb.w, hb.flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
-				log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
-			}
+		case data := <-dataCh:
+			err = WriteSSEData(w, flusher, []byte(data))
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
 
-			hb.flusher.Flush()
-			hb.Unlock()
+		// Check for errors
+		if err != nil {
+			ErrSSEResponse(w, flusher, err)
+			heartbeat.Stop()
+			return
 		}
 	}
+
 }
 
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
@@ -919,44 +888,44 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
 	}()
 
-	// Create Heartbeat
-	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
-	go heartbeat.Start(client.Context())
-
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+			heartbeat.Stop()
+			return
 		}
-
-		b, err := json.Marshal(resp)
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			break
-		}
-
-		// fmt.Printf("IM GONNA PRINT NOW: %s\n", fmt.Sprintf("data: %s\n\n", string(b)))
-		heartbeat.Lock()
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
-		}
-
-		flusher.Flush()
-		heartbeat.Unlock()
 	}
 
-	heartbeat.Done <- true
 }
 
 func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
@@ -1041,41 +1010,41 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
 	}()
 
-	// Create Heartbeat
-	heartbeat := newSSEHeartbeat(time.Second*15, flusher, w)
-	go heartbeat.Start(client.Context())
-
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+			heartbeat.Stop()
+			return
 		}
-
-		b, err := json.Marshal(resp)
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			break
-		}
-
-		heartbeat.Lock()
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
-		}
-		heartbeat.Unlock()
-
-		flusher.Flush()
 	}
-
-	heartbeat.Done <- true
 }
