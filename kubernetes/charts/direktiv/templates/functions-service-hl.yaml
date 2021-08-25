@@ -11,4 +11,4 @@ spec:
       name: grpc
       protocol: TCP
   selector:
-    {{- include "direktiv.selectorLabels" . | nindent 4 }}-functions
+    {{- include "direktiv.selectorLabelsFunctions" . | nindent 4 }}

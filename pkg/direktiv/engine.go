@@ -571,6 +571,7 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 				log.Debugf("context error in knative call")
 				return
 			}
+			log.Debugf("error in request: %v", err)
 			if err, ok := err.(*url.Error); ok {
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -29,8 +28,6 @@ func main() {
 		panic(err.Error())
 	}
 
-	changeContour()
-
 	go func() {
 		err := startingK3s()
 		if err != nil {
@@ -51,7 +48,7 @@ func main() {
 	runRegistry(kc)
 	applyYaml(kc)
 	patch(kc)
-	runHelm()
+	runHelm(kc)
 
 	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
 	if err != nil {
@@ -119,7 +116,7 @@ func (a byName) Len() int           { return len(a) }
 func (a byName) Less(i, j int) bool { return a[i].GetName() < a[j].GetName() }
 func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-func runHelm() {
+func runHelm(kc string) {
 
 	if os.Getenv("PERSIST") != "" {
 
@@ -148,11 +145,22 @@ func runHelm() {
 
 	addProxy(f)
 
+	//
+	log.Printf("creating service namespace\n")
+	/* #nosec */
+	cmd := exec.Command(kc, "create", "namespace", "direktiv-services-direktiv")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
 	log.Printf("running direktiv helm\n")
-	cmd := exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
+	cmd = exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
 	cmd.Dir = "/direktiv/kubernetes/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Run()
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 }
 
@@ -263,19 +271,6 @@ func startingK3s() error {
 
 	return cmd.Run()
 
-}
-
-func changeContour() {
-	iyaml, err := ioutil.ReadFile("/direktiv/scripts/knative/contour.yaml")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	output := bytes.Replace(iyaml, []byte("replicas: 2"), []byte("replicas: 1"), -1)
-
-	if err = ioutil.WriteFile("/direktiv/scripts/knative/contour.yaml", output, 0600); err != nil {
-		panic(err.Error())
-	}
 }
 
 func isGCP() bool {
