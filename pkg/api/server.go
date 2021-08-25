@@ -268,7 +268,7 @@ func (s *Server) Start() error {
 
 	if os.Getenv(PROMETHEUS_ADDR_ENV) != "" {
 		s.prometheus, err = prometheus.NewClient(prometheus.Config{
-			Address: "http://direktiv-prometheus-service.default:9090",
+			Address: os.Getenv(PROMETHEUS_ADDR_ENV),
 		})
 		if err != nil {
 			return err
