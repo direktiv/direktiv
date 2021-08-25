@@ -10,10 +10,11 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
-	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/secrets/ent"
 	entc "github.com/vorteil/direktiv/pkg/secrets/ent"
 	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -29,10 +30,19 @@ type dbHandler struct {
 	key string
 }
 
+var logger *zap.SugaredLogger
+
 func setupDB() (SecretsHandler, error) {
+
+	var err error
 
 	dbEnv := os.Getenv(secretsConn)
 	keyEnv := os.Getenv(secretsKey)
+
+	logger, err = dlog.ApplicationLogger("secrets-db")
+	if err != nil {
+		return nil, err
+	}
 
 	if keyEnv == "" || dbEnv == "" {
 		return nil, fmt.Errorf("DB and Key have to be set")
@@ -44,12 +54,12 @@ func setupDB() (SecretsHandler, error) {
 
 	db, err := ent.Open("postgres", dbEnv)
 	if err != nil {
-		log.Errorf("can not connect to secrets db: %v", err)
+		logger.Errorf("can not connect to secrets db: %v", err)
 		return nil, err
 	}
 
 	if err := db.Schema.Create(context.Background()); err != nil {
-		log.Errorf("failed creating schema resources: %v", err)
+		logger.Errorf("failed creating schema resources: %v", err)
 		return nil, err
 	}
 
@@ -61,7 +71,7 @@ func setupDB() (SecretsHandler, error) {
 
 func (db *dbHandler) AddSecret(namespace, name string, secret []byte) error {
 
-	log.Infof("adding secret %s", name)
+	logger.Infof("adding secret %s", name)
 
 	bs, _ := db.db.NamespaceSecret.
 		Query().
