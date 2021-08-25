@@ -1,0 +1,4 @@
+workflow hello
+
+hello:
+log("Hello!")
