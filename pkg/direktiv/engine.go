@@ -1003,6 +1003,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		return
 	}
 
+	reportStateEnd(wli.namespace, wli.wf.ID, wli.logic.ID(), wli.rec.StateBeginTime)
 	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {

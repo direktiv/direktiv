@@ -117,3 +117,17 @@ func (h *Handler) getWorkflowMetrics_Milliseconds(w http.ResponseWriter, r *http
 
 	writeJSONResponse(w, out)
 }
+
+func (h *Handler) getWorkflowMetrics_StateMilliseconds(w http.ResponseWriter, r *http.Request) {
+
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflow"]
+
+	out, err := h.queryPrometheus(fmt.Sprintf(`direktiv_states_milliseconds_sum{namespace="%s", workflow="%s"} / direktiv_states_milliseconds_count{namespace="%s", workflow="%s"}`, ns, wf, ns, wf), time.Now())
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	writeJSONResponse(w, out)
+}

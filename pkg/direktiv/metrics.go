@@ -52,6 +52,15 @@ var (
 			Help:      "Total time workflow has been actively executing.",
 		}, []string{"namespace", "workflow", "tenant"},
 	)
+
+	metricsWfStateDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Namespace: "direktiv",
+			Subsystem: "states",
+			Name:      "milliseconds",
+			Help:      "Average time each state spends in execution.",
+		}, []string{"namespace", "workflow", "state", "tenant"},
+	)
 )
 
 func reportMetricEnd(namespace, workflow, status string, t time.Time) {
@@ -72,6 +81,13 @@ func reportMetricEnd(namespace, workflow, status string, t time.Time) {
 	}
 }
 
+func reportStateEnd(namespace, workflow, state string, t time.Time) {
+
+	ms := time.Now().Sub(t).Milliseconds()
+	metricsWfStateDuration.WithLabelValues(namespace, workflow, state, namespace).Observe(float64(ms))
+
+}
+
 func setupPrometheusEndpoint() {
 
 	log.Infof("starting prometheus endpoint")
@@ -80,6 +96,7 @@ func setupPrometheusEndpoint() {
 	prometheus.MustRegister(metricsWfSuccess)
 	prometheus.MustRegister(metricsWfFail)
 	prometheus.MustRegister(metricsWfDuration)
+	prometheus.MustRegister(metricsWfStateDuration)
 	prometheus.Unregister(prometheus.NewGoCollector())
 	prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 

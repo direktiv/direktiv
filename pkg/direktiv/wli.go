@@ -272,6 +272,7 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 		code = "direktiv.internal.error"
 	}
 
+	reportStateEnd(wli.namespace, wli.wf.ID, wli.logic.ID(), wli.rec.StateBeginTime)
 	wli.engine.completeState(ctx, wli.rec, "", code, false)
 
 	wf := wli.rec.Edges.Workflow
