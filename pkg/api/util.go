@@ -4,9 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -17,18 +15,6 @@ import (
 var errNamespaceRegex = fmt.Errorf("namespace name must match the regex pattern `%s`", util.RegexPattern)
 var errWorkflowRegex = fmt.Errorf("workflow id must match the regex pattern `%s`", util.RegexPattern)
 var errSecretRegex = fmt.Errorf("secret key must match the regex pattern `%s`", util.VarRegexPattern)
-
-func closeVerbose(x io.Closer, log io.Writer) {
-	if log == nil {
-		log = os.Stdout
-	}
-
-	err := x.Close()
-	if err != nil {
-		/* #nosec */
-		_, _ = log.Write([]byte(err.Error()))
-	}
-}
 
 const filenameRegexp = `^[^\s\.\,\/\*]*$`
 

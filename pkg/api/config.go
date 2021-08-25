@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/util"
 	"gopkg.in/yaml.v2"
 )
@@ -36,18 +35,18 @@ func ConfigFromFile(cfgPath string) (*Config, error) {
 
 	cfg := new(Config)
 
-	log.Debugf("reading config %s", cfgPath)
+	logger.Debugf("reading config %s", cfgPath)
 
 	/* #nosec G304 */
 	b, err := ioutil.ReadFile(cfgPath)
 	if err != nil {
-		log.Errorf("can not read config file: %v", err)
+		logger.Errorf("can not read config file: %v", err)
 		return nil, err
 	}
 
 	err = yaml.Unmarshal(b, cfg)
 	if err != nil {
-		log.Errorf("can not unmarshal config file: %v", err)
+		logger.Errorf("can not unmarshal config file: %v", err)
 		return nil, err
 	}
 

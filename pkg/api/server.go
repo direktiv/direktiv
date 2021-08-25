@@ -8,10 +8,11 @@ import (
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/dlog"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 )
 
 // Server ..
@@ -36,16 +37,30 @@ type Server struct {
 	blocklist []string
 }
 
+var logger *zap.SugaredLogger
+
 // NewServer returns new API server
-func NewServer(cfg *Config) (*Server, error) {
+func NewServer() (*Server, error) {
+
+	var err error
+
+	logger, err = dlog.ApplicationLogger("api")
+	if err != nil {
+		return nil, err
+	}
+
+	cfg, err := Configure()
+	if err != nil {
+		return nil, err
+	}
 
 	r := mux.NewRouter()
 	var bl []string
 
-	log.Infof("check for a blocklist")
+	logger.Infof("check for a blocklist")
 
 	if cfg.hasBlockList() {
-		log.Infof("contains a blocklist")
+		logger.Infof("contains a blocklist")
 		// fetch blocklist
 		data, err := ioutil.ReadFile(cfg.BlockList)
 		if err != nil {
@@ -56,7 +71,7 @@ func NewServer(cfg *Config) (*Server, error) {
 			return nil, err
 		}
 
-		log.Infof("blocklist %s", data)
+		logger.Infof("blocklist %s", data)
 	}
 
 	s := &Server{
@@ -78,7 +93,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		s: s,
 	}
 
-	err := s.initDirektiv()
+	err = s.initDirektiv()
 	if err != nil {
 		return nil, err
 	}
@@ -117,11 +132,11 @@ func (s *Server) initDirektiv() error {
 
 	conn, err := util.GetEndpointTLS(util.TLSIngressComponent)
 	if err != nil {
-		log.Errorf("can not connect to direktiv ingress: %v", err)
+		logger.Errorf("can not connect to direktiv ingress: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", util.IngressEndpoint())
+	logger.Infof("connecting to %s", util.IngressEndpoint())
 
 	s.direktiv = ingress.NewDirektivIngressClient(conn)
 
@@ -132,11 +147,11 @@ func (s *Server) initFunctions() error {
 
 	conn, err := util.GetEndpointTLS(util.TLSFunctionsComponent)
 	if err != nil {
-		log.Errorf("can not connect to direktiv functions: %v", err)
+		logger.Errorf("can not connect to direktiv functions: %v", err)
 		return err
 	}
 
-	log.Infof("connecting to %s", util.FunctionsEndpoint())
+	logger.Infof("connecting to %s", util.FunctionsEndpoint())
 
 	s.functions = igrpc.NewFunctionsServiceClient(conn)
 
@@ -243,11 +258,11 @@ func (s *Server) prepareRoutes() {
 // Start starts the API server
 func (s *Server) Start() error {
 
-	log.Infof("Starting server - binding to %s", apiBind)
+	logger.Infof("Starting server - binding to %s", apiBind)
 
 	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
 	if len(k) > 0 {
-		log.Infof("api tls enabled")
+		logger.Infof("api tls enabled")
 		return s.srv.ListenAndServeTLS(c, k)
 	}
 

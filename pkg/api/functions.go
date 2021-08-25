@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/model"
 
@@ -441,7 +440,7 @@ func calculateList(client grpc.FunctionsServiceClient,
 
 		svcName, _, err := functions.GenerateServiceName(ns, "", li.service)
 		if err != nil {
-			log.Errorf("can not generate service name: %v", err)
+			logger.Errorf("can not generate service name: %v", err)
 			continue
 		}
 
@@ -464,7 +463,7 @@ func calculateList(client grpc.FunctionsServiceClient,
 
 	for i := range isos {
 		// that item exists, we replace
-		log.Debugf("checking %v", isos[i].GetServiceName())
+		logger.Debugf("checking %v", isos[i].GetServiceName())
 		if _, ok := gisos[isos[i].GetServiceName()]; ok {
 			gisos[isos[i].GetServiceName()] = isos[i]
 		}
