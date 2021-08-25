@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/util"
 	"github.com/werf/lockgate"
 	"github.com/werf/lockgate/pkg/distributed_locker"
@@ -28,7 +27,7 @@ func initKubernetesLock() error {
 		return err
 	}
 
-	log.Debugf("lock for cm %s in namespace %s",
+	logger.Debugf("lock for cm %s in namespace %s",
 		os.Getenv("DIREKTIV_LOCK_CM"), os.Getenv(util.DirektivNamespace))
 
 	kubernetesLock = distributed_locker.NewKubernetesLocker(
@@ -39,7 +38,7 @@ func initKubernetesLock() error {
 		}, os.Getenv("DIREKTIV_LOCK_CM"), os.Getenv(util.DirektivNamespace),
 	)
 
-	log.Infof("kubernetes lock created")
+	logger.Infof("kubernetes lock created")
 
 	return nil
 
@@ -47,7 +46,7 @@ func initKubernetesLock() error {
 
 func kubeLock(key string, blocking bool) (lockgate.LockHandle, error) {
 
-	log.Debugf("locking %s", key)
+	logger.Debugf("locking %s", key)
 
 	acquired, lock, err := kubernetesLock.Acquire(key,
 		lockgate.AcquireOptions{Shared: false, NonBlocking: blocking,
@@ -67,11 +66,11 @@ func kubeLock(key string, blocking bool) (lockgate.LockHandle, error) {
 
 func kubeUnlock(lock lockgate.LockHandle) {
 
-	log.Debugf("unlocking %s", lock.LockName)
+	logger.Debugf("unlocking %s", lock.LockName)
 
 	err := kubernetesLock.Release(lock)
 	if err != nil {
-		log.Errorf("can not unlock %v: %v", lock.LockName, err)
+		logger.Errorf("can not unlock %v: %v", lock.LockName, err)
 	}
 
 }

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	hash "github.com/mitchellh/hashstructure/v2"
-	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
@@ -42,7 +41,7 @@ func getClientSet() (*kubernetes.Clientset, error) {
 
 func kubernetesDeleteRegistry(name, namespace string) error {
 
-	log.Debugf("deleting registry %s (%s)", name, namespace)
+	logger.Debugf("deleting registry %s (%s)", name, namespace)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -86,7 +85,7 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 	auth := fmt.Sprintf(tmpl, in.GetName(), userToken[0], userToken[1],
 		base64.StdEncoding.EncodeToString(in.Data))
 
-	log.Debugf("adding secret %s (%s)", in.GetName(), in.GetNamespace())
+	logger.Debugf("adding secret %s (%s)", in.GetName(), in.GetNamespace())
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -130,12 +129,12 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 
 func listRegistriesNames(namespace string) []string {
 
-	log.Debugf("getting registries for namespace %s", namespace)
+	logger.Debugf("getting registries for namespace %s", namespace)
 	var registries []string
 
 	clientset, err := getClientSet()
 	if err != nil {
-		log.Errorf("can not get clientset: %v", err)
+		logger.Errorf("can not get clientset: %v", err)
 		return registries
 	}
 
@@ -143,7 +142,7 @@ func listRegistriesNames(namespace string) []string {
 		List(context.Background(),
 			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
-		log.Errorf("can not list secrets: %v", err)
+		logger.Errorf("can not list secrets: %v", err)
 		return registries
 	}
 

@@ -12,7 +12,6 @@ import (
 	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
-	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -72,10 +71,10 @@ var (
 func (is *functionsServer) DeleteRevision(ctx context.Context,
 	in *igrpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("delete revision %v", in.GetRevision())
+	logger.Debugf("delete revision %v", in.GetRevision())
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return &empty, err
 	}
 
@@ -84,21 +83,21 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 	r, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Get(context.Background(),
 		in.GetRevision(), metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("error getting revision for %v: %v", in.GetRevision(), err)
+		logger.Errorf("error getting revision for %v: %v", in.GetRevision(), err)
 		return &empty, err
 	}
 
 	svcName := r.Labels["serving.knative.dev/configuration"]
 	resp, err := getKnativeFunction(svcName)
 	if err != nil {
-		log.Errorf("error getting svc for %v: %v", svcName, err)
+		logger.Errorf("error getting svc for %v: %v", svcName, err)
 		return &empty, err
 	}
 
 	for i := range resp.Revisions {
 		rr := resp.Revisions[i]
 		if rr.Name != nil && rr.GetName() == in.GetRevision() && rr.GetTraffic() > 0 {
-			log.Errorf("revisions with traffic can not be deleted")
+			logger.Errorf("revisions with traffic can not be deleted")
 			return &empty, fmt.Errorf("revision %s still has traffic assigned: %d%%",
 				in.GetRevision(), rr.GetTraffic())
 		}
@@ -107,7 +106,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 	err = cs.ServingV1().Revisions(functionsConfig.Namespace).
 		Delete(context.Background(), in.GetRevision(), metav1.DeleteOptions{})
 	if err != nil {
-		log.Errorf("error delete knative revision %s: %v", in.GetRevision(), err)
+		logger.Errorf("error delete knative revision %s: %v", in.GetRevision(), err)
 		return &empty, err
 	}
 
@@ -117,7 +116,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("deleting functions %v", in.GetAnnotations())
+	logger.Debugf("deleting functions %v", in.GetAnnotations())
 
 	err := deleteKnativeFunctionss(in.GetAnnotations())
 
@@ -127,7 +126,7 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 func (is *functionsServer) GetFunction(ctx context.Context,
 	in *igrpc.GetFunctionRequest) (*igrpc.GetFunctionResponse, error) {
 
-	log.Debugf("get function %v", in.GetServiceName())
+	logger.Debugf("get function %v", in.GetServiceName())
 
 	var resp *igrpc.GetFunctionResponse
 
@@ -145,7 +144,7 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 
 	var resp igrpc.ListFunctionsResponse
 
-	log.Debugf("list functions %v", in.GetAnnotations())
+	logger.Debugf("list functions %v", in.GetAnnotations())
 
 	items, err := listKnativeFunctions(in.GetAnnotations())
 	if err != nil {
@@ -168,7 +167,7 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 func (is *functionsServer) CreateFunction(ctx context.Context,
 	in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
 
-	log.Infof("storing functions %s", in.GetInfo().GetName())
+	logger.Infof("storing functions %s", in.GetInfo().GetName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
@@ -177,7 +176,7 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 	// create ksvc service
 	err := createKnativeFunction(in.GetInfo())
 	if err != nil {
-		log.Errorf("can not create knative service: %v", err)
+		logger.Errorf("can not create knative service: %v", err)
 		return &empty, err
 	}
 
@@ -190,7 +189,7 @@ func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
 
 	err := trafficKnativeFunctions(in.GetName(), in.GetTraffic())
 	if err != nil {
-		log.Errorf("can not set traffic: %v", err)
+		logger.Errorf("can not set traffic: %v", err)
 		return &empty, err
 	}
 
@@ -203,7 +202,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 
 	err := deleteKnativeFunctions(in.GetServiceName())
 	if err != nil {
-		log.Errorf("can not delete knative service: %v", err)
+		logger.Errorf("can not delete knative service: %v", err)
 		return &empty, err
 	}
 
@@ -214,7 +213,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 func (is *functionsServer) UpdateFunction(ctx context.Context,
 	in *igrpc.UpdateFunctionRequest) (*emptypb.Empty, error) {
 
-	log.Infof("updating function %s", in.GetServiceName())
+	logger.Infof("updating function %s", in.GetServiceName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
@@ -224,7 +223,7 @@ func (is *functionsServer) UpdateFunction(ctx context.Context,
 	err := updateKnativeFunction(in.GetServiceName(),
 		in.GetInfo(), in.GetTrafficPercent())
 	if err != nil {
-		log.Errorf("can not update knative service: %v", err)
+		logger.Errorf("can not update knative service: %v", err)
 		return &empty, err
 	}
 
@@ -275,7 +274,7 @@ func filterLabels(annotations map[string]string) map[string]string {
 		ok    bool
 	)
 	if scope, ok = annotations[ServiceHeaderScope]; !ok {
-		log.Errorf("scope not set for list")
+		logger.Errorf("scope not set for list")
 		return make(map[string]string)
 	}
 
@@ -303,10 +302,10 @@ func filterLabels(annotations map[string]string) map[string]string {
 		}
 	}
 
-	log.Debugf("request type: %v", setter)
+	logger.Debugf("request type: %v", setter)
 
 	if t == invalidType {
-		log.Errorf("wrong labels for search")
+		logger.Errorf("wrong labels for search")
 		return make(map[string]string)
 	}
 
@@ -327,11 +326,11 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 		return b, fmt.Errorf("request labels are invalid")
 	}
 
-	log.Debugf("list annotations: %s", labels.Set(filtered).String())
+	logger.Debugf("list annotations: %s", labels.Set(filtered).String())
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return b, err
 	}
 
@@ -339,11 +338,11 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 	l, err := cs.ServingV1().Services(functionsConfig.Namespace).List(context.Background(), lo)
 
 	if err != nil {
-		log.Errorf("error getting functions list: %v", err)
+		logger.Errorf("error getting functions list: %v", err)
 		return b, err
 	}
 
-	log.Debugf("%d functions", len(l.Items))
+	logger.Debugf("%d functions", len(l.Items))
 
 	for i := range l.Items {
 
@@ -384,7 +383,7 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 
 	}
 
-	log.Debugf("list done")
+	logger.Debugf("list done")
 
 	return b, nil
 }
@@ -584,7 +583,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	res, err := generateResourceLimits(size)
 	if err != nil {
-		log.Errorf("can not parse requests limits")
+		logger.Errorf("can not parse requests limits")
 		return []corev1.Container{}, err
 	}
 
@@ -667,7 +666,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 func fetchServiceAPI() (*versioned.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Errorf("error getting api: %v", err)
+		logger.Errorf("error getting api: %v", err)
 		return nil, err
 	}
 	return versioned.NewForConfig(config)
@@ -676,7 +675,7 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 // GenerateServiceName generates a knative name based on workflow details
 func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
-	log.Debugf("service name: %s %s %s", ns, wf, n)
+	logger.Debugf("service name: %s %s %s", ns, wf, n)
 
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
 	if err != nil {
@@ -739,14 +738,14 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return resp, err
 	}
 
 	svc, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
 		name, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("error getting knative service: %v", err)
+		logger.Errorf("error getting knative service: %v", err)
 		return resp, err
 	}
 
@@ -776,7 +775,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
 	if err != nil {
-		log.Errorf("error getting knative service: %v", err)
+		logger.Errorf("error getting knative service: %v", err)
 		return resp, err
 	}
 
@@ -851,11 +850,11 @@ func deleteKnativeFunctionss(annotations map[string]string) error {
 		return fmt.Errorf("request labels are invalid")
 	}
 
-	log.Debugf("delete annotations: %s", labels.Set(filtered).String())
+	logger.Debugf("delete annotations: %s", labels.Set(filtered).String())
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
@@ -890,12 +889,12 @@ func createVolumes() []corev1.Volume {
 
 func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) error {
 
-	log.Debugf("update knative function %s", svn)
+	logger.Debugf("update knative function %s", svn)
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
 	if err != nil {
-		log.Errorf("can not update service: %v", err)
+		logger.Errorf("can not update service: %v", err)
 		return err
 	}
 
@@ -912,7 +911,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	// adjust traffic for new revision
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
@@ -921,7 +920,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	s, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
 		svn, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("error getting knative service: %v", err)
+		logger.Errorf("error getting knative service: %v", err)
 		return err
 	}
 
@@ -940,7 +939,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 				(100.0 - float64(percent)) / 100.0)
 			if newPercent != 0 {
 				p := int64(newPercent)
-				log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')",
+				logger.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')",
 					trafficInfo.RevisionName, p, *trafficInfo.Percent)
 				tr = append(tr, v1.TrafficTarget{
 					RevisionName: trafficInfo.RevisionName,
@@ -973,11 +972,11 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 
 	b, err := json.MarshalIndent(svc, "", "    ")
 	if err != nil {
-		log.Errorf("error marshalling new services: %v", err)
+		logger.Errorf("error marshalling new services: %v", err)
 		return nil
 	}
 
-	log.Debugf("patching service %s", svn)
+	logger.Debugf("patching service %s", svn)
 
 	// lock for updates and deletes
 	l, err := kubeLock(svn, false)
@@ -990,7 +989,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {
-		log.Errorf("can not patch service %s: %v", svn, err)
+		logger.Errorf("can not patch service %s: %v", svn, err)
 		return err
 	}
 
@@ -998,7 +997,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", svn)})
 	if err != nil {
-		log.Errorf("error getting old revisions: %v", err)
+		logger.Errorf("error getting old revisions: %v", err)
 		return err
 	}
 
@@ -1009,14 +1008,14 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 		return gen1 < gen2
 	})
 
-	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - functionsConfig.KeepRevisions))
+	logger.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - functionsConfig.KeepRevisions))
 
 	// delete old revisions
 	for i := 0; i < (len(rs.Items) - functionsConfig.KeepRevisions); i++ {
-		log.Debugf("deleting %v", rs.Items[i].Name)
+		logger.Debugf("deleting %v", rs.Items[i].Name)
 		err := cs.ServingV1().Revisions(functionsConfig.Namespace).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
 		if err != nil {
-			log.Errorf("error deleting old revisions: %v", err)
+			logger.Errorf("error deleting old revisions: %v", err)
 		}
 	}
 
@@ -1028,7 +1027,7 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 
 	secrets := listRegistriesNames(namespace)
 	for _, s := range secrets {
-		log.Debugf("adding pull secret: %v", s)
+		logger.Debugf("adding pull secret: %v", s)
 		lo = append(lo, corev1.LocalObjectReference{
 			Name: s,
 		})
@@ -1047,7 +1046,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	name, scope, err := GenerateServiceName(info.GetNamespace(),
 		info.GetWorkflow(), info.GetName())
 	if err != nil {
-		log.Errorf("can not create service name: %v", err)
+		logger.Errorf("can not create service name: %v", err)
 		return err
 	}
 
@@ -1057,9 +1056,9 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	}
 	defer kubeUnlock(l)
 
-	log.Debugf("creating knative service %s", name)
+	logger.Debugf("creating knative service %s", name)
 
-	log.Debugf("functions namespace %s", functionsConfig.Namespace)
+	logger.Debugf("functions namespace %s", functionsConfig.Namespace)
 
 	// check if min scale is not beyond max
 	min := int(info.GetMinScale())
@@ -1076,7 +1075,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
 	if err != nil {
-		log.Errorf("can not make containers: %v", err)
+		logger.Errorf("can not make containers: %v", err)
 		return err
 	}
 
@@ -1110,19 +1109,19 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	}
 
 	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
-		log.Debugf("setting runtime class %v", functionsConfig.Runtime)
+		logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
 		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &functionsConfig.Runtime
 	}
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
 	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {
-		log.Errorf("error creating knative service: %v", err)
+		logger.Errorf("error creating knative service: %v", err)
 		return err
 	}
 
@@ -1133,7 +1132,7 @@ func deleteKnativeFunctions(name string) error {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
@@ -1144,7 +1143,7 @@ func deleteKnativeFunctions(name string) error {
 
 func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
-	log.Debugf("setting traffic for %s", name)
+	logger.Debugf("setting traffic for %s", name)
 
 	if len(tv) == 0 {
 		return fmt.Errorf("no traffic defined")
@@ -1152,13 +1151,13 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
 	r, err := getKnativeFunction(name)
 	if err != nil {
-		log.Errorf("error getting service: %v", err)
+		logger.Errorf("error getting service: %v", err)
 		return err
 	}
 
@@ -1179,7 +1178,7 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 		return false
 	}
 
-	log.Debugf("latest revision name: %s", latestRevision)
+	logger.Debugf("latest revision name: %s", latestRevision)
 
 	tr := []v1.TrafficTarget{}
 	for i := range tv {
@@ -1190,7 +1189,7 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 		isLatest := latestRevision == tv[i].GetRevision()
 
-		log.Debugf("check revision: %s, %v", tv[i].GetRevision(), isLatest)
+		logger.Debugf("check revision: %s, %v", tv[i].GetRevision(), isLatest)
 
 		if tv[i].GetPercent() > 0 {
 			tt := v1.TrafficTarget{
@@ -1198,7 +1197,7 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 				Percent:        tv[i].Percent,
 			}
 
-			log.Debugf("setting traffic %v: %v",
+			logger.Debugf("setting traffic %v: %v",
 				tv[i].GetRevision(), tv[i].GetPercent())
 
 			if !isLatest {
@@ -1214,14 +1213,14 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 	b, err := json.MarshalIndent(nr, "", "    ")
 	if err != nil {
-		log.Errorf("error marshalling new services: %v", err)
+		logger.Errorf("error marshalling new services: %v", err)
 	}
 
 	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Patch(context.Background(),
 		name, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {
-		log.Errorf("error setting traffic: %v", err)
+		logger.Errorf("error setting traffic: %v", err)
 	}
 
 	return err

@@ -9,7 +9,7 @@ data:
     [SERVICE]
         Flush           5
         Daemon          off
-        Log_Level       debug
+        Log_Level       info
 
     [OUTPUT]
         Name          pgsql
