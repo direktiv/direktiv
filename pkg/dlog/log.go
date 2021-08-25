@@ -1,41 +1,50 @@
 package dlog
 
 import (
+	"bytes"
+	"log"
+	"net/http"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 const (
-	appTCP = "http://192.168.0.154:8889"
-	fnTCP  = "http://192.168.0.154:8888"
+	appTCP = "http://127.0.0.1:8889"
+	fnTCP  = "http://127.0.0.1:8888"
 )
 
 var (
 	appLogger, fnLogger *zap.Logger
 )
 
-//
-// func InitLogDB(dbConn string) error {
-//
-// 	db, err := sql.Open("postgres", dbConn)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	err = db.Ping()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-//
-// }
-
 func init() {
 	if err := zap.RegisterSink("http", NewHTTPSink); err != nil {
 		panic(err)
 	}
+
+	var (
+		err error
+	)
+	// startup probes don't work here. reporting success too early
+	for i := 0; i < 60; i++ {
+		log.Printf("connecting to logging %v\n", appTCP)
+		_, err = http.Post(appTCP, "application/json",
+			bytes.NewBuffer([]byte("")))
+
+		time.Sleep(1 * time.Second)
+
+		if err == nil {
+			break
+		}
+	}
+
+	if err != nil {
+		log.Fatalf("can not start logging: %v", err)
+	}
+
 }
 
 // ApplicationLogger returns logger for applications
@@ -83,7 +92,7 @@ func customLogger(tcp string) (*zap.Logger, error) {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = "timestamp"
 	encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
-	consoleEncoder := zapcore.NewJSONEncoder(encoderCfg)
+	consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
 
 	// tcp
 	tcpEncoder := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())

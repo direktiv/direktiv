@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -69,22 +70,28 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	logs, err := is.wfServer.instanceLogger.QueryLogs(ctx, instance, int(limit), int(offset))
+	lc := is.wfServer.components[util.LogComponent].(*logClient)
+	r, err := lc.logsForInstance(instance, offset, limit)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", instance)
 	}
 
-	resp.Offset = &offset
-	resp.Limit = &limit
+	for i := range r {
+		infoMap := r[i]
 
-	for i := range logs.Logs {
+		// get msg
+		msg := infoMap["msg"].(string)
 
-		l := &logs.Logs[i]
+		// get sec
+		ts := infoMap["ts"].(float64)
+
+		secs := int64(ts)
+		nsecs := int64((ts - float64(secs)) * 1e9)
+		tt := time.Unix(secs, nsecs)
 
 		resp.WorkflowInstanceLogs = append(resp.WorkflowInstanceLogs, &ingress.GetWorkflowInstanceLogsResponse_WorkflowInstanceLog{
-			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
-			Message:   &l.Message,
-			Context:   l.Context,
+			Message:   &msg,
+			Timestamp: timestamppb.New(tt.UTC()),
 		})
 
 	}

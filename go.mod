@@ -18,6 +18,7 @@ require (
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
+	github.com/levenlabs/golib v0.0.0-20180911183212-0f8974794783
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-shellwords v1.0.12
@@ -42,6 +43,7 @@ require (
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.19.7

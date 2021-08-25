@@ -152,3 +152,19 @@ functions:
     #     requests:
     #       memory: "2Gi"
     #       cpu:    "1"
+
+fluentbit:
+  host:          ""
+  port:          5432
+  user:          ""
+  password:      ""
+  database:      ""
+  sslmode:       prefer
+  extraConfig: ""
+  # append extra output to fluentbit.
+  # there are two logs application, functions
+  # these can be matched to new outputs, e.g.:
+  # extraConfig: |
+  #   [OUTPUT]
+  #           name stdout
+  #           match application

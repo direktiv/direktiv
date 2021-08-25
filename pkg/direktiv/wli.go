@@ -39,7 +39,7 @@ type workflowLogicInstance struct {
 	logger          dlog.Logger
 	namespaceLogger dlog.Logger
 
-	zapLogger          *zap.SugaredLogger
+	zapLogger          *zap.Logger
 	zapNamespaceLogger *zap.Logger
 }
 
@@ -104,6 +104,8 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 
 	wli.zapNamespaceLogger = fnLog.Desugar().With(zap.String("namespace", namespace))
 
+	wli.zapLogger = fnLog.Desugar().With(zap.String("namespace", namespace), zap.String("instance", wli.id))
+
 	return wli, nil
 
 }
@@ -160,6 +162,7 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 	}
 
 	wli.zapNamespaceLogger = fnLog.Desugar().With(zap.String("namespace", qns.ID))
+	wli.zapLogger = fnLog.Desugar().With(zap.String("namespace", qns.ID), zap.String("instance", wli.id))
 
 	wli.logger, err = (*we.instanceLogger).LoggerFunc(qns.ID, wli.id)
 	if err != nil {
@@ -461,6 +464,8 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 	wli.logger.Info(s)
 
+	wli.zapLogger.Info(s)
+
 	// TODO: detect content type and handle base64 data
 
 	if attr := wli.logToEvents; attr != "" {
@@ -498,6 +503,8 @@ func (wli *workflowLogicInstance) Log(ctx context.Context, msg string, a ...inte
 	s := fmt.Sprintf(msg, a...)
 
 	wli.logger.Info(s)
+
+	wli.zapLogger.Info(s)
 }
 
 func (wli *workflowLogicInstance) Save(ctx context.Context, data []byte) error {

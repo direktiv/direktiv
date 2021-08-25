@@ -11,6 +11,7 @@ import (
 
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const (
@@ -366,24 +367,10 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 // cron job delete old namespace logs every 2 hrs
 func (tm *timerManager) cleanNamespaceRecords(data []byte) error {
 	appLog.Debugf("deleting old namespace records/logs")
-	ctx := context.Background()
 
-	namespaces, err := tm.server.dbManager.dbEnt.Namespace.Query().All(ctx)
-	if err != nil {
-		return err
-	}
+	lc := tm.server.components[util.LogComponent].(*logClient)
+	return lc.deleteNamespaceLogs()
 
-	for _, namespace := range namespaces {
-		err = tm.server.instanceLogger.DeleteNamespaceLogs(namespace.ID)
-		if err != nil {
-			if !ent.IsNotFound(err) {
-				return err
-			}
-		}
-	}
-
-	appLog.Debugf("delete namespaces logs from %v namespaces", len(namespaces))
-	return nil
 }
 
 // cron job to delete old instance records / logs
@@ -400,11 +387,11 @@ func (tm *timerManager) cleanInstanceRecords(data []byte) error {
 
 	// for each result, delete instance logs and delete row from DB
 	for _, wfi := range wfis {
-		err = tm.server.instanceLogger.DeleteInstanceLogs(wfi.InstanceID)
+
+		lc := tm.server.components[util.LogComponent].(*logClient)
+		err = lc.deleteInstanceLogs(wfi.InstanceID)
 		if err != nil {
-			if !ent.IsNotFound(err) {
-				return err
-			}
+			return err
 		}
 
 		err = tm.server.dbManager.deleteWorkflowInstance(wfi.ID)

@@ -3,7 +3,6 @@ package direktiv
 import (
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -82,11 +81,14 @@ func (is *ingressServer) GetNamespaceLogs(ctx context.Context, in *ingress.GetNa
 
 		// get sec
 		ts := infoMap["ts"].(float64)
-		sec, dec := math.Modf(ts)
+
+		secs := int64(ts)
+		nsecs := int64((ts - float64(secs)) * 1e9)
+		tt := time.Unix(secs, nsecs)
 
 		resp.NamespaceLogs = append(resp.NamespaceLogs, &ingress.GetNamespaceLogsResponse_NamespaceLog{
 			Message:   &msg,
-			Timestamp: timestamppb.New(time.Unix(int64(sec), int64(dec*(1e9)))),
+			Timestamp: timestamppb.New(tt.UTC()),
 		})
 
 	}
