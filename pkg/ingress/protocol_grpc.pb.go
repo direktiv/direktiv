@@ -31,6 +31,7 @@ type DirektivIngressClient interface {
 	GetNamespaceLogs(ctx context.Context, in *GetNamespaceLogsRequest, opts ...grpc.CallOption) (*GetNamespaceLogsResponse, error)
 	GetInstancesByWorkflow(ctx context.Context, in *GetInstancesByWorkflowRequest, opts ...grpc.CallOption) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(ctx context.Context, in *GetWorkflowInstanceLogsRequest, opts ...grpc.CallOption) (*GetWorkflowInstanceLogsResponse, error)
+	WatchWorkflowInstanceLogs(ctx context.Context, in *WatchWorkflowInstanceLogsRequest, opts ...grpc.CallOption) (DirektivIngress_WatchWorkflowInstanceLogsClient, error)
 	CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetWorkflows(ctx context.Context, in *GetWorkflowsRequest, opts ...grpc.CallOption) (*GetWorkflowsResponse, error)
 	InvokeWorkflow(ctx context.Context, in *InvokeWorkflowRequest, opts ...grpc.CallOption) (*InvokeWorkflowResponse, error)
@@ -164,6 +165,38 @@ func (c *direktivIngressClient) GetWorkflowInstanceLogs(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *direktivIngressClient) WatchWorkflowInstanceLogs(ctx context.Context, in *WatchWorkflowInstanceLogsRequest, opts ...grpc.CallOption) (DirektivIngress_WatchWorkflowInstanceLogsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[0], "/ingress.DirektivIngress/WatchWorkflowInstanceLogs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &direktivIngressWatchWorkflowInstanceLogsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type DirektivIngress_WatchWorkflowInstanceLogsClient interface {
+	Recv() (*WatchWorkflowInstanceLogsResponse, error)
+	grpc.ClientStream
+}
+
+type direktivIngressWatchWorkflowInstanceLogsClient struct {
+	grpc.ClientStream
+}
+
+func (x *direktivIngressWatchWorkflowInstanceLogsClient) Recv() (*WatchWorkflowInstanceLogsResponse, error) {
+	m := new(WatchWorkflowInstanceLogsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *direktivIngressClient) CancelWorkflowInstance(ctx context.Context, in *CancelWorkflowInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/ingress.DirektivIngress/CancelWorkflowInstance", in, out, opts...)
@@ -264,7 +297,7 @@ func (c *direktivIngressClient) ListWorkflowVariables(ctx context.Context, in *L
 }
 
 func (c *direktivIngressClient) GetNamespaceVariable(ctx context.Context, in *GetNamespaceVariableRequest, opts ...grpc.CallOption) (DirektivIngress_GetNamespaceVariableClient, error) {
-	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[0], "/ingress.DirektivIngress/GetNamespaceVariable", opts...)
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[1], "/ingress.DirektivIngress/GetNamespaceVariable", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +329,7 @@ func (x *direktivIngressGetNamespaceVariableClient) Recv() (*GetNamespaceVariabl
 }
 
 func (c *direktivIngressClient) GetWorkflowVariable(ctx context.Context, in *GetWorkflowVariableRequest, opts ...grpc.CallOption) (DirektivIngress_GetWorkflowVariableClient, error) {
-	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[1], "/ingress.DirektivIngress/GetWorkflowVariable", opts...)
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[2], "/ingress.DirektivIngress/GetWorkflowVariable", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +361,7 @@ func (x *direktivIngressGetWorkflowVariableClient) Recv() (*GetWorkflowVariableR
 }
 
 func (c *direktivIngressClient) SetNamespaceVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivIngress_SetNamespaceVariableClient, error) {
-	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[2], "/ingress.DirektivIngress/SetNamespaceVariable", opts...)
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[3], "/ingress.DirektivIngress/SetNamespaceVariable", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +395,7 @@ func (x *direktivIngressSetNamespaceVariableClient) CloseAndRecv() (*empty.Empty
 }
 
 func (c *direktivIngressClient) SetWorkflowVariable(ctx context.Context, opts ...grpc.CallOption) (DirektivIngress_SetWorkflowVariableClient, error) {
-	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[3], "/ingress.DirektivIngress/SetWorkflowVariable", opts...)
+	stream, err := c.cc.NewStream(ctx, &DirektivIngress_ServiceDesc.Streams[4], "/ingress.DirektivIngress/SetWorkflowVariable", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -411,6 +444,7 @@ type DirektivIngressServer interface {
 	GetNamespaceLogs(context.Context, *GetNamespaceLogsRequest) (*GetNamespaceLogsResponse, error)
 	GetInstancesByWorkflow(context.Context, *GetInstancesByWorkflowRequest) (*GetInstancesByWorkflowResponse, error)
 	GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error)
+	WatchWorkflowInstanceLogs(*WatchWorkflowInstanceLogsRequest, DirektivIngress_WatchWorkflowInstanceLogsServer) error
 	CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*empty.Empty, error)
 	GetWorkflows(context.Context, *GetWorkflowsRequest) (*GetWorkflowsResponse, error)
 	InvokeWorkflow(context.Context, *InvokeWorkflowRequest) (*InvokeWorkflowResponse, error)
@@ -468,6 +502,9 @@ func (UnimplementedDirektivIngressServer) GetInstancesByWorkflow(context.Context
 }
 func (UnimplementedDirektivIngressServer) GetWorkflowInstanceLogs(context.Context, *GetWorkflowInstanceLogsRequest) (*GetWorkflowInstanceLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkflowInstanceLogs not implemented")
+}
+func (UnimplementedDirektivIngressServer) WatchWorkflowInstanceLogs(*WatchWorkflowInstanceLogsRequest, DirektivIngress_WatchWorkflowInstanceLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchWorkflowInstanceLogs not implemented")
 }
 func (UnimplementedDirektivIngressServer) CancelWorkflowInstance(context.Context, *CancelWorkflowInstanceRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelWorkflowInstance not implemented")
@@ -741,6 +778,27 @@ func _DirektivIngress_GetWorkflowInstanceLogs_Handler(srv interface{}, ctx conte
 		return srv.(DirektivIngressServer).GetWorkflowInstanceLogs(ctx, req.(*GetWorkflowInstanceLogsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _DirektivIngress_WatchWorkflowInstanceLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchWorkflowInstanceLogsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(DirektivIngressServer).WatchWorkflowInstanceLogs(m, &direktivIngressWatchWorkflowInstanceLogsServer{stream})
+}
+
+type DirektivIngress_WatchWorkflowInstanceLogsServer interface {
+	Send(*WatchWorkflowInstanceLogsResponse) error
+	grpc.ServerStream
+}
+
+type direktivIngressWatchWorkflowInstanceLogsServer struct {
+	grpc.ServerStream
+}
+
+func (x *direktivIngressWatchWorkflowInstanceLogsServer) Send(m *WatchWorkflowInstanceLogsResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _DirektivIngress_CancelWorkflowInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1136,6 +1194,11 @@ var DirektivIngress_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "WatchWorkflowInstanceLogs",
+			Handler:       _DirektivIngress_WatchWorkflowInstanceLogs_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "GetNamespaceVariable",
 			Handler:       _DirektivIngress_GetNamespaceVariable_Handler,

@@ -27,6 +27,8 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/qri-io/jsonschema v0.2.0
+	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc // indirect
+	github.com/r3labs/sse/v2 v2.3.5 // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rung/go-safecast v1.0.1
 	github.com/ryanuber/go-glob v1.0.0

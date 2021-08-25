@@ -156,6 +156,9 @@ func (s *Server) prepareRoutes() {
 		// responds 200 OK
 	}).Methods(http.MethodGet).Name(RN_HealthCheck)
 
+	//Testing
+	s.Router().HandleFunc("/api/watch/instance/{namespace}/{workflowTarget}/{id}", s.handler.watchInstanceLogs).Methods(http.MethodGet).Name(RN_WatchServices)
+
 	// Watch
 	s.Router().HandleFunc("/api/watch/functions/", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)
 	s.Router().HandleFunc("/api/watch/functions/{serviceName}", s.handler.watchFunctions).Methods(http.MethodGet).Name(RN_WatchServices)

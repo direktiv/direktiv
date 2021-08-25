@@ -56,10 +56,10 @@ const (
 
 // Available prefixes for different scopes
 const (
-	PrefixWorkflow  = "w"
-	PrefixNamespace = "ns"
-	PrefixGlobal    = "g"
-	PrefixService   = "s" // unused, only if a one item list is requested
+	PrefixWorkflow  = "workflow"
+	PrefixNamespace = "namespace"
+	PrefixGlobal    = "global"
+	PrefixService   = "service" // unused, only if a one item list is requested
 )
 
 const (
@@ -690,8 +690,6 @@ func filterLabels(annotations map[string]string) map[string]string {
 		log.Errorf("scope not set for list")
 		return make(map[string]string)
 	}
-
-	log.Debugf("scope = %s", scope)
 
 	t := invalidType
 	switch setter {

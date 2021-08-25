@@ -2,9 +2,11 @@ package direktiv
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -92,6 +94,42 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 
 	return &resp, nil
 
+}
+
+func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInstanceLogsRequest, out ingress.DirektivIngress_WatchWorkflowInstanceLogsServer) error {
+	ctx, done := context.WithCancel(context.Background())
+	defer done()
+
+	logChannel, err := is.wfServer.instanceLogger.StreamLogs(ctx, in.GetInstanceId())
+	if err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-out.Context().Done():
+			log.Debug("watcher server event connection closed")
+			return nil
+		case event := <-logChannel:
+			l, ok := event.(dlog.LogEntry)
+			if !ok {
+				log.Error("EVENT IS NOT A LOG ENTRY")
+				return fmt.Errorf("got event error")
+			}
+
+			resp := ingress.WatchWorkflowInstanceLogsResponse{
+				Level:     &l.Level,
+				Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
+				Context:   l.Context,
+				Message:   &l.Message,
+			}
+
+			err = out.Send(&resp)
+			if err != nil {
+				return fmt.Errorf("failed to send event: %v", err)
+			}
+		}
+	}
 }
 
 func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress.GetInstancesByWorkflowRequest) (*ingress.GetInstancesByWorkflowResponse, error) {

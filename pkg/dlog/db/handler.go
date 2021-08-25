@@ -10,15 +10,17 @@ import (
 	"time"
 
 	"github.com/inconshreveable/log15"
+	"github.com/vorteil/direktiv/pkg/dlog"
 )
 
 type Handler struct {
-	db         *sql.DB
-	args       *HandlerArgs
-	queueMutex sync.Mutex
-	logQueue   chan *log15.Record
-	queuedLogs []log15.Record
-	closed     chan bool
+	db            *sql.DB
+	args          *HandlerArgs
+	queueMutex    sync.Mutex
+	logQueue      chan *log15.Record
+	queuedLogs    []log15.Record
+	closed        chan bool
+	brokerManager *dlog.BrokerManager
 }
 
 type HandlerArgs struct {
@@ -26,6 +28,7 @@ type HandlerArgs struct {
 	InsertFrequencyMilliSeconds int
 	Namespace                   string
 	InstanceID                  string
+	BrokerManager               *dlog.BrokerManager
 }
 
 func NewHandler(args *HandlerArgs) (*Handler, error) {
@@ -34,6 +37,7 @@ func NewHandler(args *HandlerArgs) (*Handler, error) {
 
 	out.args = args
 	out.db = args.Driver
+	out.brokerManager = args.BrokerManager
 
 	return out.init()
 }
@@ -118,7 +122,7 @@ func (h *Handler) dispatcher() {
 
 		for i, msg := range h.queuedLogs {
 
-			ctxMap := make(map[string]interface{}, 0)
+			ctxMap := make(map[string]string, 0)
 			for i, c := range msg.Ctx {
 				if i%2 == 1 {
 					ctxMap[fmt.Sprintf("%s", msg.Ctx[i-1])] = fmt.Sprintf("%v", c)
@@ -134,6 +138,15 @@ func (h *Handler) dispatcher() {
 			if h.args.InstanceID != "" {
 				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5, idx+6))
 				vals = append(vals, h.args.Namespace, h.args.InstanceID, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))
+				err = h.brokerManager.Publish(h.args.InstanceID, dlog.LogEntry{
+					Level:     msg.Lvl.String(),
+					Timestamp: msg.Time.UnixNano(),
+					Message:   msg.Msg,
+					Context:   ctxMap,
+				})
+				if err != nil {
+					fmt.Printf("(todo: improve this log!!!) %s\n", err.Error())
+				}
 			} else {
 				rowValues = append(rowValues, fmt.Sprintf("($%d, $%d, $%d,  $%d, $%d)\n", idx+1, idx+2, idx+3, idx+4, idx+5))
 				vals = append(vals, h.args.Namespace, msg.Time.UnixNano(), msg.Lvl, msg.Msg, fmt.Sprintf("%s", b))

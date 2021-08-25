@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -49,11 +48,6 @@ const (
 	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
 	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
 	functionsServiceScopeAnnotation     = "direktiv.io/scope"
-
-	prefixWorkflow  = "w"
-	prefixNamespace = "ns"
-	prefixGlobal    = "g"
-	prefixService   = "s"
 )
 
 var functionsQueryLabelMapping = map[string]string{
@@ -94,7 +88,7 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	svc := mux.Vars(r)["serviceName"]
 	if svc != "" {
 		// Split namespaced service name
-		if strings.HasPrefix(svc, prefixNamespace) {
+		if strings.HasPrefix(svc, functions.PrefixNamespace) {
 			if strings.Count(svc, "-") < 2 {
 				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
 			}
@@ -118,25 +112,25 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	// Handle if this was reached via the workflow route
 	wf := mux.Vars(r)["workflowTarget"]
 	if wf != "" {
-		if annotations[functionsServiceScopeAnnotation] != "" && annotations[functionsServiceScopeAnnotation] != prefixWorkflow {
+		if annotations[functionsServiceScopeAnnotation] != "" && annotations[functionsServiceScopeAnnotation] != functions.PrefixWorkflow {
 			return nil, fmt.Errorf("this route is for workflow-scoped requests")
 		}
 
 		annotations[functionsServiceWorkflowAnnotation] = wf
-		annotations[functionsServiceScopeAnnotation] = prefixWorkflow
+		annotations[functionsServiceScopeAnnotation] = functions.PrefixWorkflow
 	}
 
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
-		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+		if annotations[functionsServiceScopeAnnotation] == functions.PrefixGlobal {
 			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
 		}
 
 		annotations[functionsServiceNamespaceAnnotation] = ns
 
 		if annotations[functionsServiceScopeAnnotation] == "" {
-			annotations[functionsServiceScopeAnnotation] = prefixNamespace
+			annotations[functionsServiceScopeAnnotation] = functions.PrefixNamespace
 		}
 	}
 
@@ -597,7 +591,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 			Annotations: map[string]string{
 				functionsServiceWorkflowAnnotation:  wf,
 				functionsServiceNamespaceAnnotation: ns,
-				functionsServiceScopeAnnotation:     prefixWorkflow,
+				functionsServiceScopeAnnotation:     functions.PrefixWorkflow,
 			},
 		})
 		if err != nil {
@@ -612,7 +606,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 		i, err := calculateList(h.s.functions, fnNS,
 			map[string]string{
 				functionsServiceNamespaceAnnotation: ns,
-				functionsServiceScopeAnnotation:     prefixNamespace,
+				functionsServiceScopeAnnotation:     functions.PrefixNamespace,
 			}, ns)
 
 		if err != nil {
@@ -627,7 +621,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 		i, err := calculateList(h.s.functions, fnGlobal,
 			map[string]string{
-				functionsServiceScopeAnnotation: prefixGlobal,
+				functionsServiceScopeAnnotation: functions.PrefixGlobal,
 			}, ns)
 
 		if err != nil {
@@ -665,53 +659,59 @@ func (h *Handler) watchFunctions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
 	}()
 
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
+			heartbeat.Stop()
 			return
 		}
-
-		b, err := json.Marshal(resp)
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
-		}
-
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
-		}
-
-		flusher.Flush()
 	}
 }
 
 func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
-
 	sn := mux.Vars(r)["serviceName"]
 	rn := mux.Vars(r)["revisionName"]
 
 	// Append prefixNamespace if in namespace route and not
 	ns := mux.Vars(r)["namespace"]
-	if ns != "" && !strings.HasPrefix(sn, prefixNamespace+"-") {
-		sn = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, sn)
+	if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
+		sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
 	}
 
 	grpcReq := new(grpc.WatchRevisionsRequest)
@@ -725,40 +725,48 @@ func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
-		<-client.Context().Done()
-		//TODO: done
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
 	}()
 
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
+			heartbeat.Stop()
 			return
 		}
-
-		b, err := json.Marshal(resp)
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
-		}
-
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
-		}
-
-		flusher.Flush()
 	}
 }
 
@@ -775,59 +783,51 @@ func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	var m sync.Mutex
-	done := make(chan bool)
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
 
+	// Start watcher client stream channels
+	dataCh := make(chan string)
+	errorCh := make(chan error)
 	go func() {
 		for {
-			select {
-			case <-done:
-				//TODO: done
-				return
-			case <-client.Context().Done():
-				//TODO: done
-				return
-			case <-time.After(15 * time.Second):
-				m.Lock()
-				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
-				if err != nil {
-					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
-					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
-				}
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
 
-				flusher.Flush()
-				m.Unlock()
+				dataCh <- *data.Data
 			}
 		}
 	}()
 
 	for {
-		resp, err := client.Recv()
+		select {
+		case data := <-dataCh:
+			err = WriteSSEData(w, flusher, []byte(data))
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
 		if err != nil {
 			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+			heartbeat.Stop()
+			return
 		}
-
-		m.Lock()
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(*resp.Data))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
-		}
-
-		flusher.Flush()
-		m.Unlock()
 	}
 
-	done <- true
 }
 
 func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
@@ -862,8 +862,8 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 
 	// Append prefixNamespace if in namespace route and not found
 	ns := mux.Vars(r)["namespace"]
-	if ns != "" && !strings.HasPrefix(sn, prefixNamespace+"-") {
-		sn = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, sn)
+	if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
+		sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
 	}
 
 	grpcReq := new(grpc.WatchPodsRequest)
@@ -877,70 +877,169 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer client.CloseSend()
-	flusher, err := setupSEEWriter(w)
+	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
 		return
 	}
 
-	go func() {
-		<-client.Context().Done()
-		//TODO: done
-	}()
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
 
-	var m sync.Mutex
-	done := make(chan bool)
-
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
 	go func() {
 		for {
-			select {
-			case <-done:
-				//TODO: done
-				return
-			case <-client.Context().Done():
-				//TODO: done
-				return
-			case <-time.After(15 * time.Second):
-				m.Lock()
-				_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
-				if err != nil {
-					ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
-					log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
-				}
-
-				flusher.Flush()
-				m.Unlock()
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
 			}
 		}
 	}()
 
 	for {
-		resp, err := client.Recv()
-		if err != nil {
-			ErrSSEResponse(w, flusher, err)
-			log.Error(fmt.Errorf("client failed to recieve: %w", err))
-			break
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
 		}
 
-		b, err := json.Marshal(resp)
+		// Check for errors
+		if err != nil {
+			ErrSSEResponse(w, flusher, err)
+			heartbeat.Stop()
+			return
+		}
+	}
+
+}
+
+func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
+
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflowTarget"]
+	id := mux.Vars(r)["id"]
+	iid := fmt.Sprintf("%s/%s/%s", ns, wf, id)
+
+	ctx, cancel := CtxDeadline(r.Context())
+	defer cancel()
+
+	offset := int32(0)
+	limit := int32(1000)
+
+	// Get Instance
+	respI, err := h.s.direktiv.GetWorkflowInstance(ctx, &ingress.GetWorkflowInstanceRequest{
+		Id: &iid,
+	})
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	// Get Previous Instance Logs
+	resp, err := h.s.direktiv.GetWorkflowInstanceLogs(ctx, &ingress.GetWorkflowInstanceLogsRequest{
+		InstanceId: &iid,
+		Limit:      &limit,
+		Offset:     &offset,
+	})
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	flusher, err := SetupSEEWriter(w)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	// Send previous logs
+	previousLogs := resp.GetWorkflowInstanceLogs()
+	for i := range previousLogs {
+		b, err := json.Marshal(previousLogs[i])
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
 			log.Error(fmt.Errorf("client recieved bad data: %w", err))
-			break
+			return
 		}
 
-		// fmt.Printf("IM GONNA PRINT NOW: %s\n", fmt.Sprintf("data: %s\n\n", string(b)))
-		m.Lock()
 		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
 		if err != nil {
 			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
 			log.Error(fmt.Errorf("client failed to write data: %w", err))
-			break
+			return
 		}
+	}
+	flusher.Flush()
 
-		flusher.Flush()
-		m.Unlock()
+	// If instance is finished dont start watching
+	if respI.EndTime != nil {
+		_, err = w.Write([]byte("data: {\"exit\": 0, \"reason\":\"instance has finished\"}\n\n"))
+		if err != nil {
+			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
+			log.Error(fmt.Errorf("client failed to write data: %w", err))
+			return
+		}
+		return
 	}
 
-	done <- true
+	grpcReq := new(ingress.WatchWorkflowInstanceLogsRequest)
+	grpcReq.InstanceId = &iid
+
+	client, err := h.s.direktiv.WatchWorkflowInstanceLogs(r.Context(), grpcReq)
+	defer client.CloseSend()
+	if err != nil {
+		// Broker does not exists
+		if len(previousLogs) == 0 {
+			ErrResponse(w, err)
+		}
+		return
+	}
+
+	// Create Heartbeat Ticker
+	heartbeat := time.NewTicker(10 * time.Second)
+	defer heartbeat.Stop()
+
+	// Start watcher client stream channels
+	dataCh := make(chan interface{})
+	errorCh := make(chan error)
+	go func() {
+		for {
+			data, err := client.Recv()
+			if err != nil {
+				errorCh <- err
+				break
+			} else {
+				dataCh <- data
+			}
+		}
+	}()
+
+	for {
+		select {
+		case data := <-dataCh:
+			err = WriteSSEJSONData(w, flusher, data)
+		case err = <-errorCh:
+		case <-client.Context().Done():
+			err = fmt.Errorf("requested stream has timed out")
+		case <-heartbeat.C:
+			SendSSEHeartbeat(w, flusher)
+		}
+
+		// Check for errors
+		if err != nil {
+			ErrSSEResponse(w, flusher, err)
+			heartbeat.Stop()
+			return
+		}
+	}
 }
