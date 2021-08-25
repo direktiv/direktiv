@@ -482,10 +482,11 @@ func (h *Handler) executeWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	ctx, cancel := CtxDeadline(r.Context())
-	defer cancel()
+	// Context should not timeout here
+	// ctx, cancel := CtxDeadline(r.Context())
+	// defer cancel()
 
-	resp, err := h.s.direktiv.InvokeWorkflow(ctx, &ingress.InvokeWorkflowRequest{
+	resp, err := h.s.direktiv.InvokeWorkflow(r.Context(), &ingress.InvokeWorkflowRequest{
 		Namespace: &ns,
 		Name:      &name,
 		Input:     b,

@@ -18,6 +18,12 @@ import "pkg/functions/grpc/functions-update.proto";
 import "pkg/functions/grpc/pod-create.proto";
 import "pkg/functions/grpc/pod-cancel.proto";
 import "pkg/functions/grpc/revision-delete.proto";
+import "pkg/functions/grpc/pod-list.proto";
+
+import "pkg/functions/grpc/watch-revisions.proto";
+import "pkg/functions/grpc/watch-functions.proto";
+import "pkg/functions/grpc/watch-pods.proto";
+import "pkg/functions/grpc/watch-logs.proto";
 
 service FunctionsService {
   rpc UpdateFunction(UpdateFunctionRequest) returns (google.protobuf.Empty)  {}
@@ -33,4 +39,9 @@ service FunctionsService {
   rpc CreateFunctionsPod(CreatePodRequest) returns (CreatePodResponse)  {}
   rpc CancelFunctionsPod(CancelPodRequest) returns (google.protobuf.Empty)  {}
   rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}
+  rpc WatchFunctions(WatchFunctionsRequest) returns (stream WatchFunctionsResponse)  {}
+  rpc WatchPods(WatchPodsRequest) returns (stream WatchPodsResponse)  {}
+  rpc WatchRevisions(WatchRevisionsRequest) returns (stream WatchRevisionsResponse)  {}
+  rpc WatchLogs(WatchLogsRequest) returns (stream WatchLogsResponse)  {}
+  rpc ListPods(ListPodsRequest) returns (ListPodsResponse)  {}
 }

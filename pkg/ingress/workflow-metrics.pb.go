@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -26,9 +26,9 @@ type WorkflowMetricsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Namespace      *string                `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
-	Workflow       *string                `protobuf:"bytes,2,opt,name=workflow,proto3,oneof" json:"workflow,omitempty"`
-	SinceTimestamp *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=sinceTimestamp,proto3,oneof" json:"sinceTimestamp,omitempty"`
+	Namespace      *string              `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
+	Workflow       *string              `protobuf:"bytes,2,opt,name=workflow,proto3,oneof" json:"workflow,omitempty"`
+	SinceTimestamp *timestamp.Timestamp `protobuf:"bytes,3,opt,name=sinceTimestamp,proto3,oneof" json:"sinceTimestamp,omitempty"`
 }
 
 func (x *WorkflowMetricsRequest) Reset() {
@@ -77,7 +77,7 @@ func (x *WorkflowMetricsRequest) GetWorkflow() string {
 	return ""
 }
 
-func (x *WorkflowMetricsRequest) GetSinceTimestamp() *timestamppb.Timestamp {
+func (x *WorkflowMetricsRequest) GetSinceTimestamp() *timestamp.Timestamp {
 	if x != nil {
 		return x.SinceTimestamp
 	}
@@ -753,7 +753,7 @@ var file_pkg_ingress_workflow_metrics_proto_goTypes = []interface{}{
 	nil,                             // 10: ingress.State.UnhandledErrorsRepresentationEntry
 	nil,                             // 11: ingress.Outcomes.TransitionsEntry
 	nil,                             // 12: ingress.MeanOutcomes.TransitionsEntry
-	(*timestamppb.Timestamp)(nil),   // 13: google.protobuf.Timestamp
+	(*timestamp.Timestamp)(nil),     // 13: google.protobuf.Timestamp
 }
 var file_pkg_ingress_workflow_metrics_proto_depIdxs = []int32{
 	13, // 0: ingress.WorkflowMetricsRequest.sinceTimestamp:type_name -> google.protobuf.Timestamp

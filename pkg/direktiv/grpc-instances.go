@@ -100,6 +100,43 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 
 }
 
+func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInstanceLogsRequest, out ingress.DirektivIngress_WatchWorkflowInstanceLogsServer) error {
+	return nil
+	// ctx, done := context.WithCancel(context.Background())
+	// defer done()
+	// logChannel, err := is.wfServer.instanceLogger.StreamLogs(ctx, in.GetInstanceId())
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// for {
+	// 	select {
+	// 	case <-out.Context().Done():
+	// 		logger.Debug("watcher server event connection closed")
+	// 		return nil
+	// 	case event := log.<-logChannel:
+	//
+	// 		l, ok := event.(dlog.LogEntry)
+	// 		if !ok {
+	// 			logger.Error("EVENT IS NOT A LOG ENTRY")
+	// 			return fmt.Errorf("got event error")
+	// 		}
+	//
+	// 		resp := ingress.WatchWorkflowInstanceLogsResponse{
+	// 			Level:     &l.Level,
+	// 			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
+	// 			Context:   l.Context,
+	// 			Message:   &l.Message,
+	// 		}
+	//
+	// 		err = out.Send(&resp)
+	// 		if err != nil {
+	// 			return fmt.Errorf("failed to send event: %v", err)
+	// 		}
+	// 	}
+	// }
+}
+
 func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress.GetInstancesByWorkflowRequest) (*ingress.GetInstancesByWorkflowResponse, error) {
 
 	var resp ingress.GetInstancesByWorkflowResponse

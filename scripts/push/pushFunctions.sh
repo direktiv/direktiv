@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-make push-isolates
+make push-functions
 set +e

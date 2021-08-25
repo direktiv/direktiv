@@ -42,6 +42,10 @@ func (l *DummyLogger) QueryLogs(ctx context.Context, instance string, limit, off
 	return dlg, nil
 }
 
+func (l *DummyLogger) StreamLogs(ctx context.Context, instance string) (chan interface{}, error) {
+	return nil, nil
+}
+
 func (l *DummyLogger) QueryAllLogs(instance string) (dlog.QueryReponse, error) {
 	dlg := dlog.QueryReponse{
 		Logs: make([]dlog.LogEntry, 0),
