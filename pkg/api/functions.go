@@ -48,11 +48,6 @@ const (
 	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
 	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
 	functionsServiceScopeAnnotation     = "direktiv.io/scope"
-
-	PrefixWorkflow  = "workflow"
-	PrefixNamespace = "namespace"
-	PrefixGlobal    = "global"
-	PrefixService   = "service"
 )
 
 var functionsQueryLabelMapping = map[string]string{
@@ -93,7 +88,7 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	svc := mux.Vars(r)["serviceName"]
 	if svc != "" {
 		// Split namespaced service name
-		if strings.HasPrefix(svc, prefixNamespace) {
+		if strings.HasPrefix(svc, functions.PrefixNamespace) {
 			if strings.Count(svc, "-") < 2 {
 				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
 			}
@@ -117,25 +112,25 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	// Handle if this was reached via the workflow route
 	wf := mux.Vars(r)["workflowTarget"]
 	if wf != "" {
-		if annotations[functionsServiceScopeAnnotation] != "" && annotations[functionsServiceScopeAnnotation] != prefixWorkflow {
+		if annotations[functionsServiceScopeAnnotation] != "" && annotations[functionsServiceScopeAnnotation] != functions.PrefixWorkflow {
 			return nil, fmt.Errorf("this route is for workflow-scoped requests")
 		}
 
 		annotations[functionsServiceWorkflowAnnotation] = wf
-		annotations[functionsServiceScopeAnnotation] = prefixWorkflow
+		annotations[functionsServiceScopeAnnotation] = functions.PrefixWorkflow
 	}
 
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
-		if annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+		if annotations[functionsServiceScopeAnnotation] == functions.PrefixGlobal {
 			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
 		}
 
 		annotations[functionsServiceNamespaceAnnotation] = ns
 
 		if annotations[functionsServiceScopeAnnotation] == "" {
-			annotations[functionsServiceScopeAnnotation] = prefixNamespace
+			annotations[functionsServiceScopeAnnotation] = functions.PrefixNamespace
 		}
 	}
 
@@ -596,7 +591,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 			Annotations: map[string]string{
 				functionsServiceWorkflowAnnotation:  wf,
 				functionsServiceNamespaceAnnotation: ns,
-				functionsServiceScopeAnnotation:     prefixWorkflow,
+				functionsServiceScopeAnnotation:     functions.PrefixWorkflow,
 			},
 		})
 		if err != nil {
@@ -611,7 +606,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 		i, err := calculateList(h.s.functions, fnNS,
 			map[string]string{
 				functionsServiceNamespaceAnnotation: ns,
-				functionsServiceScopeAnnotation:     prefixNamespace,
+				functionsServiceScopeAnnotation:     functions.PrefixNamespace,
 			}, ns)
 
 		if err != nil {
@@ -626,7 +621,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 		i, err := calculateList(h.s.functions, fnGlobal,
 			map[string]string{
-				functionsServiceScopeAnnotation: prefixGlobal,
+				functionsServiceScopeAnnotation: functions.PrefixGlobal,
 			}, ns)
 
 		if err != nil {
@@ -715,8 +710,8 @@ func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
 
 	// Append prefixNamespace if in namespace route and not
 	ns := mux.Vars(r)["namespace"]
-	if ns != "" && !strings.HasPrefix(sn, prefixNamespace+"-") {
-		sn = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, sn)
+	if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
+		sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
 	}
 
 	grpcReq := new(grpc.WatchRevisionsRequest)
@@ -867,8 +862,8 @@ func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 
 	// Append prefixNamespace if in namespace route and not found
 	ns := mux.Vars(r)["namespace"]
-	if ns != "" && !strings.HasPrefix(sn, prefixNamespace+"-") {
-		sn = fmt.Sprintf("%s-%s-%s", prefixNamespace, ns, sn)
+	if ns != "" && !strings.HasPrefix(sn, functions.PrefixNamespace+"-") {
+		sn = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, ns, sn)
 	}
 
 	grpcReq := new(grpc.WatchPodsRequest)
