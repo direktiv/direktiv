@@ -1,0 +1,13 @@
+workflow test
+
+const request = reusable(image: "vorteil/request:v10")
+
+call-reusable:
+    call(
+        callable: request, 
+        input: {
+            method: "GET",
+            url: jq(".secrets.URL_SECRET"),
+        }, 
+        secrets: ["URL_SECRET"],
+    )
