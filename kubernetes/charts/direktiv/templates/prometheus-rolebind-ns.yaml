@@ -2,7 +2,7 @@
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
- name: {{ include "direktiv.serviceAccountName" . }}-prometheus-binding-lock
+ name: {{ include "direktiv.serviceAccountName" . }}-prometheus-binding-ns
 subjects:
 - kind: ServiceAccount
   name: {{ include "direktiv.serviceAccountName" . }}-prometheus

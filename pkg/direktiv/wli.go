@@ -250,8 +250,6 @@ func (wli *workflowLogicInstance) Raise(ctx context.Context, cerr *CatchableErro
 			SetErrorMessage(cerr.Message).
 			Save(ctx)
 
-		// reportMetricEnd(wli.namespace, wli.wf.ID, "failed")
-
 		wli.rec.Edges.Workflow = wf
 		if err != nil {
 			return NewInternalError(err)
