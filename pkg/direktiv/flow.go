@@ -11,6 +11,7 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -52,22 +53,19 @@ func (fs *flowServer) ActionLog(ctx context.Context, in *flow.ActionLogRequest) 
 
 	var resp = new(emptypb.Empty)
 
-	// wi, err := fs.engine.db.getWorkflowInstance(ctx, in.GetInstanceId())
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// logger, err := (*fs.engine.instanceLogger).LoggerFunc(wi.Edges.Workflow.Edges.Namespace.ID, in.GetInstanceId())
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer logger.Close()
-	//
-	// msgs := in.GetMsg()
-	//
-	// for _, msg := range msgs {
-	// 	logger.Info(msg)
-	// }
+	wi, err := fs.engine.db.getWorkflowInstance(ctx, in.GetInstanceId())
+	if err != nil {
+		return nil, err
+	}
+
+	logger := fnLog.Desugar().With(zap.String("namespace", wi.Edges.Workflow.Edges.Namespace.ID),
+		zap.String("instance", in.GetInstanceId()))
+
+	msgs := in.GetMsg()
+
+	for _, msg := range msgs {
+		logger.Info(msg)
+	}
 
 	return resp, nil
 
