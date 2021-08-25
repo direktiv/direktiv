@@ -675,8 +675,6 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 // GenerateServiceName generates a knative name based on workflow details
 func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
-	logger.Debugf("service name: %s %s %s", ns, wf, n)
-
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
 	if err != nil {
 		return "", "", err
