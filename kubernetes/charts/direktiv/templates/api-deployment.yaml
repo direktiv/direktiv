@@ -94,6 +94,10 @@ spec:
                   name: {{ include "direktiv.fullname" . }}
                   key: apiKey
             {{- end }}
+            {{- if .Values.prometheus.enabled }}
+            - name: PROMETHEUS_ADDR
+              value: {{ .Values.prometheus.queryAddress }}
+            {{- end }}
           volumeMounts:
           - name: grpc-config
             mountPath: /etc/direktiv/grpc-config.yaml

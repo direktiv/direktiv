@@ -4,14 +4,20 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gorilla/mux"
+	prometheus "github.com/prometheus/client_golang/api"
 	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/util"
+)
+
+const (
+	PROMETHEUS_ADDR_ENV = "PROMETHEUS_ADDR"
 )
 
 // Server ..
@@ -33,7 +39,9 @@ type Server struct {
 	actionTemplateDirsPaths map[string]string
 	actionTemplateDirs      []string
 
-	blocklist []string
+	blocklist         []string
+	prometheusEnabled bool
+	prometheus        prometheus.Client
 }
 
 // NewServer returns new API server
@@ -166,6 +174,17 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
 	s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-invoked", s.handler.getNamespaceMetrics_WorkflowsInvoked).Methods(http.MethodGet).Name(RN_namespaceWorkflowsInvoked)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-successful", s.handler.getNamespaceMetrics_WorkflowsSuccessful).Methods(http.MethodGet).Name(RN_namespaceWorkflowsSuccessful)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-failed", s.handler.getNamespaceMetrics_WorkflowsFailed).Methods(http.MethodGet).Name(RN_namespaceWorkflowsFailed)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/metrics/workflows-milliseconds", s.handler.getNamespaceMetrics_WorkflowsMilliseconds).Methods(http.MethodGet).Name(RN_namespaceWorkflowsMS)
+
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/invoked", s.handler.getWorkflowMetrics_Invoked).Methods(http.MethodGet).Name(RN_metricsWorkflowInvoked)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/successful", s.handler.getWorkflowMetrics_Successful).Methods(http.MethodGet).Name(RN_metricsWorkflowSuccessful)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/failed", s.handler.getWorkflowMetrics_Failed).Methods(http.MethodGet).Name(RN_metricsWorkflowFailed)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/milliseconds", s.handler.getWorkflowMetrics_Milliseconds).Methods(http.MethodGet).Name(RN_metricsWorkflowMS)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics/state-milliseconds", s.handler.getWorkflowMetrics_StateMilliseconds).Methods(http.MethodGet).Name(RN_metricsStateMS)
+
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.listServices).Methods(http.MethodPost).Name(RN_ListServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	s.Router().HandleFunc("/api/namespaces/{namespace}/functions/new", s.handler.createService).Methods(http.MethodPost).Name(RN_CreateService)
@@ -244,6 +263,19 @@ func (s *Server) prepareRoutes() {
 func (s *Server) Start() error {
 
 	log.Infof("Starting server - binding to %s", apiBind)
+
+	var err error
+
+	if os.Getenv(PROMETHEUS_ADDR_ENV) != "" {
+		s.prometheus, err = prometheus.NewClient(prometheus.Config{
+			Address: os.Getenv(PROMETHEUS_ADDR_ENV),
+		})
+		if err != nil {
+			return err
+		}
+
+		s.prometheusEnabled = true
+	}
 
 	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
 	if len(k) > 0 {

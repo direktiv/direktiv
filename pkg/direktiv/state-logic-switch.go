@@ -22,8 +22,8 @@ func initSwitchStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 
 	sl := new(switchStateLogic)
 	sl.state = switchState
-	return sl, nil
 
+	return sl, nil
 }
 
 func (sl *switchStateLogic) Type() string {

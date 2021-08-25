@@ -55,6 +55,16 @@ ingress:
   certificate: none
   class: "contour-external"
 
+# prometheus config
+prometheus:
+  enabled: true
+  image: "prom/prometheus"
+  targetAnnotations:
+    prometheus.io/port: "2112"
+    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: "true"
+  queryAddress: "http://direktiv-prometheus-service.default:9090" 
+
 # flow config
 flow:
   image: "vorteil/flow"

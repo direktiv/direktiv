@@ -25,6 +25,7 @@ func initGetterStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 
 	sl := new(getterStateLogic)
 	sl.state = getter
+
 	return sl, nil
 
 }

@@ -249,6 +249,7 @@ func (wli *workflowLogicInstance) Raise(ctx context.Context, cerr *CatchableErro
 			SetErrorCode(cerr.Code).
 			SetErrorMessage(cerr.Message).
 			Save(ctx)
+
 		wli.rec.Edges.Workflow = wf
 		if err != nil {
 			return NewInternalError(err)
@@ -269,11 +270,13 @@ func (wli *workflowLogicInstance) setStatus(ctx context.Context, status, code, m
 		code = "direktiv.internal.error"
 	}
 
+	reportStateEnd(wli.namespace, wli.wf.ID, wli.logic.ID(), wli.rec.StateBeginTime)
 	wli.engine.completeState(ctx, wli.rec, "", code, false)
 
 	wf := wli.rec.Edges.Workflow
 
 	if wli.rec.ErrorCode == "" {
+		reportMetricEnd(wli.namespace, wli.wf.ID, status, wli.rec.StateBeginTime)
 		wli.rec, err = wli.rec.Update().
 			SetStatus(status).
 			SetEndTime(time.Now()).

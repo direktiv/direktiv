@@ -217,6 +217,8 @@ func (s *WorkflowServer) Kill() {
 // Run starts all components of direktiv
 func (s *WorkflowServer) Run() error {
 
+	go setupPrometheusEndpoint()
+
 	log.Debugf("subscribing to sync queue")
 	err := s.startDatabaseListener()
 	if err != nil {

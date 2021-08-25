@@ -1003,6 +1003,7 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		return
 	}
 
+	reportStateEnd(wli.namespace, wli.wf.ID, wli.logic.ID(), wli.rec.StateBeginTime)
 	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {
@@ -1028,6 +1029,8 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 		status = "failed"
 		wli.Log(ctx, "Workflow failed with error '%s': %s", wli.rec.ErrorCode, wli.rec.ErrorMessage)
 	}
+
+	reportMetricEnd(wli.namespace, wli.wf.ID, status, wli.rec.StateBeginTime)
 
 	wf := wli.rec.Edges.Workflow
 	rec, err = wli.rec.Update().SetOutput(string(data)).SetEndTime(time.Now()).SetStatus(status).Save(ctx)
