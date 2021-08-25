@@ -49,10 +49,10 @@ const (
 	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
 	functionsServiceScopeAnnotation     = "direktiv.io/scope"
 
-	prefixWorkflow  = "w"
-	prefixNamespace = "ns"
-	prefixGlobal    = "g"
-	prefixService   = "s"
+	PrefixWorkflow  = "workflow"
+	PrefixNamespace = "namespace"
+	PrefixGlobal    = "global"
+	PrefixService   = "service"
 )
 
 var functionsQueryLabelMapping = map[string]string{
