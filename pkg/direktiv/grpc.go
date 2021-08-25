@@ -12,6 +12,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/model"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -141,16 +142,11 @@ func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 	}
 
 	appLog.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
-	dlogger, err := is.wfServer.instanceLogger.NamespaceLogger(namespace)
-	if err != nil {
-		return nil, err
-	}
 
+	dlogger := fnLog.Desugar().With(zap.String("namespace", namespace))
 	dlogger.Info(fmt.Sprintf("Broadcasting event: type=%s, source=%s", event.Type(), event.Source()))
 
 	err = is.wfServer.handleEvent(*in.Namespace, event)
-
-	dlogger.Close()
 
 	return &resp, err
 

@@ -18,8 +18,6 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/dlog/db"
-	"github.com/vorteil/direktiv/pkg/dlog/dummy"
 	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
@@ -65,24 +63,6 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("failed to create server: %v", err)
 		}
-
-		var logger dlog.Log
-
-		switch c.InstanceLogging.Driver {
-		case "database":
-			l.Info("creating logger type database")
-			dl, err := db.NewLogger(c.Database.DB)
-			if err != nil {
-				log.Fatalf(err.Error())
-			}
-			defer dl.CloseConnection()
-			logger = dl
-		default:
-			l.Info("creating logger type default")
-			logger, _ = dummy.NewLogger()
-		}
-
-		server.SetInstanceLogger(logger)
 
 		var vstore varstore.VarStorage
 

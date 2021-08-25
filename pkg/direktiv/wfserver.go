@@ -44,8 +44,8 @@ type WorkflowServer struct {
 	tmManager *timerManager
 	engine    *workflowEngine
 
-	LifeLine        chan bool
-	instanceLogger  dlog.Log
+	LifeLine chan bool
+
 	variableStorage varstore.VarStorage
 
 	components map[string]component
@@ -171,11 +171,6 @@ func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 
 	return s, nil
 
-}
-
-// SetInstanceLogger set logger for direktiv for firecracker instances
-func (s *WorkflowServer) SetInstanceLogger(l dlog.Log) {
-	s.instanceLogger = l
 }
 
 func (s *WorkflowServer) SetVariableStorage(vs varstore.VarStorage) {

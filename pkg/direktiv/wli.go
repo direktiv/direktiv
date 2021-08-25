@@ -14,7 +14,6 @@ import (
 	hashstructure "github.com/mitchellh/hashstructure/v2"
 	"github.com/senseyeio/duration"
 	"github.com/vorteil/direktiv/ent"
-	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/jqer"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -31,13 +30,11 @@ type workflowLogicInstance struct {
 	rec       *ent.WorkflowInstance
 	step      int
 
-	namespace       string
-	id              string
-	logToEvents     string
-	lockConn        *sql.Conn
-	logic           stateLogic
-	logger          dlog.Logger
-	namespaceLogger dlog.Logger
+	namespace   string
+	id          string
+	logToEvents string
+	lockConn    *sql.Conn
+	logic       stateLogic
 
 	zapLogger          *zap.Logger
 	zapNamespaceLogger *zap.Logger
@@ -88,16 +85,6 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 
 	wli.id = fmt.Sprintf("%s/%s/%s", namespace, name, randSeq(6))
 	wli.startData, err = json.MarshalIndent(wli.data, "", "  ")
-	if err != nil {
-		return nil, NewInternalError(err)
-	}
-
-	wli.logger, err = (*we.instanceLogger).LoggerFunc(namespace, wli.id)
-	if err != nil {
-		return nil, NewInternalError(err)
-	}
-
-	wli.namespaceLogger, err = (*we.instanceLogger).NamespaceLogger(namespace)
 	if err != nil {
 		return nil, NewInternalError(err)
 	}
@@ -155,20 +142,8 @@ func (we *workflowEngine) loadWorkflowLogicInstance(id string, step int) (contex
 
 	wli.namespace = qns.ID
 
-	wli.namespaceLogger, err = (*we.instanceLogger).NamespaceLogger(qns.ID)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize namespace logger: %v", err))
-	}
-
 	wli.zapNamespaceLogger = fnLog.Desugar().With(zap.String("namespace", qns.ID))
 	wli.zapLogger = fnLog.Desugar().With(zap.String("namespace", qns.ID), zap.String("instance", wli.id))
-
-	wli.logger, err = (*we.instanceLogger).LoggerFunc(qns.ID, wli.id)
-	if err != nil {
-		wli.unlock()
-		return ctx, nil, NewInternalError(fmt.Errorf("cannot initialize instance logger: %v", err))
-	}
 
 	err = json.Unmarshal([]byte(rec.StateData), &wli.data)
 	if err != nil {
@@ -228,20 +203,6 @@ func (wli *workflowLogicInstance) Close() error {
 
 	if wli.lockConn != nil {
 		wli.unlock()
-	}
-
-	if wli.logger != nil {
-		err := wli.logger.Close()
-		if err != nil {
-			return err
-		}
-	}
-
-	if wli.namespaceLogger != nil {
-		err := wli.namespaceLogger.Close()
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -462,8 +423,6 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 	s := fmt.Sprintf(msg, a...)
 
-	wli.logger.Info(s)
-
 	wli.zapLogger.Info(s)
 
 	// TODO: detect content type and handle base64 data
@@ -494,16 +453,13 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 func (wli *workflowLogicInstance) NamespaceLog(ctx context.Context, msg string, a ...interface{}) {
 	s := fmt.Sprintf(msg, a...)
-
-	wli.namespaceLogger.Info(s)
 	wli.zapNamespaceLogger.Info(s)
 }
 
 func (wli *workflowLogicInstance) Log(ctx context.Context, msg string, a ...interface{}) {
 	s := fmt.Sprintf(msg, a...)
 
-	wli.logger.Info(s)
-
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	wli.zapLogger.Info(s)
 }
 

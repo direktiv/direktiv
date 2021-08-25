@@ -26,6 +26,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"github.com/jinzhu/copier"
@@ -34,7 +35,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent"
-	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -52,11 +52,11 @@ var (
 )
 
 type workflowEngine struct {
-	db             *dbManager
-	timer          *timerManager
-	instanceLogger *dlog.Log
-	stateLogics    map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error)
-	server         *WorkflowServer
+	db    *dbManager
+	timer *timerManager
+
+	stateLogics map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error)
+	server      *WorkflowServer
 
 	cancels     map[string]func()
 	cancelsLock sync.Mutex
@@ -79,7 +79,7 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	we.server = s
 	we.db = s.dbManager
 	we.timer = s.tmManager
-	we.instanceLogger = &s.instanceLogger
+	// we.instanceLogger = &s.instanceLogger
 	we.cancels = make(map[string]func())
 
 	we.stateLogics = map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error){
@@ -1370,7 +1370,8 @@ func (we *workflowEngine) EventsInvoke(workflowID uuid.UUID, events ...*cloudeve
 	}
 
 	if len(events) == 1 {
-		wli.namespaceLogger.Info(fmt.Sprintf("Workflow '%s' triggered by cloud event: '%s'", name, events[0].Type()), "source", events[0].Source(), "data", fmt.Sprintf("%s", events[0].Data()))
+		wli.zapNamespaceLogger.Info(fmt.Sprintf("Workflow '%s' triggered by cloud event: '%s'", name, events[0].Type()),
+			zap.String("source", events[0].Source()), zap.String("data", fmt.Sprintf("%s", events[0].Data())))
 		wli.Log(ctx, "Preparing workflow triggered by event: %s", events[0].ID())
 	} else {
 		var ids = make([]string, len(events))
