@@ -17,4 +17,6 @@ const (
 
 	DirektivFlowTLS  = "DIREKTIV_FLOW_TLS"
 	DirektivFlowMTLS = "DIREKTIV_FLOW_MTLS"
+
+	DirektivFluentbitTCP = "NO_FLUENTBIT_TCP"
 )

@@ -50,10 +50,10 @@ const (
 
 // Available prefixes for different scopes
 const (
-	PrefixWorkflow  = "w"
-	PrefixNamespace = "ns"
-	PrefixGlobal    = "g"
-	PrefixService   = "s" // unused, only if a one item list is requested
+	PrefixWorkflow  = "workflow"
+	PrefixNamespace = "namespace"
+	PrefixGlobal    = "global"
+	PrefixService   = "service" // unused, only if a one item list is requested
 )
 
 const (
@@ -478,6 +478,12 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 			Value: os.Getenv(util.DirektivDebug),
 		})
 	}
+
+	// disable tcp logging
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  util.DirektivFluentbitTCP,
+		Value: "true",
+	})
 
 	if withGrpc {
 

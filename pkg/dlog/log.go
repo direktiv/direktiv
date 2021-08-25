@@ -21,24 +21,28 @@ var (
 )
 
 func init() {
+
 	if err := zap.RegisterSink("http", NewHTTPSink); err != nil {
 		panic(err)
 	}
 
-	var (
-		err error
-	)
 	// startup probes don't work here. reporting success too early
-	for i := 0; i < 60; i++ {
-		log.Printf("connecting to logging %v\n", appTCP)
-		_, err = http.Post(appTCP, "application/json",
-			bytes.NewBuffer([]byte("")))
+	// only run if TCP enabled
+	var err error
+	if len(os.Getenv("NO_FLUENTBIT_TCP")) == 0 {
 
-		time.Sleep(1 * time.Second)
+		for i := 0; i < 60; i++ {
+			log.Printf("connecting to logging service %v\n", appTCP)
+			_, err = http.Post(appTCP, "application/json",
+				bytes.NewBuffer([]byte("")))
 
-		if err == nil {
-			break
+			time.Sleep(1 * time.Second)
+
+			if err == nil {
+				break
+			}
 		}
+
 	}
 
 	if err != nil {
@@ -50,8 +54,13 @@ func init() {
 // ApplicationLogger returns logger for applications
 func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 
+	// tcp logger is only available where fluentbit runs as a sidecar
+	// it can be disables by setting NO_FLUENTBIT_TCP in functions
+
 	var err error
+
 	if appLogger == nil {
+
 		appLogger, err = customLogger(appTCP)
 		if err != nil {
 			return nil, err
@@ -102,10 +111,17 @@ func customLogger(tcp string) (*zap.Logger, error) {
 		return nil, err
 	}
 
-	core := zapcore.NewTee(
-		zapcore.NewCore(consoleEncoder, consoleOut, logLvl),
-		zapcore.NewCore(tcpEncoder, writer, logLvl),
-	)
+	var core zapcore.Core
+	if len(os.Getenv("NO_FLUENTBIT_TCP")) == 0 {
+		core = zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, consoleOut, logLvl),
+			zapcore.NewCore(tcpEncoder, writer, logLvl),
+		)
+	} else {
+		core = zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, consoleOut, logLvl),
+		)
+	}
 
 	return zap.New(core, zap.AddCaller()), nil
 

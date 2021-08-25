@@ -39,18 +39,6 @@ type functionResponseObject struct {
 	Conditions  []*grpc.Condition `json:"conditions"`
 }
 
-const (
-	functionsServiceNameAnnotation      = "direktiv.io/name"
-	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
-	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
-	functionsServiceScopeAnnotation     = "direktiv.io/scope"
-
-	prefixWorkflow  = "w"
-	prefixNamespace = "ns"
-	prefixGlobal    = "g"
-	prefixService   = "s"
-)
-
 func accepted(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -66,10 +54,10 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListFunctionsReque
 	grpcReq := new(grpc.ListFunctionsRequest)
 	grpcReq.Annotations = make(map[string]string)
 
-	grpcReq.Annotations[functionsServiceNameAnnotation] = rb.Name
-	grpcReq.Annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
-	grpcReq.Annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
-	grpcReq.Annotations[functionsServiceScopeAnnotation] = rb.Scope
+	grpcReq.Annotations[functions.ServiceHeaderName] = rb.Name
+	grpcReq.Annotations[functions.ServiceHeaderNamespace] = rb.Namespace
+	grpcReq.Annotations[functions.ServiceHeaderWorkflow] = rb.Workflow
+	grpcReq.Annotations[functions.ServiceHeaderScope] = rb.Scope
 
 	del := make([]string, 0)
 	for k, v := range grpcReq.Annotations {
@@ -85,11 +73,11 @@ func listRequestObjectFromHTTPRequest(r *http.Request) (*grpc.ListFunctionsReque
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
-		if grpcReq.Annotations[functionsServiceScopeAnnotation] == prefixGlobal {
+		if grpcReq.Annotations[functions.ServiceHeaderScope] == functions.PrefixGlobal {
 			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
 		}
 
-		grpcReq.Annotations[functionsServiceNamespaceAnnotation] = ns
+		grpcReq.Annotations[functions.ServiceHeaderNamespace] = ns
 	}
 
 	return grpcReq, nil
@@ -434,7 +422,7 @@ func calculateList(client grpc.FunctionsServiceClient,
 		li := items[i]
 
 		ns := ""
-		if annons, ok := annotations[functionsServiceNamespaceAnnotation]; ok {
+		if annons, ok := annotations[functions.ServiceHeaderNamespace]; ok {
 			ns = annons
 		}
 
@@ -528,9 +516,9 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 	if wfFns {
 		wfResp, err := h.s.functions.ListFunctions(r.Context(), &grpc.ListFunctionsRequest{
 			Annotations: map[string]string{
-				functionsServiceWorkflowAnnotation:  wf,
-				functionsServiceNamespaceAnnotation: ns,
-				functionsServiceScopeAnnotation:     prefixWorkflow,
+				functions.ServiceHeaderWorkflow:  wf,
+				functions.ServiceHeaderNamespace: ns,
+				functions.ServiceHeaderScope:     functions.PrefixWorkflow,
 			},
 		})
 		if err != nil {
@@ -544,8 +532,8 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 		i, err := calculateList(h.s.functions, fnNS,
 			map[string]string{
-				functionsServiceNamespaceAnnotation: ns,
-				functionsServiceScopeAnnotation:     prefixNamespace,
+				functions.ServiceHeaderNamespace: ns,
+				functions.ServiceHeaderScope:     functions.PrefixNamespace,
 			}, ns)
 
 		if err != nil {
@@ -560,7 +548,7 @@ func (h *Handler) getWorkflowFunctions(w http.ResponseWriter, r *http.Request) {
 
 		i, err := calculateList(h.s.functions, fnGlobal,
 			map[string]string{
-				functionsServiceScopeAnnotation: prefixGlobal,
+				functions.ServiceHeaderScope: functions.PrefixGlobal,
 			}, ns)
 
 		if err != nil {
