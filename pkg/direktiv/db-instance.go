@@ -132,6 +132,8 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 			status = "failed"
 			errCode = "direktiv.mutex"
 			errMsg = "exclusive property prevents new instances while another exists"
+
+			reportMetricEnd(ns, workflowID, status, time.Time{})
 		}
 
 	}

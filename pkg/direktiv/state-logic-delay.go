@@ -23,8 +23,8 @@ func initDelayStateLogic(wf *model.Workflow, state model.State) (stateLogic, err
 
 	sl := new(delayStateLogic)
 	sl.state = delay
-	return sl, nil
 
+	return sl, nil
 }
 
 func (sl *delayStateLogic) Type() string {

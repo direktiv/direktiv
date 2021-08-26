@@ -24,8 +24,8 @@ func initSetterStateLogic(wf *model.Workflow, state model.State) (stateLogic, er
 
 	sl := new(setterStateLogic)
 	sl.state = setter
-	return sl, nil
 
+	return sl, nil
 }
 
 func (sl *setterStateLogic) Type() string {

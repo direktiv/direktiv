@@ -113,6 +113,7 @@ func (is *ingressServer) InvokeWorkflow(ctx context.Context, in *ingress.InvokeW
 	}
 
 	appLog.Debugf("Invoked workflow %s/%s: %s", namespace, workflow, inst.id)
+	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 
 	resp.InstanceId = &inst.id
 

@@ -237,6 +237,8 @@ func (s *WorkflowServer) Kill() {
 func (s *WorkflowServer) Run() error {
 
 	appLog.Debug("subscribing to sync queue")
+	go setupPrometheusEndpoint()
+
 	err := s.startDatabaseListener()
 	if err != nil {
 		s.Kill()

@@ -23,7 +23,6 @@ func initErrorStateLogic(wf *model.Workflow, state model.State) (stateLogic, err
 	sl.state = err
 
 	return sl, nil
-
 }
 
 func (sl *errorStateLogic) Type() string {

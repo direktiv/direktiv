@@ -24,8 +24,8 @@ func initValidateStateLogic(wf *model.Workflow, state model.State) (stateLogic, 
 
 	sl := new(validateStateLogic)
 	sl.state = validate
-	return sl, nil
 
+	return sl, nil
 }
 
 func (sl *validateStateLogic) Type() string {
