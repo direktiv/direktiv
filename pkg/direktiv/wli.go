@@ -458,8 +458,6 @@ func (wli *workflowLogicInstance) NamespaceLog(ctx context.Context, msg string, 
 
 func (wli *workflowLogicInstance) Log(ctx context.Context, msg string, a ...interface{}) {
 	s := fmt.Sprintf(msg, a...)
-
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	wli.zapLogger.Info(s)
 }
 
