@@ -43,6 +43,11 @@ const (
 	RN_SetNamespaceVariable         = "setNamespaceVariable"
 	RN_JQPlayground                 = "jqPlayground"
 	RN_ListServices                 = "listServices"
+	RN_WatchServices                = "watchServices"
+	RN_WatchRevisions               = "watchRevisions"
+	RN_WatchPods                    = "watchPods"
+	RN_WatchLogs                    = "watchLogs"
+	RN_ListPods                     = "listPods"
 	RN_DeleteServices               = "deleteServices"
 	RN_GetService                   = "getService"
 	RN_CreateService                = "createService"
@@ -78,6 +83,7 @@ var RouteNames = []string{
 	RN_GetWorkflowMetrics,
 	RN_ListWorkflows,
 	RN_GetWorkflow,
+	RN_WatchLogs,
 	RN_UpdateWorkflow,
 	RN_ToggleWorkflow,
 	RN_CreateWorkflow,
@@ -103,6 +109,7 @@ var RouteNames = []string{
 	RN_SetNamespaceVariable,
 	RN_JQPlayground,
 	RN_ListServices,
+	RN_WatchServices,
 	RN_DeleteServices,
 	RN_GetService,
 	RN_CreateService,
@@ -111,4 +118,7 @@ var RouteNames = []string{
 	RN_DeleteService,
 	RN_DeleteRevision,
 	RN_GetWorkflowFunctions,
+	RN_WatchPods,
+	RN_ListPods,
+	RN_WatchRevisions,
 }

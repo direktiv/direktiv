@@ -19,12 +19,7 @@ var apiKey = ""
 
 func main() {
 
-	cfg, err := api.Configure()
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
-	s, err := api.NewServer(cfg)
+	s, err := api.NewServer()
 	if err != nil {
 		log.Fatal(err.Error())
 	}

@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -73,17 +73,17 @@ type GetWorkflowInstanceResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id           *string                `protobuf:"bytes,1,opt,name=id,proto3,oneof" json:"id,omitempty"`
-	Status       *string                `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
-	InvokedBy    *string                `protobuf:"bytes,3,opt,name=invokedBy,proto3,oneof" json:"invokedBy,omitempty"`
-	Revision     *int32                 `protobuf:"varint,4,opt,name=revision,proto3,oneof" json:"revision,omitempty"`
-	BeginTime    *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=beginTime,proto3,oneof" json:"beginTime,omitempty"`
-	EndTime      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=endTime,proto3,oneof" json:"endTime,omitempty"`
-	Flow         []string               `protobuf:"bytes,7,rep,name=flow,proto3" json:"flow,omitempty"`
-	Input        []byte                 `protobuf:"bytes,8,opt,name=input,proto3,oneof" json:"input,omitempty"`
-	Output       []byte                 `protobuf:"bytes,9,opt,name=output,proto3,oneof" json:"output,omitempty"`
-	ErrorCode    *string                `protobuf:"bytes,10,opt,name=errorCode,proto3,oneof" json:"errorCode,omitempty"`
-	ErrorMessage *string                `protobuf:"bytes,11,opt,name=errorMessage,proto3,oneof" json:"errorMessage,omitempty"`
+	Id           *string              `protobuf:"bytes,1,opt,name=id,proto3,oneof" json:"id,omitempty"`
+	Status       *string              `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+	InvokedBy    *string              `protobuf:"bytes,3,opt,name=invokedBy,proto3,oneof" json:"invokedBy,omitempty"`
+	Revision     *int32               `protobuf:"varint,4,opt,name=revision,proto3,oneof" json:"revision,omitempty"`
+	BeginTime    *timestamp.Timestamp `protobuf:"bytes,5,opt,name=beginTime,proto3,oneof" json:"beginTime,omitempty"`
+	EndTime      *timestamp.Timestamp `protobuf:"bytes,6,opt,name=endTime,proto3,oneof" json:"endTime,omitempty"`
+	Flow         []string             `protobuf:"bytes,7,rep,name=flow,proto3" json:"flow,omitempty"`
+	Input        []byte               `protobuf:"bytes,8,opt,name=input,proto3,oneof" json:"input,omitempty"`
+	Output       []byte               `protobuf:"bytes,9,opt,name=output,proto3,oneof" json:"output,omitempty"`
+	ErrorCode    *string              `protobuf:"bytes,10,opt,name=errorCode,proto3,oneof" json:"errorCode,omitempty"`
+	ErrorMessage *string              `protobuf:"bytes,11,opt,name=errorMessage,proto3,oneof" json:"errorMessage,omitempty"`
 }
 
 func (x *GetWorkflowInstanceResponse) Reset() {
@@ -146,14 +146,14 @@ func (x *GetWorkflowInstanceResponse) GetRevision() int32 {
 	return 0
 }
 
-func (x *GetWorkflowInstanceResponse) GetBeginTime() *timestamppb.Timestamp {
+func (x *GetWorkflowInstanceResponse) GetBeginTime() *timestamp.Timestamp {
 	if x != nil {
 		return x.BeginTime
 	}
 	return nil
 }
 
-func (x *GetWorkflowInstanceResponse) GetEndTime() *timestamppb.Timestamp {
+func (x *GetWorkflowInstanceResponse) GetEndTime() *timestamp.Timestamp {
 	if x != nil {
 		return x.EndTime
 	}
@@ -262,7 +262,7 @@ var file_pkg_ingress_get_instance_proto_msgTypes = make([]protoimpl.MessageInfo,
 var file_pkg_ingress_get_instance_proto_goTypes = []interface{}{
 	(*GetWorkflowInstanceRequest)(nil),  // 0: ingress.GetWorkflowInstanceRequest
 	(*GetWorkflowInstanceResponse)(nil), // 1: ingress.GetWorkflowInstanceResponse
-	(*timestamppb.Timestamp)(nil),       // 2: google.protobuf.Timestamp
+	(*timestamp.Timestamp)(nil),         // 2: google.protobuf.Timestamp
 }
 var file_pkg_ingress_get_instance_proto_depIdxs = []int32{
 	2, // 0: ingress.GetWorkflowInstanceResponse.beginTime:type_name -> google.protobuf.Timestamp

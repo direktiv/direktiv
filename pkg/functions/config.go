@@ -4,7 +4,6 @@ import (
 	"io"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 )
@@ -54,16 +53,16 @@ func newConfigReader() *configReader {
 
 func readAndSet(path string, target interface{}) {
 
-	log.Debugf("reading config %s", path)
+	logger.Debugf("reading config %s", path)
 	file, err := os.Open(path)
 	if err != nil {
-		log.Errorf("can not open config file: %v", err)
+		logger.Errorf("can not open config file: %v", err)
 		return
 	}
 
 	fi, err := file.Stat()
 	if err != nil {
-		log.Errorf("can not stat file: %v", err)
+		logger.Errorf("can not stat file: %v", err)
 		return
 	}
 
@@ -71,13 +70,13 @@ func readAndSet(path string, target interface{}) {
 	_, err = io.ReadFull(file, buf)
 
 	if err != nil {
-		log.Errorf("can not read config file: %v", err)
+		logger.Errorf("can not read config file: %v", err)
 		return
 	}
 
 	err = yaml.Unmarshal(buf, target)
 	if err != nil {
-		log.Errorf("can not unmarshal config file: %v", err)
+		logger.Errorf("can not unmarshal config file: %v", err)
 		return
 	}
 

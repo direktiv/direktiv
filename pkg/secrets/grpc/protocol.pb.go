@@ -7,9 +7,9 @@
 package grpc
 
 import (
+	empty "github.com/golang/protobuf/ptypes/empty"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 )
 
@@ -65,7 +65,7 @@ var file_pkg_secrets_grpc_protocol_proto_goTypes = []interface{}{
 	(*SecretsDeleteRequest)(nil),    // 2: grpc.SecretsDeleteRequest
 	(*DeleteSecretsRequest)(nil),    // 3: grpc.DeleteSecretsRequest
 	(*GetSecretsRequest)(nil),       // 4: grpc.GetSecretsRequest
-	(*emptypb.Empty)(nil),           // 5: google.protobuf.Empty
+	(*empty.Empty)(nil),             // 5: google.protobuf.Empty
 	(*SecretsRetrieveResponse)(nil), // 6: grpc.SecretsRetrieveResponse
 	(*GetSecretsResponse)(nil),      // 7: grpc.GetSecretsResponse
 }

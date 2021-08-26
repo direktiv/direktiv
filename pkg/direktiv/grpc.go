@@ -6,13 +6,13 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/ent"
 	"github.com/vorteil/direktiv/pkg/health"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -76,7 +76,7 @@ func (is *ingressServer) start(s *WorkflowServer) error {
 	return util.GrpcStart(&is.grpc, util.TLSIngressComponent, ingressBind, func(srv *grpc.Server) {
 		ingress.RegisterDirektivIngressServer(srv, is)
 
-		log.Debugf("append health check to ingress service")
+		appLog.Debugf("append health check to ingress service")
 		healthServer := newHealthServer(s)
 		health.RegisterHealthServer(srv, healthServer)
 		reflection.Register(srv)
@@ -95,14 +95,14 @@ func (is *ingressServer) cronPoll() {
 
 	wfs, err := is.wfServer.dbManager.getAllWorkflows()
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 		return
 	}
 
 	for _, x := range wfs {
 		wf, err := is.wfServer.dbManager.getWorkflowByID(x.ID)
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 		is.cronPollerWorkflow(wf)
 	}
@@ -114,7 +114,7 @@ func (is *ingressServer) cronPollerWorkflow(wf *ent.Workflow) {
 	var workflow model.Workflow
 	err := workflow.Load(wf.Workflow)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 	}
 
 	is.wfServer.tmManager.deleteTimerByName("", is.wfServer.hostname, fmt.Sprintf("cron:%s", wf.ID.String()))
@@ -141,17 +141,12 @@ func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	log.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
-	dlogger, err := is.wfServer.instanceLogger.NamespaceLogger(namespace)
-	if err != nil {
-		return nil, err
-	}
+	appLog.Debugf("Broadcasting event on namespace '%s': %s/%s", namespace, event.Type(), event.Source())
 
+	dlogger := fnLog.Desugar().With(zap.String("namespace", namespace))
 	dlogger.Info(fmt.Sprintf("Broadcasting event: type=%s, source=%s", event.Type(), event.Source()))
 
 	err = is.wfServer.handleEvent(*in.Namespace, event)
-
-	dlogger.Close()
 
 	return &resp, err
 

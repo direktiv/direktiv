@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -105,11 +105,11 @@ type UpdateWorkflowResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid       *string                `protobuf:"bytes,1,opt,name=uid,proto3,oneof" json:"uid,omitempty"`
-	Id        *string                `protobuf:"bytes,2,opt,name=id,proto3,oneof" json:"id,omitempty"`
-	Revision  *int32                 `protobuf:"varint,3,opt,name=revision,proto3,oneof" json:"revision,omitempty"`
-	Active    *bool                  `protobuf:"varint,4,opt,name=active,proto3,oneof" json:"active,omitempty"`
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=createdAt,proto3,oneof" json:"createdAt,omitempty"`
+	Uid       *string              `protobuf:"bytes,1,opt,name=uid,proto3,oneof" json:"uid,omitempty"`
+	Id        *string              `protobuf:"bytes,2,opt,name=id,proto3,oneof" json:"id,omitempty"`
+	Revision  *int32               `protobuf:"varint,3,opt,name=revision,proto3,oneof" json:"revision,omitempty"`
+	Active    *bool                `protobuf:"varint,4,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	CreatedAt *timestamp.Timestamp `protobuf:"bytes,5,opt,name=createdAt,proto3,oneof" json:"createdAt,omitempty"`
 }
 
 func (x *UpdateWorkflowResponse) Reset() {
@@ -172,7 +172,7 @@ func (x *UpdateWorkflowResponse) GetActive() bool {
 	return false
 }
 
-func (x *UpdateWorkflowResponse) GetCreatedAt() *timestamppb.Timestamp {
+func (x *UpdateWorkflowResponse) GetCreatedAt() *timestamp.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
@@ -239,7 +239,7 @@ var file_pkg_ingress_update_workflow_proto_msgTypes = make([]protoimpl.MessageIn
 var file_pkg_ingress_update_workflow_proto_goTypes = []interface{}{
 	(*UpdateWorkflowRequest)(nil),  // 0: ingress.UpdateWorkflowRequest
 	(*UpdateWorkflowResponse)(nil), // 1: ingress.UpdateWorkflowResponse
-	(*timestamppb.Timestamp)(nil),  // 2: google.protobuf.Timestamp
+	(*timestamp.Timestamp)(nil),    // 2: google.protobuf.Timestamp
 }
 var file_pkg_ingress_update_workflow_proto_depIdxs = []int32{
 	2, // 0: ingress.UpdateWorkflowResponse.createdAt:type_name -> google.protobuf.Timestamp

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-config-fluentbit
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  fluentbit.cfg: |
+    [SERVICE]
+        Flush           5
+        Daemon          off
+        Log_Level       info
+
+    [OUTPUT]
+        Name          pgsql
+        Match         functions
+        {{- if .Values.fluentbit.host }}
+        Host          {{ .Values.fluentbit.host }}
+        Port          {{ .Values.fluentbit.port }}
+        User          {{ .Values.fluentbit.user }}
+        Password      {{ .Values.fluentbit.password }}
+        Database      {{ .Values.fluentbit.database }}
+        {{- else }}
+        Host          {{ printf "%s-support.%s" ( include "direktiv.fullname" . ) .Release.Namespace }}
+        Port          5432
+        User          direktiv
+        Password      direktivdirektiv
+        Database      direktiv
+        {{- end}}
+        Timestamp_Key ts
+
+    [INPUT]
+        name    http
+        host    0.0.0.0
+        port    8888
+        tag     functions
+
+    [INPUT]
+        name  http
+        host  0.0.0.0
+        port  8889
+        tag   application
+
+    {{ .Values.fluentbit.extraConfig | nindent 4 }}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 
 	"github.com/fsnotify/fsnotify"
@@ -19,18 +20,19 @@ type errStruct struct {
 
 func readErrorFile() (code, msg string, err error) {
 
+	fmt.Println("errfile")
 	a, err := ioutil.ReadFile("/direktiv-data/error.json")
 	if err != nil {
 		return "", "", err
 	}
-
+	fmt.Println("errfile1")
 	es := new(errStruct)
 
 	err = json.Unmarshal(a, es)
 	if err != nil {
 		return "", "", err
 	}
-
+	fmt.Printf("errfile2 %+v\n", es)
 	return es.Code, es.Message, nil
 
 }

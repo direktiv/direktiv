@@ -3,9 +3,10 @@ package functions
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/dlog"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -15,6 +16,8 @@ var (
 	grpcServer      *grpc.Server
 	empty           emptypb.Empty
 	functionsConfig config
+
+	logger *zap.SugaredLogger
 )
 
 const (
@@ -29,9 +32,17 @@ type functionsServer struct {
 // StartServer starts functions grpc server
 func StartServer(echan chan error) {
 
+	var err error
+
+	logger, err = dlog.ApplicationLogger("functions")
+	if err != nil {
+		echan <- err
+		return
+	}
+
 	go runPodRequestLimiter()
 
-	err := initKubernetesLock()
+	err = initKubernetesLock()
 	if err != nil {
 		echan <- err
 		return
@@ -39,11 +50,11 @@ func StartServer(echan chan error) {
 
 	cr := newConfigReader()
 
-	log.Infof("loading config file %s", confFile)
+	logger.Infof("loading config file %s", confFile)
 	cr.readConfig(confFile, &functionsConfig)
 
 	if len(util.FlowEndpoint()) == 0 {
-		log.Errorf("grpc response to flow is not configured")
+		logger.Errorf("grpc response to flow is not configured")
 		echan <- fmt.Errorf("grpc response to flow is not configured")
 	}
 

@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	hash "github.com/mitchellh/hashstructure/v2"
 	glob "github.com/ryanuber/go-glob"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -40,12 +39,12 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 
 				// if both are strings we can glob
 				if ok && ok2 && !glob.Glob(fs, vs) {
-					log.Debugf("%s does not match %s", vs, fs)
+					appLog.Debugf("%s does not match %s", vs, fs)
 					return false
 				}
 
 			} else {
-				log.Debugf("event does not contain %v", kt)
+				appLog.Debugf("event does not contain %v", kt)
 				return false
 			}
 
@@ -97,14 +96,14 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 
 		err := rows.Scan(&id, &events, &eventID)
 		if err != nil {
-			log.Errorf("can not scan result: %v", err)
+			appLog.Errorf("can not scan result: %v", err)
 			continue
 		}
 
 		var eventsIn map[string]interface{}
 		err = json.Unmarshal(events, &eventsIn)
 		if err != nil {
-			log.Errorf("can not unmarshal existing events")
+			appLog.Errorf("can not unmarshal existing events")
 			return retEvents, err
 		}
 
@@ -128,7 +127,7 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 			for _, g := range e {
 				b, err := base64.StdEncoding.DecodeString(g)
 				if err != nil {
-					log.Errorf("event data corrupt: %v", err)
+					appLog.Errorf("event data corrupt: %v", err)
 					continue
 				}
 				ev := bytesToEvent(b)
@@ -148,7 +147,7 @@ func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
 
 func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) error {
 
-	log.Debugf("handle event %s", ce.Type())
+	appLog.Debugf("handle event %s", ce.Type())
 
 	var (
 		id, count                                   int
@@ -186,7 +185,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 
 		err := rows.Scan(&id, &signature, &count, &corBytes, &allEvents, &wf, &singleEvent)
 		if err != nil {
-			log.Errorf("process row error: %v", err)
+			appLog.Errorf("process row error: %v", err)
 			continue
 		}
 
@@ -201,17 +200,17 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 		conn, err = s.dbManager.lockDB(hash, defaultLockWait)
 
 		if err != nil {
-			log.Errorf("can not lock event row: %d, %v", id, err)
+			appLog.Errorf("can not lock event row: %d, %v", id, err)
 			continue
 		}
 
-		log.Debugf("event listener %d is candidate", id)
+		appLog.Debugf("event listener %d is candidate", id)
 
 		var eventMap map[string]interface{}
 		err = json.Unmarshal(singleEvent, &eventMap)
 		if err != nil {
 			unlock()
-			log.Errorf("can not marshall event map: %v", err)
+			appLog.Errorf("can not marshall event map: %v", err)
 			continue
 		}
 
@@ -227,7 +226,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 
 		// check filters
 		if !matchesExtensions(eventMap, m) {
-			log.Debugf("event listener %d does not match", id)
+			appLog.Debugf("event listener %d does not match", id)
 			unlock()
 			continue
 		}
@@ -239,7 +238,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 
 		if count == 1 {
 
-			log.Debugf("single event workflow")
+			appLog.Debugf("single event workflow")
 			retEvents = append(retEvents, ce)
 
 		} else {
@@ -253,7 +252,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 
 			es, err := s.updateMultipleEvents(ce, id, correlations)
 			if err != nil {
-				log.Errorf("can not handle multi event: %v", err)
+				appLog.Errorf("can not handle multi event: %v", err)
 				unlock()
 				continue
 			}
@@ -264,7 +263,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 			// for a multi event workflow
 			if len(retEvents) == 0 {
 
-				log.Debugf("no events waiting")
+				appLog.Debugf("no events waiting")
 
 				// get event types
 				var eventTypes []string
@@ -276,7 +275,7 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 				if generateCorrelationHash(ce, ce.Type(), correlations) != "" {
 					err := s.addEventListenerWait(ce, id, correlations, eventTypes)
 					if err != nil {
-						log.Errorf("can not create workflow event wait: %v", err)
+						appLog.Errorf("can not create workflow event wait: %v", err)
 						unlock()
 						continue
 					}
@@ -290,11 +289,11 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 		// if single or multiple added events we fire
 		if len(retEvents) > 0 {
 			uid, _ := uuid.Parse(wf)
-			log.Debugf("run workflow %v with %d events", uid, len(retEvents))
+			appLog.Debugf("run workflow %v with %d events", uid, len(retEvents))
 			if len(signature) == 0 {
 				go s.engine.EventsInvoke(uid, retEvents...)
 			} else {
-				log.Debugf("calling with signature %v", string(signature))
+				appLog.Debugf("calling with signature %v", string(signature))
 				s.dbManager.deleteWorkflowEventListener(id)
 				go s.engine.wakeEventsWaiter(signature, retEvents)
 			}
@@ -316,7 +315,7 @@ func generateCorrelationHash(cevent *cloudevents.Event,
 		if cevent.Extensions()[strings.ToLower(k)] != nil {
 			hashBase[k] = fmt.Sprintf("%v", cevent.Extensions()[strings.ToLower(k)])
 		} else {
-			log.Debugf("event does not contain correlation id: %s", k)
+			appLog.Debugf("event does not contain correlation id: %s", k)
 			return ""
 		}
 	}
@@ -352,7 +351,7 @@ func eventToBytes(cevent cloudevents.Event) []byte {
 	enc := gob.NewEncoder(&ev)
 	err := enc.Encode(cevent)
 	if err != nil {
-		log.Errorf("can not convert event to bytes: %v", err)
+		appLog.Errorf("can not convert event to bytes: %v", err)
 	}
 	return ev.Bytes()
 }
@@ -365,7 +364,7 @@ func bytesToEvent(b []byte) *cloudevents.Event {
 	enc := gob.NewDecoder(bytes.NewReader(b))
 	err := enc.Decode(ev)
 	if err != nil {
-		log.Errorf("can not convert bytes to event: %v", err)
+		appLog.Errorf("can not convert bytes to event: %v", err)
 	}
 	return ev
 }

@@ -16,6 +16,7 @@ type Log interface {
 	LoggerFunc(namespace, instance string) (Logger, error)
 	NamespaceLogger(namespace string) (Logger, error)
 	QueryLogs(ctx context.Context, instance string, limit, offset int) (QueryReponse, error)
+	StreamLogs(ctx context.Context, instance string) (chan interface{}, error)
 	DeleteNamespaceLogs(namespace string) error
 	DeleteInstanceLogs(instance string) error
 }
@@ -28,9 +29,8 @@ type LogEntry struct {
 }
 
 type QueryReponse struct {
-	Count  int `json:"count"`
-	Limit  int `json:"limit,omitempty"`
-	Offset int `json:"offset"`
-	// Data   []map[string]interface{} `json:"data"`
-	Logs []LogEntry `json:"data"`
+	Count  int        `json:"count"`
+	Limit  int        `json:"limit,omitempty"`
+	Offset int        `json:"offset"`
+	Logs   []LogEntry `json:"data"`
 }

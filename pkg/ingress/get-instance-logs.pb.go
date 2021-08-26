@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -152,11 +152,11 @@ type GetWorkflowInstanceLogsResponse_WorkflowInstanceLog struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id        *string                `protobuf:"bytes,1,opt,name=id,proto3,oneof" json:"id,omitempty"`
-	Level     *string                `protobuf:"bytes,2,opt,name=level,proto3,oneof" json:"level,omitempty"`
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3,oneof" json:"timestamp,omitempty"`
-	Message   *string                `protobuf:"bytes,4,opt,name=message,proto3,oneof" json:"message,omitempty"`
-	Context   map[string]string      `protobuf:"bytes,5,rep,name=context,proto3" json:"context,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Id        *string              `protobuf:"bytes,1,opt,name=id,proto3,oneof" json:"id,omitempty"`
+	Level     *string              `protobuf:"bytes,2,opt,name=level,proto3,oneof" json:"level,omitempty"`
+	Timestamp *timestamp.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3,oneof" json:"timestamp,omitempty"`
+	Message   *string              `protobuf:"bytes,4,opt,name=message,proto3,oneof" json:"message,omitempty"`
+	Context   map[string]string    `protobuf:"bytes,5,rep,name=context,proto3" json:"context,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *GetWorkflowInstanceLogsResponse_WorkflowInstanceLog) Reset() {
@@ -205,7 +205,7 @@ func (x *GetWorkflowInstanceLogsResponse_WorkflowInstanceLog) GetLevel() string 
 	return ""
 }
 
-func (x *GetWorkflowInstanceLogsResponse_WorkflowInstanceLog) GetTimestamp() *timestamppb.Timestamp {
+func (x *GetWorkflowInstanceLogsResponse_WorkflowInstanceLog) GetTimestamp() *timestamp.Timestamp {
 	if x != nil {
 		return x.Timestamp
 	}
@@ -304,8 +304,8 @@ var file_pkg_ingress_get_instance_logs_proto_goTypes = []interface{}{
 	(*GetWorkflowInstanceLogsRequest)(nil),                      // 0: ingress.GetWorkflowInstanceLogsRequest
 	(*GetWorkflowInstanceLogsResponse)(nil),                     // 1: ingress.GetWorkflowInstanceLogsResponse
 	(*GetWorkflowInstanceLogsResponse_WorkflowInstanceLog)(nil), // 2: ingress.GetWorkflowInstanceLogsResponse.WorkflowInstanceLog
-	nil,                           // 3: ingress.GetWorkflowInstanceLogsResponse.WorkflowInstanceLog.ContextEntry
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	nil,                         // 3: ingress.GetWorkflowInstanceLogsResponse.WorkflowInstanceLog.ContextEntry
+	(*timestamp.Timestamp)(nil), // 4: google.protobuf.Timestamp
 }
 var file_pkg_ingress_get_instance_logs_proto_depIdxs = []int32{
 	2, // 0: ingress.GetWorkflowInstanceLogsResponse.workflowInstanceLogs:type_name -> ingress.GetWorkflowInstanceLogsResponse.WorkflowInstanceLog

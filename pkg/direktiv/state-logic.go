@@ -10,7 +10,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/senseyeio/duration"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -66,7 +65,7 @@ func deadlineFromString(s string) time.Time {
 		dur, err := duration.ParseISO8601(s)
 		if err != nil {
 			// NOTE: validation should prevent this from ever happening
-			log.Errorf("Got an invalid ISO8601 timeout: %v", err)
+			appLog.Errorf("Got an invalid ISO8601 timeout: %v", err)
 		} else {
 			now := time.Now()
 			later := dur.Shift(now)

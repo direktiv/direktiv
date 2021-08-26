@@ -5,16 +5,27 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	log "github.com/sirupsen/logrus"
+	"github.com/vorteil/direktiv/pkg/dlog"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/secrets/handler"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+var logger *zap.SugaredLogger
+
 // NewServer creates a new secrets server
 func NewServer(backend string) (*Server, error) {
+
+	var err error
+
+	logger, err = dlog.ApplicationLogger("secrets")
+	if err != nil {
+		return nil, err
+	}
+
 	srv := &Server{
 		lifeLine: make(chan bool),
 	}
@@ -23,7 +34,7 @@ func NewServer(backend string) (*Server, error) {
 		backend = "db"
 	}
 
-	log.Infof("starting secret backend %s", backend)
+	logger.Infof("starting secret backend %s", backend)
 	backendType, err := handler.ParseType(backend)
 	if err != nil {
 		return nil, err
@@ -41,7 +52,7 @@ func NewServer(backend string) (*Server, error) {
 // Run starts the secrets server
 func (s *Server) Run() {
 
-	log.Infof("starting secret server")
+	logger.Infof("starting secret server")
 
 	util.GrpcStart(&s.grpc, util.TLSSecretsComponent, "127.0.0.1:2610", func(srv *grpc.Server) {
 		secretsgrpc.RegisterSecretsServiceServer(srv, s)
@@ -54,7 +65,7 @@ func (s *Server) Stop() {
 
 	go func() {
 
-		log.Infof("stopping workflow server")
+		logger.Infof("stopping secret server")
 		s.lifeLine <- true
 
 	}()

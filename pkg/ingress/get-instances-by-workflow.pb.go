@@ -7,9 +7,9 @@
 package ingress
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -160,9 +160,9 @@ type GetInstancesByWorkflowResponse_WorkflowInstance struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id        *string                `protobuf:"bytes,1,opt,name=id,proto3,oneof" json:"id,omitempty"`
-	Status    *string                `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
-	BeginTime *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=beginTime,proto3,oneof" json:"beginTime,omitempty"`
+	Id        *string              `protobuf:"bytes,1,opt,name=id,proto3,oneof" json:"id,omitempty"`
+	Status    *string              `protobuf:"bytes,2,opt,name=status,proto3,oneof" json:"status,omitempty"`
+	BeginTime *timestamp.Timestamp `protobuf:"bytes,4,opt,name=beginTime,proto3,oneof" json:"beginTime,omitempty"`
 }
 
 func (x *GetInstancesByWorkflowResponse_WorkflowInstance) Reset() {
@@ -211,7 +211,7 @@ func (x *GetInstancesByWorkflowResponse_WorkflowInstance) GetStatus() string {
 	return ""
 }
 
-func (x *GetInstancesByWorkflowResponse_WorkflowInstance) GetBeginTime() *timestamppb.Timestamp {
+func (x *GetInstancesByWorkflowResponse_WorkflowInstance) GetBeginTime() *timestamp.Timestamp {
 	if x != nil {
 		return x.BeginTime
 	}
@@ -286,7 +286,7 @@ var file_pkg_ingress_get_instances_by_workflow_proto_goTypes = []interface{}{
 	(*GetInstancesByWorkflowRequest)(nil),                   // 0: ingress.GetInstancesByWorkflowRequest
 	(*GetInstancesByWorkflowResponse)(nil),                  // 1: ingress.GetInstancesByWorkflowResponse
 	(*GetInstancesByWorkflowResponse_WorkflowInstance)(nil), // 2: ingress.GetInstancesByWorkflowResponse.WorkflowInstance
-	(*timestamppb.Timestamp)(nil),                           // 3: google.protobuf.Timestamp
+	(*timestamp.Timestamp)(nil),                             // 3: google.protobuf.Timestamp
 }
 var file_pkg_ingress_get_instances_by_workflow_proto_depIdxs = []int32{
 	2, // 0: ingress.GetInstancesByWorkflowResponse.workflowInstances:type_name -> ingress.GetInstancesByWorkflowResponse.WorkflowInstance

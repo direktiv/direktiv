@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -26,7 +25,7 @@ func (is *ingressServer) AddNamespace(ctx context.Context, in *ingress.AddNamesp
 		return nil, grpcDatabaseError(err, "namespace", name)
 	}
 
-	log.Debugf("Added namespace: %v", name)
+	appLog.Debugf("Added namespace: %v", name)
 
 	resp.Name = &name
 	resp.CreatedAt = timestamppb.New(namespace.Created)
@@ -46,12 +45,12 @@ func (is *ingressServer) DeleteNamespace(ctx context.Context, in *ingress.Delete
 		return nil, grpcDatabaseError(err, "namespace", name)
 	}
 
-	log.Debugf("Deleted namespace: %v", name)
+	appLog.Debugf("Deleted namespace: %v", name)
 
 	// delete all functions
 	err = deleteKnativeFunctions(is.wfServer.engine.functionsClient, in.GetName(), "", "")
 	if err != nil {
-		log.Errorf("can not delete knative functions: %v", err)
+		appLog.Errorf("can not delete knative functions: %v", err)
 	}
 
 	resp.Name = &name
@@ -68,22 +67,28 @@ func (is *ingressServer) GetNamespaceLogs(ctx context.Context, in *ingress.GetNa
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	logs, err := is.wfServer.instanceLogger.QueryLogs(ctx, namespace, int(limit), int(offset))
+	lc := is.wfServer.components[util.LogComponent].(*logClient)
+	r, err := lc.logsForNamespace(namespace, offset, limit)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "namespace-logs", namespace)
 	}
 
-	resp.Offset = &offset
-	resp.Limit = &limit
+	for i := range r {
+		infoMap := r[i]
 
-	for i := range logs.Logs {
+		// get msg
+		msg := infoMap["msg"].(string)
 
-		l := &logs.Logs[i]
+		// get sec
+		ts := infoMap["ts"].(float64)
+
+		secs := int64(ts)
+		nsecs := int64((ts - float64(secs)) * 1e9)
+		tt := time.Unix(secs, nsecs)
 
 		resp.NamespaceLogs = append(resp.NamespaceLogs, &ingress.GetNamespaceLogsResponse_NamespaceLog{
-			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
-			Message:   &l.Message,
-			Context:   l.Context,
+			Message:   &msg,
+			Timestamp: timestamppb.New(tt.UTC()),
 		})
 
 	}

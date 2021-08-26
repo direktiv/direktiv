@@ -54,13 +54,13 @@ data:
 
       # memory/cpu value defined for different service sizes
       memory:
-        small: 128
-        medium: 512
-        large: 1024
+        small: 64
+        medium: 256
+        large: 512
       cpu:
-        small: 0.25
-        medium: 0.5
-        large: 1.0
+        small: 0.1
+        medium: 0.25
+        large: 0.5
 
       # proxy values
       proxy:

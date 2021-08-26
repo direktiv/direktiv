@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/senseyeio/duration"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -36,7 +35,7 @@ func (sl *delayStateLogic) Deadline() time.Time {
 
 	d, err := duration.ParseISO8601(sl.state.Duration)
 	if err != nil {
-		log.Errorf("failed to parse duration: %v", err)
+		appLog.Errorf("failed to parse duration: %v", err)
 		return time.Now()
 	}
 

@@ -2,6 +2,7 @@ package direktiv
 
 import (
 	"context"
+	"log"
 	"os"
 
 	"github.com/vorteil/direktiv/pkg/jqer"
@@ -9,9 +10,13 @@ import (
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq" // postgres for ent
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
+)
+
+var (
+	appLog, fnLog *zap.SugaredLogger
 )
 
 const (
@@ -39,8 +44,8 @@ type WorkflowServer struct {
 	tmManager *timerManager
 	engine    *workflowEngine
 
-	LifeLine        chan bool
-	instanceLogger  dlog.Log
+	LifeLine chan bool
+
 	variableStorage varstore.VarStorage
 
 	components map[string]component
@@ -97,7 +102,26 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	flowServer := newFlowServer(s.config, s.engine)
 	s.components[util.FlowComponent] = flowServer
 
+	s.components[util.LogComponent] = newLogDBClient()
+
 	return nil
+
+}
+
+func init() {
+
+	// setup logging
+	var err error
+
+	appLog, err = dlog.ApplicationLogger("flow")
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	fnLog, err = dlog.FunctionsLogger()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 
 }
 
@@ -149,11 +173,6 @@ func NewWorkflowServer(config *Config) (*WorkflowServer, error) {
 
 }
 
-// SetInstanceLogger set logger for direktiv for firecracker instances
-func (s *WorkflowServer) SetInstanceLogger(l dlog.Log) {
-	s.instanceLogger = l
-}
-
 func (s *WorkflowServer) SetVariableStorage(vs varstore.VarStorage) {
 	s.variableStorage = vs
 }
@@ -176,7 +195,7 @@ func (s *WorkflowServer) cleanup() {
 
 	// stop components
 	for _, comp := range s.components {
-		log.Infof("stopping %s", comp.name())
+		appLog.Infof("stopping %s", comp.name())
 		comp.stop()
 	}
 
@@ -191,7 +210,7 @@ func (s *WorkflowServer) Stop() {
 
 	go func() {
 
-		log.Printf("stopping workflow server")
+		appLog.Info("stopping workflow server")
 		s.cleanup()
 		s.LifeLine <- true
 
@@ -217,9 +236,9 @@ func (s *WorkflowServer) Kill() {
 // Run starts all components of direktiv
 func (s *WorkflowServer) Run() error {
 
+	appLog.Debug("subscribing to sync queue")
 	go setupPrometheusEndpoint()
 
-	log.Debugf("subscribing to sync queue")
 	err := s.startDatabaseListener()
 	if err != nil {
 		s.Kill()
@@ -227,7 +246,7 @@ func (s *WorkflowServer) Run() error {
 	}
 
 	for _, comp := range s.components {
-		log.Infof("starting %s component", comp.name())
+		appLog.Infof("starting %s component", comp.name())
 		err := comp.start(s)
 		if err != nil {
 			s.Kill()

@@ -3,7 +3,6 @@ package direktiv
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/functions"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -12,7 +11,7 @@ import (
 func cancelJob(ctx context.Context, client igrpc.FunctionsServiceClient,
 	actionID string) {
 
-	log.Debugf("cancelling job %v", actionID)
+	appLog.Debugf("cancelling job %v", actionID)
 
 	cr := igrpc.CancelPodRequest{
 		ActionID: &actionID,
@@ -20,7 +19,7 @@ func cancelJob(ctx context.Context, client igrpc.FunctionsServiceClient,
 
 	_, err := client.CancelFunctionsPod(ctx, &cr)
 	if err != nil {
-		log.Errorf("can not cancel job %s: %v", actionID, err)
+		appLog.Errorf("can not cancel job %s: %v", actionID, err)
 	}
 
 }
@@ -62,14 +61,14 @@ func isKnativeFunction(client igrpc.FunctionsServiceClient,
 	a[functions.ServiceHeaderWorkflow] = workflow
 	a[functions.ServiceHeaderScope] = functions.PrefixService
 
-	log.Debugf("knative function search: %v", a)
+	appLog.Debugf("knative function search: %v", a)
 
 	l, err := client.ListFunctions(context.Background(), &igrpc.ListFunctionsRequest{
 		Annotations: a,
 	})
 
 	if err != nil {
-		log.Errorf("can not list knative service: %v", err)
+		appLog.Errorf("can not list knative service: %v", err)
 		return false
 	}
 
@@ -137,7 +136,7 @@ func createKnativeFunctions(client igrpc.FunctionsServiceClient,
 
 			_, err := client.CreateFunction(context.Background(), &cr)
 			if err != nil {
-				log.Errorf("can not create knative service: %v", err)
+				appLog.Errorf("can not create knative service: %v", err)
 			}
 
 		}(fn, wfm, fn.ID, ns)
@@ -176,7 +175,7 @@ func deleteKnativeFunctions(client igrpc.FunctionsServiceClient,
 
 	_, err := client.DeleteFunctions(context.Background(), &dr)
 	if err != nil {
-		log.Errorf("can not delete knative service: %v", err)
+		appLog.Errorf("can not delete knative service: %v", err)
 	}
 
 	return nil

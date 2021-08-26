@@ -2,10 +2,11 @@ package direktiv
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
+	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -14,7 +15,7 @@ func (is *ingressServer) CancelWorkflowInstance(ctx context.Context, in *ingress
 
 	err := is.wfServer.engine.hardCancelInstance(in.GetId(), "direktiv.cancels.api", "cancelled by api request")
 	if err != nil {
-		log.Errorf("error cancelling instance: %v", err)
+		appLog.Errorf("error cancelling instance: %v", err)
 	}
 	return &emptypb.Empty{}, nil
 
@@ -70,28 +71,93 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 	offset := in.GetOffset()
 	limit := in.GetLimit()
 
-	logs, err := is.wfServer.instanceLogger.QueryLogs(ctx, instance, int(limit), int(offset))
+	lc := is.wfServer.components[util.LogComponent].(*logClient)
+	r, err := lc.logsForInstance(instance, offset, limit)
 	if err != nil {
 		return nil, grpcDatabaseError(err, "instance", instance)
 	}
 
-	resp.Offset = &offset
-	resp.Limit = &limit
+	for i := range r {
+		infoMap := r[i]
 
-	for i := range logs.Logs {
+		// get msg
+		msg := infoMap["msg"].(string)
 
-		l := &logs.Logs[i]
+		// get sec
+		ts := infoMap["ts"].(float64)
+
+		secs := int64(ts)
+		nsecs := int64((ts - float64(secs)) * 1e9)
+		tt := time.Unix(secs, nsecs)
 
 		resp.WorkflowInstanceLogs = append(resp.WorkflowInstanceLogs, &ingress.GetWorkflowInstanceLogsResponse_WorkflowInstanceLog{
-			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
-			Message:   &l.Message,
-			Context:   l.Context,
+			Message:   &msg,
+			Timestamp: timestamppb.New(tt.UTC()),
 		})
 
 	}
 
 	return &resp, nil
 
+}
+
+func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInstanceLogsRequest, out ingress.DirektivIngress_WatchWorkflowInstanceLogsServer) error {
+	instance := in.GetInstanceId()
+	timeTracker := float64(0)
+
+	pollTicker := time.NewTicker(250 * time.Millisecond)
+	defer pollTicker.Stop()
+
+	for {
+		select {
+		case <-out.Context().Done():
+			pollTicker.Stop()
+			return nil
+		case <-pollTicker.C:
+
+			lc := is.wfServer.components[util.LogComponent].(*logClient)
+			r, err := lc.logsForInstanceAfterTime(instance, timeTracker)
+			if err != nil {
+				return grpcDatabaseError(err, "instance", instance)
+			}
+
+			for i := range r {
+				infoMap := r[i]
+
+				// get msg
+				msg := infoMap["msg"].(string)
+
+				// get sec
+				ts := infoMap["ts"].(float64)
+
+				// get level
+				level := infoMap["level"].(string)
+
+				secs := int64(ts)
+				nsecs := int64((ts - float64(secs)) * 1e9)
+				tt := time.Unix(secs, nsecs)
+
+				resp := ingress.WatchWorkflowInstanceLogsResponse{
+					Level:     &level,
+					Timestamp: timestamppb.New(tt.UTC()),
+					// Context:   l.Context,
+					Message: &msg,
+				}
+
+				err = out.Send(&resp)
+				if err != nil {
+					pollTicker.Stop()
+					return fmt.Errorf("failed to send event: %v", err)
+				}
+
+				// update time tracker
+				if i == len(r)-1 {
+					timeTracker = ts
+				}
+			}
+
+		}
+	}
 }
 
 func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress.GetInstancesByWorkflowRequest) (*ingress.GetInstancesByWorkflowResponse, error) {

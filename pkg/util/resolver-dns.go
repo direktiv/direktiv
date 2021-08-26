@@ -31,7 +31,6 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	grpclbstate "google.golang.org/grpc/balancer/grpclb/state"
 	"google.golang.org/grpc/grpclog"
 
@@ -225,7 +224,7 @@ func (d *dnsResolver) watcher() {
 		timeout := 30
 		if d.addrsCount == 0 {
 			timeout = 5
-			log.Infof("%d servers, timeout %d, %v:%v", d.addrsCount, timeout, d.host, d.port)
+			appLog.Infof("%d servers, timeout %d, %v:%v", d.addrsCount, timeout, d.host, d.port)
 		}
 
 		if err == nil {

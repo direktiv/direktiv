@@ -11,7 +11,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/gorilla/mux"
 	"github.com/rung/go-safecast"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/util"
 )
@@ -23,7 +22,7 @@ func (h *Handler) namespaces(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.s.direktiv.GetNamespaces(ctx, &ingress.GetNamespacesRequest{})
 	if err != nil {
-		log.Errorf("error getting namespaces: %v", err)
+		logger.Errorf("error getting namespaces: %v", err)
 		ErrResponse(w, err)
 		return
 	}

@@ -25,3 +25,36 @@ message Condition {
 message FunctionsConfig {
 	optional int32 maxscale = 1;
 }
+
+message FunctionsInfo {
+	optional BaseInfo info = 1;
+	optional string status = 2;
+	repeated Condition conditions = 3;
+	optional string serviceName = 4;
+}
+
+message PodsInfo {
+	optional string name = 1;
+	optional string status = 2;
+	optional string serviceName = 3;
+	optional string serviceRevision = 4;
+}
+
+message Revision {
+	optional string name = 1;
+	optional string image = 2;
+	optional string cmd = 3;
+	optional int32 size = 4;
+	optional int32 minScale = 5;
+
+	optional int64 generation = 6;
+	optional int64 created = 7;
+
+	optional string status = 8;
+  	repeated Condition conditions = 9;
+
+	optional int64 traffic = 10;
+
+	int64 desiredReplicas = 11;
+	int64 actualReplicas = 12;
+}

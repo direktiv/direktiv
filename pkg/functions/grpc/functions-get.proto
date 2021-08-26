@@ -10,22 +10,6 @@ message GetFunctionRequest {
 	optional string ServiceName = 1;
 }
 
-message Revision {
-	optional string name = 1;
-	optional string image = 2;
-	optional string cmd = 3;
-	optional int32 size = 4;
-	optional int32 minScale = 5;
-
-	optional int64 generation = 6;
-	optional int64 created = 7;
-
-	optional string status = 8;
-  repeated Condition conditions = 9;
-
-	optional int64 traffic = 10;
-}
-
 message GetFunctionResponse {
 	optional string name = 1;
 	optional string namespace = 2;

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -58,7 +57,7 @@ func (sl *foreachStateLogic) LivingChildren(savedata []byte) []stateChild {
 	var logics []multiactionTuple
 	err = json.Unmarshal(savedata, &logics)
 	if err != nil {
-		log.Error(err)
+		appLog.Error(err)
 		return children
 	}
 

@@ -4,15 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
-	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -21,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/pkg/apis"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
@@ -51,10 +55,10 @@ const (
 
 // Available prefixes for different scopes
 const (
-	PrefixWorkflow  = "w"
-	PrefixNamespace = "ns"
-	PrefixGlobal    = "g"
-	PrefixService   = "s" // unused, only if a one item list is requested
+	PrefixWorkflow  = "workflow"
+	PrefixNamespace = "namespace"
+	PrefixGlobal    = "global"
+	PrefixService   = "service" // unused, only if a one item list is requested
 )
 
 const (
@@ -65,6 +69,10 @@ const (
 	invalidType   = iota
 )
 
+const (
+	watcherTimeout = 60 * time.Minute
+)
+
 var (
 	mtx sync.Mutex
 )
@@ -72,10 +80,10 @@ var (
 func (is *functionsServer) DeleteRevision(ctx context.Context,
 	in *igrpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("delete revision %v", in.GetRevision())
+	logger.Debugf("delete revision %v", in.GetRevision())
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return &empty, err
 	}
 
@@ -84,21 +92,21 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 	r, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Get(context.Background(),
 		in.GetRevision(), metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("error getting revision for %v: %v", in.GetRevision(), err)
+		logger.Errorf("error getting revision for %v: %v", in.GetRevision(), err)
 		return &empty, err
 	}
 
 	svcName := r.Labels["serving.knative.dev/configuration"]
 	resp, err := getKnativeFunction(svcName)
 	if err != nil {
-		log.Errorf("error getting svc for %v: %v", svcName, err)
+		logger.Errorf("error getting svc for %v: %v", svcName, err)
 		return &empty, err
 	}
 
 	for i := range resp.Revisions {
 		rr := resp.Revisions[i]
 		if rr.Name != nil && rr.GetName() == in.GetRevision() && rr.GetTraffic() > 0 {
-			log.Errorf("revisions with traffic can not be deleted")
+			logger.Errorf("revisions with traffic can not be deleted")
 			return &empty, fmt.Errorf("revision %s still has traffic assigned: %d%%",
 				in.GetRevision(), rr.GetTraffic())
 		}
@@ -107,7 +115,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 	err = cs.ServingV1().Revisions(functionsConfig.Namespace).
 		Delete(context.Background(), in.GetRevision(), metav1.DeleteOptions{})
 	if err != nil {
-		log.Errorf("error delete knative revision %s: %v", in.GetRevision(), err)
+		logger.Errorf("error delete knative revision %s: %v", in.GetRevision(), err)
 		return &empty, err
 	}
 
@@ -117,7 +125,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("deleting functions %v", in.GetAnnotations())
+	logger.Debugf("deleting functions %v", in.GetAnnotations())
 
 	err := deleteKnativeFunctionss(in.GetAnnotations())
 
@@ -127,7 +135,7 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 func (is *functionsServer) GetFunction(ctx context.Context,
 	in *igrpc.GetFunctionRequest) (*igrpc.GetFunctionResponse, error) {
 
-	log.Debugf("get function %v", in.GetServiceName())
+	logger.Debugf("get function %v", in.GetServiceName())
 
 	var resp *igrpc.GetFunctionResponse
 
@@ -139,13 +147,112 @@ func (is *functionsServer) GetFunction(ctx context.Context,
 
 }
 
+// ListPods returns pods based on label filter
+func (is *functionsServer) ListPods(ctx context.Context,
+	in *igrpc.ListPodsRequest) (*igrpc.ListPodsResponse, error) {
+
+	var resp igrpc.ListPodsResponse
+
+	logger.Debugf("list pods %v", in.GetAnnotations())
+
+	items, err := listPods(in.GetAnnotations())
+	if err != nil {
+		return &resp, err
+	}
+
+	resp.Pods = items
+	return &resp, nil
+}
+
+func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
+
+	if in.GetServiceName() == "" {
+		return fmt.Errorf("service name can not be nil")
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	l := map[string]string{
+		"serving.knative.dev/service": *in.ServiceName,
+	}
+
+	if in.GetRevisionName() != "" {
+		l["serving.knative.dev/revision"] = *in.RevisionName
+	}
+
+	labels := labels.Set(l).String()
+
+	for {
+		if done, err := is.watcherPods(cs, labels, out); err != nil {
+			logger.Errorf("pod watcher channel failed to restart: %s", err.Error())
+			return err
+		} else if done {
+			// connection has ended
+			return nil
+		}
+		logger.Debugf("pod watcher channel has closed, attempting to restart")
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, out igrpc.FunctionsService_WatchPodsServer) (bool, error) {
+	timeout := int64(watcherTimeout.Seconds())
+	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+		LabelSelector:  labels,
+		TimeoutSeconds: &timeout,
+	})
+	if err != nil {
+		return false, fmt.Errorf("could start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watch.ResultChan():
+			p, ok := event.Object.(*corev1.Pod)
+			if !ok {
+				return false, nil
+			}
+
+			svc := p.Labels["serving.knative.dev/service"]
+			srev := p.Labels["serving.knative.dev/revision"]
+
+			pod := igrpc.PodsInfo{
+				Name:            &p.Name,
+				Status:          (*string)(&p.Status.Phase),
+				ServiceName:     &svc,
+				ServiceRevision: &srev,
+			}
+
+			resp := igrpc.WatchPodsResponse{
+				Event: (*string)(&event.Type),
+				Pod:   &pod,
+			}
+
+			err = out.Send(&resp)
+			if err != nil {
+				return false, fmt.Errorf("failed to send event: %v", err)
+			}
+
+		case <-time.After(watcherTimeout):
+			return false, nil
+		case <-out.Context().Done():
+			logger.Debug("pod watcher server event connection closed")
+			watch.Stop()
+			return true, nil
+		}
+	}
+}
+
 // ListFunctionss returns isoaltes based on label filter
 func (is *functionsServer) ListFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*igrpc.ListFunctionsResponse, error) {
 
 	var resp igrpc.ListFunctionsResponse
 
-	log.Debugf("list functions %v", in.GetAnnotations())
+	logger.Debugf("list functions %v", in.GetAnnotations())
 
 	items, err := listKnativeFunctions(in.GetAnnotations())
 	if err != nil {
@@ -168,7 +275,7 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 func (is *functionsServer) CreateFunction(ctx context.Context,
 	in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
 
-	log.Infof("storing functions %s", in.GetInfo().GetName())
+	logger.Infof("storing functions %s", in.GetInfo().GetName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
@@ -177,7 +284,7 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 	// create ksvc service
 	err := createKnativeFunction(in.GetInfo())
 	if err != nil {
-		log.Errorf("can not create knative service: %v", err)
+		logger.Errorf("can not create knative service: %v", err)
 		return &empty, err
 	}
 
@@ -185,12 +292,294 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 
 }
 
+func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
+
+	annotations := in.GetAnnotations()
+
+	l := filterLabels(annotations)
+	if len(l) == 0 {
+		return fmt.Errorf("request labels are invalid")
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	labels := labels.Set(l).String()
+
+	for {
+		if done, err := is.watcherFunctions(cs, labels, out); err != nil {
+			logger.Errorf("function watcher channel failed to restart: %s", err.Error())
+			return err
+		} else if done {
+			// connection has ended
+			return nil
+		}
+		logger.Debugf("function watcher channel has closed, attempting to restart")
+		time.Sleep(5 * time.Second)
+	}
+
+}
+
+func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels string, out igrpc.FunctionsService_WatchFunctionsServer) (bool, error) {
+	timeout := int64(watcherTimeout.Seconds())
+	watch, err := cs.ServingV1().Services(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+		LabelSelector:  labels,
+		TimeoutSeconds: &timeout,
+	})
+	if err != nil {
+		return false, fmt.Errorf("could start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watch.ResultChan():
+			s, ok := event.Object.(*v1.Service)
+			if !ok {
+				return false, nil
+			}
+
+			status, conds := statusFromCondition(s.Status.Conditions)
+			resp := igrpc.WatchFunctionsResponse{
+				Event: (*string)(&event.Type),
+				Function: &igrpc.FunctionsInfo{
+					Info:        serviceBaseInfo(s),
+					Status:      &status,
+					Conditions:  conds,
+					ServiceName: &s.Name,
+				},
+			}
+
+			// traffic map
+			tm := make(map[string]*int64)
+			for i := range s.Status.Traffic {
+				tt := s.Status.Traffic[i]
+				// sometimes knative routes between the same revisions
+				// in this case we just add the percents
+				if p, ok := tm[tt.RevisionName]; ok {
+					newp := *p + *tt.Percent
+					tm[tt.RevisionName] = &newp
+				} else {
+					tm[tt.RevisionName] = tt.Percent
+
+				}
+			}
+
+			resp.Traffic = make([]*igrpc.Traffic, 0)
+			for r, p := range tm {
+				name := r
+				t := new(igrpc.Traffic)
+				t.RevisionName = &name
+				t.Traffic = p
+
+				// Get Generation
+				i, e := strconv.ParseInt(name[strings.LastIndex(name, "-")+1:], 10, 64)
+				if e != nil {
+					logger.Errorf("could get generation from revision name %v", e)
+				}
+				t.Generation = &i
+
+				resp.Traffic = append(resp.Traffic, t)
+			}
+
+			// Sort by Generation
+			sort.Slice(resp.Traffic[:], func(i, j int) bool {
+				return *resp.Traffic[i].Generation > *resp.Traffic[j].Generation
+			})
+
+			err = out.Send(&resp)
+			if err != nil {
+				return false, fmt.Errorf("failed to send event: %v", err)
+			}
+
+		case <-time.After(watcherTimeout):
+			return false, nil
+		case <-out.Context().Done():
+			logger.Debug("function watcher server event connection closed")
+			watch.Stop()
+			return true, nil
+		}
+	}
+}
+
+func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
+
+	var revisionFilter string
+
+	if in.GetServiceName() == "" {
+		return fmt.Errorf("service name can not be nil")
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	l := map[string]string{
+		"serving.knative.dev/service": *in.ServiceName,
+	}
+
+	if in.GetRevisionName() != "" {
+		revisionFilter = *in.RevisionName
+	}
+
+	labels := labels.Set(l).String()
+
+	for {
+		if done, err := is.watcherRevisions(cs, labels, revisionFilter, out); err != nil {
+			logger.Errorf("revision watcher channel failed to restart: %s", err.Error())
+			return err
+		} else if done {
+			// connection has ended
+			return nil
+		}
+		logger.Debugf("revision watcher channel has closed, attempting to restart")
+		time.Sleep(5 * time.Second)
+	}
+
+}
+
+func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.FunctionsService_WatchRevisionsServer) (bool, error) {
+	timeout := int64(watcherTimeout.Seconds())
+	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
+		LabelSelector:  labels,
+		TimeoutSeconds: &timeout,
+	})
+	if err != nil {
+		return false, fmt.Errorf("could start watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watch.ResultChan():
+			rev, ok := event.Object.(*v1.Revision)
+			if !ok {
+				return false, nil
+			} else if revisionFilter != "" && rev.Name != revisionFilter {
+				continue // skip
+			}
+
+			info := &igrpc.Revision{}
+
+			// size and scale
+			var sz, scale int32
+			var gen int64
+			fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
+			fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
+			fmt.Sscan(rev.Labels[generationHeader], &gen)
+
+			info.Size = &sz
+			info.MinScale = &scale
+			info.Generation = &gen
+
+			// set status
+			status, conds := statusFromCondition(rev.Status.Conditions)
+			info.Status = &status
+			info.Conditions = conds
+
+			img, cmd := containerFromList(rev.Spec.Containers)
+			info.Image = &img
+			info.Cmd = &cmd
+
+			// name
+			svn := rev.Name
+			info.Name = &svn
+
+			// replicas
+			info.ActualReplicas = int64(rev.Status.ActualReplicas)
+			info.DesiredReplicas = int64(rev.Status.DesiredReplicas)
+
+			// creation date
+			var t int64 = rev.CreationTimestamp.Unix()
+			info.Created = &t
+
+			resp := igrpc.WatchRevisionsResponse{
+				Event:    (*string)(&event.Type),
+				Revision: info,
+			}
+
+			err = out.Send(&resp)
+			if err != nil {
+				return false, fmt.Errorf("failed to send event: %v", err)
+			}
+
+		case <-time.After(watcherTimeout):
+			return false, nil
+		case <-out.Context().Done():
+			logger.Debug("revision watcher server event connection closed")
+			watch.Stop()
+			return true, nil
+		}
+	}
+}
+
+func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
+
+	if in.GetPodName() == "" {
+		return fmt.Errorf("pod name can not be nil")
+	}
+
+	cs, err := getClientSet()
+	if err != nil {
+		return fmt.Errorf("could not create fetch client: %v", err)
+	}
+
+	req := cs.CoreV1().Pods(functionsConfig.Namespace).GetLogs(*in.PodName, &corev1.PodLogOptions{
+		Container: "direktiv-container",
+		Follow:    true,
+	})
+
+	plogs, err := req.Stream(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not get logs: %v", err)
+	}
+	defer plogs.Close()
+
+	var done bool
+
+	// Make sure stream is closed if client disconnects
+	go func() {
+		<-out.Context().Done()
+		plogs.Close()
+		done = true
+	}()
+
+	for {
+		if done {
+			break
+		}
+		buf := make([]byte, 2000)
+		numBytes, err := plogs.Read(buf)
+		if numBytes == 0 {
+			continue
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		message := string(buf[:numBytes])
+		resp := igrpc.WatchLogsResponse{
+			Data: &message,
+		}
+
+		err = out.Send(&resp)
+		if err != nil {
+			return fmt.Errorf("log watcher failed to send event: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
 	in *igrpc.SetTrafficRequest) (*emptypb.Empty, error) {
 
 	err := trafficKnativeFunctions(in.GetName(), in.GetTraffic())
 	if err != nil {
-		log.Errorf("can not set traffic: %v", err)
+		logger.Errorf("can not set traffic: %v", err)
 		return &empty, err
 	}
 
@@ -203,7 +592,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 
 	err := deleteKnativeFunctions(in.GetServiceName())
 	if err != nil {
-		log.Errorf("can not delete knative service: %v", err)
+		logger.Errorf("can not delete knative service: %v", err)
 		return &empty, err
 	}
 
@@ -214,7 +603,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 func (is *functionsServer) UpdateFunction(ctx context.Context,
 	in *igrpc.UpdateFunctionRequest) (*emptypb.Empty, error) {
 
-	log.Infof("updating function %s", in.GetServiceName())
+	logger.Infof("updating function %s", in.GetServiceName())
 
 	if in.GetInfo() == nil {
 		return &empty, fmt.Errorf("info can not be nil")
@@ -224,7 +613,7 @@ func (is *functionsServer) UpdateFunction(ctx context.Context,
 	err := updateKnativeFunction(in.GetServiceName(),
 		in.GetInfo(), in.GetTrafficPercent())
 	if err != nil {
-		log.Errorf("can not update knative service: %v", err)
+		logger.Errorf("can not update knative service: %v", err)
 		return &empty, err
 	}
 
@@ -246,6 +635,28 @@ func containerFromList(containers []corev1.Container) (string, string) {
 	}
 
 	return img, cmd
+}
+
+func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
+
+	var sz, scale int32
+	fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
+	fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
+	n := s.Labels[ServiceHeaderName]
+	ns := s.Labels[ServiceHeaderNamespace]
+	wf := s.Labels[ServiceHeaderWorkflow]
+	img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
+
+	info := &igrpc.BaseInfo{}
+	info.Name = &n
+	info.Namespace = &ns
+	info.Workflow = &wf
+	info.Size = &sz
+	info.MinScale = &scale
+	info.Image = &img
+	info.Cmd = &cmd
+
+	return info
 }
 
 func filterLabels(annotations map[string]string) map[string]string {
@@ -275,7 +686,7 @@ func filterLabels(annotations map[string]string) map[string]string {
 		ok    bool
 	)
 	if scope, ok = annotations[ServiceHeaderScope]; !ok {
-		log.Errorf("scope not set for list")
+		logger.Errorf("scope not set for list")
 		return make(map[string]string)
 	}
 
@@ -291,6 +702,11 @@ func filterLabels(annotations map[string]string) map[string]string {
 		if scope != PrefixWorkflow {
 			t = invalidType
 		}
+	case 5:
+		t = namespaceType
+		if scope != PrefixNamespace {
+			t = invalidType
+		}
 	case 4:
 		t = namespaceType
 		if scope != PrefixNamespace {
@@ -303,10 +719,11 @@ func filterLabels(annotations map[string]string) map[string]string {
 		}
 	}
 
-	log.Debugf("request type: %v", setter)
+	logger.Debugf("request type: %v", setter)
 
-	if t == invalidType {
-		log.Errorf("wrong labels for search")
+	// Skip invalid check if only scope and name are given
+	if setter != 1 && t == invalidType {
+		logger.Errorf("wrong labels for search")
 		return make(map[string]string)
 	}
 
@@ -327,11 +744,11 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 		return b, fmt.Errorf("request labels are invalid")
 	}
 
-	log.Debugf("list annotations: %s", labels.Set(filtered).String())
+	logger.Debugf("list annotations: %s", labels.Set(filtered).String())
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return b, err
 	}
 
@@ -339,52 +756,71 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 	l, err := cs.ServingV1().Services(functionsConfig.Namespace).List(context.Background(), lo)
 
 	if err != nil {
-		log.Errorf("error getting functions list: %v", err)
+		logger.Errorf("error getting functions list: %v", err)
 		return b, err
 	}
 
-	log.Debugf("%d functions", len(l.Items))
+	logger.Debugf("%d functions", len(l.Items))
 
 	for i := range l.Items {
 
 		svc := l.Items[i]
-		n := svc.Labels[ServiceHeaderName]
-		ns := svc.Labels[ServiceHeaderNamespace]
-		wf := svc.Labels[ServiceHeaderWorkflow]
-
-		info := &igrpc.BaseInfo{}
-
-		info.Name = &n
-		info.Namespace = &ns
-		info.Workflow = &wf
-
-		var sz, scale int32
-		fmt.Sscan(svc.Annotations[ServiceHeaderSize], &sz)
-		fmt.Sscan(svc.Annotations[ServiceHeaderScale], &scale)
-
-		info.Size = &sz
-		info.MinScale = &scale
-
 		status, conds := statusFromCondition(svc.Status.Conditions)
 
-		img, cmd := containerFromList(svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
-		info.Image = &img
-		info.Cmd = &cmd
-
-		svn := svc.Name
-
 		ii := &igrpc.FunctionsInfo{
-			Info:        info,
-			ServiceName: &svn,
+			Info:        serviceBaseInfo(&svc),
+			ServiceName: &svc.Name,
 			Status:      &status,
 			Conditions:  conds,
 		}
 
 		b = append(b, ii)
-
 	}
 
-	log.Debugf("list done")
+	return b, nil
+}
+
+func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
+
+	var b []*igrpc.PodsInfo
+
+	filtered := filterLabels(annotations)
+	if len(filtered) == 0 {
+		return b, fmt.Errorf("request labels are invalid")
+	}
+
+	logger.Debugf("list annotations: %s", labels.Set(filtered).String())
+
+	cs, err := getClientSet()
+	if err != nil {
+		logger.Errorf("error getting clientset for knative: %v", err)
+		return b, err
+	}
+
+	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
+	l, err := cs.CoreV1().Pods(functionsConfig.Namespace).List(context.Background(), lo)
+
+	if err != nil {
+		logger.Errorf("error getting functions list: %v", err)
+		return b, err
+	}
+
+	for i := range l.Items {
+
+		pod := l.Items[i]
+		sn := pod.Labels["serving.knative.dev/service"]
+		sr := pod.Labels["serving.knative.dev/revision"]
+		ii := &igrpc.PodsInfo{
+			Name:            &pod.Name,
+			Status:          (*string)(&pod.Status.Phase),
+			ServiceName:     &sn,
+			ServiceRevision: &sr,
+		}
+
+		b = append(b, ii)
+	}
+
+	logger.Debugf("list done")
 
 	return b, nil
 }
@@ -479,6 +915,12 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 			Value: os.Getenv(util.DirektivDebug),
 		})
 	}
+
+	// disable tcp logging
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  util.DirektivFluentbitTCP,
+		Value: "true",
+	})
 
 	if withGrpc {
 
@@ -584,7 +1026,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	res, err := generateResourceLimits(size)
 	if err != nil {
-		log.Errorf("can not parse requests limits")
+		logger.Errorf("can not parse requests limits")
 		return []corev1.Container{}, err
 	}
 
@@ -667,7 +1109,7 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 func fetchServiceAPI() (*versioned.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Errorf("error getting api: %v", err)
+		logger.Errorf("error getting api: %v", err)
 		return nil, err
 	}
 	return versioned.NewForConfig(config)
@@ -675,8 +1117,6 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 
 // GenerateServiceName generates a knative name based on workflow details
 func GenerateServiceName(ns, wf, n string) (string, string, error) {
-
-	log.Debugf("service name: %s %s %s", ns, wf, n)
 
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
 	if err != nil {
@@ -739,14 +1179,14 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return resp, err
 	}
 
 	svc, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
 		name, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("error getting knative service: %v", err)
+		logger.Errorf("error getting knative service: %v", err)
 		return resp, err
 	}
 
@@ -776,7 +1216,7 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
 	if err != nil {
-		log.Errorf("error getting knative service: %v", err)
+		logger.Errorf("error getting knative service: %v", err)
 		return resp, err
 	}
 
@@ -806,6 +1246,10 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		// name
 		svn := rev.Name
 		info.Name = &svn
+
+		// replicas
+		info.ActualReplicas = int64(rev.Status.ActualReplicas)
+		info.DesiredReplicas = int64(rev.Status.DesiredReplicas)
 
 		// creation date
 		var t int64 = rev.CreationTimestamp.Unix()
@@ -851,11 +1295,11 @@ func deleteKnativeFunctionss(annotations map[string]string) error {
 		return fmt.Errorf("request labels are invalid")
 	}
 
-	log.Debugf("delete annotations: %s", labels.Set(filtered).String())
+	logger.Debugf("delete annotations: %s", labels.Set(filtered).String())
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
@@ -890,12 +1334,12 @@ func createVolumes() []corev1.Volume {
 
 func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) error {
 
-	log.Debugf("update knative function %s", svn)
+	logger.Debugf("update knative function %s", svn)
 
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
 	if err != nil {
-		log.Errorf("can not update service: %v", err)
+		logger.Errorf("can not update service: %v", err)
 		return err
 	}
 
@@ -912,7 +1356,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	// adjust traffic for new revision
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
@@ -921,7 +1365,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	s, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
 		svn, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("error getting knative service: %v", err)
+		logger.Errorf("error getting knative service: %v", err)
 		return err
 	}
 
@@ -940,7 +1384,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 				(100.0 - float64(percent)) / 100.0)
 			if newPercent != 0 {
 				p := int64(newPercent)
-				log.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')",
+				logger.Debugf("setting existing traffic percent for '%s' to '%d' (was '%d')",
 					trafficInfo.RevisionName, p, *trafficInfo.Percent)
 				tr = append(tr, v1.TrafficTarget{
 					RevisionName: trafficInfo.RevisionName,
@@ -973,11 +1417,11 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 
 	b, err := json.MarshalIndent(svc, "", "    ")
 	if err != nil {
-		log.Errorf("error marshalling new services: %v", err)
+		logger.Errorf("error marshalling new services: %v", err)
 		return nil
 	}
 
-	log.Debugf("patching service %s", svn)
+	logger.Debugf("patching service %s", svn)
 
 	// lock for updates and deletes
 	l, err := kubeLock(svn, false)
@@ -990,7 +1434,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {
-		log.Errorf("can not patch service %s: %v", svn, err)
+		logger.Errorf("can not patch service %s: %v", svn, err)
 		return err
 	}
 
@@ -998,7 +1442,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", svn)})
 	if err != nil {
-		log.Errorf("error getting old revisions: %v", err)
+		logger.Errorf("error getting old revisions: %v", err)
 		return err
 	}
 
@@ -1009,14 +1453,14 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) erro
 		return gen1 < gen2
 	})
 
-	log.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - functionsConfig.KeepRevisions))
+	logger.Debugf("removing old revisions for %s (%d)", svn, (len(rs.Items) - functionsConfig.KeepRevisions))
 
 	// delete old revisions
 	for i := 0; i < (len(rs.Items) - functionsConfig.KeepRevisions); i++ {
-		log.Debugf("deleting %v", rs.Items[i].Name)
+		logger.Debugf("deleting %v", rs.Items[i].Name)
 		err := cs.ServingV1().Revisions(functionsConfig.Namespace).Delete(context.Background(), rs.Items[i].Name, metav1.DeleteOptions{})
 		if err != nil {
-			log.Errorf("error deleting old revisions: %v", err)
+			logger.Errorf("error deleting old revisions: %v", err)
 		}
 	}
 
@@ -1028,7 +1472,7 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 
 	secrets := listRegistriesNames(namespace)
 	for _, s := range secrets {
-		log.Debugf("adding pull secret: %v", s)
+		logger.Debugf("adding pull secret: %v", s)
 		lo = append(lo, corev1.LocalObjectReference{
 			Name: s,
 		})
@@ -1047,7 +1491,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	name, scope, err := GenerateServiceName(info.GetNamespace(),
 		info.GetWorkflow(), info.GetName())
 	if err != nil {
-		log.Errorf("can not create service name: %v", err)
+		logger.Errorf("can not create service name: %v", err)
 		return err
 	}
 
@@ -1057,9 +1501,9 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	}
 	defer kubeUnlock(l)
 
-	log.Debugf("creating knative service %s", name)
+	logger.Debugf("creating knative service %s", name)
 
-	log.Debugf("functions namespace %s", functionsConfig.Namespace)
+	logger.Debugf("functions namespace %s", functionsConfig.Namespace)
 
 	// check if min scale is not beyond max
 	min := int(info.GetMinScale())
@@ -1076,7 +1520,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()))
 	if err != nil {
-		log.Errorf("can not make containers: %v", err)
+		logger.Errorf("can not make containers: %v", err)
 		return err
 	}
 
@@ -1110,19 +1554,19 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 	}
 
 	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
-		log.Debugf("setting runtime class %v", functionsConfig.Runtime)
+		logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
 		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &functionsConfig.Runtime
 	}
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
 	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Create(context.Background(), &svc, metav1.CreateOptions{})
 	if err != nil {
-		log.Errorf("error creating knative service: %v", err)
+		logger.Errorf("error creating knative service: %v", err)
 		return err
 	}
 
@@ -1133,7 +1577,7 @@ func deleteKnativeFunctions(name string) error {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
@@ -1144,7 +1588,7 @@ func deleteKnativeFunctions(name string) error {
 
 func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
-	log.Debugf("setting traffic for %s", name)
+	logger.Debugf("setting traffic for %s", name)
 
 	if len(tv) == 0 {
 		return fmt.Errorf("no traffic defined")
@@ -1152,13 +1596,13 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
-		log.Errorf("error getting clientset for knative: %v", err)
+		logger.Errorf("error getting clientset for knative: %v", err)
 		return err
 	}
 
 	r, err := getKnativeFunction(name)
 	if err != nil {
-		log.Errorf("error getting service: %v", err)
+		logger.Errorf("error getting service: %v", err)
 		return err
 	}
 
@@ -1179,7 +1623,7 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 		return false
 	}
 
-	log.Debugf("latest revision name: %s", latestRevision)
+	logger.Debugf("latest revision name: %s", latestRevision)
 
 	tr := []v1.TrafficTarget{}
 	for i := range tv {
@@ -1190,7 +1634,7 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 		isLatest := latestRevision == tv[i].GetRevision()
 
-		log.Debugf("check revision: %s, %v", tv[i].GetRevision(), isLatest)
+		logger.Debugf("check revision: %s, %v", tv[i].GetRevision(), isLatest)
 
 		if tv[i].GetPercent() > 0 {
 			tt := v1.TrafficTarget{
@@ -1198,7 +1642,7 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 				Percent:        tv[i].Percent,
 			}
 
-			log.Debugf("setting traffic %v: %v",
+			logger.Debugf("setting traffic %v: %v",
 				tv[i].GetRevision(), tv[i].GetPercent())
 
 			if !isLatest {
@@ -1214,14 +1658,14 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) error {
 
 	b, err := json.MarshalIndent(nr, "", "    ")
 	if err != nil {
-		log.Errorf("error marshalling new services: %v", err)
+		logger.Errorf("error marshalling new services: %v", err)
 	}
 
 	_, err = cs.ServingV1().Services(functionsConfig.Namespace).Patch(context.Background(),
 		name, types.MergePatchType, b, metav1.PatchOptions{})
 
 	if err != nil {
-		log.Errorf("error setting traffic: %v", err)
+		logger.Errorf("error setting traffic: %v", err)
 	}
 
 	return err

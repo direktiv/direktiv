@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	hash "github.com/mitchellh/hashstructure/v2"
-	log "github.com/sirupsen/logrus"
 )
 
 // FlowSync is the name of postgres pubsub channel
@@ -39,7 +38,7 @@ func SyncSubscribeTo(dbConnString string, topic int,
 
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 	}
 
@@ -61,7 +60,7 @@ func SyncSubscribeTo(dbConnString string, topic int,
 
 			notification, more := <-l.Notify
 			if !more {
-				log.Info("Database listener closed.")
+				appLog.Info("Database listener closed.")
 				return
 			}
 
@@ -72,7 +71,7 @@ func SyncSubscribeTo(dbConnString string, topic int,
 			req := new(SyncRequest)
 			err = json.Unmarshal([]byte(notification.Extra), req)
 			if err != nil {
-				log.Errorf("Unexpected notification on database listener: %v", err)
+				appLog.Errorf("Unexpected notification on database listener: %v", err)
 				continue
 			}
 
@@ -93,7 +92,7 @@ func syncAPIWait(dbConnString string, channel string, w chan bool) error {
 
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 	}
 
@@ -115,7 +114,7 @@ func syncAPIWait(dbConnString string, channel string, w chan bool) error {
 
 		notification, more := <-listener.Notify
 		if !more {
-			log.Errorf("database listener closed")
+			appLog.Errorf("database listener closed")
 			return fmt.Errorf("database listener closed")
 		}
 
@@ -137,7 +136,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			log.Error(err)
+			appLog.Error(err)
 		}
 	}
 
@@ -165,7 +164,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 
 			notification, more := <-l.Notify
 			if !more {
-				log.Info("Database listener closed.")
+				appLog.Info("Database listener closed.")
 				return
 			}
 
@@ -177,13 +176,13 @@ func (s *WorkflowServer) startDatabaseListener() error {
 				req := new(SyncRequest)
 				err = json.Unmarshal([]byte(notification.Extra), req)
 				if err != nil {
-					log.Errorf("Unexpected notification on database listener: %v", err)
+					appLog.Errorf("Unexpected notification on database listener: %v", err)
 					continue
 				}
 
 				// only handle if not send by this server
 				if s.id != req.Sender {
-					log.Debugf("sync received: %v", req)
+					appLog.Debugf("sync received: %v", req)
 
 					switch req.Cmd {
 					case CancelSubflow:
@@ -219,7 +218,7 @@ func (s *WorkflowServer) startDatabaseListener() error {
 							}
 							err = s.tmManager.addCronNoBroadcast(name, fn, pattern, data)
 							if err != nil {
-								log.Error(err)
+								appLog.Error(err)
 							}
 						}
 					}
@@ -229,20 +228,20 @@ func (s *WorkflowServer) startDatabaseListener() error {
 				m := make(map[string]interface{})
 				err = json.Unmarshal([]byte(notification.Extra), &m)
 				if err != nil {
-					log.Errorf("Unexpected notification on database listener: %v", err)
+					appLog.Errorf("Unexpected notification on database listener: %v", err)
 					continue
 				}
 
 				timerId, _ := m["timerId"]
 				str, _ := timerId.(string)
 				if str == "" {
-					log.Errorf("Unexpected notification on database listener: %v", m)
+					appLog.Errorf("Unexpected notification on database listener: %v", m)
 					continue
 				}
 
 				err = s.tmManager.deleteTimerByName(s.hostname, s.hostname, str)
 				if err != nil {
-					log.Error(err)
+					appLog.Error(err)
 					continue
 				}
 			}
@@ -280,7 +279,7 @@ func syncServer(ctx context.Context, db *dbManager, sid *uuid.UUID, id interface
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", FlowSync, string(b))
 	if err, ok := err.(*pq.Error); ok {
 
-		log.Debugf("db notification failed: %v", err)
+		appLog.Debugf("db notification failed: %v", err)
 		if err.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -311,7 +310,7 @@ func publishToHostname(db *dbManager, hostname string, req interface{}) error {
 	_, err = conn.ExecContext(db.ctx, "SELECT pg_notify($1, $2)", channel, string(b))
 	if err, ok := err.(*pq.Error); ok {
 
-		log.Debugf("db notification failed: %v", err)
+		appLog.Debugf("db notification failed: %v", err)
 		if err.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -338,7 +337,7 @@ func publishToAPI(db *dbManager, id string) error {
 	_, err = conn.ExecContext(db.ctx, "SELECT pg_notify($1, $2)", channel, id)
 	if err, ok := err.(*pq.Error); ok {
 
-		log.Debugf("db notification failed: %v", err)
+		appLog.Debugf("db notification failed: %v", err)
 		if err.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}

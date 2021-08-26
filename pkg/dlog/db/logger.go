@@ -12,7 +12,8 @@ import (
 )
 
 type Logger struct {
-	db *sql.DB
+	db            *sql.DB
+	brokerManager *dlog.BrokerManager
 }
 
 func (l *Logger) Connect(database string) error {
@@ -42,7 +43,25 @@ func (l *Logger) CloseConnection() error {
 func NewLogger(database string) (*Logger, error) {
 	l := new(Logger)
 	err := l.Connect(database)
+	l.brokerManager = dlog.NewBrokerManager()
 	return l, err
+}
+
+func (l *Logger) StreamLogs(ctx context.Context, instance string) (chan interface{}, error) {
+	broker, ok := l.brokerManager.GetBroker(instance)
+	if !ok {
+		return nil, fmt.Errorf("instance '%s' not found", instance)
+	}
+
+	ch := broker.Subscribe()
+
+	// Unsubscribe when context is done
+	go func(ch chan interface{}) {
+		<-ctx.Done()
+		broker.Unsubscribe(ch)
+	}(ch)
+
+	return ch, nil
 }
 
 type dbLogger struct {
@@ -82,6 +101,7 @@ func (l *Logger) LoggerFunc(namespace, instance string) (dlog.Logger, error) {
 		Namespace:                   namespace,
 		InstanceID:                  instance,
 		InsertFrequencyMilliSeconds: 250,
+		BrokerManager:               l.brokerManager,
 	})
 	if err != nil {
 		return nil, err
@@ -187,6 +207,9 @@ func (l *Logger) DeleteInstanceLogs(instance string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!@!@ DELETING INSTANCE ID instance = %s \n ", instance)
+	l.brokerManager.DeleteBroker(instance)
 
 	return tx.Commit()
 }

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	shellwords "github.com/mattn/go-shellwords"
-	log "github.com/sirupsen/logrus"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -37,7 +36,7 @@ func runPodRequestLimiter() {
 	// this just restarts them after 5 secs
 	for {
 		if err := runRequestLimiterLoop(); err != nil {
-			log.Errorf("error running rate limiter loop: %v", err)
+			logger.Errorf("error running rate limiter loop: %v", err)
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -59,7 +58,7 @@ func runRequestLimiterLoop() error {
 
 	clientset, err := getClientSet()
 	if err != nil {
-		log.Errorf("could not get client set: %v", err)
+		logger.Errorf("could not get client set: %v", err)
 		return err
 	}
 
@@ -69,7 +68,7 @@ func runRequestLimiterLoop() error {
 		metav1.ListOptions{LabelSelector: "direktiv.io/job=true"},
 	)
 	if err != nil {
-		log.Errorf("can not create job watcher: %v", err)
+		logger.Errorf("can not create job watcher: %v", err)
 		return err
 	}
 
@@ -77,7 +76,7 @@ func runRequestLimiterLoop() error {
 		select {
 		case event := <-watch.ResultChan():
 
-			log.Debugf("job update")
+			logger.Debugf("job update")
 			j, ok := event.Object.(*batchv1.Job)
 
 			if !ok {
@@ -93,27 +92,27 @@ func runRequestLimiterLoop() error {
 				}
 				if event.Type == watchv1.Deleted {
 					namespaceCounter[ns]--
-					log.Debugf("job counter for ns %s: %d", ns, namespaceCounter[ns])
+					logger.Debugf("job counter for ns %s: %d", ns, namespaceCounter[ns])
 					if namespaceCounter[ns] <= 0 {
 						delete(namespaceCounter, ns)
 					}
 				} else if event.Type == watchv1.Added { // empty string is ADDED
 					namespaceCounter[ns]++
-					log.Debugf("job counter for ns %s: %d", ns, namespaceCounter[ns])
+					logger.Debugf("job counter for ns %s: %d", ns, namespaceCounter[ns])
 				}
 			}
 
 			mtx.Unlock()
-			log.Debugf("job update done")
+			logger.Debugf("job update done")
 
 		case <-time.After(60 * time.Second):
 
 			if functionsConfig.PodCleaner {
 
-				log.Debugf("run pod cleaner")
+				logger.Debugf("run pod cleaner")
 				lock, err := kubeLock("podclean", true)
 				if err != nil {
-					log.Debugf("can not get pod cleaner lock: %v", err)
+					logger.Debugf("can not get pod cleaner lock: %v", err)
 					continue
 				}
 
@@ -121,7 +120,7 @@ func runRequestLimiterLoop() error {
 					metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
 				if err != nil {
 					kubeUnlock(lock)
-					log.Errorf("can not list jobs: %v", err)
+					logger.Errorf("can not list jobs: %v", err)
 					continue
 				}
 
@@ -132,10 +131,10 @@ func runRequestLimiterLoop() error {
 
 					// if nothing is runing and at least one succeeded or failed
 					if j.Status.Active == 0 && (j.Status.Succeeded > 0 || j.Status.Failed > 0) {
-						log.Debugf("deleting job %v", j.ObjectMeta.Name)
+						logger.Debugf("deleting job %v", j.ObjectMeta.Name)
 						err = jobs.Delete(context.Background(), j.ObjectMeta.Name, opts)
 						if err != nil {
-							log.Errorf("could not delete job: %v", err)
+							logger.Errorf("could not delete job: %v", err)
 						}
 					}
 				}
@@ -150,11 +149,11 @@ func runRequestLimiterLoop() error {
 
 func createUserContainer(size int, image, cmd string) (v1.Container, error) {
 
-	log.Debugf("create user container")
+	logger.Debugf("create user container")
 
 	res, err := generateResourceLimits(size)
 	if err != nil {
-		log.Errorf("can not parse requests limits")
+		logger.Errorf("can not parse requests limits")
 		return v1.Container{}, err
 	}
 
@@ -205,6 +204,14 @@ func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 			Name:  util.DirektivNamespace,
 			Value: ns,
 		},
+		{
+			Name:  util.DirektivNamespace,
+			Value: ns,
+		},
+		{
+			Name:  util.DirektivFluentbitTCP,
+			Value: "true",
+		},
 	}
 
 	return append(e, add...)
@@ -214,11 +221,11 @@ func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 func (is *functionsServer) CancelFunctionsPod(ctx context.Context,
 	in *igrpc.CancelPodRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("cancel pod %v", in.GetActionID())
+	logger.Debugf("cancel pod %v", in.GetActionID())
 
 	clientset, err := getClientSet()
 	if err != nil {
-		log.Errorf("could not get client set: %v", err)
+		logger.Errorf("could not get client set: %v", err)
 		return &empty, err
 	}
 
@@ -235,7 +242,7 @@ func (is *functionsServer) CancelFunctionsPod(ctx context.Context,
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("direktiv.io/action-id=%s", in.GetActionID())})
 
 	if err != nil {
-		log.Errorf("can not delete job %s: %v", in.GetActionID(), err)
+		logger.Errorf("can not delete job %s: %v", in.GetActionID(), err)
 	}
 
 	return &empty, err
@@ -245,7 +252,7 @@ func (is *functionsServer) CancelFunctionsPod(ctx context.Context,
 func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	in *igrpc.CreatePodRequest) (*igrpc.CreatePodResponse, error) {
 
-	log.Debugf("creating pod %v", in.GetInfo().GetName())
+	logger.Debugf("creating pod %v", in.GetInfo().GetName())
 
 	var resp igrpc.CreatePodResponse
 
@@ -267,7 +274,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 
 	clientset, err := getClientSet()
 	if err != nil {
-		log.Errorf("could not get client set: %v", err)
+		logger.Errorf("could not get client set: %v", err)
 		return &resp, err
 	}
 
@@ -276,7 +283,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	userContainer, err := createUserContainer(int(info.GetSize()),
 		info.GetImage(), info.GetCmd())
 	if err != nil {
-		log.Errorf("can not create user container: %v", err)
+		logger.Errorf("can not create user container: %v", err)
 		return &resp, err
 	}
 
@@ -413,13 +420,13 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	}
 
 	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
-		log.Debugf("setting runtime class %v", functionsConfig.Runtime)
+		logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
 		jobSpec.Spec.Template.Spec.RuntimeClassName = &functionsConfig.Runtime
 	}
 
 	j, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
 	if err != nil {
-		log.Errorf("failed to create job: %v", err)
+		logger.Errorf("failed to create job: %v", err)
 		return &resp, err
 	}
 
@@ -427,7 +434,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("job-name=%s", j.ObjectMeta.Name)},
 	)
 	if err != nil {
-		log.Errorf("can not watch job pod: %v", err)
+		logger.Errorf("can not watch job pod: %v", err)
 		// whatever happend, we try to delet the pod
 		jobs.Delete(context.TODO(), j.ObjectMeta.Name, metav1.DeleteOptions{})
 		return &resp, err
@@ -456,7 +463,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 				// 172-17-0-3.default.pod.cluster.local
 
 				if len(pip) > 0 {
-					log.Debugf("ip for pod %s, hostname %s", pip, hostname)
+					logger.Debugf("ip for pod %s, hostname %s", pip, hostname)
 					return pip, hostname, nil
 				}
 
@@ -475,7 +482,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 
 	ip, hostname, err := waitFn(j.ObjectMeta.Name)
 	if err != nil {
-		log.Errorf("timeout for job pod creation %s", j.ObjectMeta.Name)
+		logger.Errorf("timeout for job pod creation %s", j.ObjectMeta.Name)
 		return &resp, err
 	}
 

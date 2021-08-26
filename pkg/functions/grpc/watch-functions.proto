@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+
+import "pkg/functions/grpc/functions-common.proto";
+
+message Traffic {
+	optional string revisionName = 1;
+	optional int64 traffic = 2;
+	optional int64 generation = 3;
+}
+
+
+message WatchFunctionsRequest {
+	map<string, string> annotations = 1;
+}
+
+message WatchFunctionsResponse {
+	optional string event = 1;
+	optional FunctionsInfo function = 2;
+	repeated Traffic traffic = 3;
+}

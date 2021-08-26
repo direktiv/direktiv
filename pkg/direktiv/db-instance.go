@@ -12,8 +12,6 @@ import (
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (db *dbManager) deleteWorkflowInstance(id int) error {
@@ -29,14 +27,14 @@ func (db *dbManager) deleteWorkflowInstance(id int) error {
 	if db.tm != nil {
 		err := db.tm.deleteTimersForInstance(wfi.InstanceID)
 		if err != nil {
-			log.Errorf("can not delete timers for instance %s", wfi.InstanceID)
+			appLog.Errorf("can not delete timers for instance %s", wfi.InstanceID)
 		}
 	}
 
 	// delete all events attached to this instance
 	err = db.deleteWorkflowEventListenerByInstanceID(id)
 	if err != nil && !ent.IsNotFound(err) {
-		log.Errorf("can not delete event listeners for instance: %v", err)
+		appLog.Errorf("can not delete event listeners for instance: %v", err)
 	}
 
 	err = db.dbEnt.WorkflowInstance.DeleteOneID(id).Exec(db.ctx)
@@ -62,7 +60,7 @@ func (db *dbManager) deleteWorkflowInstancesByWorkflow(ctx context.Context, wf u
 	for _, i := range instances {
 		err := db.deleteWorkflowInstance(i.ID)
 		if err != nil {
-			log.Errorf("can not delete workflow instance %s", i.InstanceID)
+			appLog.Errorf("can not delete workflow instance %s", i.InstanceID)
 		}
 	}
 

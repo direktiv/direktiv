@@ -9,9 +9,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -58,11 +58,8 @@ func (fs *flowServer) ActionLog(ctx context.Context, in *flow.ActionLogRequest) 
 		return nil, err
 	}
 
-	logger, err := (*fs.engine.instanceLogger).LoggerFunc(wi.Edges.Workflow.Edges.Namespace.ID, in.GetInstanceId())
-	if err != nil {
-		return nil, err
-	}
-	defer logger.Close()
+	logger := fnLog.Desugar().With(zap.String("namespace", wi.Edges.Workflow.Edges.Namespace.ID),
+		zap.String("instance", in.GetInstanceId()))
 
 	msgs := in.GetMsg()
 
@@ -76,7 +73,7 @@ func (fs *flowServer) ActionLog(ctx context.Context, in *flow.ActionLogRequest) 
 
 func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportActionResultsRequest) (*emptypb.Empty, error) {
 
-	log.Debugf("action response: %v", in.GetActionId())
+	appLog.Debugf("action response: %v", in.GetActionId())
 
 	var resp emptypb.Empty
 
@@ -94,7 +91,7 @@ func (fs *flowServer) ReportActionResults(ctx context.Context, in *flow.ReportAc
 	if err != nil {
 		wli.Close()
 		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
-		log.Error(err)
+		appLog.Error(err)
 		return nil, err
 	}
 
