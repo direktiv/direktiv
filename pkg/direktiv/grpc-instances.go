@@ -2,6 +2,7 @@ package direktiv
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -101,40 +102,59 @@ func (is *ingressServer) GetWorkflowInstanceLogs(ctx context.Context, in *ingres
 }
 
 func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInstanceLogsRequest, out ingress.DirektivIngress_WatchWorkflowInstanceLogsServer) error {
-	return nil
-	// ctx, done := context.WithCancel(context.Background())
-	// defer done()
-	// logChannel, err := is.wfServer.instanceLogger.StreamLogs(ctx, in.GetInstanceId())
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// for {
-	// 	select {
-	// 	case <-out.Context().Done():
-	// 		logger.Debug("watcher server event connection closed")
-	// 		return nil
-	// 	case event := log.<-logChannel:
-	//
-	// 		l, ok := event.(dlog.LogEntry)
-	// 		if !ok {
-	// 			logger.Error("EVENT IS NOT A LOG ENTRY")
-	// 			return fmt.Errorf("got event error")
-	// 		}
-	//
-	// 		resp := ingress.WatchWorkflowInstanceLogsResponse{
-	// 			Level:     &l.Level,
-	// 			Timestamp: timestamppb.New(time.Unix(0, l.Timestamp)),
-	// 			Context:   l.Context,
-	// 			Message:   &l.Message,
-	// 		}
-	//
-	// 		err = out.Send(&resp)
-	// 		if err != nil {
-	// 			return fmt.Errorf("failed to send event: %v", err)
-	// 		}
-	// 	}
-	// }
+	instance := in.GetInstanceId()
+	timeTracker := float64(0)
+
+	pollTicker := time.NewTicker(250 * time.Millisecond)
+	defer pollTicker.Stop()
+
+	for {
+		select {
+		case <-out.Context().Done():
+			pollTicker.Stop()
+			return nil
+		case <-pollTicker.C:
+
+			lc := is.wfServer.components[util.LogComponent].(*logClient)
+			r, err := lc.logsForInstanceAfterTime(instance, timeTracker)
+			if err != nil {
+				return grpcDatabaseError(err, "instance", instance)
+			}
+
+			for i := range r {
+				infoMap := r[i]
+
+				// get msg
+				msg := infoMap["msg"].(string)
+
+				// get sec
+				ts := infoMap["ts"].(float64)
+
+				secs := int64(ts)
+				nsecs := int64((ts - float64(secs)) * 1e9)
+				tt := time.Unix(secs, nsecs)
+
+				resp := ingress.WatchWorkflowInstanceLogsResponse{
+					// Level:    ,
+					Timestamp: timestamppb.New(tt.UTC()),
+					// Context:   l.Context,
+					Message: &msg,
+				}
+
+				err = out.Send(&resp)
+				if err != nil {
+					pollTicker.Stop()
+					return fmt.Errorf("failed to send event: %v", err)
+				}
+
+				// update time tracker
+				if i == len(r)-1 {
+					timeTracker = ts
+				}
+			}
+
+		}
+	}
 }
 
 func (is *ingressServer) GetInstancesByWorkflow(ctx context.Context, in *ingress.GetInstancesByWorkflowRequest) (*ingress.GetInstancesByWorkflowResponse, error) {

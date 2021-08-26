@@ -77,6 +77,20 @@ func (lc *logClient) logsForInstance(id string, offset, limit int32) ([]map[stri
 
 }
 
+func (lc *logClient) logsForInstanceAfterTime(id string, time float64) ([]map[string]interface{}, error) {
+
+	rows, err := lc.db.Query(`SELECT data FROM fluentbit WHERE
+	data->> 'instance' = $1 AND data->> 'ts' > $2 ORDER BY time;`,
+		id, time)
+	if err != nil {
+		appLog.Errorf("error querying namespace logs: %v", err)
+		return nil, err
+	}
+
+	return runLogQuery(rows)
+
+}
+
 func (lc *logClient) logsForNamespace(ns string, offset, limit int32) ([]map[string]interface{}, error) {
 
 	rows, err := lc.db.Query(`SELECT data FROM fluentbit WHERE data->>'namespace' = $1
