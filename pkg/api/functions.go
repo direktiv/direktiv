@@ -42,18 +42,11 @@ type functionResponseObject struct {
 	Conditions  []*grpc.Condition `json:"conditions"`
 }
 
-const (
-	functionsServiceNameAnnotation      = "direktiv.io/name"
-	functionsServiceNamespaceAnnotation = "direktiv.io/namespace"
-	functionsServiceWorkflowAnnotation  = "direktiv.io/workflow"
-	functionsServiceScopeAnnotation     = "direktiv.io/scope"
-)
-
 var functionsQueryLabelMapping = map[string]string{
-	"scope":     functionsServiceScopeAnnotation,
-	"name":      functionsServiceNameAnnotation,
-	"namespace": functionsServiceNamespaceAnnotation,
-	"workflow":  functionsServiceWorkflowAnnotation,
+	"scope":     functions.ServiceHeaderScope,
+	"name":      functions.ServiceHeaderName,
+	"namespace": functions.ServiceHeaderNamespace,
+	"workflow":  functions.ServiceHeaderWorkflow,
 }
 
 func accepted(w http.ResponseWriter) {
@@ -77,10 +70,10 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 	if err != nil && err != io.EOF {
 		return nil, err
 	} else if err == nil {
-		annotations[functionsServiceNameAnnotation] = rb.Name
-		annotations[functionsServiceNamespaceAnnotation] = rb.Namespace
-		annotations[functionsServiceWorkflowAnnotation] = rb.Workflow
-		annotations[functionsServiceScopeAnnotation] = rb.Scope
+		annotations[functions.ServiceHeaderName] = rb.Name
+		annotations[functions.ServiceHeaderNamespace] = rb.Namespace
+		annotations[functions.ServiceHeaderWorkflow] = rb.Workflow
+		annotations[functions.ServiceHeaderScope] = rb.Scope
 	}
 
 	// Split serviceName
@@ -92,58 +85,50 @@ func getFunctionAnnotations(r *http.Request) (map[string]string, error) {
 				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
 			}
 
-			// grpcReq.Annotations[functions.ServiceHeaderName] = rb.Name
-			// grpcReq.Annotations[functions.ServiceHeaderNamespace] = rb.Namespace
-			// grpcReq.Annotations[functions.ServiceHeaderWorkflow] = rb.Workflow
-			// grpcReq.Annotations[functions.ServiceHeaderScope] = rb.Scope
-
-			// 	firstInd := strings.Index(svc, "-")
-			// 	lastInd := strings.LastIndex(svc, "-")
-			// 	annotations[functionsServiceNamespaceAnnotation] = svc[firstInd+1 : lastInd]
-			// 	annotations[functionsServiceNameAnnotation] = svc[lastInd+1:]
-			// 	annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
-			// } else {
-			// 	if strings.Count(svc, "-") < 1 {
-			// 		return nil, fmt.Errorf("service name is incorrect format, does not include scope")
-			// 	}
+			annotations[functions.ServiceHeaderName] = rb.Name
+			annotations[functions.ServiceHeaderNamespace] = rb.Namespace
+			annotations[functions.ServiceHeaderWorkflow] = rb.Workflow
+			annotations[functions.ServiceHeaderScope] = rb.Scope
 
 			firstInd := strings.Index(svc, "-")
-			annotations[functionsServiceNameAnnotation] = svc[firstInd+1:]
-			annotations[functionsServiceScopeAnnotation] = svc[:firstInd]
+			lastInd := strings.LastIndex(svc, "-")
+			annotations[functions.ServiceHeaderNamespace] = svc[firstInd+1 : lastInd]
+			annotations[functions.ServiceHeaderName] = svc[lastInd+1:]
+			annotations[functions.ServiceHeaderScope] = svc[:firstInd]
+		} else {
+			if strings.Count(svc, "-") < 1 {
+				return nil, fmt.Errorf("service name is incorrect format, does not include scope")
+			}
+
+			firstInd := strings.Index(svc, "-")
+			annotations[functions.ServiceHeaderName] = svc[firstInd+1:]
+			annotations[functions.ServiceHeaderScope] = svc[:firstInd]
 		}
 	}
 
 	// Handle if this was reached via the workflow route
 	wf := mux.Vars(r)["workflowTarget"]
 	if wf != "" {
-		if annotations[functionsServiceScopeAnnotation] != "" && annotations[functionsServiceScopeAnnotation] != functions.PrefixWorkflow {
+		if annotations[functions.ServiceHeaderScope] != "" && annotations[functions.ServiceHeaderScope] != functions.PrefixWorkflow {
 			return nil, fmt.Errorf("this route is for workflow-scoped requests")
 		}
 
-		annotations[functionsServiceWorkflowAnnotation] = wf
-		annotations[functionsServiceScopeAnnotation] = functions.PrefixWorkflow
+		annotations[functions.ServiceHeaderWorkflow] = wf
+		annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
 	}
 
 	// Handle if this was reached via the namespaced route
 	ns := mux.Vars(r)["namespace"]
 	if ns != "" {
-		// <<<<<<< HEAD
-		// if grpcReq.Annotations[functions.ServiceHeaderScope] == functions.PrefixGlobal {
-		// 	return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
-		// }
-		//
-		// grpcReq.Annotations[functions.ServiceHeaderNamespace] = ns
-		// =======
-		// 		if annotations[functionsServiceScopeAnnotation] == functions.PrefixGlobal {
-		// 			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
-		// 		}
-		//
-		// 		annotations[functionsServiceNamespaceAnnotation] = ns
-		//
-		// 		if annotations[functionsServiceScopeAnnotation] == "" {
-		// 			annotations[functionsServiceScopeAnnotation] = functions.PrefixNamespace
-		// 		}
-		// >>>>>>> watcher
+		if annotations[functions.ServiceHeaderScope] == functions.PrefixGlobal {
+			return nil, fmt.Errorf("this route is for namespace-scoped requests or lower, not global")
+		}
+
+		annotations[functions.ServiceHeaderNamespace] = ns
+
+		if annotations[functions.ServiceHeaderScope] == "" {
+			annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+		}
 	}
 
 	del := make([]string, 0)
@@ -942,65 +927,9 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	iid := fmt.Sprintf("%s/%s/%s", ns, wf, id)
 
-	ctx, cancel := CtxDeadline(r.Context())
-	defer cancel()
-
-	offset := int32(0)
-	limit := int32(1000)
-
-	// Get Instance
-	respI, err := h.s.direktiv.GetWorkflowInstance(ctx, &ingress.GetWorkflowInstanceRequest{
-		Id: &iid,
-	})
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	// Get Previous Instance Logs
-	resp, err := h.s.direktiv.GetWorkflowInstanceLogs(ctx, &ingress.GetWorkflowInstanceLogsRequest{
-		InstanceId: &iid,
-		Limit:      &limit,
-		Offset:     &offset,
-	})
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
 	flusher, err := SetupSEEWriter(w)
 	if err != nil {
 		ErrResponse(w, err)
-		return
-	}
-
-	// Send previous logs
-	previousLogs := resp.GetWorkflowInstanceLogs()
-	for i := range previousLogs {
-		b, err := json.Marshal(previousLogs[i])
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client recieved bad data"))
-			logger.Error(fmt.Errorf("client recieved bad data: %w", err))
-			return
-		}
-
-		_, err = w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(b))))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			logger.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
-		}
-	}
-	flusher.Flush()
-
-	// If instance is finished dont start watching
-	if respI.EndTime != nil {
-		_, err = w.Write([]byte("data: {\"exit\": 0, \"reason\":\"instance has finished\"}\n\n"))
-		if err != nil {
-			ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write data: %w", err))
-			logger.Error(fmt.Errorf("client failed to write data: %w", err))
-			return
-		}
 		return
 	}
 
@@ -1010,10 +939,7 @@ func (h *Handler) watchInstanceLogs(w http.ResponseWriter, r *http.Request) {
 	client, err := h.s.direktiv.WatchWorkflowInstanceLogs(r.Context(), grpcReq)
 	defer client.CloseSend()
 	if err != nil {
-		// Broker does not exists
-		if len(previousLogs) == 0 {
-			ErrResponse(w, err)
-		}
+		ErrResponse(w, err)
 		return
 	}
 

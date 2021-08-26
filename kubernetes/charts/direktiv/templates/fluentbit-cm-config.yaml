@@ -25,7 +25,7 @@ data:
         Port          5432
         User          direktiv
         Password      direktivdirektiv
-        Database      postgres
+        Database      direktiv
         {{- end}}
         Timestamp_Key ts
 
