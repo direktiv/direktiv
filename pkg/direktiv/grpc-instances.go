@@ -130,12 +130,15 @@ func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInst
 				// get sec
 				ts := infoMap["ts"].(float64)
 
+				// get level
+				level := infoMap["level"].(string)
+
 				secs := int64(ts)
 				nsecs := int64((ts - float64(secs)) * 1e9)
 				tt := time.Unix(secs, nsecs)
 
 				resp := ingress.WatchWorkflowInstanceLogsResponse{
-					// Level:    ,
+					Level:     &level,
 					Timestamp: timestamppb.New(tt.UTC()),
 					// Context:   l.Context,
 					Message: &msg,
