@@ -1,0 +1,8 @@
+workflow child
+
+const grandchild-subflow = subflow("grandchild")
+
+call-subflow:
+    call(grandchild-subflow, {
+        message: "hello",
+    })

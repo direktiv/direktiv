@@ -276,12 +276,32 @@ init_namespace () {
 
 }
 
+init_secrets () {
+
+	resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/test/secrets/ --data '{ "name": "URL_SECRET", "data": "https://docs.direktiv.io"}'`
+	code=`echo "$resp"`
+
+	echo "Code: $code"
+
+	if  [ $code -ne 409 ] && [ $code -ne 200 ]; then 
+		echo "$resp"
+		return 1
+	else
+		echo "Created secret: URL_SECRET"
+		return 0
+	fi 
+
+    status=$?
+	return $status
+}
+
 if [ "$1" = "" ]; then 
 	echo "usage: $0 TESTSUITE_DIR [TESTNAME]..."
 	exit 1
 fi
 
 init_namespace
+init_secrets
 status=$?
 if [ $status -ne 0 ]; then exit $status; fi
 
@@ -301,5 +321,4 @@ else
 	echo "$failed tests failed."
 	exit 1
 fi
-
 
