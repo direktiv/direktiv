@@ -6,22 +6,22 @@
   <a href="https://github.com/vorteil/direktiv">
     <img src="assets/images/direktiv-logo.png" alt="vorteil">
   </a>
-    <h5 align="center">event-based serverless container workflows</h5>
+    <h5 align="center">event-based serverless container-based orchestration</h5>
 </p>
 <hr/>
 
 [![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
 
-## What is Direktiv?
+## What is direktiv?
 
-**Direktiv is a serverless workflow and automation engine running on Kubernetes and Knative.**
+**direktiv is a serverless orchestration engine running on Kubernetes and Knative.**
 
-Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, runs on kubernetes and executes containers as "plugins".
+direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, runs on kubernetes and executes containers as "plugins".
 
-Direktiv defines a selection of intentionally primitive states, which can be strung together to create workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run containers as part of Direktiv workflows just about any logic can be implemented.
+Direktiv defines a selection of intentionally primitive states, which can be strung together to create orchestration workflows as simple or complex as the author requires. The powerful `jq` JSON processor allows authors to implement sophisticated control flow logic, and when combined with the ability to run containers as part of direktiv orchestration flows just about any logic can be implemented.
 
-Workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
+Orchestration workflows can be triggered by CloudEvents for event-based solutions, can use cron scheduling to handle periodic tasks, and can be scripted using the APIs for everything else.
 
 <p align="center">
   <img src="assets/images/direktiv-ui.png" alt="direktiv ui">
@@ -30,7 +30,7 @@ Workflows can be triggered by CloudEvents for event-based solutions, can use cro
 
 ## Direktiv Architecture
 
-Direktiv runs as single pod on kubernetes but each workflow step can be executed on every pod in the system to achieve load balancing and high availability during workflow execution. It uses [Knative](https://knative.dev/) to execute containers as workflow actions.
+Direktiv runs as single pod on kubernetes but each orchestration step can be executed on every pod in the system to achieve load balancing and high availability during orchestration execution. It uses [Knative](https://knative.dev/) to execute containers as orchestration actions.
 
 <p align="center">
   <img src="assets/images/direktiv-diagram-v0.2.0-backgound.png" alt="direktiv">
@@ -79,7 +79,7 @@ For full instructions on how to install Direktiv on a Kubernetes environment go 
 
 ### Workflow specification
 
-The below example is the minimal configuration needed for a workflow, following the [workflow language specification](https://docs.direktiv.io/docs/specification.html):
+The below example is the minimal configuration needed for a orchestration workflow, following the [workflow language specification](https://docs.direktiv.io/docs/specification.html):
 
 ```yaml
 id: helloworld
