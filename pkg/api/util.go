@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
@@ -79,12 +78,12 @@ func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
 
 	b, err := json.Marshal(eo)
 	if err != nil {
-		log.Errorf("FAILED to marshal sse error: %v", eo)
+		logger.Errorf("FAILED to marshal sse error: %v", eo)
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf("event: error\ndata: %s\n\n", string(b))))
 	if err != nil {
-		log.Errorf("FAILED to write sse error: %s", string(b))
+		logger.Errorf("FAILED to write sse error: %s", string(b))
 	}
 
 	flusher.Flush()
@@ -93,7 +92,7 @@ func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
 func ErrSSEResponseSimple(w http.ResponseWriter, flusher http.Flusher, data []byte) {
 	_, err := w.Write([]byte(fmt.Sprintf("event: error\ndata: %s\n\n", string(data))))
 	if err != nil {
-		log.Errorf("FAILED to write sse error: %s", string(data))
+		logger.Errorf("FAILED to write sse error: %s", string(data))
 	}
 
 	flusher.Flush()
@@ -118,7 +117,7 @@ func WriteSSEJSONData(w http.ResponseWriter, flusher http.Flusher, data interfac
 	b, err := json.Marshal(data)
 	if err != nil {
 		err = fmt.Errorf("client recieved bad data: %w", err)
-		log.Error(err)
+		logger.Error(err)
 		return err
 	}
 
@@ -129,7 +128,7 @@ func WriteSSEData(w http.ResponseWriter, flusher http.Flusher, data []byte) erro
 	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(data))))
 	if err != nil {
 		err = fmt.Errorf("client failed to write data: %w", err)
-		log.Error(err)
+		logger.Error(err)
 		return err
 	}
 
@@ -141,7 +140,7 @@ func SendSSEHeartbeat(w http.ResponseWriter, flusher http.Flusher) {
 	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", "")))
 	if err != nil {
 		ErrSSEResponse(w, flusher, fmt.Errorf("client failed to write hearbeat: %w", err))
-		log.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
+		logger.Error(fmt.Errorf("client failed to write hearbeat: %w", err))
 	}
 
 	flusher.Flush()
