@@ -6,7 +6,7 @@
   <a href="https://github.com/vorteil/direktiv">
     <img src="assets/images/direktiv-logo.png" alt="vorteil">
   </a>
-    <h5 align="center">event-based serverless container workflows</h5>
+    <h5 align="center">event-driven serverless orchestration</h5>
 </p>
 <hr/>
 
@@ -15,7 +15,7 @@
 
 ## What is Direktiv?
 
-**Direktiv is a serverless workflow and automation engine running on Kubernetes and Knative.**
+**Direktiv is a event-driven serverless orchestration engine running on Kubernetes and Knative.**
 
 Direktiv is the equivalent of AWS Step Functions, or Google Cloud Workflows or Alibaba Serverless Workflows. The difference between Direktiv and the cloud provider workflow engines is that Direktiv is cloud & platform agnostic, runs on kubernetes and executes containers as "plugins".
 
