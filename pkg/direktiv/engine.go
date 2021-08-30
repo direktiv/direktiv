@@ -23,7 +23,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/functions"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/ingress"
-	"github.com/vorteil/direktiv/pkg/metrics"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
@@ -67,8 +66,6 @@ type workflowEngine struct {
 	secretsClient secretsgrpc.SecretsServiceClient
 	ingressClient ingress.DirektivIngressClient
 	grpcConns     []*grpc.ClientConn
-
-	metricsClient *metrics.Client
 }
 
 func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
@@ -150,12 +147,6 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 	we.grpcConns = append(we.grpcConns, conn)
 	we.ingressClient = ingress.NewDirektivIngressClient(conn)
-
-	// setup metrics client
-	we.metricsClient, err = metrics.NewClient()
-	if err != nil {
-		return nil, err
-	}
 
 	go we.checkTimeoutInstances()
 
@@ -950,51 +941,6 @@ func (we *workflowEngine) transformState(ctx context.Context, wli *workflowLogic
 
 }
 
-func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowInstance, nextState, errCode string, retrying bool) {
-
-	if len(rec.Flow) == 0 {
-		return
-	}
-
-	if rec.Status != "pending" {
-		return
-	}
-
-	args := new(metrics.InsertRecordArgs)
-
-	wf := rec.Edges.Workflow
-	ns := wf.Edges.Namespace
-
-	args.Namespace = ns.ID
-	args.Workflow = wf.Name
-	args.Instance = rec.InstanceID
-	args.Invoker = rec.InvokedBy
-
-	args.State = rec.Flow[len(rec.Flow)-1]
-
-	d := time.Now().Sub(rec.StateBeginTime)
-	args.WorkflowMilliSeconds = d.Milliseconds()
-
-	args.ErrorCode = errCode
-	args.Transition = nextState
-	args.Next = metrics.NextTransition
-	if nextState == "" {
-		args.Next = metrics.NextEnd
-	} else if retrying {
-		args.Next = metrics.NextRetry
-	}
-
-	if len(rec.Flow) == 1 {
-		args.Invoker = "start"
-	}
-
-	err := we.metricsClient.InsertRecord(args)
-	if err != nil {
-		appLog.Error(err)
-	}
-
-}
-
 func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition, errCode string) {
 
 	if transition == nil {
@@ -1003,7 +949,6 @@ func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogi
 	}
 
 	reportStateEnd(wli.namespace, wli.wf.ID, wli.logic.ID(), wli.rec.StateBeginTime)
-	we.completeState(ctx, wli.rec, transition.NextState, errCode, false)
 
 	if transition.NextState != "" {
 		wli.Log(ctx, "Transitioning to next state: %s (%d).", transition.NextState, wli.step+1)

@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -124,6 +126,90 @@ func (h *Handler) getWorkflowMetrics_StateMilliseconds(w http.ResponseWriter, r 
 	wf := mux.Vars(r)["workflow"]
 
 	out, err := h.queryPrometheus(fmt.Sprintf(`direktiv_states_milliseconds_sum{namespace="%s", workflow="%s"} / direktiv_states_milliseconds_count{namespace="%s", workflow="%s"}`, ns, wf, ns, wf), time.Now())
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	writeJSONResponse(w, out)
+}
+
+func intFromPrometheusResponse(res interface{}) (int, error) {
+
+	m, ok := res.(map[string]interface{})
+	if !ok {
+		return 0, fmt.Errorf("unable to parse object")
+	}
+
+	if len(m) == 0 {
+		return 0, nil
+	}
+
+	if xRes, ok := m["results"]; ok {
+
+		b, err := json.Marshal(xRes)
+		if err != nil {
+			return 0, err
+		}
+
+		res := make([]interface{}, 0)
+		err = json.Unmarshal(b, &res)
+		if err != nil {
+			return 0, err
+		}
+
+		if len(res) == 0 {
+			return 0, nil
+		}
+
+		if xMap, ok := res[0].(map[string]interface{}); ok {
+			if xVals, ok := xMap["value"]; ok {
+				if vals, ok := xVals.([]interface{}); ok {
+					if len(vals) > 1 {
+						if str, ok := vals[1].(string); ok {
+
+							n, err := strconv.Atoi(str)
+							if err != nil {
+								return 0, err
+							}
+
+							return n, nil
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return 0, nil
+}
+
+// satisfies the API call made by the UI to populate the 'Executed Workflows' panel on the UI
+func (h *Handler) getWorkflowMetrics_Deprecated(w http.ResponseWriter, r *http.Request) {
+
+	ns := mux.Vars(r)["namespace"]
+	wf := mux.Vars(r)["workflow"]
+
+	m1, err := h.queryPrometheus(fmt.Sprintf(`direktiv_workflows_invoked_total{namespace="%s", workflow="%s"}`, ns, wf), time.Now())
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	m2, err := h.queryPrometheus(fmt.Sprintf(`direktiv_workflows_invoked_total{namespace="%s", workflow="%s"}`, ns, wf), time.Now())
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	out := make(map[string]interface{})
+	out["successfulExecutions"], err = intFromPrometheusResponse(m1)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+
+	out["totalInstancesRun"], err = intFromPrometheusResponse(m2)
 	if err != nil {
 		ErrResponse(w, err)
 		return

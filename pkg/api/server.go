@@ -257,7 +257,7 @@ func (s *Server) prepareRoutes() {
 	s.Router().HandleFunc("/api/namespaces/{namespace}/registries/", s.handler.deleteSecretOrRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 	// Metrics ..
-	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics", s.handler.workflowMetrics).Methods(http.MethodGet).Name(RN_GetWorkflowMetrics)
+	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/{workflow}/metrics", s.handler.getWorkflowMetrics_Deprecated).Methods(http.MethodGet).Name(RN_GetWorkflowMetrics)
 
 	// Workflow ..
 	s.Router().HandleFunc("/api/namespaces/{namespace}/workflows/", s.handler.workflows).Methods(http.MethodGet).Name(RN_ListWorkflows)
