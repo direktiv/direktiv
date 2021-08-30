@@ -54,6 +54,7 @@ ingress:
   host: ""
   certificate: none
   class: "contour-external"
+  timeout: "900s"
 
 # prometheus config
 prometheus:
