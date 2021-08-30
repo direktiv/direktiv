@@ -9,7 +9,7 @@ metadata:
     {{- if ne .Values.ingress.certificate "none" }}
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
-    projectcontour.io/response-timeout: 900s
+    projectcontour.io/response-timeout: {{ .Values.ingress.timeout }}
 spec:
   {{- if ne .Values.ingress.certificate "none" }}
   tls:
