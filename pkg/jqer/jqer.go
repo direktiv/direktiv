@@ -176,7 +176,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 		}
 		out = x
 
-		if len(x) == 0 && len(stringParts) > 0 {
+		if len(x) == 0 {
 			return nil, fmt.Errorf("error in jq query beginning at offset %v: no results", offset)
 		}
 		if len(x) > 1 && len(stringParts) > 0 {
