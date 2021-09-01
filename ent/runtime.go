@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/schema"
 	"github.com/vorteil/direktiv/ent/workflow"
@@ -15,6 +16,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	cloudeventsFields := schema.CloudEvents{}.Fields()
+	_ = cloudeventsFields
+	// cloudeventsDescNamespace is the schema descriptor for namespace field.
+	cloudeventsDescNamespace := cloudeventsFields[1].Descriptor()
+	// cloudevents.NamespaceValidator is a validator for the "namespace" field. It is called by the builders before save.
+	cloudevents.NamespaceValidator = cloudeventsDescNamespace.Validators[0].(func(string) error)
+	// cloudeventsDescFire is the schema descriptor for fire field.
+	cloudeventsDescFire := cloudeventsFields[3].Descriptor()
+	// cloudevents.DefaultFire holds the default value on creation for the fire field.
+	cloudevents.DefaultFire = cloudeventsDescFire.Default.(func() time.Time)
+	// cloudeventsDescCreated is the schema descriptor for created field.
+	cloudeventsDescCreated := cloudeventsFields[4].Descriptor()
+	// cloudevents.DefaultCreated holds the default value on creation for the created field.
+	cloudevents.DefaultCreated = cloudeventsDescCreated.Default.(func() time.Time)
+	// cloudeventsDescID is the schema descriptor for id field.
+	cloudeventsDescID := cloudeventsFields[0].Descriptor()
+	// cloudevents.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	cloudevents.IDValidator = cloudeventsDescID.Validators[0].(func(string) error)
 	namespaceFields := schema.Namespace{}.Fields()
 	_ = namespaceFields
 	// namespaceDescCreated is the schema descriptor for created field.

@@ -4,15 +4,89 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent"
+	ce "github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
 	"github.com/vorteil/direktiv/ent/workflowinstance"
 	"github.com/vorteil/direktiv/pkg/model"
 )
+
+func (db *dbManager) markEventAsProcessed(eventID, namespace string) (*cloudevents.Event, error) {
+
+	tx, err := db.dbEnt.Tx(db.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	e, err := db.dbEnt.CloudEvents.Get(db.ctx, eventID)
+	if err != nil {
+		return nil, rollback(tx, err)
+	}
+
+	if e.Processed {
+		return nil, rollback(tx, fmt.Errorf("event already processed"))
+	}
+
+	updater := db.dbEnt.CloudEvents.UpdateOne(e)
+	updater.SetProcessed(true)
+
+	e, err = updater.Save(db.ctx)
+	if err != nil {
+		return nil, rollback(tx, err)
+	}
+
+	ev := cloudevents.Event(e.Event)
+
+	return &ev, tx.Commit()
+
+}
+
+func (db *dbManager) getEarliestEvent() (*ent.CloudEvents, error) {
+
+	e, err := db.dbEnt.CloudEvents.
+		Query().
+		Where(
+			ce.And(
+				ce.Processed(false),
+				// ce.FireGT(time.Now()),
+			),
+		).
+		Order(ent.Asc(ce.FieldFire)).
+		First(context.Background())
+
+	return e, err
+
+}
+
+func (db *dbManager) addEvent(eventin *cloudevents.Event, ns string, delay int64) error {
+
+	// calculate fire time
+	t := time.Now().Unix() + delay
+
+	// processed
+	processed := (delay == 0)
+
+	ev := event.Event(*eventin)
+
+	_, err := db.dbEnt.CloudEvents.
+		Create().
+		SetEvent(ev).
+		SetNamespace(ns).
+		SetFire(time.Unix(t, 0)).
+		SetProcessed(processed).
+		SetID(eventin.ID()).
+		Save(db.ctx)
+
+	return err
+
+}
 
 func (db *dbManager) deleteWorkflowEventWait(id int) error {
 

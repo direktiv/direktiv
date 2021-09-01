@@ -27,6 +27,7 @@ func (o *GenerateEventDefinition) Validate() error {
 
 type GenerateEventState struct {
 	StateCommon `yaml:",inline"`
+	Delay       string                   `yaml:"delay"`
 	Event       *GenerateEventDefinition `yaml:"event"`
 	Transform   interface{}              `yaml:"transform,omitempty"`
 	Transition  string                   `yaml:"transition,omitempty"`
@@ -34,6 +35,10 @@ type GenerateEventState struct {
 
 func (o *GenerateEventState) GetID() string {
 	return o.ID
+}
+
+func (o *GenerateEventState) GetDelay() string {
+	return o.Delay
 }
 
 func (o *GenerateEventState) getTransitions() map[string]string {
@@ -75,6 +80,10 @@ func (o *GenerateEventState) Validate() error {
 		if err := validateTransformJQ(s); err != nil {
 			return err
 		}
+	}
+
+	if o.Delay != "immediate" && o.Delay != "" && !isISO8601(o.Delay) {
+		return errors.New("delay is not a ISO8601 string")
 	}
 
 	if o.Event == nil {

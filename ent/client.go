@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/migrate"
 
+	"github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
@@ -26,6 +27,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// CloudEvents is the client for interacting with the CloudEvents builders.
+	CloudEvents *CloudEventsClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 	// Workflow is the client for interacting with the Workflow builders.
@@ -49,6 +52,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 	c.Workflow = NewWorkflowClient(c.config)
 	c.WorkflowEvents = NewWorkflowEventsClient(c.config)
@@ -87,6 +91,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		CloudEvents:        NewCloudEventsClient(cfg),
 		Namespace:          NewNamespaceClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
@@ -110,6 +115,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
 		config:             cfg,
+		CloudEvents:        NewCloudEventsClient(cfg),
 		Namespace:          NewNamespaceClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
@@ -121,7 +127,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Namespace.
+//		CloudEvents.
 //		Query().
 //		Count(ctx)
 //
@@ -144,11 +150,102 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.CloudEvents.Use(hooks...)
 	c.Namespace.Use(hooks...)
 	c.Workflow.Use(hooks...)
 	c.WorkflowEvents.Use(hooks...)
 	c.WorkflowEventsWait.Use(hooks...)
 	c.WorkflowInstance.Use(hooks...)
+}
+
+// CloudEventsClient is a client for the CloudEvents schema.
+type CloudEventsClient struct {
+	config
+}
+
+// NewCloudEventsClient returns a client for the CloudEvents from the given config.
+func NewCloudEventsClient(c config) *CloudEventsClient {
+	return &CloudEventsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `cloudevents.Hooks(f(g(h())))`.
+func (c *CloudEventsClient) Use(hooks ...Hook) {
+	c.hooks.CloudEvents = append(c.hooks.CloudEvents, hooks...)
+}
+
+// Create returns a create builder for CloudEvents.
+func (c *CloudEventsClient) Create() *CloudEventsCreate {
+	mutation := newCloudEventsMutation(c.config, OpCreate)
+	return &CloudEventsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CloudEvents entities.
+func (c *CloudEventsClient) CreateBulk(builders ...*CloudEventsCreate) *CloudEventsCreateBulk {
+	return &CloudEventsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CloudEvents.
+func (c *CloudEventsClient) Update() *CloudEventsUpdate {
+	mutation := newCloudEventsMutation(c.config, OpUpdate)
+	return &CloudEventsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CloudEventsClient) UpdateOne(ce *CloudEvents) *CloudEventsUpdateOne {
+	mutation := newCloudEventsMutation(c.config, OpUpdateOne, withCloudEvents(ce))
+	return &CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CloudEventsClient) UpdateOneID(id string) *CloudEventsUpdateOne {
+	mutation := newCloudEventsMutation(c.config, OpUpdateOne, withCloudEventsID(id))
+	return &CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CloudEvents.
+func (c *CloudEventsClient) Delete() *CloudEventsDelete {
+	mutation := newCloudEventsMutation(c.config, OpDelete)
+	return &CloudEventsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *CloudEventsClient) DeleteOne(ce *CloudEvents) *CloudEventsDeleteOne {
+	return c.DeleteOneID(ce.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *CloudEventsClient) DeleteOneID(id string) *CloudEventsDeleteOne {
+	builder := c.Delete().Where(cloudevents.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CloudEventsDeleteOne{builder}
+}
+
+// Query returns a query builder for CloudEvents.
+func (c *CloudEventsClient) Query() *CloudEventsQuery {
+	return &CloudEventsQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a CloudEvents entity by its id.
+func (c *CloudEventsClient) Get(ctx context.Context, id string) (*CloudEvents, error) {
+	return c.Query().Where(cloudevents.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CloudEventsClient) GetX(ctx context.Context, id string) *CloudEvents {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CloudEventsClient) Hooks() []Hook {
+	return c.hooks.CloudEvents
 }
 
 // NamespaceClient is a client for the Namespace schema.

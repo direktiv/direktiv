@@ -21,6 +21,7 @@ const (
 	CancelTimer
 	CancelInstanceTimers
 	AddCron
+	UpdateEventDelays
 )
 
 const ApiSync = "apisync"
@@ -185,6 +186,8 @@ func (s *WorkflowServer) startDatabaseListener() error {
 					appLog.Debugf("sync received: %v", req)
 
 					switch req.Cmd {
+					case UpdateEventDelays:
+						s.syncEventDelays()
 					case CancelSubflow:
 						s.engine.finishCancelSubflow(req.ID.(string))
 					case CancelTimer:

@@ -254,6 +254,8 @@ func (s *WorkflowServer) Run() error {
 		}
 	}
 
+	s.syncEventDelays()
+
 	return nil
 
 }

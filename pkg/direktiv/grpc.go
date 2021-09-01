@@ -146,8 +146,32 @@ func (is *ingressServer) BroadcastEvent(ctx context.Context, in *ingress.Broadca
 	dlogger := fnLog.Desugar().With(zap.String("namespace", namespace))
 	dlogger.Info(fmt.Sprintf("Broadcasting event: type=%s, source=%s", event.Type(), event.Source()))
 
-	err = is.wfServer.handleEvent(*in.Namespace, event)
+	// add event to db
+	err = is.wfServer.dbManager.addEvent(event, *in.Namespace, in.GetTimer())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal,
+			"could not store cloudevent: %v", err)
+	}
 
-	return &resp, err
+	// handle vent
+	if in.GetTimer() == 0 {
+		err = is.wfServer.handleEvent(*in.Namespace, event)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal,
+				"could not execute cloudevent: %v", err)
+		}
+	} else {
+
+		// if we have a delay we need to update event delay
+		// sending nil as server id so all instances calling it
+		err = syncServer(is.wfServer.dbManager.ctx, is.wfServer.dbManager,
+			nil, nil, UpdateEventDelays)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal,
+				"could not sync cloudevent: %v", err)
+		}
+	}
+
+	return &resp, nil
 
 }

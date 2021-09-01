@@ -38,6 +38,9 @@ type workflowLogicInstance struct {
 
 	zapLogger          *zap.Logger
 	zapNamespaceLogger *zap.Logger
+
+	// stores the events to be fired on schedule
+	eventQueue []string
 }
 
 func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespace, name string, input []byte) (*workflowLogicInstance, error) {
@@ -82,6 +85,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 	wli.wf = wf
 	wli.data = stateData
 	wli.logToEvents = rec.LogToEvents
+	wli.eventQueue = make([]string, 0)
 
 	wli.id = fmt.Sprintf("%s/%s/%s", namespace, name, randSeq(6))
 	wli.startData, err = json.MarshalIndent(wli.data, "", "  ")
