@@ -48,6 +48,21 @@ func (db *dbManager) markEventAsProcessed(eventID, namespace string) (*cloudeven
 
 }
 
+func (db *dbManager) deleteExpiredEvents() error {
+
+	_, err := db.dbEnt.CloudEvents.Delete().
+		Where(
+			ce.And(
+				ce.Processed(true),
+				ce.FireLT(time.Now().Add(-1*time.Hour)),
+			),
+		).
+		Exec(db.ctx)
+
+	return err
+
+}
+
 func (db *dbManager) getEarliestEvent() (*ent.CloudEvents, error) {
 
 	e, err := db.dbEnt.CloudEvents.
@@ -55,7 +70,6 @@ func (db *dbManager) getEarliestEvent() (*ent.CloudEvents, error) {
 		Where(
 			ce.And(
 				ce.Processed(false),
-				// ce.FireGT(time.Now()),
 			),
 		).
 		Order(ent.Asc(ce.FieldFire)).
