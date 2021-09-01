@@ -8,6 +8,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/segmentio/ksuid"
+	"github.com/senseyeio/duration"
 	"github.com/vorteil/direktiv/pkg/ingress"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -117,9 +118,23 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 
 	instance.Log(ctx, "Broadcasting event: %s.", event.ID())
 
+	var dd int64
+
+	if len(sl.state.Delay) == 0 {
+		dd = 60
+		instance.eventQueue = append(instance.eventQueue, event.ID())
+	} else if sl.state.Delay != "immediate" {
+		d, _ := duration.ParseISO8601(sl.state.Delay)
+		t := d.Shift(time.Unix(0, 0).UTC())
+		dd = t.Unix()
+	}
+
+	appLog.Debugf("event fires in %d seconds", dd)
+
 	_, err = instance.engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
 		Namespace:  &instance.namespace,
 		Cloudevent: data,
+		Timer:      &dd,
 	})
 	if err != nil {
 		return

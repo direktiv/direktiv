@@ -7,4 +7,5 @@ option go_package = "github.com/vorteil/direktiv/pkg/ingress";
 message BroadcastEventRequest {
 	optional string namespace = 1;
 	optional bytes cloudevent = 2;
+	optional int64 timer 		= 3;
 }
