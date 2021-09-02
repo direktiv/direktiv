@@ -63,13 +63,8 @@ func (sl *eventsAndStateLogic) listenForEvents(ctx context.Context, instance *wo
 		event.Type = sl.state.Events[i].Type
 		event.Context = make(map[string]interface{})
 		for k, v := range sl.state.Events[i].Context {
-			query, ok := v.(string)
-			if !ok {
-				err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': not a jq query string", k)
-				return err
-			}
 			var x interface{}
-			x, err = jqOne(instance.data, query)
+			x, err = jqOne(instance.data, v)
 			if err != nil {
 				err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 				return err

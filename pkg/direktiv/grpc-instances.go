@@ -3,6 +3,7 @@ package direktiv
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -126,6 +127,7 @@ func (is *ingressServer) WatchWorkflowInstanceLogs(in *ingress.WatchWorkflowInst
 
 				// get msg
 				msg := infoMap["msg"].(string)
+				msg = strings.TrimSuffix(msg, "\n")
 
 				// get sec
 				ts := infoMap["ts"].(float64)
