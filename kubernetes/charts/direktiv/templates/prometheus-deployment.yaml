@@ -18,8 +18,6 @@ spec:
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-prometheus
       securityContext:
         runAsNonRoot: true
-        runAsUser: 33333
-        runAsGroup: 22222
       containers:
         - name: prometheus
           image: prom/prometheus:v2.29.2
