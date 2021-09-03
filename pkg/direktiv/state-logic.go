@@ -2,10 +2,7 @@ package direktiv
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -181,22 +178,22 @@ type multiactionTuple struct {
 
 func extractEventPayload(event *cloudevents.Event) (interface{}, error) {
 
-	var x interface{}
-	var err error
+	// var x interface{}
+	// var err error
+	//
+	// if len(event.Data()) == 0 {
+	// 	return "", nil
+	// }
 
-	if len(event.Data()) == 0 {
-		return "", nil
-	}
+	// if event.DataContentType() == "application/json" || event.DataContentType() == "" {
+	// 	err = json.Unmarshal(event.Data(), &x)
+	// 	if err != nil {
+	// 		return nil, NewInternalError(fmt.Errorf("Invalid json payload for event: %v", err))
+	// 	}
+	// } else {
+	// 	x = base64.StdEncoding.EncodeToString(event.Data())
+	// }
 
-	if event.DataContentType() == "application/json" || event.DataContentType() == "" {
-		err = json.Unmarshal(event.Data(), &x)
-		if err != nil {
-			return nil, NewInternalError(fmt.Errorf("Invalid json payload for event: %v", err))
-		}
-	} else {
-		x = base64.StdEncoding.EncodeToString(event.Data())
-	}
-
-	return x, nil
+	return event, nil
 
 }

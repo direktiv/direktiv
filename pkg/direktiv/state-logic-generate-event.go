@@ -104,8 +104,15 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 	}
 
 	for k, v := range sl.state.Event.Context {
-		instance.Log(ctx, "Adding context %v: %v", k, v)
-		err = event.Context.SetExtension(k, v)
+		var x interface{}
+		x, err = jqOne(instance.data, v)
+		if err != nil {
+			err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
+			return
+		}
+		// event.Context[k] = x
+		instance.Log(ctx, "Adding context %v: %v", k, x)
+		err = event.Context.SetExtension(k, x)
 		if err != nil {
 			instance.Log(ctx, "Unable to set event extension: %v", err)
 		}

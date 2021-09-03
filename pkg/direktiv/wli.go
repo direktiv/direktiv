@@ -430,7 +430,7 @@ func (wli *workflowLogicInstance) UserLog(ctx context.Context, msg string, a ...
 
 	s := fmt.Sprintf(msg, a...)
 
-	wli.zapLogger.Info(s)
+	wli.zapLogger.Debug(s)
 
 	// TODO: detect content type and handle base64 data
 
