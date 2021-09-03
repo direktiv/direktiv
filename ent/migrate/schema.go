@@ -8,6 +8,21 @@ import (
 )
 
 var (
+	// CloudEventsColumns holds the columns for the "cloud_events" table.
+	CloudEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "namespace", Type: field.TypeString},
+		{Name: "event", Type: field.TypeJSON},
+		{Name: "fire", Type: field.TypeTime},
+		{Name: "created", Type: field.TypeTime},
+		{Name: "processed", Type: field.TypeBool},
+	}
+	// CloudEventsTable holds the schema information for the "cloud_events" table.
+	CloudEventsTable = &schema.Table{
+		Name:       "cloud_events",
+		Columns:    CloudEventsColumns,
+		PrimaryKey: []*schema.Column{CloudEventsColumns[0]},
+	}
 	// NamespacesColumns holds the columns for the "namespaces" table.
 	NamespacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 64},
@@ -140,6 +155,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CloudEventsTable,
 		NamespacesTable,
 		WorkflowsTable,
 		WorkflowEventsTable,

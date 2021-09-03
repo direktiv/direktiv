@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// CloudEvents is the predicate function for cloudevents builders.
+type CloudEvents func(*sql.Selector)
+
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)
 

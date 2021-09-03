@@ -75,6 +75,7 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	var timerFunctions = map[string]func([]byte) error{
 		timerCleanInstanceRecords:  s.tmManager.cleanInstanceRecords,
 		timerCleanNamespaceRecords: s.tmManager.cleanNamespaceRecords,
+		timerCleanExpiredEvents:    s.tmManager.cleanExpiredEvents,
 	}
 
 	for n, f := range timerFunctions {
@@ -91,6 +92,8 @@ func (s *WorkflowServer) initWorkflowServer() error {
 	addCron(timerCleanInstanceRecords, "0 * * * *")
 
 	addCron(timerCleanNamespaceRecords, "0 */2 * * *")
+
+	addCron(timerCleanExpiredEvents, "0 * * * *")
 
 	ingressServer, err := newIngressServer(s)
 	if err != nil {
@@ -253,6 +256,8 @@ func (s *WorkflowServer) Run() error {
 			return err
 		}
 	}
+
+	s.syncEventDelays()
 
 	return nil
 

@@ -7,7 +7,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/metrics"
 
 	"github.com/vorteil/direktiv/pkg/ingress"
@@ -68,7 +67,7 @@ func reportMetricEnd(namespace, workflow, status string, t time.Time) {
 	now := time.Now()
 	empty := time.Time{}
 
-	log.Debugf("reporting workflow %v/%v: %v", namespace, workflow, status)
+	appLog.Debugf("restarting prometheus endpoint workflow %v/%v: %v", namespace, workflow, status)
 	if status == "failed" {
 		metricsWfFail.WithLabelValues(namespace, workflow, namespace).Inc()
 	} else {
@@ -90,7 +89,7 @@ func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
 func setupPrometheusEndpoint() {
 
-	log.Infof("starting prometheus endpoint")
+	appLog.Infof("starting prometheus endpoint")
 
 	prometheus.MustRegister(metricsWfInvoked)
 	prometheus.MustRegister(metricsWfSuccess)
