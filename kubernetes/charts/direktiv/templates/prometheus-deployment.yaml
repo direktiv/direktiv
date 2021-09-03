@@ -18,8 +18,14 @@ spec:
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-prometheus
       securityContext:
         runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
       containers:
         - name: prometheus
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          imagePullPolicy: {{ .Values.pullPolicy }}
           image: prom/prometheus:v2.29.2
           args:
             - "--storage.tsdb.retention.time=12h"
