@@ -16,9 +16,11 @@ spec:
         {{- include "direktiv.selectorLabelsPrometheus" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-prometheus
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: prometheus
-          image: prom/prometheus
+          image: prom/prometheus:v2.29.2
           args:
             - "--storage.tsdb.retention.time=12h"
             - "--config.file=/etc/prometheus/prometheus.yml"
