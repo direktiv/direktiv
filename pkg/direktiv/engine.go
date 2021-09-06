@@ -560,7 +560,6 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   300 * time.Minute,
 	}
 
 	var (
