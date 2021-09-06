@@ -110,7 +110,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 			err = NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 			return
 		}
-		// event.Context[k] = x
+
 		instance.Log(ctx, "Adding context %v: %v", k, x)
 		err = event.Context.SetExtension(k, x)
 		if err != nil {
@@ -120,9 +120,9 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, instance *workflowLo
 
 	data, err = event.MarshalJSON()
 	if err != nil {
+		err = NewUncatchableError("direktiv.event.jq", "failed to marshal event: %v", err)
 		return
 	}
-
 	instance.Log(ctx, "Broadcasting event: %s.", event.ID())
 
 	var dd int64
