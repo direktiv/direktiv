@@ -1485,7 +1485,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) error {
 
 	var (
 		concurrency int64 = 100
-		timeoutSec  int64 = 60
+		timeoutSec        = int64(functionsConfig.RequestTimeout)
 	)
 
 	name, scope, err := GenerateServiceName(info.GetNamespace(),
