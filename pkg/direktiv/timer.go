@@ -19,6 +19,7 @@ const (
 	timerSchedWorkflow         = "schedWorkflow"
 	timerCleanInstanceRecords  = "cleanInstanceRecords"
 	timerCleanNamespaceRecords = "cleanNamespaceRecords"
+	timerCleanExpiredEvents    = "timerCleanExpiredEvents"
 )
 
 type timerManager struct {
@@ -362,6 +363,14 @@ func (tm *timerManager) deleteTimerByName(oldController, newController, name str
 	}
 
 	return nil
+}
+
+func (tm *timerManager) cleanExpiredEvents(data []byte) error {
+
+	appLog.Debugf("deleting expired events")
+
+	return tm.server.dbManager.deleteExpiredEvents()
+
 }
 
 // cron job delete old namespace logs every 2 hrs

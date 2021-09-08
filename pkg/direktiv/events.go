@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -66,6 +68,91 @@ func hasEventInList(ev *cloudevents.Event, evl []*cloudevents.Event) bool {
 	}
 
 	return false
+}
+
+func (s *WorkflowServer) sendEvent(data []byte) error {
+
+	n := strings.SplitN(string(data), "/", 2)
+
+	if len(n) != 2 {
+		appLog.Errorf("namespace and id must be set for dealyed events")
+		return fmt.Errorf("namespace,id not set")
+	}
+
+	appLog.Debugf("flushing %s (%s)", n[0], n[1])
+
+	err := s.flushEvent(n[0], n[1], true)
+	if err != nil {
+		appLog.Errorf("can not flush delayed event: %v", err)
+	}
+
+	return nil
+}
+
+var syncMtx sync.Mutex
+
+func (s *WorkflowServer) syncEventDelays() {
+
+	syncMtx.Lock()
+	defer syncMtx.Unlock()
+
+	// sync with other servers
+	appLog.Debugf("update event timeout")
+
+	// disable old timer
+	for i := range s.engine.timer.timers {
+		ti := s.engine.timer.timers[i]
+		if ti.name == "sendEventTimer" {
+			s.engine.timer.disableTimer(ti)
+			break
+		}
+	}
+
+	for {
+		e, err := s.dbManager.getEarliestEvent()
+		if err != nil {
+			appLog.Errorf("can not sync event delays: %v", err)
+			return
+		}
+
+		if e.Fire.Before(time.Now()) {
+			appLog.Debugf("flushing old event %s", e.ID)
+			err = s.flushEvent(e.ID, e.Namespace, false)
+			if err != nil {
+				appLog.Errorf("can not flush event %s: %v", e.ID, err)
+			}
+			continue
+		}
+
+		err = s.engine.timer.addOneShot("sendEventTimer", sendEventFunction,
+			e.Fire, []byte(fmt.Sprintf("%s/%s", e.ID, e.Namespace)))
+		if err != nil {
+			appLog.Errorf("can not reschedule event timer: %v", err)
+		}
+
+		break
+
+	}
+
+}
+
+func (s *WorkflowServer) flushEvent(eventID, namespace string, rearm bool) error {
+
+	appLog.Debugf("flushing cloud event %s (%s)", eventID, namespace)
+
+	e, err := s.dbManager.markEventAsProcessed(eventID, namespace)
+	if err != nil {
+		return err
+	}
+
+	defer func(r bool) {
+		if r {
+			s.syncEventDelays()
+		}
+	}(rearm)
+
+	return s.handleEvent(namespace, e)
+
 }
 
 func (s *WorkflowServer) updateMultipleEvents(ce *cloudevents.Event, id int,
@@ -156,14 +243,6 @@ func (s *WorkflowServer) handleEvent(namespace string, ce *cloudevents.Event) er
 	)
 
 	db := s.dbManager.dbEnt.DB()
-
-	// get candidates for event
-	// query := fmt.Sprintf(`select
-	// 	id, signature, count, correlations, events, workflow_wfevents,
-	// 	v from workflow_events etl,
-	// 	jsonb_array_elements(etl.events) as v
-	// 	where v::json->>'type' = '%s'`,
-	// 	ce.Type())
 
 	rows, err := db.Query(`select
 	we.id, signature, count, correlations, events, workflow_wfevents, v

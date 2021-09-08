@@ -71,6 +71,8 @@ type workflowEngine struct {
 	metricsClient *metrics.Client
 }
 
+const sendEventFunction = "sendEvent"
+
 func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 
 	var err error
@@ -105,6 +107,11 @@ func newWorkflowEngine(s *WorkflowServer) (*workflowEngine, error) {
 	}
 
 	err = we.timer.registerFunction(retryWakeupFunction, we.retryWakeup)
+	if err != nil {
+		return nil, err
+	}
+
+	err = we.timer.registerFunction(sendEventFunction, s.sendEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -1008,6 +1015,12 @@ func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowIn
 }
 
 func (we *workflowEngine) transitionState(ctx context.Context, wli *workflowLogicInstance, transition *stateTransition, errCode string) {
+
+	if transition == nil || transition.NextState == "" {
+		for i := range wli.eventQueue {
+			we.server.flushEvent(wli.eventQueue[i], wli.namespace, true)
+		}
+	}
 
 	if transition == nil {
 		wli.Close()

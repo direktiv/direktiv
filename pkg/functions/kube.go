@@ -1588,7 +1588,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 
 	var (
 		concurrency int64 = 100
-		timeoutSec  int64 = 60
+		timeoutSec        = int64(functionsConfig.RequestTimeout)
 	)
 
 	logger.Debugf("info.GetNamespace(),	info.GetWorkflow(), info.GetName() = %s, %s, %s", info.GetNamespace(),

@@ -8,7 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
+	"github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/predicate"
 	"github.com/vorteil/direktiv/ent/services"
@@ -29,6 +31,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeCloudEvents        = "CloudEvents"
 	TypeNamespace          = "Namespace"
 	TypeServices           = "Services"
 	TypeWorkflow           = "Workflow"
@@ -36,6 +39,520 @@ const (
 	TypeWorkflowEventsWait = "WorkflowEventsWait"
 	TypeWorkflowInstance   = "WorkflowInstance"
 )
+
+// CloudEventsMutation represents an operation that mutates the CloudEvents nodes in the graph.
+type CloudEventsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	namespace     *string
+	event         *event.Event
+	fire          *time.Time
+	created       *time.Time
+	processed     *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*CloudEvents, error)
+	predicates    []predicate.CloudEvents
+}
+
+var _ ent.Mutation = (*CloudEventsMutation)(nil)
+
+// cloudeventsOption allows management of the mutation configuration using functional options.
+type cloudeventsOption func(*CloudEventsMutation)
+
+// newCloudEventsMutation creates new mutation for the CloudEvents entity.
+func newCloudEventsMutation(c config, op Op, opts ...cloudeventsOption) *CloudEventsMutation {
+	m := &CloudEventsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCloudEvents,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCloudEventsID sets the ID field of the mutation.
+func withCloudEventsID(id string) cloudeventsOption {
+	return func(m *CloudEventsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CloudEvents
+		)
+		m.oldValue = func(ctx context.Context) (*CloudEvents, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CloudEvents.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCloudEvents sets the old CloudEvents of the mutation.
+func withCloudEvents(node *CloudEvents) cloudeventsOption {
+	return func(m *CloudEventsMutation) {
+		m.oldValue = func(context.Context) (*CloudEvents, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CloudEventsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CloudEventsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of CloudEvents entities.
+func (m *CloudEventsMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CloudEventsMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetNamespace sets the "namespace" field.
+func (m *CloudEventsMutation) SetNamespace(s string) {
+	m.namespace = &s
+}
+
+// Namespace returns the value of the "namespace" field in the mutation.
+func (m *CloudEventsMutation) Namespace() (r string, exists bool) {
+	v := m.namespace
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNamespace returns the old "namespace" field's value of the CloudEvents entity.
+// If the CloudEvents object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventsMutation) OldNamespace(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldNamespace is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldNamespace requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNamespace: %w", err)
+	}
+	return oldValue.Namespace, nil
+}
+
+// ResetNamespace resets all changes to the "namespace" field.
+func (m *CloudEventsMutation) ResetNamespace() {
+	m.namespace = nil
+}
+
+// SetEvent sets the "event" field.
+func (m *CloudEventsMutation) SetEvent(e event.Event) {
+	m.event = &e
+}
+
+// Event returns the value of the "event" field in the mutation.
+func (m *CloudEventsMutation) Event() (r event.Event, exists bool) {
+	v := m.event
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEvent returns the old "event" field's value of the CloudEvents entity.
+// If the CloudEvents object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventsMutation) OldEvent(ctx context.Context) (v event.Event, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldEvent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldEvent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEvent: %w", err)
+	}
+	return oldValue.Event, nil
+}
+
+// ResetEvent resets all changes to the "event" field.
+func (m *CloudEventsMutation) ResetEvent() {
+	m.event = nil
+}
+
+// SetFire sets the "fire" field.
+func (m *CloudEventsMutation) SetFire(t time.Time) {
+	m.fire = &t
+}
+
+// Fire returns the value of the "fire" field in the mutation.
+func (m *CloudEventsMutation) Fire() (r time.Time, exists bool) {
+	v := m.fire
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFire returns the old "fire" field's value of the CloudEvents entity.
+// If the CloudEvents object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventsMutation) OldFire(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFire is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFire requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFire: %w", err)
+	}
+	return oldValue.Fire, nil
+}
+
+// ResetFire resets all changes to the "fire" field.
+func (m *CloudEventsMutation) ResetFire() {
+	m.fire = nil
+}
+
+// SetCreated sets the "created" field.
+func (m *CloudEventsMutation) SetCreated(t time.Time) {
+	m.created = &t
+}
+
+// Created returns the value of the "created" field in the mutation.
+func (m *CloudEventsMutation) Created() (r time.Time, exists bool) {
+	v := m.created
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreated returns the old "created" field's value of the CloudEvents entity.
+// If the CloudEvents object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventsMutation) OldCreated(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreated: %w", err)
+	}
+	return oldValue.Created, nil
+}
+
+// ResetCreated resets all changes to the "created" field.
+func (m *CloudEventsMutation) ResetCreated() {
+	m.created = nil
+}
+
+// SetProcessed sets the "processed" field.
+func (m *CloudEventsMutation) SetProcessed(b bool) {
+	m.processed = &b
+}
+
+// Processed returns the value of the "processed" field in the mutation.
+func (m *CloudEventsMutation) Processed() (r bool, exists bool) {
+	v := m.processed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProcessed returns the old "processed" field's value of the CloudEvents entity.
+// If the CloudEvents object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudEventsMutation) OldProcessed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldProcessed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldProcessed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProcessed: %w", err)
+	}
+	return oldValue.Processed, nil
+}
+
+// ResetProcessed resets all changes to the "processed" field.
+func (m *CloudEventsMutation) ResetProcessed() {
+	m.processed = nil
+}
+
+// Where appends a list predicates to the CloudEventsMutation builder.
+func (m *CloudEventsMutation) Where(ps ...predicate.CloudEvents) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *CloudEventsMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (CloudEvents).
+func (m *CloudEventsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CloudEventsMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.namespace != nil {
+		fields = append(fields, cloudevents.FieldNamespace)
+	}
+	if m.event != nil {
+		fields = append(fields, cloudevents.FieldEvent)
+	}
+	if m.fire != nil {
+		fields = append(fields, cloudevents.FieldFire)
+	}
+	if m.created != nil {
+		fields = append(fields, cloudevents.FieldCreated)
+	}
+	if m.processed != nil {
+		fields = append(fields, cloudevents.FieldProcessed)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CloudEventsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case cloudevents.FieldNamespace:
+		return m.Namespace()
+	case cloudevents.FieldEvent:
+		return m.Event()
+	case cloudevents.FieldFire:
+		return m.Fire()
+	case cloudevents.FieldCreated:
+		return m.Created()
+	case cloudevents.FieldProcessed:
+		return m.Processed()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CloudEventsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case cloudevents.FieldNamespace:
+		return m.OldNamespace(ctx)
+	case cloudevents.FieldEvent:
+		return m.OldEvent(ctx)
+	case cloudevents.FieldFire:
+		return m.OldFire(ctx)
+	case cloudevents.FieldCreated:
+		return m.OldCreated(ctx)
+	case cloudevents.FieldProcessed:
+		return m.OldProcessed(ctx)
+	}
+	return nil, fmt.Errorf("unknown CloudEvents field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudEventsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case cloudevents.FieldNamespace:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNamespace(v)
+		return nil
+	case cloudevents.FieldEvent:
+		v, ok := value.(event.Event)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEvent(v)
+		return nil
+	case cloudevents.FieldFire:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFire(v)
+		return nil
+	case cloudevents.FieldCreated:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreated(v)
+		return nil
+	case cloudevents.FieldProcessed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProcessed(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CloudEvents field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CloudEventsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CloudEventsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudEventsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CloudEvents numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CloudEventsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CloudEventsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CloudEventsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CloudEvents nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CloudEventsMutation) ResetField(name string) error {
+	switch name {
+	case cloudevents.FieldNamespace:
+		m.ResetNamespace()
+		return nil
+	case cloudevents.FieldEvent:
+		m.ResetEvent()
+		return nil
+	case cloudevents.FieldFire:
+		m.ResetFire()
+		return nil
+	case cloudevents.FieldCreated:
+		m.ResetCreated()
+		return nil
+	case cloudevents.FieldProcessed:
+		m.ResetProcessed()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudEvents field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CloudEventsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CloudEventsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CloudEventsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CloudEventsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CloudEventsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CloudEventsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CloudEventsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown CloudEvents unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CloudEventsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown CloudEvents edge %s", name)
+}
 
 // NamespaceMutation represents an operation that mutates the Namespace nodes in the graph.
 type NamespaceMutation struct {

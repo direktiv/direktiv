@@ -12,6 +12,7 @@ type configReader struct {
 }
 
 type config struct {
+	RequestTimeout     int    `yaml:"request-timeout"`
 	ServiceAccount     string `yaml:"service-account"`
 	Namespace          string `yaml:"namespace"`
 	SidecarDb          string `yaml:"sidecar-db"`

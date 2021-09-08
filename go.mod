@@ -3,13 +3,14 @@ module github.com/vorteil/direktiv
 go 1.15
 
 require (
-	entgo.io/ent v0.9.0
+	entgo.io/ent v0.9.1
 	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0

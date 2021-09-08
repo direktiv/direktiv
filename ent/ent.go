@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/services"
 	"github.com/vorteil/direktiv/ent/workflow"
@@ -34,6 +35,7 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		cloudevents.Table:        cloudevents.ValidColumn,
 		namespace.Table:          namespace.ValidColumn,
 		services.Table:           services.ValidColumn,
 		workflow.Table:           workflow.ValidColumn,
