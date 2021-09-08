@@ -155,6 +155,9 @@ func (nc *NamespaceCreate) sqlSave(ctx context.Context) (*Namespace, error) {
 		}
 		return nil, err
 	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(string)
+	}
 	return _node, nil
 }
 

@@ -575,14 +575,14 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 
-						// we can recreate the function if it is a workflow scope function
-						// if not we can bail right here
-						if ar.Container.Type != model.ReusableContainerFunctionType {
-							we.reportError(ar,
-								fmt.Errorf("function %s does not exist on scope %v",
-									ar.Container.ID, ar.Container.Type))
-							return
-						}
+						// // we can recreate the function if it is a workflow scope function
+						// // if not we can bail right here
+						// if ar.Container.Type != model.ReusableContainerFunctionType {
+						// 	we.reportError(ar,
+						// 		fmt.Errorf("function %s does not exist on scope %v",
+						// 			ar.Container.ID, ar.Container.Type))
+						// 	return
+						// }
 
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
@@ -591,6 +591,18 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 							err := createKnativeFunction(we.functionsClient, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								appLog.Errorf("can not create knative function: %v", err)
+								we.reportError(ar, err)
+								return
+							}
+						}
+
+						// recreate if the service if it exists in the database but not knative
+						if (ar.Container.Type == model.GlobalKnativeFunctionType ||
+							ar.Container.Type == model.NamespacedKnativeFunctionType) &&
+							!isScopedKnativeFunction(we.functionsClient, ar.Container.Service) {
+							err := reconstructScopedKnativeFunction(we.functionsClient, ar.Container.Service)
+							if err != nil {
+								appLog.Errorf("can not create scoped knative function: %v", err)
 								we.reportError(ar, err)
 								return
 							}

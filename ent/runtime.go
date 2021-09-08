@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/ent/namespace"
 	"github.com/vorteil/direktiv/ent/schema"
+	"github.com/vorteil/direktiv/ent/services"
 	"github.com/vorteil/direktiv/ent/workflow"
 )
 
@@ -34,6 +35,26 @@ func init() {
 		return func(id string) error {
 			for _, fn := range fns {
 				if err := fn(id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	servicesFields := schema.Services{}.Fields()
+	_ = servicesFields
+	// servicesDescName is the schema descriptor for name field.
+	servicesDescName := servicesFields[0].Descriptor()
+	// services.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	services.NameValidator = func() func(string) error {
+		validators := servicesDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
 					return err
 				}
 			}

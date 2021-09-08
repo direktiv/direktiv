@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FunctionsServiceClient interface {
+	ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -45,6 +46,15 @@ type functionsServiceClient struct {
 
 func NewFunctionsServiceClient(cc grpc.ClientConnInterface) FunctionsServiceClient {
 	return &functionsServiceClient{cc}
+}
+
+func (c *functionsServiceClient) ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ReconstructFunction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
@@ -305,6 +315,7 @@ func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsReque
 // All implementations must embed UnimplementedFunctionsServiceServer
 // for forward compatibility
 type FunctionsServiceServer interface {
+	ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*empty.Empty, error)
 	UpdateFunction(context.Context, *UpdateFunctionRequest) (*empty.Empty, error)
 	CreateFunction(context.Context, *CreateFunctionRequest) (*empty.Empty, error)
 	DeleteFunctions(context.Context, *ListFunctionsRequest) (*empty.Empty, error)
@@ -330,6 +341,9 @@ type FunctionsServiceServer interface {
 type UnimplementedFunctionsServiceServer struct {
 }
 
+func (UnimplementedFunctionsServiceServer) ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReconstructFunction not implemented")
+}
 func (UnimplementedFunctionsServiceServer) UpdateFunction(context.Context, *UpdateFunctionRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFunction not implemented")
 }
@@ -395,6 +409,24 @@ type UnsafeFunctionsServiceServer interface {
 
 func RegisterFunctionsServiceServer(s grpc.ServiceRegistrar, srv FunctionsServiceServer) {
 	s.RegisterService(&FunctionsService_ServiceDesc, srv)
+}
+
+func _FunctionsService_ReconstructFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReconstructFunctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).ReconstructFunction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.FunctionsService/ReconstructFunction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).ReconstructFunction(ctx, req.(*ReconstructFunctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_UpdateFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -740,6 +772,10 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "grpc.FunctionsService",
 	HandlerType: (*FunctionsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ReconstructFunction",
+			Handler:    _FunctionsService_ReconstructFunction_Handler,
+		},
 		{
 			MethodName: "UpdateFunction",
 			Handler:    _FunctionsService_UpdateFunction_Handler,

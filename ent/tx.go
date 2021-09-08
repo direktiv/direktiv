@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
+	// Services is the client for interacting with the Services builders.
+	Services *ServicesClient
 	// Workflow is the client for interacting with the Workflow builders.
 	Workflow *WorkflowClient
 	// WorkflowEvents is the client for interacting with the WorkflowEvents builders.
@@ -158,6 +160,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Namespace = NewNamespaceClient(tx.config)
+	tx.Services = NewServicesClient(tx.config)
 	tx.Workflow = NewWorkflowClient(tx.config)
 	tx.WorkflowEvents = NewWorkflowEventsClient(tx.config)
 	tx.WorkflowEventsWait = NewWorkflowEventsWaitClient(tx.config)
