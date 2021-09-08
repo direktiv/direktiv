@@ -903,7 +903,7 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 	return b, nil
 }
 
-func metaSpec(net string, min, max int, ns, wf, name, scope, svn string, size int) metav1.ObjectMeta {
+func metaSpec(net string, min, max int, ns, wf, name, scope string, size int) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   functionsConfig.Namespace,
@@ -923,9 +923,6 @@ func metaSpec(net string, min, max int, ns, wf, name, scope, svn string, size in
 	metaSpec.Labels[ServiceHeaderName] = name
 	if len(wf) > 0 {
 		metaSpec.Labels[ServiceHeaderWorkflow] = wf
-	} else {
-		// Explicitly set latest revision name if service is not workflow
-		metaSpec.Name = fmt.Sprintf("%s-00001", svn)
 	}
 
 	metaSpec.Labels[ServiceHeaderNamespace] = ns
@@ -1465,9 +1462,9 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 	// Update generation counter
 	spec.Labels[ServiceTemplateGeneration] = fmt.Sprint(gen + 1)
 
-	// Add name is global or namespace service
+	// Add name if global or namespace service
 	if _, ok := s.Spec.Template.ObjectMeta.Labels[ServiceHeaderWorkflow]; !ok {
-		spec.Name = fmt.Sprintf("%s-0000%s", svn, spec.Labels[ServiceTemplateGeneration])
+		spec.Name = fmt.Sprintf("%s-%s%s", svn, strings.Repeat("0", 5-len(spec.Labels[ServiceTemplateGeneration])), spec.Labels[ServiceTemplateGeneration])
 		flog.Debugf("next revision set to %s", spec.Name)
 	}
 
@@ -1520,7 +1517,6 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 	b, err := json.MarshalIndent(*svc, "", "    ")
 	if err != nil {
 		flog.Errorf("error marshalling new services: %v", err)
-		// TODO: check if we should be returning error
 		return nil, err
 	}
 
@@ -1642,7 +1638,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: metaSpec(functionsConfig.NetShape, min, functionsConfig.MaxScale,
-						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope, name, int(info.GetSize())),
+						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope, int(info.GetSize())),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							AutomountServiceAccountToken: &mountToken,
@@ -1661,6 +1657,11 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 
 	// Manually Keep track of revision on our side to more easily generate names in the future.
 	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Labels[ServiceTemplateGeneration] = "1"
+
+	if len(info.GetWorkflow()) == 0 {
+		// Explicitly set first revision name if service is not workflow
+		svc.Spec.ConfigurationSpec.Template.ObjectMeta.Name = fmt.Sprintf("%s-00001", name)
+	}
 
 	if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
 		logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
@@ -1780,6 +1781,16 @@ func trafficKnativeFunctions(name string, tv []*igrpc.TrafficValue) (*v1.Service
 
 }
 
+//	backupService : Given service name, record a service and its revisions to a database record.
+//	Service Templates are backed up with their latest revision switched with the earliest revision. This
+//	is to ease the process of reconstructing all revisions in the correct order.
+//	Parameters:
+//	 - opts
+//		- previousRevisionName:	This is the previously know revision name. The backup service process will not begin until
+//								the service Latest Created Revision Name does not match this value. This is to confirm that
+//								a service has changed before we start updating its backup record.
+//		- patch: 				Whether or not this is a new service, and we need to create a new record for it (true), or
+//								patch the old record (false).
 func (is *functionsServer) backupService(serviceName string, opts backupServiceOptions) error {
 	// Load options
 	blog := logger.With("service", serviceName)
@@ -1848,7 +1859,7 @@ func (is *functionsServer) backupService(serviceName string, opts backupServiceO
 	for i := range revList.Items {
 		tmpRev := revList.Items[i].DeepCopy()
 
-		// Append revisions
+		// Append all revisions excluding the service template revision (earliest)
 		if tmpRev.ObjectMeta.Name != exportCfg.Service.Spec.Template.ObjectMeta.Name {
 			blog.With("revision", tmpRev.Name, "generation", tmpRev.ObjectMeta.Labels[ServiceTemplateGeneration], "gen", tmpRev.ObjectMeta.Generation).Debug("backing up service revision")
 			exportCfg.Revisions = append(exportCfg.Revisions, prepareRevisionForExport(tmpRev))
@@ -1911,6 +1922,10 @@ func getTemplateMetaGenerationFromName(meta *metav1.ObjectMeta) (int, error) {
 	return i, nil
 }
 
+//	reconstructService : Reconstructs a service and its revisions from a backed up service database record
+//	This is done in two steps:
+//	1) Create service with earliest recorded revision
+//	2) For each other revision create them in asceneding order by patching the exisiting service.
 func (is *functionsServer) reconstructService(name string, ctx context.Context) error {
 
 	cs, err := fetchServiceAPI()
@@ -1955,6 +1970,8 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 		if err != nil {
 			logger.With("service", name, "revision", tmpRev.ObjectMeta.Name).Warnf("error getting direktiv service generation: %w", err)
 			logger.With("service", name, "revision", tmpRev.ObjectMeta.Name).Debugf("attempting to get template generation from revision name")
+
+			// If the template generation label is not set, attempt to recover generation from name.
 			gen, err = getTemplateMetaGenerationFromName(&tmpRev.ObjectMeta)
 			if err != nil {
 				logger.With("service", name, "revision", tmpRev.ObjectMeta.Name).Errorf("error getting direktiv service name: %w", err)
@@ -1983,7 +2000,6 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 		b, err := json.MarshalIndent(*revPatch, "", "    ")
 		if err != nil {
 			logger.Errorf("error marshalling new services: %v", err)
-			// TODO: check if we should be returning error
 			return err
 		}
 
@@ -2015,6 +2031,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 	return nil
 }
 
+// 	prepareRevisionForExport : Strips any annotations we no longer need.
 func prepareRevisionForExport(revision *servingv1.Revision) servingv1.Revision {
 	exportedRevision := servingv1.Revision{
 		ObjectMeta: metav1.ObjectMeta{
@@ -2036,6 +2053,9 @@ func prepareRevisionForExport(revision *servingv1.Revision) servingv1.Revision {
 	return exportedRevision
 }
 
+//	prepareRevisionForExport : Strips any annotations we no longer need, and switchs
+//	latest service template with earliest revision to ease the
+//	process of reconstructing all revisions in the correct order.
 func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.Revision) *servingv1.Service {
 	exportedSvc := servingv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
