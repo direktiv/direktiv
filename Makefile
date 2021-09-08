@@ -98,7 +98,7 @@ protoc:
 # Patterns
 
 build/%-binary: Makefile ${GO_SOURCE_FILES}
-	@if [ -d "cmd/$*" ]; then \
+	@set -e ; if [ -d "cmd/$*" ]; then \
 		echo "Building $* binary..."; \
 		export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
@@ -111,7 +111,7 @@ build/%.md5: build/%-binary
 	@md5sum $< build/docker/$*/Dockerfile > $@
 
 build/%-docker.checksum: build/%.md5 ${DOCKER_FILES}
-	@if ! cmp --silent build/$*.md5 build/$*-docker.checksum; then echo "Building docker image for $* binary..." && cd build && docker build -t direktiv-$* -f docker/$*/Dockerfile . ; else echo "Skipping docker build due to unchanged $* binary." && touch build/$*-docker.checksum; fi
+	@set -e ; if ! cmp --silent build/$*.md5 build/$*-docker.checksum; then echo "Building docker image for $* binary..." && cd build && docker build -t direktiv-$* -f docker/$*/Dockerfile . ; else echo "Skipping docker build due to unchanged $* binary." && touch build/$*-docker.checksum; fi
 	@cp build/$*.md5 build/$*-docker.checksum
 
 .PHONY: image-%
