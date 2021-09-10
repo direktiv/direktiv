@@ -3,7 +3,9 @@ module github.com/vorteil/direktiv
 go 1.15
 
 require (
+	entgo.io/contrib v0.1.0
 	entgo.io/ent v0.9.1
+	github.com/99designs/gqlgen v0.13.0
 	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
@@ -13,16 +15,16 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.15.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
 	github.com/levenlabs/golib v0.0.0-20180911183212-0f8974794783
 	github.com/lib/pq v1.10.2
-	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
 	github.com/nxadm/tail v1.4.4
@@ -39,6 +41,8 @@ require (
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.3
+	github.com/vektah/gqlparser/v2 v2.2.0
+	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	github.com/vorteil/direktiv-apps/pkg v0.0.0-20210802230159-3c773c116635
 	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -48,7 +52,7 @@ require (
 	golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.36.0
-	google.golang.org/protobuf v1.26.0-rc.1
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

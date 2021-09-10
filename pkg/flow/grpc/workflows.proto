@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+import "google/protobuf/timestamp.proto";
+
+import "pkg/flow/grpc/pagination.proto";
+
+import "pkg/flow/grpc/nodes.proto";
+
+message Revision {
+	google.protobuf.Timestamp created_at = 1;
+	string hash = 2;
+	bytes source = 3;
+}
+
+message WorkflowRequest {
+	string namespace = 1;
+	string path = 2;	
+	string ref = 3;
+}
+
+message WorkflowResponse {
+	string namespace = 1;
+	Node node = 2;
+	Revision revision = 3;
+}
+
+message CreateWorkflowRequest {
+	string namespace = 1;
+	string path = 2;
+	bytes source = 3;
+}
+
+message CreateWorkflowResponse {
+	string namespace = 1;
+	Node node = 2;
+	Revision revision = 3;
+}
+
+message UpdateWorkflowRequest {
+	string namespace = 1;
+	string path = 2;
+	bytes source = 3;
+}
+
+message UpdateWorkflowResponse {
+	string namespace = 1;
+	Node node = 2;
+	Revision revision = 3;
+}
+
+message SaveHeadRequest {
+	string namespace = 1;
+	string path = 2;
+}
+
+message SaveHeadResponse {
+	string namespace = 1;
+	Node node = 2;
+	Revision revision = 3;
+}
+
+message DiscardHeadRequest {
+	string namespace = 1;
+	string path = 2;
+}
+
+message DiscardHeadResponse {
+	string namespace = 1;
+	Node node = 2;
+	Revision revision = 3;
+}
+
+message TagsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string path = 3;
+}
+
+message Ref {
+	string name = 1;
+}
+
+message RefsEdge {
+	Ref node = 1;
+	string cursor = 2;
+}
+
+message TagsResponse {
+	string namespace = 1;
+	Node node = 2;
+	int32 totalCount = 3;
+	PageInfo pageInfo = 4;
+	repeated RefsEdge edges = 5;
+}
+
+message RefsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string path = 3;
+}
+
+message RefsResponse {
+	string namespace = 1;
+	Node node = 2;
+	int32 totalCount = 3;
+	PageInfo pageInfo = 4;
+	repeated RefsEdge edges = 5;
+}
+
+message RevisionsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string path = 3;
+}
+
+message RevisionsResponse {
+	string namespace = 1;
+	Node node = 2;
+	int32 totalCount = 3;
+	PageInfo pageInfo = 4;
+	repeated RefsEdge edges = 5;
+}
+
+message TagRequest {
+	string namespace = 1;
+	string path = 2;
+	string ref = 3;
+	string tag = 4;
+}
+
+message UntagRequest {
+	string namespace = 1;
+	string path = 2;
+	string tag = 4;
+}
+
+message RetagRequest {
+	string namespace = 1;
+	string path = 2;
+	string ref = 3;
+	string tag = 4;
+}
+
+message DeleteRevisionRequest {
+	string namespace = 1;
+	string path = 2;
+	string revision = 3;
+}
+
+message Route {
+	string ref = 1;
+	int32 weight = 2;
+}
+
+message RouterRequest {
+	string namespace = 1;
+	string path = 2;
+}
+
+message RouterResponse {
+	string namespace = 1;
+	Node node = 2;
+	bool live = 3;
+	repeated Route routes = 4;
+}
+
+message EditRouterRequest {
+	string namespace = 1;
+	string path = 2;
+	bool live = 3;
+	repeated Route route = 4;
+}
+
+message EditRouterResponse {
+	string namespace = 1;
+	Node node = 2;
+	bool live = 3;
+	repeated Route routes = 4;
+}
+
+message ValidateRefRequest {
+	string namespace = 1;
+	string path = 2;
+	string ref = 3;
+}
+
+message ValidateRefResponse {
+	string namespace = 1;
+	string path = 2;
+	string ref = 3;
+	bool invalid = 4;
+	string reason = 5;
+	bool compiles = 6;
+}
+
+message ValidateRouterRequest {
+	string namespace = 1;
+	string path = 2;
+}
+
+message ValidateRouterResponse {
+	string namespace = 1;
+	string path = 2;
+	bool invalid = 3;
+	string reason = 4;
+}

@@ -1,122 +1,218 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"strings"
-	"syscall"
-
-	"github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/varstore"
 
 	"github.com/spf13/cobra"
+	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"go.uber.org/zap"
+	libgrpc "google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+)
 
-	"github.com/vorteil/direktiv/pkg/direktiv"
-	"github.com/vorteil/direktiv/pkg/dlog"
-	_ "github.com/vorteil/direktiv/pkg/util"
+var ctx = context.Background()
+
+var (
+	stream                                      bool
+	afterVal, beforeVal                         string
+	after, before                               *string
+	firstVal, lastVal                           int32
+	first, last                                 *int32
+	orderFieldVal, orderDirectionVal            string
+	orderField, orderDirection                  *string
+	filterFieldVal, filterTypeVal, filterValVal string
+	filterField, filterType, filterVal          *string
+
+	stdin  bool
+	filein string
 )
 
 var (
-	debug      bool
-	configFile string
+	logger *zap.Logger
 )
 
+func main() {
+
+	var err error
+
+	logger, err = zap.NewDevelopment()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
+		os.Exit(1)
+	}
+	defer logger.Sync()
+
+	rootCmd.AddCommand(serverCmd)
+
+	rootCmd.AddCommand(serverLogsCmd)
+	rootCmd.AddCommand(namespaceLogsCmd)
+	rootCmd.AddCommand(workflowLogsCmd)
+	rootCmd.AddCommand(instanceLogsCmd)
+
+	rootCmd.AddCommand(namespaceCmd)
+	rootCmd.AddCommand(namespacesCmd)
+	rootCmd.AddCommand(createNamespaceCmd)
+	rootCmd.AddCommand(deleteNamespaceCmd)
+	rootCmd.AddCommand(renameNamespaceCmd)
+
+	rootCmd.AddCommand(directoryCmd)
+	rootCmd.AddCommand(createDirectoryCmd)
+	rootCmd.AddCommand(deleteNodeCmd)
+	rootCmd.AddCommand(renameNodeCmd)
+
+	rootCmd.AddCommand(workflowCmd)
+	rootCmd.AddCommand(createWorkflowCmd)
+	rootCmd.AddCommand(updateWorkflowCmd)
+	rootCmd.AddCommand(saveHeadCmd)
+	rootCmd.AddCommand(discardHeadCmd)
+	rootCmd.AddCommand(tagsCmd)
+	rootCmd.AddCommand(refsCmd)
+	rootCmd.AddCommand(revisionsCmd)
+
+	rootCmd.AddCommand(startWorkflowCmd)
+	rootCmd.AddCommand(instanceCmd)
+	rootCmd.AddCommand(instancesCmd)
+	rootCmd.AddCommand(instanceInputCmd)
+	rootCmd.AddCommand(instanceOutputCmd)
+
+	err = rootCmd.Execute()
+	if err != nil {
+		exit(err)
+	}
+
+}
+
+func addPaginationFlags(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&stream, "stream", false, "")
+	cmd.Flags().StringVar(&afterVal, "after", "", "")
+	cmd.Flags().Int32Var(&firstVal, "first", 0, "")
+	cmd.Flags().StringVar(&beforeVal, "before", "", "")
+	cmd.Flags().Int32Var(&lastVal, "last", 0, "")
+	cmd.Flags().StringVar(&orderFieldVal, "order.field", "", "")
+	cmd.Flags().StringVar(&orderDirectionVal, "order.direction", "", "")
+	cmd.Flags().StringVar(&filterFieldVal, "filter.field", "", "")
+	cmd.Flags().StringVar(&filterTypeVal, "filter.type", "", "")
+	cmd.Flags().StringVar(&filterValVal, "filter.val", "", "")
+}
+
+func client() (grpc.FlowClient, io.Closer, error) {
+
+	conn, err := libgrpc.Dial("localhost:8080", libgrpc.WithInsecure())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return grpc.NewFlowClient(conn), conn, nil
+
+}
+
+func print(x interface{}) {
+
+	data, err := protojson.MarshalOptions{
+		Multiline:       true,
+		EmitUnpopulated: true,
+	}.Marshal(x.(proto.Message))
+	if err != nil {
+		exit(err)
+	}
+
+	s := string(data)
+
+	fmt.Fprintf(os.Stdout, "%s\n", s)
+
+}
+
+func exit(err error) {
+
+	desc := libgrpc.ErrorDesc(err)
+
+	logger.Error(fmt.Sprintf("%s", desc))
+
+	os.Exit(1)
+
+}
+
 var rootCmd = &cobra.Command{
-	Use:   "direktiv",
-	Short: "direktiv is a serverless, container workflow engine.",
-	Run: func(cmd *cobra.Command, args []string) {
+	Use: "flow",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
-		defer func() {
-			// just in case, stop DNS server
-			pv, err := ioutil.ReadFile("/proc/version")
-			if err == nil {
-				// this is a vorteil machine, so we press poweroff
-				if strings.Contains(string(pv), "#vorteil") {
-					log.Printf("vorteil machine, powering off")
-
-					if err := exec.Command("/sbin/poweroff").Run(); err != nil {
-						fmt.Println("error shutting down:", err)
-					}
-
-				}
-			}
-
-		}()
-
-		l, err := dlog.ApplicationLogger("flow")
-		if err != nil {
-			log.Fatalf("can not get logger: %v", err)
-		}
-		l.Info("starting direktiv flow component")
-
-		c, err := direktiv.ReadConfig(configFile)
-		if err != nil {
-			log.Fatalf("Failed to initialize server: %v", err)
+		if afterVal != "" {
+			after = &afterVal
 		}
 
-		server, err := direktiv.NewWorkflowServer(c)
-		if err != nil {
-			log.Fatalf("failed to create server: %v", err)
+		if beforeVal != "" {
+			before = &beforeVal
 		}
 
-		var vstore varstore.VarStorage
-
-		switch c.VariablesStorage.Driver {
-		case "":
-			fallthrough
-		case "database":
-			vstore, err = varstore.NewPostgresVarStorage(c.Database.DB)
-			if err != nil {
-				logrus.Error(err)
-				os.Exit(1)
-			}
-			defer vstore.Close()
-		default:
-			l.Error(errors.New("unsupported variables storage driver"))
-			os.Exit(1)
+		if firstVal != 0 {
+			first = &firstVal
 		}
 
-		server.SetVariableStorage(vstore)
+		if lastVal != 0 {
+			last = &lastVal
+		}
 
-		go func() {
-			sig := make(chan os.Signal, 1)
-			signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
-			<-sig
-			server.Stop()
-			<-sig
-			server.Kill()
-		}()
+		if orderFieldVal != "" {
+			orderField = &orderFieldVal
+		}
 
-		go func() {
-			err := server.Run()
-			if err != nil {
-				log.Fatalf("unable to start server: %v", err)
-			}
-		}()
-
-		<-server.Lifeline()
-
-		l.Infof("server stopped\n")
-
-		return
+		if orderDirectionVal != "" {
+			orderDirection = &orderDirectionVal
+		}
 
 	},
 }
 
-func main() {
+var serverCmd = &cobra.Command{
+	Use:  "server CONFIG_FILE",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
 
-	rootCmd.Flags().BoolVarP(&debug, "debug", "d", false, "enabled debug output")
-	rootCmd.Flags().StringVarP(&configFile, "config", "c", "", "configuration file to use")
+		defer shutdown()
 
-	err := rootCmd.Execute()
-	if err != nil {
-		logrus.Errorf("%v", err)
-		os.Exit(1)
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer cancel()
+
+		conf, err := flow.ReadConfig(args[0])
+		if err != nil {
+			exit(err)
+		}
+
+		err = flow.Run(ctx, logger, conf)
+		if err != nil {
+			exit(err)
+		}
+
+	},
+}
+
+func shutdown() {
+
+	// just in case, stop DNS server
+	pv, err := ioutil.ReadFile("/proc/version")
+	if err == nil {
+
+		// this is a vorteil machine, so we press poweroff
+		if strings.Contains(string(pv), "#vorteil") {
+
+			log.Printf("vorteil machine, powering off")
+
+			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
+				fmt.Println("error shutting down:", err)
+			}
+
+		}
+
 	}
 
 }

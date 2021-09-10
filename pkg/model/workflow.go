@@ -170,8 +170,8 @@ func (o *Workflow) unmFunction(state interface{}, fIndex int) error {
 
 func (o *Workflow) validate() error {
 
-	if err := o.regexValidateID(); err != nil {
-		return err
+	if len(o.States) == 0 {
+		return errors.New("workflow has no defined states")
 	}
 
 	states, err := o.getStatesMap()
@@ -346,7 +346,19 @@ func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (o *Workflow) Load(data []byte) error {
-	return yaml.Unmarshal(data, o)
+
+	err := yaml.Unmarshal(data, o)
+	if err != nil {
+		return err
+	}
+
+	err = o.validate()
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func (o *Workflow) GetStartState() State {

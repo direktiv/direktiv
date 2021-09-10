@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+message ReportActionResultsRequest {
+	optional string instanceId = 1;
+	optional int32 step = 2;
+	optional string actionId = 3;
+	optional string errorCode = 4;
+	optional string errorMessage = 5;
+	optional bytes output = 6;
+}
+
+message ActionLogRequest {
+	optional string instanceId = 1;
+	repeated string msg = 2;
+}

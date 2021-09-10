@@ -957,13 +957,15 @@ func (we *workflowEngine) transformState(ctx context.Context, wli *workflowLogic
 
 }
 
+const instanceStatusPending = "pending"
+
 func (we *workflowEngine) completeState(ctx context.Context, rec *ent.WorkflowInstance, nextState, errCode string, retrying bool) {
 
 	if len(rec.Flow) == 0 {
 		return
 	}
 
-	if rec.Status != "pending" {
+	if rec.Status != instanceStatusPending {
 		return
 	}
 

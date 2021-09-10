@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+import "google/protobuf/empty.proto";
+
+import "pkg/flow/grpc/namespaces.proto";
+import "pkg/flow/grpc/logs.proto";
+import "pkg/flow/grpc/nodes.proto";
+import "pkg/flow/grpc/workflows.proto";
+import "pkg/flow/grpc/variables.proto";
+import "pkg/flow/grpc/secrets.proto";
+import "pkg/flow/grpc/instances.proto";
+import "pkg/flow/grpc/internal.proto";
+
+service Flow {
+	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
+	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
+	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
+	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
+	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
+	rpc RenameNamespace (RenameNamespaceRequest) returns (RenameNamespaceResponse) {}
+	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {} 
+	rpc ServerLogsParcels (ServerLogsRequest) returns (stream ServerLogsResponse) {} 
+	rpc NamespaceLogs (NamespaceLogsRequest) returns (NamespaceLogsResponse) {}
+	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {}
+	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {} 
+	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {} 
+	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {}
+	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
+	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {}
+	rpc DeleteNode (DeleteNodeRequest) returns (google.protobuf.Empty) {}
+	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {}
+	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {}
+	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {} 
+	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}
+	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
+	rpc SaveHead (SaveHeadRequest) returns (SaveHeadResponse) {}
+	rpc DiscardHead (DiscardHeadRequest) returns (DiscardHeadResponse) {}
+	rpc Tags (TagsRequest) returns (TagsResponse) {}
+	rpc TagsStream (TagsRequest) returns (stream TagsResponse) {}
+	rpc Refs (RefsRequest) returns (RefsResponse) {}
+	rpc RefsStream (RefsRequest) returns (stream RefsResponse) {}
+	rpc Revisions (RevisionsRequest) returns (RevisionsResponse) {}
+	rpc RevisionsStream (RevisionsRequest) returns (stream RevisionsResponse) {}
+	rpc DeleteRevision (DeleteRevisionRequest) returns (google.protobuf.Empty) {}
+	rpc Tag (TagRequest) returns (google.protobuf.Empty) {}
+	rpc Untag (UntagRequest) returns (google.protobuf.Empty) {}
+	rpc Retag (RetagRequest) returns (google.protobuf.Empty) {}
+	rpc Router (RouterRequest) returns (RouterResponse) {}
+	rpc RouterStream (RouterRequest) returns (stream RouterResponse) {}
+	rpc EditRouter (EditRouterRequest) returns (EditRouterResponse) {}
+	rpc ValidateRef (ValidateRefRequest) returns (ValidateRefResponse) {}
+	rpc ValidateRouter (ValidateRouterRequest) returns (ValidateRouterResponse) {}
+	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
+	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
+	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
+	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
+	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
+	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
+	rpc Instances (InstancesRequest) returns (InstancesResponse) {}
+	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
+	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {}
+	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {}
+	rpc InstanceLogs (InstanceLogsRequest) returns (InstanceLogsResponse) {} 
+	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {} 
+	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {}
+	rpc RunWorkflow (RunWorkflowRequest) returns (stream RunWorkflowResponse) {}
+	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}
+
+	//
+
+	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
+	rpc NamespaceVariableParcels (NamespaceVariableRequest) returns (stream NamespaceVariableResponse) {}
+	rpc NamespaceVariables (NamespaceVariablesRequest) returns (NamespaceVariablesResponse) {}
+	rpc NamespaceVariablesStream (NamespaceVariablesRequest) returns (stream NamespaceVariablesResponse) {}
+	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
+	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
+	rpc DeleteNamespaceVariable (DeleteNamespaceVariableRequest) returns (google.protobuf.Empty) {}
+	rpc RenameNamespaceVariable (RenameNamespaceVariableRequest) returns (RenameNamespaceVariableResponse) {}
+	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
+	rpc WorkflowVariableParcels (WorkflowVariableRequest) returns (stream WorkflowVariableResponse) {}
+	rpc WorkflowVariables (WorkflowVariablesRequest) returns (WorkflowVariablesResponse) {}
+	rpc WorkflowVariablesStream (WorkflowVariablesRequest) returns (stream WorkflowVariablesResponse) {}
+	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
+	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
+	rpc DeleteWorkflowVariable (DeleteWorkflowVariableRequest) returns (google.protobuf.Empty) {}
+	rpc RenameWorkflowVariable (RenameWorkflowVariableRequest) returns (RenameWorkflowVariableResponse) {}
+	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
+	rpc InstanceVariableParcels (InstanceVariableRequest) returns (stream InstanceVariableResponse) {}
+	rpc InstanceVariables (InstanceVariablesRequest) returns (InstanceVariablesResponse) {}
+	rpc InstanceVariablesStream (InstanceVariablesRequest) returns (stream InstanceVariablesResponse) {}
+	rpc SetInstanceVariable (SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
+	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
+	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
+	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
+
+	// COMING SOON:
+	//
+	// rpc ValidateWorkflow (ValidateWorkflowRequest) returns (ValidateWorkflowResponse) {}
+	// Dependencies // Return dependency graph.
+	// Crons // List of cron schedules on the namespace.
+	// Broadcast // Broadcast Cloudevent.
+	// EventListeners // Get list of event listeners.
+	// Linting
+	// LintRevision
+	// LintPayload
+	// Workflow Metrics
+}
+
+service Internal {
+ 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
+ 	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
+ 	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
+ 	// rpc NamespaceVariable (NamespaceVariableInternalRequest) returns (NamespaceVariableInternalResponse) {}
+	// rpc NamespaceVariableParcels (NamespaceVariableInternalRequest) returns (stream NamespaceVariableInternalResponse) {}
+	// rpc NamespaceVariables (NamespaceVariablesInternalRequest) returns (NamespaceVariablesInternalResponse) {}
+	// rpc NamespaceVariablesStream (NamespaceVariablesInternalRequest) returns (stream NamespaceVariablesInternalResponse) {}
+	// rpc SetNamespaceVariable (SetNamespaceVariableInternalRequest) returns (SetNamespaceVariableInternalResponse) {}
+	// rpc SetNamespaceVariableParcels (stream SetNamespaceVariableInternalRequest) returns (SetNamespaceVariableInternalResponse) {}
+	// rpc DeleteNamespaceVariable (DeleteNamespaceVariableInternalRequest) returns (google.protobuf.Empty) {}
+	// rpc RenameNamespaceVariable (RenameNamespaceVariableInternalRequest) returns (RenameNamespaceVariableInternalResponse) {}
+	// rpc WorkflowVariable (WorkflowVariableInternalRequest) returns (WorkflowVariableInternalResponse) {}
+	// rpc WorkflowVariableParcels (WorkflowVariableInternalRequest) returns (stream WorkflowVariableInternalResponse) {}
+	// rpc WorkflowVariables (WorkflowVariablesInternalRequest) returns (WorkflowVariablesInternalResponse) {}
+	// rpc WorkflowVariablesStream (WorkflowVariablesInternalRequest) returns (stream WorkflowVariablesInternalResponse) {}
+	// rpc SetWorkflowVariable (SetWorkflowVariableInternalRequest) returns (SetWorkflowVariableInternalResponse) {}
+	// rpc SetWorkflowVariableParcels (stream SetWorkflowVariableInternalRequest) returns (SetWorkflowVariableInternalResponse) {}
+	// rpc DeleteWorkflowVariable (DeleteWorkflowVariableInternalRequest) returns (google.protobuf.Empty) {}
+	// rpc RenameWorkflowVariable (RenameWorkflowVariableInternalRequest) returns (RenameWorkflowVariableInternalResponse) {}
+	// rpc InstanceVariable (InstanceVariableInternalRequest) returns (InstanceVariableInternalResponse) {}
+	// rpc InstanceVariableParcels (InstanceVariableInternalRequest) returns (stream InstanceVariableInternalResponse) {}
+	// rpc InstanceVariables (InstanceVariablesInternalRequest) returns (InstanceVariablesInternalResponse) {}
+	// rpc InstanceVariablesStream (InstanceVariablesInternalRequest) returns (stream InstanceVariablesInternalResponse) {}
+	// rpc SetInstanceVariable (SetInstanceVariableInternalRequest) returns (SetInstanceVariableInternalResponse) {}
+	// rpc SetInstanceVariableParcels (stream SetInstanceVariableInternalRequest) returns (SetInstanceVariableInternalResponse) {}
+	// rpc DeleteInstanceVariable (DeleteInstanceVariableInternalRequest) returns (google.protobuf.Empty) {}
+	// rpc RenameInstanceVariable (RenameInstanceVariableInternalRequest) returns (RenameInstanceVariableInternalResponse) {}
+}

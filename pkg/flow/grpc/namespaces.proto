@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+import "google/protobuf/timestamp.proto";
+
+import "pkg/flow/grpc/pagination.proto";
+
+message Namespace {
+	google.protobuf.Timestamp created_at = 1;
+	google.protobuf.Timestamp updated_at = 2;
+	string name = 3;
+}
+
+message NamespaceRequest {
+	string name = 1;
+}
+
+message NamespaceResponse {
+	Namespace namespace = 1;
+}
+
+message NamespacesRequest {
+	Pagination pagination = 1;
+}
+
+message NamespacesResponseEdge {
+	Namespace node = 1;
+	string cursor = 2;
+}
+
+message NamespacesResponse {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated NamespacesResponseEdge edges = 3;
+}
+
+message CreateNamespaceRequest {
+	string name = 1;
+	bool idempotent = 2;
+}
+
+message CreateNamespaceResponse {
+	Namespace namespace = 1;
+}
+
+message DeleteNamespaceRequest {
+	string name = 1;
+	bool idempotent = 2;
+	bool recursive = 3;
+}
+
+message RenameNamespaceRequest {
+	string old = 1;
+	string new = 2;
+}
+
+message RenameNamespaceResponse {
+	Namespace namespace = 1;
+}
