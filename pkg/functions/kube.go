@@ -16,6 +16,7 @@ import (
 	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
+	"github.com/vorteil/direktiv/ent/predicate"
 	entservices "github.com/vorteil/direktiv/ent/services"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
@@ -24,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -42,20 +44,26 @@ const (
 
 	containerUser    = "direktiv-container"
 	containerSidecar = "direktiv-sidecar"
-
-	generationHeader = "serving.knative.dev/configurationGeneration"
 )
 
 // Headers for knative services
 const (
+	// Direktiv Headers
 	ServiceHeaderName         = "direktiv.io/name"
 	ServiceHeaderNamespace    = "direktiv.io/namespace"
 	ServiceHeaderWorkflow     = "direktiv.io/workflow"
 	ServiceHeaderSize         = "direktiv.io/size"
 	ServiceHeaderScale        = "direktiv.io/scale"
 	ServiceTemplateGeneration = "direktiv.io/templateGeneration"
+	ServiceHeaderScope        = "direktiv.io/scope"
 	// ServiceHeaderScale = "autoscaling.knative.dev/minScale"
-	ServiceHeaderScope = "direktiv.io/scope"
+
+	// Serving Headers
+	ServiceKnativeHeaderName            = "serving.knative.dev/service"
+	ServiceKnativeHeaderConfiguration   = "serving.knative.dev/configuration"
+	ServiceKnativeHeaderGeneration      = "serving.knative.dev/configurationGeneration"
+	ServiceKnativeHeaderRevision        = "serving.knative.dev/revision"
+	ServiceKnativeHeaderRolloutDuration = "serving.knative.dev/rolloutDuration"
 )
 
 // Available prefixes for different scopes
@@ -111,7 +119,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 		return &empty, err
 	}
 
-	svcName := r.Labels["serving.knative.dev/configuration"]
+	svcName := r.Labels[ServiceKnativeHeaderConfiguration]
 	resp, err := getKnativeFunction(svcName)
 	if err != nil {
 		logger.Errorf("error getting svc for %v: %v", svcName, err)
@@ -142,7 +150,29 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 
 	logger.Debugf("deleting functions %v", in.GetAnnotations())
 
-	err := deleteKnativeFunctionss(in.GetAnnotations())
+	svcList, err := deleteKnativeFunctions(in.GetAnnotations())
+	if err != nil {
+		logger.Errorf("error delete knative services %s: %w", in.GetAnnotations(), err)
+		return &empty, err
+	}
+
+	// Delete Database records
+	logger.Debugf("deleting database records %v", in.GetAnnotations())
+
+	deleteRecord := is.db.Services.Delete()
+	conditions := make([]predicate.Services, 0)
+	for i := range svcList {
+		conditions = append(conditions, entservices.Name(svcList[i]))
+	}
+
+	deleteRecord = deleteRecord.Where(entservices.Or(conditions...))
+	recordCount, err := deleteRecord.Exec(ctx)
+	if err != nil {
+		logger.Errorf("error delete knative database record %s: %w", in.GetAnnotations(), err)
+		return &empty, err
+	}
+
+	logger.Debugf("deleted %v database records", recordCount)
 
 	return &empty, err
 }
@@ -191,11 +221,11 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 	}
 
 	l := map[string]string{
-		"serving.knative.dev/service": *in.ServiceName,
+		ServiceKnativeHeaderName: *in.ServiceName,
 	}
 
 	if in.GetRevisionName() != "" {
-		l["serving.knative.dev/revision"] = *in.RevisionName
+		l[ServiceKnativeHeaderRevision] = *in.RevisionName
 	}
 
 	labels := labels.Set(l).String()
@@ -231,8 +261,8 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 				return false, nil
 			}
 
-			svc := p.Labels["serving.knative.dev/service"]
-			srev := p.Labels["serving.knative.dev/revision"]
+			svc := p.Labels[ServiceKnativeHeaderName]
+			srev := p.Labels[ServiceKnativeHeaderRevision]
 
 			pod := igrpc.PodsInfo{
 				Name:            &p.Name,
@@ -261,7 +291,7 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 	}
 }
 
-// ListFunctionss returns isoaltes based on label filter
+// ListFunctions returns isoaltes based on label filter
 func (is *functionsServer) ListFunctions(ctx context.Context,
 	in *igrpc.ListFunctionsRequest) (*igrpc.ListFunctionsResponse, error) {
 
@@ -459,7 +489,7 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 	}
 
 	l := map[string]string{
-		"serving.knative.dev/service": *in.ServiceName,
+		ServiceKnativeHeaderName: *in.ServiceName,
 	}
 
 	if in.GetRevisionName() != "" {
@@ -645,12 +675,20 @@ func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
 func (is *functionsServer) DeleteFunction(ctx context.Context,
 	in *igrpc.GetFunctionRequest) (*emptypb.Empty, error) {
 
-	err := deleteKnativeFunctions(in.GetServiceName())
+	err := deleteKnativeFunction(in.GetServiceName())
 	if err != nil {
 		logger.Errorf("can not delete knative service: %v", err)
 		return &empty, err
 	}
 
+	deleteRecord := is.db.Services.Delete().Where(entservices.Name(in.GetServiceName()))
+	recordCount, err := deleteRecord.Exec(ctx)
+	if err != nil {
+		logger.Errorf("successfully delete service, but could not delete backup record: %v", err)
+		return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %v", err)
+	}
+
+	logger.With("service", in.GetServiceName(), "deleted-records", recordCount).Debug("Successfully deleted knative service and record")
 	return &empty, nil
 
 }
@@ -886,8 +924,8 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 	for i := range l.Items {
 
 		pod := l.Items[i]
-		sn := pod.Labels["serving.knative.dev/service"]
-		sr := pod.Labels["serving.knative.dev/revision"]
+		sn := pod.Labels[ServiceKnativeHeaderName]
+		sr := pod.Labels[ServiceKnativeHeaderRevision]
 		ii := &igrpc.PodsInfo{
 			Name:            &pod.Name,
 			Status:          (*string)(&pod.Status.Phase),
@@ -958,7 +996,7 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 	meta.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", size)
 
 	// crashes knative sometimes
-	meta.Annotations["serving.knative.dev/rolloutDuration"] =
+	meta.Annotations[ServiceKnativeHeaderRolloutDuration] =
 		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 
 	return meta
@@ -1371,11 +1409,11 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 
 }
 
-func deleteKnativeFunctionss(annotations map[string]string) error {
+func deleteKnativeFunctions(annotations map[string]string) ([]string, error) {
 
 	filtered := filterLabels(annotations)
 	if len(filtered) == 0 {
-		return fmt.Errorf("request labels are invalid")
+		return nil, fmt.Errorf("request labels are invalid")
 	}
 
 	logger.Debugf("delete annotations: %s", labels.Set(filtered).String())
@@ -1383,12 +1421,25 @@ func deleteKnativeFunctionss(annotations map[string]string) error {
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		logger.Errorf("error getting clientset for knative: %v", err)
-		return err
+		return nil, err
 	}
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
-	return cs.ServingV1().Services(functionsConfig.Namespace).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
+	// Get list of services will be deleted
+	svcList, err := cs.ServingV1().Services(functionsConfig.Namespace).List(context.Background(), lo)
+	if err != nil {
+		logger.Errorf("error getting service list from knative: %v", err)
+		return nil, err
+	}
+
+	servicesToDelete := make([]string, 0)
+	for i := range svcList.Items {
+		servicesToDelete = append(servicesToDelete, svcList.Items[i].Name)
+	}
+
+	err = cs.ServingV1().Services(functionsConfig.Namespace).DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
+	return servicesToDelete, err
 }
 
 func createVolumes() []corev1.Volume {
@@ -1447,7 +1498,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 	}
 
 	spec.Annotations[ServiceHeaderSize] = fmt.Sprintf("%d", info.GetSize())
-	spec.Annotations["serving.knative.dev/rolloutDuration"] =
+	spec.Annotations[ServiceKnativeHeaderRolloutDuration] =
 		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 	spec.Annotations["autoscaling.knative.dev/minScale"] =
 		fmt.Sprintf("%d", info.GetMinScale())
@@ -1547,8 +1598,8 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 
 	sort.Slice(rs.Items[:], func(i, j int) bool {
 		var gen1, gen2 int64
-		fmt.Sscan(rs.Items[i].Labels[generationHeader], &gen1)
-		fmt.Sscan(rs.Items[j].Labels[generationHeader], &gen2)
+		fmt.Sscan(rs.Items[i].Labels[ServiceKnativeHeaderGeneration], &gen1)
+		fmt.Sscan(rs.Items[j].Labels[ServiceKnativeHeaderGeneration], &gen2)
 		return gen1 < gen2
 	})
 
@@ -1683,7 +1734,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	return newSvc, nil
 }
 
-func deleteKnativeFunctions(name string) error {
+func deleteKnativeFunction(name string) error {
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
@@ -1826,7 +1877,7 @@ func (is *functionsServer) backupService(serviceName string, opts backupServiceO
 
 	// Get Revisions
 	labelSelector := labels.Set(map[string]string{
-		"serving.knative.dev/service": serviceName,
+		ServiceKnativeHeaderName: serviceName,
 	}).String()
 
 	revList, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(), metav1.ListOptions{
@@ -2028,6 +2079,62 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 		}
 	}
 
+	return nil
+}
+
+//	reconstructServices : Checks to see if there are any records in the database of
+//	backed up services that are missing. If any missing services are found, they
+//	are recontructed
+func (is *functionsServer) reconstructServices(ctx context.Context) error {
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		logger.Errorf("error getting clientset for knative: %v", err)
+		return err
+	}
+
+	// Get Current Namespace and Global Services
+	lblScope, err := labels.NewRequirement(ServiceHeaderScope, selection.In, []string{PrefixNamespace, PrefixGlobal})
+	if err != nil {
+		logger.Errorf("invalid label: %v", err)
+		return err
+	}
+
+	svcList, err := cs.ServingV1().Services(functionsConfig.Namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: lblScope.String(),
+	})
+	if err != nil {
+		logger.Errorf("error getting services", err)
+		return err
+	}
+
+	logger.Infof("Reconstruct Services - Found %v services", len(svcList.Items))
+
+	// Get missing services that exist in database
+	query := is.db.Services.Query()
+	conditions := make([]predicate.Services, 0)
+	for _, svc := range svcList.Items {
+		conditions = append(conditions, entservices.Not(entservices.Name(svc.Name)))
+	}
+	query = query.Where(entservices.And(conditions...))
+
+	recoverSVCList, err := query.All(ctx)
+	if err != nil {
+		logger.Error("failed to get services from database: %w", err)
+		return err
+	}
+
+	logger.Infof("Reconstruct Services - Found %v backup records to recover", len(recoverSVCList))
+
+	for i := range recoverSVCList {
+		logger.Infof("Reconstruct Services - Reconstructing %s ", recoverSVCList[i].Name)
+		err := is.reconstructService(recoverSVCList[i].Name, ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	logger.Infof("Reconstruct Services - Successfully recovered %v services", len(recoverSVCList))
 	return nil
 }
 

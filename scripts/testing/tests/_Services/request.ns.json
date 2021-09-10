@@ -2,13 +2,13 @@
     "revisions": [
       {
         "image": "vorteil/request:v6",
-        "minScale": 1,
+        "minScale": 0,
         "size": 0,
         "cmd": ""
       },
       {
         "image": "vorteil/request:v7",
-        "minScale": 1,
+        "minScale": 0,
         "size": 0,
         "cmd": ""
       },

@@ -78,14 +78,20 @@ func StartServer(echan chan error) {
 		echan <- fmt.Errorf("failed to auto migrate database: %w", err)
 	}
 
+	fServer := functionsServer{
+		db: db,
+	}
+
 	err = util.GrpcStart(&grpcServer, util.TLSFunctionsComponent,
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
-			igrpc.RegisterFunctionsServiceServer(srv, &functionsServer{
-				db: db,
-			})
+			igrpc.RegisterFunctionsServiceServer(srv, &fServer)
 			reflection.Register(srv)
 		})
+	if err != nil {
+		echan <- err
+	}
 
+	err = fServer.reconstructServices(context.Background())
 	if err != nil {
 		echan <- err
 	}

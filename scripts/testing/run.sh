@@ -284,7 +284,7 @@ run_test_init_script () {
 	test=$1
 	script=$test/init.sh
 	if [ -f "$script" ]; then
-		echo "init-start =========== running script $script"
+		echo "init-start =========== running script (This may take awhile) $script"
 		init_output=`DIREKTIV_API=$DIREKTIV_API NAMESPACE=$NAMESPACE bash -c $script`
 		status=$?
 		echo "$init_output" | while IFS= read -r line ; do echo -e "    ${GREY}$line${NC}"; done
