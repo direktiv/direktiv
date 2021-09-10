@@ -354,10 +354,12 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 		return &empty, err
 	}
 
-	// backup service
-	if err := is.backupService(svc.Name, backupServiceOptions{}); err != nil {
-		logger.Errorf("can not backup knative service: %v", err)
-		return &empty, err
+	// backup service if not a workflow service
+	if svc.ObjectMeta.Labels[ServiceHeaderWorkflow] == "" {
+		if err := is.backupService(svc.Name, backupServiceOptions{}); err != nil {
+			logger.Errorf("can not backup knative service: %v", err)
+			return &empty, err
+		}
 	}
 
 	return &empty, nil
@@ -661,11 +663,13 @@ func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
 	}
 
 	// backup service
-	if err := is.backupService(svc.Name, backupServiceOptions{
-		patch: true,
-	}); err != nil {
-		logger.Errorf("can not backup knative service: %v", err)
-		return &empty, err
+	if svc.ObjectMeta.Labels[ServiceHeaderWorkflow] == "" {
+		if err := is.backupService(svc.Name, backupServiceOptions{
+			patch: true,
+		}); err != nil {
+			logger.Errorf("can not backup knative service: %v", err)
+			return &empty, err
+		}
 	}
 
 	return &empty, nil
@@ -725,12 +729,14 @@ func (is *functionsServer) UpdateFunction(ctx context.Context,
 	}
 
 	// backup service
-	if err := is.backupService(svc.Name, backupServiceOptions{
-		previousRevisionName: previousSvc.Status.LatestCreatedRevisionName,
-		patch:                true,
-	}); err != nil {
-		logger.Errorf("can not backup knative service: %v", err)
-		return &empty, err
+	if svc.ObjectMeta.Labels[ServiceHeaderWorkflow] == "" {
+		if err := is.backupService(svc.Name, backupServiceOptions{
+			previousRevisionName: previousSvc.Status.LatestCreatedRevisionName,
+			patch:                true,
+		}); err != nil {
+			logger.Errorf("can not backup knative service: %v", err)
+			return &empty, err
+		}
 	}
 
 	return &empty, nil
