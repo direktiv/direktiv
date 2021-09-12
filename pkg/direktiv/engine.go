@@ -582,15 +582,6 @@ func (we *workflowEngine) doKnativeHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 
-						// // we can recreate the function if it is a workflow scope function
-						// // if not we can bail right here
-						// if ar.Container.Type != model.ReusableContainerFunctionType {
-						// 	we.reportError(ar,
-						// 		fmt.Errorf("function %s does not exist on scope %v",
-						// 			ar.Container.ID, ar.Container.Type))
-						// 	return
-						// }
-
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
 							!isKnativeFunction(we.functionsClient, ar.Container.ID,
