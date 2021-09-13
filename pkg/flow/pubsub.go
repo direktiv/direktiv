@@ -390,9 +390,11 @@ func (pubsub *pubsub) walkInodeKeys(ino *ent.Inode) []string {
 	array := make([]string, 0)
 
 	x := ino
+	array = append(array, x.ID.String())
+
 	for x.Edges.Parent != nil {
-		array = append(array, x.ID.String())
 		x = ino.Edges.Parent
+		array = append(array, x.ID.String())
 	}
 
 	ns := ino.Edges.Namespace
