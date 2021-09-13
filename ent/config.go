@@ -26,6 +26,7 @@ type config struct {
 type hooks struct {
 	CloudEvents        []ent.Hook
 	Namespace          []ent.Hook
+	Services           []ent.Hook
 	Workflow           []ent.Hook
 	WorkflowEvents     []ent.Hook
 	WorkflowEventsWait []ent.Hook

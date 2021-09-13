@@ -24,6 +24,7 @@ type config struct {
 	MaxJobs            int    `yaml:"max-jobs"`
 	MaxScale           int    `yaml:"max-scale"`
 	NetShape           string `yaml:"net-shape"`
+	Database           string `yaml:"db"`
 	RolloutDuration    int    `yaml:"rollout-duration"`
 	Concurrency        int    `yaml:"concurrency"`
 	Storage            int    `yaml:"storage"`

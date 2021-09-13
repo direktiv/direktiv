@@ -12,6 +12,9 @@ type CloudEvents func(*sql.Selector)
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)
 
+// Services is the predicate function for services builders.
+type Services func(*sql.Selector)
+
 // Workflow is the predicate function for workflow builders.
 type Workflow func(*sql.Selector)
 
