@@ -21,7 +21,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	flow := &flow{server: srv}
 
-	flow.listener, err = net.Listen("tcp", srv.conf.Bind)
+	flow.listener, err = net.Listen("tcp", srv.conf.BindFlow)
 	if err != nil {
 		return nil, err
 	}

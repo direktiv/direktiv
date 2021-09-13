@@ -20,8 +20,9 @@ import (
 const parcelSize = 0x100000
 
 type Config struct {
-	Database string
-	Bind     string
+	Database     string `yaml:"database"`
+	BindFlow     string `yaml:"bind_flow"`
+	BindInternal string `yaml:"bind_internal"`
 }
 
 func ReadConfig(file string) (*Config, error) {
@@ -156,17 +157,17 @@ func (srv *server) start(ctx context.Context) error {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
-	wg.Add(1)
+	wg.Add(2)
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// srv.sugar.Debug("Initializing internal grpc server.")
+	srv.sugar.Debug("Initializing internal grpc server.")
 
-	// srv.internal, err = initInternalServer(cctx, srv)
-	// if err != nil {
-	// 	return err
-	// }
+	srv.internal, err = initInternalServer(cctx, srv)
+	if err != nil {
+		return err
+	}
 
 	srv.sugar.Debug("Initializing flow grpc server.")
 
@@ -175,19 +176,19 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 
-	// go func() {
-	// 	defer wg.Done()
-	// 	defer cancel()
-	// 	e := srv.internal.Run()
-	// 	if e != nil {
-	// 		srv.sugar.Error(err)
-	// 		lock.Lock()
-	// 		if err == nil {
-	// 			err = e
-	// 		}
-	// 		lock.Unlock()
-	// 	}
-	// }()
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.internal.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
 
 	go func() {
 		defer wg.Done()
