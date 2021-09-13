@@ -11,6 +11,9 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
+	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
+	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
 	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
@@ -49,6 +52,167 @@ type Edge struct {
 	Type string      `json:"type,omitempty"` // edge type.
 	Name string      `json:"name,omitempty"` // edge name.
 	IDs  []uuid.UUID `json:"ids,omitempty"`  // node ids (where this edge point to).
+}
+
+func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     ce.ID,
+		Type:   "CloudEvents",
+		Fields: make([]*Field, 6),
+		Edges:  make([]*Edge, 0),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(ce.EventId); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "eventId",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ce.Namespace); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "namespace",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ce.Event); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "event.Event",
+		Name:  "event",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ce.Fire); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "fire",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ce.Created); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "time.Time",
+		Name:  "created",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ce.Processed); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "bool",
+		Name:  "processed",
+		Value: string(buf),
+	}
+	return node, nil
+}
+
+func (e *Events) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     e.ID,
+		Type:   "Events",
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 3),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(e.Events); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "[]map[string]interface {}",
+		Name:  "events",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(e.Correlations); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "[]string",
+		Name:  "correlations",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(e.Signature); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "[]byte",
+		Name:  "signature",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(e.Count); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "int",
+		Name:  "count",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Workflow",
+		Name: "workflow",
+	}
+	err = e.QueryWorkflow().
+		Select(workflow.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "EventsWait",
+		Name: "wfeventswait",
+	}
+	err = e.QueryWfeventswait().
+		Select(eventswait.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Instance",
+		Name: "workflowinstance",
+	}
+	err = e.QueryWorkflowinstance().
+		Select(instance.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (ew *EventsWait) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     ew.ID,
+		Type:   "EventsWait",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(ew.Events); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "map[string]interface {}",
+		Name:  "events",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Events",
+		Name: "workflowevent",
+	}
+	err = ew.QueryWorkflowevent().
+		Select(events.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
@@ -139,7 +303,7 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 		ID:     i.ID,
 		Type:   "Instance",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(i.CreatedAt); err != nil {
@@ -265,6 +429,16 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 	err = i.QueryChildren().
 		Select(instanceruntime.FieldID).
 		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "Events",
+		Name: "instance",
+	}
+	err = i.QueryInstance().
+		Select(events.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -810,7 +984,7 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 		ID:     w.ID,
 		Type:   "Workflow",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 8),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(w.Live); err != nil {
@@ -901,6 +1075,16 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[8] = &Edge{
+		Type: "Events",
+		Name: "wfevents",
+	}
+	err = w.QueryWfevents().
+		Select(events.FieldID).
+		Scan(ctx, &node.Edges[8].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -971,6 +1155,33 @@ func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_
 
 func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, error) {
 	switch table {
+	case cloudevents.Table:
+		n, err := c.CloudEvents.Query().
+			Where(cloudevents.ID(id)).
+			CollectFields(ctx, "CloudEvents").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case events.Table:
+		n, err := c.Events.Query().
+			Where(events.ID(id)).
+			CollectFields(ctx, "Events").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case eventswait.Table:
+		n, err := c.EventsWait.Query().
+			Where(eventswait.ID(id)).
+			CollectFields(ctx, "EventsWait").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case inode.Table:
 		n, err := c.Inode.Query().
 			Where(inode.ID(id)).
@@ -1143,6 +1354,45 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case cloudevents.Table:
+		nodes, err := c.CloudEvents.Query().
+			Where(cloudevents.IDIn(ids...)).
+			CollectFields(ctx, "CloudEvents").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case events.Table:
+		nodes, err := c.Events.Query().
+			Where(events.IDIn(ids...)).
+			CollectFields(ctx, "Events").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case eventswait.Table:
+		nodes, err := c.EventsWait.Query().
+			Where(eventswait.IDIn(ids...)).
+			CollectFields(ctx, "EventsWait").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case inode.Table:
 		nodes, err := c.Inode.Query().
 			Where(inode.IDIn(ids...)).

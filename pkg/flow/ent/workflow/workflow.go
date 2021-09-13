@@ -29,6 +29,8 @@ const (
 	EdgeLogs = "logs"
 	// EdgeVars holds the string denoting the vars edge name in mutations.
 	EdgeVars = "vars"
+	// EdgeWfevents holds the string denoting the wfevents edge name in mutations.
+	EdgeWfevents = "wfevents"
 	// Table holds the table name of the workflow in the database.
 	Table = "workflows"
 	// InodeTable is the table that holds the inode relation/edge.
@@ -87,6 +89,13 @@ const (
 	VarsInverseTable = "var_refs"
 	// VarsColumn is the table column denoting the vars relation/edge.
 	VarsColumn = "workflow_vars"
+	// WfeventsTable is the table that holds the wfevents relation/edge.
+	WfeventsTable = "events"
+	// WfeventsInverseTable is the table name for the Events entity.
+	// It exists in this package in order to avoid circular dependency with the "events" package.
+	WfeventsInverseTable = "events"
+	// WfeventsColumn is the table column denoting the wfevents relation/edge.
+	WfeventsColumn = "workflow_wfevents"
 )
 
 // Columns holds all SQL columns for workflow fields.

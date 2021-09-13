@@ -337,6 +337,34 @@ func HasVarsWith(preds ...predicate.VarRef) predicate.Workflow {
 	})
 }
 
+// HasWfevents applies the HasEdge predicate on the "wfevents" edge.
+func HasWfevents() predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(WfeventsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, WfeventsTable, WfeventsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWfeventsWith applies the HasEdge predicate on the "wfevents" edge with a given conditions (other predicates).
+func HasWfeventsWith(preds ...predicate.Events) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(WfeventsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, WfeventsTable, WfeventsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Workflow) predicate.Workflow {
 	return predicate.Workflow(func(s *sql.Selector) {

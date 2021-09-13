@@ -120,47 +120,54 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
-	muxc := tx.Route
-	_, err = muxc.Delete().Where(entmux.HasWorkflowWith(entwf.ID(d.wf.ID))).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+	var routes []*ent.Route
 
-	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
-	if err != nil {
-		return nil, err
-	}
+	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+		func() error {
 
-	for i := range req.Route {
+			muxc := tx.Route
+			_, err = muxc.Delete().Where(entmux.HasWorkflowWith(entwf.ID(d.wf.ID))).Exec(ctx)
+			if err != nil {
+				return err
+			}
 
-		route := req.Route[i]
-		ref, err := flow.getRef(ctx, d.wf, route.Ref)
-		if err != nil {
-			return nil, err
-		}
+			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+			if err != nil {
+				return err
+			}
 
-		err = muxc.Create().SetWorkflow(d.wf).SetWeight(int(route.Weight)).SetRef(ref).Exec(ctx)
-		if err != nil {
-			return nil, err
-		}
+			for i := range req.Route {
 
-	}
+				route := req.Route[i]
+				ref, err := flow.getRef(ctx, d.wf, route.Ref)
+				if err != nil {
+					return err
+				}
 
-	routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
-	if err != nil {
-		return nil, err
-	}
+				err = muxc.Create().SetWorkflow(d.wf).SetWeight(int(route.Weight)).SetRef(ref).Exec(ctx)
+				if err != nil {
+					return err
+				}
 
-	if d.wf.Live != req.GetLive() {
-		err = d.wf.Update().SetLive(req.GetLive()).Exec(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
+			}
 
-	// TODO: validate
+			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+			if err != nil {
+				return err
+			}
 
-	err = tx.Commit()
+			if d.wf.Live != req.GetLive() {
+				err = d.wf.Update().SetLive(req.GetLive()).Exec(ctx)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +203,7 @@ func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRe
 		return nil, err
 	}
 
-	verr, err := validateRouter(ctx, d.wf)
+	_, verr, err := validateRouter(ctx, d.wf)
 	if err != nil {
 		return nil, err
 	}

@@ -9,6 +9,45 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 )
 
+// The CloudEventsFunc type is an adapter to allow the use of ordinary
+// function as CloudEvents mutator.
+type CloudEventsFunc func(context.Context, *ent.CloudEventsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CloudEventsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CloudEventsMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CloudEventsMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The EventsFunc type is an adapter to allow the use of ordinary
+// function as Events mutator.
+type EventsFunc func(context.Context, *ent.EventsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EventsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.EventsMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventsMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The EventsWaitFunc type is an adapter to allow the use of ordinary
+// function as EventsWait mutator.
+type EventsWaitFunc func(context.Context, *ent.EventsWaitMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EventsWaitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.EventsWaitMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventsWaitMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The InodeFunc type is an adapter to allow the use of ordinary
 // function as Inode mutator.
 type InodeFunc func(context.Context, *ent.InodeMutation) (ent.Value, error)

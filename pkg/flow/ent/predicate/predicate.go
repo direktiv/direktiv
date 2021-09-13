@@ -6,6 +6,15 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// CloudEvents is the predicate function for cloudevents builders.
+type CloudEvents func(*sql.Selector)
+
+// Events is the predicate function for events builders.
+type Events func(*sql.Selector)
+
+// EventsWait is the predicate function for eventswait builders.
+type EventsWait func(*sql.Selector)
+
 // Inode is the predicate function for inode builders.
 type Inode func(*sql.Selector)
 

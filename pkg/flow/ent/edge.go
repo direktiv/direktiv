@@ -4,6 +4,38 @@ package ent
 
 import "context"
 
+func (e *Events) Workflow(ctx context.Context) (*Workflow, error) {
+	result, err := e.Edges.WorkflowOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryWorkflow().Only(ctx)
+	}
+	return result, err
+}
+
+func (e *Events) Wfeventswait(ctx context.Context) ([]*EventsWait, error) {
+	result, err := e.Edges.WfeventswaitOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryWfeventswait().All(ctx)
+	}
+	return result, err
+}
+
+func (e *Events) Workflowinstance(ctx context.Context) (*Instance, error) {
+	result, err := e.Edges.WorkflowinstanceOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryWorkflowinstance().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (ew *EventsWait) Workflowevent(ctx context.Context) (*Events, error) {
+	result, err := ew.Edges.WorkfloweventOrErr()
+	if IsNotLoaded(err) {
+		result, err = ew.QueryWorkflowevent().Only(ctx)
+	}
+	return result, err
+}
+
 func (i *Inode) Namespace(ctx context.Context) (*Namespace, error) {
 	result, err := i.Edges.NamespaceOrErr()
 	if IsNotLoaded(err) {
@@ -88,6 +120,14 @@ func (i *Instance) Children(ctx context.Context) ([]*InstanceRuntime, error) {
 	result, err := i.Edges.ChildrenOrErr()
 	if IsNotLoaded(err) {
 		result, err = i.QueryChildren().All(ctx)
+	}
+	return result, err
+}
+
+func (i *Instance) Instance(ctx context.Context) ([]*Events, error) {
+	result, err := i.Edges.InstanceOrErr()
+	if IsNotLoaded(err) {
+		result, err = i.QueryInstance().All(ctx)
 	}
 	return result, err
 }
@@ -336,6 +376,14 @@ func (w *Workflow) Vars(ctx context.Context) ([]*VarRef, error) {
 	result, err := w.Edges.VarsOrErr()
 	if IsNotLoaded(err) {
 		result, err = w.QueryVars().All(ctx)
+	}
+	return result, err
+}
+
+func (w *Workflow) Wfevents(ctx context.Context) ([]*Events, error) {
+	result, err := w.Edges.WfeventsOrErr()
+	if IsNotLoaded(err) {
+		result, err = w.QueryWfevents().All(ctx)
 	}
 	return result, err
 }

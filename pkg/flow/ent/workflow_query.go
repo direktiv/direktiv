@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
 	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
@@ -43,6 +44,7 @@ type WorkflowQuery struct {
 	withRoutes    *RouteQuery
 	withLogs      *LogMsgQuery
 	withVars      *VarRefQuery
+	withWfevents  *EventsQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -256,6 +258,28 @@ func (wq *WorkflowQuery) QueryVars() *VarRefQuery {
 	return query
 }
 
+// QueryWfevents chains the current query on the "wfevents" edge.
+func (wq *WorkflowQuery) QueryWfevents() *EventsQuery {
+	query := &EventsQuery{config: wq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := wq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := wq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflow.Table, workflow.FieldID, selector),
+			sqlgraph.To(events.Table, events.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflow.WfeventsTable, workflow.WfeventsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(wq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Workflow entity from the query.
 // Returns a *NotFoundError when no Workflow was found.
 func (wq *WorkflowQuery) First(ctx context.Context) (*Workflow, error) {
@@ -445,6 +469,7 @@ func (wq *WorkflowQuery) Clone() *WorkflowQuery {
 		withRoutes:    wq.withRoutes.Clone(),
 		withLogs:      wq.withLogs.Clone(),
 		withVars:      wq.withVars.Clone(),
+		withWfevents:  wq.withWfevents.Clone(),
 		// clone intermediate query.
 		sql:  wq.sql.Clone(),
 		path: wq.path,
@@ -539,6 +564,17 @@ func (wq *WorkflowQuery) WithVars(opts ...func(*VarRefQuery)) *WorkflowQuery {
 	return wq
 }
 
+// WithWfevents tells the query-builder to eager-load the nodes that are connected to
+// the "wfevents" edge. The optional arguments are used to configure the query builder of the edge.
+func (wq *WorkflowQuery) WithWfevents(opts ...func(*EventsQuery)) *WorkflowQuery {
+	query := &EventsQuery{config: wq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	wq.withWfevents = query
+	return wq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -605,7 +641,7 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 		nodes       = []*Workflow{}
 		withFKs     = wq.withFKs
 		_spec       = wq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			wq.withInode != nil,
 			wq.withNamespace != nil,
 			wq.withRevisions != nil,
@@ -614,6 +650,7 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 			wq.withRoutes != nil,
 			wq.withLogs != nil,
 			wq.withVars != nil,
+			wq.withWfevents != nil,
 		}
 	)
 	if wq.withNamespace != nil {
@@ -870,6 +907,35 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "workflow_vars" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Vars = append(node.Edges.Vars, n)
+		}
+	}
+
+	if query := wq.withWfevents; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Workflow)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Wfevents = []*Events{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Events(func(s *sql.Selector) {
+			s.Where(sql.InValues(workflow.WfeventsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.workflow_wfevents
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "workflow_wfevents" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "workflow_wfevents" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Wfevents = append(node.Edges.Wfevents, n)
 		}
 	}
 

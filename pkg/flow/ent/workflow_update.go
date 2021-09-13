@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
 	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
@@ -170,6 +171,21 @@ func (wu *WorkflowUpdate) AddVars(v ...*VarRef) *WorkflowUpdate {
 	return wu.AddVarIDs(ids...)
 }
 
+// AddWfeventIDs adds the "wfevents" edge to the Events entity by IDs.
+func (wu *WorkflowUpdate) AddWfeventIDs(ids ...uuid.UUID) *WorkflowUpdate {
+	wu.mutation.AddWfeventIDs(ids...)
+	return wu
+}
+
+// AddWfevents adds the "wfevents" edges to the Events entity.
+func (wu *WorkflowUpdate) AddWfevents(e ...*Events) *WorkflowUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return wu.AddWfeventIDs(ids...)
+}
+
 // Mutation returns the WorkflowMutation object of the builder.
 func (wu *WorkflowUpdate) Mutation() *WorkflowMutation {
 	return wu.mutation
@@ -311,6 +327,27 @@ func (wu *WorkflowUpdate) RemoveVars(v ...*VarRef) *WorkflowUpdate {
 		ids[i] = v[i].ID
 	}
 	return wu.RemoveVarIDs(ids...)
+}
+
+// ClearWfevents clears all "wfevents" edges to the Events entity.
+func (wu *WorkflowUpdate) ClearWfevents() *WorkflowUpdate {
+	wu.mutation.ClearWfevents()
+	return wu
+}
+
+// RemoveWfeventIDs removes the "wfevents" edge to Events entities by IDs.
+func (wu *WorkflowUpdate) RemoveWfeventIDs(ids ...uuid.UUID) *WorkflowUpdate {
+	wu.mutation.RemoveWfeventIDs(ids...)
+	return wu
+}
+
+// RemoveWfevents removes "wfevents" edges to Events entities.
+func (wu *WorkflowUpdate) RemoveWfevents(e ...*Events) *WorkflowUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return wu.RemoveWfeventIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -800,6 +837,60 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if wu.mutation.WfeventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.WfeventsTable,
+			Columns: []string{workflow.WfeventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wu.mutation.RemovedWfeventsIDs(); len(nodes) > 0 && !wu.mutation.WfeventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.WfeventsTable,
+			Columns: []string{workflow.WfeventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wu.mutation.WfeventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.WfeventsTable,
+			Columns: []string{workflow.WfeventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, wu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workflow.Label}
@@ -953,6 +1044,21 @@ func (wuo *WorkflowUpdateOne) AddVars(v ...*VarRef) *WorkflowUpdateOne {
 	return wuo.AddVarIDs(ids...)
 }
 
+// AddWfeventIDs adds the "wfevents" edge to the Events entity by IDs.
+func (wuo *WorkflowUpdateOne) AddWfeventIDs(ids ...uuid.UUID) *WorkflowUpdateOne {
+	wuo.mutation.AddWfeventIDs(ids...)
+	return wuo
+}
+
+// AddWfevents adds the "wfevents" edges to the Events entity.
+func (wuo *WorkflowUpdateOne) AddWfevents(e ...*Events) *WorkflowUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return wuo.AddWfeventIDs(ids...)
+}
+
 // Mutation returns the WorkflowMutation object of the builder.
 func (wuo *WorkflowUpdateOne) Mutation() *WorkflowMutation {
 	return wuo.mutation
@@ -1094,6 +1200,27 @@ func (wuo *WorkflowUpdateOne) RemoveVars(v ...*VarRef) *WorkflowUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return wuo.RemoveVarIDs(ids...)
+}
+
+// ClearWfevents clears all "wfevents" edges to the Events entity.
+func (wuo *WorkflowUpdateOne) ClearWfevents() *WorkflowUpdateOne {
+	wuo.mutation.ClearWfevents()
+	return wuo
+}
+
+// RemoveWfeventIDs removes the "wfevents" edge to Events entities by IDs.
+func (wuo *WorkflowUpdateOne) RemoveWfeventIDs(ids ...uuid.UUID) *WorkflowUpdateOne {
+	wuo.mutation.RemoveWfeventIDs(ids...)
+	return wuo
+}
+
+// RemoveWfevents removes "wfevents" edges to Events entities.
+func (wuo *WorkflowUpdateOne) RemoveWfevents(e ...*Events) *WorkflowUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return wuo.RemoveWfeventIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1599,6 +1726,60 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: varref.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if wuo.mutation.WfeventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.WfeventsTable,
+			Columns: []string{workflow.WfeventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wuo.mutation.RemovedWfeventsIDs(); len(nodes) > 0 && !wuo.mutation.WfeventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.WfeventsTable,
+			Columns: []string{workflow.WfeventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wuo.mutation.WfeventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.WfeventsTable,
+			Columns: []string{workflow.WfeventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
 				},
 			},
 		}

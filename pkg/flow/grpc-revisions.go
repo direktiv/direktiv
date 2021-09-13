@@ -162,13 +162,20 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, errors.New("cannot delete latest")
 	}
 
-	revc := tx.Revision
-	err = revc.DeleteOne(d.rev()).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+		func() error {
 
-	err = tx.Commit()
+			revc := tx.Revision
+			err := revc.DeleteOne(d.rev()).Exec(ctx)
+			if err != nil {
+				return err
+			}
+
+			return nil
+
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}

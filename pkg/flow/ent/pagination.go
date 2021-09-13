@@ -17,6 +17,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vmihailenco/msgpack/v5"
+	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
+	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
 	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
@@ -242,6 +245,816 @@ const (
 	pageInfoField   = "pageInfo"
 	totalCountField = "totalCount"
 )
+
+// CloudEventsEdge is the edge representation of CloudEvents.
+type CloudEventsEdge struct {
+	Node   *CloudEvents `json:"node"`
+	Cursor Cursor       `json:"cursor"`
+}
+
+// CloudEventsConnection is the connection containing edges to CloudEvents.
+type CloudEventsConnection struct {
+	Edges      []*CloudEventsEdge `json:"edges"`
+	PageInfo   PageInfo           `json:"pageInfo"`
+	TotalCount int                `json:"totalCount"`
+}
+
+// CloudEventsPaginateOption enables pagination customization.
+type CloudEventsPaginateOption func(*cloudEventsPager) error
+
+// WithCloudEventsOrder configures pagination ordering.
+func WithCloudEventsOrder(order *CloudEventsOrder) CloudEventsPaginateOption {
+	if order == nil {
+		order = DefaultCloudEventsOrder
+	}
+	o := *order
+	return func(pager *cloudEventsPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultCloudEventsOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithCloudEventsFilter configures pagination filter.
+func WithCloudEventsFilter(filter func(*CloudEventsQuery) (*CloudEventsQuery, error)) CloudEventsPaginateOption {
+	return func(pager *cloudEventsPager) error {
+		if filter == nil {
+			return errors.New("CloudEventsQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type cloudEventsPager struct {
+	order  *CloudEventsOrder
+	filter func(*CloudEventsQuery) (*CloudEventsQuery, error)
+}
+
+func newCloudEventsPager(opts []CloudEventsPaginateOption) (*cloudEventsPager, error) {
+	pager := &cloudEventsPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultCloudEventsOrder
+	}
+	return pager, nil
+}
+
+func (p *cloudEventsPager) applyFilter(query *CloudEventsQuery) (*CloudEventsQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *cloudEventsPager) toCursor(ce *CloudEvents) Cursor {
+	return p.order.Field.toCursor(ce)
+}
+
+func (p *cloudEventsPager) applyCursors(query *CloudEventsQuery, after, before *Cursor) *CloudEventsQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultCloudEventsOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *cloudEventsPager) applyOrder(query *CloudEventsQuery, reverse bool) *CloudEventsQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultCloudEventsOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultCloudEventsOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to CloudEvents.
+func (ce *CloudEventsQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...CloudEventsPaginateOption,
+) (*CloudEventsConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newCloudEventsPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if ce, err = pager.applyFilter(ce); err != nil {
+		return nil, err
+	}
+
+	conn := &CloudEventsConnection{Edges: []*CloudEventsEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := ce.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := ce.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	ce = pager.applyCursors(ce, after, before)
+	ce = pager.applyOrder(ce, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		ce = ce.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		ce = ce.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := ce.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *CloudEvents
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *CloudEvents {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *CloudEvents {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*CloudEventsEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &CloudEventsEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// CloudEventsOrderFieldID orders CloudEvents by id.
+	CloudEventsOrderFieldID = &CloudEventsOrderField{
+		field: cloudevents.FieldID,
+		toCursor: func(ce *CloudEvents) Cursor {
+			return Cursor{
+				ID:    ce.ID,
+				Value: ce.ID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f CloudEventsOrderField) String() string {
+	var str string
+	switch f.field {
+	case cloudevents.FieldID:
+		str = "ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f CloudEventsOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *CloudEventsOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("CloudEventsOrderField %T must be a string", v)
+	}
+	switch str {
+	case "ID":
+		*f = *CloudEventsOrderFieldID
+	default:
+		return fmt.Errorf("%s is not a valid CloudEventsOrderField", str)
+	}
+	return nil
+}
+
+// CloudEventsOrderField defines the ordering field of CloudEvents.
+type CloudEventsOrderField struct {
+	field    string
+	toCursor func(*CloudEvents) Cursor
+}
+
+// CloudEventsOrder defines the ordering of CloudEvents.
+type CloudEventsOrder struct {
+	Direction OrderDirection         `json:"direction"`
+	Field     *CloudEventsOrderField `json:"field"`
+}
+
+// DefaultCloudEventsOrder is the default ordering of CloudEvents.
+var DefaultCloudEventsOrder = &CloudEventsOrder{
+	Direction: OrderDirectionAsc,
+	Field: &CloudEventsOrderField{
+		field: cloudevents.FieldID,
+		toCursor: func(ce *CloudEvents) Cursor {
+			return Cursor{ID: ce.ID}
+		},
+	},
+}
+
+// ToEdge converts CloudEvents into CloudEventsEdge.
+func (ce *CloudEvents) ToEdge(order *CloudEventsOrder) *CloudEventsEdge {
+	if order == nil {
+		order = DefaultCloudEventsOrder
+	}
+	return &CloudEventsEdge{
+		Node:   ce,
+		Cursor: order.Field.toCursor(ce),
+	}
+}
+
+// EventsEdge is the edge representation of Events.
+type EventsEdge struct {
+	Node   *Events `json:"node"`
+	Cursor Cursor  `json:"cursor"`
+}
+
+// EventsConnection is the connection containing edges to Events.
+type EventsConnection struct {
+	Edges      []*EventsEdge `json:"edges"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+	TotalCount int           `json:"totalCount"`
+}
+
+// EventsPaginateOption enables pagination customization.
+type EventsPaginateOption func(*eventsPager) error
+
+// WithEventsOrder configures pagination ordering.
+func WithEventsOrder(order *EventsOrder) EventsPaginateOption {
+	if order == nil {
+		order = DefaultEventsOrder
+	}
+	o := *order
+	return func(pager *eventsPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultEventsOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithEventsFilter configures pagination filter.
+func WithEventsFilter(filter func(*EventsQuery) (*EventsQuery, error)) EventsPaginateOption {
+	return func(pager *eventsPager) error {
+		if filter == nil {
+			return errors.New("EventsQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type eventsPager struct {
+	order  *EventsOrder
+	filter func(*EventsQuery) (*EventsQuery, error)
+}
+
+func newEventsPager(opts []EventsPaginateOption) (*eventsPager, error) {
+	pager := &eventsPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultEventsOrder
+	}
+	return pager, nil
+}
+
+func (p *eventsPager) applyFilter(query *EventsQuery) (*EventsQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *eventsPager) toCursor(e *Events) Cursor {
+	return p.order.Field.toCursor(e)
+}
+
+func (p *eventsPager) applyCursors(query *EventsQuery, after, before *Cursor) *EventsQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultEventsOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *eventsPager) applyOrder(query *EventsQuery, reverse bool) *EventsQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultEventsOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultEventsOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Events.
+func (e *EventsQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...EventsPaginateOption,
+) (*EventsConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newEventsPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if e, err = pager.applyFilter(e); err != nil {
+		return nil, err
+	}
+
+	conn := &EventsConnection{Edges: []*EventsEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := e.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := e.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	e = pager.applyCursors(e, after, before)
+	e = pager.applyOrder(e, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		e = e.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		e = e.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := e.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Events
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Events {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Events {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*EventsEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &EventsEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// EventsOrderFieldID orders Events by id.
+	EventsOrderFieldID = &EventsOrderField{
+		field: events.FieldID,
+		toCursor: func(e *Events) Cursor {
+			return Cursor{
+				ID:    e.ID,
+				Value: e.ID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f EventsOrderField) String() string {
+	var str string
+	switch f.field {
+	case events.FieldID:
+		str = "ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f EventsOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *EventsOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("EventsOrderField %T must be a string", v)
+	}
+	switch str {
+	case "ID":
+		*f = *EventsOrderFieldID
+	default:
+		return fmt.Errorf("%s is not a valid EventsOrderField", str)
+	}
+	return nil
+}
+
+// EventsOrderField defines the ordering field of Events.
+type EventsOrderField struct {
+	field    string
+	toCursor func(*Events) Cursor
+}
+
+// EventsOrder defines the ordering of Events.
+type EventsOrder struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     *EventsOrderField `json:"field"`
+}
+
+// DefaultEventsOrder is the default ordering of Events.
+var DefaultEventsOrder = &EventsOrder{
+	Direction: OrderDirectionAsc,
+	Field: &EventsOrderField{
+		field: events.FieldID,
+		toCursor: func(e *Events) Cursor {
+			return Cursor{ID: e.ID}
+		},
+	},
+}
+
+// ToEdge converts Events into EventsEdge.
+func (e *Events) ToEdge(order *EventsOrder) *EventsEdge {
+	if order == nil {
+		order = DefaultEventsOrder
+	}
+	return &EventsEdge{
+		Node:   e,
+		Cursor: order.Field.toCursor(e),
+	}
+}
+
+// EventsWaitEdge is the edge representation of EventsWait.
+type EventsWaitEdge struct {
+	Node   *EventsWait `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// EventsWaitConnection is the connection containing edges to EventsWait.
+type EventsWaitConnection struct {
+	Edges      []*EventsWaitEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+// EventsWaitPaginateOption enables pagination customization.
+type EventsWaitPaginateOption func(*eventsWaitPager) error
+
+// WithEventsWaitOrder configures pagination ordering.
+func WithEventsWaitOrder(order *EventsWaitOrder) EventsWaitPaginateOption {
+	if order == nil {
+		order = DefaultEventsWaitOrder
+	}
+	o := *order
+	return func(pager *eventsWaitPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultEventsWaitOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithEventsWaitFilter configures pagination filter.
+func WithEventsWaitFilter(filter func(*EventsWaitQuery) (*EventsWaitQuery, error)) EventsWaitPaginateOption {
+	return func(pager *eventsWaitPager) error {
+		if filter == nil {
+			return errors.New("EventsWaitQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type eventsWaitPager struct {
+	order  *EventsWaitOrder
+	filter func(*EventsWaitQuery) (*EventsWaitQuery, error)
+}
+
+func newEventsWaitPager(opts []EventsWaitPaginateOption) (*eventsWaitPager, error) {
+	pager := &eventsWaitPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultEventsWaitOrder
+	}
+	return pager, nil
+}
+
+func (p *eventsWaitPager) applyFilter(query *EventsWaitQuery) (*EventsWaitQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *eventsWaitPager) toCursor(ew *EventsWait) Cursor {
+	return p.order.Field.toCursor(ew)
+}
+
+func (p *eventsWaitPager) applyCursors(query *EventsWaitQuery, after, before *Cursor) *EventsWaitQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultEventsWaitOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *eventsWaitPager) applyOrder(query *EventsWaitQuery, reverse bool) *EventsWaitQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultEventsWaitOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultEventsWaitOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to EventsWait.
+func (ew *EventsWaitQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...EventsWaitPaginateOption,
+) (*EventsWaitConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newEventsWaitPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if ew, err = pager.applyFilter(ew); err != nil {
+		return nil, err
+	}
+
+	conn := &EventsWaitConnection{Edges: []*EventsWaitEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := ew.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := ew.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	ew = pager.applyCursors(ew, after, before)
+	ew = pager.applyOrder(ew, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		ew = ew.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		ew = ew.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := ew.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *EventsWait
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *EventsWait {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *EventsWait {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*EventsWaitEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &EventsWaitEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// EventsWaitOrderFieldID orders EventsWait by id.
+	EventsWaitOrderFieldID = &EventsWaitOrderField{
+		field: eventswait.FieldID,
+		toCursor: func(ew *EventsWait) Cursor {
+			return Cursor{
+				ID:    ew.ID,
+				Value: ew.ID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f EventsWaitOrderField) String() string {
+	var str string
+	switch f.field {
+	case eventswait.FieldID:
+		str = "ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f EventsWaitOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *EventsWaitOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("EventsWaitOrderField %T must be a string", v)
+	}
+	switch str {
+	case "ID":
+		*f = *EventsWaitOrderFieldID
+	default:
+		return fmt.Errorf("%s is not a valid EventsWaitOrderField", str)
+	}
+	return nil
+}
+
+// EventsWaitOrderField defines the ordering field of EventsWait.
+type EventsWaitOrderField struct {
+	field    string
+	toCursor func(*EventsWait) Cursor
+}
+
+// EventsWaitOrder defines the ordering of EventsWait.
+type EventsWaitOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *EventsWaitOrderField `json:"field"`
+}
+
+// DefaultEventsWaitOrder is the default ordering of EventsWait.
+var DefaultEventsWaitOrder = &EventsWaitOrder{
+	Direction: OrderDirectionAsc,
+	Field: &EventsWaitOrderField{
+		field: eventswait.FieldID,
+		toCursor: func(ew *EventsWait) Cursor {
+			return Cursor{ID: ew.ID}
+		},
+	},
+}
+
+// ToEdge converts EventsWait into EventsWaitEdge.
+func (ew *EventsWait) ToEdge(order *EventsWaitOrder) *EventsWaitEdge {
+	if order == nil {
+		order = DefaultEventsWaitOrder
+	}
+	return &EventsWaitEdge{
+		Node:   ew,
+		Cursor: order.Field.toCursor(ew),
+	}
+}
 
 // InodeEdge is the edge representation of Inode.
 type InodeEdge struct {

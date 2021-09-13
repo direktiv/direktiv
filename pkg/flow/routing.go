@@ -4,18 +4,66 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
 	entref "github.com/vorteil/direktiv/pkg/flow/ent/ref"
+	"github.com/vorteil/direktiv/pkg/model"
 )
 
-func validateRouter(ctx context.Context, wf *ent.Workflow) (error, error) {
+type muxStart struct {
+	Enabled bool                         `json:"enabled"`
+	Type    string                       `json:"type"`
+	Cron    string                       `json:"cron"`
+	Events  []model.StartEventDefinition `json:"events"`
+}
+
+func newMuxStart(workflow *model.Workflow) *muxStart {
+
+	ms := new(muxStart)
+
+	def := workflow.GetStartDefinition()
+	ms.Enabled = true
+	ms.Type = def.GetType().String()
+	ms.Events = def.GetEvents()
+
+	switch def.GetType() {
+	case model.StartTypeDefault:
+	case model.StartTypeEvent:
+	case model.StartTypeEventsAnd:
+	case model.StartTypeEventsXor:
+	case model.StartTypeScheduled:
+		x := def.(*model.ScheduledStart)
+		ms.Cron = x.Cron
+	default:
+		panic(fmt.Errorf("unexpected start type: %v", def.GetType()))
+	}
+
+	return ms
+
+}
+
+func (ms *muxStart) Hash() string {
+
+	if ms == nil {
+		ms = new(muxStart)
+		ms.Enabled = true
+		ms.Type = model.StartTypeDefault.String()
+	}
+
+	return checksum(ms)
+
+}
+
+func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, error) {
 
 	routes, err := wf.QueryRoutes().WithRef(func(q *ent.RefQuery) {
 		q.WithRevision()
 	}).All(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if len(routes) == 0 {
@@ -23,41 +71,49 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (error, error) {
 		// latest
 		ref, err := wf.QueryRefs().Where(entref.NameEQ(latest)).WithRevision().Only(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		_, err = loadSource(ref.Edges.Revision)
+		workflow, err := loadSource(ref.Edges.Revision)
 		if err != nil {
-			return err, nil
+			return nil, err, nil
 		}
 
-		return nil, nil
+		ms := newMuxStart(workflow)
+		ms.Enabled = wf.Live
+
+		return ms, nil, nil
 
 	}
 
 	var startHash string
 	var startRef string
 
+	var ms *muxStart
+
 	for _, route := range routes {
 
 		workflow, err := loadSource(route.Edges.Ref.Edges.Revision)
 		if err != nil {
-			return fmt.Errorf("route to '%s' invalid because revision fails to compile: %v", route.Edges.Ref.Name, err), nil
+			return nil, fmt.Errorf("route to '%s' invalid because revision fails to compile: %v", route.Edges.Ref.Name, err), nil
 		}
 
-		hash := checksum(workflow.Start)
+		ms = newMuxStart(workflow)
+		ms.Enabled = wf.Live
+
+		hash := ms.Hash() // checksum(workflow.Start)
 		if startHash == "" {
 			startHash = hash
 			startRef = route.Edges.Ref.Name
 		} else {
 			if startHash != hash {
-				return fmt.Errorf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Edges.Ref.Name), nil
+				return nil, fmt.Errorf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Edges.Ref.Name), nil
 			}
 		}
 
 	}
 
-	return nil, nil
+	return ms, nil, nil
 
 }
 
@@ -127,5 +183,204 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 	d.ref.Edges.Revision.Edges.Workflow = d.wf
 
 	return d, nil
+
+}
+
+const (
+	rcfNone     = 0
+	rcfNoPriors = 1 << iota
+	rcfBreaking // don't throw a router validation error if the router was already invalid before the change
+)
+
+func hasFlag(flags, flag int) bool {
+	return flags&flag != 0
+}
+
+func (flow *flow) configureRouter(ctx context.Context, wf *ent.Workflow, flags int, changer, commit func() error) error {
+
+	var err error
+	var muxErr1 error
+	var ms1 *muxStart
+
+	if !hasFlag(flags, rcfNoPriors) {
+		// NOTE: we check router valid before deleting because there's no sense failing the
+		// operation for resulting in an invalid router if the router was already invalid.
+		ms1, muxErr1, err = validateRouter(ctx, wf)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = changer()
+	if err != nil {
+		return err
+	}
+
+	ms2, muxErr2, err := validateRouter(ctx, wf)
+	if err != nil {
+		return err
+	}
+
+	if muxErr2 != nil {
+		if !hasFlag(flags, rcfBreaking) || muxErr1 != nil {
+			return muxErr2
+		}
+	}
+
+	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
+
+	if mustReconfigureRouter {
+		err = flow.preCommitRouterConfiguration(ms2)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = commit()
+	if err != nil {
+		return err
+	}
+
+	if mustReconfigureRouter {
+		flow.postCommitRouterConfiguration(wf.ID.String(), ms2)
+	}
+
+	return nil
+
+}
+
+func (flow *flow) preCommitRouterConfiguration(ms *muxStart) error {
+
+	// TODO: event start stuff
+
+	return nil
+
+}
+
+func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
+
+	flow.pubsub.ConfigureRouterCron(id, ms.Cron, ms.Enabled)
+
+}
+
+func (flow *flow) configureRouterHandler(req *pubsubUpdate) {
+
+	msg := new(configureRouterMessage)
+
+	err := unmarshal(req.Key, msg)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	if msg.Cron == "" || !msg.Enabled {
+		flow.timers.deleteCronForWorkflow(msg.ID)
+	}
+
+	if msg.Cron != "" && msg.Enabled {
+		err = flow.timers.addCron(fmt.Sprintf("cron:%s", msg.ID), wfCron, msg.Cron, []byte(msg.ID))
+		if err != nil {
+			flow.sugar.Error(err)
+			return
+		}
+	}
+
+}
+
+func (flow *flow) cronHandler(data []byte) {
+
+	id := string(data)
+
+	ctx, conn, err := flow.engine.lock(id, defaultLockWait)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer flow.engine.unlock(id, conn)
+
+	d, err := flow.reverseTraverseToWorkflow(ctx, id)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData("cron"))).Count(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	if k != 0 {
+		// already triggered
+		return
+	}
+
+	args := new(newInstanceArgs)
+	args.Namespace = d.namespace()
+	args.Path = d.path
+	args.Ref = ""
+	args.Input = nil
+	args.Caller = "cron"
+	args.CallerData = "cron"
+
+	im, err := flow.engine.NewInstance(ctx, args)
+	if err != nil {
+		flow.sugar.Error("Error returned to gRPC request %s: %v", this(), err)
+		return
+	}
+
+	flow.engine.queue(im)
+
+	/*
+
+		var err error
+
+		ctx := context.Background()
+
+		wf, err := we.db.getWorkflow(uid)
+		if err != nil {
+			return err
+		}
+
+		ns, err := wf.QueryNamespace().Only(ctx)
+		if err != nil {
+			return nil
+		}
+
+		wli, err := we.newWorkflowLogicInstance(ctx, ns.ID, wf.Name, []byte("{}"))
+		if err != nil {
+			if _, ok := err.(*InternalError); ok {
+				appLog.Errorf("Internal error on CronInvoke: %v", err)
+				return errors.New("an internal error occurred")
+			} else {
+				return err
+			}
+		}
+
+		if wli.wf.Start == nil || wli.wf.Start.GetType() != model.StartTypeScheduled {
+			wli.Close()
+			return fmt.Errorf("cannot cron invoke workflows with '%s' starts", wli.wf.Start.GetType())
+		}
+
+		wli.rec, err = we.db.addWorkflowInstance(ctx, ns.ID, wf.Name, wli.id, string(wli.startData), true, wli.wf.Exclusive, nil)
+		if err != nil {
+			wli.Close()
+			if strings.Contains(err.Error(), "invoked") || strings.Contains(err.Error(), "transactions") {
+				return nil
+			}
+			return NewInternalError(err)
+		}
+
+		start := wli.wf.GetStartState()
+
+		wli.NamespaceLog(ctx, "Workflow '%s' has been triggered by the cron scheduler.", start.GetID())
+
+		wli.Log(ctx, "Preparing workflow triggered by cron scheduler.")
+
+		go wli.start()
+
+		return nil
+
+	*/
 
 }

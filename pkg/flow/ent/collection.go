@@ -9,6 +9,42 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ce *CloudEventsQuery) CollectFields(ctx context.Context, satisfies ...string) *CloudEventsQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		ce = ce.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return ce
+}
+
+func (ce *CloudEventsQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *CloudEventsQuery {
+	return ce
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (e *EventsQuery) CollectFields(ctx context.Context, satisfies ...string) *EventsQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		e = e.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return e
+}
+
+func (e *EventsQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *EventsQuery {
+	return e
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ew *EventsWaitQuery) CollectFields(ctx context.Context, satisfies ...string) *EventsWaitQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		ew = ew.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return ew
+}
+
+func (ew *EventsWaitQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *EventsWaitQuery {
+	return ew
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (i *InodeQuery) CollectFields(ctx context.Context, satisfies ...string) *InodeQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		i = i.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

@@ -153,7 +153,12 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = tx.Commit()
+	err = flow.configureRouter(ctx, wf, rcfNoPriors,
+		func() error {
+			return nil
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -217,33 +222,40 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		goto respond
 	}
 
-	rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(d.wf).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
+	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+		func() error {
 
-	// change latest tag
-	err = d.ref.Update().SetRevision(rev).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(d.wf).Save(ctx)
+			if err != nil {
+				return err
+			}
 
-	k, err = oldrev.QueryRefs().Count(ctx)
-	if err != nil {
-		return nil, err
-	}
+			// change latest tag
+			err = d.ref.Update().SetRevision(rev).Exec(ctx)
+			if err != nil {
+				return err
+			}
 
-	// ??? if hash matches non-latest
+			k, err = oldrev.QueryRefs().Count(ctx)
+			if err != nil {
+				return err
+			}
 
-	if k == 0 {
-		// delete previous latest if untagged
-		err = revc.DeleteOne(oldrev).Exec(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
+			// ??? if hash matches non-latest
 
-	err = tx.Commit()
+			if k == 0 {
+				// delete previous latest if untagged
+				err = revc.DeleteOne(oldrev).Exec(ctx)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -377,20 +389,27 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	err = d.ref.Update().SetRevision(prevrev).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+		func() error {
 
-	rev = d.rev()
-	err = revc.DeleteOne(rev).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+			err = d.ref.Update().SetRevision(prevrev).Exec(ctx)
+			if err != nil {
+				return err
+			}
 
-	rev = prevrev
+			rev = d.rev()
+			err = revc.DeleteOne(rev).Exec(ctx)
+			if err != nil {
+				return err
+			}
 
-	err = tx.Commit()
+			rev = prevrev
+
+			return nil
+
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}

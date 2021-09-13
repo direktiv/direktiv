@@ -58,6 +58,7 @@ type server struct {
 	secrets  *secrets
 	flow     *flow
 	internal *internal
+	events   *events
 }
 
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
@@ -135,6 +136,12 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.timers.Close)
+
+	srv.events, err = initEvents(srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.events.Close)
 
 	srv.sugar.Debug("Initializing engine.")
 
@@ -276,8 +283,11 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.registerFunction(pubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
 	srv.pubsub.registerFunction(pubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.registerFunction(pubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
+	srv.pubsub.registerFunction(pubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
+	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
+	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 
 }

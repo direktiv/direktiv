@@ -371,13 +371,20 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, errors.New("not a tag")
 	}
 
-	refc := tx.Ref
-	err = refc.DeleteOne(d.ref).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+		func() error {
 
-	err = tx.Commit()
+			refc := tx.Ref
+			err = refc.DeleteOne(d.ref).Exec(ctx)
+			if err != nil {
+				return err
+			}
+
+			return nil
+
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -422,12 +429,19 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 		return nil, errors.New("not a tag")
 	}
 
-	err = dt.ref.Update().SetRevision(d.rev()).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+		func() error {
 
-	err = tx.Commit()
+			err = dt.ref.Update().SetRevision(d.rev()).Exec(ctx)
+			if err != nil {
+				return err
+			}
+
+			return nil
+
+		},
+		tx.Commit,
+	)
 	if err != nil {
 		return nil, err
 	}

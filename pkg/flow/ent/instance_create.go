@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
@@ -202,6 +203,21 @@ func (ic *InstanceCreate) AddChildren(i ...*InstanceRuntime) *InstanceCreate {
 		ids[j] = i[j].ID
 	}
 	return ic.AddChildIDs(ids...)
+}
+
+// AddInstanceIDs adds the "instance" edge to the Events entity by IDs.
+func (ic *InstanceCreate) AddInstanceIDs(ids ...uuid.UUID) *InstanceCreate {
+	ic.mutation.AddInstanceIDs(ids...)
+	return ic
+}
+
+// AddInstance adds the "instance" edges to the Events entity.
+func (ic *InstanceCreate) AddInstance(e ...*Events) *InstanceCreate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return ic.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the InstanceMutation object of the builder.
@@ -531,6 +547,25 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instanceruntime.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.InstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   instance.InstanceTable,
+			Columns: []string{instance.InstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
 				},
 			},
 		}

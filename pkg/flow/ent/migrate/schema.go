@@ -8,6 +8,72 @@ import (
 )
 
 var (
+	// CloudEventsColumns holds the columns for the "cloud_events" table.
+	CloudEventsColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "event_id", Type: field.TypeString, Unique: true},
+		{Name: "namespace", Type: field.TypeString},
+		{Name: "event", Type: field.TypeJSON},
+		{Name: "fire", Type: field.TypeTime},
+		{Name: "created", Type: field.TypeTime},
+		{Name: "processed", Type: field.TypeBool},
+	}
+	// CloudEventsTable holds the schema information for the "cloud_events" table.
+	CloudEventsTable = &schema.Table{
+		Name:       "cloud_events",
+		Columns:    CloudEventsColumns,
+		PrimaryKey: []*schema.Column{CloudEventsColumns[0]},
+	}
+	// EventsColumns holds the columns for the "events" table.
+	EventsColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "events", Type: field.TypeJSON},
+		{Name: "correlations", Type: field.TypeJSON},
+		{Name: "signature", Type: field.TypeBytes, Nullable: true},
+		{Name: "count", Type: field.TypeInt},
+		{Name: "instance_instance", Type: field.TypeUUID, Nullable: true},
+		{Name: "workflow_wfevents", Type: field.TypeUUID, Nullable: true},
+	}
+	// EventsTable holds the schema information for the "events" table.
+	EventsTable = &schema.Table{
+		Name:       "events",
+		Columns:    EventsColumns,
+		PrimaryKey: []*schema.Column{EventsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "events_instances_instance",
+				Columns:    []*schema.Column{EventsColumns[5]},
+				RefColumns: []*schema.Column{InstancesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "events_workflows_wfevents",
+				Columns:    []*schema.Column{EventsColumns[6]},
+				RefColumns: []*schema.Column{WorkflowsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// EventsWaitsColumns holds the columns for the "events_waits" table.
+	EventsWaitsColumns = []*schema.Column{
+		{Name: "oid", Type: field.TypeUUID},
+		{Name: "events", Type: field.TypeJSON},
+		{Name: "events_wfeventswait", Type: field.TypeUUID, Nullable: true},
+	}
+	// EventsWaitsTable holds the schema information for the "events_waits" table.
+	EventsWaitsTable = &schema.Table{
+		Name:       "events_waits",
+		Columns:    EventsWaitsColumns,
+		PrimaryKey: []*schema.Column{EventsWaitsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "events_waits_events_wfeventswait",
+				Columns:    []*schema.Column{EventsWaitsColumns[2]},
+				RefColumns: []*schema.Column{EventsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// InodesColumns holds the columns for the "inodes" table.
 	InodesColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -338,6 +404,9 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CloudEventsTable,
+		EventsTable,
+		EventsWaitsTable,
 		InodesTable,
 		InstancesTable,
 		InstanceRuntimesTable,
@@ -353,6 +422,9 @@ var (
 )
 
 func init() {
+	EventsTable.ForeignKeys[0].RefTable = InstancesTable
+	EventsTable.ForeignKeys[1].RefTable = WorkflowsTable
+	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 	InodesTable.ForeignKeys[0].RefTable = InodesTable
 	InodesTable.ForeignKeys[1].RefTable = NamespacesTable
 	InodesTable.ForeignKeys[2].RefTable = WorkflowsTable

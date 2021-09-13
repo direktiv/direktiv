@@ -8,6 +8,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
+	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
 	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
@@ -39,6 +42,9 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		cloudevents.Table:     cloudevents.ValidColumn,
+		events.Table:          events.ValidColumn,
+		eventswait.Table:      eventswait.ValidColumn,
 		inode.Table:           inode.ValidColumn,
 		instance.Table:        instance.ValidColumn,
 		instanceruntime.Table: instanceruntime.ValidColumn,

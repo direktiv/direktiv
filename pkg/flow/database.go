@@ -99,6 +99,69 @@ func (srv *server) traverseToInode(ctx context.Context, nsc *ent.NamespaceClient
 
 }
 
+func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*nodeData, error) {
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	d := new(nodeData)
+
+	ino, err := srv.db.Inode.Get(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	ns, err := ino.Namespace(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ino.Edges.Namespace = ns
+
+	d.ino = ino
+	d.path = ino.Name
+	d.dir = ""
+	d.base = ino.Name
+
+	var recurser func(ino *ent.Inode) error
+
+	recurser = func(ino *ent.Inode) error {
+
+		pino, err := ino.Parent(ctx)
+		if err != nil {
+
+			if ent.IsNotFound(err) {
+				d.dir = "/" + d.dir
+				d.path = "/" + d.path
+				return nil
+			}
+
+			return err
+
+		}
+
+		pino.Edges.Namespace = ns
+		ino.Edges.Parent = pino
+		if pino.Name != "" {
+			d.path = pino.Name + "/" + d.path
+			d.dir = pino.Name + "/" + pino.Name
+		}
+
+		return recurser(pino)
+
+	}
+
+	err = recurser(ino)
+	if err != nil {
+		return nil, err
+	}
+
+	return d, nil
+
+}
+
 func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.Namespace, path string, createParents bool) (*nodeData, error) {
 
 	d := new(nodeData)
@@ -242,6 +305,39 @@ func (srv *server) traverseToWorkflow(ctx context.Context, nsc *ent.NamespaceCli
 	wf.Edges.Namespace = wd.ns()
 
 	return wd, nil
+
+}
+
+func (srv *server) reverseTraverseToWorkflow(ctx context.Context, id string) (*wfData, error) {
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	wf, err := srv.db.Workflow.Get(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	ino, err := wf.Inode(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	nd, err := srv.reverseTraverseToInode(ctx, ino.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	wf.Edges.Inode = nd.ino
+	wf.Edges.Namespace = nd.ino.Edges.Namespace
+
+	d := new(wfData)
+	d.wf = wf
+	d.nodeData = nd
+
+	return d, nil
 
 }
 

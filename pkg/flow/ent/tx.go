@@ -12,6 +12,12 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// CloudEvents is the client for interacting with the CloudEvents builders.
+	CloudEvents *CloudEventsClient
+	// Events is the client for interacting with the Events builders.
+	Events *EventsClient
+	// EventsWait is the client for interacting with the EventsWait builders.
+	EventsWait *EventsWaitClient
 	// Inode is the client for interacting with the Inode builders.
 	Inode *InodeClient
 	// Instance is the client for interacting with the Instance builders.
@@ -169,6 +175,9 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.CloudEvents = NewCloudEventsClient(tx.config)
+	tx.Events = NewEventsClient(tx.config)
+	tx.EventsWait = NewEventsWaitClient(tx.config)
 	tx.Inode = NewInodeClient(tx.config)
 	tx.Instance = NewInstanceClient(tx.config)
 	tx.InstanceRuntime = NewInstanceRuntimeClient(tx.config)
@@ -189,7 +198,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Inode.QueryXXX(), the query will be executed
+// applies a query, for example: CloudEvents.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

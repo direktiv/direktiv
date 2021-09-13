@@ -1053,6 +1053,34 @@ func HasChildrenWith(preds ...predicate.InstanceRuntime) predicate.Instance {
 	})
 }
 
+// HasInstance applies the HasEdge predicate on the "instance" edge.
+func HasInstance() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstanceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InstanceTable, InstanceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
+func HasInstanceWith(preds ...predicate.Events) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstanceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InstanceTable, InstanceColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Instance) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {

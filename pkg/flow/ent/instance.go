@@ -59,9 +59,11 @@ type InstanceEdges struct {
 	Runtime *InstanceRuntime `json:"runtime,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*InstanceRuntime `json:"children,omitempty"`
+	// Instance holds the value of the instance edge.
+	Instance []*Events `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -145,6 +147,15 @@ func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
+}
+
+// InstanceOrErr returns the Instance value or an error if the edge
+// was not loaded in eager-loading.
+func (e InstanceEdges) InstanceOrErr() ([]*Events, error) {
+	if e.loadedTypes[7] {
+		return e.Instance, nil
+	}
+	return nil, &NotLoadedError{edge: "instance"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -286,6 +297,11 @@ func (i *Instance) QueryRuntime() *InstanceRuntimeQuery {
 // QueryChildren queries the "children" edge of the Instance entity.
 func (i *Instance) QueryChildren() *InstanceRuntimeQuery {
 	return (&InstanceClient{config: i.config}).QueryChildren(i)
+}
+
+// QueryInstance queries the "instance" edge of the Instance entity.
+func (i *Instance) QueryInstance() *EventsQuery {
+	return (&InstanceClient{config: i.config}).QueryInstance(i)
 }
 
 // Update returns a builder for updating this Instance.

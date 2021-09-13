@@ -18,6 +18,7 @@ const (
 	pubsubDeleteTimerFunction          = "deleteTimer"
 	pubsubDeleteInstanceTimersFunction = "deleteInstanceTimers"
 	pubsubCancelWorkflowFunction       = "cancelWorkflow"
+	pubsubConfigureRouterFunction      = "configureRouter"
 )
 
 type pubsub struct {
@@ -628,6 +629,29 @@ func (pubsub *pubsub) HostnameDeleteTimer(hostname, name string) {
 		Handler:  pubsubDeleteTimerFunction,
 		Key:      name,
 		Hostname: hostname,
+	})
+
+}
+
+type configureRouterMessage struct {
+	ID      string
+	Cron    string
+	Enabled bool
+}
+
+func (pubsub *pubsub) ConfigureRouterCron(id, cron string, enabled bool) {
+
+	msg := &configureRouterMessage{
+		ID:      id,
+		Cron:    cron,
+		Enabled: enabled,
+	}
+
+	key := marshal(msg)
+
+	pubsub.publish(&pubsubUpdate{
+		Handler: pubsubConfigureRouterFunction,
+		Key:     key,
 	})
 
 }

@@ -16,6 +16,7 @@ const (
 	timerCleanInstanceRecords  = "cleanInstanceRecords"
 	timerCleanNamespaceRecords = "cleanNamespaceRecords"
 	timerCleanExpiredEvents    = "timerCleanExpiredEvents"
+	wfCron                     = "wfcron"
 )
 
 const (
@@ -331,11 +332,9 @@ func (timers *timers) deleteTimerByName(oldController, newController, name strin
 
 }
 
-/*
-func (timers *timers) deleteCronForWorkflow(id string) error {
-	return timers.deleteTimerByName("", "", fmt.Sprintf("cron:%s", id))
+func (timers *timers) deleteCronForWorkflow(id string) {
+	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
 }
-*/
 
 /*
 func (timers *timers) cleanExpiredEvents(data []byte) error {

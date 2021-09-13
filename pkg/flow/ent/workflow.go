@@ -44,9 +44,11 @@ type WorkflowEdges struct {
 	Logs []*LogMsg `json:"logs,omitempty"`
 	// Vars holds the value of the vars edge.
 	Vars []*VarRef `json:"vars,omitempty"`
+	// Wfevents holds the value of the wfevents edge.
+	Wfevents []*Events `json:"wfevents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // InodeOrErr returns the Inode value or an error if the edge
@@ -129,6 +131,15 @@ func (e WorkflowEdges) VarsOrErr() ([]*VarRef, error) {
 		return e.Vars, nil
 	}
 	return nil, &NotLoadedError{edge: "vars"}
+}
+
+// WfeventsOrErr returns the Wfevents value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowEdges) WfeventsOrErr() ([]*Events, error) {
+	if e.loadedTypes[8] {
+		return e.Wfevents, nil
+	}
+	return nil, &NotLoadedError{edge: "wfevents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -219,6 +230,11 @@ func (w *Workflow) QueryLogs() *LogMsgQuery {
 // QueryVars queries the "vars" edge of the Workflow entity.
 func (w *Workflow) QueryVars() *VarRefQuery {
 	return (&WorkflowClient{config: w.config}).QueryVars(w)
+}
+
+// QueryWfevents queries the "wfevents" edge of the Workflow entity.
+func (w *Workflow) QueryWfevents() *EventsQuery {
+	return (&WorkflowClient{config: w.config}).QueryWfevents(w)
 }
 
 // Update returns a builder for updating this Workflow.

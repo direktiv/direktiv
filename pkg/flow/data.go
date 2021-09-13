@@ -53,6 +53,17 @@ func marshal(x interface{}) string {
 
 }
 
+func unmarshal(data string, x interface{}) error {
+
+	err := json.Unmarshal([]byte(data), x)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func unmarshalInstanceInputData(input []byte) interface{} {
 
 	var inputData, stateData interface{}

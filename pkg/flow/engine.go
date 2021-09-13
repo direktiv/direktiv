@@ -57,10 +57,12 @@ func (engine *engine) Close() error {
 }
 
 type newInstanceArgs struct {
-	Namespace string
-	Path      string
-	Ref       string
-	Input     []byte
+	Namespace  string
+	Path       string
+	Ref        string
+	Input      []byte
+	Caller     string
+	CallerData string
 }
 
 type subflowCaller struct {
@@ -96,7 +98,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	data := marshalInstanceInputData(args.Input)
 
 	// SetFlow()
-	rt, err := rtc.Create().SetInput(args.Input).SetData(data).SetMemory("null").Save(ctx)
+	rt, err := rtc.Create().SetInput(args.Input).SetData(data).SetMemory("null").SetCallerData(args.CallerData).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -135,9 +137,9 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	t := time.Now()
 	engine.pubsub.NotifyInstances(d.ns())
-	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by API.", args.Path)
-	engine.logToWorkflow(ctx, t, d.wf, "Instance '%s' created by API.", im.ID().String())
-	engine.logToInstance(ctx, t, in, "Preparing workflow triggered by API.")
+	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
+	engine.logToWorkflow(ctx, t, d.wf, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
+	engine.logToInstance(ctx, t, in, "Preparing workflow triggered by %s.", args.Caller)
 
 	return im, nil
 

@@ -293,6 +293,7 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	args.Path = req.GetPath()
 	args.Ref = req.GetRef()
 	args.Input = req.GetInput()
+	args.Caller = "API"
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {

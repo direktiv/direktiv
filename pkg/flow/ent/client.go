@@ -10,6 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent/migrate"
 
+	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/events"
+	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
 	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
@@ -32,6 +35,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// CloudEvents is the client for interacting with the CloudEvents builders.
+	CloudEvents *CloudEventsClient
+	// Events is the client for interacting with the Events builders.
+	Events *EventsClient
+	// EventsWait is the client for interacting with the EventsWait builders.
+	EventsWait *EventsWaitClient
 	// Inode is the client for interacting with the Inode builders.
 	Inode *InodeClient
 	// Instance is the client for interacting with the Instance builders.
@@ -67,6 +76,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.CloudEvents = NewCloudEventsClient(c.config)
+	c.Events = NewEventsClient(c.config)
+	c.EventsWait = NewEventsWaitClient(c.config)
 	c.Inode = NewInodeClient(c.config)
 	c.Instance = NewInstanceClient(c.config)
 	c.InstanceRuntime = NewInstanceRuntimeClient(c.config)
@@ -111,6 +123,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		CloudEvents:     NewCloudEventsClient(cfg),
+		Events:          NewEventsClient(cfg),
+		EventsWait:      NewEventsWaitClient(cfg),
 		Inode:           NewInodeClient(cfg),
 		Instance:        NewInstanceClient(cfg),
 		InstanceRuntime: NewInstanceRuntimeClient(cfg),
@@ -140,6 +155,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
 		config:          cfg,
+		CloudEvents:     NewCloudEventsClient(cfg),
+		Events:          NewEventsClient(cfg),
+		EventsWait:      NewEventsWaitClient(cfg),
 		Inode:           NewInodeClient(cfg),
 		Instance:        NewInstanceClient(cfg),
 		InstanceRuntime: NewInstanceRuntimeClient(cfg),
@@ -157,7 +175,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Inode.
+//		CloudEvents.
 //		Query().
 //		Count(ctx)
 //
@@ -180,6 +198,9 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.CloudEvents.Use(hooks...)
+	c.Events.Use(hooks...)
+	c.EventsWait.Use(hooks...)
 	c.Inode.Use(hooks...)
 	c.Instance.Use(hooks...)
 	c.InstanceRuntime.Use(hooks...)
@@ -191,6 +212,340 @@ func (c *Client) Use(hooks ...Hook) {
 	c.VarData.Use(hooks...)
 	c.VarRef.Use(hooks...)
 	c.Workflow.Use(hooks...)
+}
+
+// CloudEventsClient is a client for the CloudEvents schema.
+type CloudEventsClient struct {
+	config
+}
+
+// NewCloudEventsClient returns a client for the CloudEvents from the given config.
+func NewCloudEventsClient(c config) *CloudEventsClient {
+	return &CloudEventsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `cloudevents.Hooks(f(g(h())))`.
+func (c *CloudEventsClient) Use(hooks ...Hook) {
+	c.hooks.CloudEvents = append(c.hooks.CloudEvents, hooks...)
+}
+
+// Create returns a create builder for CloudEvents.
+func (c *CloudEventsClient) Create() *CloudEventsCreate {
+	mutation := newCloudEventsMutation(c.config, OpCreate)
+	return &CloudEventsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CloudEvents entities.
+func (c *CloudEventsClient) CreateBulk(builders ...*CloudEventsCreate) *CloudEventsCreateBulk {
+	return &CloudEventsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CloudEvents.
+func (c *CloudEventsClient) Update() *CloudEventsUpdate {
+	mutation := newCloudEventsMutation(c.config, OpUpdate)
+	return &CloudEventsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CloudEventsClient) UpdateOne(ce *CloudEvents) *CloudEventsUpdateOne {
+	mutation := newCloudEventsMutation(c.config, OpUpdateOne, withCloudEvents(ce))
+	return &CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CloudEventsClient) UpdateOneID(id uuid.UUID) *CloudEventsUpdateOne {
+	mutation := newCloudEventsMutation(c.config, OpUpdateOne, withCloudEventsID(id))
+	return &CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CloudEvents.
+func (c *CloudEventsClient) Delete() *CloudEventsDelete {
+	mutation := newCloudEventsMutation(c.config, OpDelete)
+	return &CloudEventsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *CloudEventsClient) DeleteOne(ce *CloudEvents) *CloudEventsDeleteOne {
+	return c.DeleteOneID(ce.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *CloudEventsClient) DeleteOneID(id uuid.UUID) *CloudEventsDeleteOne {
+	builder := c.Delete().Where(cloudevents.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CloudEventsDeleteOne{builder}
+}
+
+// Query returns a query builder for CloudEvents.
+func (c *CloudEventsClient) Query() *CloudEventsQuery {
+	return &CloudEventsQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a CloudEvents entity by its id.
+func (c *CloudEventsClient) Get(ctx context.Context, id uuid.UUID) (*CloudEvents, error) {
+	return c.Query().Where(cloudevents.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CloudEventsClient) GetX(ctx context.Context, id uuid.UUID) *CloudEvents {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CloudEventsClient) Hooks() []Hook {
+	return c.hooks.CloudEvents
+}
+
+// EventsClient is a client for the Events schema.
+type EventsClient struct {
+	config
+}
+
+// NewEventsClient returns a client for the Events from the given config.
+func NewEventsClient(c config) *EventsClient {
+	return &EventsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `events.Hooks(f(g(h())))`.
+func (c *EventsClient) Use(hooks ...Hook) {
+	c.hooks.Events = append(c.hooks.Events, hooks...)
+}
+
+// Create returns a create builder for Events.
+func (c *EventsClient) Create() *EventsCreate {
+	mutation := newEventsMutation(c.config, OpCreate)
+	return &EventsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Events entities.
+func (c *EventsClient) CreateBulk(builders ...*EventsCreate) *EventsCreateBulk {
+	return &EventsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Events.
+func (c *EventsClient) Update() *EventsUpdate {
+	mutation := newEventsMutation(c.config, OpUpdate)
+	return &EventsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EventsClient) UpdateOne(e *Events) *EventsUpdateOne {
+	mutation := newEventsMutation(c.config, OpUpdateOne, withEvents(e))
+	return &EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EventsClient) UpdateOneID(id uuid.UUID) *EventsUpdateOne {
+	mutation := newEventsMutation(c.config, OpUpdateOne, withEventsID(id))
+	return &EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Events.
+func (c *EventsClient) Delete() *EventsDelete {
+	mutation := newEventsMutation(c.config, OpDelete)
+	return &EventsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *EventsClient) DeleteOne(e *Events) *EventsDeleteOne {
+	return c.DeleteOneID(e.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *EventsClient) DeleteOneID(id uuid.UUID) *EventsDeleteOne {
+	builder := c.Delete().Where(events.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EventsDeleteOne{builder}
+}
+
+// Query returns a query builder for Events.
+func (c *EventsClient) Query() *EventsQuery {
+	return &EventsQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Events entity by its id.
+func (c *EventsClient) Get(ctx context.Context, id uuid.UUID) (*Events, error) {
+	return c.Query().Where(events.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EventsClient) GetX(ctx context.Context, id uuid.UUID) *Events {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkflow queries the workflow edge of a Events.
+func (c *EventsClient) QueryWorkflow(e *Events) *WorkflowQuery {
+	query := &WorkflowQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(events.Table, events.FieldID, id),
+			sqlgraph.To(workflow.Table, workflow.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, events.WorkflowTable, events.WorkflowColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWfeventswait queries the wfeventswait edge of a Events.
+func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
+	query := &EventsWaitQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(events.Table, events.FieldID, id),
+			sqlgraph.To(eventswait.Table, eventswait.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, events.WfeventswaitTable, events.WfeventswaitColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWorkflowinstance queries the workflowinstance edge of a Events.
+func (c *EventsClient) QueryWorkflowinstance(e *Events) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(events.Table, events.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, events.WorkflowinstanceTable, events.WorkflowinstanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EventsClient) Hooks() []Hook {
+	return c.hooks.Events
+}
+
+// EventsWaitClient is a client for the EventsWait schema.
+type EventsWaitClient struct {
+	config
+}
+
+// NewEventsWaitClient returns a client for the EventsWait from the given config.
+func NewEventsWaitClient(c config) *EventsWaitClient {
+	return &EventsWaitClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `eventswait.Hooks(f(g(h())))`.
+func (c *EventsWaitClient) Use(hooks ...Hook) {
+	c.hooks.EventsWait = append(c.hooks.EventsWait, hooks...)
+}
+
+// Create returns a create builder for EventsWait.
+func (c *EventsWaitClient) Create() *EventsWaitCreate {
+	mutation := newEventsWaitMutation(c.config, OpCreate)
+	return &EventsWaitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EventsWait entities.
+func (c *EventsWaitClient) CreateBulk(builders ...*EventsWaitCreate) *EventsWaitCreateBulk {
+	return &EventsWaitCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EventsWait.
+func (c *EventsWaitClient) Update() *EventsWaitUpdate {
+	mutation := newEventsWaitMutation(c.config, OpUpdate)
+	return &EventsWaitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EventsWaitClient) UpdateOne(ew *EventsWait) *EventsWaitUpdateOne {
+	mutation := newEventsWaitMutation(c.config, OpUpdateOne, withEventsWait(ew))
+	return &EventsWaitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EventsWaitClient) UpdateOneID(id uuid.UUID) *EventsWaitUpdateOne {
+	mutation := newEventsWaitMutation(c.config, OpUpdateOne, withEventsWaitID(id))
+	return &EventsWaitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EventsWait.
+func (c *EventsWaitClient) Delete() *EventsWaitDelete {
+	mutation := newEventsWaitMutation(c.config, OpDelete)
+	return &EventsWaitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *EventsWaitClient) DeleteOne(ew *EventsWait) *EventsWaitDeleteOne {
+	return c.DeleteOneID(ew.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *EventsWaitClient) DeleteOneID(id uuid.UUID) *EventsWaitDeleteOne {
+	builder := c.Delete().Where(eventswait.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EventsWaitDeleteOne{builder}
+}
+
+// Query returns a query builder for EventsWait.
+func (c *EventsWaitClient) Query() *EventsWaitQuery {
+	return &EventsWaitQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a EventsWait entity by its id.
+func (c *EventsWaitClient) Get(ctx context.Context, id uuid.UUID) (*EventsWait, error) {
+	return c.Query().Where(eventswait.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EventsWaitClient) GetX(ctx context.Context, id uuid.UUID) *EventsWait {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkflowevent queries the workflowevent edge of a EventsWait.
+func (c *EventsWaitClient) QueryWorkflowevent(ew *EventsWait) *EventsQuery {
+	query := &EventsQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ew.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(eventswait.Table, eventswait.FieldID, id),
+			sqlgraph.To(events.Table, events.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, eventswait.WorkfloweventTable, eventswait.WorkfloweventColumn),
+		)
+		fromV = sqlgraph.Neighbors(ew.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EventsWaitClient) Hooks() []Hook {
+	return c.hooks.EventsWait
 }
 
 // InodeClient is a client for the Inode schema.
@@ -537,6 +892,22 @@ func (c *InstanceClient) QueryChildren(i *Instance) *InstanceRuntimeQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, id),
 			sqlgraph.To(instanceruntime.Table, instanceruntime.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, instance.ChildrenTable, instance.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInstance queries the instance edge of a Instance.
+func (c *InstanceClient) QueryInstance(i *Instance) *EventsQuery {
+	query := &EventsQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(events.Table, events.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.InstanceTable, instance.InstanceColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1843,6 +2214,22 @@ func (c *WorkflowClient) QueryVars(w *Workflow) *VarRefQuery {
 			sqlgraph.From(workflow.Table, workflow.FieldID, id),
 			sqlgraph.To(varref.Table, varref.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workflow.VarsTable, workflow.VarsColumn),
+		)
+		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWfevents queries the wfevents edge of a Workflow.
+func (c *WorkflowClient) QueryWfevents(w *Workflow) *EventsQuery {
+	query := &EventsQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := w.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflow.Table, workflow.FieldID, id),
+			sqlgraph.To(events.Table, events.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflow.WfeventsTable, workflow.WfeventsColumn),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil

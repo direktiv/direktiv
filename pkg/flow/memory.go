@@ -224,7 +224,7 @@ func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *s
 	var err error
 
 	str := im.in.Edges.Runtime.CallerData
-	if str == "" {
+	if str == "" || str == "cron" {
 		return nil
 	}
 
