@@ -291,18 +291,26 @@ out:
 
 func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 
+	engine.freeResources(im)
+
 	if im.lock != nil {
 		engine.InstanceUnlock(im)
+	}
+
+	engine.timers.deleteTimersForInstance(im.ID().String())
+
+	err := engine.events.deleteWorkflowEventListenerByInstanceID(im.ID())
+	if err != nil {
+		engine.sugar.Error(err)
 	}
 
 }
 
 func (engine *engine) freeResources(im *instanceMemory) {
 
-	engine.timers.deleteTimersForInstance(im.ID().String())
-
-	// TODO
-	// engine.clearEventListeners(im)
+	for i := range im.eventQueue {
+		engine.events.flushEvent(im.eventQueue[i], im.in.Edges.Namespace, true)
+	}
 
 	// TODO: do we actually want to delete variables here? There could be value in keeping them around for a little while.
 

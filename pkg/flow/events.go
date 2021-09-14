@@ -65,10 +65,10 @@ func (events *events) markEventAsProcessed(eventID string, ns *ent.Namespace) (*
 
 	ctx := context.Background()
 
-	id, err := uuid.Parse(eventID)
-	if err != nil {
-		return nil, err
-	}
+	// id, err := uuid.Parse(eventID)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	tx, err := events.db.Tx(ctx)
 	if err != nil {
@@ -76,7 +76,9 @@ func (events *events) markEventAsProcessed(eventID string, ns *ent.Namespace) (*
 	}
 	defer rollback(tx)
 
-	e, err := events.db.CloudEvents.Get(ctx, id)
+	// e, err := events.db.CloudEvents.Get(ctx, id)
+
+	e, err := events.db.CloudEvents.Query().Where(entcev.EventId(eventID)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +134,6 @@ func (events *events) getEarliestEvent() (*ent.CloudEvents, error) {
 		First(ctx)
 
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXAAAAA")
 		return nil, err
 	}
 
@@ -223,6 +224,9 @@ func (events *events) deleteWorkflowEventListenerByInstanceID(id uuid.UUID) erro
 	var el *ent.Events
 	el, err = events.getWorkflowEventByInstanceID(id)
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil
+		}
 		return err
 	}
 
@@ -353,7 +357,6 @@ func (events *events) getWorkflowEventByID(id uuid.UUID) (*ent.Events, error) {
 		Only(ctx)
 
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXX2222")
 		return nil, err
 	}
 
@@ -374,7 +377,6 @@ func (events *events) getWorkflowEventByWorkflowUID(id uuid.UUID) (*ent.Events, 
 		Only(ctx)
 
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXX333")
 		return nil, err
 	}
 
@@ -495,6 +497,10 @@ func (events *events) syncEventDelays() {
 	for {
 		e, err := events.getEarliestEvent()
 		if err != nil {
+			if ent.IsNotFound(err) {
+				return
+			}
+
 			events.sugar.Errorf("can not sync event delays: %v", err)
 			return
 		}
@@ -557,7 +563,6 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 	WHERE events::jsonb ? $3 and workflow_events_wfeventswait = $4
 	returning *`, fmt.Sprintf("{%s}", chash), fmt.Sprintf(`"%s"`, base64.StdEncoding.EncodeToString(data)), chash, id)
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXX")
 		return retEvents, err
 	}
 
@@ -646,17 +651,16 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 	db := events.db.DB()
 
 	rows, err := db.Query(`select
-	we.id, signature, count, correlations, we.events, workflow_wfevents, v
+	we.oid, signature, count, correlations, we.events, workflow_wfevents, v
 	from events we
 	inner join workflows w
-		on w.id = workflow_wfevents
+		on w.oid = workflow_wfevents
 	inner join namespaces n
-		on n.id = w.namespace_workflows,
+		on n.oid = w.namespace_workflows,
 	jsonb_array_elements(events) as v
 	where v::json->>'type' = $1
-	and n.id = $2`, ce.Type(), ns.ID.String())
+	and n.oid = $2`, ce.Type(), ns.ID.String())
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXYYY")
 		return err
 	}
 	defer rows.Close()
@@ -666,7 +670,6 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		err := rows.Scan(&id, &signature, &count, &corBytes, &allEvents, &wf, &singleEvent)
 		if err != nil {
-			fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXZZZ")
 			events.sugar.Errorf("process row error: %v", err)
 			continue
 		}
@@ -680,13 +683,12 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		}
 
 		conn, err = events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
-
 		if err != nil {
 			events.sugar.Errorf("can not lock event row: %d, %v", id, err)
 			continue
 		}
 
-		events.sugar.Debugf("event listener %d is candidate", id)
+		// events.sugar.Debugf("event listener %d is candidate", id)
 
 		var eventMap map[string]interface{}
 		err = json.Unmarshal(singleEvent, &eventMap)
@@ -708,7 +710,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		// check filters
 		if !matchesExtensions(eventMap, m) {
-			events.sugar.Debugf("event listener %d does not match", id)
+			// events.sugar.Debugf("event listener %d does not match", id)
 			unlock()
 			continue
 		}
@@ -776,10 +778,14 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 				// TODO
 				// go events.engine.EventsInvoke(uid, retEvents...)
 			} else {
-				events.sugar.Debugf("calling with signature %v", string(signature))
-				events.deleteWorkflowEventListener(id)
-				// TODO
-				// go events.wakeEventsWaiter(signature, retEvents)
+
+				err = events.deleteWorkflowEventListener(id)
+				if err != nil {
+					events.engine.sugar.Error(err)
+				}
+
+				go events.engine.wakeEventsWaiter(signature, retEvents)
+
 			}
 
 		}
@@ -899,7 +905,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 		return err
 	}
 
-	// handle vent
+	// handle event
 	if timer == 0 {
 		err = events.handleEvent(ns, event)
 		if err != nil {

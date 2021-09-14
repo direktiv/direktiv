@@ -12,7 +12,11 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 
 	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
 
-	engine.FreeInstanceMemory(im)
+	engine.freeResources(im)
+
+	if im.lock != nil {
+		engine.InstanceUnlock(im)
+	}
 
 }
 
