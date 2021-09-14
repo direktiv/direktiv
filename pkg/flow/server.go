@@ -153,8 +153,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.engine.Close)
 
-	srv.registerFunctions()
-
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
@@ -176,6 +174,8 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	srv.registerFunctions()
 
 	go func() {
 		defer wg.Done()
