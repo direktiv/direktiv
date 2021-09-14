@@ -12,6 +12,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 )
 
 // CloudEvents is the model entity for the CloudEvents schema.
@@ -21,8 +22,6 @@ type CloudEvents struct {
 	ID uuid.UUID `json:"id"`
 	// EventId holds the value of the "eventId" field.
 	EventId string `json:"eventId,omitempty"`
-	// Namespace holds the value of the "namespace" field.
-	Namespace string `json:"namespace,omitempty"`
 	// Event holds the value of the "event" field.
 	Event event.Event `json:"event,omitempty"`
 	// Fire holds the value of the "fire" field.
@@ -31,6 +30,33 @@ type CloudEvents struct {
 	Created time.Time `json:"created,omitempty"`
 	// Processed holds the value of the "processed" field.
 	Processed bool `json:"processed,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the CloudEventsQuery when eager-loading is set.
+	Edges                 CloudEventsEdges `json:"edges"`
+	namespace_cloudevents *uuid.UUID
+}
+
+// CloudEventsEdges holds the relations/edges for other nodes in the graph.
+type CloudEventsEdges struct {
+	// Namespace holds the value of the namespace edge.
+	Namespace *Namespace `json:"namespace,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// NamespaceOrErr returns the Namespace value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e CloudEventsEdges) NamespaceOrErr() (*Namespace, error) {
+	if e.loadedTypes[0] {
+		if e.Namespace == nil {
+			// The edge namespace was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: namespace.Label}
+		}
+		return e.Namespace, nil
+	}
+	return nil, &NotLoadedError{edge: "namespace"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -42,12 +68,14 @@ func (*CloudEvents) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case cloudevents.FieldProcessed:
 			values[i] = new(sql.NullBool)
-		case cloudevents.FieldEventId, cloudevents.FieldNamespace:
+		case cloudevents.FieldEventId:
 			values[i] = new(sql.NullString)
 		case cloudevents.FieldFire, cloudevents.FieldCreated:
 			values[i] = new(sql.NullTime)
 		case cloudevents.FieldID:
 			values[i] = new(uuid.UUID)
+		case cloudevents.ForeignKeys[0]: // namespace_cloudevents
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type CloudEvents", columns[i])
 		}
@@ -75,12 +103,6 @@ func (ce *CloudEvents) assignValues(columns []string, values []interface{}) erro
 			} else if value.Valid {
 				ce.EventId = value.String
 			}
-		case cloudevents.FieldNamespace:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field namespace", values[i])
-			} else if value.Valid {
-				ce.Namespace = value.String
-			}
 		case cloudevents.FieldEvent:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field event", values[i])
@@ -107,9 +129,21 @@ func (ce *CloudEvents) assignValues(columns []string, values []interface{}) erro
 			} else if value.Valid {
 				ce.Processed = value.Bool
 			}
+		case cloudevents.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field namespace_cloudevents", values[i])
+			} else if value.Valid {
+				ce.namespace_cloudevents = new(uuid.UUID)
+				*ce.namespace_cloudevents = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryNamespace queries the "namespace" edge of the CloudEvents entity.
+func (ce *CloudEvents) QueryNamespace() *NamespaceQuery {
+	return (&CloudEventsClient{config: ce.config}).QueryNamespace(ce)
 }
 
 // Update returns a builder for updating this CloudEvents.
@@ -137,8 +171,6 @@ func (ce *CloudEvents) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", ce.ID))
 	builder.WriteString(", eventId=")
 	builder.WriteString(ce.EventId)
-	builder.WriteString(", namespace=")
-	builder.WriteString(ce.Namespace)
 	builder.WriteString(", event=")
 	builder.WriteString(fmt.Sprintf("%v", ce.Event))
 	builder.WriteString(", fire=")

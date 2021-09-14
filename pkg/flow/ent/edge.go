@@ -4,6 +4,14 @@ package ent
 
 import "context"
 
+func (ce *CloudEvents) Namespace(ctx context.Context) (*Namespace, error) {
+	result, err := ce.Edges.NamespaceOrErr()
+	if IsNotLoaded(err) {
+		result, err = ce.QueryNamespace().Only(ctx)
+	}
+	return result, err
+}
+
 func (e *Events) Workflow(ctx context.Context) (*Workflow, error) {
 	result, err := e.Edges.WorkflowOrErr()
 	if IsNotLoaded(err) {
@@ -208,6 +216,14 @@ func (n *Namespace) Vars(ctx context.Context) ([]*VarRef, error) {
 	result, err := n.Edges.VarsOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryVars().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Namespace) Cloudevents(ctx context.Context) ([]*CloudEvents, error) {
+	result, err := n.Edges.CloudeventsOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryCloudevents().All(ctx)
 	}
 	return result, err
 }

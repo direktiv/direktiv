@@ -13,6 +13,8 @@ const (
 	FieldID = "oid"
 	// FieldLive holds the string denoting the live field in the database.
 	FieldLive = "live"
+	// FieldLogToEvents holds the string denoting the logtoevents field in the database.
+	FieldLogToEvents = "log_to_events"
 	// EdgeInode holds the string denoting the inode edge name in mutations.
 	EdgeInode = "inode"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
@@ -102,6 +104,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldLive,
+	FieldLogToEvents,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "workflows"

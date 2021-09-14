@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
 )
 
@@ -25,6 +26,9 @@ type CloudEventsQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.CloudEvents
+	// eager-loading edges.
+	withNamespace *NamespaceQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +63,28 @@ func (ceq *CloudEventsQuery) Unique(unique bool) *CloudEventsQuery {
 func (ceq *CloudEventsQuery) Order(o ...OrderFunc) *CloudEventsQuery {
 	ceq.order = append(ceq.order, o...)
 	return ceq
+}
+
+// QueryNamespace chains the current query on the "namespace" edge.
+func (ceq *CloudEventsQuery) QueryNamespace() *NamespaceQuery {
+	query := &NamespaceQuery{config: ceq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ceq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ceq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cloudevents.Table, cloudevents.FieldID, selector),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, cloudevents.NamespaceTable, cloudevents.NamespaceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ceq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first CloudEvents entity from the query.
@@ -237,15 +263,27 @@ func (ceq *CloudEventsQuery) Clone() *CloudEventsQuery {
 		return nil
 	}
 	return &CloudEventsQuery{
-		config:     ceq.config,
-		limit:      ceq.limit,
-		offset:     ceq.offset,
-		order:      append([]OrderFunc{}, ceq.order...),
-		predicates: append([]predicate.CloudEvents{}, ceq.predicates...),
+		config:        ceq.config,
+		limit:         ceq.limit,
+		offset:        ceq.offset,
+		order:         append([]OrderFunc{}, ceq.order...),
+		predicates:    append([]predicate.CloudEvents{}, ceq.predicates...),
+		withNamespace: ceq.withNamespace.Clone(),
 		// clone intermediate query.
 		sql:  ceq.sql.Clone(),
 		path: ceq.path,
 	}
+}
+
+// WithNamespace tells the query-builder to eager-load the nodes that are connected to
+// the "namespace" edge. The optional arguments are used to configure the query builder of the edge.
+func (ceq *CloudEventsQuery) WithNamespace(opts ...func(*NamespaceQuery)) *CloudEventsQuery {
+	query := &NamespaceQuery{config: ceq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ceq.withNamespace = query
+	return ceq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -311,9 +349,19 @@ func (ceq *CloudEventsQuery) prepareQuery(ctx context.Context) error {
 
 func (ceq *CloudEventsQuery) sqlAll(ctx context.Context) ([]*CloudEvents, error) {
 	var (
-		nodes = []*CloudEvents{}
-		_spec = ceq.querySpec()
+		nodes       = []*CloudEvents{}
+		withFKs     = ceq.withFKs
+		_spec       = ceq.querySpec()
+		loadedTypes = [1]bool{
+			ceq.withNamespace != nil,
+		}
 	)
+	if ceq.withNamespace != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, cloudevents.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &CloudEvents{config: ceq.config}
 		nodes = append(nodes, node)
@@ -324,6 +372,7 @@ func (ceq *CloudEventsQuery) sqlAll(ctx context.Context) ([]*CloudEvents, error)
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, ceq.driver, _spec); err != nil {
@@ -332,6 +381,36 @@ func (ceq *CloudEventsQuery) sqlAll(ctx context.Context) ([]*CloudEvents, error)
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := ceq.withNamespace; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*CloudEvents)
+		for i := range nodes {
+			if nodes[i].namespace_cloudevents == nil {
+				continue
+			}
+			fk := *nodes[i].namespace_cloudevents
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(namespace.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "namespace_cloudevents" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Namespace = n
+			}
+		}
+	}
+
 	return nodes, nil
 }
 

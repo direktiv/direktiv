@@ -99,6 +99,13 @@ func Live(v bool) predicate.Workflow {
 	})
 }
 
+// LogToEvents applies equality check predicate on the "logToEvents" field. It's identical to LogToEventsEQ.
+func LogToEvents(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLogToEvents), v))
+	})
+}
+
 // LiveEQ applies the EQ predicate on the "live" field.
 func LiveEQ(v bool) predicate.Workflow {
 	return predicate.Workflow(func(s *sql.Selector) {
@@ -110,6 +117,131 @@ func LiveEQ(v bool) predicate.Workflow {
 func LiveNEQ(v bool) predicate.Workflow {
 	return predicate.Workflow(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldLive), v))
+	})
+}
+
+// LogToEventsEQ applies the EQ predicate on the "logToEvents" field.
+func LogToEventsEQ(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsNEQ applies the NEQ predicate on the "logToEvents" field.
+func LogToEventsNEQ(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsIn applies the In predicate on the "logToEvents" field.
+func LogToEventsIn(vs ...string) predicate.Workflow {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Workflow(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldLogToEvents), v...))
+	})
+}
+
+// LogToEventsNotIn applies the NotIn predicate on the "logToEvents" field.
+func LogToEventsNotIn(vs ...string) predicate.Workflow {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Workflow(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldLogToEvents), v...))
+	})
+}
+
+// LogToEventsGT applies the GT predicate on the "logToEvents" field.
+func LogToEventsGT(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsGTE applies the GTE predicate on the "logToEvents" field.
+func LogToEventsGTE(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsLT applies the LT predicate on the "logToEvents" field.
+func LogToEventsLT(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsLTE applies the LTE predicate on the "logToEvents" field.
+func LogToEventsLTE(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsContains applies the Contains predicate on the "logToEvents" field.
+func LogToEventsContains(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsHasPrefix applies the HasPrefix predicate on the "logToEvents" field.
+func LogToEventsHasPrefix(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsHasSuffix applies the HasSuffix predicate on the "logToEvents" field.
+func LogToEventsHasSuffix(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsIsNil applies the IsNil predicate on the "logToEvents" field.
+func LogToEventsIsNil() predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLogToEvents)))
+	})
+}
+
+// LogToEventsNotNil applies the NotNil predicate on the "logToEvents" field.
+func LogToEventsNotNil() predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLogToEvents)))
+	})
+}
+
+// LogToEventsEqualFold applies the EqualFold predicate on the "logToEvents" field.
+func LogToEventsEqualFold(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldLogToEvents), v))
+	})
+}
+
+// LogToEventsContainsFold applies the ContainsFold predicate on the "logToEvents" field.
+func LogToEventsContainsFold(v string) predicate.Workflow {
+	return predicate.Workflow(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldLogToEvents), v))
 	})
 }
 

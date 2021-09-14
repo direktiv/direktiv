@@ -371,7 +371,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, errors.New("not a tag")
 	}
 
-	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
 		func() error {
 
 			refc := tx.Ref
@@ -429,7 +429,7 @@ func (flow *flow) Retag(ctx context.Context, req *grpc.RetagRequest) (*emptypb.E
 		return nil, errors.New("not a tag")
 	}
 
-	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
 		func() error {
 
 			err = dt.ref.Update().SetRevision(d.rev()).Exec(ctx)

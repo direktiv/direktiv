@@ -33,16 +33,12 @@ func init() {
 	cloudeventsDescEventId := cloudeventsFields[1].Descriptor()
 	// cloudevents.EventIdValidator is a validator for the "eventId" field. It is called by the builders before save.
 	cloudevents.EventIdValidator = cloudeventsDescEventId.Validators[0].(func(string) error)
-	// cloudeventsDescNamespace is the schema descriptor for namespace field.
-	cloudeventsDescNamespace := cloudeventsFields[2].Descriptor()
-	// cloudevents.NamespaceValidator is a validator for the "namespace" field. It is called by the builders before save.
-	cloudevents.NamespaceValidator = cloudeventsDescNamespace.Validators[0].(func(string) error)
 	// cloudeventsDescFire is the schema descriptor for fire field.
-	cloudeventsDescFire := cloudeventsFields[4].Descriptor()
+	cloudeventsDescFire := cloudeventsFields[3].Descriptor()
 	// cloudevents.DefaultFire holds the default value on creation for the fire field.
 	cloudevents.DefaultFire = cloudeventsDescFire.Default.(func() time.Time)
 	// cloudeventsDescCreated is the schema descriptor for created field.
-	cloudeventsDescCreated := cloudeventsFields[5].Descriptor()
+	cloudeventsDescCreated := cloudeventsFields[4].Descriptor()
 	// cloudevents.DefaultCreated holds the default value on creation for the created field.
 	cloudevents.DefaultCreated = cloudeventsDescCreated.Default.(func() time.Time)
 	// cloudeventsDescID is the schema descriptor for id field.

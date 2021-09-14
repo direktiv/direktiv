@@ -4,13 +4,16 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
 )
 
@@ -39,9 +42,26 @@ func (ceu *CloudEventsUpdate) SetProcessed(b bool) *CloudEventsUpdate {
 	return ceu
 }
 
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (ceu *CloudEventsUpdate) SetNamespaceID(id uuid.UUID) *CloudEventsUpdate {
+	ceu.mutation.SetNamespaceID(id)
+	return ceu
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (ceu *CloudEventsUpdate) SetNamespace(n *Namespace) *CloudEventsUpdate {
+	return ceu.SetNamespaceID(n.ID)
+}
+
 // Mutation returns the CloudEventsMutation object of the builder.
 func (ceu *CloudEventsUpdate) Mutation() *CloudEventsMutation {
 	return ceu.mutation
+}
+
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (ceu *CloudEventsUpdate) ClearNamespace() *CloudEventsUpdate {
+	ceu.mutation.ClearNamespace()
+	return ceu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -51,12 +71,18 @@ func (ceu *CloudEventsUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(ceu.hooks) == 0 {
+		if err = ceu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = ceu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*CloudEventsMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = ceu.check(); err != nil {
+				return 0, err
 			}
 			ceu.mutation = mutation
 			affected, err = ceu.sqlSave(ctx)
@@ -98,6 +124,14 @@ func (ceu *CloudEventsUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ceu *CloudEventsUpdate) check() error {
+	if _, ok := ceu.mutation.NamespaceID(); ceu.mutation.NamespaceCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"namespace\"")
+	}
+	return nil
+}
+
 func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -130,6 +164,41 @@ func (ceu *CloudEventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: cloudevents.FieldProcessed,
 		})
 	}
+	if ceu.mutation.NamespaceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cloudevents.NamespaceTable,
+			Columns: []string{cloudevents.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ceu.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cloudevents.NamespaceTable,
+			Columns: []string{cloudevents.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ceu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{cloudevents.Label}
@@ -161,9 +230,26 @@ func (ceuo *CloudEventsUpdateOne) SetProcessed(b bool) *CloudEventsUpdateOne {
 	return ceuo
 }
 
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (ceuo *CloudEventsUpdateOne) SetNamespaceID(id uuid.UUID) *CloudEventsUpdateOne {
+	ceuo.mutation.SetNamespaceID(id)
+	return ceuo
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (ceuo *CloudEventsUpdateOne) SetNamespace(n *Namespace) *CloudEventsUpdateOne {
+	return ceuo.SetNamespaceID(n.ID)
+}
+
 // Mutation returns the CloudEventsMutation object of the builder.
 func (ceuo *CloudEventsUpdateOne) Mutation() *CloudEventsMutation {
 	return ceuo.mutation
+}
+
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (ceuo *CloudEventsUpdateOne) ClearNamespace() *CloudEventsUpdateOne {
+	ceuo.mutation.ClearNamespace()
+	return ceuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -180,12 +266,18 @@ func (ceuo *CloudEventsUpdateOne) Save(ctx context.Context) (*CloudEvents, error
 		node *CloudEvents
 	)
 	if len(ceuo.hooks) == 0 {
+		if err = ceuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = ceuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*CloudEventsMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = ceuo.check(); err != nil {
+				return nil, err
 			}
 			ceuo.mutation = mutation
 			node, err = ceuo.sqlSave(ctx)
@@ -225,6 +317,14 @@ func (ceuo *CloudEventsUpdateOne) ExecX(ctx context.Context) {
 	if err := ceuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (ceuo *CloudEventsUpdateOne) check() error {
+	if _, ok := ceuo.mutation.NamespaceID(); ceuo.mutation.NamespaceCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"namespace\"")
+	}
+	return nil
 }
 
 func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEvents, err error) {
@@ -275,6 +375,41 @@ func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEven
 			Value:  value,
 			Column: cloudevents.FieldProcessed,
 		})
+	}
+	if ceuo.mutation.NamespaceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cloudevents.NamespaceTable,
+			Columns: []string{cloudevents.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ceuo.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cloudevents.NamespaceTable,
+			Columns: []string{cloudevents.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &CloudEvents{config: ceuo.config}
 	_spec.Assign = _node.assignValues

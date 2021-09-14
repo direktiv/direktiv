@@ -12,17 +12,25 @@ var (
 	CloudEventsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "event_id", Type: field.TypeString, Unique: true},
-		{Name: "namespace", Type: field.TypeString},
 		{Name: "event", Type: field.TypeJSON},
 		{Name: "fire", Type: field.TypeTime},
 		{Name: "created", Type: field.TypeTime},
 		{Name: "processed", Type: field.TypeBool},
+		{Name: "namespace_cloudevents", Type: field.TypeUUID, Nullable: true},
 	}
 	// CloudEventsTable holds the schema information for the "cloud_events" table.
 	CloudEventsTable = &schema.Table{
 		Name:       "cloud_events",
 		Columns:    CloudEventsColumns,
 		PrimaryKey: []*schema.Column{CloudEventsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cloud_events_namespaces_cloudevents",
+				Columns:    []*schema.Column{CloudEventsColumns[6]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// EventsColumns holds the columns for the "events" table.
 	EventsColumns = []*schema.Column{
@@ -386,6 +394,7 @@ var (
 	WorkflowsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "live", Type: field.TypeBool, Default: true},
+		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
 		{Name: "namespace_workflows", Type: field.TypeUUID, Nullable: true},
 	}
 	// WorkflowsTable holds the schema information for the "workflows" table.
@@ -396,7 +405,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workflows_namespaces_workflows",
-				Columns:    []*schema.Column{WorkflowsColumns[2]},
+				Columns:    []*schema.Column{WorkflowsColumns[3]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -422,6 +431,7 @@ var (
 )
 
 func init() {
+	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsTable.ForeignKeys[0].RefTable = InstancesTable
 	EventsTable.ForeignKeys[1].RefTable = WorkflowsTable
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable

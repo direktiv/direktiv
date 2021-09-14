@@ -672,3 +672,11 @@ func (pubsub *pubsub) CancelWorkflow(id, code, message string, soft bool) {
 	})
 
 }
+
+func (pubsub *pubsub) UpdateEventDelays() {
+
+	pubsub.publish(&pubsubUpdate{
+		Handler: pubsubUpdateEventDelays,
+	})
+
+}

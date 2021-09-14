@@ -43,6 +43,20 @@ func (wc *WorkflowCreate) SetNillableLive(b *bool) *WorkflowCreate {
 	return wc
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (wc *WorkflowCreate) SetLogToEvents(s string) *WorkflowCreate {
+	wc.mutation.SetLogToEvents(s)
+	return wc
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (wc *WorkflowCreate) SetNillableLogToEvents(s *string) *WorkflowCreate {
+	if s != nil {
+		wc.SetLogToEvents(*s)
+	}
+	return wc
+}
+
 // SetID sets the "id" field.
 func (wc *WorkflowCreate) SetID(u uuid.UUID) *WorkflowCreate {
 	wc.mutation.SetID(u)
@@ -312,6 +326,14 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 			Column: workflow.FieldLive,
 		})
 		_node.Live = value
+	}
+	if value, ok := wc.mutation.LogToEvents(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflow.FieldLogToEvents,
+		})
+		_node.LogToEvents = value
 	}
 	if nodes := wc.mutation.InodeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

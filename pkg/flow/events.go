@@ -8,6 +8,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -15,6 +16,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	hash "github.com/mitchellh/hashstructure/v2"
 	glob "github.com/ryanuber/go-glob"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -23,7 +25,11 @@ import (
 	entevw "github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
 	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -55,7 +61,7 @@ func (events *events) Close() error {
 	return nil
 }
 
-func (events *events) markEventAsProcessed(eventID, namespace string) (*cloudevents.Event, error) {
+func (events *events) markEventAsProcessed(eventID string, ns *ent.Namespace) (*cloudevents.Event, error) {
 
 	ctx := context.Background()
 
@@ -122,13 +128,14 @@ func (events *events) getEarliestEvent() (*ent.CloudEvents, error) {
 			),
 		).
 		Order(ent.Asc(entcev.FieldFire)).
+		WithNamespace().
 		First(ctx)
 
 	return e, err
 
 }
 
-func (events *events) addEvent(eventin *cloudevents.Event, ns string, delay int64) error {
+func (events *events) addEvent(eventin *cloudevents.Event, ns *ent.Namespace, delay int64) error {
 
 	ctx := context.Background()
 
@@ -247,24 +254,19 @@ func (events *events) addWorkflowEventWait(ev map[string]interface{}, count int,
 }
 
 // called by add workflow, adds event listeners if required
-func (events *events) processWorkflowEvents(ctx context.Context, tx *ent.Tx,
-	wf *ent.Workflow, startDefinition model.StartDefinition, active bool) error {
+func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.EventsClient,
+	wf *ent.Workflow, ms *muxStart) error {
 
-	var sevents []model.StartEventDefinition
-	if startDefinition != nil {
-		sevents = startDefinition.GetEvents()
+	// delete everything event related
+	wfe, err := events.getWorkflowEventByWorkflowUID(wf.ID)
+	if err == nil {
+		events.deleteWorkflowEventListener(wfe.ID)
 	}
 
-	if len(sevents) > 0 && active {
-
-		// delete everything event related
-		wfe, err := events.getWorkflowEventByWorkflowUID(wf.ID)
-		if err == nil {
-			events.deleteWorkflowEventListener(wfe.ID)
-		}
+	if len(ms.Events) > 0 && ms.Enabled {
 
 		var ev []map[string]interface{}
-		for _, e := range sevents {
+		for _, e := range ms.Events {
 			em := make(map[string]interface{})
 			em[eventTypeString] = e.Type
 
@@ -277,15 +279,12 @@ func (events *events) processWorkflowEvents(ctx context.Context, tx *ent.Tx,
 		correlations := []string{}
 		count := 1
 
-		switch d := startDefinition.(type) {
-		case *model.EventsAndStart:
-			{
-				correlations = append(correlations, d.Correlate...)
-				count = len(sevents)
-			}
+		if len(ms.Correlate) != 0 {
+			correlations = append(correlations, ms.Correlate...)
+			count = len(ms.Events)
 		}
 
-		_, err = tx.Events.
+		_, err = evc.
 			Create().
 			SetWorkflow(wf).
 			SetEvents(ev).
@@ -427,7 +426,21 @@ func (events *events) sendEvent(data []byte) {
 		return
 	}
 
-	err := events.flushEvent(n[0], n[1], true)
+	nsid, err := uuid.Parse(n[1])
+	if err != nil {
+		events.sugar.Errorf("namespace id invalid")
+		return
+	}
+
+	ctx := context.Background()
+
+	ns, err := events.db.Namespace.Get(ctx, nsid)
+	if err != nil {
+		events.sugar.Error(err)
+		return
+	}
+
+	err = events.flushEvent(n[0], ns, true)
 	if err != nil {
 		events.sugar.Errorf("can not flush delayed event: %v", err)
 		return
@@ -463,7 +476,7 @@ func (events *events) syncEventDelays() {
 
 		if e.Fire.Before(time.Now()) {
 			events.sugar.Debugf("flushing old event %s", e.ID)
-			err = events.flushEvent(e.EventId, e.Namespace, false)
+			err = events.flushEvent(e.EventId, e.Edges.Namespace, false)
 			if err != nil {
 				events.sugar.Errorf("can not flush event %s: %v", e.ID, err)
 			}
@@ -471,7 +484,7 @@ func (events *events) syncEventDelays() {
 		}
 
 		err = events.timers.addOneShot("sendEventTimer", sendEventFunction,
-			e.Fire, []byte(fmt.Sprintf("%s/%s", e.ID, e.Namespace)))
+			e.Fire, []byte(fmt.Sprintf("%s/%s", e.ID, e.Edges.Namespace.ID.String())))
 		if err != nil {
 			events.sugar.Errorf("can not reschedule event timer: %v", err)
 		}
@@ -482,11 +495,11 @@ func (events *events) syncEventDelays() {
 
 }
 
-func (events *events) flushEvent(eventID, namespace string, rearm bool) error {
+func (events *events) flushEvent(eventID string, ns *ent.Namespace, rearm bool) error {
 
-	events.sugar.Debugf("flushing cloud event %s (%s)", eventID, namespace)
+	events.sugar.Debugf("flushing cloud event %s (%s)", eventID, ns.ID.String())
 
-	e, err := events.markEventAsProcessed(eventID, namespace)
+	e, err := events.markEventAsProcessed(eventID, ns)
 	if err != nil {
 		return err
 	}
@@ -497,7 +510,7 @@ func (events *events) flushEvent(eventID, namespace string, rearm bool) error {
 		}
 	}(rearm)
 
-	return events.handleEvent(namespace, e)
+	return events.handleEvent(ns, e)
 
 }
 
@@ -593,7 +606,7 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 
 }
 
-func (events *events) handleEvent(namespace string, ce *cloudevents.Event) error {
+func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
 
 	events.sugar.Debugf("handle event %s", ce.Type())
 
@@ -607,15 +620,15 @@ func (events *events) handleEvent(namespace string, ce *cloudevents.Event) error
 	db := events.db.DB()
 
 	rows, err := db.Query(`select
-	we.id, signature, count, correlations, events, workflow_wfevents, v
-	from workflow_events we
+	we.id, signature, count, correlations, we.events, workflow_wfevents, v
+	from events we
 	inner join workflows w
 		on w.id = workflow_wfevents
 	inner join namespaces n
 		on n.id = w.namespace_workflows,
 	jsonb_array_elements(events) as v
 	where v::json->>'type' = $1
-	and n.id = $2`, ce.Type(), namespace)
+	and n.id = $2`, ce.Type(), ns.ID.String())
 	if err != nil {
 		return err
 	}
@@ -817,4 +830,150 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	}
 
 	return ev, nil
+}
+
+func (flow *flow) BroadcastEvent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
+
+	namespace := in.GetNamespace()
+	rawevent := in.GetCloudevent()
+
+	event := new(cloudevents.Event)
+	err := event.UnmarshalJSON(rawevent)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+	}
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	timer := in.GetTimer()
+
+	err = flow.events.BroadcastCloudevent(ctx, ns, event, timer)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp emptypb.Empty
+
+	return &resp, nil
+
+}
+
+func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace, event *cloudevents.Event, timer int64) error {
+
+	events.logToNamespace(ctx, time.Now(), ns, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+
+	// add event to db
+	err := events.addEvent(event, ns, timer)
+	if err != nil {
+		return err
+	}
+
+	// handle vent
+	if timer == 0 {
+		err = events.handleEvent(ns, event)
+		if err != nil {
+			return err
+		}
+	} else {
+
+		// if we have a delay we need to update event delay
+		// sending nil as server id so all instances calling it
+		events.pubsub.UpdateEventDelays()
+
+	}
+
+	return nil
+
+}
+
+const pubsubUpdateEventDelays = "updateEventDelays"
+
+func (events *events) updateEventDelaysHandler(req *pubsubUpdate) {
+
+	events.syncEventDelays()
+
+}
+
+type eventsWaiterSignature struct {
+	InstanceID string
+	Step       int
+}
+
+type eventsResultMessage struct {
+	InstanceID string
+	State      string
+	Step       int
+	Payloads   []*cloudevents.Event
+}
+
+func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
+
+	signature, err := json.Marshal(&eventsWaiterSignature{
+		InstanceID: im.in.ID.String(),
+		Step:       im.Step(),
+	})
+	if err != nil {
+		return err
+	}
+
+	var transformedEvents []*model.ConsumeEventDefinition
+
+	for i := range ceds {
+
+		ev := new(model.ConsumeEventDefinition)
+		copier.Copy(ev, ceds[i])
+
+		for k, v := range ceds[i].Context {
+
+			str, ok := v.(string)
+			if !ok {
+				continue
+			}
+
+			if strings.HasPrefix(str, "{{") && strings.HasSuffix(str, "}}") {
+
+				query := str[2 : len(str)-2]
+				x, err := jqOne(im.data, query)
+				if err != nil {
+					return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
+				}
+
+				switch x.(type) {
+				case bool:
+				case int:
+				case string:
+				case []byte:
+				case time.Time:
+				default:
+					return fmt.Errorf("jq query on key '%s' for event definition %d returned an unacceptable type: %v", k, i, reflect.TypeOf(x))
+				}
+
+				ev.Context[k] = x
+
+			}
+
+		}
+
+		transformedEvents = append(transformedEvents, ev)
+
+	}
+
+	wf, err := events.engine.InstanceWorkflow(ctx, im)
+	if err != nil {
+		return err
+	}
+
+	_, err = events.addWorkflowEventListener(wf.ID, im.in.ID,
+		transformedEvents, signature, all)
+	if err != nil {
+		return err
+	}
+
+	events.logToInstance(ctx, time.Now(), im.in, "Registered to receive events.")
+
+	return nil
+
 }

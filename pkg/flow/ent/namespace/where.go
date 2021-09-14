@@ -518,6 +518,34 @@ func HasVarsWith(preds ...predicate.VarRef) predicate.Namespace {
 	})
 }
 
+// HasCloudevents applies the HasEdge predicate on the "cloudevents" edge.
+func HasCloudevents() predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CloudeventsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventsTable, CloudeventsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCloudeventsWith applies the HasEdge predicate on the "cloudevents" edge with a given conditions (other predicates).
+func HasCloudeventsWith(preds ...predicate.CloudEvents) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CloudeventsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventsTable, CloudeventsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Namespace) predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {

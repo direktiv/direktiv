@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 )
 
@@ -118,36 +120,30 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 
 	engine.logToInstance(ctx, time.Now(), im.in, msg, a...)
 
-	// TODO
+	s := fmt.Sprintf(msg, a...)
 
-	/*
-		s := fmt.Sprintf(msg, a...)
+	// TODO: detect content type and handle base64 data
 
-		// TODO: detect content type and handle base64 data
+	wf, err := engine.InstanceWorkflow(ctx, im)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
 
-		if attr := im.LogToEvents(); attr != "" {
-			event := cloudevents.NewEvent()
-			event.SetID(uuid.New().String())
-			event.SetSource(wli.wf.ID)
-			event.SetType("direktiv.instanceLog")
-			event.SetExtension("logger", attr)
-			event.SetDataContentType("application/json")
-			event.SetData(s)
-			data, err := event.MarshalJSON()
-			if err != nil {
-				engine.sugar.Errorf("failed to marshal UserLog cloudevent: %v", err)
-				return
-			}
-			_, err = engine.ingressClient.BroadcastEvent(ctx, &ingress.BroadcastEventRequest{
-				Namespace:  &wli.namespace,
-				Cloudevent: data,
-			})
-			if err != nil {
-				engine.sugar.Errorf("failed to broadcast cloudevent: %v", err)
-				return
-			}
+	if attr := wf.LogToEvents; attr != "" {
+		event := cloudevents.NewEvent()
+		event.SetID(uuid.New().String())
+		event.SetSource(wf.ID.String()) // TODO: resolve to a human-readable path
+		event.SetType("direktiv.instanceLog")
+		event.SetExtension("logger", attr)
+		event.SetDataContentType("application/json")
+		event.SetData("application/json", s)
+		err = engine.events.BroadcastCloudevent(ctx, im.in.Edges.Namespace, &event, 0)
+		if err != nil {
+			engine.sugar.Errorf("failed to broadcast cloudevent: %v", err)
+			return
 		}
-	*/
+	}
 
 }
 

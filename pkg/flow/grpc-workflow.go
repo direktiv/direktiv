@@ -153,7 +153,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.configureRouter(ctx, wf, rcfNoPriors,
+	err = flow.configureRouter(ctx, tx.Events, wf, rcfNoPriors,
 		func() error {
 			return nil
 		},
@@ -222,7 +222,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		goto respond
 	}
 
-	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
 		func() error {
 
 			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(d.wf).Save(ctx)
@@ -389,7 +389,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	err = flow.configureRouter(ctx, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
 		func() error {
 
 			err = d.ref.Update().SetRevision(prevrev).Exec(ctx)

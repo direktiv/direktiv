@@ -3,7 +3,7 @@ package functions
 import (
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/dlog"
+	// "github.com/vorteil/direktiv/pkg/dlog"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
@@ -34,11 +34,11 @@ func StartServer(echan chan error) {
 
 	var err error
 
-	logger, err = dlog.ApplicationLogger("functions")
-	if err != nil {
-		echan <- err
-		return
-	}
+	// logger, err = dlog.ApplicationLogger("functions")
+	// if err != nil {
+	// 	echan <- err
+	// 	return
+	// }
 
 	go runPodRequestLimiter()
 

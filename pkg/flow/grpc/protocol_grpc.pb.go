@@ -72,6 +72,7 @@ type FlowClient interface {
 	StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error)
 	RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error)
 	NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error)
@@ -928,6 +929,15 @@ func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceReque
 	return out, nil
 }
 
+func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.Flow/BroadcastCloudevent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error) {
 	out := new(NamespaceVariableResponse)
 	err := c.cc.Invoke(ctx, "/grpc.Flow/NamespaceVariable", in, out, opts...)
@@ -1414,6 +1424,7 @@ type FlowServer interface {
 	StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error)
 	RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*empty.Empty, error)
+	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*empty.Empty, error)
 	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(*NamespaceVariableRequest, Flow_NamespaceVariableParcelsServer) error
 	NamespaceVariables(context.Context, *NamespaceVariablesRequest) (*NamespaceVariablesResponse, error)
@@ -1603,6 +1614,9 @@ func (UnimplementedFlowServer) RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflow
 }
 func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelInstance not implemented")
+}
+func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BroadcastCloudevent not implemented")
 }
 func (UnimplementedFlowServer) NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NamespaceVariable not implemented")
@@ -2688,6 +2702,24 @@ func _Flow_CancelInstance_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_BroadcastCloudevent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BroadcastCloudeventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).BroadcastCloudevent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.Flow/BroadcastCloudevent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).BroadcastCloudevent(ctx, req.(*BroadcastCloudeventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_NamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NamespaceVariableRequest)
 	if err := dec(in); err != nil {
@@ -3320,6 +3352,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelInstance",
 			Handler:    _Flow_CancelInstance_Handler,
+		},
+		{
+			MethodName: "BroadcastCloudevent",
+			Handler:    _Flow_BroadcastCloudevent_Handler,
 		},
 		{
 			MethodName: "NamespaceVariable",

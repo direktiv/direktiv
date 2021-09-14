@@ -49,7 +49,7 @@ func NewFunctionsServiceClient(cc grpc.ClientConnInterface) FunctionsServiceClie
 
 func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/UpdateFunction", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/UpdateFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *UpdateF
 
 func (c *functionsServiceClient) CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/CreateFunction", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/CreateFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *functionsServiceClient) CreateFunction(ctx context.Context, in *CreateF
 
 func (c *functionsServiceClient) DeleteFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteFunctions", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteFunctions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *functionsServiceClient) DeleteFunctions(ctx context.Context, in *ListFu
 
 func (c *functionsServiceClient) ListFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*ListFunctionsResponse, error) {
 	out := new(ListFunctionsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ListFunctions", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/ListFunctions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (c *functionsServiceClient) ListFunctions(ctx context.Context, in *ListFunc
 
 func (c *functionsServiceClient) GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error) {
 	out := new(GetFunctionResponse)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/GetFunction", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/GetFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *functionsServiceClient) GetFunction(ctx context.Context, in *GetFunctio
 
 func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteFunction", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunc
 
 func (c *functionsServiceClient) SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/SetFunctionsTraffic", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/SetFunctionsTraffic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (c *functionsServiceClient) SetFunctionsTraffic(ctx context.Context, in *Se
 
 func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/StoreRegistry", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/StoreRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreReg
 
 func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
 	out := new(GetRegistriesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/GetRegistries", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/GetRegistries", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegis
 
 func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteRegistry", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteR
 
 func (c *functionsServiceClient) CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error) {
 	out := new(CreatePodResponse)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/CreateFunctionsPod", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/CreateFunctionsPod", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (c *functionsServiceClient) CreateFunctionsPod(ctx context.Context, in *Cre
 
 func (c *functionsServiceClient) CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/CancelFunctionsPod", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/CancelFunctionsPod", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (c *functionsServiceClient) CancelFunctionsPod(ctx context.Context, in *Can
 
 func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/DeleteRevision", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteRevision", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *DeleteR
 }
 
 func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[0], "/grpc.FunctionsService/WatchFunctions", opts...)
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[0], "/direktiv_functions.FunctionsService/WatchFunctions", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (x *functionsServiceWatchFunctionsClient) Recv() (*WatchFunctionsResponse, 
 }
 
 func (c *functionsServiceClient) WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[1], "/grpc.FunctionsService/WatchPods", opts...)
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[1], "/direktiv_functions.FunctionsService/WatchPods", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func (x *functionsServiceWatchPodsClient) Recv() (*WatchPodsResponse, error) {
 }
 
 func (c *functionsServiceClient) WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[2], "/grpc.FunctionsService/WatchRevisions", opts...)
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[2], "/direktiv_functions.FunctionsService/WatchRevisions", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +261,7 @@ func (x *functionsServiceWatchRevisionsClient) Recv() (*WatchRevisionsResponse, 
 }
 
 func (c *functionsServiceClient) WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[3], "/grpc.FunctionsService/WatchLogs", opts...)
+	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[3], "/direktiv_functions.FunctionsService/WatchLogs", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +294,7 @@ func (x *functionsServiceWatchLogsClient) Recv() (*WatchLogsResponse, error) {
 
 func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error) {
 	out := new(ListPodsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.FunctionsService/ListPods", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/ListPods", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +407,7 @@ func _FunctionsService_UpdateFunction_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/UpdateFunction",
+		FullMethod: "/direktiv_functions.FunctionsService/UpdateFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).UpdateFunction(ctx, req.(*UpdateFunctionRequest))
@@ -425,7 +425,7 @@ func _FunctionsService_CreateFunction_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/CreateFunction",
+		FullMethod: "/direktiv_functions.FunctionsService/CreateFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).CreateFunction(ctx, req.(*CreateFunctionRequest))
@@ -443,7 +443,7 @@ func _FunctionsService_DeleteFunctions_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/DeleteFunctions",
+		FullMethod: "/direktiv_functions.FunctionsService/DeleteFunctions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).DeleteFunctions(ctx, req.(*ListFunctionsRequest))
@@ -461,7 +461,7 @@ func _FunctionsService_ListFunctions_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/ListFunctions",
+		FullMethod: "/direktiv_functions.FunctionsService/ListFunctions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).ListFunctions(ctx, req.(*ListFunctionsRequest))
@@ -479,7 +479,7 @@ func _FunctionsService_GetFunction_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/GetFunction",
+		FullMethod: "/direktiv_functions.FunctionsService/GetFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).GetFunction(ctx, req.(*GetFunctionRequest))
@@ -497,7 +497,7 @@ func _FunctionsService_DeleteFunction_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/DeleteFunction",
+		FullMethod: "/direktiv_functions.FunctionsService/DeleteFunction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).DeleteFunction(ctx, req.(*GetFunctionRequest))
@@ -515,7 +515,7 @@ func _FunctionsService_SetFunctionsTraffic_Handler(srv interface{}, ctx context.
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/SetFunctionsTraffic",
+		FullMethod: "/direktiv_functions.FunctionsService/SetFunctionsTraffic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).SetFunctionsTraffic(ctx, req.(*SetTrafficRequest))
@@ -533,7 +533,7 @@ func _FunctionsService_StoreRegistry_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/StoreRegistry",
+		FullMethod: "/direktiv_functions.FunctionsService/StoreRegistry",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
@@ -551,7 +551,7 @@ func _FunctionsService_GetRegistries_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/GetRegistries",
+		FullMethod: "/direktiv_functions.FunctionsService/GetRegistries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
@@ -569,7 +569,7 @@ func _FunctionsService_DeleteRegistry_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/DeleteRegistry",
+		FullMethod: "/direktiv_functions.FunctionsService/DeleteRegistry",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
@@ -587,7 +587,7 @@ func _FunctionsService_CreateFunctionsPod_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/CreateFunctionsPod",
+		FullMethod: "/direktiv_functions.FunctionsService/CreateFunctionsPod",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).CreateFunctionsPod(ctx, req.(*CreatePodRequest))
@@ -605,7 +605,7 @@ func _FunctionsService_CancelFunctionsPod_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/CancelFunctionsPod",
+		FullMethod: "/direktiv_functions.FunctionsService/CancelFunctionsPod",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).CancelFunctionsPod(ctx, req.(*CancelPodRequest))
@@ -623,7 +623,7 @@ func _FunctionsService_DeleteRevision_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/DeleteRevision",
+		FullMethod: "/direktiv_functions.FunctionsService/DeleteRevision",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).DeleteRevision(ctx, req.(*DeleteRevisionRequest))
@@ -725,7 +725,7 @@ func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.FunctionsService/ListPods",
+		FullMethod: "/direktiv_functions.FunctionsService/ListPods",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).ListPods(ctx, req.(*ListPodsRequest))
@@ -737,7 +737,7 @@ func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, de
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var FunctionsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.FunctionsService",
+	ServiceName: "direktiv_functions.FunctionsService",
 	HandlerType: (*FunctionsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

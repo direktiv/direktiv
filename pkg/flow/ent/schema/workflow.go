@@ -18,6 +18,7 @@ func (Workflow) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Bool("live").Default(true),
+		field.String("logToEvents").Optional(),
 	}
 }
 

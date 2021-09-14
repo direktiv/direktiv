@@ -20,6 +20,8 @@ type Workflow struct {
 	ID uuid.UUID `json:"-"`
 	// Live holds the value of the "live" field.
 	Live bool `json:"live,omitempty"`
+	// LogToEvents holds the value of the "logToEvents" field.
+	LogToEvents string `json:"logToEvents,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowQuery when eager-loading is set.
 	Edges               WorkflowEdges `json:"edges"`
@@ -149,6 +151,8 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case workflow.FieldLive:
 			values[i] = new(sql.NullBool)
+		case workflow.FieldLogToEvents:
+			values[i] = new(sql.NullString)
 		case workflow.FieldID:
 			values[i] = new(uuid.UUID)
 		case workflow.ForeignKeys[0]: // namespace_workflows
@@ -179,6 +183,12 @@ func (w *Workflow) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field live", values[i])
 			} else if value.Valid {
 				w.Live = value.Bool
+			}
+		case workflow.FieldLogToEvents:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field logToEvents", values[i])
+			} else if value.Valid {
+				w.LogToEvents = value.String
 			}
 		case workflow.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -262,6 +272,8 @@ func (w *Workflow) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", w.ID))
 	builder.WriteString(", live=")
 	builder.WriteString(fmt.Sprintf("%v", w.Live))
+	builder.WriteString(", logToEvents=")
+	builder.WriteString(w.LogToEvents)
 	builder.WriteByte(')')
 	return builder.String()
 }

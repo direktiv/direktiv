@@ -51,6 +51,26 @@ func (wu *WorkflowUpdate) SetNillableLive(b *bool) *WorkflowUpdate {
 	return wu
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (wu *WorkflowUpdate) SetLogToEvents(s string) *WorkflowUpdate {
+	wu.mutation.SetLogToEvents(s)
+	return wu
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (wu *WorkflowUpdate) SetNillableLogToEvents(s *string) *WorkflowUpdate {
+	if s != nil {
+		wu.SetLogToEvents(*s)
+	}
+	return wu
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (wu *WorkflowUpdate) ClearLogToEvents() *WorkflowUpdate {
+	wu.mutation.ClearLogToEvents()
+	return wu
+}
+
 // SetInodeID sets the "inode" edge to the Inode entity by ID.
 func (wu *WorkflowUpdate) SetInodeID(id uuid.UUID) *WorkflowUpdate {
 	wu.mutation.SetInodeID(id)
@@ -441,6 +461,19 @@ func (wu *WorkflowUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeBool,
 			Value:  value,
 			Column: workflow.FieldLive,
+		})
+	}
+	if value, ok := wu.mutation.LogToEvents(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflow.FieldLogToEvents,
+		})
+	}
+	if wu.mutation.LogToEventsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: workflow.FieldLogToEvents,
 		})
 	}
 	if wu.mutation.InodeCleared() {
@@ -924,6 +957,26 @@ func (wuo *WorkflowUpdateOne) SetNillableLive(b *bool) *WorkflowUpdateOne {
 	return wuo
 }
 
+// SetLogToEvents sets the "logToEvents" field.
+func (wuo *WorkflowUpdateOne) SetLogToEvents(s string) *WorkflowUpdateOne {
+	wuo.mutation.SetLogToEvents(s)
+	return wuo
+}
+
+// SetNillableLogToEvents sets the "logToEvents" field if the given value is not nil.
+func (wuo *WorkflowUpdateOne) SetNillableLogToEvents(s *string) *WorkflowUpdateOne {
+	if s != nil {
+		wuo.SetLogToEvents(*s)
+	}
+	return wuo
+}
+
+// ClearLogToEvents clears the value of the "logToEvents" field.
+func (wuo *WorkflowUpdateOne) ClearLogToEvents() *WorkflowUpdateOne {
+	wuo.mutation.ClearLogToEvents()
+	return wuo
+}
+
 // SetInodeID sets the "inode" edge to the Inode entity by ID.
 func (wuo *WorkflowUpdateOne) SetInodeID(id uuid.UUID) *WorkflowUpdateOne {
 	wuo.mutation.SetInodeID(id)
@@ -1338,6 +1391,19 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 			Type:   field.TypeBool,
 			Value:  value,
 			Column: workflow.FieldLive,
+		})
+	}
+	if value, ok := wuo.mutation.LogToEvents(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: workflow.FieldLogToEvents,
+		})
+	}
+	if wuo.mutation.LogToEventsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: workflow.FieldLogToEvents,
 		})
 	}
 	if wuo.mutation.InodeCleared() {

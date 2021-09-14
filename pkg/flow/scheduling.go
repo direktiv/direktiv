@@ -16,20 +16,6 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 
 }
 
-type actionResultPayload struct {
-	ActionID     string
-	ErrorCode    string
-	ErrorMessage string
-	Output       []byte
-}
-
-type actionResultMessage struct {
-	InstanceID string
-	State      string
-	Step       int32
-	Payload    actionResultPayload
-}
-
 func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory) {
 
 	caller := engine.InstanceCaller(ctx, im)
@@ -41,7 +27,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		msg := &actionResultMessage{
 			InstanceID: caller.InstanceID,
 			State:      caller.State,
-			Step:       int32(caller.Step),
+			Step:       caller.Step,
 			Payload: actionResultPayload{
 				ActionID:     im.ID().String(),
 				ErrorCode:    im.ErrorCode(),
@@ -50,9 +36,11 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 			},
 		}
 
+		step := int32(msg.Step)
+
 		_, err := engine.server.internal.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
 			InstanceId:   &msg.InstanceID,
-			Step:         &msg.Step,
+			Step:         &step,
 			ActionId:     &msg.Payload.ActionID,
 			ErrorCode:    &msg.Payload.ErrorCode,
 			ErrorMessage: &msg.Payload.ErrorMessage,

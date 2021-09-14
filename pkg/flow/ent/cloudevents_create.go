@@ -13,6 +13,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 )
 
 // CloudEventsCreate is the builder for creating a CloudEvents entity.
@@ -25,12 +26,6 @@ type CloudEventsCreate struct {
 // SetEventId sets the "eventId" field.
 func (cec *CloudEventsCreate) SetEventId(s string) *CloudEventsCreate {
 	cec.mutation.SetEventId(s)
-	return cec
-}
-
-// SetNamespace sets the "namespace" field.
-func (cec *CloudEventsCreate) SetNamespace(s string) *CloudEventsCreate {
-	cec.mutation.SetNamespace(s)
 	return cec
 }
 
@@ -78,6 +73,17 @@ func (cec *CloudEventsCreate) SetProcessed(b bool) *CloudEventsCreate {
 func (cec *CloudEventsCreate) SetID(u uuid.UUID) *CloudEventsCreate {
 	cec.mutation.SetID(u)
 	return cec
+}
+
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (cec *CloudEventsCreate) SetNamespaceID(id uuid.UUID) *CloudEventsCreate {
+	cec.mutation.SetNamespaceID(id)
+	return cec
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (cec *CloudEventsCreate) SetNamespace(n *Namespace) *CloudEventsCreate {
+	return cec.SetNamespaceID(n.ID)
 }
 
 // Mutation returns the CloudEventsMutation object of the builder.
@@ -175,14 +181,6 @@ func (cec *CloudEventsCreate) check() error {
 			return &ValidationError{Name: "eventId", err: fmt.Errorf(`ent: validator failed for field "eventId": %w`, err)}
 		}
 	}
-	if _, ok := cec.mutation.Namespace(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required field "namespace"`)}
-	}
-	if v, ok := cec.mutation.Namespace(); ok {
-		if err := cloudevents.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf(`ent: validator failed for field "namespace": %w`, err)}
-		}
-	}
 	if _, ok := cec.mutation.Event(); !ok {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required field "event"`)}
 	}
@@ -194,6 +192,9 @@ func (cec *CloudEventsCreate) check() error {
 	}
 	if _, ok := cec.mutation.Processed(); !ok {
 		return &ValidationError{Name: "processed", err: errors.New(`ent: missing required field "processed"`)}
+	}
+	if _, ok := cec.mutation.NamespaceID(); !ok {
+		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
 	}
 	return nil
 }
@@ -235,14 +236,6 @@ func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) 
 		})
 		_node.EventId = value
 	}
-	if value, ok := cec.mutation.Namespace(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: cloudevents.FieldNamespace,
-		})
-		_node.Namespace = value
-	}
 	if value, ok := cec.mutation.Event(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
@@ -274,6 +267,26 @@ func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) 
 			Column: cloudevents.FieldProcessed,
 		})
 		_node.Processed = value
+	}
+	if nodes := cec.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cloudevents.NamespaceTable,
+			Columns: []string{cloudevents.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.namespace_cloudevents = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

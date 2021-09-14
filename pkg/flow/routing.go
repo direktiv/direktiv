@@ -14,10 +14,12 @@ import (
 )
 
 type muxStart struct {
-	Enabled bool                         `json:"enabled"`
-	Type    string                       `json:"type"`
-	Cron    string                       `json:"cron"`
-	Events  []model.StartEventDefinition `json:"events"`
+	Enabled   bool                         `json:"enabled"`
+	Type      string                       `json:"type"`
+	Cron      string                       `json:"cron"`
+	Events    []model.StartEventDefinition `json:"events"`
+	Correlate []string                     `json:"correlate"`
+	Lifespan  string                       `json:"lifespan"`
 }
 
 func newMuxStart(workflow *model.Workflow) *muxStart {
@@ -33,6 +35,9 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	case model.StartTypeDefault:
 	case model.StartTypeEvent:
 	case model.StartTypeEventsAnd:
+		x := def.(*model.EventsAndStart)
+		ms.Correlate = x.Correlate
+		ms.Lifespan = x.LifeSpan
 	case model.StartTypeEventsXor:
 	case model.StartTypeScheduled:
 		x := def.(*model.ScheduledStart)
@@ -196,7 +201,7 @@ func hasFlag(flags, flag int) bool {
 	return flags&flag != 0
 }
 
-func (flow *flow) configureRouter(ctx context.Context, wf *ent.Workflow, flags int, changer, commit func() error) error {
+func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow, flags int, changer, commit func() error) error {
 
 	var err error
 	var muxErr1 error
@@ -230,7 +235,7 @@ func (flow *flow) configureRouter(ctx context.Context, wf *ent.Workflow, flags i
 	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
 
 	if mustReconfigureRouter {
-		err = flow.preCommitRouterConfiguration(ms2)
+		err = flow.preCommitRouterConfiguration(ctx, evc, wf, ms2)
 		if err != nil {
 			return err
 		}
@@ -249,9 +254,12 @@ func (flow *flow) configureRouter(ctx context.Context, wf *ent.Workflow, flags i
 
 }
 
-func (flow *flow) preCommitRouterConfiguration(ms *muxStart) error {
+func (flow *flow) preCommitRouterConfiguration(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow, ms *muxStart) error {
 
-	// TODO: event start stuff
+	err := flow.events.processWorkflowEvents(ctx, evc, wf, ms)
+	if err != nil {
+		return err
+	}
 
 	return nil
 

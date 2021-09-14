@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
 )
@@ -97,13 +98,6 @@ func IDLTE(id uuid.UUID) predicate.CloudEvents {
 func EventId(v string) predicate.CloudEvents {
 	return predicate.CloudEvents(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldEventId), v))
-	})
-}
-
-// Namespace applies equality check predicate on the "namespace" field. It's identical to NamespaceEQ.
-func Namespace(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNamespace), v))
 	})
 }
 
@@ -236,117 +230,6 @@ func EventIdEqualFold(v string) predicate.CloudEvents {
 func EventIdContainsFold(v string) predicate.CloudEvents {
 	return predicate.CloudEvents(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldEventId), v))
-	})
-}
-
-// NamespaceEQ applies the EQ predicate on the "namespace" field.
-func NamespaceEQ(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceNEQ applies the NEQ predicate on the "namespace" field.
-func NamespaceNEQ(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceIn applies the In predicate on the "namespace" field.
-func NamespaceIn(vs ...string) predicate.CloudEvents {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldNamespace), v...))
-	})
-}
-
-// NamespaceNotIn applies the NotIn predicate on the "namespace" field.
-func NamespaceNotIn(vs ...string) predicate.CloudEvents {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldNamespace), v...))
-	})
-}
-
-// NamespaceGT applies the GT predicate on the "namespace" field.
-func NamespaceGT(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceGTE applies the GTE predicate on the "namespace" field.
-func NamespaceGTE(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceLT applies the LT predicate on the "namespace" field.
-func NamespaceLT(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceLTE applies the LTE predicate on the "namespace" field.
-func NamespaceLTE(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceContains applies the Contains predicate on the "namespace" field.
-func NamespaceContains(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceHasPrefix applies the HasPrefix predicate on the "namespace" field.
-func NamespaceHasPrefix(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceHasSuffix applies the HasSuffix predicate on the "namespace" field.
-func NamespaceHasSuffix(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceEqualFold applies the EqualFold predicate on the "namespace" field.
-func NamespaceEqualFold(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldNamespace), v))
-	})
-}
-
-// NamespaceContainsFold applies the ContainsFold predicate on the "namespace" field.
-func NamespaceContainsFold(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldNamespace), v))
 	})
 }
 
@@ -513,6 +396,34 @@ func ProcessedEQ(v bool) predicate.CloudEvents {
 func ProcessedNEQ(v bool) predicate.CloudEvents {
 	return predicate.CloudEvents(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldProcessed), v))
+	})
+}
+
+// HasNamespace applies the HasEdge predicate on the "namespace" edge.
+func HasNamespace() predicate.CloudEvents {
+	return predicate.CloudEvents(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(NamespaceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNamespaceWith applies the HasEdge predicate on the "namespace" edge with a given conditions (other predicates).
+func HasNamespaceWith(preds ...predicate.Namespace) predicate.CloudEvents {
+	return predicate.CloudEvents(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(NamespaceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

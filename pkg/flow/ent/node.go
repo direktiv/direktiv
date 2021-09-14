@@ -58,8 +58,8 @@ func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     ce.ID,
 		Type:   "CloudEvents",
-		Fields: make([]*Field, 6),
-		Edges:  make([]*Edge, 0),
+		Fields: make([]*Field, 5),
+		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ce.EventId); err != nil {
@@ -70,18 +70,10 @@ func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "eventId",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(ce.Namespace); err != nil {
-		return nil, err
-	}
-	node.Fields[1] = &Field{
-		Type:  "string",
-		Name:  "namespace",
-		Value: string(buf),
-	}
 	if buf, err = json.Marshal(ce.Event); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[1] = &Field{
 		Type:  "event.Event",
 		Name:  "event",
 		Value: string(buf),
@@ -89,7 +81,7 @@ func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(ce.Fire); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[2] = &Field{
 		Type:  "time.Time",
 		Name:  "fire",
 		Value: string(buf),
@@ -97,7 +89,7 @@ func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(ce.Created); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "time.Time",
 		Name:  "created",
 		Value: string(buf),
@@ -105,10 +97,20 @@ func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(ce.Processed); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[4] = &Field{
 		Type:  "bool",
 		Name:  "processed",
 		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Namespace",
+		Name: "namespace",
+	}
+	err = ce.QueryNamespace().
+		Select(namespace.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
 	}
 	return node, nil
 }
@@ -618,7 +620,7 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		ID:     n.ID,
 		Type:   "Namespace",
 		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(n.CreatedAt); err != nil {
@@ -692,6 +694,16 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 	err = n.QueryVars().
 		Select(varref.FieldID).
 		Scan(ctx, &node.Edges[4].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
+		Type: "CloudEvents",
+		Name: "cloudevents",
+	}
+	err = n.QueryCloudevents().
+		Select(cloudevents.FieldID).
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -983,7 +995,7 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     w.ID,
 		Type:   "Workflow",
-		Fields: make([]*Field, 1),
+		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
@@ -993,6 +1005,14 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[0] = &Field{
 		Type:  "bool",
 		Name:  "live",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(w.LogToEvents); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "logToEvents",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

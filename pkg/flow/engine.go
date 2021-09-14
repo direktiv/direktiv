@@ -1,17 +1,32 @@
 package flow
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/senseyeio/duration"
 
+	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type engine struct {
@@ -19,6 +34,8 @@ type engine struct {
 	cancellers     map[string]func()
 	cancellersLock sync.Mutex
 	stateLogics    map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error)
+
+	functionsClient igrpc.FunctionsServiceClient // TODO: move somewhere else
 }
 
 func initEngine(srv *server) (*engine, error) {
@@ -30,20 +47,20 @@ func initEngine(srv *server) (*engine, error) {
 	engine.cancellers = make(map[string]func())
 
 	engine.stateLogics = map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error){
-		model.StateTypeNoop: initNoopStateLogic,
-		// model.StateTypeAction:        initActionStateLogic,
-		// model.StateTypeConsumeEvent:  initConsumeEventStateLogic,
-		model.StateTypeDelay: initDelayStateLogic,
-		model.StateTypeError: initErrorStateLogic,
-		// model.StateTypeEventsAnd:     initEventsAndStateLogic,
-		// model.StateTypeEventsXor:     initEventsXorStateLogic,
-		// model.StateTypeForEach:       initForEachStateLogic,
-		// model.StateTypeGenerateEvent: initGenerateEventStateLogic,
-		// model.StateTypeParallel:      initParallelStateLogic,
-		model.StateTypeSwitch:   initSwitchStateLogic,
-		model.StateTypeValidate: initValidateStateLogic,
-		model.StateTypeGetter:   initGetterStateLogic,
-		model.StateTypeSetter:   initSetterStateLogic,
+		model.StateTypeNoop:          initNoopStateLogic,
+		model.StateTypeAction:        initActionStateLogic,
+		model.StateTypeConsumeEvent:  initConsumeEventStateLogic,
+		model.StateTypeDelay:         initDelayStateLogic,
+		model.StateTypeError:         initErrorStateLogic,
+		model.StateTypeEventsAnd:     initEventsAndStateLogic,
+		model.StateTypeEventsXor:     initEventsXorStateLogic,
+		model.StateTypeForEach:       initForEachStateLogic,
+		model.StateTypeGenerateEvent: initGenerateEventStateLogic,
+		model.StateTypeParallel:      initParallelStateLogic,
+		model.StateTypeSwitch:        initSwitchStateLogic,
+		model.StateTypeValidate:      initValidateStateLogic,
+		model.StateTypeGetter:        initGetterStateLogic,
+		model.StateTypeSetter:        initSetterStateLogic,
 	}
 
 	return engine, nil
@@ -218,7 +235,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	// TODO: I don't think this is actually possible?
 	// if len(wli.rec.Flow) != wli.step {
 	// 	err := errors.New("workflow logic instance aborted for being tardy")
-	// 	appLog.Error(err)
+	// 	engine.sugar.Error(err)
 	// 	wli.Close()
 	// 	return
 	// }
@@ -442,7 +459,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		// }
 		//
 		// for i := range im.eventQueue {
-		// 	we.server.flushEvent(im.eventQueue[i], ns.ID, true)
+		// 	engine.server.flushEvent(im.eventQueue[i], ns.ID, true)
 		// }
 
 	}
@@ -499,5 +516,427 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	engine.logToInstance(ctx, time.Now(), im.in, "Workflow completed.")
 
 	engine.TerminateInstance(ctx, im)
+
+}
+
+const maxSubflowDepth = 5
+
+func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, ns *ent.Namespace, name string, input []byte) (string, error) {
+
+	var err error
+
+	elems := strings.SplitN(name, ":", 2)
+
+	args := new(newInstanceArgs)
+	args.Namespace = ns.Name
+	args.Path = elems[0]
+	if len(elems) == 2 {
+		args.Ref = elems[1]
+	}
+
+	args.Input = input
+	args.Caller = "workflow" // TODO: human readable
+
+	if caller != nil {
+
+		callerData, err := json.Marshal(caller)
+		if err != nil {
+			return "", NewInternalError(err)
+		}
+		args.CallerData = string(callerData)
+
+	}
+
+	im, err := engine.NewInstance(ctx, args)
+	if err != nil {
+		engine.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		return "", err
+	}
+
+	engine.queue(im)
+
+	return im.ID().String(), nil
+
+}
+
+type retryMessage struct {
+	InstanceID string
+	State      string
+	Step       int
+	Data       []byte
+}
+
+const retryWakeupFunction = "retryWakeup"
+
+func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
+
+	data, _ = json.Marshal(&retryMessage{
+		InstanceID: id,
+		State:      state,
+		Step:       step,
+		Data:       data,
+	})
+
+	if d := t.Sub(time.Now()); d < time.Second*5 {
+		go func() {
+			time.Sleep(d)
+			/* #nosec */
+			_ = engine.retryWakeup(data)
+		}()
+		return nil
+	}
+
+	err := engine.timers.addOneShot(id, retryWakeupFunction, t, data)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	return nil
+
+}
+
+func (engine *engine) retryWakeup(data []byte) error {
+
+	msg := new(retryMessage)
+
+	err := json.Unmarshal(data, msg)
+	if err != nil {
+		engine.sugar.Error(err)
+		return nil
+	}
+
+	ctx, im, err := engine.loadInstanceMemory(msg.InstanceID, msg.Step)
+	if err != nil {
+		engine.sugar.Error(err)
+		return nil
+	}
+
+	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
+
+	go engine.runState(ctx, im, []byte(msg.Data), nil)
+
+	return nil
+
+}
+
+type actionResultPayload struct {
+	ActionID     string
+	ErrorCode    string
+	ErrorMessage string
+	Output       []byte
+}
+
+type actionResultMessage struct {
+	InstanceID string
+	State      string
+	Step       int
+	Payload    actionResultPayload
+}
+
+func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) error {
+
+	if ar.Workflow.Timeout == 0 {
+		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
+	}
+
+	// TODO: should this ctx be modified with a shorter deadline?
+	switch ar.Container.Type {
+	case model.IsolatedContainerFunctionType:
+		hostname, ip, err := engine.addPodFunction(ctx, engine.functionsClient, ar)
+		if err != nil {
+			return NewInternalError(err)
+		}
+
+		go func(ar *functionRequest) {
+			// post data
+			engine.doPodHTTPRequest(ctx, ar, hostname, ip)
+		}(ar)
+
+	case model.DefaultFunctionType:
+		fallthrough
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.GlobalKnativeFunctionType:
+		fallthrough
+	case model.ReusableContainerFunctionType:
+		go engine.doKnativeHTTPRequest(ctx, ar)
+	}
+
+	return nil
+
+}
+
+func (engine *engine) doPodHTTPRequest(ctx context.Context,
+	ar *functionRequest, hostname, ip string) {
+
+	useTLS := engine.conf.FunctionsProtocol == "https"
+
+	tr := engine.createTransport(useTLS)
+
+	// configured namespace for workflows
+	addr := fmt.Sprintf("%s://%s:8890", engine.conf.FunctionsProtocol, ip)
+	if useTLS {
+		addr = fmt.Sprintf("%s://%s:8890", engine.conf.FunctionsProtocol, hostname)
+	}
+
+	engine.sugar.Debugf("function request: %v", addr)
+
+	now := time.Now()
+	deadline := now.Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	engine.sugar.Debugf("deadline for pod request: %v", deadline.Sub(now))
+
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
+		bytes.NewReader(ar.Container.Data))
+	if err != nil {
+		engine.reportError(ar, err)
+		return
+	}
+
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		data, err := json.Marshal(f)
+		if err != nil {
+			engine.reportError(ar, err)
+		}
+		str := base64.StdEncoding.EncodeToString(data)
+		req.Header.Add(DirektivFileHeader, str)
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
+
+	var (
+		resp *http.Response
+	)
+
+	// if we use https we need to use hostname for the certs to be valid
+	// that can lead to some delays with kubernetes DNS
+	if useTLS {
+		for i := 0; i < 100; i++ {
+			resp, err = client.Do(req)
+			if err != nil && strings.Contains(err.Error(), "connection refused") {
+				time.Sleep(250 * time.Millisecond)
+				continue
+			}
+		}
+	} else {
+		resp, err = client.Do(req)
+	}
+
+	if err != nil {
+		if ctxErr := rctx.Err(); ctxErr != nil {
+			engine.sugar.Debugf("context error in pod call")
+			return
+		}
+		engine.reportError(ar, err)
+	}
+
+	if err != nil {
+		engine.reportError(ar, err)
+		return
+	}
+
+	if resp.StatusCode != 200 {
+		engine.reportError(ar, fmt.Errorf("action error status: %d",
+			resp.StatusCode))
+	}
+
+	engine.sugar.Debugf("function request done")
+
+}
+
+func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
+	ar *functionRequest) {
+
+	var (
+		err error
+	)
+
+	tr := engine.createTransport(engine.conf.FunctionsProtocol == "https")
+
+	// configured namespace for workflows
+	ns := os.Getenv(util.DirektivServiceNamespace)
+
+	// set service name if global/namespace
+	// otherwise generate baes on action request
+	svn := ar.Container.Service
+	if ar.Container.Type == model.ReusableContainerFunctionType {
+		svn, _, err = functions.GenerateServiceName(ar.Workflow.Namespace,
+			ar.Workflow.ID, ar.Container.ID)
+		if err != nil {
+			engine.sugar.Errorf("can not create service name: %v", err)
+			engine.reportError(ar, err)
+		}
+	}
+
+	addr := fmt.Sprintf("%s://%s.%s", engine.conf.FunctionsProtocol, svn, ns)
+	engine.sugar.Debugf("function request: %v", addr)
+
+	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	engine.sugar.Debugf("deadline for request: %v", deadline.Sub(time.Now()))
+
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
+		bytes.NewReader(ar.Container.Data))
+	if err != nil {
+		engine.reportError(ar, err)
+		return
+	}
+
+	// add headers
+	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
+	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
+	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Step)))
+
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		data, err := json.Marshal(f)
+		if err != nil {
+			panic(err)
+		}
+		str := base64.StdEncoding.EncodeToString(data)
+		req.Header.Add(DirektivFileHeader, str)
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
+
+	var (
+		resp *http.Response
+	)
+
+	// potentially dns error for a brand new service
+	// we just loop and see if we can recreate the service
+	// one minute wait max
+	for i := 0; i < 60; i++ {
+		engine.sugar.Debugf("functions request (%d): %v", i, addr)
+		resp, err = client.Do(req)
+		if err != nil {
+			if ctxErr := rctx.Err(); ctxErr != nil {
+				engine.sugar.Debugf("context error in knative call")
+				return
+			}
+			engine.sugar.Debugf("error in request: %v", err)
+			if err, ok := err.(*url.Error); ok {
+				if err, ok := err.Err.(*net.OpError); ok {
+					if _, ok := err.Err.(*net.DNSError); ok {
+
+						// we can recreate the function if it is a workflow scope function
+						// if not we can bail right here
+						if ar.Container.Type != model.ReusableContainerFunctionType {
+							engine.reportError(ar,
+								fmt.Errorf("function %s does not exist on scope %v",
+									ar.Container.ID, ar.Container.Type))
+							return
+						}
+
+						// recreate if the service does not exist
+						if ar.Container.Type == model.ReusableContainerFunctionType &&
+							!engine.isKnativeFunction(engine.functionsClient, ar.Container.ID,
+								ar.Workflow.Namespace, ar.Workflow.ID) {
+							err := createKnativeFunction(engine.functionsClient, ar)
+							if err != nil && !strings.Contains(err.Error(), "already exists") {
+								engine.sugar.Errorf("can not create knative function: %v", err)
+								engine.reportError(ar, err)
+								return
+							}
+						}
+
+						time.Sleep(1000 * time.Millisecond)
+						continue
+					}
+				}
+			}
+
+			time.Sleep(1000 * time.Millisecond)
+
+		} else {
+			break
+		}
+	}
+
+	if err != nil {
+		engine.reportError(ar, err)
+		return
+	}
+
+	if resp.StatusCode != 200 {
+		engine.reportError(ar, fmt.Errorf("action error status: %d",
+			resp.StatusCode))
+	}
+
+	engine.sugar.Debugf("function request done")
+
+}
+
+func (engine *engine) reportError(ar *functionRequest, err error) {
+	ec := ""
+	em := err.Error()
+	step := int32(ar.Workflow.Step)
+	r := &grpc.ReportActionResultsRequest{
+		InstanceId:   &ar.Workflow.InstanceID,
+		Step:         &step,
+		ActionId:     &ar.ActionID,
+		ErrorCode:    &ec,
+		ErrorMessage: &em,
+	}
+
+	_, err = engine.internal.ReportActionResults(context.Background(), r)
+	if err != nil {
+		engine.sugar.Errorf("can not respond to flow: %v", err)
+	}
+}
+
+func (engine *engine) createTransport(useTLS bool) *http.Transport {
+
+	tr := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   10 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	if useTLS {
+		rootCAs, _ := x509.SystemCertPool()
+		if rootCAs == nil {
+			rootCAs = x509.NewCertPool()
+		}
+
+		// Read in the cert file. just in case it is the same being used
+		// in the ingress
+		certs, err := ioutil.ReadFile("/etc/direktiv/certs/ca/ca.crt")
+		if err == nil {
+			// Append our cert to the system pool if we have it
+			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+				engine.sugar.Warnf("no certs appended, using system certs only")
+			}
+		}
+
+		// Trust the augmented cert pool in our client
+		config := &tls.Config{
+			RootCAs:    rootCAs,
+			MinVersion: tls.VersionTLS12,
+		}
+		tr.TLSClientConfig = config
+	}
+
+	return tr
 
 }

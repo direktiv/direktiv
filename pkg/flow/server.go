@@ -20,9 +20,10 @@ import (
 const parcelSize = 0x100000
 
 type Config struct {
-	Database     string `yaml:"database"`
-	BindFlow     string `yaml:"bind_flow"`
-	BindInternal string `yaml:"bind_internal"`
+	Database          string `yaml:"database"`
+	BindFlow          string `yaml:"bind_flow"`
+	BindInternal      string `yaml:"bind_internal"`
+	FunctionsProtocol string `yaml:"functions-protocol"`
 }
 
 func ReadConfig(file string) (*Config, error) {
@@ -285,6 +286,7 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.registerFunction(pubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
 	srv.pubsub.registerFunction(pubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
 	srv.pubsub.registerFunction(pubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	srv.pubsub.registerFunction(pubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
