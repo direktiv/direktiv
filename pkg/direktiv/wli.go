@@ -103,7 +103,7 @@ func (we *workflowEngine) newWorkflowLogicInstance(ctx context.Context, namespac
 
 func (wli *workflowLogicInstance) start() {
 
-	ctx, err := wli.lock(time.Second * 5)
+	ctx, err := wli.lock(time.Second * defaultLockWait)
 	if err != nil {
 		appLog.Error(err)
 		return

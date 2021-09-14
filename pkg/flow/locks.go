@@ -10,7 +10,7 @@ import (
 	"github.com/mitchellh/hashstructure/v2"
 )
 
-const defaultLockWait = 10
+const defaultLockWait = time.Second * 10
 
 type locks struct {
 	db *sql.DB
@@ -128,6 +128,7 @@ func (engine *engine) lock(key string, timeout time.Duration) (context.Context, 
 	}
 
 	wait := int(timeout.Seconds())
+
 	conn, err := engine.locks.lockDB(hash, wait)
 	if err != nil {
 		return nil, nil, NewInternalError(err)
@@ -166,12 +167,17 @@ func (engine *engine) unlock(key string, conn *sql.Conn) {
 	}
 
 	engine.cancellersLock.Lock()
+	defer engine.cancellersLock.Unlock()
+
 	cancel := engine.cancellers[key]
 	delete(engine.cancellers, key)
 	cancel()
 
-	engine.locks.unlockDB(hash, conn)
-	engine.cancellersLock.Unlock()
+	err = engine.locks.unlockDB(hash, conn)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
 
 }
 

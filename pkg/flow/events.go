@@ -651,7 +651,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 			}
 		}
 
-		conn, err = events.locks.lockDB(hash, defaultLockWait)
+		conn, err = events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
 
 		if err != nil {
 			events.sugar.Errorf("can not lock event row: %d, %v", id, err)

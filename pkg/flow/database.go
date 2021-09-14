@@ -130,16 +130,13 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 	recurser = func(ino *ent.Inode) error {
 
 		pino, err := ino.Parent(ctx)
+		if ent.IsNotFound(err) || pino == nil {
+			d.dir = "/" + d.dir
+			d.path = "/" + d.path
+			return nil
+		}
 		if err != nil {
-
-			if ent.IsNotFound(err) {
-				d.dir = "/" + d.dir
-				d.path = "/" + d.path
-				return nil
-			}
-
 			return err
-
 		}
 
 		pino.Edges.Namespace = ns

@@ -20,7 +20,7 @@ type Instance struct {
 func (Instance) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"id"`).Annotations(entgql.OrderField("ID")),
-		field.Time("created_at").Default(time.Now).Immutable(),
+		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.Time("end_at").Optional(),
 		field.String("status"),

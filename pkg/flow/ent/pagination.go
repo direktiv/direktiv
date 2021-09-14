@@ -1520,6 +1520,16 @@ func (i *InstanceQuery) Paginate(
 }
 
 var (
+	// InstanceOrderFieldCreatedAt orders Instance by created_at.
+	InstanceOrderFieldCreatedAt = &InstanceOrderField{
+		field: instance.FieldCreatedAt,
+		toCursor: func(i *Instance) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.CreatedAt,
+			}
+		},
+	}
 	// InstanceOrderFieldID orders Instance by id.
 	InstanceOrderFieldID = &InstanceOrderField{
 		field: instance.FieldID,
@@ -1536,6 +1546,8 @@ var (
 func (f InstanceOrderField) String() string {
 	var str string
 	switch f.field {
+	case instance.FieldCreatedAt:
+		str = "CREATED"
 	case instance.FieldID:
 		str = "ID"
 	}
@@ -1554,6 +1566,8 @@ func (f *InstanceOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("InstanceOrderField %T must be a string", v)
 	}
 	switch str {
+	case "CREATED":
+		*f = *InstanceOrderFieldCreatedAt
 	case "ID":
 		*f = *InstanceOrderFieldID
 	default:

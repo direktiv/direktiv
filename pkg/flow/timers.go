@@ -41,6 +41,13 @@ func initTimers(pubsub *pubsub) (*timers, error) {
 	timers.timers = make(map[string]*timer) // timers can be key as name because it is unique
 	timers.pubsub = pubsub
 
+	var err error
+
+	timers.hostname, err = os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
 	go timers.cron.Start()
 
 	return timers, nil
@@ -201,24 +208,18 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 		return err
 	}
 
-	err = func(timer *timer) error {
+	id, err := timers.cron.AddFunc(t.cron.pattern, func() {
+		timers.executeFunction(t)
+	})
+	if err != nil {
+		return fmt.Errorf("can not enable timer %s: %v", name, err)
+	}
 
-		id, err := timers.cron.AddFunc(timer.cron.pattern, func() {
-			timers.executeFunction(timer)
-		})
-		if err != nil {
-			return fmt.Errorf("can not enable timer %s: %v", name, err)
-		}
-
-		timer.cron.cronID = id
-
-		return nil
-
-	}(t)
+	t.cron.cronID = id
 
 	timers.timers[name] = t
 
-	return err
+	return nil
 
 }
 
@@ -296,7 +297,6 @@ func (timers *timers) deleteInstanceTimersHandler(req *pubsubUpdate) {
 }
 
 func (timers *timers) deleteTimerHandler(req *pubsubUpdate) {
-
 	timers.deleteTimerByName("", timers.pubsub.hostname, req.Key)
 
 }

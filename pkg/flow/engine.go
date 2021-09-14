@@ -164,7 +164,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 func (engine *engine) start(im *instanceMemory) {
 
-	ctx, err := engine.InstanceLock(im, time.Second*defaultLockWait)
+	ctx, err := engine.InstanceLock(im, defaultLockWait)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
@@ -181,6 +181,34 @@ func (engine *engine) start(im *instanceMemory) {
 	start := workflow.GetStartState()
 
 	engine.Transition(ctx, im, start.GetID(), 0)
+
+}
+
+func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
+
+	workflow, err := im.Model()
+	if err != nil {
+		return err
+	}
+
+	states := workflow.GetStatesMap()
+	state, exists := states[stateID]
+	if !exists {
+		return fmt.Errorf("workflow cannot resolve state: %s", stateID)
+	}
+
+	init, exists := engine.stateLogics[state.GetType()]
+	if !exists {
+		return fmt.Errorf("engine cannot resolve state type: %s", state.GetType().String())
+	}
+
+	stateLogic, err := init(workflow, state)
+	if err != nil {
+		return fmt.Errorf("cannot initialize state logic: %v", err)
+	}
+	im.logic = stateLogic
+
+	return nil
 
 }
 
@@ -244,31 +272,14 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		panic("don't call this function with an empty nextState")
 	}
 
-	states := workflow.GetStatesMap()
-	state, exists := states[nextState]
-	if !exists {
-		err = fmt.Errorf("workflow cannot resolve transition: %s", nextState)
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-
-	init, exists := engine.stateLogics[state.GetType()]
-	if !exists {
-		err = fmt.Errorf("engine cannot resolve state type: %s", state.GetType().String())
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-
-	stateLogic, err := init(workflow, state)
+	err = engine.loadStateLogic(im, nextState)
 	if err != nil {
-		err = fmt.Errorf("cannot initialize state logic: %v", err)
 		engine.CrashInstance(ctx, im, err)
 		return
 	}
-	im.logic = stateLogic
 
 	flow := append(im.Flow(), nextState)
-	deadline := stateLogic.Deadline(ctx, engine, im)
+	deadline := im.logic.Deadline(ctx, engine, im)
 
 	rt := im.in.Edges.Runtime
 	edges := rt.Edges

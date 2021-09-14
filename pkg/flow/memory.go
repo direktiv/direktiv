@@ -168,7 +168,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		return nil, err
 	}
 
-	in, err := inc.Query().Where(entinst.IDEQ(uid)).WithRuntime().Only(ctx)
+	in, err := inc.Query().Where(entinst.IDEQ(uid)).WithNamespace().WithWorkflow().WithRevision().WithRuntime().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -186,13 +186,21 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		return nil, err
 	}
 
+	flow := im.in.Edges.Runtime.Flow
+	stateID := flow[len(flow)-1]
+
+	err = engine.loadStateLogic(im, stateID)
+	if err != nil {
+		return nil, err
+	}
+
 	return im, nil
 
 }
 
 func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, *instanceMemory, error) {
 
-	ctx, conn, err := engine.lock(id, time.Second*defaultLockWait)
+	ctx, conn, err := engine.lock(id, defaultLockWait)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -177,6 +178,8 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.registerFunctions()
 
+	go srv.cronPoller()
+
 	go func() {
 		defer wg.Done()
 		defer cancel()
@@ -292,5 +295,57 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
+
+}
+
+func (srv *server) cronPoller() {
+
+	for {
+		srv.cronPoll()
+		time.Sleep(time.Minute * 15)
+	}
+
+}
+
+func (srv *server) cronPoll() {
+
+	ctx := context.Background()
+
+	wfs, err := srv.db.Workflow.Query().All(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+
+	for _, wf := range wfs {
+		srv.cronPollerWorkflow(wf)
+	}
+
+}
+
+func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
+
+	ctx := context.Background()
+
+	ms, muxErr, err := validateRouter(ctx, wf)
+	if err != nil || muxErr != nil {
+		return
+	}
+
+	if !ms.Enabled || ms.Cron != "" {
+		srv.timers.deleteCronForWorkflow(wf.ID.String())
+	}
+
+	if ms.Cron != "" && ms.Enabled {
+
+		err = srv.timers.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, ms.Cron, []byte(wf.ID.String()))
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		srv.sugar.Debugf("Loaded cron: %s", wf.ID.String())
+
+	}
 
 }

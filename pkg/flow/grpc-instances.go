@@ -314,8 +314,8 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 
 func instancesOrder(p *pagination) ent.InstancePaginateOption {
 
-	field := ent.InstanceOrderFieldID
-	direction := ent.OrderDirectionAsc
+	field := ent.InstanceOrderFieldCreatedAt
+	direction := ent.OrderDirectionDesc
 
 	if p.order != nil {
 
@@ -323,8 +323,16 @@ func instancesOrder(p *pagination) ent.InstancePaginateOption {
 			field = ent.InstanceOrderFieldID
 		}
 
+		if x := p.order.Field; x != nil && *x == "CREATED" {
+			field = ent.InstanceOrderFieldCreatedAt
+		}
+
 		if x := p.order.Direction; x != nil && *x == "DESC" {
 			direction = ent.OrderDirectionDesc
+		}
+
+		if x := p.order.Direction; x != nil && *x == "ASC" {
+			direction = ent.OrderDirectionAsc
 		}
 
 	}
