@@ -482,9 +482,6 @@ func (events *events) syncEventDelays() {
 	syncMtx.Lock()
 	defer syncMtx.Unlock()
 
-	// sync with other servers
-	events.sugar.Debugf("update event timeout")
-
 	// disable old timer
 	for i := range events.timers.timers {
 		ti := events.timers.timers[i]
@@ -506,7 +503,6 @@ func (events *events) syncEventDelays() {
 		}
 
 		if e.Fire.Before(time.Now()) {
-			events.sugar.Debugf("flushing old event %s", e.ID)
 			err = events.flushEvent(e.EventId, e.Edges.Namespace, false)
 			if err != nil {
 				events.sugar.Errorf("can not flush event %s: %v", e.ID, err)
@@ -527,8 +523,6 @@ func (events *events) syncEventDelays() {
 }
 
 func (events *events) flushEvent(eventID string, ns *ent.Namespace, rearm bool) error {
-
-	events.sugar.Debugf("flushing cloud event %s (%s)", eventID, ns.ID.String())
 
 	e, err := events.markEventAsProcessed(eventID, ns)
 	if err != nil {
@@ -639,8 +633,6 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 
 func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
 
-	events.sugar.Debugf("handle event %s", ce.Type())
-
 	var (
 		id                                          uuid.UUID
 		count                                       int
@@ -722,7 +714,6 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		if count == 1 {
 
-			events.sugar.Debugf("single event workflow")
 			retEvents = append(retEvents, ce)
 
 		} else {
@@ -772,16 +763,25 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		unlock()
 		// if single or multiple added events we fire
 		if len(retEvents) > 0 {
-			uid, _ := uuid.Parse(wf)
-			events.sugar.Debugf("run workflow %v with %d events", uid, len(retEvents))
+
+			uid, err := uuid.Parse(wf)
+			if err != nil {
+				events.engine.sugar.Error(err)
+				return nil
+			}
+
+			// events.sugar.Debugf("run workflow %v with %d events", uid, len(retEvents))
+
 			if len(signature) == 0 {
-				// TODO
-				// go events.engine.EventsInvoke(uid, retEvents...)
+
+				go events.engine.EventsInvoke(uid, retEvents...)
+
 			} else {
 
 				err = events.deleteWorkflowEventListener(id)
 				if err != nil {
 					events.engine.sugar.Error(err)
+					return nil
 				}
 
 				go events.engine.wakeEventsWaiter(signature, retEvents)

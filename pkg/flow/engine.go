@@ -20,6 +20,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -962,5 +963,50 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 	}
 
 	go engine.runState(ctx, im, wakedata, nil)
+
+}
+
+func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
+
+	ctx := context.Background()
+
+	d, err := engine.reverseTraverseToWorkflow(ctx, workflowID.String())
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	var input []byte
+	m := make(map[string]interface{})
+	for _, event := range events {
+
+		if event == nil {
+			continue
+		}
+
+		m[event.Type()] = event
+
+	}
+
+	input, err = json.Marshal(m)
+	if err != nil {
+		engine.sugar.Errorf("Internal error on EventsInvoke: %v", err)
+		return
+	}
+
+	args := new(newInstanceArgs)
+	args.Namespace = d.namespace()
+	args.Path = d.path
+
+	args.Input = input
+	args.Caller = "cloudevent" // TODO: human readable
+
+	im, err := engine.NewInstance(ctx, args)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	engine.queue(im)
 
 }

@@ -130,7 +130,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 		dd = t.Unix()
 	}
 
-	engine.sugar.Debugf("event fires in %d seconds", dd)
+	// engine.sugar.Debugf("event fires in %d seconds", dd)
 
 	err = engine.events.BroadcastCloudevent(ctx, im.in.Edges.Namespace, &event, dd)
 	if err != nil {
