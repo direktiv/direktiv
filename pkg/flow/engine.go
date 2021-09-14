@@ -324,8 +324,6 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 	engine.TerminateInstance(ctx, im)
 
-	engine.FreeInstanceMemory(im)
-
 }
 
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
@@ -334,6 +332,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 	engine.WakeInstanceCaller(ctx, im)
 	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
 	engine.metricsCompleteInstance(ctx, im)
+	engine.InstanceUnlock(im)
 
 }
 

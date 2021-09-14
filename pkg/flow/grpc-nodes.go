@@ -76,6 +76,32 @@ func directoryFilter(p *pagination) ent.InodePaginateOption {
 
 }
 
+func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	var err error
+	var resp grpc.NodeResponse
+
+	nsc := flow.db.Namespace
+	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	err = atob(d.ino, &resp.Node)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Namespace = d.namespace()
+	resp.Node.Path = d.path
+	resp.Node.Parent = d.dir
+
+	return &resp, nil
+
+}
+
 func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())

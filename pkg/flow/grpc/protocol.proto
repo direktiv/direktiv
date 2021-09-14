@@ -34,6 +34,7 @@ service Flow {
 	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {}
 	rpc DeleteNode (DeleteNodeRequest) returns (google.protobuf.Empty) {}
 	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {}
+	rpc Node (NodeRequest) returns (NodeResponse) {}
 	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {}
 	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {} 
 	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}

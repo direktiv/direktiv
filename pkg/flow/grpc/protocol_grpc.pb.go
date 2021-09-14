@@ -36,6 +36,7 @@ type FlowClient interface {
 	CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
 	DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error)
+	Node(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error)
 	Workflow(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 	WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error)
 	CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error)
@@ -369,6 +370,15 @@ func (c *flowClient) DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts
 func (c *flowClient) RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error) {
 	out := new(RenameNodeResponse)
 	err := c.cc.Invoke(ctx, "/grpc.Flow/RenameNode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) Node(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error) {
+	out := new(NodeResponse)
+	err := c.cc.Invoke(ctx, "/grpc.Flow/Node", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1388,6 +1398,7 @@ type FlowServer interface {
 	CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error)
 	DeleteNode(context.Context, *DeleteNodeRequest) (*empty.Empty, error)
 	RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error)
+	Node(context.Context, *NodeRequest) (*NodeResponse, error)
 	Workflow(context.Context, *WorkflowRequest) (*WorkflowResponse, error)
 	WorkflowStream(*WorkflowRequest, Flow_WorkflowStreamServer) error
 	CreateWorkflow(context.Context, *CreateWorkflowRequest) (*CreateWorkflowResponse, error)
@@ -1506,6 +1517,9 @@ func (UnimplementedFlowServer) DeleteNode(context.Context, *DeleteNodeRequest) (
 }
 func (UnimplementedFlowServer) RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenameNode not implemented")
+}
+func (UnimplementedFlowServer) Node(context.Context, *NodeRequest) (*NodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Node not implemented")
 }
 func (UnimplementedFlowServer) Workflow(context.Context, *WorkflowRequest) (*WorkflowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Workflow not implemented")
@@ -2020,6 +2034,24 @@ func _Flow_RenameNode_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).RenameNode(ctx, req.(*RenameNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_Node_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).Node(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.Flow/Node",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).Node(ctx, req.(*NodeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3248,6 +3280,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RenameNode",
 			Handler:    _Flow_RenameNode_Handler,
+		},
+		{
+			MethodName: "Node",
+			Handler:    _Flow_Node_Handler,
 		},
 		{
 			MethodName: "Workflow",

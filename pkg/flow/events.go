@@ -131,7 +131,12 @@ func (events *events) getEarliestEvent() (*ent.CloudEvents, error) {
 		WithNamespace().
 		First(ctx)
 
-	return e, err
+	if err != nil {
+		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXAAAAA")
+		return nil, err
+	}
+
+	return e, nil
 
 }
 
@@ -341,11 +346,18 @@ func (events *events) getWorkflowEventByID(id uuid.UUID) (*ent.Events, error) {
 
 	ctx := context.Background()
 
-	return events.db.Events.
+	evs, err := events.db.Events.
 		Query().
 		Where(entev.IDEQ(id)).
 		WithWorkflow().
 		Only(ctx)
+
+	if err != nil {
+		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXX2222")
+		return nil, err
+	}
+
+	return evs, nil
 
 }
 
@@ -353,7 +365,7 @@ func (events *events) getWorkflowEventByWorkflowUID(id uuid.UUID) (*ent.Events, 
 
 	ctx := context.Background()
 
-	return events.db.Events.
+	evs, err := events.db.Events.
 		Query().
 		Where(entev.HasWorkflowWith(
 			workflow.IDEQ(id),
@@ -361,18 +373,31 @@ func (events *events) getWorkflowEventByWorkflowUID(id uuid.UUID) (*ent.Events, 
 		WithWorkflow().
 		Only(ctx)
 
+	if err != nil {
+		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXX333")
+		return nil, err
+	}
+
+	return evs, nil
+
 }
 
 func (events *events) getWorkflowEventByInstanceID(id uuid.UUID) (*ent.Events, error) {
 
 	ctx := context.Background()
 
-	return events.db.Events.
+	evs, err := events.db.Events.
 		Query().
 		Where(entev.HasWorkflowinstanceWith(
 			entinst.IDEQ(id),
 		)).
 		Only(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return evs, nil
 
 }
 
@@ -532,6 +557,7 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 	WHERE events::jsonb ? $3 and workflow_events_wfeventswait = $4
 	returning *`, fmt.Sprintf("{%s}", chash), fmt.Sprintf(`"%s"`, base64.StdEncoding.EncodeToString(data)), chash, id)
 	if err != nil {
+		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXX")
 		return retEvents, err
 	}
 
@@ -630,6 +656,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 	where v::json->>'type' = $1
 	and n.id = $2`, ce.Type(), ns.ID.String())
 	if err != nil {
+		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXYYY")
 		return err
 	}
 	defer rows.Close()
@@ -639,6 +666,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		err := rows.Scan(&id, &signature, &count, &corBytes, &allEvents, &wf, &singleEvent)
 		if err != nil {
+			fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXZZZ")
 			events.sugar.Errorf("process row error: %v", err)
 			continue
 		}
