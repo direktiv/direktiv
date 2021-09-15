@@ -308,7 +308,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 			return err
 		}
 
-		if req.TotalSize != nil {
+		if req.TotalSize <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -319,7 +319,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 			return err
 		}
 
-		if req.TotalSize != nil {
+		if req.TotalSize <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}

@@ -319,19 +319,19 @@ func instancesOrder(p *pagination) ent.InstancePaginateOption {
 
 	if p.order != nil {
 
-		if x := p.order.Field; x != nil && *x == "ID" {
+		if x := p.order.Field; x != "" && x == "ID" {
 			field = ent.InstanceOrderFieldID
 		}
 
-		if x := p.order.Field; x != nil && *x == "CREATED" {
+		if x := p.order.Field; x != "" && x == "CREATED" {
 			field = ent.InstanceOrderFieldCreatedAt
 		}
 
-		if x := p.order.Direction; x != nil && *x == "DESC" {
+		if x := p.order.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
-		if x := p.order.Direction; x != nil && *x == "ASC" {
+		if x := p.order.Direction; x != "" && x == "ASC" {
 			direction = ent.OrderDirectionAsc
 		}
 
@@ -354,26 +354,26 @@ func instancesFilter(p *pagination) ent.InstancePaginateOption {
 
 	return ent.WithInstanceFilter(func(query *ent.InstanceQuery) (*ent.InstanceQuery, error) {
 
-		if filter == nil {
+		if filter == "" {
 			return query, nil
 		}
 
 		field := p.filter.Field
-		if field == nil {
+		if field == "" {
 			return query, nil
 		}
 
-		switch *field {
+		switch field {
 		case "AS":
 
 			ftype := p.filter.Type
-			if ftype == nil {
+			if ftype == "" {
 				return query, nil
 			}
 
-			switch *ftype {
+			switch ftype {
 			case "CONTAINS":
-				return query.Where(entinst.AsContains(*filter)), nil
+				return query.Where(entinst.AsContains(filter)), nil
 			}
 		}
 

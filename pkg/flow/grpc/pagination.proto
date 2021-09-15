@@ -12,21 +12,21 @@ message PageInfo {
 }
 
 message PageOrder {
-	optional string field = 1;
-	optional string direction = 2;
+	string field = 1;
+	string direction = 2;
 }
 
 message PageFilter {
-	optional string field = 1;
-	optional string type = 2;
-	optional string val = 3;
+	string field = 1;
+	string type = 2;
+	string val = 3;
 }
 
 message Pagination {
-	optional string after = 1;
-	optional int32 first = 2;
-	optional string before = 3;
-	optional int32 last = 4;
+	string after = 1;
+	int32 first = 2;
+	string before = 3;
+	int32 last = 4;
 	PageOrder order = 5;
 	PageFilter filter = 6;
 }

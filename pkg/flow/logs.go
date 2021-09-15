@@ -19,11 +19,11 @@ func logsOrder(p *pagination) ent.LogMsgPaginateOption {
 
 	if p.order != nil {
 
-		if x := p.order.Field; x != nil && *x == "TIMESTAMP" {
+		if x := p.order.Field; x != "" && x == "TIMESTAMP" {
 			field = ent.LogMsgOrderFieldT
 		}
 
-		if x := p.order.Direction; x != nil && *x == "DESC" {
+		if x := p.order.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 

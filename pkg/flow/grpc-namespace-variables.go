@@ -103,11 +103,11 @@ func variablesOrder(p *pagination) ent.VarRefPaginateOption {
 
 	if p.order != nil {
 
-		if x := p.order.Field; x != nil && *x == "NAME" {
+		if x := p.order.Field; x != "" && x == "NAME" {
 			field = ent.VarRefOrderFieldName
 		}
 
-		if x := p.order.Direction; x != nil && *x == "DESC" {
+		if x := p.order.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
@@ -130,26 +130,26 @@ func variablesFilter(p *pagination) ent.VarRefPaginateOption {
 
 	return ent.WithVarRefFilter(func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
 
-		if filter == nil {
+		if filter == "" {
 			return query, nil
 		}
 
 		field := p.filter.Field
-		if field == nil {
+		if field == "" {
 			return query, nil
 		}
 
-		switch *field {
+		switch field {
 		case "NAME":
 
 			ftype := p.filter.Type
-			if ftype == nil {
+			if ftype == "" {
 				return query, nil
 			}
 
-			switch *ftype {
+			switch ftype {
 			case "CONTAINS":
-				return query.Where(entvar.NameContains(*filter)), nil
+				return query.Where(entvar.NameContains(filter)), nil
 			}
 		}
 
@@ -366,7 +366,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			return err
 		}
 
-		if req.TotalSize != nil {
+		if req.TotalSize <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -377,7 +377,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			return err
 		}
 
-		if req.TotalSize != nil {
+		if req.TotalSize <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}

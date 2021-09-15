@@ -6,6 +6,7 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type flow struct {
@@ -35,6 +36,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	}))
 
 	grpc.RegisterFlowServer(flow.srv, flow)
+	reflection.Register(flow.srv)
 
 	go func() {
 		<-ctx.Done()

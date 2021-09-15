@@ -12,56 +12,56 @@ import (
 )
 
 type pagination struct {
-	after  *string
-	first  *int32
-	before *string
-	last   *int32
+	after  string
+	first  int32
+	before string
+	last   int32
 	order  *grpc.PageOrder
 	filter *grpc.PageFilter
 }
 
 func (p *pagination) Before() *ent.Cursor {
 
-	if p.before == nil {
+	if p.before == "" {
 		return nil
 	}
 
-	x := decodeCursor(*p.before)
+	x := decodeCursor(p.before)
 	return x
 
 }
 
 func (p *pagination) First() *int {
 
-	if p.first == nil {
+	if p.first <= 0 {
 		return nil
 	}
 
 	var x int
-	x = int(*p.first)
+	x = int(p.first)
 	return &x
 
 }
 
 func (p *pagination) After() *ent.Cursor {
 
-	if p.after == nil {
+	if p.after == "" {
 		return nil
 	}
 
-	x := decodeCursor(*p.after)
+	x := decodeCursor(p.after)
 	return x
 
 }
 
 func (p *pagination) Last() *int {
 
-	if p.last == nil {
+	if p.last <= 0 {
 		return nil
 	}
 
 	var x int
-	x = int(*p.last)
+	x = int(p.last)
 	return &x
 
 }
@@ -69,12 +69,12 @@ func (p *pagination) Last() *int {
 func getPagination(args *grpc.Pagination) (*pagination, error) {
 
 	p := new(pagination)
-	p.after = args.After
-	p.first = args.First
-	p.before = args.Before
-	p.last = args.Last
-	p.order = args.Order
-	p.filter = args.Filter
+	p.after = args.GetAfter()
+	p.first = args.GetFirst()
+	p.before = args.GetBefore()
+	p.last = args.GetLast()
+	p.order = args.GetOrder()
+	p.filter = args.GetFilter()
 
 	return p, nil
 
@@ -163,8 +163,8 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 
 	beforeIdx := cp.data.Total() - 1
 	before := req.before
-	if before != nil {
-		x, err := decodeCustomCursor(*before)
+	if before != "" {
+		x, err := decodeCustomCursor(before)
 		if err == nil {
 			for i := beforeIdx; i >= 0; i-- {
 				id := cp.data.ID(i)
@@ -180,8 +180,8 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 
 	afterIdx := 0
 	after := req.after
-	if after != nil {
-		x, err := decodeCustomCursor(*after)
+	if after != "" {
+		x, err := decodeCustomCursor(after)
 		if err == nil {
 			for i := afterIdx; i < cp.data.Total(); i++ {
 				id := cp.data.ID(i)
