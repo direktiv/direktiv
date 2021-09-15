@@ -41,6 +41,7 @@ countdown
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
+helm dependency update $dir/../kubernetes/charts/knative
 helm install --set development=true knative $dir/../kubernetes/charts/knative
 
 countdown
