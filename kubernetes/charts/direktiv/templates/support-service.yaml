@@ -4,6 +4,8 @@ kind: Service
 metadata:
   namespace: {{ .Release.Namespace }}
   name: {{ include "direktiv.fullname" . }}-support
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
   labels:
     {{- include "direktiv.labelsSupport" . | nindent 4 }}
 spec:

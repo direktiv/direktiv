@@ -3,6 +3,7 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+GREY='\033[0;37m'
 NC='\033[0m' # No Color
 NL=$'\n'
 
@@ -17,6 +18,24 @@ echo "Searching for tests in: $suite_dir"
 tests=`find $suite_dir -maxdepth 1 -type d ! -name "_*" | tail --lines=+2 | sort`
 count=`echo "$tests" | wc -l`
 failed=0
+
+init_direktion () {
+	if [ -f "$DIREKTION" ]; then
+		echo -e "${GREEN}USING DIREKTION FROM GO PATH${NC}"
+		return 0
+	fi
+
+	gopath=$DIREKTION
+
+	DIREKTION=`which direktion`
+	if [ -f "$DIREKTION" ]; then
+		echo -e "${GREEN}USING DIREKTION FROM PATH${NC}"
+		return 0
+	fi
+
+	echo -e "${RED}DIREKTION BINARY NOT FOUND IN SYSTEM PATH OR GO PATH: $gopath ${NC}"
+	exit 1
+}
 
 build_isolate () {
 	isolate=$1
@@ -66,6 +85,90 @@ build_isolates () {
 		status=$?
 		if [ $status -ne 0 ]; then return $status; fi
 	done
+}
+
+create_services () {
+	dir=$1
+	services=`find $dir -maxdepth 2 -type f -wholename '*_Services/*.json'`
+	is=`echo "$services" | wc -l`
+	if [ ! -z "$services" ]
+	then
+		echo -e "${BLUE}Creating Services${NC}"
+	fi
+
+	idx=0
+	for service in $services; do 
+		let idx++
+		if [[ $service == *.global.json ]]; then
+			echo "  building services ($idx/$is): $service..."
+			build_service $service "global"
+			status=$?
+			if [ $status -ne 0 ]; then return $status; fi
+		else
+			echo "  building services ($idx/$is): $service..."
+			build_service $service "ns"
+			status=$?
+			if [ $status -ne 0 ]; then return $status; fi
+		fi
+	done
+}
+
+build_service () {
+	service=$1
+	scope=$2
+
+	name=`basename $service`
+	name=${name%.*}
+	name=${name%.*}
+	revisions=`cat $service | jq '.revisions'`
+	traffic=`cat $service | jq '.traffic'`
+	rev=1
+	skiped="false"
+
+	if [[ $scope == "ns" ]]; then
+		echo "service =========== namespace-$NAMESPACE-$name"
+		for row in $(echo "${revisions}" | jq -r '.[] | @base64'); do
+			echo "revision =========== namespace-$NAMESPACE-$name-0000$rev"
+			if [ "$rev" -eq "1" ]; then
+				# Create Service
+				data=`echo ${row} | base64 --decode | jq --arg namespace "$NAMESPACE" --arg name "$name" '. + {"namespace": $namespace, "name": $name}'`
+				resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/functions/new --data-raw "$data"`
+				status=$?
+				if [ $status -ne 0 ]; then return $status; fi
+				code=`echo $resp | jq '.Code'`
+				if [[ $code == "2" ]]; then
+					echo -e "service =========== namespace-$NAMESPACE-$name already exists - ${BLUE}skipping all revisions${NC}"
+					skiped="true"
+					break
+				fi
+			else
+				# Create revision
+				data=`echo ${row} | base64 --decode | jq '. + {"trafficPercent": 100}'`
+				resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/functions/namespace-$NAMESPACE-$name --data-raw "$data"`
+				status=$?
+			
+				if [ $status -ne 0 ]; then return $status; fi
+			fi
+
+			# increment rev
+			((rev=rev+1))
+		done
+
+		# sleep for 1 sec if more than service revisions creation was not skipped
+		if [[ $skiped == "false" ]]; then
+			sleep 1
+		fi
+
+		revisionPrefix="namespace-$NAMESPACE-$name-"
+		trafficData=`echo $traffic | jq --arg revisionPrefix "$revisionPrefix" '{values: [.[] | {"percent": .percent, "revision": ($revisionPrefix + .genSuffix)}]}'`
+		echo "traffic =========== $(echo $trafficData | jq -c ".values")"
+		resp=`curl -s -S -X PATCH $DIREKTIV_API/api/namespaces/$NAMESPACE/functions/namespace-$NAMESPACE-$name --data-raw "$trafficData"`
+		status=$?
+		
+		if [ $status -ne 0 ]; then return $status; fi
+	else
+		echo -e "service =========== global-$name ${RED} NOT IMPLEMENTED ${NC}";
+	fi
 }
 
 push_variable () {
@@ -177,6 +280,20 @@ compile_scripts () {
 
 }
 
+run_test_init_script () {
+	test=$1
+	script=$test/init.sh
+	if [ -f "$script" ]; then
+		echo "init-start =========== running script (This may take awhile) $script"
+		init_output=`DIREKTIV_API=$DIREKTIV_API NAMESPACE=$NAMESPACE bash -c $script`
+		status=$?
+		echo "$init_output" | while IFS= read -r line ; do echo -e "    ${GREY}$line${NC}"; done
+		if [ $status -ne 0 ]; then return $status; fi
+		echo "init-end =========== running script $script"
+		return 0
+	fi
+}
+
 wipe_namespace () {
 
 	# wipe workflows 
@@ -200,6 +317,10 @@ perform_test () {
 	wipe_namespace
 
 	compile_scripts $test
+	status=$?
+	if [ $status -ne 0 ]; then return $status; fi
+
+	run_test_init_script $test
 	status=$?
 	if [ $status -ne 0 ]; then return $status; fi
 
@@ -279,9 +400,13 @@ init_namespace () {
 init_secrets () {
 
 	resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/test/secrets/ --data '{ "name": "URL_SECRET", "data": "https://docs.direktiv.io"}'`
-	code=`echo "$resp"`
-
-	echo "Code: $code"
+	code=`echo "$resp" | head -1 | cut -f2 -d" "`
+	grpcCode=`echo $resp | jq '.Code'`
+	if [[ $grpcCode == "2" ]]; then
+		grpcMsg=`echo $resp | jq '.Message'`
+		echo -e "${BLUE}Skipping secret creation${NC}: $grpcMsg"
+		return 0
+	fi
 
 	if  [ $code -ne 409 ] && [ $code -ne 200 ]; then 
 		echo "$resp"
@@ -300,11 +425,14 @@ if [ "$1" = "" ]; then
 	exit 1
 fi
 
+init_direktion
+
 init_namespace
+create_services $1
+
 init_secrets
 status=$?
 if [ $status -ne 0 ]; then exit $status; fi
-
 build_isolates $1
 push_namespace_variables $1
 

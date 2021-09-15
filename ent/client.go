@@ -12,6 +12,7 @@ import (
 
 	"github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/namespace"
+	"github.com/vorteil/direktiv/ent/services"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
@@ -31,6 +32,8 @@ type Client struct {
 	CloudEvents *CloudEventsClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
+	// Services is the client for interacting with the Services builders.
+	Services *ServicesClient
 	// Workflow is the client for interacting with the Workflow builders.
 	Workflow *WorkflowClient
 	// WorkflowEvents is the client for interacting with the WorkflowEvents builders.
@@ -54,6 +57,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
+	c.Services = NewServicesClient(c.config)
 	c.Workflow = NewWorkflowClient(c.config)
 	c.WorkflowEvents = NewWorkflowEventsClient(c.config)
 	c.WorkflowEventsWait = NewWorkflowEventsWaitClient(c.config)
@@ -93,6 +97,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:             cfg,
 		CloudEvents:        NewCloudEventsClient(cfg),
 		Namespace:          NewNamespaceClient(cfg),
+		Services:           NewServicesClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
 		WorkflowEventsWait: NewWorkflowEventsWaitClient(cfg),
@@ -117,6 +122,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:             cfg,
 		CloudEvents:        NewCloudEventsClient(cfg),
 		Namespace:          NewNamespaceClient(cfg),
+		Services:           NewServicesClient(cfg),
 		Workflow:           NewWorkflowClient(cfg),
 		WorkflowEvents:     NewWorkflowEventsClient(cfg),
 		WorkflowEventsWait: NewWorkflowEventsWaitClient(cfg),
@@ -152,6 +158,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.CloudEvents.Use(hooks...)
 	c.Namespace.Use(hooks...)
+	c.Services.Use(hooks...)
 	c.Workflow.Use(hooks...)
 	c.WorkflowEvents.Use(hooks...)
 	c.WorkflowEventsWait.Use(hooks...)
@@ -352,6 +359,96 @@ func (c *NamespaceClient) QueryWorkflows(n *Namespace) *WorkflowQuery {
 // Hooks returns the client hooks.
 func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
+}
+
+// ServicesClient is a client for the Services schema.
+type ServicesClient struct {
+	config
+}
+
+// NewServicesClient returns a client for the Services from the given config.
+func NewServicesClient(c config) *ServicesClient {
+	return &ServicesClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `services.Hooks(f(g(h())))`.
+func (c *ServicesClient) Use(hooks ...Hook) {
+	c.hooks.Services = append(c.hooks.Services, hooks...)
+}
+
+// Create returns a create builder for Services.
+func (c *ServicesClient) Create() *ServicesCreate {
+	mutation := newServicesMutation(c.config, OpCreate)
+	return &ServicesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Services entities.
+func (c *ServicesClient) CreateBulk(builders ...*ServicesCreate) *ServicesCreateBulk {
+	return &ServicesCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Services.
+func (c *ServicesClient) Update() *ServicesUpdate {
+	mutation := newServicesMutation(c.config, OpUpdate)
+	return &ServicesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ServicesClient) UpdateOne(s *Services) *ServicesUpdateOne {
+	mutation := newServicesMutation(c.config, OpUpdateOne, withServices(s))
+	return &ServicesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ServicesClient) UpdateOneID(id int) *ServicesUpdateOne {
+	mutation := newServicesMutation(c.config, OpUpdateOne, withServicesID(id))
+	return &ServicesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Services.
+func (c *ServicesClient) Delete() *ServicesDelete {
+	mutation := newServicesMutation(c.config, OpDelete)
+	return &ServicesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ServicesClient) DeleteOne(s *Services) *ServicesDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ServicesClient) DeleteOneID(id int) *ServicesDeleteOne {
+	builder := c.Delete().Where(services.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ServicesDeleteOne{builder}
+}
+
+// Query returns a query builder for Services.
+func (c *ServicesClient) Query() *ServicesQuery {
+	return &ServicesQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Services entity by its id.
+func (c *ServicesClient) Get(ctx context.Context, id int) (*Services, error) {
+	return c.Query().Where(services.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ServicesClient) GetX(ctx context.Context, id int) *Services {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ServicesClient) Hooks() []Hook {
+	return c.hooks.Services
 }
 
 // WorkflowClient is a client for the Workflow schema.

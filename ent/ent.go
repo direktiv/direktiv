@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/vorteil/direktiv/ent/cloudevents"
 	"github.com/vorteil/direktiv/ent/namespace"
+	"github.com/vorteil/direktiv/ent/services"
 	"github.com/vorteil/direktiv/ent/workflow"
 	"github.com/vorteil/direktiv/ent/workflowevents"
 	"github.com/vorteil/direktiv/ent/workfloweventswait"
@@ -36,6 +37,7 @@ func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		cloudevents.Table:        cloudevents.ValidColumn,
 		namespace.Table:          namespace.ValidColumn,
+		services.Table:           services.ValidColumn,
 		workflow.Table:           workflow.ValidColumn,
 		workflowevents.Table:     workflowevents.ValidColumn,
 		workfloweventswait.Table: workfloweventswait.ValidColumn,

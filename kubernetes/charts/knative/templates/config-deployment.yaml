@@ -4,7 +4,7 @@ metadata:
   name: config-deployment
   namespace: knative-serving-{{ .Release.Name }}
   labels:
-    serving.knative.dev/release: v0.25.0
+    serving.knative.dev/release: v0.25.1
     {{- include "knative.labels" . | nindent 4 }}
 
 data:

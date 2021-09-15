@@ -65,3 +65,6 @@
 *build/docker/functions/functions
 build/docker/all/kubernetes
 deploy*.yaml
+
+kubernetes/charts/knative/charts
+kubernetes/charts/knative/Chart.lock

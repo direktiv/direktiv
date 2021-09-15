@@ -5,9 +5,10 @@ metadata:
   name: {{ include "direktiv.fullname" . }}-ui
   labels:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
-  {{- if ne  .Values.ui.certificate "none" }}
   annotations:
-    projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-ui,8080"
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+  {{- if ne  .Values.ui.certificate "none" }}
+    konghq.com/protocol: "https"
   {{- end }}
 spec:
   ports:

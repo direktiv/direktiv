@@ -53,7 +53,7 @@ networkPolicies:
 ingress:
   host: ""
   certificate: none
-  class: "contour-external"
+  class: "kong"
   timeout: "900s"
 
 # prometheus config
@@ -64,7 +64,7 @@ prometheus:
     prometheus.io/port: "2112"
     prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
-  queryAddress: "http://direktiv-prometheus-service.default:9090" 
+  queryAddress: "http://direktiv-prometheus-service.default:9090"
 
 # flow config
 flow:
