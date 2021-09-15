@@ -79,23 +79,23 @@ func (ec *EventsCreate) AddWfeventswait(e ...*EventsWait) *EventsCreate {
 	return ec.AddWfeventswaitIDs(ids...)
 }
 
-// SetWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by ID.
-func (ec *EventsCreate) SetWorkflowinstanceID(id uuid.UUID) *EventsCreate {
-	ec.mutation.SetWorkflowinstanceID(id)
+// SetInstanceID sets the "instance" edge to the Instance entity by ID.
+func (ec *EventsCreate) SetInstanceID(id uuid.UUID) *EventsCreate {
+	ec.mutation.SetInstanceID(id)
 	return ec
 }
 
-// SetNillableWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by ID if the given value is not nil.
-func (ec *EventsCreate) SetNillableWorkflowinstanceID(id *uuid.UUID) *EventsCreate {
+// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
+func (ec *EventsCreate) SetNillableInstanceID(id *uuid.UUID) *EventsCreate {
 	if id != nil {
-		ec = ec.SetWorkflowinstanceID(*id)
+		ec = ec.SetInstanceID(*id)
 	}
 	return ec
 }
 
-// SetWorkflowinstance sets the "workflowinstance" edge to the Instance entity.
-func (ec *EventsCreate) SetWorkflowinstance(i *Instance) *EventsCreate {
-	return ec.SetWorkflowinstanceID(i.ID)
+// SetInstance sets the "instance" edge to the Instance entity.
+func (ec *EventsCreate) SetInstance(i *Instance) *EventsCreate {
+	return ec.SetInstanceID(i.ID)
 }
 
 // Mutation returns the EventsMutation object of the builder.
@@ -292,12 +292,12 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.WorkflowinstanceIDs(); len(nodes) > 0 {
+	if nodes := ec.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   events.WorkflowinstanceTable,
-			Columns: []string{events.WorkflowinstanceColumn},
+			Table:   events.InstanceTable,
+			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -309,7 +309,7 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.instance_instance = &nodes[0]
+		_node.instance_eventlisteners = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

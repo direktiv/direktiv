@@ -39,7 +39,7 @@ var (
 		{Name: "correlations", Type: field.TypeJSON},
 		{Name: "signature", Type: field.TypeBytes, Nullable: true},
 		{Name: "count", Type: field.TypeInt},
-		{Name: "instance_instance", Type: field.TypeUUID, Nullable: true},
+		{Name: "instance_eventlisteners", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_wfevents", Type: field.TypeUUID, Nullable: true},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -49,16 +49,16 @@ var (
 		PrimaryKey: []*schema.Column{EventsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "events_instances_instance",
+				Symbol:     "events_instances_eventlisteners",
 				Columns:    []*schema.Column{EventsColumns[5]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "events_workflows_wfevents",
 				Columns:    []*schema.Column{EventsColumns[6]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -78,7 +78,7 @@ var (
 				Symbol:     "events_waits_events_wfeventswait",
 				Columns:    []*schema.Column{EventsWaitsColumns[2]},
 				RefColumns: []*schema.Column{EventsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}

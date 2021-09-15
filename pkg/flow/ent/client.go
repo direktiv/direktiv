@@ -437,15 +437,15 @@ func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
 	return query
 }
 
-// QueryWorkflowinstance queries the workflowinstance edge of a Events.
-func (c *EventsClient) QueryWorkflowinstance(e *Events) *InstanceQuery {
+// QueryInstance queries the instance edge of a Events.
+func (c *EventsClient) QueryInstance(e *Events) *InstanceQuery {
 	query := &InstanceQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(events.Table, events.FieldID, id),
 			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, events.WorkflowinstanceTable, events.WorkflowinstanceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, events.InstanceTable, events.InstanceColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -915,15 +915,15 @@ func (c *InstanceClient) QueryChildren(i *Instance) *InstanceRuntimeQuery {
 	return query
 }
 
-// QueryInstance queries the instance edge of a Instance.
-func (c *InstanceClient) QueryInstance(i *Instance) *EventsQuery {
+// QueryEventlisteners queries the eventlisteners edge of a Instance.
+func (c *InstanceClient) QueryEventlisteners(i *Instance) *EventsQuery {
 	query := &EventsQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(instance.Table, instance.FieldID, id),
 			sqlgraph.To(events.Table, events.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.InstanceTable, instance.InstanceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.EventlistenersTable, instance.EventlistenersColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

@@ -40,6 +40,6 @@ func (Instance) Edges() []ent.Edge {
 		edge.To("vars", VarRef.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("runtime", InstanceRuntime.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique().Required(),
 		edge.To("children", InstanceRuntime.Type),
-		edge.To("instance", Events.Type),
+		edge.To("eventlisteners", Events.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }
