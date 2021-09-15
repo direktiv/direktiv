@@ -5,6 +5,7 @@ package grpc;
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 import "pkg/flow/grpc/namespaces.proto";
 import "pkg/flow/grpc/logs.proto";
@@ -17,8 +18,14 @@ import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 
 service Flow {
-	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
-	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
+	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {
+	}
+	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {
+		option (google.api.http) = {
+			get: "/v1/api/namespaces"
+			body: "pagination"
+		};
+	}
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}

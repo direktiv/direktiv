@@ -308,7 +308,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 			return err
 		}
 
-		if req.TotalSize != nil {
+		if req.TotalSize <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -319,7 +319,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 			return err
 		}
 
-		if req.TotalSize != nil {
+		if req.TotalSize <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}

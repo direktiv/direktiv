@@ -19,11 +19,11 @@ func refOrder(p *pagination) ent.RefPaginateOption {
 
 	if p.order != nil {
 
-		if x := p.order.Field; x != nil && *x == "NAME" {
+		if x := p.order.Field; x != "" && x == "NAME" {
 			field = ent.RefOrderFieldName
 		}
 
-		if x := p.order.Direction; x != nil && *x == "DESC" {
+		if x := p.order.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
@@ -46,26 +46,26 @@ func refFilter(p *pagination) ent.RefPaginateOption {
 
 	return ent.WithRefFilter(func(query *ent.RefQuery) (*ent.RefQuery, error) {
 
-		if filter == nil {
+		if filter == "" {
 			return query, nil
 		}
 
 		field := p.filter.Field
-		if field == nil {
+		if field == "" {
 			return query, nil
 		}
 
-		switch *field {
+		switch field {
 		case "NAME":
 
 			ftype := p.filter.Type
-			if ftype == nil {
+			if ftype == "" {
 				return query, nil
 			}
 
-			switch *ftype {
+			switch ftype {
 			case "CONTAINS":
-				return query.Where(entref.NameContains(*filter)), nil
+				return query.Where(entref.NameContains(filter)), nil
 			}
 		}
 

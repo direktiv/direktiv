@@ -17,11 +17,11 @@ func namespaceOrder(p *pagination) ent.NamespacePaginateOption {
 
 	if p.order != nil {
 
-		if x := p.order.Field; x != nil && *x == "NAME" {
+		if x := p.order.Field; x != "" && x == "NAME" {
 			field = ent.NamespaceOrderFieldName
 		}
 
-		if x := p.order.Direction; x != nil && *x == "DESC" {
+		if x := p.order.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
@@ -44,26 +44,26 @@ func namespaceFilter(p *pagination) ent.NamespacePaginateOption {
 
 	return ent.WithNamespaceFilter(func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
 
-		if filter == nil {
+		if filter == "" {
 			return query, nil
 		}
 
 		field := p.filter.Field
-		if field == nil {
+		if field == "" {
 			return query, nil
 		}
 
-		switch *field {
+		switch field {
 		case "NAME":
 
 			ftype := p.filter.Type
-			if ftype == nil {
+			if ftype == "" {
 				return query, nil
 			}
 
-			switch *ftype {
+			switch ftype {
 			case "CONTAINS":
-				return query.Where(entns.NameContains(*filter)), nil
+				return query.Where(entns.NameContains(filter)), nil
 			}
 		}
 

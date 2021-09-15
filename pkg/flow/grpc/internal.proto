@@ -5,15 +5,15 @@ package grpc;
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
 message ReportActionResultsRequest {
-	optional string instanceId = 1;
-	optional int32 step = 2;
-	optional string actionId = 3;
-	optional string errorCode = 4;
-	optional string errorMessage = 5;
-	optional bytes output = 6;
+	string instanceId = 1;
+	int32 step = 2;
+	string actionId = 3;
+	string errorCode = 4;
+	string errorMessage = 5;
+	bytes output = 6;
 }
 
 message ActionLogRequest {
-	optional string instanceId = 1;
+	string instanceId = 1;
 	repeated string msg = 2;
 }

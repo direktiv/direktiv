@@ -43,11 +43,11 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		step := int32(msg.Step)
 
 		_, err := engine.server.internal.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
-			InstanceId:   &msg.InstanceID,
-			Step:         &step,
-			ActionId:     &msg.Payload.ActionID,
-			ErrorCode:    &msg.Payload.ErrorCode,
-			ErrorMessage: &msg.Payload.ErrorMessage,
+			InstanceId:   msg.InstanceID,
+			Step:         step,
+			ActionId:     msg.Payload.ActionID,
+			ErrorCode:    msg.Payload.ErrorCode,
+			ErrorMessage: msg.Payload.ErrorMessage,
 			Output:       msg.Payload.Output,
 		})
 		if err != nil {

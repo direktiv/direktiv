@@ -878,11 +878,11 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 	em := err.Error()
 	step := int32(ar.Workflow.Step)
 	r := &grpc.ReportActionResultsRequest{
-		InstanceId:   &ar.Workflow.InstanceID,
-		Step:         &step,
-		ActionId:     &ar.ActionID,
-		ErrorCode:    &ec,
-		ErrorMessage: &em,
+		InstanceId:   ar.Workflow.InstanceID,
+		Step:         step,
+		ActionId:     ar.ActionID,
+		ErrorCode:    ec,
+		ErrorMessage: em,
 	}
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
