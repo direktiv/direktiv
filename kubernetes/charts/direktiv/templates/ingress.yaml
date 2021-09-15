@@ -8,7 +8,6 @@ metadata:
     {{- if ne .Values.ingress.certificate "none" }}
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
-    # projectcontour.io/response-timeout: {{ .Values.ingress.timeout }}
 spec:
   ingressClassName: {{ .Values.ingress.class }}
   {{- if ne .Values.ingress.certificate "none" }}
