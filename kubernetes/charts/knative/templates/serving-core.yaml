@@ -3776,12 +3776,6 @@ data:
       selector:
         app: secret
 
-
-    # Controls whether volume support for EmptyDir is enabled or not.
-    # 1. Enabled: enabling EmptyDir volume support
-    # 2. Disabled: disabling EmptyDir volume support
-    kubernetes.podspec-volumes-emptydir: "disabled"
-
 ---
 # Copyright 2018 The Knative Authors
 #
@@ -4847,14 +4841,6 @@ spec:
               drop:
                 - all
           ports:
-{{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
-            - name: HTTPS_PROXY
-              value: "{{ .Values.https_proxy }}"
-            - name: HTTP_PROXY
-              value: "{{ .Values.http_proxy }}"
-            - name: NO_PROXY
-              value: "{{ .Values.no_proxy }}"
-{{- end }}
             - name: metrics
               containerPort: 9090
             - name: profiling

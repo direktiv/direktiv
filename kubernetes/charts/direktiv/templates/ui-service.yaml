@@ -8,6 +8,7 @@ metadata:
   {{- if ne  .Values.ui.certificate "none" }}
   annotations:
     projectcontour.io/upstream-protocol.tls: "{{ include "direktiv.fullname" . }}-ui,8080"
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
   {{- end }}
 spec:
   ports:
