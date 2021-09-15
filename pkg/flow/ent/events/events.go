@@ -23,8 +23,8 @@ const (
 	EdgeWorkflow = "workflow"
 	// EdgeWfeventswait holds the string denoting the wfeventswait edge name in mutations.
 	EdgeWfeventswait = "wfeventswait"
-	// EdgeWorkflowinstance holds the string denoting the workflowinstance edge name in mutations.
-	EdgeWorkflowinstance = "workflowinstance"
+	// EdgeInstance holds the string denoting the instance edge name in mutations.
+	EdgeInstance = "instance"
 	// Table holds the table name of the events in the database.
 	Table = "events"
 	// WorkflowTable is the table that holds the workflow relation/edge.
@@ -41,13 +41,13 @@ const (
 	WfeventswaitInverseTable = "events_waits"
 	// WfeventswaitColumn is the table column denoting the wfeventswait relation/edge.
 	WfeventswaitColumn = "events_wfeventswait"
-	// WorkflowinstanceTable is the table that holds the workflowinstance relation/edge.
-	WorkflowinstanceTable = "events"
-	// WorkflowinstanceInverseTable is the table name for the Instance entity.
+	// InstanceTable is the table that holds the instance relation/edge.
+	InstanceTable = "events"
+	// InstanceInverseTable is the table name for the Instance entity.
 	// It exists in this package in order to avoid circular dependency with the "instance" package.
-	WorkflowinstanceInverseTable = "instances"
-	// WorkflowinstanceColumn is the table column denoting the workflowinstance relation/edge.
-	WorkflowinstanceColumn = "instance_instance"
+	InstanceInverseTable = "instances"
+	// InstanceColumn is the table column denoting the instance relation/edge.
+	InstanceColumn = "instance_eventlisteners"
 )
 
 // Columns holds all SQL columns for events fields.
@@ -62,7 +62,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"instance_instance",
+	"instance_eventlisteners",
 	"workflow_wfevents",
 }
 

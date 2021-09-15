@@ -8,7 +8,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -20,11 +19,6 @@ import (
 	hash "github.com/mitchellh/hashstructure/v2"
 	glob "github.com/ryanuber/go-glob"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entcev "github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	entev "github.com/vorteil/direktiv/pkg/flow/ent/events"
-	entevw "github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 	"google.golang.org/grpc/codes"
@@ -61,348 +55,6 @@ func (events *events) Close() error {
 	return nil
 }
 
-func (events *events) markEventAsProcessed(eventID string, ns *ent.Namespace) (*cloudevents.Event, error) {
-
-	ctx := context.Background()
-
-	// id, err := uuid.Parse(eventID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	tx, err := events.db.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(tx)
-
-	// e, err := events.db.CloudEvents.Get(ctx, id)
-
-	e, err := events.db.CloudEvents.Query().Where(entcev.EventId(eventID)).Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if e.Processed {
-		return nil, fmt.Errorf("event already processed")
-	}
-
-	updater := events.db.CloudEvents.UpdateOne(e)
-	updater.SetProcessed(true)
-
-	e, err = updater.Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	ev := cloudevents.Event(e.Event)
-
-	return &ev, tx.Commit()
-
-}
-
-func (events *events) deleteExpiredEvents() error {
-
-	ctx := context.Background()
-
-	_, err := events.db.CloudEvents.Delete().
-		Where(
-			entcev.And(
-				entcev.Processed(true),
-				entcev.FireLT(time.Now().Add(-1*time.Hour)),
-			),
-		).
-		Exec(ctx)
-
-	return err
-
-}
-
-func (events *events) getEarliestEvent() (*ent.CloudEvents, error) {
-
-	ctx := context.Background()
-
-	e, err := events.db.CloudEvents.
-		Query().
-		Where(
-			entcev.And(
-				entcev.Processed(false),
-			),
-		).
-		Order(ent.Asc(entcev.FieldFire)).
-		WithNamespace().
-		First(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return e, nil
-
-}
-
-func (events *events) addEvent(eventin *cloudevents.Event, ns *ent.Namespace, delay int64) error {
-
-	ctx := context.Background()
-
-	// calculate fire time
-	t := time.Now().Unix() + delay
-
-	// processed
-	processed := (delay == 0)
-
-	ev := event.Event(*eventin)
-
-	_, err := events.db.CloudEvents.
-		Create().
-		SetEvent(ev).
-		SetNamespace(ns).
-		SetFire(time.Unix(t, 0)).
-		SetProcessed(processed).
-		SetEventId(eventin.ID()).
-		Save(ctx)
-
-	return err
-
-}
-
-func (events *events) deleteWorkflowEventWait(id uuid.UUID) error {
-
-	ctx := context.Background()
-
-	_, err := events.db.EventsWait.
-		Delete().
-		Where(entevw.IDEQ(id)).
-		Exec(ctx)
-
-	return err
-
-}
-
-func (events *events) deleteWorkflowEventListener(id uuid.UUID) error {
-
-	ctx := context.Background()
-
-	err := events.deleteWorkflowEventWaitByListenerID(id)
-	if err != nil {
-		events.sugar.Errorf("can not delete event listeners wait for event listener: %v", err)
-	}
-
-	_, err = events.db.Events.
-		Delete().
-		Where(entev.IDEQ(id)).
-		Exec(ctx)
-
-	return err
-}
-
-func (events *events) deleteWorkflowEventWaitByListenerID(id uuid.UUID) error {
-
-	ctx := context.Background()
-
-	_, err := events.db.EventsWait.
-		Delete().
-		Where(entevw.HasWorkfloweventWith(entev.IDEQ(id))).
-		Exec(ctx)
-
-	return err
-
-}
-
-func (events *events) deleteWorkflowEventListenerByInstanceID(id uuid.UUID) error {
-
-	var err error
-
-	ctx := context.Background()
-
-	tx, err := events.db.Tx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback(tx)
-
-	var el *ent.Events
-	el, err = events.getWorkflowEventByInstanceID(id)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	err = events.deleteWorkflowEventListener(el.ID)
-	if err != nil {
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-func (events *events) addWorkflowEventWait(ev map[string]interface{}, count int, id uuid.UUID) (*ent.EventsWait, error) {
-
-	ctx := context.Background()
-
-	ww, err := events.db.EventsWait.
-		Create().
-		SetEvents(ev).
-		SetWorkfloweventID(id).
-		Save(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ww, nil
-
-}
-
-// called by add workflow, adds event listeners if required
-func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.EventsClient,
-	wf *ent.Workflow, ms *muxStart) error {
-
-	// delete everything event related
-	wfe, err := events.getWorkflowEventByWorkflowUID(wf.ID)
-	if err == nil {
-		events.deleteWorkflowEventListener(wfe.ID)
-	}
-
-	if len(ms.Events) > 0 && ms.Enabled {
-
-		var ev []map[string]interface{}
-		for _, e := range ms.Events {
-			em := make(map[string]interface{})
-			em[eventTypeString] = e.Type
-
-			for kf, vf := range e.Filters {
-				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-			}
-			ev = append(ev, em)
-		}
-
-		correlations := []string{}
-		count := 1
-
-		if len(ms.Correlate) != 0 {
-			correlations = append(correlations, ms.Correlate...)
-			count = len(ms.Events)
-		}
-
-		_, err = evc.
-			Create().
-			SetWorkflow(wf).
-			SetEvents(ev).
-			SetCorrelations(correlations).
-			SetCount(count).
-			Save(ctx)
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-
-}
-
-// called from workflow instances to create event listeners
-func (events *events) addWorkflowEventListener(wfid uuid.UUID, wfinstance uuid.UUID,
-	sevents []*model.ConsumeEventDefinition,
-	signature []byte, all bool) (*ent.Events, error) {
-
-	ctx := context.Background()
-
-	var ev []map[string]interface{}
-	for _, e := range sevents {
-		em := make(map[string]interface{})
-		em[eventTypeString] = e.Type
-
-		for kf, vf := range e.Context {
-			em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-		}
-		ev = append(ev, em)
-	}
-
-	count := 1
-	if all {
-		count = len(sevents)
-	}
-
-	return events.db.Events.
-		Create().
-		SetWorkflowID(wfid).
-		SetEvents(ev).
-		SetCorrelations([]string{}).
-		SetSignature(signature).
-		SetWorkflowinstanceID(wfinstance).
-		SetCount(count).
-		Save(ctx)
-
-}
-
-func (events *events) getWorkflowEventByID(id uuid.UUID) (*ent.Events, error) {
-
-	ctx := context.Background()
-
-	evs, err := events.db.Events.
-		Query().
-		Where(entev.IDEQ(id)).
-		WithWorkflow().
-		Only(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return evs, nil
-
-}
-
-func (events *events) getWorkflowEventByWorkflowUID(id uuid.UUID) (*ent.Events, error) {
-
-	ctx := context.Background()
-
-	evs, err := events.db.Events.
-		Query().
-		Where(entev.HasWorkflowWith(
-			workflow.IDEQ(id),
-		)).
-		WithWorkflow().
-		Only(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return evs, nil
-
-}
-
-func (events *events) getWorkflowEventByInstanceID(id uuid.UUID) (*ent.Events, error) {
-
-	ctx := context.Background()
-
-	evs, err := events.db.Events.
-		Query().
-		Where(entev.HasWorkflowinstanceWith(
-			entinst.IDEQ(id),
-		)).
-		Only(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return evs, nil
-
-}
-
 func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 
 	for k, f := range eventMap {
@@ -428,6 +80,7 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 	}
 
 	return true
+
 }
 
 func hasEventInList(ev *cloudevents.Event, evl []*cloudevents.Event) bool {
@@ -442,6 +95,7 @@ func hasEventInList(ev *cloudevents.Event, evl []*cloudevents.Event) bool {
 	}
 
 	return false
+
 }
 
 func (events *events) sendEvent(data []byte) {
@@ -467,7 +121,7 @@ func (events *events) sendEvent(data []byte) {
 		return
 	}
 
-	err = events.flushEvent(n[0], ns, true)
+	err = events.flushEvent(ctx, n[0], ns, true)
 	if err != nil {
 		events.sugar.Errorf("can not flush delayed event: %v", err)
 		return
@@ -491,8 +145,10 @@ func (events *events) syncEventDelays() {
 		}
 	}
 
+	ctx := context.Background()
+
 	for {
-		e, err := events.getEarliestEvent()
+		e, err := events.getEarliestEvent(ctx, events.db.CloudEvents)
 		if err != nil {
 			if ent.IsNotFound(err) {
 				return
@@ -503,7 +159,7 @@ func (events *events) syncEventDelays() {
 		}
 
 		if e.Fire.Before(time.Now()) {
-			err = events.flushEvent(e.EventId, e.Edges.Namespace, false)
+			err = events.flushEvent(ctx, e.EventId, e.Edges.Namespace, false)
 			if err != nil {
 				events.sugar.Errorf("can not flush event %s: %v", e.ID, err)
 			}
@@ -522,9 +178,20 @@ func (events *events) syncEventDelays() {
 
 }
 
-func (events *events) flushEvent(eventID string, ns *ent.Namespace, rearm bool) error {
+func (events *events) flushEvent(ctx context.Context, eventID string, ns *ent.Namespace, rearm bool) error {
 
-	e, err := events.markEventAsProcessed(eventID, ns)
+	tx, err := events.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(tx)
+
+	e, err := events.markEventAsProcessed(ctx, tx.CloudEvents, eventID)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
 	if err != nil {
 		return err
 	}
@@ -535,7 +202,12 @@ func (events *events) flushEvent(eventID string, ns *ent.Namespace, rearm bool) 
 		}
 	}(rearm)
 
-	return events.handleEvent(ns, e)
+	err = events.handleEvent(ns, e)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
@@ -552,15 +224,17 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 		return nil, err
 	}
 
-	rows, err := db.Query(`update workflow_events_waits
+	rows, err := db.Query(`update events_waits
 	set events = jsonb_set(events, $1, $2, true)
-	WHERE events::jsonb ? $3 and workflow_events_wfeventswait = $4
+	WHERE events::jsonb ? $3 and events_wfeventswait = $4
 	returning *`, fmt.Sprintf("{%s}", chash), fmt.Sprintf(`"%s"`, base64.StdEncoding.EncodeToString(data)), chash, id)
 	if err != nil {
 		return retEvents, err
 	}
 
 	rc := 0
+
+	ctx := context.Background()
 
 	for rows.Next() {
 		rc++
@@ -595,7 +269,7 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 		// all events have values so we can start the workflow
 		if counter == 0 {
 
-			err = events.deleteWorkflowEventWait(id)
+			err := events.db.EventsWait.DeleteOneID(id).Exec(ctx)
 			if err != nil {
 				events.sugar.Error(err)
 				continue
@@ -656,6 +330,8 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		return err
 	}
 	defer rows.Close()
+
+	ctx := context.Background()
 
 	var conn *sql.Conn
 	for rows.Next() {
@@ -748,7 +424,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 				// only add if the correlation id exists
 				if generateCorrelationHash(ce, ce.Type(), correlations) != "" {
-					err := events.addEventListenerWait(ce, id, correlations, eventTypes)
+					err := events.addEventListenerWait(ctx, ce, id, correlations, eventTypes)
 					if err != nil {
 						events.sugar.Errorf("can not create workflow event wait: %v", err)
 						unlock()
@@ -761,24 +437,23 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		}
 
 		unlock()
+
 		// if single or multiple added events we fire
 		if len(retEvents) > 0 {
 
-			uid, err := uuid.Parse(wf)
-			if err != nil {
-				events.engine.sugar.Error(err)
-				return nil
-			}
-
-			// events.sugar.Debugf("run workflow %v with %d events", uid, len(retEvents))
-
 			if len(signature) == 0 {
 
-				go events.engine.EventsInvoke(uid, retEvents...)
+				go events.engine.EventsInvoke(wf, retEvents...)
 
 			} else {
 
-				err = events.deleteWorkflowEventListener(id)
+				d, err := events.reverseTraverseToWorkflow(ctx, wf)
+				if err != nil {
+					events.engine.sugar.Error(err)
+					return nil
+				}
+
+				err = events.deleteWorkflowEventListeners(ctx, d.wf)
 				if err != nil {
 					events.engine.sugar.Error(err)
 					return nil
@@ -817,7 +492,7 @@ func generateCorrelationHash(cevent *cloudevents.Event,
 
 }
 
-func (events *events) addEventListenerWait(cevent *cloudevents.Event, id uuid.UUID,
+func (events *events) addEventListenerWait(ctx context.Context, cevent *cloudevents.Event, id uuid.UUID,
 	correlations, eventTypes []string) error {
 
 	sevents := make(map[string]interface{})
@@ -834,8 +509,12 @@ func (events *events) addEventListenerWait(cevent *cloudevents.Event, id uuid.UU
 		}
 	}
 
-	_, err := events.addWorkflowEventWait(sevents, 1, id)
-	return err
+	err := events.addWorkflowEventWait(ctx, events.db.EventsWait, sevents, 1, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
@@ -856,9 +535,9 @@ func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
 func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 
 	ev := new(cloudevents.Event)
+
 	enc := gob.NewDecoder(bytes.NewReader(b))
 	err := enc.Decode(ev)
-
 	if err != nil {
 		return nil, fmt.Errorf("can not convert bytes to event: %v", err)
 	}
@@ -900,7 +579,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 	events.logToNamespace(ctx, time.Now(), ns, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	// add event to db
-	err := events.addEvent(event, ns, timer)
+	err := events.addEvent(ctx, events.db.CloudEvents, event, ns, timer)
 	if err != nil {
 		return err
 	}
@@ -958,35 +637,18 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	for i := range ceds {
 
 		ev := new(model.ConsumeEventDefinition)
-		copier.Copy(ev, ceds[i])
+		ev.Context = make(map[string]interface{})
+
+		err = copier.Copy(ev, ceds[i])
+		if err != nil {
+			return err
+		}
 
 		for k, v := range ceds[i].Context {
 
-			str, ok := v.(string)
-			if !ok {
-				continue
-			}
-
-			if strings.HasPrefix(str, "{{") && strings.HasSuffix(str, "}}") {
-
-				query := str[2 : len(str)-2]
-				x, err := jqOne(im.data, query)
-				if err != nil {
-					return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
-				}
-
-				switch x.(type) {
-				case bool:
-				case int:
-				case string:
-				case []byte:
-				case time.Time:
-				default:
-					return fmt.Errorf("jq query on key '%s' for event definition %d returned an unacceptable type: %v", k, i, reflect.TypeOf(x))
-				}
-
-				ev.Context[k] = x
-
+			ev.Context[k], err = jqOne(im.data, v)
+			if err != nil {
+				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %v", k, i, err)
 			}
 
 		}
@@ -1000,7 +662,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	_, err = events.addWorkflowEventListener(wf.ID, im.in.ID,
+	err = events.addInstanceEventListener(ctx, events.db.Events, wf, im.in,
 		transformedEvents, signature, all)
 	if err != nil {
 		return err

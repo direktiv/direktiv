@@ -94,23 +94,23 @@ func (eu *EventsUpdate) AddWfeventswait(e ...*EventsWait) *EventsUpdate {
 	return eu.AddWfeventswaitIDs(ids...)
 }
 
-// SetWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by ID.
-func (eu *EventsUpdate) SetWorkflowinstanceID(id uuid.UUID) *EventsUpdate {
-	eu.mutation.SetWorkflowinstanceID(id)
+// SetInstanceID sets the "instance" edge to the Instance entity by ID.
+func (eu *EventsUpdate) SetInstanceID(id uuid.UUID) *EventsUpdate {
+	eu.mutation.SetInstanceID(id)
 	return eu
 }
 
-// SetNillableWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by ID if the given value is not nil.
-func (eu *EventsUpdate) SetNillableWorkflowinstanceID(id *uuid.UUID) *EventsUpdate {
+// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
+func (eu *EventsUpdate) SetNillableInstanceID(id *uuid.UUID) *EventsUpdate {
 	if id != nil {
-		eu = eu.SetWorkflowinstanceID(*id)
+		eu = eu.SetInstanceID(*id)
 	}
 	return eu
 }
 
-// SetWorkflowinstance sets the "workflowinstance" edge to the Instance entity.
-func (eu *EventsUpdate) SetWorkflowinstance(i *Instance) *EventsUpdate {
-	return eu.SetWorkflowinstanceID(i.ID)
+// SetInstance sets the "instance" edge to the Instance entity.
+func (eu *EventsUpdate) SetInstance(i *Instance) *EventsUpdate {
+	return eu.SetInstanceID(i.ID)
 }
 
 // Mutation returns the EventsMutation object of the builder.
@@ -145,9 +145,9 @@ func (eu *EventsUpdate) RemoveWfeventswait(e ...*EventsWait) *EventsUpdate {
 	return eu.RemoveWfeventswaitIDs(ids...)
 }
 
-// ClearWorkflowinstance clears the "workflowinstance" edge to the Instance entity.
-func (eu *EventsUpdate) ClearWorkflowinstance() *EventsUpdate {
-	eu.mutation.ClearWorkflowinstance()
+// ClearInstance clears the "instance" edge to the Instance entity.
+func (eu *EventsUpdate) ClearInstance() *EventsUpdate {
+	eu.mutation.ClearInstance()
 	return eu
 }
 
@@ -367,12 +367,12 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eu.mutation.WorkflowinstanceCleared() {
+	if eu.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   events.WorkflowinstanceTable,
-			Columns: []string{events.WorkflowinstanceColumn},
+			Table:   events.InstanceTable,
+			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -383,12 +383,12 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.WorkflowinstanceIDs(); len(nodes) > 0 {
+	if nodes := eu.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   events.WorkflowinstanceTable,
-			Columns: []string{events.WorkflowinstanceColumn},
+			Table:   events.InstanceTable,
+			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -484,23 +484,23 @@ func (euo *EventsUpdateOne) AddWfeventswait(e ...*EventsWait) *EventsUpdateOne {
 	return euo.AddWfeventswaitIDs(ids...)
 }
 
-// SetWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by ID.
-func (euo *EventsUpdateOne) SetWorkflowinstanceID(id uuid.UUID) *EventsUpdateOne {
-	euo.mutation.SetWorkflowinstanceID(id)
+// SetInstanceID sets the "instance" edge to the Instance entity by ID.
+func (euo *EventsUpdateOne) SetInstanceID(id uuid.UUID) *EventsUpdateOne {
+	euo.mutation.SetInstanceID(id)
 	return euo
 }
 
-// SetNillableWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by ID if the given value is not nil.
-func (euo *EventsUpdateOne) SetNillableWorkflowinstanceID(id *uuid.UUID) *EventsUpdateOne {
+// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
+func (euo *EventsUpdateOne) SetNillableInstanceID(id *uuid.UUID) *EventsUpdateOne {
 	if id != nil {
-		euo = euo.SetWorkflowinstanceID(*id)
+		euo = euo.SetInstanceID(*id)
 	}
 	return euo
 }
 
-// SetWorkflowinstance sets the "workflowinstance" edge to the Instance entity.
-func (euo *EventsUpdateOne) SetWorkflowinstance(i *Instance) *EventsUpdateOne {
-	return euo.SetWorkflowinstanceID(i.ID)
+// SetInstance sets the "instance" edge to the Instance entity.
+func (euo *EventsUpdateOne) SetInstance(i *Instance) *EventsUpdateOne {
+	return euo.SetInstanceID(i.ID)
 }
 
 // Mutation returns the EventsMutation object of the builder.
@@ -535,9 +535,9 @@ func (euo *EventsUpdateOne) RemoveWfeventswait(e ...*EventsWait) *EventsUpdateOn
 	return euo.RemoveWfeventswaitIDs(ids...)
 }
 
-// ClearWorkflowinstance clears the "workflowinstance" edge to the Instance entity.
-func (euo *EventsUpdateOne) ClearWorkflowinstance() *EventsUpdateOne {
-	euo.mutation.ClearWorkflowinstance()
+// ClearInstance clears the "instance" edge to the Instance entity.
+func (euo *EventsUpdateOne) ClearInstance() *EventsUpdateOne {
+	euo.mutation.ClearInstance()
 	return euo
 }
 
@@ -781,12 +781,12 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if euo.mutation.WorkflowinstanceCleared() {
+	if euo.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   events.WorkflowinstanceTable,
-			Columns: []string{events.WorkflowinstanceColumn},
+			Table:   events.InstanceTable,
+			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -797,12 +797,12 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.WorkflowinstanceIDs(); len(nodes) > 0 {
+	if nodes := euo.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   events.WorkflowinstanceTable,
-			Columns: []string{events.WorkflowinstanceColumn},
+			Table:   events.InstanceTable,
+			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

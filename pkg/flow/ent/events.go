@@ -29,9 +29,9 @@ type Events struct {
 	Count int `json:"count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventsQuery when eager-loading is set.
-	Edges             EventsEdges `json:"edges"`
-	instance_instance *uuid.UUID
-	workflow_wfevents *uuid.UUID
+	Edges                   EventsEdges `json:"edges"`
+	instance_eventlisteners *uuid.UUID
+	workflow_wfevents       *uuid.UUID
 }
 
 // EventsEdges holds the relations/edges for other nodes in the graph.
@@ -40,8 +40,8 @@ type EventsEdges struct {
 	Workflow *Workflow `json:"workflow,omitempty"`
 	// Wfeventswait holds the value of the wfeventswait edge.
 	Wfeventswait []*EventsWait `json:"wfeventswait,omitempty"`
-	// Workflowinstance holds the value of the workflowinstance edge.
-	Workflowinstance *Instance `json:"workflowinstance,omitempty"`
+	// Instance holds the value of the instance edge.
+	Instance *Instance `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -70,18 +70,18 @@ func (e EventsEdges) WfeventswaitOrErr() ([]*EventsWait, error) {
 	return nil, &NotLoadedError{edge: "wfeventswait"}
 }
 
-// WorkflowinstanceOrErr returns the Workflowinstance value or an error if the edge
+// InstanceOrErr returns the Instance value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e EventsEdges) WorkflowinstanceOrErr() (*Instance, error) {
+func (e EventsEdges) InstanceOrErr() (*Instance, error) {
 	if e.loadedTypes[2] {
-		if e.Workflowinstance == nil {
-			// The edge workflowinstance was loaded in eager-loading,
+		if e.Instance == nil {
+			// The edge instance was loaded in eager-loading,
 			// but was not found.
 			return nil, &NotFoundError{label: instance.Label}
 		}
-		return e.Workflowinstance, nil
+		return e.Instance, nil
 	}
-	return nil, &NotLoadedError{edge: "workflowinstance"}
+	return nil, &NotLoadedError{edge: "instance"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -95,7 +95,7 @@ func (*Events) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case events.FieldID:
 			values[i] = new(uuid.UUID)
-		case events.ForeignKeys[0]: // instance_instance
+		case events.ForeignKeys[0]: // instance_eventlisteners
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case events.ForeignKeys[1]: // workflow_wfevents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
@@ -150,10 +150,10 @@ func (e *Events) assignValues(columns []string, values []interface{}) error {
 			}
 		case events.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field instance_instance", values[i])
+				return fmt.Errorf("unexpected type %T for field instance_eventlisteners", values[i])
 			} else if value.Valid {
-				e.instance_instance = new(uuid.UUID)
-				*e.instance_instance = *value.S.(*uuid.UUID)
+				e.instance_eventlisteners = new(uuid.UUID)
+				*e.instance_eventlisteners = *value.S.(*uuid.UUID)
 			}
 		case events.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -177,9 +177,9 @@ func (e *Events) QueryWfeventswait() *EventsWaitQuery {
 	return (&EventsClient{config: e.config}).QueryWfeventswait(e)
 }
 
-// QueryWorkflowinstance queries the "workflowinstance" edge of the Events entity.
-func (e *Events) QueryWorkflowinstance() *InstanceQuery {
-	return (&EventsClient{config: e.config}).QueryWorkflowinstance(e)
+// QueryInstance queries the "instance" edge of the Events entity.
+func (e *Events) QueryInstance() *InstanceQuery {
+	return (&EventsClient{config: e.config}).QueryInstance(e)
 }
 
 // Update returns a builder for updating this Events.

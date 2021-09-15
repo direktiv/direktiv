@@ -177,9 +177,9 @@ func (e *Events) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[2] = &Edge{
 		Type: "Instance",
-		Name: "workflowinstance",
+		Name: "instance",
 	}
-	err = e.QueryWorkflowinstance().
+	err = e.QueryInstance().
 		Select(instance.FieldID).
 		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
@@ -436,9 +436,9 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[7] = &Edge{
 		Type: "Events",
-		Name: "instance",
+		Name: "eventlisteners",
 	}
-	err = i.QueryInstance().
+	err = i.QueryEventlisteners().
 		Select(events.FieldID).
 		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {

@@ -640,25 +640,25 @@ func (m *CloudEventsMutation) ResetEdge(name string) error {
 // EventsMutation represents an operation that mutates the Events nodes in the graph.
 type EventsMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	events                  *[]map[string]interface{}
-	correlations            *[]string
-	signature               *[]byte
-	count                   *int
-	addcount                *int
-	clearedFields           map[string]struct{}
-	workflow                *uuid.UUID
-	clearedworkflow         bool
-	wfeventswait            map[uuid.UUID]struct{}
-	removedwfeventswait     map[uuid.UUID]struct{}
-	clearedwfeventswait     bool
-	workflowinstance        *uuid.UUID
-	clearedworkflowinstance bool
-	done                    bool
-	oldValue                func(context.Context) (*Events, error)
-	predicates              []predicate.Events
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	events              *[]map[string]interface{}
+	correlations        *[]string
+	signature           *[]byte
+	count               *int
+	addcount            *int
+	clearedFields       map[string]struct{}
+	workflow            *uuid.UUID
+	clearedworkflow     bool
+	wfeventswait        map[uuid.UUID]struct{}
+	removedwfeventswait map[uuid.UUID]struct{}
+	clearedwfeventswait bool
+	instance            *uuid.UUID
+	clearedinstance     bool
+	done                bool
+	oldValue            func(context.Context) (*Events, error)
+	predicates          []predicate.Events
 }
 
 var _ ent.Mutation = (*EventsMutation)(nil)
@@ -1016,43 +1016,43 @@ func (m *EventsMutation) ResetWfeventswait() {
 	m.removedwfeventswait = nil
 }
 
-// SetWorkflowinstanceID sets the "workflowinstance" edge to the Instance entity by id.
-func (m *EventsMutation) SetWorkflowinstanceID(id uuid.UUID) {
-	m.workflowinstance = &id
+// SetInstanceID sets the "instance" edge to the Instance entity by id.
+func (m *EventsMutation) SetInstanceID(id uuid.UUID) {
+	m.instance = &id
 }
 
-// ClearWorkflowinstance clears the "workflowinstance" edge to the Instance entity.
-func (m *EventsMutation) ClearWorkflowinstance() {
-	m.clearedworkflowinstance = true
+// ClearInstance clears the "instance" edge to the Instance entity.
+func (m *EventsMutation) ClearInstance() {
+	m.clearedinstance = true
 }
 
-// WorkflowinstanceCleared reports if the "workflowinstance" edge to the Instance entity was cleared.
-func (m *EventsMutation) WorkflowinstanceCleared() bool {
-	return m.clearedworkflowinstance
+// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
+func (m *EventsMutation) InstanceCleared() bool {
+	return m.clearedinstance
 }
 
-// WorkflowinstanceID returns the "workflowinstance" edge ID in the mutation.
-func (m *EventsMutation) WorkflowinstanceID() (id uuid.UUID, exists bool) {
-	if m.workflowinstance != nil {
-		return *m.workflowinstance, true
+// InstanceID returns the "instance" edge ID in the mutation.
+func (m *EventsMutation) InstanceID() (id uuid.UUID, exists bool) {
+	if m.instance != nil {
+		return *m.instance, true
 	}
 	return
 }
 
-// WorkflowinstanceIDs returns the "workflowinstance" edge IDs in the mutation.
+// InstanceIDs returns the "instance" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkflowinstanceID instead. It exists only for internal usage by the builders.
-func (m *EventsMutation) WorkflowinstanceIDs() (ids []uuid.UUID) {
-	if id := m.workflowinstance; id != nil {
+// InstanceID instead. It exists only for internal usage by the builders.
+func (m *EventsMutation) InstanceIDs() (ids []uuid.UUID) {
+	if id := m.instance; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkflowinstance resets all changes to the "workflowinstance" edge.
-func (m *EventsMutation) ResetWorkflowinstance() {
-	m.workflowinstance = nil
-	m.clearedworkflowinstance = false
+// ResetInstance resets all changes to the "instance" edge.
+func (m *EventsMutation) ResetInstance() {
+	m.instance = nil
+	m.clearedinstance = false
 }
 
 // Where appends a list predicates to the EventsMutation builder.
@@ -1255,8 +1255,8 @@ func (m *EventsMutation) AddedEdges() []string {
 	if m.wfeventswait != nil {
 		edges = append(edges, events.EdgeWfeventswait)
 	}
-	if m.workflowinstance != nil {
-		edges = append(edges, events.EdgeWorkflowinstance)
+	if m.instance != nil {
+		edges = append(edges, events.EdgeInstance)
 	}
 	return edges
 }
@@ -1275,8 +1275,8 @@ func (m *EventsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case events.EdgeWorkflowinstance:
-		if id := m.workflowinstance; id != nil {
+	case events.EdgeInstance:
+		if id := m.instance; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -1315,8 +1315,8 @@ func (m *EventsMutation) ClearedEdges() []string {
 	if m.clearedwfeventswait {
 		edges = append(edges, events.EdgeWfeventswait)
 	}
-	if m.clearedworkflowinstance {
-		edges = append(edges, events.EdgeWorkflowinstance)
+	if m.clearedinstance {
+		edges = append(edges, events.EdgeInstance)
 	}
 	return edges
 }
@@ -1329,8 +1329,8 @@ func (m *EventsMutation) EdgeCleared(name string) bool {
 		return m.clearedworkflow
 	case events.EdgeWfeventswait:
 		return m.clearedwfeventswait
-	case events.EdgeWorkflowinstance:
-		return m.clearedworkflowinstance
+	case events.EdgeInstance:
+		return m.clearedinstance
 	}
 	return false
 }
@@ -1342,8 +1342,8 @@ func (m *EventsMutation) ClearEdge(name string) error {
 	case events.EdgeWorkflow:
 		m.ClearWorkflow()
 		return nil
-	case events.EdgeWorkflowinstance:
-		m.ClearWorkflowinstance()
+	case events.EdgeInstance:
+		m.ClearInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown Events unique edge %s", name)
@@ -1359,8 +1359,8 @@ func (m *EventsMutation) ResetEdge(name string) error {
 	case events.EdgeWfeventswait:
 		m.ResetWfeventswait()
 		return nil
-	case events.EdgeWorkflowinstance:
-		m.ResetWorkflowinstance()
+	case events.EdgeInstance:
+		m.ResetInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown Events edge %s", name)
@@ -2488,40 +2488,40 @@ func (m *InodeMutation) ResetEdge(name string) error {
 // InstanceMutation represents an operation that mutates the Instance nodes in the graph.
 type InstanceMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	created_at       *time.Time
-	updated_at       *time.Time
-	end_at           *time.Time
-	status           *string
-	as               *string
-	errorCode        *string
-	errorMessage     *string
-	clearedFields    map[string]struct{}
-	namespace        *uuid.UUID
-	clearednamespace bool
-	workflow         *uuid.UUID
-	clearedworkflow  bool
-	revision         *uuid.UUID
-	clearedrevision  bool
-	logs             map[uuid.UUID]struct{}
-	removedlogs      map[uuid.UUID]struct{}
-	clearedlogs      bool
-	vars             map[uuid.UUID]struct{}
-	removedvars      map[uuid.UUID]struct{}
-	clearedvars      bool
-	runtime          *uuid.UUID
-	clearedruntime   bool
-	children         map[uuid.UUID]struct{}
-	removedchildren  map[uuid.UUID]struct{}
-	clearedchildren  bool
-	instance         map[uuid.UUID]struct{}
-	removedinstance  map[uuid.UUID]struct{}
-	clearedinstance  bool
-	done             bool
-	oldValue         func(context.Context) (*Instance, error)
-	predicates       []predicate.Instance
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	end_at                *time.Time
+	status                *string
+	as                    *string
+	errorCode             *string
+	errorMessage          *string
+	clearedFields         map[string]struct{}
+	namespace             *uuid.UUID
+	clearednamespace      bool
+	workflow              *uuid.UUID
+	clearedworkflow       bool
+	revision              *uuid.UUID
+	clearedrevision       bool
+	logs                  map[uuid.UUID]struct{}
+	removedlogs           map[uuid.UUID]struct{}
+	clearedlogs           bool
+	vars                  map[uuid.UUID]struct{}
+	removedvars           map[uuid.UUID]struct{}
+	clearedvars           bool
+	runtime               *uuid.UUID
+	clearedruntime        bool
+	children              map[uuid.UUID]struct{}
+	removedchildren       map[uuid.UUID]struct{}
+	clearedchildren       bool
+	eventlisteners        map[uuid.UUID]struct{}
+	removedeventlisteners map[uuid.UUID]struct{}
+	clearedeventlisteners bool
+	done                  bool
+	oldValue              func(context.Context) (*Instance, error)
+	predicates            []predicate.Instance
 }
 
 var _ ent.Mutation = (*InstanceMutation)(nil)
@@ -3218,58 +3218,58 @@ func (m *InstanceMutation) ResetChildren() {
 	m.removedchildren = nil
 }
 
-// AddInstanceIDs adds the "instance" edge to the Events entity by ids.
-func (m *InstanceMutation) AddInstanceIDs(ids ...uuid.UUID) {
-	if m.instance == nil {
-		m.instance = make(map[uuid.UUID]struct{})
+// AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by ids.
+func (m *InstanceMutation) AddEventlistenerIDs(ids ...uuid.UUID) {
+	if m.eventlisteners == nil {
+		m.eventlisteners = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.instance[ids[i]] = struct{}{}
+		m.eventlisteners[ids[i]] = struct{}{}
 	}
 }
 
-// ClearInstance clears the "instance" edge to the Events entity.
-func (m *InstanceMutation) ClearInstance() {
-	m.clearedinstance = true
+// ClearEventlisteners clears the "eventlisteners" edge to the Events entity.
+func (m *InstanceMutation) ClearEventlisteners() {
+	m.clearedeventlisteners = true
 }
 
-// InstanceCleared reports if the "instance" edge to the Events entity was cleared.
-func (m *InstanceMutation) InstanceCleared() bool {
-	return m.clearedinstance
+// EventlistenersCleared reports if the "eventlisteners" edge to the Events entity was cleared.
+func (m *InstanceMutation) EventlistenersCleared() bool {
+	return m.clearedeventlisteners
 }
 
-// RemoveInstanceIDs removes the "instance" edge to the Events entity by IDs.
-func (m *InstanceMutation) RemoveInstanceIDs(ids ...uuid.UUID) {
-	if m.removedinstance == nil {
-		m.removedinstance = make(map[uuid.UUID]struct{})
+// RemoveEventlistenerIDs removes the "eventlisteners" edge to the Events entity by IDs.
+func (m *InstanceMutation) RemoveEventlistenerIDs(ids ...uuid.UUID) {
+	if m.removedeventlisteners == nil {
+		m.removedeventlisteners = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.instance, ids[i])
-		m.removedinstance[ids[i]] = struct{}{}
+		delete(m.eventlisteners, ids[i])
+		m.removedeventlisteners[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedInstance returns the removed IDs of the "instance" edge to the Events entity.
-func (m *InstanceMutation) RemovedInstanceIDs() (ids []uuid.UUID) {
-	for id := range m.removedinstance {
+// RemovedEventlisteners returns the removed IDs of the "eventlisteners" edge to the Events entity.
+func (m *InstanceMutation) RemovedEventlistenersIDs() (ids []uuid.UUID) {
+	for id := range m.removedeventlisteners {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-func (m *InstanceMutation) InstanceIDs() (ids []uuid.UUID) {
-	for id := range m.instance {
+// EventlistenersIDs returns the "eventlisteners" edge IDs in the mutation.
+func (m *InstanceMutation) EventlistenersIDs() (ids []uuid.UUID) {
+	for id := range m.eventlisteners {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetInstance resets all changes to the "instance" edge.
-func (m *InstanceMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
-	m.removedinstance = nil
+// ResetEventlisteners resets all changes to the "eventlisteners" edge.
+func (m *InstanceMutation) ResetEventlisteners() {
+	m.eventlisteners = nil
+	m.clearedeventlisteners = false
+	m.removedeventlisteners = nil
 }
 
 // Where appends a list predicates to the InstanceMutation builder.
@@ -3535,8 +3535,8 @@ func (m *InstanceMutation) AddedEdges() []string {
 	if m.children != nil {
 		edges = append(edges, instance.EdgeChildren)
 	}
-	if m.instance != nil {
-		edges = append(edges, instance.EdgeInstance)
+	if m.eventlisteners != nil {
+		edges = append(edges, instance.EdgeEventlisteners)
 	}
 	return edges
 }
@@ -3579,9 +3579,9 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case instance.EdgeInstance:
-		ids := make([]ent.Value, 0, len(m.instance))
-		for id := range m.instance {
+	case instance.EdgeEventlisteners:
+		ids := make([]ent.Value, 0, len(m.eventlisteners))
+		for id := range m.eventlisteners {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3601,8 +3601,8 @@ func (m *InstanceMutation) RemovedEdges() []string {
 	if m.removedchildren != nil {
 		edges = append(edges, instance.EdgeChildren)
 	}
-	if m.removedinstance != nil {
-		edges = append(edges, instance.EdgeInstance)
+	if m.removedeventlisteners != nil {
+		edges = append(edges, instance.EdgeEventlisteners)
 	}
 	return edges
 }
@@ -3629,9 +3629,9 @@ func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case instance.EdgeInstance:
-		ids := make([]ent.Value, 0, len(m.removedinstance))
-		for id := range m.removedinstance {
+	case instance.EdgeEventlisteners:
+		ids := make([]ent.Value, 0, len(m.removedeventlisteners))
+		for id := range m.removedeventlisteners {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3663,8 +3663,8 @@ func (m *InstanceMutation) ClearedEdges() []string {
 	if m.clearedchildren {
 		edges = append(edges, instance.EdgeChildren)
 	}
-	if m.clearedinstance {
-		edges = append(edges, instance.EdgeInstance)
+	if m.clearedeventlisteners {
+		edges = append(edges, instance.EdgeEventlisteners)
 	}
 	return edges
 }
@@ -3687,8 +3687,8 @@ func (m *InstanceMutation) EdgeCleared(name string) bool {
 		return m.clearedruntime
 	case instance.EdgeChildren:
 		return m.clearedchildren
-	case instance.EdgeInstance:
-		return m.clearedinstance
+	case instance.EdgeEventlisteners:
+		return m.clearedeventlisteners
 	}
 	return false
 }
@@ -3738,8 +3738,8 @@ func (m *InstanceMutation) ResetEdge(name string) error {
 	case instance.EdgeChildren:
 		m.ResetChildren()
 		return nil
-	case instance.EdgeInstance:
-		m.ResetInstance()
+	case instance.EdgeEventlisteners:
+		m.ResetEventlisteners()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance edge %s", name)

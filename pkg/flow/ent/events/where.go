@@ -328,25 +328,25 @@ func HasWfeventswaitWith(preds ...predicate.EventsWait) predicate.Events {
 	})
 }
 
-// HasWorkflowinstance applies the HasEdge predicate on the "workflowinstance" edge.
-func HasWorkflowinstance() predicate.Events {
+// HasInstance applies the HasEdge predicate on the "instance" edge.
+func HasInstance() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowinstanceTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowinstanceTable, WorkflowinstanceColumn),
+			sqlgraph.To(InstanceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasWorkflowinstanceWith applies the HasEdge predicate on the "workflowinstance" edge with a given conditions (other predicates).
-func HasWorkflowinstanceWith(preds ...predicate.Instance) predicate.Events {
+// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
+func HasInstanceWith(preds ...predicate.Instance) predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WorkflowinstanceInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkflowinstanceTable, WorkflowinstanceColumn),
+			sqlgraph.To(InstanceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
