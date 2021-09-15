@@ -77,7 +77,7 @@ func (sl *eventsXorStateLogic) listenForEvents(ctx context.Context, engine *engi
 
 	}
 
-	err := engine.events.deleteWorkflowEventListenerByInstanceID(im.in.ID)
+	err := engine.events.deleteInstanceEventListeners(ctx, im.in)
 	if err != nil {
 		return err
 	}

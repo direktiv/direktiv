@@ -33,6 +33,6 @@ func (Workflow) Edges() []ent.Edge {
 		edge.To("routes", Route.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("vars", VarRef.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("wfevents", Events.Type),
+		edge.To("wfevents", Events.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

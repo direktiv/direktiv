@@ -82,7 +82,7 @@ func (sl *consumeEventStateLogic) Run(ctx context.Context, engine *engine, im *i
 
 		events = append(events, event)
 
-		err = engine.events.deleteWorkflowEventListenerByInstanceID(im.in.ID)
+		err = engine.events.deleteInstanceEventListeners(ctx, im.in)
 		if err != nil {
 			return
 		}

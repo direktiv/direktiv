@@ -28,10 +28,10 @@ func (e *Events) Wfeventswait(ctx context.Context) ([]*EventsWait, error) {
 	return result, err
 }
 
-func (e *Events) Workflowinstance(ctx context.Context) (*Instance, error) {
-	result, err := e.Edges.WorkflowinstanceOrErr()
+func (e *Events) Instance(ctx context.Context) (*Instance, error) {
+	result, err := e.Edges.InstanceOrErr()
 	if IsNotLoaded(err) {
-		result, err = e.QueryWorkflowinstance().Only(ctx)
+		result, err = e.QueryInstance().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }
@@ -132,10 +132,10 @@ func (i *Instance) Children(ctx context.Context) ([]*InstanceRuntime, error) {
 	return result, err
 }
 
-func (i *Instance) Instance(ctx context.Context) ([]*Events, error) {
-	result, err := i.Edges.InstanceOrErr()
+func (i *Instance) Eventlisteners(ctx context.Context) ([]*Events, error) {
+	result, err := i.Edges.EventlistenersOrErr()
 	if IsNotLoaded(err) {
-		result, err = i.QueryInstance().All(ctx)
+		result, err = i.QueryEventlisteners().All(ctx)
 	}
 	return result, err
 }

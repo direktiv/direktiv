@@ -197,19 +197,19 @@ func (iu *InstanceUpdate) AddChildren(i ...*InstanceRuntime) *InstanceUpdate {
 	return iu.AddChildIDs(ids...)
 }
 
-// AddInstanceIDs adds the "instance" edge to the Events entity by IDs.
-func (iu *InstanceUpdate) AddInstanceIDs(ids ...uuid.UUID) *InstanceUpdate {
-	iu.mutation.AddInstanceIDs(ids...)
+// AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by IDs.
+func (iu *InstanceUpdate) AddEventlistenerIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.AddEventlistenerIDs(ids...)
 	return iu
 }
 
-// AddInstance adds the "instance" edges to the Events entity.
-func (iu *InstanceUpdate) AddInstance(e ...*Events) *InstanceUpdate {
+// AddEventlisteners adds the "eventlisteners" edges to the Events entity.
+func (iu *InstanceUpdate) AddEventlisteners(e ...*Events) *InstanceUpdate {
 	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
-	return iu.AddInstanceIDs(ids...)
+	return iu.AddEventlistenerIDs(ids...)
 }
 
 // Mutation returns the InstanceMutation object of the builder.
@@ -304,25 +304,25 @@ func (iu *InstanceUpdate) RemoveChildren(i ...*InstanceRuntime) *InstanceUpdate 
 	return iu.RemoveChildIDs(ids...)
 }
 
-// ClearInstance clears all "instance" edges to the Events entity.
-func (iu *InstanceUpdate) ClearInstance() *InstanceUpdate {
-	iu.mutation.ClearInstance()
+// ClearEventlisteners clears all "eventlisteners" edges to the Events entity.
+func (iu *InstanceUpdate) ClearEventlisteners() *InstanceUpdate {
+	iu.mutation.ClearEventlisteners()
 	return iu
 }
 
-// RemoveInstanceIDs removes the "instance" edge to Events entities by IDs.
-func (iu *InstanceUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *InstanceUpdate {
-	iu.mutation.RemoveInstanceIDs(ids...)
+// RemoveEventlistenerIDs removes the "eventlisteners" edge to Events entities by IDs.
+func (iu *InstanceUpdate) RemoveEventlistenerIDs(ids ...uuid.UUID) *InstanceUpdate {
+	iu.mutation.RemoveEventlistenerIDs(ids...)
 	return iu
 }
 
-// RemoveInstance removes "instance" edges to Events entities.
-func (iu *InstanceUpdate) RemoveInstance(e ...*Events) *InstanceUpdate {
+// RemoveEventlisteners removes "eventlisteners" edges to Events entities.
+func (iu *InstanceUpdate) RemoveEventlisteners(e ...*Events) *InstanceUpdate {
 	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
-	return iu.RemoveInstanceIDs(ids...)
+	return iu.RemoveEventlistenerIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -784,12 +784,12 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iu.mutation.InstanceCleared() {
+	if iu.mutation.EventlistenersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   instance.InstanceTable,
-			Columns: []string{instance.InstanceColumn},
+			Table:   instance.EventlistenersTable,
+			Columns: []string{instance.EventlistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -800,12 +800,12 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iu.mutation.RemovedInstanceIDs(); len(nodes) > 0 && !iu.mutation.InstanceCleared() {
+	if nodes := iu.mutation.RemovedEventlistenersIDs(); len(nodes) > 0 && !iu.mutation.EventlistenersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   instance.InstanceTable,
-			Columns: []string{instance.InstanceColumn},
+			Table:   instance.EventlistenersTable,
+			Columns: []string{instance.EventlistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -819,12 +819,12 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iu.mutation.InstanceIDs(); len(nodes) > 0 {
+	if nodes := iu.mutation.EventlistenersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   instance.InstanceTable,
-			Columns: []string{instance.InstanceColumn},
+			Table:   instance.EventlistenersTable,
+			Columns: []string{instance.EventlistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1018,19 +1018,19 @@ func (iuo *InstanceUpdateOne) AddChildren(i ...*InstanceRuntime) *InstanceUpdate
 	return iuo.AddChildIDs(ids...)
 }
 
-// AddInstanceIDs adds the "instance" edge to the Events entity by IDs.
-func (iuo *InstanceUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *InstanceUpdateOne {
-	iuo.mutation.AddInstanceIDs(ids...)
+// AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by IDs.
+func (iuo *InstanceUpdateOne) AddEventlistenerIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.AddEventlistenerIDs(ids...)
 	return iuo
 }
 
-// AddInstance adds the "instance" edges to the Events entity.
-func (iuo *InstanceUpdateOne) AddInstance(e ...*Events) *InstanceUpdateOne {
+// AddEventlisteners adds the "eventlisteners" edges to the Events entity.
+func (iuo *InstanceUpdateOne) AddEventlisteners(e ...*Events) *InstanceUpdateOne {
 	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
-	return iuo.AddInstanceIDs(ids...)
+	return iuo.AddEventlistenerIDs(ids...)
 }
 
 // Mutation returns the InstanceMutation object of the builder.
@@ -1125,25 +1125,25 @@ func (iuo *InstanceUpdateOne) RemoveChildren(i ...*InstanceRuntime) *InstanceUpd
 	return iuo.RemoveChildIDs(ids...)
 }
 
-// ClearInstance clears all "instance" edges to the Events entity.
-func (iuo *InstanceUpdateOne) ClearInstance() *InstanceUpdateOne {
-	iuo.mutation.ClearInstance()
+// ClearEventlisteners clears all "eventlisteners" edges to the Events entity.
+func (iuo *InstanceUpdateOne) ClearEventlisteners() *InstanceUpdateOne {
+	iuo.mutation.ClearEventlisteners()
 	return iuo
 }
 
-// RemoveInstanceIDs removes the "instance" edge to Events entities by IDs.
-func (iuo *InstanceUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *InstanceUpdateOne {
-	iuo.mutation.RemoveInstanceIDs(ids...)
+// RemoveEventlistenerIDs removes the "eventlisteners" edge to Events entities by IDs.
+func (iuo *InstanceUpdateOne) RemoveEventlistenerIDs(ids ...uuid.UUID) *InstanceUpdateOne {
+	iuo.mutation.RemoveEventlistenerIDs(ids...)
 	return iuo
 }
 
-// RemoveInstance removes "instance" edges to Events entities.
-func (iuo *InstanceUpdateOne) RemoveInstance(e ...*Events) *InstanceUpdateOne {
+// RemoveEventlisteners removes "eventlisteners" edges to Events entities.
+func (iuo *InstanceUpdateOne) RemoveEventlisteners(e ...*Events) *InstanceUpdateOne {
 	ids := make([]uuid.UUID, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
-	return iuo.RemoveInstanceIDs(ids...)
+	return iuo.RemoveEventlistenerIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1629,12 +1629,12 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iuo.mutation.InstanceCleared() {
+	if iuo.mutation.EventlistenersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   instance.InstanceTable,
-			Columns: []string{instance.InstanceColumn},
+			Table:   instance.EventlistenersTable,
+			Columns: []string{instance.EventlistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1645,12 +1645,12 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iuo.mutation.RemovedInstanceIDs(); len(nodes) > 0 && !iuo.mutation.InstanceCleared() {
+	if nodes := iuo.mutation.RemovedEventlistenersIDs(); len(nodes) > 0 && !iuo.mutation.EventlistenersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   instance.InstanceTable,
-			Columns: []string{instance.InstanceColumn},
+			Table:   instance.EventlistenersTable,
+			Columns: []string{instance.EventlistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1664,12 +1664,12 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iuo.mutation.InstanceIDs(); len(nodes) > 0 {
+	if nodes := iuo.mutation.EventlistenersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   instance.InstanceTable,
-			Columns: []string{instance.InstanceColumn},
+			Table:   instance.EventlistenersTable,
+			Columns: []string{instance.EventlistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

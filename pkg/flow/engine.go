@@ -20,7 +20,6 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -966,11 +965,11 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 
 }
 
-func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
+func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
 
 	ctx := context.Background()
 
-	d, err := engine.reverseTraverseToWorkflow(ctx, workflowID.String())
+	d, err := engine.reverseTraverseToWorkflow(ctx, workflowID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
