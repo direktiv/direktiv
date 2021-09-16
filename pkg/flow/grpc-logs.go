@@ -96,7 +96,7 @@ resend:
 	phash = nhash
 
 	p = new(pagination)
-	p.after = &resp.PageInfo.EndCursor
+	p.after = resp.PageInfo.EndCursor
 	p.order = porder
 	p.filter = pfilter
 
@@ -213,7 +213,7 @@ resend:
 	phash = nhash
 
 	p = new(pagination)
-	p.after = &resp.PageInfo.EndCursor
+	p.after = resp.PageInfo.EndCursor
 	p.order = porder
 	p.filter = pfilter
 
@@ -326,7 +326,7 @@ resend:
 	phash = nhash
 
 	p = new(pagination)
-	p.after = &resp.PageInfo.EndCursor
+	p.after = resp.PageInfo.EndCursor
 	p.order = porder
 	p.filter = pfilter
 
@@ -439,7 +439,7 @@ resend:
 	phash = nhash
 
 	p = new(pagination)
-	p.after = &resp.PageInfo.EndCursor
+	p.after = resp.PageInfo.EndCursor
 	p.order = porder
 	p.filter = pfilter
 

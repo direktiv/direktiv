@@ -5,6 +5,7 @@ package grpc;
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 import "pkg/flow/grpc/namespaces.proto";
 import "pkg/flow/grpc/logs.proto";
@@ -17,18 +18,24 @@ import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 
 service Flow {
-	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
-	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
+	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {
+	}
+	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {
+		option (google.api.http) = {
+			get: "/v1/api/namespaces"
+			body: "pagination"
+		};
+	}
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
 	rpc RenameNamespace (RenameNamespaceRequest) returns (RenameNamespaceResponse) {}
-	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {} 
-	rpc ServerLogsParcels (ServerLogsRequest) returns (stream ServerLogsResponse) {} 
+	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {}
+	rpc ServerLogsParcels (ServerLogsRequest) returns (stream ServerLogsResponse) {}
 	rpc NamespaceLogs (NamespaceLogsRequest) returns (NamespaceLogsResponse) {}
 	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {}
-	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {} 
-	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {} 
+	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {}
+	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {}
 	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {}
 	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
 	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {}
@@ -36,7 +43,7 @@ service Flow {
 	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {}
 	rpc Node (NodeRequest) returns (NodeResponse) {}
 	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {}
-	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {} 
+	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
 	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}
 	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
 	rpc SaveHead (SaveHeadRequest) returns (SaveHeadResponse) {}
@@ -66,8 +73,8 @@ service Flow {
 	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
 	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {}
 	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {}
-	rpc InstanceLogs (InstanceLogsRequest) returns (InstanceLogsResponse) {} 
-	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {} 
+	rpc InstanceLogs (InstanceLogsRequest) returns (InstanceLogsResponse) {}
+	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {}
 	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {}
 	rpc RunWorkflow (RunWorkflowRequest) returns (stream RunWorkflowResponse) {}
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}

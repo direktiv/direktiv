@@ -41,8 +41,8 @@ const (
 	EdgeRuntime = "runtime"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
-	// EdgeInstance holds the string denoting the instance edge name in mutations.
-	EdgeInstance = "instance"
+	// EdgeEventlisteners holds the string denoting the eventlisteners edge name in mutations.
+	EdgeEventlisteners = "eventlisteners"
 	// Table holds the table name of the instance in the database.
 	Table = "instances"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -94,13 +94,13 @@ const (
 	ChildrenInverseTable = "instance_runtimes"
 	// ChildrenColumn is the table column denoting the children relation/edge.
 	ChildrenColumn = "instance_children"
-	// InstanceTable is the table that holds the instance relation/edge.
-	InstanceTable = "events"
-	// InstanceInverseTable is the table name for the Events entity.
+	// EventlistenersTable is the table that holds the eventlisteners relation/edge.
+	EventlistenersTable = "events"
+	// EventlistenersInverseTable is the table name for the Events entity.
 	// It exists in this package in order to avoid circular dependency with the "events" package.
-	InstanceInverseTable = "events"
-	// InstanceColumn is the table column denoting the instance relation/edge.
-	InstanceColumn = "instance_instance"
+	EventlistenersInverseTable = "events"
+	// EventlistenersColumn is the table column denoting the eventlisteners relation/edge.
+	EventlistenersColumn = "instance_eventlisteners"
 )
 
 // Columns holds all SQL columns for instance fields.

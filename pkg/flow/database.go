@@ -462,7 +462,8 @@ func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceCli
 
 	recurser = func(x *ent.Inode) error {
 
-		parent, err := ino.QueryParent().Only(ctx)
+		parent, err := x.QueryParent().Only(ctx)
+
 		if err != nil {
 
 			if ent.IsNotFound(err) {

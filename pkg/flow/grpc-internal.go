@@ -8,6 +8,7 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -38,6 +39,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 	}))
 
 	grpc.RegisterInternalServer(internal.srv, internal)
+	reflection.Register(internal.srv)
 
 	go func() {
 		<-ctx.Done()

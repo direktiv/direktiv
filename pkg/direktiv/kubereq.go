@@ -103,6 +103,39 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 
 }
 
+func isScopedKnativeFunction(client igrpc.FunctionsServiceClient,
+	serviceName string) bool {
+
+	// search annotations
+	a := make(map[string]string)
+	// FIXME: make const
+	a["serving.knative.dev/service"] = serviceName
+
+	appLog.Debugf("knative function search: %v", a)
+
+	_, err := client.GetFunction(context.Background(), &igrpc.GetFunctionRequest{
+		ServiceName: &serviceName,
+	})
+
+	if err != nil {
+		appLog.Errorf("can not get knative service: %v", err)
+		return false
+	}
+
+	return true
+}
+
+func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
+	serviceName string) error {
+
+	cr := igrpc.ReconstructFunctionRequest{
+		Name: &serviceName,
+	}
+
+	_, err := client.ReconstructFunction(context.Background(), &cr)
+	return err
+}
+
 func createKnativeFunctions(client igrpc.FunctionsServiceClient,
 	wfm model.Workflow, ns string) error {
 

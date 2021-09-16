@@ -34,6 +34,18 @@ var (
 		Columns:    NamespacesColumns,
 		PrimaryKey: []*schema.Column{NamespacesColumns[0]},
 	}
+	// ServicesColumns holds the columns for the "services" table.
+	ServicesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "data", Type: field.TypeString},
+	}
+	// ServicesTable holds the schema information for the "services" table.
+	ServicesTable = &schema.Table{
+		Name:       "services",
+		Columns:    ServicesColumns,
+		PrimaryKey: []*schema.Column{ServicesColumns[0]},
+	}
 	// WorkflowsColumns holds the columns for the "workflows" table.
 	WorkflowsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -157,6 +169,7 @@ var (
 	Tables = []*schema.Table{
 		CloudEventsTable,
 		NamespacesTable,
+		ServicesTable,
 		WorkflowsTable,
 		WorkflowEventsTable,
 		WorkflowEventsWaitsTable,

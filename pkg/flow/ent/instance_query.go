@@ -34,15 +34,15 @@ type InstanceQuery struct {
 	fields     []string
 	predicates []predicate.Instance
 	// eager-loading edges.
-	withNamespace *NamespaceQuery
-	withWorkflow  *WorkflowQuery
-	withRevision  *RevisionQuery
-	withLogs      *LogMsgQuery
-	withVars      *VarRefQuery
-	withRuntime   *InstanceRuntimeQuery
-	withChildren  *InstanceRuntimeQuery
-	withInstance  *EventsQuery
-	withFKs       bool
+	withNamespace      *NamespaceQuery
+	withWorkflow       *WorkflowQuery
+	withRevision       *RevisionQuery
+	withLogs           *LogMsgQuery
+	withVars           *VarRefQuery
+	withRuntime        *InstanceRuntimeQuery
+	withChildren       *InstanceRuntimeQuery
+	withEventlisteners *EventsQuery
+	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -233,8 +233,8 @@ func (iq *InstanceQuery) QueryChildren() *InstanceRuntimeQuery {
 	return query
 }
 
-// QueryInstance chains the current query on the "instance" edge.
-func (iq *InstanceQuery) QueryInstance() *EventsQuery {
+// QueryEventlisteners chains the current query on the "eventlisteners" edge.
+func (iq *InstanceQuery) QueryEventlisteners() *EventsQuery {
 	query := &EventsQuery{config: iq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
@@ -247,7 +247,7 @@ func (iq *InstanceQuery) QueryInstance() *EventsQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(instance.Table, instance.FieldID, selector),
 			sqlgraph.To(events.Table, events.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.InstanceTable, instance.InstanceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.EventlistenersTable, instance.EventlistenersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -431,19 +431,19 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		return nil
 	}
 	return &InstanceQuery{
-		config:        iq.config,
-		limit:         iq.limit,
-		offset:        iq.offset,
-		order:         append([]OrderFunc{}, iq.order...),
-		predicates:    append([]predicate.Instance{}, iq.predicates...),
-		withNamespace: iq.withNamespace.Clone(),
-		withWorkflow:  iq.withWorkflow.Clone(),
-		withRevision:  iq.withRevision.Clone(),
-		withLogs:      iq.withLogs.Clone(),
-		withVars:      iq.withVars.Clone(),
-		withRuntime:   iq.withRuntime.Clone(),
-		withChildren:  iq.withChildren.Clone(),
-		withInstance:  iq.withInstance.Clone(),
+		config:             iq.config,
+		limit:              iq.limit,
+		offset:             iq.offset,
+		order:              append([]OrderFunc{}, iq.order...),
+		predicates:         append([]predicate.Instance{}, iq.predicates...),
+		withNamespace:      iq.withNamespace.Clone(),
+		withWorkflow:       iq.withWorkflow.Clone(),
+		withRevision:       iq.withRevision.Clone(),
+		withLogs:           iq.withLogs.Clone(),
+		withVars:           iq.withVars.Clone(),
+		withRuntime:        iq.withRuntime.Clone(),
+		withChildren:       iq.withChildren.Clone(),
+		withEventlisteners: iq.withEventlisteners.Clone(),
 		// clone intermediate query.
 		sql:  iq.sql.Clone(),
 		path: iq.path,
@@ -527,14 +527,14 @@ func (iq *InstanceQuery) WithChildren(opts ...func(*InstanceRuntimeQuery)) *Inst
 	return iq
 }
 
-// WithInstance tells the query-builder to eager-load the nodes that are connected to
-// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithInstance(opts ...func(*EventsQuery)) *InstanceQuery {
+// WithEventlisteners tells the query-builder to eager-load the nodes that are connected to
+// the "eventlisteners" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *InstanceQuery {
 	query := &EventsQuery{config: iq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	iq.withInstance = query
+	iq.withEventlisteners = query
 	return iq
 }
 
@@ -612,7 +612,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context) ([]*Instance, error) {
 			iq.withVars != nil,
 			iq.withRuntime != nil,
 			iq.withChildren != nil,
-			iq.withInstance != nil,
+			iq.withEventlisteners != nil,
 		}
 	)
 	if iq.withNamespace != nil || iq.withWorkflow != nil || iq.withRevision != nil {
@@ -843,32 +843,32 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context) ([]*Instance, error) {
 		}
 	}
 
-	if query := iq.withInstance; query != nil {
+	if query := iq.withEventlisteners; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[uuid.UUID]*Instance)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Instance = []*Events{}
+			nodes[i].Edges.Eventlisteners = []*Events{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Events(func(s *sql.Selector) {
-			s.Where(sql.InValues(instance.InstanceColumn, fks...))
+			s.Where(sql.InValues(instance.EventlistenersColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.instance_instance
+			fk := n.instance_eventlisteners
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "instance_instance" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "instance_eventlisteners" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_instance" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Instance = append(node.Edges.Instance, n)
+			node.Edges.Eventlisteners = append(node.Edges.Eventlisteners, n)
 		}
 	}
 

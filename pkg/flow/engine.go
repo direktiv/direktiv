@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/senseyeio/duration"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -328,11 +329,10 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
 
-	engine.freeResources(im)
 	engine.WakeInstanceCaller(ctx, im)
 	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
 	engine.metricsCompleteInstance(ctx, im)
-	engine.InstanceUnlock(im)
+	engine.FreeInstanceMemory(im)
 
 }
 
@@ -457,22 +457,6 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 }
 
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *stateTransition, errCode string) {
-
-	if transition == nil || transition.NextState == "" {
-
-		// TODO
-
-		// ns, err := engine.InstanceNamespace(ctx, im)
-		// if err != nil {
-		// 	engine.CrashInstance(ctx, im, err)
-		// 	return
-		// }
-		//
-		// for i := range im.eventQueue {
-		// 	engine.server.flushEvent(im.eventQueue[i], ns.ID, true)
-		// }
-
-	}
 
 	if transition == nil {
 		engine.InstanceYield(im)
@@ -894,11 +878,11 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 	em := err.Error()
 	step := int32(ar.Workflow.Step)
 	r := &grpc.ReportActionResultsRequest{
-		InstanceId:   &ar.Workflow.InstanceID,
-		Step:         &step,
-		ActionId:     &ar.ActionID,
-		ErrorCode:    &ec,
-		ErrorMessage: &em,
+		InstanceId:   ar.Workflow.InstanceID,
+		Step:         step,
+		ActionId:     ar.ActionID,
+		ErrorCode:    ec,
+		ErrorMessage: em,
 	}
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
@@ -948,5 +932,80 @@ func (engine *engine) createTransport(useTLS bool) *http.Transport {
 	}
 
 	return tr
+
+}
+
+const eventsWakeupFunction = "eventsWakeup"
+
+func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
+
+	sig := new(eventsWaiterSignature)
+	err := json.Unmarshal(signature, sig)
+	if err != nil {
+		err = NewInternalError(err)
+		engine.sugar.Error(err)
+		return
+	}
+
+	ctx, im, err := engine.loadInstanceMemory(sig.InstanceID, sig.Step)
+	if err != nil {
+		err = fmt.Errorf("cannot load workflow logic instance: %v", err)
+		engine.sugar.Error(err)
+		return
+	}
+
+	wakedata, err := json.Marshal(events)
+	if err != nil {
+		err = fmt.Errorf("cannot marshal the action results payload: %v", err)
+		engine.CrashInstance(ctx, im, err)
+		return
+	}
+
+	go engine.runState(ctx, im, wakedata, nil)
+
+}
+
+func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
+
+	ctx := context.Background()
+
+	d, err := engine.reverseTraverseToWorkflow(ctx, workflowID)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	var input []byte
+	m := make(map[string]interface{})
+	for _, event := range events {
+
+		if event == nil {
+			continue
+		}
+
+		m[event.Type()] = event
+
+	}
+
+	input, err = json.Marshal(m)
+	if err != nil {
+		engine.sugar.Errorf("Internal error on EventsInvoke: %v", err)
+		return
+	}
+
+	args := new(newInstanceArgs)
+	args.Namespace = d.namespace()
+	args.Path = d.path
+
+	args.Input = input
+	args.Caller = "cloudevent" // TODO: human readable
+
+	im, err := engine.NewInstance(ctx, args)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	engine.queue(im)
 
 }

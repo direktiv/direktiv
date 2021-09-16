@@ -55,7 +55,7 @@ message NamespaceVariablesResponse {
 message SetNamespaceVariableRequest {
 	string namespace = 1;
 	string key = 2;
-	optional int64 totalSize = 3;
+	int64 totalSize = 3;
 	bytes data = 4;
 }
 
@@ -121,7 +121,7 @@ message SetWorkflowVariableRequest {
 	string namespace = 1;
 	string path = 2;
 	string key = 3;
-	optional int64 totalSize = 4;
+	int64 totalSize = 4;
 	bytes data = 5;
 }
 
@@ -191,7 +191,7 @@ message SetInstanceVariableRequest {
 	string namespace = 1;
 	string instance = 2;
 	string key = 3;
-	optional int64 totalSize = 4;
+	int64 totalSize = 4;
 	bytes data = 5;
 }
 

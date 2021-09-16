@@ -1,3 +1,9 @@
 http_proxy: ""
 https_proxy: ""
 no_proxy: ""
+
+kong-internal:
+  proxy:
+    type: ClusterIP
+  ingressController:
+    ingressClass: kong-internal

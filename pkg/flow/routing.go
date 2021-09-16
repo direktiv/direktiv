@@ -299,8 +299,6 @@ func (flow *flow) cronHandler(data []byte) {
 
 	id := string(data)
 
-	fmt.Println("id", id)
-
 	ctx, conn, err := flow.engine.lock(id, defaultLockWait)
 	if err != nil {
 		flow.sugar.Error(err)

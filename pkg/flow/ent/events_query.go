@@ -30,10 +30,10 @@ type EventsQuery struct {
 	fields     []string
 	predicates []predicate.Events
 	// eager-loading edges.
-	withWorkflow         *WorkflowQuery
-	withWfeventswait     *EventsWaitQuery
-	withWorkflowinstance *InstanceQuery
-	withFKs              bool
+	withWorkflow     *WorkflowQuery
+	withWfeventswait *EventsWaitQuery
+	withInstance     *InstanceQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -114,8 +114,8 @@ func (eq *EventsQuery) QueryWfeventswait() *EventsWaitQuery {
 	return query
 }
 
-// QueryWorkflowinstance chains the current query on the "workflowinstance" edge.
-func (eq *EventsQuery) QueryWorkflowinstance() *InstanceQuery {
+// QueryInstance chains the current query on the "instance" edge.
+func (eq *EventsQuery) QueryInstance() *InstanceQuery {
 	query := &InstanceQuery{config: eq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := eq.prepareQuery(ctx); err != nil {
@@ -128,7 +128,7 @@ func (eq *EventsQuery) QueryWorkflowinstance() *InstanceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(events.Table, events.FieldID, selector),
 			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, events.WorkflowinstanceTable, events.WorkflowinstanceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, events.InstanceTable, events.InstanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -312,14 +312,14 @@ func (eq *EventsQuery) Clone() *EventsQuery {
 		return nil
 	}
 	return &EventsQuery{
-		config:               eq.config,
-		limit:                eq.limit,
-		offset:               eq.offset,
-		order:                append([]OrderFunc{}, eq.order...),
-		predicates:           append([]predicate.Events{}, eq.predicates...),
-		withWorkflow:         eq.withWorkflow.Clone(),
-		withWfeventswait:     eq.withWfeventswait.Clone(),
-		withWorkflowinstance: eq.withWorkflowinstance.Clone(),
+		config:           eq.config,
+		limit:            eq.limit,
+		offset:           eq.offset,
+		order:            append([]OrderFunc{}, eq.order...),
+		predicates:       append([]predicate.Events{}, eq.predicates...),
+		withWorkflow:     eq.withWorkflow.Clone(),
+		withWfeventswait: eq.withWfeventswait.Clone(),
+		withInstance:     eq.withInstance.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -348,14 +348,14 @@ func (eq *EventsQuery) WithWfeventswait(opts ...func(*EventsWaitQuery)) *EventsQ
 	return eq
 }
 
-// WithWorkflowinstance tells the query-builder to eager-load the nodes that are connected to
-// the "workflowinstance" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EventsQuery) WithWorkflowinstance(opts ...func(*InstanceQuery)) *EventsQuery {
+// WithInstance tells the query-builder to eager-load the nodes that are connected to
+// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EventsQuery) WithInstance(opts ...func(*InstanceQuery)) *EventsQuery {
 	query := &InstanceQuery{config: eq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	eq.withWorkflowinstance = query
+	eq.withInstance = query
 	return eq
 }
 
@@ -428,10 +428,10 @@ func (eq *EventsQuery) sqlAll(ctx context.Context) ([]*Events, error) {
 		loadedTypes = [3]bool{
 			eq.withWorkflow != nil,
 			eq.withWfeventswait != nil,
-			eq.withWorkflowinstance != nil,
+			eq.withInstance != nil,
 		}
 	)
-	if eq.withWorkflow != nil || eq.withWorkflowinstance != nil {
+	if eq.withWorkflow != nil || eq.withInstance != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -515,14 +515,14 @@ func (eq *EventsQuery) sqlAll(ctx context.Context) ([]*Events, error) {
 		}
 	}
 
-	if query := eq.withWorkflowinstance; query != nil {
+	if query := eq.withInstance; query != nil {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Events)
 		for i := range nodes {
-			if nodes[i].instance_instance == nil {
+			if nodes[i].instance_eventlisteners == nil {
 				continue
 			}
-			fk := *nodes[i].instance_instance
+			fk := *nodes[i].instance_eventlisteners
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -536,10 +536,10 @@ func (eq *EventsQuery) sqlAll(ctx context.Context) ([]*Events, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "instance_instance" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.Workflowinstance = n
+				nodes[i].Edges.Instance = n
 			}
 		}
 	}

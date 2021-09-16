@@ -12,6 +12,7 @@ type configReader struct {
 }
 
 type config struct {
+	RequestTimeout     int    `yaml:"request-timeout"`
 	ServiceAccount     string `yaml:"service-account"`
 	Namespace          string `yaml:"namespace"`
 	SidecarDb          string `yaml:"sidecar-db"`
@@ -23,6 +24,7 @@ type config struct {
 	MaxJobs            int    `yaml:"max-jobs"`
 	MaxScale           int    `yaml:"max-scale"`
 	NetShape           string `yaml:"net-shape"`
+	Database           string `yaml:"db"`
 	RolloutDuration    int    `yaml:"rollout-duration"`
 	Concurrency        int    `yaml:"concurrency"`
 	Storage            int    `yaml:"storage"`

@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -30,8 +31,8 @@ func (Events) Edges() []ent.Edge {
 		edge.From("workflow", Workflow.Type).
 			Ref("wfevents").
 			Unique().Required(),
-		edge.To("wfeventswait", EventsWait.Type),
-		edge.From("workflowinstance", Instance.Type).
-			Ref("instance").Unique(),
+		edge.To("wfeventswait", EventsWait.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("instance", Instance.Type).
+			Ref("eventlisteners").Unique(),
 	}
 }

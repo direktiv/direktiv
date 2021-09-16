@@ -25,13 +25,13 @@ var ctx = context.Background()
 var (
 	stream                                      bool
 	afterVal, beforeVal                         string
-	after, before                               *string
+	after, before                               string
 	firstVal, lastVal                           int32
-	first, last                                 *int32
+	first, last                                 int32
 	orderFieldVal, orderDirectionVal            string
-	orderField, orderDirection                  *string
+	orderField, orderDirection                  string
 	filterFieldVal, filterTypeVal, filterValVal string
-	filterField, filterType, filterVal          *string
+	filterField, filterType, filterVal          string
 
 	stdin  bool
 	filein string
@@ -148,27 +148,27 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
 		if afterVal != "" {
-			after = &afterVal
+			after = afterVal
 		}
 
 		if beforeVal != "" {
-			before = &beforeVal
+			before = beforeVal
 		}
 
 		if firstVal != 0 {
-			first = &firstVal
+			first = firstVal
 		}
 
 		if lastVal != 0 {
-			last = &lastVal
+			last = lastVal
 		}
 
 		if orderFieldVal != "" {
-			orderField = &orderFieldVal
+			orderField = orderFieldVal
 		}
 
 		if orderDirectionVal != "" {
-			orderDirection = &orderDirectionVal
+			orderDirection = orderDirectionVal
 		}
 
 	},
