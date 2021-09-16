@@ -1,20 +1,33 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
-
-	_ "github.com/vorteil/direktiv/pkg/util"
+	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
+var log *zap.SugaredLogger
 
 func main() {
 
-	if os.Getenv("DIREKTIV_DEBUG") == "true" {
-		log.SetLevel(logrus.DebugLevel)
+	var err error
+
+	dlog.Init()
+	util.Init()
+
+	logger, err = zap.NewDevelopment()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
+		os.Exit(1)
 	}
+	defer logger.Sync()
+
+	log = logger.Sugar()
 
 	sl := new(SignalListener)
 	sl.Start()

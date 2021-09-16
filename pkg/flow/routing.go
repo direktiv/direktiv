@@ -277,7 +277,7 @@ func (flow *flow) postCommitRouterConfiguration(id string, ms *muxStart) {
 
 }
 
-func (flow *flow) configureRouterHandler(req *pubsubUpdate) {
+func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
 
 	msg := new(configureRouterMessage)
 

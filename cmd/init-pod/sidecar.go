@@ -8,9 +8,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	tailfile "github.com/nxadm/tail"
-	log "github.com/sirupsen/logrus"
-	_ "github.com/vorteil/direktiv/pkg/direktiv"
-	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
 type errStruct struct {
@@ -39,7 +37,7 @@ func readErrorFile() (code, msg string, err error) {
 
 func runAsSidecar() {
 
-	log.Println("Running as sidecar container.")
+	log.Infof("Running as sidecar container.")
 
 	go tail()
 
@@ -62,42 +60,42 @@ func runAsSidecar() {
 					return
 				}
 
-				log.Printf("Inotify event: %v", event)
+				log.Infof("Inotify event: %v", event)
 
 				if event.Op&fsnotify.Create == fsnotify.Create && event.Name == "/direktiv-data/done" {
 
-					log.Println("\"Done\" file created.")
+					log.Infof("\"Done\" file created.")
 
 					err := setOutVariables(context.Background())
 					if err != nil {
-						log.Printf("Error setting output file variables: %v", err)
+						log.Infof("Error setting output file variables: %v", err)
 					}
 
 					output, err := ioutil.ReadFile("/direktiv-data/output.json")
 					if err != nil {
-						log.Printf("Error reading output file: %v", err)
+						log.Infof("Error reading output file: %v", err)
 					}
 
 					errCode, errMsg, err := readErrorFile()
 					if err != nil {
-						log.Printf("Error reading error file: %v", err)
+						log.Infof("Error reading error file: %v", err)
 					}
 
-					_, err = flowClient.ReportActionResults(context.Background(), &flow.ReportActionResultsRequest{
-						InstanceId:   &instanceId,
-						Step:         &step,
-						ActionId:     &actionId,
-						ErrorCode:    &errCode,
-						ErrorMessage: &errMsg,
+					_, err = flow.ReportActionResults(context.Background(), &grpc.ReportActionResultsRequest{
+						InstanceId:   instanceId,
+						Step:         step,
+						ActionId:     actionId,
+						ErrorCode:    errCode,
+						ErrorMessage: errMsg,
 						Output:       output,
 					})
 					if err != nil {
-						log.Printf("Error reporting action results: %v", err)
+						log.Infof("Error reporting action results: %v", err)
 						return
 					}
 
 					// TODO: file vars
-					log.Printf("Job finished.")
+					log.Infof("Job finished.")
 					return
 
 				}
@@ -106,7 +104,7 @@ func runAsSidecar() {
 				if !ok {
 					return
 				}
-				log.Printf("Inotify error: %v", err)
+				log.Infof("Inotify error: %v", err)
 			}
 		}
 
@@ -123,7 +121,7 @@ func runAsSidecar() {
 
 func tail() {
 
-	log.Println("Tailing logs.")
+	log.Infof("Tailing logs.")
 
 	t, err := tailfile.TailFile(
 		"/direktiv-data/out.log", tailfile.Config{Follow: true, ReOpen: true, MustExist: false})
@@ -132,17 +130,17 @@ func tail() {
 	}
 
 	for line := range t.Lines {
-		log.Printf("Container log: %v", line.Text)
-		_, err = flowClient.ActionLog(context.Background(), &flow.ActionLogRequest{
-			InstanceId: &instanceId,
+		log.Infof("Container log: %v", line.Text)
+		_, err = flow.ActionLog(context.Background(), &grpc.ActionLogRequest{
+			InstanceId: instanceId,
 			Msg:        []string{line.Text},
 		})
 		if err != nil {
-			log.Printf("Failed to push log: %v.", err)
+			log.Infof("Failed to push log: %v.", err)
 		}
 	}
 
 end:
-	log.Println("Log tailing finished.")
+	log.Infof("Log tailing finished.")
 
 }

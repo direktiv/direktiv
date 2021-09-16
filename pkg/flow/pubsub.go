@@ -25,12 +25,12 @@ type pubsub struct {
 	id       uuid.UUID
 	notifier notifier
 
-	handlers map[string]func(*pubsubUpdate)
+	handlers map[string]func(*PubsubUpdate)
 
 	closed   bool
 	closer   chan bool
 	hostname string
-	queue    chan *pubsubUpdate
+	queue    chan *PubsubUpdate
 	mtx      sync.RWMutex
 	channels map[string]map[*subscription]bool
 }
@@ -47,7 +47,7 @@ func (pubsub *pubsub) Close() error {
 
 }
 
-type pubsubUpdate struct {
+type PubsubUpdate struct {
 	Handler  string
 	Sender   string
 	Key      string
@@ -86,12 +86,12 @@ func initPubSub(notifier notifier, database string) (*pubsub, error) {
 
 	pubsub.notifier = notifier
 	pubsub.closer = make(chan bool)
-	pubsub.queue = make(chan *pubsubUpdate, 1024)
+	pubsub.queue = make(chan *PubsubUpdate, 1024)
 	pubsub.channels = make(map[string]map[*subscription]bool)
 
 	go pubsub.dispatcher()
 
-	pubsub.handlers = make(map[string]func(*pubsubUpdate))
+	pubsub.handlers = make(map[string]func(*PubsubUpdate))
 
 	go func(l *pq.Listener) {
 
@@ -116,7 +116,7 @@ func initPubSub(notifier notifier, database string) (*pubsub, error) {
 				continue
 			}
 
-			req := new(pubsubUpdate)
+			req := new(PubsubUpdate)
 			err = json.Unmarshal([]byte(notification.Extra), req)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "unexpected notification on database listener: %v\n", err)
@@ -139,7 +139,7 @@ func initPubSub(notifier notifier, database string) (*pubsub, error) {
 
 }
 
-func (pubsub *pubsub) registerFunction(name string, fn func(*pubsubUpdate)) {
+func (pubsub *pubsub) registerFunction(name string, fn func(*PubsubUpdate)) {
 
 	if _, ok := pubsub.handlers[name]; ok {
 		panic(fmt.Errorf("function already exists"))
@@ -176,7 +176,7 @@ func (pubsub *pubsub) dispatcher() {
 
 }
 
-func (pubsub *pubsub) Notify(req *pubsubUpdate) {
+func (pubsub *pubsub) Notify(req *PubsubUpdate) {
 
 	pubsub.mtx.RLock()
 	defer pubsub.mtx.RUnlock()
@@ -197,7 +197,7 @@ func (pubsub *pubsub) Notify(req *pubsubUpdate) {
 
 }
 
-func (pubsub *pubsub) Disconnect(req *pubsubUpdate) {
+func (pubsub *pubsub) Disconnect(req *PubsubUpdate) {
 
 	pubsub.mtx.RLock()
 	defer pubsub.mtx.RUnlock()
@@ -265,7 +265,7 @@ func (s *subscription) Close() error {
 
 }
 
-func (pubsub *pubsub) publish(req *pubsubUpdate) {
+func (pubsub *pubsub) publish(req *PubsubUpdate) {
 
 	req.Sender = pubsub.id.String()
 
@@ -311,15 +311,15 @@ func (pubsub *pubsub) Subscribe(id ...string) *subscription {
 
 }
 
-func pubsubNotify(key string) *pubsubUpdate {
-	return &pubsubUpdate{
+func pubsubNotify(key string) *PubsubUpdate {
+	return &PubsubUpdate{
 		Handler: pubsubNotifyFunction,
 		Key:     key,
 	}
 }
 
-func pubsubDisconnect(key string) *pubsubUpdate {
-	return &pubsubUpdate{
+func pubsubDisconnect(key string) *PubsubUpdate {
+	return &PubsubUpdate{
 		Handler: pubsubDisconnectFunction,
 		Key:     key,
 	}
@@ -609,7 +609,7 @@ func (pubsub *pubsub) SubscribeInstance(in *ent.Instance) *subscription {
 
 func (pubsub *pubsub) ClusterDeleteTimer(name string) {
 
-	pubsub.publish(&pubsubUpdate{
+	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubDeleteTimerFunction,
 		Key:     name,
 	})
@@ -618,7 +618,7 @@ func (pubsub *pubsub) ClusterDeleteTimer(name string) {
 
 func (pubsub *pubsub) ClusterDeleteInstanceTimers(name string) {
 
-	pubsub.publish(&pubsubUpdate{
+	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubDeleteInstanceTimersFunction,
 		Key:     name,
 	})
@@ -627,7 +627,7 @@ func (pubsub *pubsub) ClusterDeleteInstanceTimers(name string) {
 
 func (pubsub *pubsub) HostnameDeleteTimer(hostname, name string) {
 
-	pubsub.publish(&pubsubUpdate{
+	pubsub.publish(&PubsubUpdate{
 		Handler:  pubsubDeleteTimerFunction,
 		Key:      name,
 		Hostname: hostname,
@@ -651,7 +651,7 @@ func (pubsub *pubsub) ConfigureRouterCron(id, cron string, enabled bool) {
 
 	key := marshal(msg)
 
-	pubsub.publish(&pubsubUpdate{
+	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubConfigureRouterFunction,
 		Key:     key,
 	})
@@ -666,7 +666,7 @@ func (pubsub *pubsub) CancelWorkflow(id, code, message string, soft bool) {
 		panic(err)
 	}
 
-	pubsub.publish(&pubsubUpdate{
+	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubCancelWorkflowFunction,
 		Key:     string(data),
 	})
@@ -675,7 +675,7 @@ func (pubsub *pubsub) CancelWorkflow(id, code, message string, soft bool) {
 
 func (pubsub *pubsub) UpdateEventDelays() {
 
-	pubsub.publish(&pubsubUpdate{
+	pubsub.publish(&PubsubUpdate{
 		Handler: pubsubUpdateEventDelays,
 	})
 
