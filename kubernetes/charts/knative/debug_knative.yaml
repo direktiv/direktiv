@@ -1,0 +1,7 @@
+kong-external:
+  image:
+    repository: localhost:5000/cong
+    tag: "latest"
+    pullPolicy: Always
+  env:
+    log_level: "debug"

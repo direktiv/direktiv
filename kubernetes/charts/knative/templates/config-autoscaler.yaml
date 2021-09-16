@@ -8,7 +8,7 @@ metadata:
     serving.knative.dev/release: v0.25.1
     {{- include "knative.labels" . | nindent 4 }}
   name: config-autoscaler
-  namespace: knative-serving-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
 data:
   # The Revision ContainerConcurrency field specifies the maximum number
   # of requests the Container can handle at once. Container concurrency

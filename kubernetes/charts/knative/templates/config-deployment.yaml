@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-deployment
-  namespace: knative-serving-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
   labels:
     serving.knative.dev/release: v0.25.1
     {{- include "knative.labels" . | nindent 4 }}

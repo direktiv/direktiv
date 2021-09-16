@@ -32,12 +32,3 @@ dependencies:
     repository: "https://charts.konghq.com"
     version: "2.3.0"
     alias: "kong-internal"
-
-
-
-
-  # helm repo add kong https://charts.konghq.com
-  # helm repo update
-  #
-  # kubectl create namespace kong-external
-  # helm install -n kong-external kong-external kong/kong

@@ -36,9 +36,6 @@ Common labels
 {{- define "knative.labels" -}}
 helm.sh/chart: {{ include "knative.chart" . }}
 {{ include "knative.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -46,6 +43,5 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "knative.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "knative.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

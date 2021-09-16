@@ -6,7 +6,7 @@ metadata:
     serving.knative.dev/release: v0.25.1
   {{- include "knative.labels" . | nindent 4 }}
   name: config-network
-  namespace: knative-serving-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
 data:
   # ingress.class specifies the default ingress class
   # to use when not dictated by Route annotation.
