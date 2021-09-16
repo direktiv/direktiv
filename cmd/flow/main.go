@@ -69,6 +69,7 @@ func main() {
 	rootCmd.AddCommand(createDirectoryCmd)
 	rootCmd.AddCommand(deleteNodeCmd)
 	rootCmd.AddCommand(renameNodeCmd)
+	rootCmd.AddCommand(nodeCmd)
 
 	rootCmd.AddCommand(workflowCmd)
 	rootCmd.AddCommand(createWorkflowCmd)
