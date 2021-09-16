@@ -57,23 +57,39 @@ service Flow {
 	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/workflows/{path=**}/logs"
+			additional_bindings {
+				get: "/api/namespaces/{namespace}/workflows/{path}/logs"
+				body: "*"
+			}
 		};
 	}
 	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {}
 	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/directory/{path=**}"
+			additional_bindings {
+				get: "/api/namespaces/{namespace}/directory/{path}"
+			}
+			additional_bindings {
+				get: "/api/namespaces/{namespace}/directory/"
+			}
 		};
 	}
 	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
 	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {
 		option (google.api.http) = {
 			post: "/api/namespaces/{namespace}/directory/{path=**}"
+			additional_bindings {
+				post: "/api/namespaces/{namespace}/directory/{path}"
+			}
 		};
 	}
 	rpc DeleteNode (DeleteNodeRequest) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
 			delete: "/api/namespaces/{namespace}/node/{path=**}"
+			additional_bindings {
+				delete: "/api/namespaces/{namespace}/node/{path}"
+			}
 		};
 	}
 	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {
@@ -86,12 +102,24 @@ service Flow {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/node/{path=**}"
 			body: "*"
+			additional_bindings {
+				get: "/api/namespaces/{namespace}/node/{path}"
+				body: "*"
+			}
+			additional_bindings {
+				get: "/api/namespaces/{namespace}/node/"
+				body: "*"
+			}
 		};
 	}
 	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/workflow/{path=**}"
 			body: "*"
+			additional_bindings {
+				get: "/api/namespaces/{namespace}/workflow/{path}"
+				body: "*"
+			}
 		};
 	}
 	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
@@ -99,6 +127,10 @@ service Flow {
 		option (google.api.http) = {
 			post: "/api/namespaces/{namespace}/workflow/{path=**}"
 			body: "*"
+			additional_bindings {
+				post: "/api/namespaces/{namespace}/workflow/{path}"
+				body: "*"
+			}
 		};
 	}
 	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {

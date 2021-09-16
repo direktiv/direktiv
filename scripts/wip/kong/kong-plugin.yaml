@@ -1,0 +1,36 @@
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: direktiv-grpc-gateway
+config: 
+  proto: /usr/local/kong/proto/flow.proto
+plugin: grpc-gateway
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: direktiv-kong-plugin-myplugin
+plugin: kong-plugin-myplugin
+# ---
+# apiVersion: configuration.konghq.com/v1
+# kind: KongPlugin
+# metadata:
+#   name: direktiv-grpc-custom
+# plugin: kong-custom-plugin
+# ---
+# apiVersion: configuration.konghq.com/v1
+# kind: KongPlugin
+# metadata:
+#   name: direktiv-response-transformer
+# config: 
+#   add:
+#     json:
+#     - wildcard:some_value
+# plugin: response-transformer
+# ---
+# apiVersion: configuration.konghq.com/v1
+# kind: KongPlugin
+# metadata:
+#   name: direktiv-kong-plugin-myplugin
+# plugin: kong-plugin-myplugin
