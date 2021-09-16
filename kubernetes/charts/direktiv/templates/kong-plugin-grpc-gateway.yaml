@@ -1,0 +1,9 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-gateway
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+config: 
+  proto: /usr/local/kong/proto/flow.proto
+plugin: grpc-gateway
