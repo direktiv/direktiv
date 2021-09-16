@@ -80,7 +80,6 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
 	go get entgo.io/ent
-	go generate ./ent
 	go generate ./pkg/flow/ent
 	go generate ./pkg/secrets/ent/schema
 
