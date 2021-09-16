@@ -99,6 +99,8 @@ type FlowClient interface {
 	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
+	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type flowClient struct {
@@ -1387,6 +1389,24 @@ func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOpt
 	return out, nil
 }
 
+func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.Flow/CreateNodeAttributes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteNodeAttributes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -1471,6 +1491,8 @@ type FlowServer interface {
 	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*empty.Empty, error)
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
+	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error)
+	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -1717,6 +1739,12 @@ func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameIn
 }
 func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
+}
+func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNodeAttributes not implemented")
+}
+func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNodeAttributes not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -3258,6 +3286,42 @@ func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_CreateNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNodeAttributesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).CreateNodeAttributes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.Flow/CreateNodeAttributes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).CreateNodeAttributes(ctx, req.(*CreateNodeAttributesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_DeleteNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteNodeAttributesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteNodeAttributes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.Flow/DeleteNodeAttributes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteNodeAttributes(ctx, req.(*DeleteNodeAttributesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3488,6 +3552,14 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "JQ",
 			Handler:    _Flow_JQ_Handler,
+		},
+		{
+			MethodName: "CreateNodeAttributes",
+			Handler:    _Flow_CreateNodeAttributes_Handler,
+		},
+		{
+			MethodName: "DeleteNodeAttributes",
+			Handler:    _Flow_DeleteNodeAttributes_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

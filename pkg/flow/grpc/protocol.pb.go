@@ -53,7 +53,7 @@ var file_pkg_flow_grpc_protocol_proto_rawDesc = []byte{
 	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x63, 0x6c, 0x6f, 0x75,
 	0x64, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x70, 0x6b,
 	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x75, 0x74, 0x69, 0x6c,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xb7, 0x3e, 0x0a, 0x04, 0x46, 0x6c, 0x6f, 0x77, 0x12,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xe1, 0x3f, 0x0a, 0x04, 0x46, 0x6c, 0x6f, 0x77, 0x12,
 	0x3e, 0x0a, 0x09, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x16, 0x2e, 0x67,
 	0x72, 0x70, 0x63, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x4e, 0x61, 0x6d, 0x65,
@@ -553,57 +553,67 @@ var file_pkg_flow_grpc_protocol_proto_rawDesc = []byte{
 	0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x29, 0x0a, 0x02, 0x4a, 0x51, 0x12, 0x0f, 0x2e, 0x67, 0x72,
 	0x70, 0x63, 0x2e, 0x4a, 0x51, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x10, 0x2e, 0x67,
 	0x72, 0x70, 0x63, 0x2e, 0x4a, 0x51, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
-	0x32, 0xed, 0x05, 0x0a, 0x08, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x12, 0x51, 0x0a,
-	0x13, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73,
-	0x75, 0x6c, 0x74, 0x73, 0x12, 0x20, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x52, 0x65, 0x70, 0x6f,
-	0x72, 0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00,
-	0x12, 0x3d, 0x0a, 0x09, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x6f, 0x67, 0x12, 0x16, 0x2e,
-	0x67, 0x72, 0x70, 0x63, 0x2e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x6f, 0x67, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12,
-	0x5d, 0x0a, 0x18, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69,
-	0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x1d, 0x2e, 0x67, 0x72,
-	0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72,
-	0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x67, 0x72, 0x70,
-	0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e,
-	0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01, 0x12, 0x66,
-	0x0a, 0x1b, 0x53, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x56, 0x61,
-	0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x20, 0x2e,
-	0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65,
-	0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x21, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62,
-	0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x5c, 0x0a, 0x17, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c,
-	0x6f, 0x77, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c,
-	0x73, 0x12, 0x1d, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c,
-	0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x1e, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65,
-	0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x00, 0x30, 0x01, 0x12, 0x65, 0x0a, 0x1a, 0x53, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x66,
-	0x6c, 0x6f, 0x77, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65,
-	0x6c, 0x73, 0x12, 0x20, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72,
+	0x12, 0x53, 0x0a, 0x14, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x74,
+	0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x12, 0x21, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62,
+	0x75, 0x74, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f,
+	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d,
+	0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x53, 0x0a, 0x14, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4e,
+	0x6f, 0x64, 0x65, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x12, 0x21, 0x2e,
+	0x67, 0x72, 0x70, 0x63, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41,
+	0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x32, 0xed, 0x05, 0x0a, 0x08, 0x49,
+	0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x12, 0x51, 0x0a, 0x13, 0x52, 0x65, 0x70, 0x6f, 0x72,
+	0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x12, 0x20,
+	0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x41, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x3d, 0x0a, 0x09, 0x41, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x6f, 0x67, 0x12, 0x16, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x41,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x6f, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x5d, 0x0a, 0x18, 0x4e, 0x61, 0x6d,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61,
+	0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x1d, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72,
 	0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56,
-	0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x5c, 0x0a, 0x17, 0x49,
-	0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50,
-	0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x1d, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61,
-	0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72,
-	0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01, 0x12, 0x65, 0x0a, 0x1a, 0x53, 0x65, 0x74,
-	0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69,
+	0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01, 0x12, 0x66, 0x0a, 0x1b, 0x53, 0x65, 0x74, 0x4e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65,
 	0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x20, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53,
 	0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e,
 	0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x67, 0x72, 0x70, 0x63,
 	0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65,
 	0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01,
-	0x42, 0x2b, 0x5a, 0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76,
-	0x6f, 0x72, 0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f,
-	0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x12, 0x5c, 0x0a, 0x17, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x56, 0x61, 0x72, 0x69,
+	0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x1d, 0x2e, 0x67, 0x72,
+	0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72,
+	0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x67, 0x72, 0x70,
+	0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e,
+	0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01, 0x12, 0x65,
+	0x0a, 0x1a, 0x53, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x56, 0x61, 0x72,
+	0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x20, 0x2e, 0x67,
+	0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49,
+	0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21,
+	0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c,
+	0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x5c, 0x0a, 0x17, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63,
+	0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73,
+	0x12, 0x1d, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65,
+	0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x1e, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49,
+	0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x30, 0x01, 0x12, 0x65, 0x0a, 0x1a, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e,
+	0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c,
+	0x73, 0x12, 0x20, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69,
+	0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61,
+	0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x42, 0x2b, 0x5a, 0x29, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x6f, 0x72, 0x74, 0x65, 0x69, 0x6c,
+	0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c,
+	0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_pkg_flow_grpc_protocol_proto_goTypes = []interface{}{
@@ -664,58 +674,60 @@ var file_pkg_flow_grpc_protocol_proto_goTypes = []interface{}{
 	(*DeleteInstanceVariableRequest)(nil),   // 54: grpc.DeleteInstanceVariableRequest
 	(*RenameInstanceVariableRequest)(nil),   // 55: grpc.RenameInstanceVariableRequest
 	(*JQRequest)(nil),                       // 56: grpc.JQRequest
-	(*ReportActionResultsRequest)(nil),      // 57: grpc.ReportActionResultsRequest
-	(*ActionLogRequest)(nil),                // 58: grpc.ActionLogRequest
-	(*VariableInternalRequest)(nil),         // 59: grpc.VariableInternalRequest
-	(*SetVariableInternalRequest)(nil),      // 60: grpc.SetVariableInternalRequest
-	(*NamespaceResponse)(nil),               // 61: grpc.NamespaceResponse
-	(*NamespacesResponse)(nil),              // 62: grpc.NamespacesResponse
-	(*CreateNamespaceResponse)(nil),         // 63: grpc.CreateNamespaceResponse
-	(*empty.Empty)(nil),                     // 64: google.protobuf.Empty
-	(*RenameNamespaceResponse)(nil),         // 65: grpc.RenameNamespaceResponse
-	(*ServerLogsResponse)(nil),              // 66: grpc.ServerLogsResponse
-	(*NamespaceLogsResponse)(nil),           // 67: grpc.NamespaceLogsResponse
-	(*WorkflowLogsResponse)(nil),            // 68: grpc.WorkflowLogsResponse
-	(*DirectoryResponse)(nil),               // 69: grpc.DirectoryResponse
-	(*CreateDirectoryResponse)(nil),         // 70: grpc.CreateDirectoryResponse
-	(*RenameNodeResponse)(nil),              // 71: grpc.RenameNodeResponse
-	(*NodeResponse)(nil),                    // 72: grpc.NodeResponse
-	(*WorkflowResponse)(nil),                // 73: grpc.WorkflowResponse
-	(*CreateWorkflowResponse)(nil),          // 74: grpc.CreateWorkflowResponse
-	(*UpdateWorkflowResponse)(nil),          // 75: grpc.UpdateWorkflowResponse
-	(*SaveHeadResponse)(nil),                // 76: grpc.SaveHeadResponse
-	(*DiscardHeadResponse)(nil),             // 77: grpc.DiscardHeadResponse
-	(*TagsResponse)(nil),                    // 78: grpc.TagsResponse
-	(*RefsResponse)(nil),                    // 79: grpc.RefsResponse
-	(*RevisionsResponse)(nil),               // 80: grpc.RevisionsResponse
-	(*RouterResponse)(nil),                  // 81: grpc.RouterResponse
-	(*EditRouterResponse)(nil),              // 82: grpc.EditRouterResponse
-	(*ValidateRefResponse)(nil),             // 83: grpc.ValidateRefResponse
-	(*ValidateRouterResponse)(nil),          // 84: grpc.ValidateRouterResponse
-	(*SecretsResponse)(nil),                 // 85: grpc.SecretsResponse
-	(*SetSecretResponse)(nil),               // 86: grpc.SetSecretResponse
-	(*InstanceResponse)(nil),                // 87: grpc.InstanceResponse
-	(*InstancesResponse)(nil),               // 88: grpc.InstancesResponse
-	(*InstanceInputResponse)(nil),           // 89: grpc.InstanceInputResponse
-	(*InstanceOutputResponse)(nil),          // 90: grpc.InstanceOutputResponse
-	(*InstanceLogsResponse)(nil),            // 91: grpc.InstanceLogsResponse
-	(*StartWorkflowResponse)(nil),           // 92: grpc.StartWorkflowResponse
-	(*RunWorkflowResponse)(nil),             // 93: grpc.RunWorkflowResponse
-	(*NamespaceVariableResponse)(nil),       // 94: grpc.NamespaceVariableResponse
-	(*NamespaceVariablesResponse)(nil),      // 95: grpc.NamespaceVariablesResponse
-	(*SetNamespaceVariableResponse)(nil),    // 96: grpc.SetNamespaceVariableResponse
-	(*RenameNamespaceVariableResponse)(nil), // 97: grpc.RenameNamespaceVariableResponse
-	(*WorkflowVariableResponse)(nil),        // 98: grpc.WorkflowVariableResponse
-	(*WorkflowVariablesResponse)(nil),       // 99: grpc.WorkflowVariablesResponse
-	(*SetWorkflowVariableResponse)(nil),     // 100: grpc.SetWorkflowVariableResponse
-	(*RenameWorkflowVariableResponse)(nil),  // 101: grpc.RenameWorkflowVariableResponse
-	(*InstanceVariableResponse)(nil),        // 102: grpc.InstanceVariableResponse
-	(*InstanceVariablesResponse)(nil),       // 103: grpc.InstanceVariablesResponse
-	(*SetInstanceVariableResponse)(nil),     // 104: grpc.SetInstanceVariableResponse
-	(*RenameInstanceVariableResponse)(nil),  // 105: grpc.RenameInstanceVariableResponse
-	(*JQResponse)(nil),                      // 106: grpc.JQResponse
-	(*VariableInternalResponse)(nil),        // 107: grpc.VariableInternalResponse
-	(*SetVariableInternalResponse)(nil),     // 108: grpc.SetVariableInternalResponse
+	(*CreateNodeAttributesRequest)(nil),     // 57: grpc.CreateNodeAttributesRequest
+	(*DeleteNodeAttributesRequest)(nil),     // 58: grpc.DeleteNodeAttributesRequest
+	(*ReportActionResultsRequest)(nil),      // 59: grpc.ReportActionResultsRequest
+	(*ActionLogRequest)(nil),                // 60: grpc.ActionLogRequest
+	(*VariableInternalRequest)(nil),         // 61: grpc.VariableInternalRequest
+	(*SetVariableInternalRequest)(nil),      // 62: grpc.SetVariableInternalRequest
+	(*NamespaceResponse)(nil),               // 63: grpc.NamespaceResponse
+	(*NamespacesResponse)(nil),              // 64: grpc.NamespacesResponse
+	(*CreateNamespaceResponse)(nil),         // 65: grpc.CreateNamespaceResponse
+	(*empty.Empty)(nil),                     // 66: google.protobuf.Empty
+	(*RenameNamespaceResponse)(nil),         // 67: grpc.RenameNamespaceResponse
+	(*ServerLogsResponse)(nil),              // 68: grpc.ServerLogsResponse
+	(*NamespaceLogsResponse)(nil),           // 69: grpc.NamespaceLogsResponse
+	(*WorkflowLogsResponse)(nil),            // 70: grpc.WorkflowLogsResponse
+	(*DirectoryResponse)(nil),               // 71: grpc.DirectoryResponse
+	(*CreateDirectoryResponse)(nil),         // 72: grpc.CreateDirectoryResponse
+	(*RenameNodeResponse)(nil),              // 73: grpc.RenameNodeResponse
+	(*NodeResponse)(nil),                    // 74: grpc.NodeResponse
+	(*WorkflowResponse)(nil),                // 75: grpc.WorkflowResponse
+	(*CreateWorkflowResponse)(nil),          // 76: grpc.CreateWorkflowResponse
+	(*UpdateWorkflowResponse)(nil),          // 77: grpc.UpdateWorkflowResponse
+	(*SaveHeadResponse)(nil),                // 78: grpc.SaveHeadResponse
+	(*DiscardHeadResponse)(nil),             // 79: grpc.DiscardHeadResponse
+	(*TagsResponse)(nil),                    // 80: grpc.TagsResponse
+	(*RefsResponse)(nil),                    // 81: grpc.RefsResponse
+	(*RevisionsResponse)(nil),               // 82: grpc.RevisionsResponse
+	(*RouterResponse)(nil),                  // 83: grpc.RouterResponse
+	(*EditRouterResponse)(nil),              // 84: grpc.EditRouterResponse
+	(*ValidateRefResponse)(nil),             // 85: grpc.ValidateRefResponse
+	(*ValidateRouterResponse)(nil),          // 86: grpc.ValidateRouterResponse
+	(*SecretsResponse)(nil),                 // 87: grpc.SecretsResponse
+	(*SetSecretResponse)(nil),               // 88: grpc.SetSecretResponse
+	(*InstanceResponse)(nil),                // 89: grpc.InstanceResponse
+	(*InstancesResponse)(nil),               // 90: grpc.InstancesResponse
+	(*InstanceInputResponse)(nil),           // 91: grpc.InstanceInputResponse
+	(*InstanceOutputResponse)(nil),          // 92: grpc.InstanceOutputResponse
+	(*InstanceLogsResponse)(nil),            // 93: grpc.InstanceLogsResponse
+	(*StartWorkflowResponse)(nil),           // 94: grpc.StartWorkflowResponse
+	(*RunWorkflowResponse)(nil),             // 95: grpc.RunWorkflowResponse
+	(*NamespaceVariableResponse)(nil),       // 96: grpc.NamespaceVariableResponse
+	(*NamespaceVariablesResponse)(nil),      // 97: grpc.NamespaceVariablesResponse
+	(*SetNamespaceVariableResponse)(nil),    // 98: grpc.SetNamespaceVariableResponse
+	(*RenameNamespaceVariableResponse)(nil), // 99: grpc.RenameNamespaceVariableResponse
+	(*WorkflowVariableResponse)(nil),        // 100: grpc.WorkflowVariableResponse
+	(*WorkflowVariablesResponse)(nil),       // 101: grpc.WorkflowVariablesResponse
+	(*SetWorkflowVariableResponse)(nil),     // 102: grpc.SetWorkflowVariableResponse
+	(*RenameWorkflowVariableResponse)(nil),  // 103: grpc.RenameWorkflowVariableResponse
+	(*InstanceVariableResponse)(nil),        // 104: grpc.InstanceVariableResponse
+	(*InstanceVariablesResponse)(nil),       // 105: grpc.InstanceVariablesResponse
+	(*SetInstanceVariableResponse)(nil),     // 106: grpc.SetInstanceVariableResponse
+	(*RenameInstanceVariableResponse)(nil),  // 107: grpc.RenameInstanceVariableResponse
+	(*JQResponse)(nil),                      // 108: grpc.JQResponse
+	(*VariableInternalResponse)(nil),        // 109: grpc.VariableInternalResponse
+	(*SetVariableInternalResponse)(nil),     // 110: grpc.SetVariableInternalResponse
 }
 var file_pkg_flow_grpc_protocol_proto_depIdxs = []int32{
 	0,   // 0: grpc.Flow.Namespace:input_type -> grpc.NamespaceRequest
@@ -798,104 +810,108 @@ var file_pkg_flow_grpc_protocol_proto_depIdxs = []int32{
 	54,  // 77: grpc.Flow.DeleteInstanceVariable:input_type -> grpc.DeleteInstanceVariableRequest
 	55,  // 78: grpc.Flow.RenameInstanceVariable:input_type -> grpc.RenameInstanceVariableRequest
 	56,  // 79: grpc.Flow.JQ:input_type -> grpc.JQRequest
-	57,  // 80: grpc.Internal.ReportActionResults:input_type -> grpc.ReportActionResultsRequest
-	58,  // 81: grpc.Internal.ActionLog:input_type -> grpc.ActionLogRequest
-	59,  // 82: grpc.Internal.NamespaceVariableParcels:input_type -> grpc.VariableInternalRequest
-	60,  // 83: grpc.Internal.SetNamespaceVariableParcels:input_type -> grpc.SetVariableInternalRequest
-	59,  // 84: grpc.Internal.WorkflowVariableParcels:input_type -> grpc.VariableInternalRequest
-	60,  // 85: grpc.Internal.SetWorkflowVariableParcels:input_type -> grpc.SetVariableInternalRequest
-	59,  // 86: grpc.Internal.InstanceVariableParcels:input_type -> grpc.VariableInternalRequest
-	60,  // 87: grpc.Internal.SetInstanceVariableParcels:input_type -> grpc.SetVariableInternalRequest
-	61,  // 88: grpc.Flow.Namespace:output_type -> grpc.NamespaceResponse
-	62,  // 89: grpc.Flow.Namespaces:output_type -> grpc.NamespacesResponse
-	62,  // 90: grpc.Flow.NamespacesStream:output_type -> grpc.NamespacesResponse
-	63,  // 91: grpc.Flow.CreateNamespace:output_type -> grpc.CreateNamespaceResponse
-	64,  // 92: grpc.Flow.DeleteNamespace:output_type -> google.protobuf.Empty
-	65,  // 93: grpc.Flow.RenameNamespace:output_type -> grpc.RenameNamespaceResponse
-	66,  // 94: grpc.Flow.ServerLogs:output_type -> grpc.ServerLogsResponse
-	66,  // 95: grpc.Flow.ServerLogsParcels:output_type -> grpc.ServerLogsResponse
-	67,  // 96: grpc.Flow.NamespaceLogs:output_type -> grpc.NamespaceLogsResponse
-	67,  // 97: grpc.Flow.NamespaceLogsParcels:output_type -> grpc.NamespaceLogsResponse
-	68,  // 98: grpc.Flow.WorkflowLogs:output_type -> grpc.WorkflowLogsResponse
-	68,  // 99: grpc.Flow.WorkflowLogsParcels:output_type -> grpc.WorkflowLogsResponse
-	69,  // 100: grpc.Flow.Directory:output_type -> grpc.DirectoryResponse
-	69,  // 101: grpc.Flow.DirectoryStream:output_type -> grpc.DirectoryResponse
-	70,  // 102: grpc.Flow.CreateDirectory:output_type -> grpc.CreateDirectoryResponse
-	64,  // 103: grpc.Flow.DeleteNode:output_type -> google.protobuf.Empty
-	71,  // 104: grpc.Flow.RenameNode:output_type -> grpc.RenameNodeResponse
-	72,  // 105: grpc.Flow.Node:output_type -> grpc.NodeResponse
-	73,  // 106: grpc.Flow.Workflow:output_type -> grpc.WorkflowResponse
-	73,  // 107: grpc.Flow.WorkflowStream:output_type -> grpc.WorkflowResponse
-	74,  // 108: grpc.Flow.CreateWorkflow:output_type -> grpc.CreateWorkflowResponse
-	75,  // 109: grpc.Flow.UpdateWorkflow:output_type -> grpc.UpdateWorkflowResponse
-	76,  // 110: grpc.Flow.SaveHead:output_type -> grpc.SaveHeadResponse
-	77,  // 111: grpc.Flow.DiscardHead:output_type -> grpc.DiscardHeadResponse
-	78,  // 112: grpc.Flow.Tags:output_type -> grpc.TagsResponse
-	78,  // 113: grpc.Flow.TagsStream:output_type -> grpc.TagsResponse
-	79,  // 114: grpc.Flow.Refs:output_type -> grpc.RefsResponse
-	79,  // 115: grpc.Flow.RefsStream:output_type -> grpc.RefsResponse
-	80,  // 116: grpc.Flow.Revisions:output_type -> grpc.RevisionsResponse
-	80,  // 117: grpc.Flow.RevisionsStream:output_type -> grpc.RevisionsResponse
-	64,  // 118: grpc.Flow.DeleteRevision:output_type -> google.protobuf.Empty
-	64,  // 119: grpc.Flow.Tag:output_type -> google.protobuf.Empty
-	64,  // 120: grpc.Flow.Untag:output_type -> google.protobuf.Empty
-	64,  // 121: grpc.Flow.Retag:output_type -> google.protobuf.Empty
-	81,  // 122: grpc.Flow.Router:output_type -> grpc.RouterResponse
-	81,  // 123: grpc.Flow.RouterStream:output_type -> grpc.RouterResponse
-	82,  // 124: grpc.Flow.EditRouter:output_type -> grpc.EditRouterResponse
-	83,  // 125: grpc.Flow.ValidateRef:output_type -> grpc.ValidateRefResponse
-	84,  // 126: grpc.Flow.ValidateRouter:output_type -> grpc.ValidateRouterResponse
-	85,  // 127: grpc.Flow.Secrets:output_type -> grpc.SecretsResponse
-	85,  // 128: grpc.Flow.SecretsStream:output_type -> grpc.SecretsResponse
-	86,  // 129: grpc.Flow.SetSecret:output_type -> grpc.SetSecretResponse
-	64,  // 130: grpc.Flow.DeleteSecret:output_type -> google.protobuf.Empty
-	87,  // 131: grpc.Flow.Instance:output_type -> grpc.InstanceResponse
-	87,  // 132: grpc.Flow.InstanceStream:output_type -> grpc.InstanceResponse
-	88,  // 133: grpc.Flow.Instances:output_type -> grpc.InstancesResponse
-	88,  // 134: grpc.Flow.InstancesStream:output_type -> grpc.InstancesResponse
-	89,  // 135: grpc.Flow.InstanceInput:output_type -> grpc.InstanceInputResponse
-	90,  // 136: grpc.Flow.InstanceOutput:output_type -> grpc.InstanceOutputResponse
-	91,  // 137: grpc.Flow.InstanceLogs:output_type -> grpc.InstanceLogsResponse
-	91,  // 138: grpc.Flow.InstanceLogsParcels:output_type -> grpc.InstanceLogsResponse
-	92,  // 139: grpc.Flow.StartWorkflow:output_type -> grpc.StartWorkflowResponse
-	93,  // 140: grpc.Flow.RunWorkflow:output_type -> grpc.RunWorkflowResponse
-	64,  // 141: grpc.Flow.CancelInstance:output_type -> google.protobuf.Empty
-	64,  // 142: grpc.Flow.BroadcastCloudevent:output_type -> google.protobuf.Empty
-	94,  // 143: grpc.Flow.NamespaceVariable:output_type -> grpc.NamespaceVariableResponse
-	94,  // 144: grpc.Flow.NamespaceVariableParcels:output_type -> grpc.NamespaceVariableResponse
-	95,  // 145: grpc.Flow.NamespaceVariables:output_type -> grpc.NamespaceVariablesResponse
-	95,  // 146: grpc.Flow.NamespaceVariablesStream:output_type -> grpc.NamespaceVariablesResponse
-	96,  // 147: grpc.Flow.SetNamespaceVariable:output_type -> grpc.SetNamespaceVariableResponse
-	96,  // 148: grpc.Flow.SetNamespaceVariableParcels:output_type -> grpc.SetNamespaceVariableResponse
-	64,  // 149: grpc.Flow.DeleteNamespaceVariable:output_type -> google.protobuf.Empty
-	97,  // 150: grpc.Flow.RenameNamespaceVariable:output_type -> grpc.RenameNamespaceVariableResponse
-	98,  // 151: grpc.Flow.WorkflowVariable:output_type -> grpc.WorkflowVariableResponse
-	98,  // 152: grpc.Flow.WorkflowVariableParcels:output_type -> grpc.WorkflowVariableResponse
-	99,  // 153: grpc.Flow.WorkflowVariables:output_type -> grpc.WorkflowVariablesResponse
-	99,  // 154: grpc.Flow.WorkflowVariablesStream:output_type -> grpc.WorkflowVariablesResponse
-	100, // 155: grpc.Flow.SetWorkflowVariable:output_type -> grpc.SetWorkflowVariableResponse
-	100, // 156: grpc.Flow.SetWorkflowVariableParcels:output_type -> grpc.SetWorkflowVariableResponse
-	64,  // 157: grpc.Flow.DeleteWorkflowVariable:output_type -> google.protobuf.Empty
-	101, // 158: grpc.Flow.RenameWorkflowVariable:output_type -> grpc.RenameWorkflowVariableResponse
-	102, // 159: grpc.Flow.InstanceVariable:output_type -> grpc.InstanceVariableResponse
-	102, // 160: grpc.Flow.InstanceVariableParcels:output_type -> grpc.InstanceVariableResponse
-	103, // 161: grpc.Flow.InstanceVariables:output_type -> grpc.InstanceVariablesResponse
-	103, // 162: grpc.Flow.InstanceVariablesStream:output_type -> grpc.InstanceVariablesResponse
-	104, // 163: grpc.Flow.SetInstanceVariable:output_type -> grpc.SetInstanceVariableResponse
-	104, // 164: grpc.Flow.SetInstanceVariableParcels:output_type -> grpc.SetInstanceVariableResponse
-	64,  // 165: grpc.Flow.DeleteInstanceVariable:output_type -> google.protobuf.Empty
-	105, // 166: grpc.Flow.RenameInstanceVariable:output_type -> grpc.RenameInstanceVariableResponse
-	106, // 167: grpc.Flow.JQ:output_type -> grpc.JQResponse
-	64,  // 168: grpc.Internal.ReportActionResults:output_type -> google.protobuf.Empty
-	64,  // 169: grpc.Internal.ActionLog:output_type -> google.protobuf.Empty
-	107, // 170: grpc.Internal.NamespaceVariableParcels:output_type -> grpc.VariableInternalResponse
-	108, // 171: grpc.Internal.SetNamespaceVariableParcels:output_type -> grpc.SetVariableInternalResponse
-	107, // 172: grpc.Internal.WorkflowVariableParcels:output_type -> grpc.VariableInternalResponse
-	108, // 173: grpc.Internal.SetWorkflowVariableParcels:output_type -> grpc.SetVariableInternalResponse
-	107, // 174: grpc.Internal.InstanceVariableParcels:output_type -> grpc.VariableInternalResponse
-	108, // 175: grpc.Internal.SetInstanceVariableParcels:output_type -> grpc.SetVariableInternalResponse
-	88,  // [88:176] is the sub-list for method output_type
-	0,   // [0:88] is the sub-list for method input_type
+	57,  // 80: grpc.Flow.CreateNodeAttributes:input_type -> grpc.CreateNodeAttributesRequest
+	58,  // 81: grpc.Flow.DeleteNodeAttributes:input_type -> grpc.DeleteNodeAttributesRequest
+	59,  // 82: grpc.Internal.ReportActionResults:input_type -> grpc.ReportActionResultsRequest
+	60,  // 83: grpc.Internal.ActionLog:input_type -> grpc.ActionLogRequest
+	61,  // 84: grpc.Internal.NamespaceVariableParcels:input_type -> grpc.VariableInternalRequest
+	62,  // 85: grpc.Internal.SetNamespaceVariableParcels:input_type -> grpc.SetVariableInternalRequest
+	61,  // 86: grpc.Internal.WorkflowVariableParcels:input_type -> grpc.VariableInternalRequest
+	62,  // 87: grpc.Internal.SetWorkflowVariableParcels:input_type -> grpc.SetVariableInternalRequest
+	61,  // 88: grpc.Internal.InstanceVariableParcels:input_type -> grpc.VariableInternalRequest
+	62,  // 89: grpc.Internal.SetInstanceVariableParcels:input_type -> grpc.SetVariableInternalRequest
+	63,  // 90: grpc.Flow.Namespace:output_type -> grpc.NamespaceResponse
+	64,  // 91: grpc.Flow.Namespaces:output_type -> grpc.NamespacesResponse
+	64,  // 92: grpc.Flow.NamespacesStream:output_type -> grpc.NamespacesResponse
+	65,  // 93: grpc.Flow.CreateNamespace:output_type -> grpc.CreateNamespaceResponse
+	66,  // 94: grpc.Flow.DeleteNamespace:output_type -> google.protobuf.Empty
+	67,  // 95: grpc.Flow.RenameNamespace:output_type -> grpc.RenameNamespaceResponse
+	68,  // 96: grpc.Flow.ServerLogs:output_type -> grpc.ServerLogsResponse
+	68,  // 97: grpc.Flow.ServerLogsParcels:output_type -> grpc.ServerLogsResponse
+	69,  // 98: grpc.Flow.NamespaceLogs:output_type -> grpc.NamespaceLogsResponse
+	69,  // 99: grpc.Flow.NamespaceLogsParcels:output_type -> grpc.NamespaceLogsResponse
+	70,  // 100: grpc.Flow.WorkflowLogs:output_type -> grpc.WorkflowLogsResponse
+	70,  // 101: grpc.Flow.WorkflowLogsParcels:output_type -> grpc.WorkflowLogsResponse
+	71,  // 102: grpc.Flow.Directory:output_type -> grpc.DirectoryResponse
+	71,  // 103: grpc.Flow.DirectoryStream:output_type -> grpc.DirectoryResponse
+	72,  // 104: grpc.Flow.CreateDirectory:output_type -> grpc.CreateDirectoryResponse
+	66,  // 105: grpc.Flow.DeleteNode:output_type -> google.protobuf.Empty
+	73,  // 106: grpc.Flow.RenameNode:output_type -> grpc.RenameNodeResponse
+	74,  // 107: grpc.Flow.Node:output_type -> grpc.NodeResponse
+	75,  // 108: grpc.Flow.Workflow:output_type -> grpc.WorkflowResponse
+	75,  // 109: grpc.Flow.WorkflowStream:output_type -> grpc.WorkflowResponse
+	76,  // 110: grpc.Flow.CreateWorkflow:output_type -> grpc.CreateWorkflowResponse
+	77,  // 111: grpc.Flow.UpdateWorkflow:output_type -> grpc.UpdateWorkflowResponse
+	78,  // 112: grpc.Flow.SaveHead:output_type -> grpc.SaveHeadResponse
+	79,  // 113: grpc.Flow.DiscardHead:output_type -> grpc.DiscardHeadResponse
+	80,  // 114: grpc.Flow.Tags:output_type -> grpc.TagsResponse
+	80,  // 115: grpc.Flow.TagsStream:output_type -> grpc.TagsResponse
+	81,  // 116: grpc.Flow.Refs:output_type -> grpc.RefsResponse
+	81,  // 117: grpc.Flow.RefsStream:output_type -> grpc.RefsResponse
+	82,  // 118: grpc.Flow.Revisions:output_type -> grpc.RevisionsResponse
+	82,  // 119: grpc.Flow.RevisionsStream:output_type -> grpc.RevisionsResponse
+	66,  // 120: grpc.Flow.DeleteRevision:output_type -> google.protobuf.Empty
+	66,  // 121: grpc.Flow.Tag:output_type -> google.protobuf.Empty
+	66,  // 122: grpc.Flow.Untag:output_type -> google.protobuf.Empty
+	66,  // 123: grpc.Flow.Retag:output_type -> google.protobuf.Empty
+	83,  // 124: grpc.Flow.Router:output_type -> grpc.RouterResponse
+	83,  // 125: grpc.Flow.RouterStream:output_type -> grpc.RouterResponse
+	84,  // 126: grpc.Flow.EditRouter:output_type -> grpc.EditRouterResponse
+	85,  // 127: grpc.Flow.ValidateRef:output_type -> grpc.ValidateRefResponse
+	86,  // 128: grpc.Flow.ValidateRouter:output_type -> grpc.ValidateRouterResponse
+	87,  // 129: grpc.Flow.Secrets:output_type -> grpc.SecretsResponse
+	87,  // 130: grpc.Flow.SecretsStream:output_type -> grpc.SecretsResponse
+	88,  // 131: grpc.Flow.SetSecret:output_type -> grpc.SetSecretResponse
+	66,  // 132: grpc.Flow.DeleteSecret:output_type -> google.protobuf.Empty
+	89,  // 133: grpc.Flow.Instance:output_type -> grpc.InstanceResponse
+	89,  // 134: grpc.Flow.InstanceStream:output_type -> grpc.InstanceResponse
+	90,  // 135: grpc.Flow.Instances:output_type -> grpc.InstancesResponse
+	90,  // 136: grpc.Flow.InstancesStream:output_type -> grpc.InstancesResponse
+	91,  // 137: grpc.Flow.InstanceInput:output_type -> grpc.InstanceInputResponse
+	92,  // 138: grpc.Flow.InstanceOutput:output_type -> grpc.InstanceOutputResponse
+	93,  // 139: grpc.Flow.InstanceLogs:output_type -> grpc.InstanceLogsResponse
+	93,  // 140: grpc.Flow.InstanceLogsParcels:output_type -> grpc.InstanceLogsResponse
+	94,  // 141: grpc.Flow.StartWorkflow:output_type -> grpc.StartWorkflowResponse
+	95,  // 142: grpc.Flow.RunWorkflow:output_type -> grpc.RunWorkflowResponse
+	66,  // 143: grpc.Flow.CancelInstance:output_type -> google.protobuf.Empty
+	66,  // 144: grpc.Flow.BroadcastCloudevent:output_type -> google.protobuf.Empty
+	96,  // 145: grpc.Flow.NamespaceVariable:output_type -> grpc.NamespaceVariableResponse
+	96,  // 146: grpc.Flow.NamespaceVariableParcels:output_type -> grpc.NamespaceVariableResponse
+	97,  // 147: grpc.Flow.NamespaceVariables:output_type -> grpc.NamespaceVariablesResponse
+	97,  // 148: grpc.Flow.NamespaceVariablesStream:output_type -> grpc.NamespaceVariablesResponse
+	98,  // 149: grpc.Flow.SetNamespaceVariable:output_type -> grpc.SetNamespaceVariableResponse
+	98,  // 150: grpc.Flow.SetNamespaceVariableParcels:output_type -> grpc.SetNamespaceVariableResponse
+	66,  // 151: grpc.Flow.DeleteNamespaceVariable:output_type -> google.protobuf.Empty
+	99,  // 152: grpc.Flow.RenameNamespaceVariable:output_type -> grpc.RenameNamespaceVariableResponse
+	100, // 153: grpc.Flow.WorkflowVariable:output_type -> grpc.WorkflowVariableResponse
+	100, // 154: grpc.Flow.WorkflowVariableParcels:output_type -> grpc.WorkflowVariableResponse
+	101, // 155: grpc.Flow.WorkflowVariables:output_type -> grpc.WorkflowVariablesResponse
+	101, // 156: grpc.Flow.WorkflowVariablesStream:output_type -> grpc.WorkflowVariablesResponse
+	102, // 157: grpc.Flow.SetWorkflowVariable:output_type -> grpc.SetWorkflowVariableResponse
+	102, // 158: grpc.Flow.SetWorkflowVariableParcels:output_type -> grpc.SetWorkflowVariableResponse
+	66,  // 159: grpc.Flow.DeleteWorkflowVariable:output_type -> google.protobuf.Empty
+	103, // 160: grpc.Flow.RenameWorkflowVariable:output_type -> grpc.RenameWorkflowVariableResponse
+	104, // 161: grpc.Flow.InstanceVariable:output_type -> grpc.InstanceVariableResponse
+	104, // 162: grpc.Flow.InstanceVariableParcels:output_type -> grpc.InstanceVariableResponse
+	105, // 163: grpc.Flow.InstanceVariables:output_type -> grpc.InstanceVariablesResponse
+	105, // 164: grpc.Flow.InstanceVariablesStream:output_type -> grpc.InstanceVariablesResponse
+	106, // 165: grpc.Flow.SetInstanceVariable:output_type -> grpc.SetInstanceVariableResponse
+	106, // 166: grpc.Flow.SetInstanceVariableParcels:output_type -> grpc.SetInstanceVariableResponse
+	66,  // 167: grpc.Flow.DeleteInstanceVariable:output_type -> google.protobuf.Empty
+	107, // 168: grpc.Flow.RenameInstanceVariable:output_type -> grpc.RenameInstanceVariableResponse
+	108, // 169: grpc.Flow.JQ:output_type -> grpc.JQResponse
+	66,  // 170: grpc.Flow.CreateNodeAttributes:output_type -> google.protobuf.Empty
+	66,  // 171: grpc.Flow.DeleteNodeAttributes:output_type -> google.protobuf.Empty
+	66,  // 172: grpc.Internal.ReportActionResults:output_type -> google.protobuf.Empty
+	66,  // 173: grpc.Internal.ActionLog:output_type -> google.protobuf.Empty
+	109, // 174: grpc.Internal.NamespaceVariableParcels:output_type -> grpc.VariableInternalResponse
+	110, // 175: grpc.Internal.SetNamespaceVariableParcels:output_type -> grpc.SetVariableInternalResponse
+	109, // 176: grpc.Internal.WorkflowVariableParcels:output_type -> grpc.VariableInternalResponse
+	110, // 177: grpc.Internal.SetWorkflowVariableParcels:output_type -> grpc.SetVariableInternalResponse
+	109, // 178: grpc.Internal.InstanceVariableParcels:output_type -> grpc.VariableInternalResponse
+	110, // 179: grpc.Internal.SetInstanceVariableParcels:output_type -> grpc.SetVariableInternalResponse
+	90,  // [90:180] is the sub-list for method output_type
+	0,   // [0:90] is the sub-list for method input_type
 	0,   // [0:0] is the sub-list for extension type_name
 	0,   // [0:0] is the sub-list for extension extendee
 	0,   // [0:0] is the sub-list for field type_name
