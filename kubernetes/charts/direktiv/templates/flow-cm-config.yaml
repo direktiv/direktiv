@@ -10,7 +10,8 @@ data:
 
       # protocol used to access functions
       functions-protocol: {{ .Values.flow.functionsProtocol }}
-      database: 'host=192.168.1.60 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable'
+      database: 'host=direktiv-support.default port=5432 user=direktiv password=direktivdirektiv dbname=postgres sslmode=disable'
+      # database: 'host=192.168.1.60 port=5432 user=sisatech dbname=postgres password=sisatech sslmode=disable'
 
       # ingress -> bind_flow
       # flow -> bind_internal
