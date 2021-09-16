@@ -71,3 +71,5 @@ kubernetes/charts/knative/Chart.lock
 
 kubernetes/charts/direktiv/charts
 kubernetes/charts/direktiv/Chart.lock
+
+scripts/wip/kong/proto

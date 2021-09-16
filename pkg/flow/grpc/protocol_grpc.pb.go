@@ -3584,7 +3584,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InternalClient interface {
 	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
@@ -3823,7 +3822,6 @@ func (x *internalSetInstanceVariableParcelsClient) CloseAndRecv() (*SetVariableI
 // for forward compatibility
 type InternalServer interface {
 	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
 	NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error
 	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error
