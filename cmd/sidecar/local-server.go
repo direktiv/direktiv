@@ -14,12 +14,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/direktiv"
 	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -28,7 +25,7 @@ const (
 
 type LocalServer struct {
 	end     func()
-	flow    flow.DirektivFlowClient
+	flow    grpc.InternalClient
 	queue   chan *inboundRequest
 	router  *mux.Router
 	stopper chan *time.Time
@@ -46,7 +43,7 @@ func (srv *LocalServer) initFlow() error {
 		return err
 	}
 
-	srv.flow = flow.NewDirektivFlowClient(conn)
+	srv.flow = grpc.NewInternalClient(conn)
 
 	return nil
 
@@ -58,8 +55,8 @@ func (srv *LocalServer) initPubSub() error {
 
 	log.Infof("Connecting to pub/sub service.")
 
-	err := direktiv.SyncSubscribeTo(addr,
-		direktiv.CancelFunction, srv.handlePubSubCancel)
+	err := flow.SyncSubscribeTo(logger, addr,
+		flow.CancelActionMessage, srv.handlePubSubCancel)
 	if err != nil {
 		return err
 	}
@@ -75,6 +72,7 @@ func (srv *LocalServer) handlePubSubCancel(in interface{}) {
 		log.Errorf("cancel data %v not valid", in)
 		return
 	}
+
 	log.Infof("cancelling function %v", actionId)
 
 	// TODO: do we need to find a better way to cancel requests that come late off the queue?
@@ -212,8 +210,8 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := srv.flow.ActionLog(req.ctx, &flow.ActionLogRequest{
-		InstanceId: &req.instanceId,
+	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
+		InstanceId: req.instanceId,
 		Msg:        []string{msg},
 	})
 	if err != nil {
@@ -434,8 +432,7 @@ type varClient interface {
 
 type varClientMsg interface {
 	GetTotalSize() int64
-	GetChunkSize() int64
-	GetValue() []byte
+	GetData() []byte
 }
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
@@ -447,10 +444,10 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 	switch scope {
 
 	case "namespace":
-		var nvClient flow.DirektivFlow_GetNamespaceVariableClient
-		nvClient, err = srv.flow.GetNamespaceVariable(ctx, &flow.GetNamespaceVariableRequest{
-			InstanceId: &ir.instanceId,
-			Key:        &key,
+		var nvClient grpc.Internal_NamespaceVariableParcelsClient
+		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: ir.instanceId,
+			Key:      key,
 		})
 		client = nvClient
 		recv = func() (varClientMsg, error) {
@@ -458,10 +455,10 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 		}
 
 	case "workflow":
-		var wvClient flow.DirektivFlow_GetWorkflowVariableClient
-		wvClient, err = srv.flow.GetWorkflowVariable(ctx, &flow.GetWorkflowVariableRequest{
-			InstanceId: &ir.instanceId,
-			Key:        &key,
+		var wvClient grpc.Internal_WorkflowVariableParcelsClient
+		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: ir.instanceId,
+			Key:      key,
 		})
 		client = wvClient
 		recv = func() (varClientMsg, error) {
@@ -472,10 +469,10 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 		fallthrough
 
 	case "instance":
-		var ivClient flow.DirektivFlow_GetInstanceVariableClient
-		ivClient, err = srv.flow.GetInstanceVariable(ctx, &flow.GetInstanceVariableRequest{
-			InstanceId: &ir.instanceId,
-			Key:        &key,
+		var ivClient grpc.Internal_InstanceVariableParcelsClient
+		ivClient, err = srv.flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: ir.instanceId,
+			Key:      key,
 		})
 		client = ivClient
 		recv = func() (varClientMsg, error) {
@@ -491,15 +488,14 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 }
 
 type varSetClient interface {
-	CloseAndRecv() (*emptypb.Empty, error)
+	CloseAndRecv() (*grpc.SetVariableInternalResponse, error)
 }
 
 type varSetClientMsg struct {
-	Key        *string
-	InstanceId *string
-	Value      []byte
-	TotalSize  *int64
-	ChunkSize  *int64
+	Key       string
+	Instance  string
+	Value     []byte
+	TotalSize int64
 }
 
 func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key string) error {
@@ -515,30 +511,28 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	switch scope {
 
 	case "namespace":
-		var nvClient flow.DirektivFlow_SetNamespaceVariableClient
-		nvClient, err = srv.flow.SetNamespaceVariable(ctx)
+		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
+		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
 		client = nvClient
 		send = func(x *varSetClientMsg) error {
-			req := &flow.SetNamespaceVariableRequest{}
+			req := &grpc.SetVariableInternalRequest{}
 			req.Key = x.Key
-			req.InstanceId = x.InstanceId
+			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
-			req.Value = x.Value
-			req.ChunkSize = x.ChunkSize
+			req.Data = x.Value
 			return nvClient.Send(req)
 		}
 
 	case "workflow":
-		var wvClient flow.DirektivFlow_SetWorkflowVariableClient
-		wvClient, err = srv.flow.SetWorkflowVariable(ctx)
+		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
+		wvClient, err = srv.flow.SetWorkflowVariableParcels(ctx)
 		client = wvClient
 		send = func(x *varSetClientMsg) error {
-			req := &flow.SetWorkflowVariableRequest{}
+			req := &grpc.SetVariableInternalRequest{}
 			req.Key = x.Key
-			req.InstanceId = x.InstanceId
+			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
-			req.Value = x.Value
-			req.ChunkSize = x.ChunkSize
+			req.Data = x.Value
 			return wvClient.Send(req)
 		}
 
@@ -546,16 +540,15 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 		fallthrough
 
 	case "instance":
-		var ivClient flow.DirektivFlow_SetInstanceVariableClient
-		ivClient, err = srv.flow.SetInstanceVariable(ctx)
+		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
+		ivClient, err = srv.flow.SetInstanceVariableParcels(ctx)
 		client = ivClient
 		send = func(x *varSetClientMsg) error {
-			req := &flow.SetInstanceVariableRequest{}
+			req := &grpc.SetVariableInternalRequest{}
 			req.Key = x.Key
-			req.InstanceId = x.InstanceId
+			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
-			req.Value = x.Value
-			req.ChunkSize = x.ChunkSize
+			req.Data = x.Value
 			return ivClient.Send(req)
 		}
 
@@ -595,11 +588,10 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 		written += k
 
 		err = send(&varSetClientMsg{
-			TotalSize:  &totalSize,
-			ChunkSize:  &chunkSize,
-			Key:        &key,
-			InstanceId: &ir.instanceId,
-			Value:      buf.Bytes(),
+			TotalSize: totalSize,
+			Key:       key,
+			Instance:  ir.instanceId,
+			Value:     buf.Bytes(),
 		})
 		if err != nil {
 			return err
@@ -647,7 +639,7 @@ func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Wr
 			setTotalSize = nil
 		}
 
-		data := msg.GetValue()
+		data := msg.GetData()
 		received += int64(len(data))
 
 		if received > totalSize {

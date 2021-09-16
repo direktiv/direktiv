@@ -42,6 +42,26 @@ func ReadConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
+	s := os.Getenv("DATABASE")
+	if s != "" {
+		c.Database = s
+	}
+
+	s = os.Getenv("BIND_FLOW")
+	if s != "" {
+		c.BindFlow = s
+	}
+
+	s = os.Getenv("BIND_INTERNAL")
+	if s != "" {
+		c.BindInternal = s
+	}
+
+	s = os.Getenv("FUNCTIONS_PROTOCOL")
+	if s != "" {
+		c.FunctionsProtocol = s
+	}
+
 	return c, nil
 
 }

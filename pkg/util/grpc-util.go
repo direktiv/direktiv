@@ -5,15 +5,18 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/url"
 	"os"
 	"path/filepath"
 
+	"github.com/vorteil/direktiv/pkg/dlog"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/resolver"
 	"gopkg.in/yaml.v2"
 )
 
@@ -77,8 +80,7 @@ type tlsComponent struct {
 	mtls        string
 }
 
-/*
-func init() {
+func Init() {
 
 	var err error
 	appLog, err = dlog.ApplicationLogger("grpc")
@@ -120,7 +122,6 @@ func init() {
 	}
 
 }
-*/
 
 // CertsForComponent return key and cert for direktiv component
 func CertsForComponent(component string) (string, string, string) {

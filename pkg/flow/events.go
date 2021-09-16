@@ -604,7 +604,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 
 const pubsubUpdateEventDelays = "updateEventDelays"
 
-func (events *events) updateEventDelaysHandler(req *pubsubUpdate) {
+func (events *events) updateEventDelaysHandler(req *PubsubUpdate) {
 
 	events.syncEventDelays()
 

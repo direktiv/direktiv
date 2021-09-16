@@ -1,27 +1,47 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
+var log *zap.SugaredLogger
 
 var (
 	namespace, actionId, instanceId string
 	step                            int32
 
-	flowClient flow.DirektivFlowClient
+	flow grpc.InternalClient
 )
 
 func main() {
+
+	var err error
+
+	dlog.Init()
+	util.Init()
+
+	logger, err = zap.NewDevelopment()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
+		os.Exit(1)
+	}
+	defer logger.Sync()
+
+	log = logger.Sugar()
+
 	lifecycle := os.Getenv("DIREKTIV_LIFECYCLE")
 
-	err := initialize()
+	err = initialize()
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Infof("Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -30,7 +50,7 @@ func main() {
 	} else if lifecycle == "run" {
 		runAsSidecar()
 	} else {
-		log.Printf("Invalid DIREKTIV_LIFECYCLE: \"%s\"", lifecycle)
+		log.Infof("Invalid DIREKTIV_LIFECYCLE: \"%s\"", lifecycle)
 	}
 
 }
@@ -50,10 +70,10 @@ func initialize() error {
 	/* #nosec */
 	step = int32(x)
 
-	log.Printf("DIREKTIV_ACTIONID: %s", actionId)
-	log.Printf("DIREKTIV_INSTANCEID: %s", instanceId)
-	log.Printf("DIREKTIV_NAMESPACE: %s", namespace)
-	log.Printf("DIREKTIV_STEP: %v", step)
+	log.Infof("DIREKTIV_ACTIONID: %s", actionId)
+	log.Infof("DIREKTIV_INSTANCEID: %s", instanceId)
+	log.Infof("DIREKTIV_NAMESPACE: %s", namespace)
+	log.Infof("DIREKTIV_STEP: %v", step)
 
 	// "Direktiv-Deadline"
 
@@ -73,7 +93,7 @@ func initFlow() error {
 		return err
 	}
 
-	flowClient = flow.NewDirektivFlowClient(conn)
+	flow = grpc.NewInternalClient(conn)
 
 	return nil
 

@@ -10,13 +10,12 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func runAsInit() {
 
-	log.Println("Running as init container.")
+	log.Infof("Running as init container.")
 
 	var lock sync.Mutex
 	var received, failed bool
@@ -28,7 +27,7 @@ func runAsInit() {
 		lock.Lock()
 		if received {
 			lock.Unlock()
-			log.Println("Unexpected extra payload request received.")
+			log.Infof("Unexpected extra payload request received.")
 			code := http.StatusServiceUnavailable
 			http.Error(w, http.StatusText(code), code)
 			return
@@ -40,12 +39,12 @@ func runAsInit() {
 			go srv.Shutdown(context.Background())
 		}()
 
-		log.Println("Initial payload request received.")
+		log.Infof("Initial payload request received.")
 
 		data, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			failed = true
-			log.Printf("Error: %v.", err)
+			log.Infof("Error: %v.", err)
 			code := http.StatusBadRequest
 			http.Error(w, http.StatusText(code), code)
 			return
@@ -54,7 +53,7 @@ func runAsInit() {
 		f, err := os.Create("/direktiv-data/input.json")
 		if err != nil {
 			failed = true
-			log.Printf("Error: %v.", err)
+			log.Infof("Error: %v.", err)
 			code := http.StatusInternalServerError
 			http.Error(w, http.StatusText(code), code)
 			return
@@ -63,7 +62,7 @@ func runAsInit() {
 		_, err = io.Copy(f, bytes.NewReader(data))
 		if err != nil {
 			failed = true
-			log.Printf("Error: %v.", err)
+			log.Infof("Error: %v.", err)
 			code := http.StatusInternalServerError
 			http.Error(w, http.StatusText(code), code)
 			return
@@ -72,7 +71,7 @@ func runAsInit() {
 		err = loadFiles(r)
 		if err != nil {
 			failed = true
-			log.Printf("Error: %v.", err)
+			log.Infof("Error: %v.", err)
 			code := http.StatusInternalServerError
 			http.Error(w, http.StatusText(code), code)
 			return
@@ -81,7 +80,7 @@ func runAsInit() {
 		w.WriteHeader(200)
 		_, err = w.Write([]byte("ok"))
 		if err != nil {
-			log.Printf("Error: %v.", err)
+			log.Infof("Error: %v.", err)
 			return
 		}
 
@@ -106,6 +105,6 @@ func runAsInit() {
 		os.Exit(1)
 	}
 
-	log.Println("Init step completed successfully.")
+	log.Infof("Init step completed successfully.")
 
 }

@@ -122,30 +122,13 @@ service Flow {
 
 service Internal {
  	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
- 	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
  	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
- 	// rpc NamespaceVariable (NamespaceVariableInternalRequest) returns (NamespaceVariableInternalResponse) {}
-	// rpc NamespaceVariableParcels (NamespaceVariableInternalRequest) returns (stream NamespaceVariableInternalResponse) {}
-	// rpc NamespaceVariables (NamespaceVariablesInternalRequest) returns (NamespaceVariablesInternalResponse) {}
-	// rpc NamespaceVariablesStream (NamespaceVariablesInternalRequest) returns (stream NamespaceVariablesInternalResponse) {}
-	// rpc SetNamespaceVariable (SetNamespaceVariableInternalRequest) returns (SetNamespaceVariableInternalResponse) {}
-	// rpc SetNamespaceVariableParcels (stream SetNamespaceVariableInternalRequest) returns (SetNamespaceVariableInternalResponse) {}
-	// rpc DeleteNamespaceVariable (DeleteNamespaceVariableInternalRequest) returns (google.protobuf.Empty) {}
-	// rpc RenameNamespaceVariable (RenameNamespaceVariableInternalRequest) returns (RenameNamespaceVariableInternalResponse) {}
-	// rpc WorkflowVariable (WorkflowVariableInternalRequest) returns (WorkflowVariableInternalResponse) {}
-	// rpc WorkflowVariableParcels (WorkflowVariableInternalRequest) returns (stream WorkflowVariableInternalResponse) {}
-	// rpc WorkflowVariables (WorkflowVariablesInternalRequest) returns (WorkflowVariablesInternalResponse) {}
-	// rpc WorkflowVariablesStream (WorkflowVariablesInternalRequest) returns (stream WorkflowVariablesInternalResponse) {}
-	// rpc SetWorkflowVariable (SetWorkflowVariableInternalRequest) returns (SetWorkflowVariableInternalResponse) {}
-	// rpc SetWorkflowVariableParcels (stream SetWorkflowVariableInternalRequest) returns (SetWorkflowVariableInternalResponse) {}
-	// rpc DeleteWorkflowVariable (DeleteWorkflowVariableInternalRequest) returns (google.protobuf.Empty) {}
-	// rpc RenameWorkflowVariable (RenameWorkflowVariableInternalRequest) returns (RenameWorkflowVariableInternalResponse) {}
-	// rpc InstanceVariable (InstanceVariableInternalRequest) returns (InstanceVariableInternalResponse) {}
-	// rpc InstanceVariableParcels (InstanceVariableInternalRequest) returns (stream InstanceVariableInternalResponse) {}
-	// rpc InstanceVariables (InstanceVariablesInternalRequest) returns (InstanceVariablesInternalResponse) {}
-	// rpc InstanceVariablesStream (InstanceVariablesInternalRequest) returns (stream InstanceVariablesInternalResponse) {}
-	// rpc SetInstanceVariable (SetInstanceVariableInternalRequest) returns (SetInstanceVariableInternalResponse) {}
-	// rpc SetInstanceVariableParcels (stream SetInstanceVariableInternalRequest) returns (SetInstanceVariableInternalResponse) {}
-	// rpc DeleteInstanceVariable (DeleteInstanceVariableInternalRequest) returns (google.protobuf.Empty) {}
-	// rpc RenameInstanceVariable (RenameInstanceVariableInternalRequest) returns (RenameInstanceVariableInternalResponse) {}
+	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
+
+	rpc NamespaceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
+	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
+	rpc WorkflowVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
+	rpc SetWorkflowVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
+	rpc InstanceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
+	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 }
