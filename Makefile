@@ -27,7 +27,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: cmd/direkcli/*.go build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
+binaries: build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
@@ -80,7 +80,6 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
 	go get entgo.io/ent
-	go generate ./ent
 	go generate ./pkg/flow/ent
 	go generate ./pkg/secrets/ent/schema
 

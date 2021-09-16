@@ -98,6 +98,7 @@ type FlowClient interface {
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
 	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
+	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
 }
 
 type flowClient struct {
@@ -1377,6 +1378,15 @@ func (c *flowClient) RenameInstanceVariable(ctx context.Context, in *RenameInsta
 	return out, nil
 }
 
+func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error) {
+	out := new(JQResponse)
+	err := c.cc.Invoke(ctx, "/grpc.Flow/JQ", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -1460,6 +1470,7 @@ type FlowServer interface {
 	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
 	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*empty.Empty, error)
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
+	JQ(context.Context, *JQRequest) (*JQResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -1703,6 +1714,9 @@ func (UnimplementedFlowServer) DeleteInstanceVariable(context.Context, *DeleteIn
 }
 func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenameInstanceVariable not implemented")
+}
+func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -3226,6 +3240,24 @@ func _Flow_RenameInstanceVariable_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JQRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).JQ(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.Flow/JQ",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).JQ(ctx, req.(*JQRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3453,6 +3485,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "RenameInstanceVariable",
 			Handler:    _Flow_RenameInstanceVariable_Handler,
 		},
+		{
+			MethodName: "JQ",
+			Handler:    _Flow_JQ_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -3584,7 +3620,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InternalClient interface {
 	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
@@ -3823,7 +3858,6 @@ func (x *internalSetInstanceVariableParcelsClient) CloseAndRecv() (*SetVariableI
 // for forward compatibility
 type InternalServer interface {
 	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
 	NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error
 	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error

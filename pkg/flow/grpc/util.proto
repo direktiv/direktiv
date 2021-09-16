@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+message JQRequest {
+	string query = 1;
+	bytes data = 2;
+}
+
+message JQResponse {
+	string query = 1;
+	bytes data = 2;
+	repeated string results = 3;
+}

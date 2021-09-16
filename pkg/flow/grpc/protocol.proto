@@ -16,6 +16,7 @@ import "pkg/flow/grpc/secrets.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
+import "pkg/flow/grpc/util.proto";
 
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {
@@ -270,6 +271,8 @@ service Flow {
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
 	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
 	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
+
+	rpc JQ (JQRequest) returns (JQResponse) {}
 
 	// COMING SOON:
 	//

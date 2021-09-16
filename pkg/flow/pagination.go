@@ -2,6 +2,7 @@ package flow
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -75,6 +76,9 @@ func getPagination(args *grpc.Pagination) (*pagination, error) {
 	p.last = args.GetLast()
 	p.order = args.GetOrder()
 	p.filter = args.GetFilter()
+
+	data, _ := json.MarshalIndent(args, "", "  ")
+	fmt.Println("GET PAGINATION", string(data))
 
 	return p, nil
 
