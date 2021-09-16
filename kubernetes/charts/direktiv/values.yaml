@@ -1,3 +1,38 @@
+kube-prometheus:
+  alertmanager:
+    enabled: false
+  operator:
+    enabled: false
+  exporters:
+    node-exporter:
+      enabled: false
+    kube-state-metrics:
+      enabled: false
+    kubelet:
+      enabled: false
+    kubeApiServer:
+      enabled: false
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    coreDns:
+      enabled: false
+    kubeProxy:
+      enabled: false
+
+
+minio:
+  enabled: false
+
+thanos:
+  enabled: true
+
+prometheus:
+  enabled: true
+
+
+
 # Default values for direktiv.
 replicaCount: 1
 
