@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const actionIDHeader = "Direktiv-ActionID"

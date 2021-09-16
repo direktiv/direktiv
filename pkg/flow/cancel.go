@@ -45,7 +45,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 
 }
 
-func (engine *engine) finishCancelWorkflow(req *pubsubUpdate) {
+func (engine *engine) finishCancelWorkflow(req *PubsubUpdate) {
 
 	args := make([]interface{}, 0)
 

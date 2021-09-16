@@ -17,8 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vorteil/direktiv/pkg/flow"
-	"google.golang.org/protobuf/types/known/emptypb"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
 type functionFile struct {
@@ -347,7 +346,7 @@ func getVar(ctx context.Context, w io.Writer, setTotalSize func(x int64), scope,
 			setTotalSize = nil
 		}
 
-		data := msg.GetValue()
+		data := msg.GetData()
 		received += int64(len(data))
 
 		if received > totalSize {
@@ -379,8 +378,7 @@ type varClient interface {
 
 type varClientMsg interface {
 	GetTotalSize() int64
-	GetChunkSize() int64
-	GetValue() []byte
+	GetData() []byte
 }
 
 func requestVar(ctx context.Context, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
@@ -392,10 +390,10 @@ func requestVar(ctx context.Context, scope, key string) (client varClient, recv 
 	switch scope {
 
 	case "namespace":
-		var nvClient flow.DirektivFlow_GetNamespaceVariableClient
-		nvClient, err = flowClient.GetNamespaceVariable(ctx, &flow.GetNamespaceVariableRequest{
-			InstanceId: &instanceId,
-			Key:        &key,
+		var nvClient grpc.Internal_NamespaceVariableParcelsClient
+		nvClient, err = flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: instanceId,
+			Key:      key,
 		})
 		client = nvClient
 		recv = func() (varClientMsg, error) {
@@ -403,10 +401,10 @@ func requestVar(ctx context.Context, scope, key string) (client varClient, recv 
 		}
 
 	case "workflow":
-		var wvClient flow.DirektivFlow_GetWorkflowVariableClient
-		wvClient, err = flowClient.GetWorkflowVariable(ctx, &flow.GetWorkflowVariableRequest{
-			InstanceId: &instanceId,
-			Key:        &key,
+		var wvClient grpc.Internal_WorkflowVariableParcelsClient
+		wvClient, err = flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: instanceId,
+			Key:      key,
 		})
 		client = wvClient
 		recv = func() (varClientMsg, error) {
@@ -417,10 +415,10 @@ func requestVar(ctx context.Context, scope, key string) (client varClient, recv 
 		fallthrough
 
 	case "instance":
-		var ivClient flow.DirektivFlow_GetInstanceVariableClient
-		ivClient, err = flowClient.GetInstanceVariable(ctx, &flow.GetInstanceVariableRequest{
-			InstanceId: &instanceId,
-			Key:        &key,
+		var ivClient grpc.Internal_InstanceVariableParcelsClient
+		ivClient, err = flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: instanceId,
+			Key:      key,
 		})
 		client = ivClient
 		recv = func() (varClientMsg, error) {
@@ -560,15 +558,14 @@ func tarGzDir(src string, buf io.Writer) error {
 }
 
 type varSetClient interface {
-	CloseAndRecv() (*emptypb.Empty, error)
+	CloseAndRecv() (*grpc.SetVariableInternalResponse, error)
 }
 
 type varSetClientMsg struct {
-	Key        *string
-	InstanceId *string
-	Value      []byte
-	TotalSize  *int64
-	ChunkSize  *int64
+	Key       string
+	Instance  string
+	Value     []byte
+	TotalSize int64
 }
 
 func setVar(ctx context.Context, totalSize int64, r io.Reader, scope, key string) error {
@@ -584,30 +581,28 @@ func setVar(ctx context.Context, totalSize int64, r io.Reader, scope, key string
 	switch scope {
 
 	case "namespace":
-		var nvClient flow.DirektivFlow_SetNamespaceVariableClient
-		nvClient, err = flowClient.SetNamespaceVariable(ctx)
+		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
+		nvClient, err = flow.SetNamespaceVariableParcels(ctx)
 		client = nvClient
 		send = func(x *varSetClientMsg) error {
-			req := &flow.SetNamespaceVariableRequest{}
+			req := &grpc.SetVariableInternalRequest{}
 			req.Key = x.Key
-			req.InstanceId = x.InstanceId
+			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
-			req.Value = x.Value
-			req.ChunkSize = x.ChunkSize
+			req.Data = x.Value
 			return nvClient.Send(req)
 		}
 
 	case "workflow":
-		var wvClient flow.DirektivFlow_SetWorkflowVariableClient
-		wvClient, err = flowClient.SetWorkflowVariable(ctx)
+		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
+		wvClient, err = flow.SetWorkflowVariableParcels(ctx)
 		client = wvClient
 		send = func(x *varSetClientMsg) error {
-			req := &flow.SetWorkflowVariableRequest{}
+			req := &grpc.SetVariableInternalRequest{}
 			req.Key = x.Key
-			req.InstanceId = x.InstanceId
+			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
-			req.Value = x.Value
-			req.ChunkSize = x.ChunkSize
+			req.Data = x.Value
 			return wvClient.Send(req)
 		}
 
@@ -615,16 +610,15 @@ func setVar(ctx context.Context, totalSize int64, r io.Reader, scope, key string
 		fallthrough
 
 	case "instance":
-		var ivClient flow.DirektivFlow_SetInstanceVariableClient
-		ivClient, err = flowClient.SetInstanceVariable(ctx)
+		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
+		ivClient, err = flow.SetInstanceVariableParcels(ctx)
 		client = ivClient
 		send = func(x *varSetClientMsg) error {
-			req := &flow.SetInstanceVariableRequest{}
+			req := &grpc.SetVariableInternalRequest{}
 			req.Key = x.Key
-			req.InstanceId = x.InstanceId
+			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
-			req.Value = x.Value
-			req.ChunkSize = x.ChunkSize
+			req.Data = x.Value
 			return ivClient.Send(req)
 		}
 
@@ -664,11 +658,10 @@ func setVar(ctx context.Context, totalSize int64, r io.Reader, scope, key string
 		written += k
 
 		err = send(&varSetClientMsg{
-			TotalSize:  &totalSize,
-			ChunkSize:  &chunkSize,
-			Key:        &key,
-			InstanceId: &instanceId,
-			Value:      buf.Bytes(),
+			TotalSize: totalSize,
+			Key:       key,
+			Instance:  instanceId,
+			Value:     buf.Bytes(),
 		})
 		if err != nil {
 			return err

@@ -23,15 +23,11 @@ import (
 var ctx = context.Background()
 
 var (
-	stream                                      bool
-	afterVal, beforeVal                         string
-	after, before                               string
-	firstVal, lastVal                           int32
-	first, last                                 int32
-	orderFieldVal, orderDirectionVal            string
-	orderField, orderDirection                  string
-	filterFieldVal, filterTypeVal, filterValVal string
-	filterField, filterType, filterVal          string
+	stream                             bool
+	after, before                      string
+	first, last                        int32
+	orderField, orderDirection         string
+	filterField, filterType, filterVal string
 
 	stdin  bool
 	filein string
@@ -98,15 +94,15 @@ func main() {
 
 func addPaginationFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&stream, "stream", false, "")
-	cmd.Flags().StringVar(&afterVal, "after", "", "")
-	cmd.Flags().Int32Var(&firstVal, "first", 0, "")
-	cmd.Flags().StringVar(&beforeVal, "before", "", "")
-	cmd.Flags().Int32Var(&lastVal, "last", 0, "")
-	cmd.Flags().StringVar(&orderFieldVal, "order.field", "", "")
-	cmd.Flags().StringVar(&orderDirectionVal, "order.direction", "", "")
-	cmd.Flags().StringVar(&filterFieldVal, "filter.field", "", "")
-	cmd.Flags().StringVar(&filterTypeVal, "filter.type", "", "")
-	cmd.Flags().StringVar(&filterValVal, "filter.val", "", "")
+	cmd.Flags().StringVar(&after, "after", "", "")
+	cmd.Flags().Int32Var(&first, "first", 0, "")
+	cmd.Flags().StringVar(&before, "before", "", "")
+	cmd.Flags().Int32Var(&last, "last", 0, "")
+	cmd.Flags().StringVar(&orderField, "order.field", "", "")
+	cmd.Flags().StringVar(&orderDirection, "order.direction", "", "")
+	cmd.Flags().StringVar(&filterField, "filter.field", "", "")
+	cmd.Flags().StringVar(&filterType, "filter.type", "", "")
+	cmd.Flags().StringVar(&filterVal, "filter.val", "", "")
 }
 
 func client() (grpc.FlowClient, io.Closer, error) {
@@ -149,30 +145,6 @@ func exit(err error) {
 var rootCmd = &cobra.Command{
 	Use: "flow",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
-		if afterVal != "" {
-			after = afterVal
-		}
-
-		if beforeVal != "" {
-			before = beforeVal
-		}
-
-		if firstVal != 0 {
-			first = firstVal
-		}
-
-		if lastVal != 0 {
-			last = lastVal
-		}
-
-		if orderFieldVal != "" {
-			orderField = orderFieldVal
-		}
-
-		if orderDirectionVal != "" {
-			orderDirection = orderDirectionVal
-		}
 
 	},
 }

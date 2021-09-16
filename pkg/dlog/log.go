@@ -20,7 +20,7 @@ var (
 	appLogger, fnLogger *zap.Logger
 )
 
-func init() {
+func Init() {
 
 	if err := zap.RegisterSink("http", NewHTTPSink); err != nil {
 		panic(err)

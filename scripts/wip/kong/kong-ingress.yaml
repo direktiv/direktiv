@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: direktiv-grpc-gateway,direktiv-kong-plugin-myplugin
+    konghq.com/protocols: http,grpc
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: "flow-rework-server"
+            port: 
+              number: 9091

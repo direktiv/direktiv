@@ -290,13 +290,13 @@ func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
 
 }
 
-func (timers *timers) deleteInstanceTimersHandler(req *pubsubUpdate) {
+func (timers *timers) deleteInstanceTimersHandler(req *PubsubUpdate) {
 
 	timers.deleteTimersForInstanceNoBroadcast(req.Key)
 
 }
 
-func (timers *timers) deleteTimerHandler(req *pubsubUpdate) {
+func (timers *timers) deleteTimerHandler(req *PubsubUpdate) {
 	timers.deleteTimerByName("", timers.pubsub.hostname, req.Key)
 
 }

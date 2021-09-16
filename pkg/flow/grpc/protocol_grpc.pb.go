@@ -3586,6 +3586,12 @@ type InternalClient interface {
 	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error)
+	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
+	WorkflowVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_WorkflowVariableParcelsClient, error)
+	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetWorkflowVariableParcelsClient, error)
+	InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error)
+	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error)
 }
 
 type internalClient struct {
@@ -3614,6 +3620,204 @@ func (c *internalClient) ActionLog(ctx context.Context, in *ActionLogRequest, op
 	return out, nil
 }
 
+func (c *internalClient) NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[0], "/grpc.Internal/NamespaceVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalNamespaceVariableParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Internal_NamespaceVariableParcelsClient interface {
+	Recv() (*VariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalNamespaceVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalNamespaceVariableParcelsClient) Recv() (*VariableInternalResponse, error) {
+	m := new(VariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *internalClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[1], "/grpc.Internal/SetNamespaceVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalSetNamespaceVariableParcelsClient{stream}
+	return x, nil
+}
+
+type Internal_SetNamespaceVariableParcelsClient interface {
+	Send(*SetVariableInternalRequest) error
+	CloseAndRecv() (*SetVariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalSetNamespaceVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalSetNamespaceVariableParcelsClient) Send(m *SetVariableInternalRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *internalSetNamespaceVariableParcelsClient) CloseAndRecv() (*SetVariableInternalResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetVariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *internalClient) WorkflowVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_WorkflowVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[2], "/grpc.Internal/WorkflowVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalWorkflowVariableParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Internal_WorkflowVariableParcelsClient interface {
+	Recv() (*VariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalWorkflowVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalWorkflowVariableParcelsClient) Recv() (*VariableInternalResponse, error) {
+	m := new(VariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *internalClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetWorkflowVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[3], "/grpc.Internal/SetWorkflowVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalSetWorkflowVariableParcelsClient{stream}
+	return x, nil
+}
+
+type Internal_SetWorkflowVariableParcelsClient interface {
+	Send(*SetVariableInternalRequest) error
+	CloseAndRecv() (*SetVariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalSetWorkflowVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalSetWorkflowVariableParcelsClient) Send(m *SetVariableInternalRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *internalSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetVariableInternalResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetVariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *internalClient) InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], "/grpc.Internal/InstanceVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalInstanceVariableParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Internal_InstanceVariableParcelsClient interface {
+	Recv() (*VariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalInstanceVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalInstanceVariableParcelsClient) Recv() (*VariableInternalResponse, error) {
+	m := new(VariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *internalClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], "/grpc.Internal/SetInstanceVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalSetInstanceVariableParcelsClient{stream}
+	return x, nil
+}
+
+type Internal_SetInstanceVariableParcelsClient interface {
+	Send(*SetVariableInternalRequest) error
+	CloseAndRecv() (*SetVariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalSetInstanceVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalSetInstanceVariableParcelsClient) Send(m *SetVariableInternalRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *internalSetInstanceVariableParcelsClient) CloseAndRecv() (*SetVariableInternalResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetVariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // InternalServer is the server API for Internal service.
 // All implementations must embed UnimplementedInternalServer
 // for forward compatibility
@@ -3621,6 +3825,12 @@ type InternalServer interface {
 	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
 	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
+	NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error
+	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error
+	WorkflowVariableParcels(*VariableInternalRequest, Internal_WorkflowVariableParcelsServer) error
+	SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error
+	InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error
+	SetInstanceVariableParcels(Internal_SetInstanceVariableParcelsServer) error
 	mustEmbedUnimplementedInternalServer()
 }
 
@@ -3633,6 +3843,24 @@ func (UnimplementedInternalServer) ReportActionResults(context.Context, *ReportA
 }
 func (UnimplementedInternalServer) ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActionLog not implemented")
+}
+func (UnimplementedInternalServer) NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method NamespaceVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetNamespaceVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) WorkflowVariableParcels(*VariableInternalRequest, Internal_WorkflowVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method WorkflowVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetWorkflowVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method InstanceVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) SetInstanceVariableParcels(Internal_SetInstanceVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetInstanceVariableParcels not implemented")
 }
 func (UnimplementedInternalServer) mustEmbedUnimplementedInternalServer() {}
 
@@ -3683,6 +3911,147 @@ func _Internal_ActionLog_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Internal_NamespaceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(VariableInternalRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(InternalServer).NamespaceVariableParcels(m, &internalNamespaceVariableParcelsServer{stream})
+}
+
+type Internal_NamespaceVariableParcelsServer interface {
+	Send(*VariableInternalResponse) error
+	grpc.ServerStream
+}
+
+type internalNamespaceVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalNamespaceVariableParcelsServer) Send(m *VariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Internal_SetNamespaceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(InternalServer).SetNamespaceVariableParcels(&internalSetNamespaceVariableParcelsServer{stream})
+}
+
+type Internal_SetNamespaceVariableParcelsServer interface {
+	SendAndClose(*SetVariableInternalResponse) error
+	Recv() (*SetVariableInternalRequest, error)
+	grpc.ServerStream
+}
+
+type internalSetNamespaceVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalSetNamespaceVariableParcelsServer) SendAndClose(m *SetVariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *internalSetNamespaceVariableParcelsServer) Recv() (*SetVariableInternalRequest, error) {
+	m := new(SetVariableInternalRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Internal_WorkflowVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(VariableInternalRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(InternalServer).WorkflowVariableParcels(m, &internalWorkflowVariableParcelsServer{stream})
+}
+
+type Internal_WorkflowVariableParcelsServer interface {
+	Send(*VariableInternalResponse) error
+	grpc.ServerStream
+}
+
+type internalWorkflowVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalWorkflowVariableParcelsServer) Send(m *VariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Internal_SetWorkflowVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(InternalServer).SetWorkflowVariableParcels(&internalSetWorkflowVariableParcelsServer{stream})
+}
+
+type Internal_SetWorkflowVariableParcelsServer interface {
+	SendAndClose(*SetVariableInternalResponse) error
+	Recv() (*SetVariableInternalRequest, error)
+	grpc.ServerStream
+}
+
+type internalSetWorkflowVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalSetWorkflowVariableParcelsServer) SendAndClose(m *SetVariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *internalSetWorkflowVariableParcelsServer) Recv() (*SetVariableInternalRequest, error) {
+	m := new(SetVariableInternalRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Internal_InstanceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(VariableInternalRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(InternalServer).InstanceVariableParcels(m, &internalInstanceVariableParcelsServer{stream})
+}
+
+type Internal_InstanceVariableParcelsServer interface {
+	Send(*VariableInternalResponse) error
+	grpc.ServerStream
+}
+
+type internalInstanceVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalInstanceVariableParcelsServer) Send(m *VariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Internal_SetInstanceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(InternalServer).SetInstanceVariableParcels(&internalSetInstanceVariableParcelsServer{stream})
+}
+
+type Internal_SetInstanceVariableParcelsServer interface {
+	SendAndClose(*SetVariableInternalResponse) error
+	Recv() (*SetVariableInternalRequest, error)
+	grpc.ServerStream
+}
+
+type internalSetInstanceVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalSetInstanceVariableParcelsServer) SendAndClose(m *SetVariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *internalSetInstanceVariableParcelsServer) Recv() (*SetVariableInternalRequest, error) {
+	m := new(SetVariableInternalRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Internal_ServiceDesc is the grpc.ServiceDesc for Internal service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3699,6 +4068,37 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Internal_ActionLog_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "NamespaceVariableParcels",
+			Handler:       _Internal_NamespaceVariableParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetNamespaceVariableParcels",
+			Handler:       _Internal_SetNamespaceVariableParcels_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "WorkflowVariableParcels",
+			Handler:       _Internal_WorkflowVariableParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetWorkflowVariableParcels",
+			Handler:       _Internal_SetWorkflowVariableParcels_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "InstanceVariableParcels",
+			Handler:       _Internal_InstanceVariableParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetInstanceVariableParcels",
+			Handler:       _Internal_SetInstanceVariableParcels_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "pkg/flow/grpc/protocol.proto",
 }

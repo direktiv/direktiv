@@ -7,3 +7,13 @@ kong-internal:
     type: ClusterIP
   ingressController:
     ingressClass: kong-internal
+
+kong-external:
+  image:
+    repository: localhost:5000/cong
+    tag: "latest"
+    pullPolicy: Always
+  env:
+    prefix: /kong_prefix/
+    plugins: "grpc-gateway,grpc-stream"
+    log_level: "debug"
