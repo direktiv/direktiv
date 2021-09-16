@@ -227,9 +227,15 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	}
 
 	if muxErr2 != nil {
-		if !hasFlag(flags, rcfBreaking) || muxErr1 != nil {
+
+		if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
 			return muxErr2
 		}
+
+	}
+
+	if ms2 == nil {
+		ms2 = new(muxStart)
 	}
 
 	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
