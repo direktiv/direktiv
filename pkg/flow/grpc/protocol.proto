@@ -23,13 +23,11 @@ service Flow {
 	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces"
-			body: "pagination"
 		};
 	}
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {
 		option (google.api.http) = {
 			get: "/api/stream/namespaces"
-			body: "pagination"
 		};
 	}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {
@@ -53,21 +51,18 @@ service Flow {
 	rpc NamespaceLogs (NamespaceLogsRequest) returns (NamespaceLogsResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/logs"
-			body: "pagination"
 		};
 	}
 	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {}
 	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/workflows/{path=**}/logs"
-			body: "pagination"
 		};
 	}
 	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {}
 	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {
 		option (google.api.http) = {
 			get: "/api/namespaces/{namespace}/directory/{path=**}"
-			body: "pagination"
 		};
 	}
 	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
