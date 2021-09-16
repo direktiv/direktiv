@@ -27,7 +27,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: cmd/direkcli/*.go build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
+binaries: build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
