@@ -8,6 +8,9 @@ metadata:
     {{- if ne .Values.ingress.certificate "none" }}
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
+    konghq.com/plugins: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-gateway
+    konghq.com/protocols: http,grpc
+      # konghq.com/plugins: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-gateway,{{ include "direktiv.fullname" . }}-kong-plugin-grpc-stream
 spec:
   ingressClassName: {{ .Values.ingress.class }}
   {{- if ne .Values.ingress.certificate "none" }}
@@ -24,9 +27,9 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: {{ include "direktiv.fullname" . }}-api-service
+              name: {{ include "direktiv.fullname" . }}-ingress-hl
               port:
-                number: 8080
+                number: 6666
         - path: /
           pathType: Prefix
           backend:

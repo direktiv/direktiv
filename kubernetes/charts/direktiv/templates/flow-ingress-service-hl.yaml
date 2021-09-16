@@ -5,6 +5,7 @@ metadata:
   name: {{ include "direktiv.fullname" . }}-ingress-hl
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+    konghq.com/protocol: "grpc"
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:

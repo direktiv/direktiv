@@ -1,0 +1,7 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-stream
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+plugin: grpc-stream
