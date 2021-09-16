@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -99,6 +100,66 @@ func init() {
 	cmd := createWorkflowCmd
 	cmd.Flags().BoolVar(&stdin, "stdin", false, "")
 	cmd.Flags().StringVar(&filein, "input", "", "")
+}
+
+var editRouterCmd = &cobra.Command{
+	Use:  "edit-router NAMESPACE PATH ACTIVE",
+	Args: cobra.ExactArgs(3),
+	Run: func(cmd *cobra.Command, args []string) {
+		namespace := args[0]
+		path := args[1]
+		active := args[2]
+
+		c, closer, err := client()
+		if err != nil {
+			exit(err)
+		}
+
+		defer closer.Close()
+
+		dv, _ := strconv.ParseBool(active)
+		resp, err := c.EditRouter(ctx, &grpc.EditRouterRequest{
+			Namespace: namespace,
+			Path:      path,
+			Live:      dv,
+		})
+		if err != nil {
+			exit(err)
+		}
+
+		print(resp)
+	},
+}
+
+var routerCmd = &cobra.Command{
+	Use:  "router NAMESPACE PATH",
+	Args: cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		namespace := args[0]
+		path := args[1]
+
+		// source, err := loadSource()
+		// if err != nil {
+		// 	exit(err)
+		// }
+
+		c, closer, err := client()
+		if err != nil {
+			exit(err)
+		}
+
+		defer closer.Close()
+
+		resp, err := c.Router(ctx, &grpc.RouterRequest{
+			Namespace: namespace,
+			Path:      path,
+		})
+		if err != nil {
+			exit(err)
+		}
+
+		print(resp)
+	},
 }
 
 var createWorkflowCmd = &cobra.Command{

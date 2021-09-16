@@ -86,6 +86,9 @@ func main() {
 	rootCmd.AddCommand(instanceInputCmd)
 	rootCmd.AddCommand(instanceOutputCmd)
 
+	rootCmd.AddCommand(routerCmd)
+	rootCmd.AddCommand(editRouterCmd)
+
 	err = rootCmd.Execute()
 	if err != nil {
 		exit(err)
@@ -108,7 +111,7 @@ func addPaginationFlags(cmd *cobra.Command) {
 
 func client() (grpc.FlowClient, io.Closer, error) {
 
-	conn, err := libgrpc.Dial("localhost:8080", libgrpc.WithInsecure())
+	conn, err := libgrpc.Dial("192.168.1.60:8080", libgrpc.WithInsecure())
 	if err != nil {
 		return nil, nil, err
 	}
