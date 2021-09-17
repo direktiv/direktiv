@@ -102,6 +102,10 @@ function plugin:body_filter(conf)
   else
     ctx.rt_body_chunks[ctx.rt_body_chunk_number] = chunk
     ctx.rt_body_chunk_number = ctx.rt_body_chunk_number + 1
+
+    kong.log.debug("!!!! GOT ctx.rt_body_chunks === ", ctx.rt_body_chunks or "NO ctx.rt_body_chunks!")
+    kong.log.debug("!!!! GOT ctx.rt_body_chunk_number === ", ctx.rt_body_chunk_number or "NO ctx.rt_body_chunk_number!")
+
     ngx.arg[1] = string.format("data: %s\n\n", chunk)
   end
 end
