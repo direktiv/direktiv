@@ -101,6 +101,7 @@ type FlowClient interface {
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
 	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 }
 
 type flowClient struct {
@@ -1407,6 +1408,15 @@ func (c *flowClient) DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAtt
 	return out, nil
 }
 
+func (c *flowClient) WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error) {
+	out := new(WorkflowMetricsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.Flow/WorkflowMetrics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -1493,6 +1503,7 @@ type FlowServer interface {
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
 	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error)
 	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error)
+	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -1745,6 +1756,9 @@ func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNode
 }
 func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNodeAttributes not implemented")
+}
+func (UnimplementedFlowServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -3322,6 +3336,24 @@ func _Flow_DeleteNodeAttributes_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkflowMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).WorkflowMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.Flow/WorkflowMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).WorkflowMetrics(ctx, req.(*WorkflowMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3560,6 +3592,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteNodeAttributes",
 			Handler:    _Flow_DeleteNodeAttributes_Handler,
+		},
+		{
+			MethodName: "WorkflowMetrics",
+			Handler:    _Flow_WorkflowMetrics_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
