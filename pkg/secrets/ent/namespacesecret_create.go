@@ -63,11 +63,17 @@ func (nsc *NamespaceSecretCreate) Save(ctx context.Context) (*NamespaceSecret, e
 				return nil, err
 			}
 			nsc.mutation = mutation
-			node, err = nsc.sqlSave(ctx)
+			if node, err = nsc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(nsc.hooks) - 1; i >= 0; i-- {
+			if nsc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nsc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nsc.mutation); err != nil {
@@ -86,16 +92,29 @@ func (nsc *NamespaceSecretCreate) SaveX(ctx context.Context) *NamespaceSecret {
 	return v
 }
 
+// Exec executes the query.
+func (nsc *NamespaceSecretCreate) Exec(ctx context.Context) error {
+	_, err := nsc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (nsc *NamespaceSecretCreate) ExecX(ctx context.Context) {
+	if err := nsc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (nsc *NamespaceSecretCreate) check() error {
 	if _, ok := nsc.mutation.Ns(); !ok {
-		return &ValidationError{Name: "ns", err: errors.New("ent: missing required field \"ns\"")}
+		return &ValidationError{Name: "ns", err: errors.New(`ent: missing required field "ns"`)}
 	}
 	if _, ok := nsc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := nsc.mutation.Secret(); !ok {
-		return &ValidationError{Name: "secret", err: errors.New("ent: missing required field \"secret\"")}
+		return &ValidationError{Name: "secret", err: errors.New(`ent: missing required field "secret"`)}
 	}
 	return nil
 }
@@ -103,8 +122,8 @@ func (nsc *NamespaceSecretCreate) check() error {
 func (nsc *NamespaceSecretCreate) sqlSave(ctx context.Context) (*NamespaceSecret, error) {
 	_node, _spec := nsc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, nsc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -179,19 +198,23 @@ func (nscb *NamespaceSecretCreateBulk) Save(ctx context.Context) ([]*NamespaceSe
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, nscb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, nscb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, nscb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -215,4 +238,17 @@ func (nscb *NamespaceSecretCreateBulk) SaveX(ctx context.Context) []*NamespaceSe
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (nscb *NamespaceSecretCreateBulk) Exec(ctx context.Context) error {
+	_, err := nscb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (nscb *NamespaceSecretCreateBulk) ExecX(ctx context.Context) {
+	if err := nscb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

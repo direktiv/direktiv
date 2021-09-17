@@ -16,14 +16,14 @@ import (
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const parcelSize = 0x100000
 
 type Config struct {
-
-	FunctionsService string `yaml:"functions-service"`
-	FlowService      string `yaml:"flow-service"`
+	FunctionsService  string `yaml:"functions-service"`
+	FlowService       string `yaml:"flow-service"`
 	FunctionsProtocol string `yaml:"functions-protocol"`
 
 	// Database          string `yaml:"database"`
@@ -135,7 +135,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing locks.")
 
-	db := os.Getenv("DIREKTIV_DB")
+	db := os.Getenv(util.DBConn)
 
 	srv.locks, err = initLocks(db)
 	if err != nil {

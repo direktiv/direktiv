@@ -8,13 +8,11 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/secrets"
-	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {
 
 	dlog.Init()
-	util.Init()
 
 	backend := "db"
 

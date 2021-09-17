@@ -337,21 +337,21 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 		},
 	}
 
-	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
-
-		certName := "flowcerts"
-		tlsVolume := v1.Volume{}
-		tlsVolume.Name = certName
-		tlsVolume.Secret = &v1.SecretVolumeSource{
-			SecretName: util.GrpcCfg().FlowTLS,
-		}
-		volumes = append(volumes, tlsVolume)
-
-		tlsVolumeMount.Name = certName
-		tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
-		tlsVolumeMount.ReadOnly = true
-		volumeMounts = append(volumeMounts, tlsVolumeMount)
-	}
+	// if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+	//
+	// 	certName := "flowcerts"
+	// 	tlsVolume := v1.Volume{}
+	// 	tlsVolume.Name = certName
+	// 	tlsVolume.Secret = &v1.SecretVolumeSource{
+	// 		SecretName: util.GrpcCfg().FlowTLS,
+	// 	}
+	// 	volumes = append(volumes, tlsVolume)
+	//
+	// 	tlsVolumeMount.Name = certName
+	// 	tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
+	// 	tlsVolumeMount.ReadOnly = true
+	// 	volumeMounts = append(volumeMounts, tlsVolumeMount)
+	// }
 
 	if functionsConfig.InitPodCertificate != "none" &&
 		functionsConfig.InitPodCertificate != "" {

@@ -1,328 +1,40 @@
 package util
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
-	"io/ioutil"
-	"log"
 	"net"
-	"net/url"
-	"os"
 
-	"github.com/vorteil/direktiv/pkg/dlog"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/resolver"
-	"gopkg.in/yaml.v2"
 )
 
-// GRPC constants
-const (
-	IngressComponent string = "ingress"
-	FlowComponent    string = "flow"
-	LogComponent     string = "log"
-
-	certBase = "/etc/direktiv/certs/"
-
-	grpcSettingsFile = "/etc/direktiv/grpc-config.yaml"
-)
-
-var (
-	appLog *zap.SugaredLogger
-)
-
-// GrpcConfig holds the information about the grpc clients and servers
-type GrpcConfig struct {
-	MaxSendClient int `yaml:"max-send-client"`
-	MaxRcvClient  int `yaml:"max-rcv-client"`
-	MaxSendServer int `yaml:"max-send-server"`
-	MaxRcvServer  int `yaml:"max-rcv-server"`
-
-	FunctionsEndpoint string `yaml:"functions-endpoint"`
-	FlowEnpoint       string `yaml:"flow-enpoint"`
-	IngressEndpoint   string `yaml:"ingress-endpoint"`
-
-	FunctionsTLS  string `yaml:"functions-tls"`
-	FunctionsMTLS string `yaml:"functions-mtls"`
-
-	IngressTLS  string `yaml:"ingress-tls"`
-	IngressMTLS string `yaml:"ingress-mtls"`
-
-	FlowTLS  string `yaml:"flow-tls"`
-	FlowMTLS string `yaml:"flow-mtls"`
-}
-
-var (
-	additionalServerOptions []grpc.ServerOption
-	additionalCallOptions   []grpc.CallOption
-	grpcCfg                 GrpcConfig
-
-	grpcComponents map[string]tlsComponent
-)
-
-// Available grpc components in direktiv
-const (
-	TLSSecretsComponent   = "secrets"
-	TLSIngressComponent   = "ingress"
-	TLSFlowComponent      = "flow"
-	TLSFunctionsComponent = "functions"
-	TLSHttpComponent      = "http"
-)
-
-type tlsComponent struct {
-	endpoint    string
-	certificate string
-	tls         string
-	mtls        string
-}
-
-func Init() {
-
-	var err error
-	appLog, err = dlog.ApplicationLogger("grpc")
-	if err != nil {
-		log.Fatalf("can not init app logs: %v", err)
-	}
-
-	resolver.Register(NewBuilder())
-
-	grpcUnmarshalConfig()
-
-	grpcComponents = make(map[string]tlsComponent)
-
-	grpcComponents[TLSSecretsComponent] = tlsComponent{
-		endpoint: "127.0.0.1:2610",
-	}
-	grpcComponents[TLSIngressComponent] = tlsComponent{
-		endpoint: IngressEndpoint(),
-	}
-	grpcComponents[TLSFunctionsComponent] = tlsComponent{
-		endpoint: FunctionsEndpoint(),
-	}
-	grpcComponents[TLSFlowComponent] = tlsComponent{
-		endpoint: FlowEndpoint(),
-	}
-	grpcComponents[TLSHttpComponent] = tlsComponent{
-		endpoint: "",
-	}
-
-}
-
-// CertsForComponent return key and cert for direktiv component
-// func CertsForComponent(component string) (string, string, string) {
-//
-// 	if c, ok := tlsComponents[component]; ok {
-//
-// 		if _, err := os.Stat(filepath.Join(c.certificate, "tls.key")); err != nil {
-// 			return "", "", ""
-// 		}
-//
-// 		return filepath.Join(c.certificate, "tls.key"),
-// 			filepath.Join(c.certificate, "tls.crt"), filepath.Join(c.certificate, "ca.crt")
-// 	}
-//
-// 	return "", "", ""
-// }
-
-var (
-	globalGRPCDialOptions []grpc.DialOption
-)
-
-func AddGlobalGRPCDialOption(opt grpc.DialOption) {
-	globalGRPCDialOptions = append(globalGRPCDialOptions, opt)
-}
-
-var globalGRPCServerOptions []grpc.ServerOption
-
-func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
-	globalGRPCServerOptions = append(globalGRPCServerOptions, opt)
-}
-
-func getTransport(cert, key, cacert,
-	endpoint string, server bool) (credentials.TransportCredentials, error) {
-
-	certificate, err := tls.LoadX509KeyPair(cert, key)
-	if err != nil {
-
-		appLog.Errorf("could not load client key pair: %s", err)
-		return nil, err
-	}
-
-	// Create a certificate pool from the certificate authority
-	certPool := x509.NewCertPool()
-	ca, err := ioutil.ReadFile(cacert)
-	if err != nil {
-		appLog.Errorf("could not read ca certificate: %s", err)
-		return nil, err
-	}
-
-	// Append the certificates from the CA
-	if ok := certPool.AppendCertsFromPEM(ca); !ok {
-		appLog.Errorf("failed to append ca certs: %v", err)
-		return nil, err
-	}
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		appLog.Errorf("can not parse endpoint url: %v", err)
-		return nil, err
-	}
-
-	tlsConfig := &tls.Config{
-		ServerName:   u.Hostname(),
-		Certificates: []tls.Certificate{certificate},
-		RootCAs:      certPool,
-	}
-
-	if server {
-		tlsConfig.ClientCAs = certPool
-		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
-	}
-
-	return credentials.NewTLS(tlsConfig), nil
-}
+const maxSize = 33554432
 
 // GetEndpointTLS creates a grpc client
-// func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
-//
-// 	var (
-// 		c  tlsComponent
-// 		ok bool
-// 	)
-//
-// 	if c, ok = tlsComponents[component]; !ok {
-// 		return nil, fmt.Errorf("unknown component: %s", component)
-// 	}
-//
-// 	var options []grpc.DialOption
-//
-// 	if len(additionalCallOptions) > 0 {
-// 		options = append(options,
-// 			grpc.WithDefaultCallOptions(additionalCallOptions...))
-// 	}
-//
-// 	key, cert, cacert := CertsForComponent(component)
-// 	if c.mtls != "none" && c.mtls != "" {
-//
-// 		appLog.Infof("using mtls for %s", component)
-// 		creds, err := getTransport(cert, key, cacert, c.endpoint, false)
-// 		if err != nil {
-// 			appLog.Errorf("could get transport: %v", err)
-// 			return nil, err
-// 		}
-//
-// 		options = append(options, grpc.WithTransportCredentials(creds))
-//
-// 	} else if c.tls != "none" && c.tls != "" {
-//
-// 		appLog.Infof("using tls for %s", component)
-// 		creds, err := credentials.NewClientTLSFromFile(cacert, "")
-// 		if err != nil {
-// 			return nil, fmt.Errorf("could not load ca cert: %s", err)
-// 		}
-// 		options = append(options, grpc.WithTransportCredentials(creds))
-//
-// 	} else {
-// 		options = append(options, grpc.WithInsecure())
-// 	}
-//
-// 	options = append(options, grpc.WithBalancerName(roundrobin.Name))
-// 	options = append(options, globalGRPCDialOptions...)
-//
-// 	appLog.Infof("dialing with %s", c.endpoint)
-//
-// 	if len(c.endpoint) == 0 {
-// 		return nil, fmt.Errorf("endpoint value empty")
-// 	}
-//
-// 	return grpc.Dial(c.endpoint, options...)
-//
-// }
+func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 
-// FunctionsEndpoint return grpc encpoint for functions services
-func FunctionsEndpoint() string {
-	return grpcCfg.FunctionsEndpoint
-}
+	var additionalCallOptions []grpc.CallOption
+	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(maxSize))
+	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(maxSize))
 
-// IngressEndpoint return grpc encpoint for ingress services
-func IngressEndpoint() string {
-	return grpcCfg.IngressEndpoint
-}
+	var options []grpc.DialOption
 
-// FlowEndpoint return grpc encpoint for flow services
-func FlowEndpoint() string {
-	return grpcCfg.FlowEnpoint
-}
+	options = append(options,
+		grpc.WithDefaultCallOptions(additionalCallOptions...))
 
-// GrpcCfg returns the full grpc configuration
-func GrpcCfg() GrpcConfig {
-	return grpcCfg
-}
-
-func grpcUnmarshalConfig() {
-
-	// try to build the grpc config from envs
-	if _, err := os.Stat("/etc/direktiv/grpc-config.yaml"); os.IsNotExist(err) {
-
-		grpcCfg.FlowEnpoint = os.Getenv(DirektivFlowEndpoint)
-		grpcCfg.FunctionsEndpoint = os.Getenv(DirektivFunctionsEndpoint)
-		grpcCfg.IngressEndpoint = os.Getenv(DirektivIngressEndpoint)
-
-		fmt.Sscan(os.Getenv(DirektivMaxClientRcv), &grpcCfg.MaxRcvClient)
-		fmt.Sscan(os.Getenv(DirektivMaxServerRcv), &grpcCfg.MaxRcvServer)
-		fmt.Sscan(os.Getenv(DirektivMaxClientSend), &grpcCfg.MaxSendClient)
-		fmt.Sscan(os.Getenv(DirektivMaxServerSend), &grpcCfg.MaxSendServer)
-
-		grpcCfg.FlowTLS = os.Getenv(DirektivFlowTLS)
-		grpcCfg.FlowMTLS = os.Getenv(DirektivFlowMTLS)
-
-	} else {
-		cfgBytes, err := ioutil.ReadFile(grpcSettingsFile)
-		if err != nil {
-			return
-		}
-
-		err = yaml.Unmarshal(cfgBytes, &grpcCfg)
-		if err != nil {
-			return
-		}
-	}
-
-	appLog.Infof("setting grpc server send/rcv size: %v/%v", grpcCfg.MaxSendServer, grpcCfg.MaxRcvServer)
-	additionalServerOptions = append(additionalServerOptions, grpc.MaxSendMsgSize(grpcCfg.MaxSendServer))
-	additionalServerOptions = append(additionalServerOptions, grpc.MaxRecvMsgSize(grpcCfg.MaxRcvServer))
-	appLog.Infof("setting grpc client send/rcv size: %v/%v", grpcCfg.MaxSendClient, grpcCfg.MaxRcvClient)
-	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(grpcCfg.MaxSendClient))
-	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(grpcCfg.MaxRcvClient))
+	return grpc.Dial(service, options...)
 
 }
 
 // GrpcStart starts a grpc server
 func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
 
-	// var (
-	// 	c  tlsComponent
-	// 	ok bool
-	// )
-
-	if len(bind) == 0 {
-		return fmt.Errorf("grpc bind for %s empty", name)
-	}
-
-	// if c, ok = tlsComponents[name]; !ok {
-	// 	return fmt.Errorf("unknown component: %s", name)
-	// }
-
-	appLog.Debugf("%s endpoint starting at %s", name, bind)
-
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
 		return err
 	}
 
-	additionalServerOptions = append(additionalServerOptions, globalGRPCServerOptions...)
+	var additionalServerOptions []grpc.ServerOption
+	additionalServerOptions = append(additionalServerOptions, grpc.MaxSendMsgSize(maxSize))
+	additionalServerOptions = append(additionalServerOptions, grpc.MaxRecvMsgSize(maxSize))
 
 	(*server) = grpc.NewServer(additionalServerOptions...)
 

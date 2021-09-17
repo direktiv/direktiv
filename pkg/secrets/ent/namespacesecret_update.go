@@ -20,9 +20,9 @@ type NamespaceSecretUpdate struct {
 	mutation *NamespaceSecretMutation
 }
 
-// Where adds a new predicate for the NamespaceSecretUpdate builder.
+// Where appends a list predicates to the NamespaceSecretUpdate builder.
 func (nsu *NamespaceSecretUpdate) Where(ps ...predicate.NamespaceSecret) *NamespaceSecretUpdate {
-	nsu.mutation.predicates = append(nsu.mutation.predicates, ps...)
+	nsu.mutation.Where(ps...)
 	return nsu
 }
 
@@ -69,6 +69,9 @@ func (nsu *NamespaceSecretUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(nsu.hooks) - 1; i >= 0; i-- {
+			if nsu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nsu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nsu.mutation); err != nil {
@@ -142,8 +145,8 @@ func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error
 	if n, err = sqlgraph.UpdateNodes(ctx, nsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{namespacesecret.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -208,6 +211,9 @@ func (nsuo *NamespaceSecretUpdateOne) Save(ctx context.Context) (*NamespaceSecre
 			return node, err
 		})
 		for i := len(nsuo.hooks) - 1; i >= 0; i-- {
+			if nsuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nsuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nsuo.mutation); err != nil {
@@ -301,8 +307,8 @@ func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *Names
 	if err = sqlgraph.UpdateNode(ctx, nsuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{namespacesecret.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

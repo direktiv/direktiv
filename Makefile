@@ -81,7 +81,8 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 ent: ## Manually regenerates ent database packages.
 	go get entgo.io/ent
 	go generate ./pkg/flow/ent
-	go generate ./pkg/secrets/ent/schema
+	go generate ./pkg/secrets/ent
+	go generate ./pkg/functions/ent
 
 # Helm docs
 

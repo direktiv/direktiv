@@ -39,15 +39,6 @@ spec:
             limits:
               memory: "2048Mi"
               cpu: "2"
-          readinessProbe:
-            httpGet:
-              path: /manifest.json
-              port: 8080
-              {{- if ne  .Values.ui.certificate "none" }}
-              scheme: HTTPS
-              {{- end }}
-            periodSeconds: 10
-            failureThreshold: 3
           image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
           env:
           - name: SERVE_PORT
@@ -58,23 +49,12 @@ spec:
             value: "/api"
           - name: KEYCLOAK_URL
             value: {{ .Values.ui.keycloakUrl }}
-          {{- if ne .Values.ui.certificate "none" }}
-          volumeMounts:
-          - name: certs
-            mountPath: "/etc/direktiv/certs/http"
-            readOnly: true
-          {{- end }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: ui
               containerPort: 8080
               protocol: TCP
       volumes:
-      {{- if ne  .Values.ui.certificate "none" }}
-        - name: certs
-          secret:
-            secretName: {{ .Values.ui.certificate }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

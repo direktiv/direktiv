@@ -26,7 +26,6 @@ func main() {
 	var err error
 
 	dlog.Init()
-	util.Init()
 
 	logger, err = zap.NewDevelopment()
 	if err != nil {
@@ -88,7 +87,7 @@ func initialize() error {
 
 func initFlow() error {
 
-	conn, err := util.GetEndpointTLS(util.TLSFlowComponent)
+	conn, err := util.GetEndpointTLS("service url")
 	if err != nil {
 		return err
 	}

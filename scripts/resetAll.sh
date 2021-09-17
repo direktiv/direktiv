@@ -55,6 +55,7 @@ exe='cd /certs && step certificate create root.linkerd.cluster.local ca.crt ca.k
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 rm -Rf $dir/devcerts/*
+chmod 777 $dir/devcerts
 
 docker run -v $dir/devcerts:/certs  -i smallstep/step-cli /bin/bash -c "$exe"
 
@@ -80,5 +81,7 @@ kubectl create namespace yugabyte
 helm repo add yugabytedb https://charts.yugabyte.com
 
 helm install -n yugabyte -f $dir/../kubernetes/install/db/tiny.yaml yugabyte yugabytedb/yugabyte
+
+helm dependency update $dir/../kubernetes/charts/direktiv
 
 countdown

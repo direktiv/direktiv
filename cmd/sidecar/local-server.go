@@ -38,7 +38,7 @@ type LocalServer struct {
 
 func (srv *LocalServer) initFlow() error {
 
-	conn, err := util.GetEndpointTLS(util.TLSFlowComponent)
+	conn, err := util.GetEndpointTLS("flowservice!!!!")
 	if err != nil {
 		return err
 	}

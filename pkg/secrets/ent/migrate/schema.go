@@ -17,10 +17,16 @@ var (
 	}
 	// NamespaceSecretsTable holds the schema information for the "namespace_secrets" table.
 	NamespaceSecretsTable = &schema.Table{
-		Name:        "namespace_secrets",
-		Columns:     NamespaceSecretsColumns,
-		PrimaryKey:  []*schema.Column{NamespaceSecretsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "namespace_secrets",
+		Columns:    NamespaceSecretsColumns,
+		PrimaryKey: []*schema.Column{NamespaceSecretsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "namespacesecret_name",
+				Unique:  true,
+				Columns: []*schema.Column{NamespaceSecretsColumns[2]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
