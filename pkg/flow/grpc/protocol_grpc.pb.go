@@ -98,6 +98,9 @@ type FlowClient interface {
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
 	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
+	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
+	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type flowClient struct {
@@ -110,7 +113,7 @@ func NewFlowClient(cc grpc.ClientConnInterface) FlowClient {
 
 func (c *flowClient) Namespace(ctx context.Context, in *NamespaceRequest, opts ...grpc.CallOption) (*NamespaceResponse, error) {
 	out := new(NamespaceResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Namespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Namespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +122,7 @@ func (c *flowClient) Namespace(ctx context.Context, in *NamespaceRequest, opts .
 
 func (c *flowClient) Namespaces(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (*NamespacesResponse, error) {
 	out := new(NamespacesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Namespaces", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Namespaces", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +130,7 @@ func (c *flowClient) Namespaces(ctx context.Context, in *NamespacesRequest, opts
 }
 
 func (c *flowClient) NamespacesStream(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (Flow_NamespacesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[0], "/grpc.Flow/NamespacesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[0], "/direktiv_flow.Flow/NamespacesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +163,7 @@ func (x *flowNamespacesStreamClient) Recv() (*NamespacesResponse, error) {
 
 func (c *flowClient) CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
 	out := new(CreateNamespaceResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/CreateNamespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +172,7 @@ func (c *flowClient) CreateNamespace(ctx context.Context, in *CreateNamespaceReq
 
 func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteNamespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +181,7 @@ func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceReq
 
 func (c *flowClient) RenameNamespace(ctx context.Context, in *RenameNamespaceRequest, opts ...grpc.CallOption) (*RenameNamespaceResponse, error) {
 	out := new(RenameNamespaceResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/RenameNamespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +190,7 @@ func (c *flowClient) RenameNamespace(ctx context.Context, in *RenameNamespaceReq
 
 func (c *flowClient) ServerLogs(ctx context.Context, in *ServerLogsRequest, opts ...grpc.CallOption) (*ServerLogsResponse, error) {
 	out := new(ServerLogsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/ServerLogs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ServerLogs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +198,7 @@ func (c *flowClient) ServerLogs(ctx context.Context, in *ServerLogsRequest, opts
 }
 
 func (c *flowClient) ServerLogsParcels(ctx context.Context, in *ServerLogsRequest, opts ...grpc.CallOption) (Flow_ServerLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[1], "/grpc.Flow/ServerLogsParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[1], "/direktiv_flow.Flow/ServerLogsParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +231,7 @@ func (x *flowServerLogsParcelsClient) Recv() (*ServerLogsResponse, error) {
 
 func (c *flowClient) NamespaceLogs(ctx context.Context, in *NamespaceLogsRequest, opts ...grpc.CallOption) (*NamespaceLogsResponse, error) {
 	out := new(NamespaceLogsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/NamespaceLogs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespaceLogs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +239,7 @@ func (c *flowClient) NamespaceLogs(ctx context.Context, in *NamespaceLogsRequest
 }
 
 func (c *flowClient) NamespaceLogsParcels(ctx context.Context, in *NamespaceLogsRequest, opts ...grpc.CallOption) (Flow_NamespaceLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[2], "/grpc.Flow/NamespaceLogsParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[2], "/direktiv_flow.Flow/NamespaceLogsParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +272,7 @@ func (x *flowNamespaceLogsParcelsClient) Recv() (*NamespaceLogsResponse, error) 
 
 func (c *flowClient) WorkflowLogs(ctx context.Context, in *WorkflowLogsRequest, opts ...grpc.CallOption) (*WorkflowLogsResponse, error) {
 	out := new(WorkflowLogsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/WorkflowLogs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/WorkflowLogs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -277,7 +280,7 @@ func (c *flowClient) WorkflowLogs(ctx context.Context, in *WorkflowLogsRequest, 
 }
 
 func (c *flowClient) WorkflowLogsParcels(ctx context.Context, in *WorkflowLogsRequest, opts ...grpc.CallOption) (Flow_WorkflowLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], "/grpc.Flow/WorkflowLogsParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], "/direktiv_flow.Flow/WorkflowLogsParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +313,7 @@ func (x *flowWorkflowLogsParcelsClient) Recv() (*WorkflowLogsResponse, error) {
 
 func (c *flowClient) Directory(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (*DirectoryResponse, error) {
 	out := new(DirectoryResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Directory", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Directory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +321,7 @@ func (c *flowClient) Directory(ctx context.Context, in *DirectoryRequest, opts .
 }
 
 func (c *flowClient) DirectoryStream(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (Flow_DirectoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], "/grpc.Flow/DirectoryStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], "/direktiv_flow.Flow/DirectoryStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +354,7 @@ func (x *flowDirectoryStreamClient) Recv() (*DirectoryResponse, error) {
 
 func (c *flowClient) CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error) {
 	out := new(CreateDirectoryResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/CreateDirectory", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateDirectory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +363,7 @@ func (c *flowClient) CreateDirectory(ctx context.Context, in *CreateDirectoryReq
 
 func (c *flowClient) DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteNode", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNode", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +372,7 @@ func (c *flowClient) DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts
 
 func (c *flowClient) RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error) {
 	out := new(RenameNodeResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/RenameNode", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameNode", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +381,7 @@ func (c *flowClient) RenameNode(ctx context.Context, in *RenameNodeRequest, opts
 
 func (c *flowClient) Node(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error) {
 	out := new(NodeResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Node", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Node", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +390,7 @@ func (c *flowClient) Node(ctx context.Context, in *NodeRequest, opts ...grpc.Cal
 
 func (c *flowClient) Workflow(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (*WorkflowResponse, error) {
 	out := new(WorkflowResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Workflow", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Workflow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -395,7 +398,7 @@ func (c *flowClient) Workflow(ctx context.Context, in *WorkflowRequest, opts ...
 }
 
 func (c *flowClient) WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], "/grpc.Flow/WorkflowStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], "/direktiv_flow.Flow/WorkflowStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +431,7 @@ func (x *flowWorkflowStreamClient) Recv() (*WorkflowResponse, error) {
 
 func (c *flowClient) CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error) {
 	out := new(CreateWorkflowResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/CreateWorkflow", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateWorkflow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +440,7 @@ func (c *flowClient) CreateWorkflow(ctx context.Context, in *CreateWorkflowReque
 
 func (c *flowClient) UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error) {
 	out := new(UpdateWorkflowResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/UpdateWorkflow", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/UpdateWorkflow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +449,7 @@ func (c *flowClient) UpdateWorkflow(ctx context.Context, in *UpdateWorkflowReque
 
 func (c *flowClient) SaveHead(ctx context.Context, in *SaveHeadRequest, opts ...grpc.CallOption) (*SaveHeadResponse, error) {
 	out := new(SaveHeadResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/SaveHead", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SaveHead", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -455,7 +458,7 @@ func (c *flowClient) SaveHead(ctx context.Context, in *SaveHeadRequest, opts ...
 
 func (c *flowClient) DiscardHead(ctx context.Context, in *DiscardHeadRequest, opts ...grpc.CallOption) (*DiscardHeadResponse, error) {
 	out := new(DiscardHeadResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DiscardHead", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DiscardHead", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -464,7 +467,7 @@ func (c *flowClient) DiscardHead(ctx context.Context, in *DiscardHeadRequest, op
 
 func (c *flowClient) Tags(ctx context.Context, in *TagsRequest, opts ...grpc.CallOption) (*TagsResponse, error) {
 	out := new(TagsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Tags", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Tags", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +475,7 @@ func (c *flowClient) Tags(ctx context.Context, in *TagsRequest, opts ...grpc.Cal
 }
 
 func (c *flowClient) TagsStream(ctx context.Context, in *TagsRequest, opts ...grpc.CallOption) (Flow_TagsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], "/grpc.Flow/TagsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], "/direktiv_flow.Flow/TagsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -505,7 +508,7 @@ func (x *flowTagsStreamClient) Recv() (*TagsResponse, error) {
 
 func (c *flowClient) Refs(ctx context.Context, in *RefsRequest, opts ...grpc.CallOption) (*RefsResponse, error) {
 	out := new(RefsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Refs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Refs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -513,7 +516,7 @@ func (c *flowClient) Refs(ctx context.Context, in *RefsRequest, opts ...grpc.Cal
 }
 
 func (c *flowClient) RefsStream(ctx context.Context, in *RefsRequest, opts ...grpc.CallOption) (Flow_RefsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], "/grpc.Flow/RefsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], "/direktiv_flow.Flow/RefsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -546,7 +549,7 @@ func (x *flowRefsStreamClient) Recv() (*RefsResponse, error) {
 
 func (c *flowClient) Revisions(ctx context.Context, in *RevisionsRequest, opts ...grpc.CallOption) (*RevisionsResponse, error) {
 	out := new(RevisionsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Revisions", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Revisions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -554,7 +557,7 @@ func (c *flowClient) Revisions(ctx context.Context, in *RevisionsRequest, opts .
 }
 
 func (c *flowClient) RevisionsStream(ctx context.Context, in *RevisionsRequest, opts ...grpc.CallOption) (Flow_RevisionsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], "/grpc.Flow/RevisionsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], "/direktiv_flow.Flow/RevisionsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -587,7 +590,7 @@ func (x *flowRevisionsStreamClient) Recv() (*RevisionsResponse, error) {
 
 func (c *flowClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteRevision", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteRevision", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -596,7 +599,7 @@ func (c *flowClient) DeleteRevision(ctx context.Context, in *DeleteRevisionReque
 
 func (c *flowClient) Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Tag", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Tag", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -605,7 +608,7 @@ func (c *flowClient) Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallO
 
 func (c *flowClient) Untag(ctx context.Context, in *UntagRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Untag", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Untag", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -614,7 +617,7 @@ func (c *flowClient) Untag(ctx context.Context, in *UntagRequest, opts ...grpc.C
 
 func (c *flowClient) Retag(ctx context.Context, in *RetagRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Retag", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Retag", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -623,7 +626,7 @@ func (c *flowClient) Retag(ctx context.Context, in *RetagRequest, opts ...grpc.C
 
 func (c *flowClient) Router(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (*RouterResponse, error) {
 	out := new(RouterResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Router", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Router", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -631,7 +634,7 @@ func (c *flowClient) Router(ctx context.Context, in *RouterRequest, opts ...grpc
 }
 
 func (c *flowClient) RouterStream(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (Flow_RouterStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], "/grpc.Flow/RouterStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], "/direktiv_flow.Flow/RouterStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -664,7 +667,7 @@ func (x *flowRouterStreamClient) Recv() (*RouterResponse, error) {
 
 func (c *flowClient) EditRouter(ctx context.Context, in *EditRouterRequest, opts ...grpc.CallOption) (*EditRouterResponse, error) {
 	out := new(EditRouterResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/EditRouter", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/EditRouter", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -673,7 +676,7 @@ func (c *flowClient) EditRouter(ctx context.Context, in *EditRouterRequest, opts
 
 func (c *flowClient) ValidateRef(ctx context.Context, in *ValidateRefRequest, opts ...grpc.CallOption) (*ValidateRefResponse, error) {
 	out := new(ValidateRefResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/ValidateRef", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ValidateRef", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -682,7 +685,7 @@ func (c *flowClient) ValidateRef(ctx context.Context, in *ValidateRefRequest, op
 
 func (c *flowClient) ValidateRouter(ctx context.Context, in *ValidateRouterRequest, opts ...grpc.CallOption) (*ValidateRouterResponse, error) {
 	out := new(ValidateRouterResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/ValidateRouter", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ValidateRouter", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -691,7 +694,7 @@ func (c *flowClient) ValidateRouter(ctx context.Context, in *ValidateRouterReque
 
 func (c *flowClient) Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error) {
 	out := new(SecretsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Secrets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Secrets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -699,7 +702,7 @@ func (c *flowClient) Secrets(ctx context.Context, in *SecretsRequest, opts ...gr
 }
 
 func (c *flowClient) SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], "/grpc.Flow/SecretsStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], "/direktiv_flow.Flow/SecretsStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -732,7 +735,7 @@ func (x *flowSecretsStreamClient) Recv() (*SecretsResponse, error) {
 
 func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error) {
 	out := new(SetSecretResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/SetSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -741,7 +744,7 @@ func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts .
 
 func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -750,7 +753,7 @@ func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, 
 
 func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error) {
 	out := new(InstanceResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Instance", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Instance", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -758,7 +761,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], "/grpc.Flow/InstanceStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], "/direktiv_flow.Flow/InstanceStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -791,7 +794,7 @@ func (x *flowInstanceStreamClient) Recv() (*InstanceResponse, error) {
 
 func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (*InstancesResponse, error) {
 	out := new(InstancesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/Instances", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Instances", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -799,7 +802,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], "/grpc.Flow/InstancesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], "/direktiv_flow.Flow/InstancesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -832,7 +835,7 @@ func (x *flowInstancesStreamClient) Recv() (*InstancesResponse, error) {
 
 func (c *flowClient) InstanceInput(ctx context.Context, in *InstanceInputRequest, opts ...grpc.CallOption) (*InstanceInputResponse, error) {
 	out := new(InstanceInputResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/InstanceInput", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceInput", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -841,7 +844,7 @@ func (c *flowClient) InstanceInput(ctx context.Context, in *InstanceInputRequest
 
 func (c *flowClient) InstanceOutput(ctx context.Context, in *InstanceOutputRequest, opts ...grpc.CallOption) (*InstanceOutputResponse, error) {
 	out := new(InstanceOutputResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/InstanceOutput", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceOutput", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -850,7 +853,7 @@ func (c *flowClient) InstanceOutput(ctx context.Context, in *InstanceOutputReque
 
 func (c *flowClient) InstanceLogs(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (*InstanceLogsResponse, error) {
 	out := new(InstanceLogsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/InstanceLogs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceLogs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -858,7 +861,7 @@ func (c *flowClient) InstanceLogs(ctx context.Context, in *InstanceLogsRequest, 
 }
 
 func (c *flowClient) InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], "/grpc.Flow/InstanceLogsParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], "/direktiv_flow.Flow/InstanceLogsParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -891,7 +894,7 @@ func (x *flowInstanceLogsParcelsClient) Recv() (*InstanceLogsResponse, error) {
 
 func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error) {
 	out := new(StartWorkflowResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/StartWorkflow", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/StartWorkflow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -899,7 +902,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], "/grpc.Flow/RunWorkflow", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], "/direktiv_flow.Flow/RunWorkflow", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -932,7 +935,7 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 
 func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/CancelInstance", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CancelInstance", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -941,7 +944,7 @@ func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceReque
 
 func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/BroadcastCloudevent", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/BroadcastCloudevent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -950,7 +953,7 @@ func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloud
 
 func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error) {
 	out := new(NamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/NamespaceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespaceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -958,7 +961,7 @@ func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariabl
 }
 
 func (c *flowClient) NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], "/grpc.Flow/NamespaceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], "/direktiv_flow.Flow/NamespaceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -991,7 +994,7 @@ func (x *flowNamespaceVariableParcelsClient) Recv() (*NamespaceVariableResponse,
 
 func (c *flowClient) NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error) {
 	out := new(NamespaceVariablesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/NamespaceVariables", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespaceVariables", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -999,7 +1002,7 @@ func (c *flowClient) NamespaceVariables(ctx context.Context, in *NamespaceVariab
 }
 
 func (c *flowClient) NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], "/grpc.Flow/NamespaceVariablesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], "/direktiv_flow.Flow/NamespaceVariablesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1032,7 +1035,7 @@ func (x *flowNamespaceVariablesStreamClient) Recv() (*NamespaceVariablesResponse
 
 func (c *flowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*SetNamespaceVariableResponse, error) {
 	out := new(SetNamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/SetNamespaceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetNamespaceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1040,7 +1043,7 @@ func (c *flowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceV
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], "/grpc.Flow/SetNamespaceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], "/direktiv_flow.Flow/SetNamespaceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1075,7 +1078,7 @@ func (x *flowSetNamespaceVariableParcelsClient) CloseAndRecv() (*SetNamespaceVar
 
 func (c *flowClient) DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteNamespaceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNamespaceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1084,7 +1087,7 @@ func (c *flowClient) DeleteNamespaceVariable(ctx context.Context, in *DeleteName
 
 func (c *flowClient) RenameNamespaceVariable(ctx context.Context, in *RenameNamespaceVariableRequest, opts ...grpc.CallOption) (*RenameNamespaceVariableResponse, error) {
 	out := new(RenameNamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/RenameNamespaceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameNamespaceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1093,7 +1096,7 @@ func (c *flowClient) RenameNamespaceVariable(ctx context.Context, in *RenameName
 
 func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (*WorkflowVariableResponse, error) {
 	out := new(WorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/WorkflowVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/WorkflowVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1101,7 +1104,7 @@ func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableR
 }
 
 func (c *flowClient) WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], "/grpc.Flow/WorkflowVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], "/direktiv_flow.Flow/WorkflowVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1134,7 +1137,7 @@ func (x *flowWorkflowVariableParcelsClient) Recv() (*WorkflowVariableResponse, e
 
 func (c *flowClient) WorkflowVariables(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (*WorkflowVariablesResponse, error) {
 	out := new(WorkflowVariablesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/WorkflowVariables", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/WorkflowVariables", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1142,7 +1145,7 @@ func (c *flowClient) WorkflowVariables(ctx context.Context, in *WorkflowVariable
 }
 
 func (c *flowClient) WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], "/grpc.Flow/WorkflowVariablesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], "/direktiv_flow.Flow/WorkflowVariablesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1175,7 +1178,7 @@ func (x *flowWorkflowVariablesStreamClient) Recv() (*WorkflowVariablesResponse, 
 
 func (c *flowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*SetWorkflowVariableResponse, error) {
 	out := new(SetWorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/SetWorkflowVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetWorkflowVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1183,7 +1186,7 @@ func (c *flowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVar
 }
 
 func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], "/grpc.Flow/SetWorkflowVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], "/direktiv_flow.Flow/SetWorkflowVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1218,7 +1221,7 @@ func (x *flowSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetWorkflowVaria
 
 func (c *flowClient) DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteWorkflowVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteWorkflowVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1227,7 +1230,7 @@ func (c *flowClient) DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkf
 
 func (c *flowClient) RenameWorkflowVariable(ctx context.Context, in *RenameWorkflowVariableRequest, opts ...grpc.CallOption) (*RenameWorkflowVariableResponse, error) {
 	out := new(RenameWorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/RenameWorkflowVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameWorkflowVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1236,7 +1239,7 @@ func (c *flowClient) RenameWorkflowVariable(ctx context.Context, in *RenameWorkf
 
 func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error) {
 	out := new(InstanceVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/InstanceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1244,7 +1247,7 @@ func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableR
 }
 
 func (c *flowClient) InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], "/grpc.Flow/InstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], "/direktiv_flow.Flow/InstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1277,7 +1280,7 @@ func (x *flowInstanceVariableParcelsClient) Recv() (*InstanceVariableResponse, e
 
 func (c *flowClient) InstanceVariables(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (*InstanceVariablesResponse, error) {
 	out := new(InstanceVariablesResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/InstanceVariables", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceVariables", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1285,7 +1288,7 @@ func (c *flowClient) InstanceVariables(ctx context.Context, in *InstanceVariable
 }
 
 func (c *flowClient) InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], "/grpc.Flow/InstanceVariablesStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], "/direktiv_flow.Flow/InstanceVariablesStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1318,7 +1321,7 @@ func (x *flowInstanceVariablesStreamClient) Recv() (*InstanceVariablesResponse, 
 
 func (c *flowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVariableRequest, opts ...grpc.CallOption) (*SetInstanceVariableResponse, error) {
 	out := new(SetInstanceVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/SetInstanceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetInstanceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1326,7 +1329,7 @@ func (c *flowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVar
 }
 
 func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], "/grpc.Flow/SetInstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], "/direktiv_flow.Flow/SetInstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1361,7 +1364,7 @@ func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVaria
 
 func (c *flowClient) DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/DeleteInstanceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteInstanceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1370,7 +1373,34 @@ func (c *flowClient) DeleteInstanceVariable(ctx context.Context, in *DeleteInsta
 
 func (c *flowClient) RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error) {
 	out := new(RenameInstanceVariableResponse)
-	err := c.cc.Invoke(ctx, "/grpc.Flow/RenameInstanceVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/RenameInstanceVariable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error) {
+	out := new(JQResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/JQ", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateNodeAttributes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNodeAttributes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1460,6 +1490,9 @@ type FlowServer interface {
 	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
 	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*empty.Empty, error)
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
+	JQ(context.Context, *JQRequest) (*JQResponse, error)
+	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error)
+	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -1704,6 +1737,15 @@ func (UnimplementedFlowServer) DeleteInstanceVariable(context.Context, *DeleteIn
 func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenameInstanceVariable not implemented")
 }
+func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
+}
+func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNodeAttributes not implemented")
+}
+func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNodeAttributes not implemented")
+}
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
 // UnsafeFlowServer may be embedded to opt out of forward compatibility for this service.
@@ -1727,7 +1769,7 @@ func _Flow_Namespace_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Namespace",
+		FullMethod: "/direktiv_flow.Flow/Namespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Namespace(ctx, req.(*NamespaceRequest))
@@ -1745,7 +1787,7 @@ func _Flow_Namespaces_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Namespaces",
+		FullMethod: "/direktiv_flow.Flow/Namespaces",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Namespaces(ctx, req.(*NamespacesRequest))
@@ -1784,7 +1826,7 @@ func _Flow_CreateNamespace_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/CreateNamespace",
+		FullMethod: "/direktiv_flow.Flow/CreateNamespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).CreateNamespace(ctx, req.(*CreateNamespaceRequest))
@@ -1802,7 +1844,7 @@ func _Flow_DeleteNamespace_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteNamespace",
+		FullMethod: "/direktiv_flow.Flow/DeleteNamespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteNamespace(ctx, req.(*DeleteNamespaceRequest))
@@ -1820,7 +1862,7 @@ func _Flow_RenameNamespace_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/RenameNamespace",
+		FullMethod: "/direktiv_flow.Flow/RenameNamespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).RenameNamespace(ctx, req.(*RenameNamespaceRequest))
@@ -1838,7 +1880,7 @@ func _Flow_ServerLogs_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/ServerLogs",
+		FullMethod: "/direktiv_flow.Flow/ServerLogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).ServerLogs(ctx, req.(*ServerLogsRequest))
@@ -1877,7 +1919,7 @@ func _Flow_NamespaceLogs_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/NamespaceLogs",
+		FullMethod: "/direktiv_flow.Flow/NamespaceLogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).NamespaceLogs(ctx, req.(*NamespaceLogsRequest))
@@ -1916,7 +1958,7 @@ func _Flow_WorkflowLogs_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/WorkflowLogs",
+		FullMethod: "/direktiv_flow.Flow/WorkflowLogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).WorkflowLogs(ctx, req.(*WorkflowLogsRequest))
@@ -1955,7 +1997,7 @@ func _Flow_Directory_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Directory",
+		FullMethod: "/direktiv_flow.Flow/Directory",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Directory(ctx, req.(*DirectoryRequest))
@@ -1994,7 +2036,7 @@ func _Flow_CreateDirectory_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/CreateDirectory",
+		FullMethod: "/direktiv_flow.Flow/CreateDirectory",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).CreateDirectory(ctx, req.(*CreateDirectoryRequest))
@@ -2012,7 +2054,7 @@ func _Flow_DeleteNode_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteNode",
+		FullMethod: "/direktiv_flow.Flow/DeleteNode",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteNode(ctx, req.(*DeleteNodeRequest))
@@ -2030,7 +2072,7 @@ func _Flow_RenameNode_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/RenameNode",
+		FullMethod: "/direktiv_flow.Flow/RenameNode",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).RenameNode(ctx, req.(*RenameNodeRequest))
@@ -2048,7 +2090,7 @@ func _Flow_Node_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Node",
+		FullMethod: "/direktiv_flow.Flow/Node",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Node(ctx, req.(*NodeRequest))
@@ -2066,7 +2108,7 @@ func _Flow_Workflow_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Workflow",
+		FullMethod: "/direktiv_flow.Flow/Workflow",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Workflow(ctx, req.(*WorkflowRequest))
@@ -2105,7 +2147,7 @@ func _Flow_CreateWorkflow_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/CreateWorkflow",
+		FullMethod: "/direktiv_flow.Flow/CreateWorkflow",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).CreateWorkflow(ctx, req.(*CreateWorkflowRequest))
@@ -2123,7 +2165,7 @@ func _Flow_UpdateWorkflow_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/UpdateWorkflow",
+		FullMethod: "/direktiv_flow.Flow/UpdateWorkflow",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).UpdateWorkflow(ctx, req.(*UpdateWorkflowRequest))
@@ -2141,7 +2183,7 @@ func _Flow_SaveHead_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/SaveHead",
+		FullMethod: "/direktiv_flow.Flow/SaveHead",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).SaveHead(ctx, req.(*SaveHeadRequest))
@@ -2159,7 +2201,7 @@ func _Flow_DiscardHead_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DiscardHead",
+		FullMethod: "/direktiv_flow.Flow/DiscardHead",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DiscardHead(ctx, req.(*DiscardHeadRequest))
@@ -2177,7 +2219,7 @@ func _Flow_Tags_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Tags",
+		FullMethod: "/direktiv_flow.Flow/Tags",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Tags(ctx, req.(*TagsRequest))
@@ -2216,7 +2258,7 @@ func _Flow_Refs_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Refs",
+		FullMethod: "/direktiv_flow.Flow/Refs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Refs(ctx, req.(*RefsRequest))
@@ -2255,7 +2297,7 @@ func _Flow_Revisions_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Revisions",
+		FullMethod: "/direktiv_flow.Flow/Revisions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Revisions(ctx, req.(*RevisionsRequest))
@@ -2294,7 +2336,7 @@ func _Flow_DeleteRevision_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteRevision",
+		FullMethod: "/direktiv_flow.Flow/DeleteRevision",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteRevision(ctx, req.(*DeleteRevisionRequest))
@@ -2312,7 +2354,7 @@ func _Flow_Tag_Handler(srv interface{}, ctx context.Context, dec func(interface{
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Tag",
+		FullMethod: "/direktiv_flow.Flow/Tag",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Tag(ctx, req.(*TagRequest))
@@ -2330,7 +2372,7 @@ func _Flow_Untag_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Untag",
+		FullMethod: "/direktiv_flow.Flow/Untag",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Untag(ctx, req.(*UntagRequest))
@@ -2348,7 +2390,7 @@ func _Flow_Retag_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Retag",
+		FullMethod: "/direktiv_flow.Flow/Retag",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Retag(ctx, req.(*RetagRequest))
@@ -2366,7 +2408,7 @@ func _Flow_Router_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Router",
+		FullMethod: "/direktiv_flow.Flow/Router",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Router(ctx, req.(*RouterRequest))
@@ -2405,7 +2447,7 @@ func _Flow_EditRouter_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/EditRouter",
+		FullMethod: "/direktiv_flow.Flow/EditRouter",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).EditRouter(ctx, req.(*EditRouterRequest))
@@ -2423,7 +2465,7 @@ func _Flow_ValidateRef_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/ValidateRef",
+		FullMethod: "/direktiv_flow.Flow/ValidateRef",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).ValidateRef(ctx, req.(*ValidateRefRequest))
@@ -2441,7 +2483,7 @@ func _Flow_ValidateRouter_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/ValidateRouter",
+		FullMethod: "/direktiv_flow.Flow/ValidateRouter",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).ValidateRouter(ctx, req.(*ValidateRouterRequest))
@@ -2459,7 +2501,7 @@ func _Flow_Secrets_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Secrets",
+		FullMethod: "/direktiv_flow.Flow/Secrets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Secrets(ctx, req.(*SecretsRequest))
@@ -2498,7 +2540,7 @@ func _Flow_SetSecret_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/SetSecret",
+		FullMethod: "/direktiv_flow.Flow/SetSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).SetSecret(ctx, req.(*SetSecretRequest))
@@ -2516,7 +2558,7 @@ func _Flow_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteSecret",
+		FullMethod: "/direktiv_flow.Flow/DeleteSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteSecret(ctx, req.(*DeleteSecretRequest))
@@ -2534,7 +2576,7 @@ func _Flow_Instance_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Instance",
+		FullMethod: "/direktiv_flow.Flow/Instance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Instance(ctx, req.(*InstanceRequest))
@@ -2573,7 +2615,7 @@ func _Flow_Instances_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/Instances",
+		FullMethod: "/direktiv_flow.Flow/Instances",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).Instances(ctx, req.(*InstancesRequest))
@@ -2612,7 +2654,7 @@ func _Flow_InstanceInput_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/InstanceInput",
+		FullMethod: "/direktiv_flow.Flow/InstanceInput",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).InstanceInput(ctx, req.(*InstanceInputRequest))
@@ -2630,7 +2672,7 @@ func _Flow_InstanceOutput_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/InstanceOutput",
+		FullMethod: "/direktiv_flow.Flow/InstanceOutput",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).InstanceOutput(ctx, req.(*InstanceOutputRequest))
@@ -2648,7 +2690,7 @@ func _Flow_InstanceLogs_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/InstanceLogs",
+		FullMethod: "/direktiv_flow.Flow/InstanceLogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).InstanceLogs(ctx, req.(*InstanceLogsRequest))
@@ -2687,7 +2729,7 @@ func _Flow_StartWorkflow_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/StartWorkflow",
+		FullMethod: "/direktiv_flow.Flow/StartWorkflow",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).StartWorkflow(ctx, req.(*StartWorkflowRequest))
@@ -2726,7 +2768,7 @@ func _Flow_CancelInstance_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/CancelInstance",
+		FullMethod: "/direktiv_flow.Flow/CancelInstance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).CancelInstance(ctx, req.(*CancelInstanceRequest))
@@ -2744,7 +2786,7 @@ func _Flow_BroadcastCloudevent_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/BroadcastCloudevent",
+		FullMethod: "/direktiv_flow.Flow/BroadcastCloudevent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).BroadcastCloudevent(ctx, req.(*BroadcastCloudeventRequest))
@@ -2762,7 +2804,7 @@ func _Flow_NamespaceVariable_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/NamespaceVariable",
+		FullMethod: "/direktiv_flow.Flow/NamespaceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).NamespaceVariable(ctx, req.(*NamespaceVariableRequest))
@@ -2801,7 +2843,7 @@ func _Flow_NamespaceVariables_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/NamespaceVariables",
+		FullMethod: "/direktiv_flow.Flow/NamespaceVariables",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).NamespaceVariables(ctx, req.(*NamespaceVariablesRequest))
@@ -2840,7 +2882,7 @@ func _Flow_SetNamespaceVariable_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/SetNamespaceVariable",
+		FullMethod: "/direktiv_flow.Flow/SetNamespaceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).SetNamespaceVariable(ctx, req.(*SetNamespaceVariableRequest))
@@ -2884,7 +2926,7 @@ func _Flow_DeleteNamespaceVariable_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteNamespaceVariable",
+		FullMethod: "/direktiv_flow.Flow/DeleteNamespaceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteNamespaceVariable(ctx, req.(*DeleteNamespaceVariableRequest))
@@ -2902,7 +2944,7 @@ func _Flow_RenameNamespaceVariable_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/RenameNamespaceVariable",
+		FullMethod: "/direktiv_flow.Flow/RenameNamespaceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).RenameNamespaceVariable(ctx, req.(*RenameNamespaceVariableRequest))
@@ -2920,7 +2962,7 @@ func _Flow_WorkflowVariable_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/WorkflowVariable",
+		FullMethod: "/direktiv_flow.Flow/WorkflowVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).WorkflowVariable(ctx, req.(*WorkflowVariableRequest))
@@ -2959,7 +3001,7 @@ func _Flow_WorkflowVariables_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/WorkflowVariables",
+		FullMethod: "/direktiv_flow.Flow/WorkflowVariables",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).WorkflowVariables(ctx, req.(*WorkflowVariablesRequest))
@@ -2998,7 +3040,7 @@ func _Flow_SetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/SetWorkflowVariable",
+		FullMethod: "/direktiv_flow.Flow/SetWorkflowVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).SetWorkflowVariable(ctx, req.(*SetWorkflowVariableRequest))
@@ -3042,7 +3084,7 @@ func _Flow_DeleteWorkflowVariable_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteWorkflowVariable",
+		FullMethod: "/direktiv_flow.Flow/DeleteWorkflowVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteWorkflowVariable(ctx, req.(*DeleteWorkflowVariableRequest))
@@ -3060,7 +3102,7 @@ func _Flow_RenameWorkflowVariable_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/RenameWorkflowVariable",
+		FullMethod: "/direktiv_flow.Flow/RenameWorkflowVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).RenameWorkflowVariable(ctx, req.(*RenameWorkflowVariableRequest))
@@ -3078,7 +3120,7 @@ func _Flow_InstanceVariable_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/InstanceVariable",
+		FullMethod: "/direktiv_flow.Flow/InstanceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).InstanceVariable(ctx, req.(*InstanceVariableRequest))
@@ -3117,7 +3159,7 @@ func _Flow_InstanceVariables_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/InstanceVariables",
+		FullMethod: "/direktiv_flow.Flow/InstanceVariables",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).InstanceVariables(ctx, req.(*InstanceVariablesRequest))
@@ -3156,7 +3198,7 @@ func _Flow_SetInstanceVariable_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/SetInstanceVariable",
+		FullMethod: "/direktiv_flow.Flow/SetInstanceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).SetInstanceVariable(ctx, req.(*SetInstanceVariableRequest))
@@ -3200,7 +3242,7 @@ func _Flow_DeleteInstanceVariable_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/DeleteInstanceVariable",
+		FullMethod: "/direktiv_flow.Flow/DeleteInstanceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteInstanceVariable(ctx, req.(*DeleteInstanceVariableRequest))
@@ -3218,10 +3260,64 @@ func _Flow_RenameInstanceVariable_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Flow/RenameInstanceVariable",
+		FullMethod: "/direktiv_flow.Flow/RenameInstanceVariable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).RenameInstanceVariable(ctx, req.(*RenameInstanceVariableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JQRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).JQ(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/JQ",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).JQ(ctx, req.(*JQRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_CreateNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNodeAttributesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).CreateNodeAttributes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/CreateNodeAttributes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).CreateNodeAttributes(ctx, req.(*CreateNodeAttributesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_DeleteNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteNodeAttributesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).DeleteNodeAttributes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/DeleteNodeAttributes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).DeleteNodeAttributes(ctx, req.(*DeleteNodeAttributesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3230,7 +3326,7 @@ func _Flow_RenameInstanceVariable_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Flow_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.Flow",
+	ServiceName: "direktiv_flow.Flow",
 	HandlerType: (*FlowServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -3453,6 +3549,18 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "RenameInstanceVariable",
 			Handler:    _Flow_RenameInstanceVariable_Handler,
 		},
+		{
+			MethodName: "JQ",
+			Handler:    _Flow_JQ_Handler,
+		},
+		{
+			MethodName: "CreateNodeAttributes",
+			Handler:    _Flow_CreateNodeAttributes_Handler,
+		},
+		{
+			MethodName: "DeleteNodeAttributes",
+			Handler:    _Flow_DeleteNodeAttributes_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -3584,7 +3692,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InternalClient interface {
 	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
@@ -3604,7 +3711,7 @@ func NewInternalClient(cc grpc.ClientConnInterface) InternalClient {
 
 func (c *internalClient) ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Internal/ReportActionResults", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Internal/ReportActionResults", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3613,7 +3720,7 @@ func (c *internalClient) ReportActionResults(ctx context.Context, in *ReportActi
 
 func (c *internalClient) ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/grpc.Internal/ActionLog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Internal/ActionLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3621,7 +3728,7 @@ func (c *internalClient) ActionLog(ctx context.Context, in *ActionLogRequest, op
 }
 
 func (c *internalClient) NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[0], "/grpc.Internal/NamespaceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[0], "/direktiv_flow.Internal/NamespaceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3653,7 +3760,7 @@ func (x *internalNamespaceVariableParcelsClient) Recv() (*VariableInternalRespon
 }
 
 func (c *internalClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[1], "/grpc.Internal/SetNamespaceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[1], "/direktiv_flow.Internal/SetNamespaceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3687,7 +3794,7 @@ func (x *internalSetNamespaceVariableParcelsClient) CloseAndRecv() (*SetVariable
 }
 
 func (c *internalClient) WorkflowVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_WorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[2], "/grpc.Internal/WorkflowVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[2], "/direktiv_flow.Internal/WorkflowVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3719,7 +3826,7 @@ func (x *internalWorkflowVariableParcelsClient) Recv() (*VariableInternalRespons
 }
 
 func (c *internalClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[3], "/grpc.Internal/SetWorkflowVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[3], "/direktiv_flow.Internal/SetWorkflowVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3753,7 +3860,7 @@ func (x *internalSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetVariableI
 }
 
 func (c *internalClient) InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], "/grpc.Internal/InstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], "/direktiv_flow.Internal/InstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3785,7 +3892,7 @@ func (x *internalInstanceVariableParcelsClient) Recv() (*VariableInternalRespons
 }
 
 func (c *internalClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], "/grpc.Internal/SetInstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], "/direktiv_flow.Internal/SetInstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3823,7 +3930,6 @@ func (x *internalSetInstanceVariableParcelsClient) CloseAndRecv() (*SetVariableI
 // for forward compatibility
 type InternalServer interface {
 	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
 	NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error
 	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error
@@ -3885,7 +3991,7 @@ func _Internal_ReportActionResults_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Internal/ReportActionResults",
+		FullMethod: "/direktiv_flow.Internal/ReportActionResults",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(InternalServer).ReportActionResults(ctx, req.(*ReportActionResultsRequest))
@@ -3903,7 +4009,7 @@ func _Internal_ActionLog_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.Internal/ActionLog",
+		FullMethod: "/direktiv_flow.Internal/ActionLog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(InternalServer).ActionLog(ctx, req.(*ActionLogRequest))
@@ -4056,7 +4162,7 @@ func (x *internalSetInstanceVariableParcelsServer) Recv() (*SetVariableInternalR
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Internal_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.Internal",
+	ServiceName: "direktiv_flow.Internal",
 	HandlerType: (*InternalServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

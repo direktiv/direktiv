@@ -2,7 +2,6 @@ package flow
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -76,9 +75,6 @@ func getPagination(args *grpc.Pagination) (*pagination, error) {
 	p.last = args.GetLast()
 	p.order = args.GetOrder()
 	p.filter = args.GetFilter()
-
-	data, _ := json.MarshalIndent(args, "", "  ")
-	fmt.Println("GET PAGINATION", string(data))
 
 	return p, nil
 
@@ -161,7 +157,7 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 	ids := make([]string, 0)
 	list := make([]map[string]interface{}, 0)
 	for i := 0; i < cp.data.Total(); i++ {
-		ids = append(ids, cp.data.ID(i))
+		ids = append(ids, encodeCustomCursor(cp.data.ID(i)))
 		list = append(list, cp.data.Value(i))
 	}
 

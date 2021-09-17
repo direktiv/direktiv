@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_flow;
 
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
@@ -16,6 +16,7 @@ import "pkg/flow/grpc/secrets.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
+import "pkg/flow/grpc/util.proto";
 
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {
@@ -56,9 +57,9 @@ service Flow {
 	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {}
 	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflows/{path=**}/logs"
+			get: "/api/namespaces/{namespace}/logs/workflows/{path=**}"
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/workflows/{path}/logs"
+				get: "/api/namespaces/{namespace}/logs/workflows/{path}"
 				body: "*"
 			}
 		};
@@ -141,31 +142,37 @@ service Flow {
 	}
 	rpc SaveHead (SaveHeadRequest) returns (SaveHeadResponse) {
 		option (google.api.http) = {
-			patch: "/api/namespaces/{namespace}/workflow/{path=**}/head"
+			patch: "/api/namespaces/{namespace}/head/workflow/{path=**}"
+			additional_bindings {
+				patch: "/api/namespaces/{namespace}/head/workflow/{path}"
+			} 
 		};
 	}
 	rpc DiscardHead (DiscardHeadRequest) returns (DiscardHeadResponse) {
 		option (google.api.http) = {
-			delete: "/api/namespaces/{namespace}/workflow/{path=**}/head"
+			delete: "/api/namespaces/{namespace}/head/workflow/{path=**}"
+			additional_bindings {
+				delete: "/api/namespaces/{namespace}/head/workflow/{path}"
+			} 
 		};
 	}
 	rpc Tags (TagsRequest) returns (TagsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}/tags"
+			get: "/api/namespaces/{namespace}/tags/workflow/{path=**}"
 			body: "*"
 		};
 	}
 	rpc TagsStream (TagsRequest) returns (stream TagsResponse) {}
 	rpc Refs (RefsRequest) returns (RefsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}/refs"
+			get: "/api/namespaces/{namespace}/refs/workflow/{path=**}"
 			body: "*"
 		};
 	}
 	rpc RefsStream (RefsRequest) returns (stream RefsResponse) {}
 	rpc Revisions (RevisionsRequest) returns (RevisionsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}/revisions"
+			get: "/api/namespaces/{namespace}/revisions/workflow/{path=**}"
 			body: "*"
 		};
 	}
@@ -213,14 +220,22 @@ service Flow {
 	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {}
 	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{namespace}/workflow/{path=**}/execute"
+			post: "/api/namespaces/{namespace}/execute/workflow/{path=**}"
 			body: "*"
+			additional_bindings {
+				post: "/api/namespaces/{namespace}/execute/workflow/{path}"
+				body: "*"
+			} 
 		};
 	}
 	rpc RunWorkflow (RunWorkflowRequest) returns (stream RunWorkflowResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{namespace}/workflow/{path=**}/run"
+			post: "/api/namespaces/{namespace}/run/workflow/{path=**}"
 			body: "*"
+			additional_bindings {
+				post: "/api/namespaces/{namespace}/run/workflow/{path}"
+				body: "*"
+			} 
 		};
 	}
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {
@@ -256,6 +271,10 @@ service Flow {
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
 	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
 	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
+
+	rpc JQ (JQRequest) returns (JQResponse) {}
+	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
+	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
 
 	// COMING SOON:
 	//

@@ -57,6 +57,18 @@ func (iu *InodeUpdate) ClearName() *InodeUpdate {
 	return iu
 }
 
+// SetAttributes sets the "attributes" field.
+func (iu *InodeUpdate) SetAttributes(s []string) *InodeUpdate {
+	iu.mutation.SetAttributes(s)
+	return iu
+}
+
+// ClearAttributes clears the value of the "attributes" field.
+func (iu *InodeUpdate) ClearAttributes() *InodeUpdate {
+	iu.mutation.ClearAttributes()
+	return iu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iu *InodeUpdate) SetNamespaceID(id uuid.UUID) *InodeUpdate {
 	iu.mutation.SetNamespaceID(id)
@@ -285,6 +297,19 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: inode.FieldName,
 		})
 	}
+	if value, ok := iu.mutation.Attributes(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: inode.FieldAttributes,
+		})
+	}
+	if iu.mutation.AttributesCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: inode.FieldAttributes,
+		})
+	}
 	if iu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -486,6 +511,18 @@ func (iuo *InodeUpdateOne) SetNillableName(s *string) *InodeUpdateOne {
 // ClearName clears the value of the "name" field.
 func (iuo *InodeUpdateOne) ClearName() *InodeUpdateOne {
 	iuo.mutation.ClearName()
+	return iuo
+}
+
+// SetAttributes sets the "attributes" field.
+func (iuo *InodeUpdateOne) SetAttributes(s []string) *InodeUpdateOne {
+	iuo.mutation.SetAttributes(s)
+	return iuo
+}
+
+// ClearAttributes clears the value of the "attributes" field.
+func (iuo *InodeUpdateOne) ClearAttributes() *InodeUpdateOne {
+	iuo.mutation.ClearAttributes()
 	return iuo
 }
 
@@ -739,6 +776,19 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: inode.FieldName,
+		})
+	}
+	if value, ok := iuo.mutation.Attributes(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: inode.FieldAttributes,
+		})
+	}
+	if iuo.mutation.AttributesCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: inode.FieldAttributes,
 		})
 	}
 	if iuo.mutation.NamespaceCleared() {

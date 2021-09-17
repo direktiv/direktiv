@@ -71,6 +71,12 @@ func (ic *InodeCreate) SetType(s string) *InodeCreate {
 	return ic
 }
 
+// SetAttributes sets the "attributes" field.
+func (ic *InodeCreate) SetAttributes(s []string) *InodeCreate {
+	ic.mutation.SetAttributes(s)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InodeCreate) SetID(u uuid.UUID) *InodeCreate {
 	ic.mutation.SetID(u)
@@ -308,6 +314,14 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 			Column: inode.FieldType,
 		})
 		_node.Type = value
+	}
+	if value, ok := ic.mutation.Attributes(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: inode.FieldAttributes,
+		})
+		_node.Attributes = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

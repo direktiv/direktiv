@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_flow;
 
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 

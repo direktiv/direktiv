@@ -1743,6 +1743,7 @@ type InodeMutation struct {
 	updated_at       *time.Time
 	name             *string
 	_type            *string
+	attributes       *[]string
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
@@ -2000,6 +2001,55 @@ func (m *InodeMutation) ResetType() {
 	m._type = nil
 }
 
+// SetAttributes sets the "attributes" field.
+func (m *InodeMutation) SetAttributes(s []string) {
+	m.attributes = &s
+}
+
+// Attributes returns the value of the "attributes" field in the mutation.
+func (m *InodeMutation) Attributes() (r []string, exists bool) {
+	v := m.attributes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAttributes returns the old "attributes" field's value of the Inode entity.
+// If the Inode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InodeMutation) OldAttributes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAttributes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAttributes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAttributes: %w", err)
+	}
+	return oldValue.Attributes, nil
+}
+
+// ClearAttributes clears the value of the "attributes" field.
+func (m *InodeMutation) ClearAttributes() {
+	m.attributes = nil
+	m.clearedFields[inode.FieldAttributes] = struct{}{}
+}
+
+// AttributesCleared returns if the "attributes" field was cleared in this mutation.
+func (m *InodeMutation) AttributesCleared() bool {
+	_, ok := m.clearedFields[inode.FieldAttributes]
+	return ok
+}
+
+// ResetAttributes resets all changes to the "attributes" field.
+func (m *InodeMutation) ResetAttributes() {
+	m.attributes = nil
+	delete(m.clearedFields, inode.FieldAttributes)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *InodeMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -2190,7 +2240,7 @@ func (m *InodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InodeMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.created_at != nil {
 		fields = append(fields, inode.FieldCreatedAt)
 	}
@@ -2202,6 +2252,9 @@ func (m *InodeMutation) Fields() []string {
 	}
 	if m._type != nil {
 		fields = append(fields, inode.FieldType)
+	}
+	if m.attributes != nil {
+		fields = append(fields, inode.FieldAttributes)
 	}
 	return fields
 }
@@ -2219,6 +2272,8 @@ func (m *InodeMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case inode.FieldType:
 		return m.GetType()
+	case inode.FieldAttributes:
+		return m.Attributes()
 	}
 	return nil, false
 }
@@ -2236,6 +2291,8 @@ func (m *InodeMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldName(ctx)
 	case inode.FieldType:
 		return m.OldType(ctx)
+	case inode.FieldAttributes:
+		return m.OldAttributes(ctx)
 	}
 	return nil, fmt.Errorf("unknown Inode field %s", name)
 }
@@ -2273,6 +2330,13 @@ func (m *InodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetType(v)
 		return nil
+	case inode.FieldAttributes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAttributes(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Inode field %s", name)
 }
@@ -2306,6 +2370,9 @@ func (m *InodeMutation) ClearedFields() []string {
 	if m.FieldCleared(inode.FieldName) {
 		fields = append(fields, inode.FieldName)
 	}
+	if m.FieldCleared(inode.FieldAttributes) {
+		fields = append(fields, inode.FieldAttributes)
+	}
 	return fields
 }
 
@@ -2322,6 +2389,9 @@ func (m *InodeMutation) ClearField(name string) error {
 	switch name {
 	case inode.FieldName:
 		m.ClearName()
+		return nil
+	case inode.FieldAttributes:
+		m.ClearAttributes()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode nullable field %s", name)
@@ -2342,6 +2412,9 @@ func (m *InodeMutation) ResetField(name string) error {
 		return nil
 	case inode.FieldType:
 		m.ResetType()
+		return nil
+	case inode.FieldAttributes:
+		m.ResetAttributes()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode field %s", name)

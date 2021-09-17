@@ -23,6 +23,8 @@ import (
 var ctx = context.Background()
 
 var (
+	addr string
+
 	stream                             bool
 	after, before                      string
 	first, last                        int32
@@ -48,6 +50,7 @@ func main() {
 	}
 	defer logger.Sync()
 
+	serverCmd.Flags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
 
 	rootCmd.AddCommand(serverLogsCmd)
@@ -84,6 +87,9 @@ func main() {
 
 	rootCmd.AddCommand(routerCmd)
 	rootCmd.AddCommand(editRouterCmd)
+	rootCmd.AddCommand(secretsCmd)
+	rootCmd.AddCommand(setSecretCmd)
+	rootCmd.AddCommand(deleteSecretCmd)
 
 	err = rootCmd.Execute()
 	if err != nil {
@@ -107,7 +113,7 @@ func addPaginationFlags(cmd *cobra.Command) {
 
 func client() (grpc.FlowClient, io.Closer, error) {
 
-	conn, err := libgrpc.Dial("192.168.1.60:8080", libgrpc.WithInsecure())
+	conn, err := libgrpc.Dial(addr, libgrpc.WithInsecure())
 	if err != nil {
 		return nil, nil, err
 	}

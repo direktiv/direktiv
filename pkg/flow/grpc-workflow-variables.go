@@ -16,6 +16,8 @@ import (
 
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	nsc := flow.db.Namespace
 
 	d, err := flow.traverseToWorkflowVariable(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetKey(), true)
@@ -44,6 +46,8 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 }
 
 func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv grpc.Flow_WorkflowVariableParcelsServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
@@ -98,6 +102,8 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 }
 
 func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVariablesRequest) (*grpc.WorkflowVariablesResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -157,6 +163,8 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 }
 
 func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, srv grpc.Flow_WorkflowVariablesStreamServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 	phash := ""
@@ -239,6 +247,8 @@ resend:
 
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	hash := checksum(req.Data)
 
 	tx, err := flow.db.Tx(ctx)
@@ -289,6 +299,8 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 }
 
 func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariableParcelsServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
@@ -395,6 +407,8 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 
 func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -443,6 +457,8 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 }
 
 func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
