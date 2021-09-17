@@ -26,7 +26,7 @@ func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
 	vars := new(vars)
 
 	vars.server = srv
-	vars.listener, err = net.Listen("tcp", srv.conf.BindVars)
+	vars.listener, err = net.Listen("tcp", "0.0.0.0:9999")
 	if err != nil {
 		return nil, err
 	}
