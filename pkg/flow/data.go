@@ -102,6 +102,37 @@ func atobMapBuilder(t reflect.Type, v reflect.Value) interface{} {
 
 	m := make(map[string]interface{})
 
+	iter := v.MapRange()
+
+	for iter.Next() {
+		kv := iter.Key()
+		vv := iter.Value()
+
+		if !vv.CanInterface() {
+			continue
+		}
+
+		key := kv.String()
+
+		val := vv.Interface()
+		m[key] = val
+
+	}
+
+	x := make(map[string]interface{})
+
+	for k, v := range m {
+		x[k] = atobBuilder(v)
+	}
+
+	return x
+
+}
+
+func atobStructBuilder(t reflect.Type, v reflect.Value) interface{} {
+
+	m := make(map[string]interface{})
+
 	for i := 0; i < v.NumField(); i++ {
 
 		if !v.Field(i).CanInterface() {
@@ -230,8 +261,10 @@ deref:
 			return encodeCursor(x.(ent.Cursor))
 		case time.Time:
 			return timestamppb.New(x.(time.Time))
-		default:
+		case map[string]interface{}:
 			return atobMapBuilder(t, v)
+		default:
+			return atobStructBuilder(t, v)
 		}
 	default:
 		x := v.Interface()

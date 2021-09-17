@@ -15,7 +15,9 @@ import (
 
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
+	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const parcelSize = 0x100000
@@ -86,6 +88,9 @@ type server struct {
 
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
+	dlog.Init()
+	util.Init()
+
 	srv, err := newServer(logger, conf)
 	if err != nil {
 		return err
@@ -138,7 +143,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = initPubSub(srv, srv.conf.Database)
+	srv.pubsub, err = initPubSub(srv.sugar, srv, srv.conf.Database)
 	if err != nil {
 		return err
 	}
