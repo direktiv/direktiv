@@ -21,6 +21,8 @@ const (
 	FieldName = "name"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
+	// FieldAttributes holds the string denoting the attributes field in the database.
+	FieldAttributes = "attributes"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -62,6 +64,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldName,
 	FieldType,
+	FieldAttributes,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "inodes"

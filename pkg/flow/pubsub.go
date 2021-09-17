@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"go.uber.org/zap"
 )
 
 const (
@@ -24,6 +25,7 @@ const (
 type pubsub struct {
 	id       uuid.UUID
 	notifier notifier
+	log      *zap.SugaredLogger
 
 	handlers map[string]func(*PubsubUpdate)
 
@@ -61,11 +63,12 @@ type notifier interface {
 	notifyHostname(string, string) error
 }
 
-func initPubSub(notifier notifier, database string) (*pubsub, error) {
+func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pubsub, error) {
 
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "pubsub error: %v\n", err)
+			log.Errorf("pubsub error: %v\n", err)
+			os.Exit(1)
 		}
 	}
 
@@ -78,6 +81,7 @@ func initPubSub(notifier notifier, database string) (*pubsub, error) {
 
 	pubsub := new(pubsub)
 	pubsub.id = uuid.New()
+	pubsub.log = log
 
 	pubsub.hostname, err = os.Hostname()
 	if err != nil {
@@ -169,7 +173,8 @@ func (pubsub *pubsub) dispatcher() {
 		}
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "pubsub error: %v\n", err)
+			pubsub.log.Errorf("pubsub error: %v\n", err)
+			os.Exit(1)
 		}
 
 	}

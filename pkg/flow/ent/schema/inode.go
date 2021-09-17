@@ -26,6 +26,7 @@ func (Inode) Fields() []ent.Field {
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("name").Match(NameRegex).Optional().Annotations(entgql.OrderField("NAME")),
 		field.String("type").Immutable(),
+		field.Strings("attributes").Optional(),
 	}
 }
 

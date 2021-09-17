@@ -273,6 +273,8 @@ service Flow {
 	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
 
 	rpc JQ (JQRequest) returns (JQResponse) {}
+	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
+	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
 
 	// COMING SOON:
 	//

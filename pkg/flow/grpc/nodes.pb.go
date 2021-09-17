@@ -26,12 +26,13 @@ type Node struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CreatedAt *timestamp.Timestamp `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Name      string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Path      string               `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
-	Parent    string               `protobuf:"bytes,5,opt,name=parent,proto3" json:"parent,omitempty"`
-	Type      string               `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
+	CreatedAt  *timestamp.Timestamp `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt  *timestamp.Timestamp `protobuf:"bytes,2,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Name       string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Path       string               `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
+	Parent     string               `protobuf:"bytes,5,opt,name=parent,proto3" json:"parent,omitempty"`
+	Type       string               `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
+	Attributes []string             `protobuf:"bytes,7,rep,name=attributes,proto3" json:"attributes,omitempty"`
 }
 
 func (x *Node) Reset() {
@@ -106,6 +107,13 @@ func (x *Node) GetType() string {
 		return x.Type
 	}
 	return ""
+}
+
+func (x *Node) GetAttributes() []string {
+	if x != nil {
+		return x.Attributes
+	}
+	return nil
 }
 
 type DirectoryRequest struct {
@@ -667,6 +675,132 @@ func (x *RenameNodeResponse) GetNode() *Node {
 	return nil
 }
 
+type CreateNodeAttributesRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace  string   `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path       string   `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Attributes []string `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
+}
+
+func (x *CreateNodeAttributesRequest) Reset() {
+	*x = CreateNodeAttributesRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_nodes_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateNodeAttributesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateNodeAttributesRequest) ProtoMessage() {}
+
+func (x *CreateNodeAttributesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_nodes_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateNodeAttributesRequest.ProtoReflect.Descriptor instead.
+func (*CreateNodeAttributesRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_nodes_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CreateNodeAttributesRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *CreateNodeAttributesRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *CreateNodeAttributesRequest) GetAttributes() []string {
+	if x != nil {
+		return x.Attributes
+	}
+	return nil
+}
+
+type DeleteNodeAttributesRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace  string   `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path       string   `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Attributes []string `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
+}
+
+func (x *DeleteNodeAttributesRequest) Reset() {
+	*x = DeleteNodeAttributesRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_nodes_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteNodeAttributesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteNodeAttributesRequest) ProtoMessage() {}
+
+func (x *DeleteNodeAttributesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_nodes_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteNodeAttributesRequest.ProtoReflect.Descriptor instead.
+func (*DeleteNodeAttributesRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_nodes_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *DeleteNodeAttributesRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *DeleteNodeAttributesRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *DeleteNodeAttributesRequest) GetAttributes() []string {
+	if x != nil {
+		return x.Attributes
+	}
+	return nil
+}
+
 var File_pkg_flow_grpc_nodes_proto protoreflect.FileDescriptor
 
 var file_pkg_flow_grpc_nodes_proto_rawDesc = []byte{
@@ -676,7 +810,7 @@ var file_pkg_flow_grpc_nodes_proto_rawDesc = []byte{
 	0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65,
 	0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x70, 0x6b, 0x67,
 	0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x70, 0x61, 0x67, 0x69, 0x6e,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd0, 0x01, 0x0a, 0x04,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf0, 0x01, 0x0a, 0x04,
 	0x4e, 0x6f, 0x64, 0x65, 0x12, 0x39, 0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f,
 	0x61, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
 	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73,
@@ -689,7 +823,9 @@ var file_pkg_flow_grpc_nodes_proto_rawDesc = []byte{
 	0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61,
 	0x74, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x06, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79,
-	0x70, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x7f,
+	0x70, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x1e,
+	0x0a, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x18, 0x07, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x22, 0x7f,
 	0x0a, 0x10, 0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
@@ -757,11 +893,25 @@ var file_pkg_flow_grpc_nodes_proto_rawDesc = []byte{
 	0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65,
 	0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
-	0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x42, 0x2b,
-	0x5a, 0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x6f, 0x72,
-	0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0x6f,
+	0x0a, 0x1b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x74, 0x74, 0x72,
+	0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a,
+	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70,
+	0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12,
+	0x1e, 0x0a, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x18, 0x03, 0x20,
+	0x03, 0x28, 0x09, 0x52, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x22,
+	0x6f, 0x0a, 0x1b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x74, 0x74,
+	0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c,
+	0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04,
+	0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68,
+	0x12, 0x1e, 0x0a, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x18, 0x03,
+	0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73,
+	0x42, 0x2b, 0x5a, 0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76,
+	0x6f, 0x72, 0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f,
+	0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -776,28 +926,30 @@ func file_pkg_flow_grpc_nodes_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_nodes_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_nodes_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_pkg_flow_grpc_nodes_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_pkg_flow_grpc_nodes_proto_goTypes = []interface{}{
-	(*Node)(nil),                    // 0: direktiv_flow.Node
-	(*DirectoryRequest)(nil),        // 1: direktiv_flow.DirectoryRequest
-	(*DirectoryResponseEdge)(nil),   // 2: direktiv_flow.DirectoryResponseEdge
-	(*DirectoryChildren)(nil),       // 3: direktiv_flow.DirectoryChildren
-	(*DirectoryResponse)(nil),       // 4: direktiv_flow.DirectoryResponse
-	(*CreateDirectoryRequest)(nil),  // 5: direktiv_flow.CreateDirectoryRequest
-	(*CreateDirectoryResponse)(nil), // 6: direktiv_flow.CreateDirectoryResponse
-	(*DeleteNodeRequest)(nil),       // 7: direktiv_flow.DeleteNodeRequest
-	(*RenameNodeRequest)(nil),       // 8: direktiv_flow.RenameNodeRequest
-	(*RenameNodeResponse)(nil),      // 9: direktiv_flow.RenameNodeResponse
-	(*timestamp.Timestamp)(nil),     // 10: google.protobuf.Timestamp
-	(*Pagination)(nil),              // 11: direktiv_flow.Pagination
-	(*PageInfo)(nil),                // 12: direktiv_flow.PageInfo
+	(*Node)(nil),                        // 0: direktiv_flow.Node
+	(*DirectoryRequest)(nil),            // 1: direktiv_flow.DirectoryRequest
+	(*DirectoryResponseEdge)(nil),       // 2: direktiv_flow.DirectoryResponseEdge
+	(*DirectoryChildren)(nil),           // 3: direktiv_flow.DirectoryChildren
+	(*DirectoryResponse)(nil),           // 4: direktiv_flow.DirectoryResponse
+	(*CreateDirectoryRequest)(nil),      // 5: direktiv_flow.CreateDirectoryRequest
+	(*CreateDirectoryResponse)(nil),     // 6: direktiv_flow.CreateDirectoryResponse
+	(*DeleteNodeRequest)(nil),           // 7: direktiv_flow.DeleteNodeRequest
+	(*RenameNodeRequest)(nil),           // 8: direktiv_flow.RenameNodeRequest
+	(*RenameNodeResponse)(nil),          // 9: direktiv_flow.RenameNodeResponse
+	(*CreateNodeAttributesRequest)(nil), // 10: direktiv_flow.CreateNodeAttributesRequest
+	(*DeleteNodeAttributesRequest)(nil), // 11: direktiv_flow.DeleteNodeAttributesRequest
+	(*timestamp.Timestamp)(nil),         // 12: google.protobuf.Timestamp
+	(*Pagination)(nil),                  // 13: direktiv_flow.Pagination
+	(*PageInfo)(nil),                    // 14: direktiv_flow.PageInfo
 }
 var file_pkg_flow_grpc_nodes_proto_depIdxs = []int32{
-	10, // 0: direktiv_flow.Node.created_at:type_name -> google.protobuf.Timestamp
-	10, // 1: direktiv_flow.Node.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 2: direktiv_flow.DirectoryRequest.pagination:type_name -> direktiv_flow.Pagination
+	12, // 0: direktiv_flow.Node.created_at:type_name -> google.protobuf.Timestamp
+	12, // 1: direktiv_flow.Node.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 2: direktiv_flow.DirectoryRequest.pagination:type_name -> direktiv_flow.Pagination
 	0,  // 3: direktiv_flow.DirectoryResponseEdge.node:type_name -> direktiv_flow.Node
-	12, // 4: direktiv_flow.DirectoryChildren.pageInfo:type_name -> direktiv_flow.PageInfo
+	14, // 4: direktiv_flow.DirectoryChildren.pageInfo:type_name -> direktiv_flow.PageInfo
 	2,  // 5: direktiv_flow.DirectoryChildren.edges:type_name -> direktiv_flow.DirectoryResponseEdge
 	0,  // 6: direktiv_flow.DirectoryResponse.node:type_name -> direktiv_flow.Node
 	3,  // 7: direktiv_flow.DirectoryResponse.children:type_name -> direktiv_flow.DirectoryChildren
@@ -937,6 +1089,30 @@ func file_pkg_flow_grpc_nodes_proto_init() {
 				return nil
 			}
 		}
+		file_pkg_flow_grpc_nodes_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateNodeAttributesRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_nodes_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteNodeAttributesRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -944,7 +1120,7 @@ func file_pkg_flow_grpc_nodes_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_nodes_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

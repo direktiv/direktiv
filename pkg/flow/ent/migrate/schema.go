@@ -89,6 +89,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Nullable: true},
 		{Name: "type", Type: field.TypeString},
+		{Name: "attributes", Type: field.TypeJSON, Nullable: true},
 		{Name: "inode_children", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_inodes", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_inode", Type: field.TypeUUID, Unique: true, Nullable: true},
@@ -101,19 +102,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "inodes_inodes_children",
-				Columns:    []*schema.Column{InodesColumns[5]},
+				Columns:    []*schema.Column{InodesColumns[6]},
 				RefColumns: []*schema.Column{InodesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "inodes_namespaces_inodes",
-				Columns:    []*schema.Column{InodesColumns[6]},
+				Columns:    []*schema.Column{InodesColumns[7]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "inodes_workflows_inode",
-				Columns:    []*schema.Column{InodesColumns[7]},
+				Columns:    []*schema.Column{InodesColumns[8]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -122,7 +123,7 @@ var (
 			{
 				Name:    "inode_name_inode_children",
 				Unique:  true,
-				Columns: []*schema.Column{InodesColumns[3], InodesColumns[5]},
+				Columns: []*schema.Column{InodesColumns[3], InodesColumns[6]},
 			},
 		},
 	}
