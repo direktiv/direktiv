@@ -17,6 +17,7 @@ import (
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/metrics"
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
@@ -84,6 +85,8 @@ type server struct {
 	flow     *flow
 	internal *internal
 	events   *events
+
+	metrics *metrics.Client
 }
 
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
@@ -170,6 +173,13 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.events.Close)
+
+	srv.sugar.Debug("Initializing metrics.")
+
+	srv.metrics, err = metrics.NewClient()
+	if err != nil {
+		return err
+	}
 
 	srv.sugar.Debug("Initializing engine.")
 

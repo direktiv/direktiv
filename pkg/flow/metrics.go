@@ -7,6 +7,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/metrics"
 )
 
@@ -99,25 +100,24 @@ func setupPrometheusEndpoint() {
 
 }
 
-/*
-func (flow *flow) WorkflowMetrics(ctx context.Context, in *ingress.WorkflowMetricsRequest) (*ingress.WorkflowMetricsResponse, error) {
+func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 
-	resp, err := is.wfServer.engine.metricsClient.GetMetrics(&metrics.GetMetricsArgs{
-		Namespace: *in.Namespace,
-		Workflow:  *in.Workflow,
-		Since:     in.SinceTimestamp.AsTime(),
+	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
+		Namespace: req.Namespace,
+		Workflow:  req.Path,
+		Since:     req.SinceTimestamp.AsTime(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	out := new(ingress.WorkflowMetricsResponse)
-	out.TotalInstancesRun = &resp.TotalInstancesRun
-	out.TotalInstanceMilliseconds = &resp.TotalInstanceMilliSeconds
-	out.SuccessfulExecutions = &resp.SuccessfulExecutions
-	out.FailedExecutions = &resp.FailedExecutions
-	out.SampleSize = &resp.TotalInstancesRun
-	out.MeanInstanceMilliseconds = &resp.MeanInstanceMilliSeconds
+	out := new(grpc.WorkflowMetricsResponse)
+	out.TotalInstancesRun = resp.TotalInstancesRun
+	out.TotalInstanceMilliseconds = resp.TotalInstanceMilliSeconds
+	out.SuccessfulExecutions = resp.SuccessfulExecutions
+	out.FailedExecutions = resp.FailedExecutions
+	out.SampleSize = resp.TotalInstancesRun
+	out.MeanInstanceMilliseconds = resp.MeanInstanceMilliSeconds
 
 	out.ErrorCodes = resp.ErrorCodes
 	out.ErrorCodesRepresentation = resp.ErrorCodesRepresentation
@@ -126,29 +126,29 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, in *ingress.WorkflowMetri
 	sr = float32(resp.SuccessRate)
 	fr = float32(resp.FailureRate)
 
-	out.SuccessRate = &sr
-	out.FailureRate = &fr
+	out.SuccessRate = sr
+	out.FailureRate = fr
 
-	states := make([]*ingress.State, 0)
+	states := make([]*grpc.State, 0)
 	for _, s := range resp.States {
 
 		thisState := s
 
-		is := new(ingress.State)
+		is := new(grpc.State)
 		x := thisState.Name
-		is.Name = &x
+		is.Name = x
 
 		is.Invokers = thisState.Invokers
 		is.InvokersRepresentation = thisState.InvokersRepresentation
 
-		is.TotalExecutions = &thisState.TotalExecutions
-		is.TotalMilliseconds = &thisState.TotalMilliSeconds
-		is.TotalSuccesses = &thisState.TotalSuccesses
-		is.TotalFailures = &thisState.TotalFailures
-		is.TotalRetries = &thisState.TotalRetries
-		is.Outcomes = &ingress.Outcomes{
-			Success:     &thisState.Outcomes.EndStates.Success,
-			Failure:     &thisState.Outcomes.EndStates.Failure,
+		is.TotalExecutions = thisState.TotalExecutions
+		is.TotalMilliseconds = thisState.TotalMilliSeconds
+		is.TotalSuccesses = thisState.TotalSuccesses
+		is.TotalFailures = thisState.TotalFailures
+		is.TotalRetries = thisState.TotalRetries
+		is.Outcomes = &grpc.Outcomes{
+			Success:     thisState.Outcomes.EndStates.Success,
+			Failure:     thisState.Outcomes.EndStates.Failure,
 			Transitions: s.Outcomes.Transitions,
 		}
 
@@ -156,21 +156,21 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, in *ingress.WorkflowMetri
 		sr = float32(thisState.MeanOutcomes.EndStates.Success)
 		fr = float32(thisState.MeanOutcomes.EndStates.Failure)
 
-		is.MeanOutcomes = &ingress.MeanOutcomes{
-			Success:     &sr,
-			Failure:     &fr,
+		is.MeanOutcomes = &grpc.MeanOutcomes{
+			Success:     sr,
+			Failure:     fr,
 			Transitions: s.MeanOutcomes.Transitions,
 		}
-		is.MeanExecutionsPerInstance = &thisState.MeanExecutionsPerInstance
-		is.MeanMillisecondsPerInstance = &thisState.MeanMilliSecondsPerInstance
+		is.MeanExecutionsPerInstance = thisState.MeanExecutionsPerInstance
+		is.MeanMillisecondsPerInstance = thisState.MeanMilliSecondsPerInstance
 
 		sr2 := float32(thisState.SuccessRate)
 		fr2 := float32(thisState.FailureRate)
 		ar := float32(thisState.MeanRetries)
 
-		is.SuccessRate = &sr2
-		is.FailureRate = &fr2
-		is.MeanRetries = &ar
+		is.SuccessRate = sr2
+		is.FailureRate = fr2
+		is.MeanRetries = ar
 
 		is.UnhandledErrors = thisState.UnhandledErrors
 		is.UnhandledErrorsRepresentation = thisState.UnhandledErrorsRepresentation
@@ -182,21 +182,8 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, in *ingress.WorkflowMetri
 
 	return out, nil
 }
-*/
 
 func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemory, nextState, errCode string, retrying bool) {
-
-	// TODO: reportStateEnd(wli.namespace, wli.wf.ID, wli.logic.ID(), wli.rec.StateBeginTime)
-
-	if im.Step() == 0 {
-		return
-	}
-
-	if im.Status() != StatusPending {
-		return
-	}
-
-	args := new(metrics.InsertRecordArgs)
 
 	ns, err := engine.InstanceNamespace(ctx, im)
 	if err != nil {
@@ -209,6 +196,18 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		engine.sugar.Error(err)
 		return
 	}
+
+	reportStateEnd(ns.Name, wf.ID.String(), im.logic.ID(), im.in.Edges.Runtime.StateBeginTime)
+
+	if im.Step() == 0 {
+		return
+	}
+
+	if im.Status() != StatusPending {
+		return
+	}
+
+	args := new(metrics.InsertRecordArgs)
 
 	args.Namespace = ns.ID.String()
 	args.Workflow = wf.ID.String()
@@ -238,11 +237,10 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		args.Invoker = "start"
 	}
 
-	// TODO
-	// err = we.metricsClient.InsertRecord(args)
-	// if err != nil {
-	// 	engine.sugar.Error(err)
-	// }
+	err = engine.metrics.InsertRecord(args)
+	if err != nil {
+		engine.sugar.Error(err)
+	}
 
 }
 
