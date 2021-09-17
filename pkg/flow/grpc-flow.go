@@ -3,11 +3,14 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 type flow struct {
@@ -69,6 +72,7 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 	err := json.Unmarshal(data, &input)
 	if err != nil {
+		err = status.Error(codes.AlreadyExists, fmt.Sprintf("invalid json data: %v", err))
 		return nil, err
 	}
 
@@ -76,6 +80,7 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 	results, err := jq(input, command)
 	if err != nil {
+		err = status.Error(codes.AlreadyExists, fmt.Sprintf("error executing JQ command: %v", err))
 		return nil, err
 	}
 

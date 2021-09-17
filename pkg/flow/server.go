@@ -27,6 +27,7 @@ type Config struct {
 	Database          string `yaml:"database"`
 	BindFlow          string `yaml:"bind_flow"`
 	BindInternal      string `yaml:"bind_internal"`
+	BindVars          string `yaml:"bind_vars"`
 	FunctionsProtocol string `yaml:"functions-protocol"`
 }
 
@@ -60,6 +61,11 @@ func ReadConfig(file string) (*Config, error) {
 		c.BindInternal = s
 	}
 
+	s = os.Getenv("BIND_VARS")
+	if s != "" {
+		c.BindVars = s
+	}
+
 	s = os.Getenv("FUNCTIONS_PROTOCOL")
 	if s != "" {
 		c.FunctionsProtocol = s
@@ -85,6 +91,7 @@ type server struct {
 	flow     *flow
 	internal *internal
 	events   *events
+	vars     *vars
 
 	metrics *metrics.Client
 }
@@ -192,10 +199,17 @@ func (srv *server) start(ctx context.Context) error {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
-	wg.Add(2)
+	wg.Add(3)
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	srv.sugar.Debug("Initializing vars server.")
+
+	srv.vars, err = initVarsServer(cctx, srv)
+	if err != nil {
+		return err
+	}
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
@@ -214,6 +228,20 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.vars.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
 
 	go func() {
 		defer wg.Done()
