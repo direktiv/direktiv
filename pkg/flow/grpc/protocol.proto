@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_flow;
 
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
@@ -204,12 +204,12 @@ service Flow {
 	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
 	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances/{instance}"
+			get: "/api/namespaces/{namespace}/instances/{instance}/input"
 		};
 	}
 	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances/{instance}"
+			get: "/api/namespaces/{namespace}/instances/{instance}/output"
 		};
 	}
 	rpc InstanceLogs (InstanceLogsRequest) returns (InstanceLogsResponse) {

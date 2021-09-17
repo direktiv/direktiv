@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_flow;
 
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
@@ -72,8 +72,8 @@ message InstanceOutputResponse {
 }
 
 message InstancesRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
+	string namespace = 1;
+	Pagination pagination = 2;
 }
 
 message InstancesResponse {
