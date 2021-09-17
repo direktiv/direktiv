@@ -190,12 +190,6 @@ tail-secrets: ## Tail logs for currently active 'secrets' container.
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
 	kubectl logs -f ${FLOW_POD} secrets
 
-.PHONY: tail-api
-tail-api: ## Tail logs for currently active 'api' container.
-	$(eval API_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-api") | .metadata.name'))
-	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
-	kubectl logs -f ${API_POD} api
-
 .PHONY: tail-functions
 tail-functions: ## Tail logs for currently active 'functions' container.
 	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
