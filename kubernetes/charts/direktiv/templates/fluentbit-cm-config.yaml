@@ -14,19 +14,11 @@ data:
     [OUTPUT]
         Name          pgsql
         Match         functions
-        {{- if .Values.fluentbit.host }}
-        Host          {{ .Values.fluentbit.host }}
-        Port          {{ .Values.fluentbit.port }}
-        User          {{ .Values.fluentbit.user }}
-        Password      {{ .Values.fluentbit.password }}
-        Database      {{ .Values.fluentbit.database }}
-        {{- else }}
-        Host          {{ printf "%s-support.%s" ( include "direktiv.fullname" . ) .Release.Namespace }}
-        Port          5432
-        User          direktiv
-        Password      direktivdirektiv
-        Database      direktiv
-        {{- end}}
+        Host          {{ .Values.database.host }}
+        Port          {{ .Values.database.port }}
+        User          {{ .Values.database.user }}
+        Password      {{ .Values.database.password }}
+        Database      {{ .Values.database.name }}
         Timestamp_Key ts
 
     [INPUT]

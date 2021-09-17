@@ -1,8 +1,7 @@
-{{- if .Values.withFlow -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "direktiv.fullname" . }}
+  name: {{ include "direktiv.fullname" . }}-flow
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
@@ -222,4 +221,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}

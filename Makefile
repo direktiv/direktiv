@@ -83,6 +83,14 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./pkg/flow/ent
 	go generate ./pkg/secrets/ent/schema
 
+# Helm docs
+
+.PHONY: helm-docs
+helm-docs: ## Generates helm documentation
+helm-docs:
+	GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
+	helm-docs kubernetes/charts
+
 # PROTOC
 
 PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)

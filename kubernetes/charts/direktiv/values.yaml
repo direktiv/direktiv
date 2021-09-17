@@ -1,3 +1,32 @@
+# -- enable debug across all direktiv components
+debug: false
+
+database:
+  # -- database host
+  host:          "yb-tservers.yugabyte"
+  # -- database port
+  port:          5433
+  # -- database user
+  user:          "direktiv"
+  # -- database password
+  password:      "direktiv"
+  # -- database name, auto created if it does not exist
+  name:      "direktiv"
+  # -- sslmode for database
+  sslmode:       require
+
+
+# -- service account for flow component
+serviceAccount:
+  annotations: {}
+  name: ""
+  # example to annotate for GCP database access
+  #   annotations:
+  #      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
+
+
+
+
 kube-prometheus:
   alertmanager:
     enabled: false
@@ -44,16 +73,7 @@ registry: "docker.io"
 pullPolicy: Always
 imagePullSecrets: []
 
-# if using proxy the user needs to be a valid IAM user with access to the database
-# e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
-# to to google with:
-# ccount:
-#   annotations:
-#      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
-serviceAccount:
-  annotations: {}
-  name: ""
-  create: true
+
 
 # proxy settings
 http_proxy: ""
@@ -68,15 +88,12 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 
 # support services
-withSupport: true
-withFlow: true
+
 withUI: true
 withAPI: true
 
 supportPersist: false
 
-# enable debug
-debug: false
 
 networkPolicies:
   enabled: false
@@ -199,17 +216,14 @@ functions:
     #       memory: "2Gi"
     #       cpu:    "1"
 
+
+
 fluentbit:
-  host:          ""
-  port:          5432
-  user:          ""
-  password:      ""
-  database:      ""
-  sslmode:       prefer
+  # -- postgres for direktiv services
+  # Append extra output to fluentbit configuration.
+  # There are two log types: application (system), functions (workflows)
+  # these can be matched to new outputs.
   extraConfig: ""
-  # append extra output to fluentbit.
-  # there are two logs application, functions
-  # these can be matched to new outputs, e.g.:
   # extraConfig: |
   #   [OUTPUT]
   #           name stdout

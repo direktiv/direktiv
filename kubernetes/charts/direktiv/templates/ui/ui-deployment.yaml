@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: {{ include "direktiv.fullname" . }}-ui
   labels:
-    {{ include "direktiv.labelsAPI" . | nindent 4 }}-ui
+    {{ include "direktiv.labelsUI" . | nindent 4 }}-ui
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}

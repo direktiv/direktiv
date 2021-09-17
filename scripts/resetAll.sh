@@ -45,4 +45,14 @@ kubectl create namespace knative-serving
 helm dependency update $dir/../kubernetes/charts/knative
 helm install -n knative-serving -f $dir/../kubernetes/charts/knative/debug-knative.yaml  knative $dir/../kubernetes/charts/knative
 
+# install database
+# delete stuff first
+kc delete --all -n yugabyte persistentvolumeclaims
+kc delete  job.batch/yugabyte-setup-credentials -n yugabyte
+
+kubectl create namespace yugabyte
+helm repo add yugabytedb https://charts.yugabyte.com
+
+helm install -n yugabyte -f $dir/../kubernetes/install/db/tiny.yaml yugabyte yugabytedb/yugabyte
+
 countdown
