@@ -3,17 +3,17 @@ debug: false
 
 database:
   # -- database host
-  host:          "yb-tservers.yugabyte"
+  host: "yb-tservers.yugabyte"
   # -- database port
-  port:          5433
+  port: 5433
   # -- database user
-  user:          "direktiv"
+  user: "direktiv"
   # -- database password
-  password:      "direktiv"
+  password: "direktivdirektiv"
   # -- database name, auto created if it does not exist
-  name:      "direktiv"
+  name: "direktiv"
   # -- sslmode for database
-  sslmode:       require
+  sslmode: require
 
 
 # -- service account for flow component
@@ -25,6 +25,25 @@ serviceAccount:
   #      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
 
 
+# flow config
+flow:
+  # -- number of flow replicas
+  replicas: 1
+  # -- image for flow pod
+  image: "vorteil/flow"
+  # -- image tag for flow pod
+  tag: ""
+  # -- extra container in flow pod
+  extraContainers: []
+  # -- extra volume mounts in flow pod
+  extraVolumeMounts:
+    # - name: service-template
+    #   mountPath: /etc/config
+  # -- extra volumes in flow pod
+  extraVolumes:
+    # - name: service-template
+    #   configMap:
+    #     name: service-template
 
 
 kube-prometheus:
@@ -80,12 +99,12 @@ http_proxy: ""
 https_proxy: ""
 no_proxy: ""
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
+# autoscaling:
+#   enabled: false
+#   minReplicas: 1
+#   maxReplicas: 10
+#   targetCPUUtilizationPercentage: 80
+#   targetMemoryUtilizationPercentage: 80
 
 # support services
 
@@ -118,26 +137,7 @@ prometheus:
     prometheus.io/scrape: "true"
   queryAddress: "http://direktiv-prometheus-service.default:9090"
 
-# flow config
-flow:
-  image: "vorteil/flow"
-  tag: ""
-  db: ""
-  functionsProtocol: "http"
-  functionsCA: "none" # change function pod secret too
-  certificates:
-    flow: none
-    mtlsFlow: none
-    ingress: none
-    mtlsIngress: none
-  extraContainers: []
-  extraVolumeMounts:
-    # - name: service-template
-    #   mountPath: /etc/config
-  extraVolumes:
-    # - name: service-template
-    #   configMap:
-    #     name: service-template
+
 
 secrets:
   image: "vorteil/secrets"

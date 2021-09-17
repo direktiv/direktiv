@@ -6,9 +6,7 @@ metadata:
   labels:
     {{ include "direktiv.labelsUI" . | nindent 4 }}-ui
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "direktiv.selectorLabelsUI" . | nindent 6 }}

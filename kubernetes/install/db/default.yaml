@@ -11,7 +11,7 @@ enableLoadBalancer: false
 authCredentials:
   ysql:
     user: "direktiv"
-    password: "direktiv"
+    password: "direktivdirektiv"
     database: "direktiv"
 
 tls:

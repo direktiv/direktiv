@@ -9,12 +9,10 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"path/filepath"
 
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/resolver"
 	"gopkg.in/yaml.v2"
@@ -61,7 +59,7 @@ var (
 	additionalCallOptions   []grpc.CallOption
 	grpcCfg                 GrpcConfig
 
-	tlsComponents map[string]tlsComponent
+	grpcComponents map[string]tlsComponent
 )
 
 // Available grpc components in direktiv
@@ -92,52 +90,41 @@ func Init() {
 
 	grpcUnmarshalConfig()
 
-	tlsComponents = make(map[string]tlsComponent)
+	grpcComponents = make(map[string]tlsComponent)
 
-	tlsComponents[TLSSecretsComponent] = tlsComponent{
-		endpoint:    "127.0.0.1:2610",
-		certificate: filepath.Join(certBase, TLSSecretsComponent),
+	grpcComponents[TLSSecretsComponent] = tlsComponent{
+		endpoint: "127.0.0.1:2610",
 	}
-	tlsComponents[TLSIngressComponent] = tlsComponent{
-		endpoint:    IngressEndpoint(),
-		certificate: filepath.Join(certBase, TLSIngressComponent),
-		tls:         grpcCfg.IngressTLS,
-		mtls:        grpcCfg.IngressMTLS,
+	grpcComponents[TLSIngressComponent] = tlsComponent{
+		endpoint: IngressEndpoint(),
 	}
-	tlsComponents[TLSFunctionsComponent] = tlsComponent{
-		endpoint:    FunctionsEndpoint(),
-		certificate: filepath.Join(certBase, TLSFunctionsComponent),
-		tls:         grpcCfg.FunctionsTLS,
-		mtls:        grpcCfg.FunctionsMTLS,
+	grpcComponents[TLSFunctionsComponent] = tlsComponent{
+		endpoint: FunctionsEndpoint(),
 	}
-	tlsComponents[TLSFlowComponent] = tlsComponent{
-		endpoint:    FlowEndpoint(),
-		certificate: filepath.Join(certBase, TLSFlowComponent),
-		tls:         grpcCfg.FlowTLS,
-		mtls:        grpcCfg.FlowMTLS,
+	grpcComponents[TLSFlowComponent] = tlsComponent{
+		endpoint: FlowEndpoint(),
 	}
-	tlsComponents[TLSHttpComponent] = tlsComponent{
-		endpoint:    "",
-		certificate: filepath.Join(certBase, TLSHttpComponent),
+	grpcComponents[TLSHttpComponent] = tlsComponent{
+		endpoint: "",
 	}
 
 }
 
 // CertsForComponent return key and cert for direktiv component
-func CertsForComponent(component string) (string, string, string) {
-
-	if c, ok := tlsComponents[component]; ok {
-
-		if _, err := os.Stat(filepath.Join(c.certificate, "tls.key")); err != nil {
-			return "", "", ""
-		}
-
-		return filepath.Join(c.certificate, "tls.key"),
-			filepath.Join(c.certificate, "tls.crt"), filepath.Join(c.certificate, "ca.crt")
-	}
-
-	return "", "", ""
-}
+// func CertsForComponent(component string) (string, string, string) {
+//
+// 	if c, ok := tlsComponents[component]; ok {
+//
+// 		if _, err := os.Stat(filepath.Join(c.certificate, "tls.key")); err != nil {
+// 			return "", "", ""
+// 		}
+//
+// 		return filepath.Join(c.certificate, "tls.key"),
+// 			filepath.Join(c.certificate, "tls.crt"), filepath.Join(c.certificate, "ca.crt")
+// 	}
+//
+// 	return "", "", ""
+// }
 
 var (
 	globalGRPCDialOptions []grpc.DialOption
@@ -198,61 +185,61 @@ func getTransport(cert, key, cacert,
 }
 
 // GetEndpointTLS creates a grpc client
-func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
-
-	var (
-		c  tlsComponent
-		ok bool
-	)
-
-	if c, ok = tlsComponents[component]; !ok {
-		return nil, fmt.Errorf("unknown component: %s", component)
-	}
-
-	var options []grpc.DialOption
-
-	if len(additionalCallOptions) > 0 {
-		options = append(options,
-			grpc.WithDefaultCallOptions(additionalCallOptions...))
-	}
-
-	key, cert, cacert := CertsForComponent(component)
-	if c.mtls != "none" && c.mtls != "" {
-
-		appLog.Infof("using mtls for %s", component)
-		creds, err := getTransport(cert, key, cacert, c.endpoint, false)
-		if err != nil {
-			appLog.Errorf("could get transport: %v", err)
-			return nil, err
-		}
-
-		options = append(options, grpc.WithTransportCredentials(creds))
-
-	} else if c.tls != "none" && c.tls != "" {
-
-		appLog.Infof("using tls for %s", component)
-		creds, err := credentials.NewClientTLSFromFile(cacert, "")
-		if err != nil {
-			return nil, fmt.Errorf("could not load ca cert: %s", err)
-		}
-		options = append(options, grpc.WithTransportCredentials(creds))
-
-	} else {
-		options = append(options, grpc.WithInsecure())
-	}
-
-	options = append(options, grpc.WithBalancerName(roundrobin.Name))
-	options = append(options, globalGRPCDialOptions...)
-
-	appLog.Infof("dialing with %s", c.endpoint)
-
-	if len(c.endpoint) == 0 {
-		return nil, fmt.Errorf("endpoint value empty")
-	}
-
-	return grpc.Dial(c.endpoint, options...)
-
-}
+// func GetEndpointTLS(component string) (*grpc.ClientConn, error) {
+//
+// 	var (
+// 		c  tlsComponent
+// 		ok bool
+// 	)
+//
+// 	if c, ok = tlsComponents[component]; !ok {
+// 		return nil, fmt.Errorf("unknown component: %s", component)
+// 	}
+//
+// 	var options []grpc.DialOption
+//
+// 	if len(additionalCallOptions) > 0 {
+// 		options = append(options,
+// 			grpc.WithDefaultCallOptions(additionalCallOptions...))
+// 	}
+//
+// 	key, cert, cacert := CertsForComponent(component)
+// 	if c.mtls != "none" && c.mtls != "" {
+//
+// 		appLog.Infof("using mtls for %s", component)
+// 		creds, err := getTransport(cert, key, cacert, c.endpoint, false)
+// 		if err != nil {
+// 			appLog.Errorf("could get transport: %v", err)
+// 			return nil, err
+// 		}
+//
+// 		options = append(options, grpc.WithTransportCredentials(creds))
+//
+// 	} else if c.tls != "none" && c.tls != "" {
+//
+// 		appLog.Infof("using tls for %s", component)
+// 		creds, err := credentials.NewClientTLSFromFile(cacert, "")
+// 		if err != nil {
+// 			return nil, fmt.Errorf("could not load ca cert: %s", err)
+// 		}
+// 		options = append(options, grpc.WithTransportCredentials(creds))
+//
+// 	} else {
+// 		options = append(options, grpc.WithInsecure())
+// 	}
+//
+// 	options = append(options, grpc.WithBalancerName(roundrobin.Name))
+// 	options = append(options, globalGRPCDialOptions...)
+//
+// 	appLog.Infof("dialing with %s", c.endpoint)
+//
+// 	if len(c.endpoint) == 0 {
+// 		return nil, fmt.Errorf("endpoint value empty")
+// 	}
+//
+// 	return grpc.Dial(c.endpoint, options...)
+//
+// }
 
 // FunctionsEndpoint return grpc encpoint for functions services
 func FunctionsEndpoint() string {
@@ -315,45 +302,20 @@ func grpcUnmarshalConfig() {
 // GrpcStart starts a grpc server
 func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
 
-	var (
-		c  tlsComponent
-		ok bool
-	)
+	// var (
+	// 	c  tlsComponent
+	// 	ok bool
+	// )
 
 	if len(bind) == 0 {
 		return fmt.Errorf("grpc bind for %s empty", name)
 	}
 
-	if c, ok = tlsComponents[name]; !ok {
-		return fmt.Errorf("unknown component: %s", name)
-	}
+	// if c, ok = tlsComponents[name]; !ok {
+	// 	return fmt.Errorf("unknown component: %s", name)
+	// }
 
 	appLog.Debugf("%s endpoint starting at %s", name, bind)
-
-	// use tls/mtls
-	key, cert, cacert := CertsForComponent(name)
-	if c.mtls != "none" && c.mtls != "" {
-
-		appLog.Infof("enabling mtls for grpc service %s", name)
-
-		creds, err := getTransport(cert, key, cacert, c.endpoint, true)
-		if err != nil {
-			appLog.Errorf("can not create grpc server: %v", err)
-			return err
-		}
-
-		additionalServerOptions = append(additionalServerOptions, grpc.Creds(creds))
-
-	} else if c.tls != "none" && c.tls != "" {
-
-		appLog.Infof("enabling tls for grpc service %s", name)
-		creds, err := credentials.NewServerTLSFromFile(cert, key)
-		if err != nil {
-			return fmt.Errorf("could not load TLS keys: %s", err)
-		}
-		additionalServerOptions = append(additionalServerOptions, grpc.Creds(creds))
-
-	}
 
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {

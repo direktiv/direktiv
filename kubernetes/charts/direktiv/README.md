@@ -6,6 +6,8 @@ direktiv helm chart
 
 ## Additional Information
 
+.Values.functions.namespace
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
 et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
 aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
@@ -37,11 +39,6 @@ $ helm install my-release foo-bar/direktiv
 | api.image | string | `"vorteil/api"` |  |
 | api.key | string | `""` |  |
 | api.tag | string | `""` |  |
-| autoscaling.enabled | bool | `false` |  |
-| autoscaling.maxReplicas | int | `10` |  |
-| autoscaling.minReplicas | int | `1` |  |
-| autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| autoscaling.targetMemoryUtilizationPercentage | int | `80` |  |
 | database.host | string | `"yb-tservers.yugabyte"` | database host |
 | database.name | string | `"direktiv"` | database name, auto created if it does not exist |
 | database.password | string | `"direktiv"` | database password |
@@ -49,18 +46,11 @@ $ helm install my-release foo-bar/direktiv
 | database.sslmode | string | `"require"` | sslmode for database |
 | database.user | string | `"direktiv"` | database user |
 | debug | bool | `false` | enable debug across all direktiv components |
-| flow.certificates.flow | string | `"none"` |  |
-| flow.certificates.ingress | string | `"none"` |  |
-| flow.certificates.mtlsFlow | string | `"none"` |  |
-| flow.certificates.mtlsIngress | string | `"none"` |  |
-| flow.db | string | `""` |  |
-| flow.extraContainers | list | `[]` |  |
-| flow.extraVolumeMounts | string | `nil` |  |
-| flow.extraVolumes | string | `nil` |    mountPath: /etc/config |
-| flow.functionsCA | string | `"none"` |  |
-| flow.functionsProtocol | string | `"http"` |  |
-| flow.image | string | `"vorteil/flow"` |  |
-| flow.tag | string | `""` |  |
+| flow.extraContainers | list | `[]` | extra container in flow pod |
+| flow.extraVolumeMounts | string | `nil` | extra volume mounts in flow pod |
+| flow.extraVolumes | string | `nil` | extra volumes in flow pod |
+| flow.image | string | `"vorteil/flow"` | image for flow pod |
+| flow.tag | string | `""` | image tag for flow pod |
 | fluentbit.extraConfig | string | `""` | postgres for direktiv services Append extra output to fluentbit configuration. There are two log types: application (system), functions (workflows) these can be matched to new outputs. |
 | functions.certificate | string | `"none"` |  |
 | functions.db | string | `""` |  |
@@ -129,5 +119,5 @@ $ helm install my-release foo-bar/direktiv
 | ui.image | string | `"vorteil/direktiv-ui"` |  |
 | ui.tag | string | `""` |  |
 | withAPI | bool | `true` |  |
-| withUI | bool | `true` |  |
+| withUI | bool | `true` |    enabled: false   minReplicas: 1   maxReplicas: 10   targetCPUUtilizationPercentage: 80   targetMemoryUtilizationPercentage: 80 support services |
 

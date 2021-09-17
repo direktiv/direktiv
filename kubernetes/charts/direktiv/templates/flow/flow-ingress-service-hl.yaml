@@ -5,7 +5,6 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
     konghq.com/plugins: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-gateway
-    # konghq.com/plugins: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-gateway,{{ include "direktiv.fullname" . }}-kong-plugin-grpc-stream
     konghq.com/protocol: "grpc"
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}

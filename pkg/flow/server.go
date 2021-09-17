@@ -21,10 +21,15 @@ import (
 const parcelSize = 0x100000
 
 type Config struct {
-	Database          string `yaml:"database"`
-	BindFlow          string `yaml:"bind_flow"`
-	BindInternal      string `yaml:"bind_internal"`
+
+	FunctionsService string `yaml:"functions-service"`
+	FlowService      string `yaml:"flow-service"`
 	FunctionsProtocol string `yaml:"functions-protocol"`
+
+	// Database          string `yaml:"database"`
+	// BindFlow          string `yaml:"bind_flow"`
+	// BindInternal      string `yaml:"bind_internal"`
+	// FunctionsProtocol string `yaml:"functions-protocol"`
 }
 
 func ReadConfig(file string) (*Config, error) {
@@ -42,25 +47,25 @@ func ReadConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
-	s := os.Getenv("DATABASE")
-	if s != "" {
-		c.Database = s
-	}
-
-	s = os.Getenv("BIND_FLOW")
-	if s != "" {
-		c.BindFlow = s
-	}
-
-	s = os.Getenv("BIND_INTERNAL")
-	if s != "" {
-		c.BindInternal = s
-	}
-
-	s = os.Getenv("FUNCTIONS_PROTOCOL")
-	if s != "" {
-		c.FunctionsProtocol = s
-	}
+	// s := os.Getenv("DATABASE")
+	// if s != "" {
+	// 	c.Database = s
+	// }
+	//
+	// s = os.Getenv("BIND_FLOW")
+	// if s != "" {
+	// 	c.BindFlow = s
+	// }
+	//
+	// s = os.Getenv("BIND_INTERNAL")
+	// if s != "" {
+	// 	c.BindInternal = s
+	// }
+	//
+	// s = os.Getenv("FUNCTIONS_PROTOCOL")
+	// if s != "" {
+	// 	c.FunctionsProtocol = s
+	// }
 
 	return c, nil
 
@@ -130,7 +135,9 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing locks.")
 
-	srv.locks, err = initLocks(srv.conf.Database)
+	db := os.Getenv("DIREKTIV_DB")
+
+	srv.locks, err = initLocks(db)
 	if err != nil {
 		return err
 	}
@@ -138,7 +145,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = initPubSub(srv, srv.conf.Database)
+	srv.pubsub, err = initPubSub(srv, db)
 	if err != nil {
 		return err
 	}
@@ -146,7 +153,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 
-	srv.db, err = initDatabase(ctx, srv.conf.Database)
+	srv.db, err = initDatabase(ctx, db)
 	if err != nil {
 		return err
 	}

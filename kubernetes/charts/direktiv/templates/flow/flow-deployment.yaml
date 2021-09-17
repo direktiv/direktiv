@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: {{ .Values.flow.replicas }}
   selector:
     matchLabels:
       {{- include "direktiv.selectorLabels" . | nindent 6 }}
@@ -53,32 +51,9 @@ spec:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
           {{- end }}
-          - name: grpc-config
-            mountPath: /etc/direktiv/grpc-config.yaml
-            subPath: grpc-config.yaml
           - name: flow-config
             mountPath: /etc/direktiv/flow-config.yaml
             subPath: flow-config.yaml
-          {{- if ne .Values.flow.certificates.flow "none" }}
-          - name: flowcerts
-            mountPath: "/etc/direktiv/certs/flow"
-            readOnly: true
-          {{- end }}
-          {{- if ne .Values.flow.certificates.ingress "none" }}
-          - name: ingresscerts
-            mountPath: "/etc/direktiv/certs/ingress"
-            readOnly: true
-          {{- end }}
-          {{- if ne .Values.functions.certificate "none" }}
-          - name: functionscerts
-            mountPath: "/etc/direktiv/certs/functions"
-            readOnly: true
-          {{- end }}
-          {{- if eq .Values.flow.functionsProtocol "https" }}
-          - name: podca
-            mountPath: "/etc/direktiv/certs/ca"
-            readOnly: true
-          {{- end }}
           ports:
             - name: ingress
               containerPort: 6666
@@ -94,8 +69,6 @@ spec:
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SERVICE_NAMESPACE
             value: {{ .Values.functions.namespace }}
-          - name: DIREKTIV_KUBERNETES_NAMESPACE
-            value: {{ .Release.Namespace }}
           {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
           - name: "HTTP_PROXY"
             value: "{{ .Values.http_proxy }}"
@@ -136,7 +109,7 @@ spec:
               protocol: TCP
           env:
           - name: PGSSLMODE
-            value: {{ .Values.fluentbit.sslmode| quote }}
+            value: {{ .Values.database.sslmode| quote }}
         - name: secrets
           securityContext:
             readOnlyRootFilesystem: true
@@ -155,9 +128,6 @@ spec:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
           {{- end }}
-          - name: grpc-config
-            mountPath: /etc/direktiv/grpc-config.yaml
-            subPath: grpc-config.yaml
           ports:
             - name: secrets
               containerPort: 2610
@@ -169,46 +139,25 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
-                key: secretsDb
+                key: db
           - name: DIREKTIV_SECRETS_KEY
             valueFrom:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: key
+          - name: PGSSLMODE
+            value: {{ .Values.database.sslmode| quote }}
       volumes:
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}
-        - name: fluentcfg
-          configMap:
-            name:  {{ include "direktiv.fullname" . }}-config-fluentbit
-        {{- if eq .Values.flow.functionsProtocol "https" }}
-        - name: podca
-          secret:
-            secretName: {{ .Values.flow.functionsCA }}
-        {{- end }}
-        - name: grpc-config
-          configMap:
-            name: {{ include "direktiv.fullname" . }}-config-grpc
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
-        {{- if ne  .Values.flow.certificates.flow "none" }}
-        - name: flowcerts
-          secret:
-            secretName: {{ .Values.flow.certificates.flow }}
-        {{- end }}
-        {{- if ne  .Values.flow.certificates.ingress "none" }}
-        - name: ingresscerts
-          secret:
-            secretName: {{ .Values.flow.certificates.ingress }}
-        {{- end }}
-        {{- if ne  .Values.functions.certificate "none" }}
-        - name: functionscerts
-          secret:
-            secretName: {{ .Values.functions.certificate }}
-        {{- end }}
-      {{- with .Values.nodeSelector }}:0
+        - name: fluentcfg
+          configMap:
+            name:  {{ include "direktiv.fullname" . }}-config-fluentbit
+      {{- with .Values.nodeSelector }}
 
       nodeSelector:
         {{- toYaml . | nindent 8 }}

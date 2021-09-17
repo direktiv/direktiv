@@ -50,6 +50,8 @@ helm install -n knative-serving -f $dir/../kubernetes/charts/knative/debug-knati
 kc delete --all -n yugabyte persistentvolumeclaims
 kc delete  job.batch/yugabyte-setup-credentials -n yugabyte
 
+kubectl create namespace direktiv-services-direktiv
+
 kubectl create namespace yugabyte
 helm repo add yugabytedb https://charts.yugabyte.com
 
