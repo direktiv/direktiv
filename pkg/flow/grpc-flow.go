@@ -72,7 +72,7 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 	err := json.Unmarshal(data, &input)
 	if err != nil {
-		err = status.Error(codes.AlreadyExists, fmt.Sprintf("invalid json data: %v", err))
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("invalid json data: %v", err))
 		return nil, err
 	}
 
@@ -80,7 +80,7 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 	results, err := jq(input, command)
 	if err != nil {
-		err = status.Error(codes.AlreadyExists, fmt.Sprintf("error executing JQ command: %v", err))
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("error executing JQ command: %v", err))
 		return nil, err
 	}
 
