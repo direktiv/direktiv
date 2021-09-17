@@ -56,6 +56,11 @@ flow:
     #   configMap:
     #     name: service-template
 
+thanos:
+  enabled: true
+
+prometheus:
+  enabled: true
 
 nodeSelector: {}
 tolerations: []
@@ -66,18 +71,21 @@ pullPolicy: Always
 imagePullSecrets: []
 
 
-  # -- proxy settings
+# -- proxy settings
 http_proxy: ""
 https_proxy: ""
 no_proxy: ""
 
-
-
 kube-prometheus:
+  prometheus:
+    enabled: true
+    replicaCount: 1
+    thanos:
+      create: false
   alertmanager:
     enabled: false
   operator:
-    enabled: false
+    enabled: true
   exporters:
     node-exporter:
       enabled: false
@@ -100,11 +108,7 @@ kube-prometheus:
 minio:
   enabled: false
 
-thanos:
-  enabled: true
 
-prometheus:
-  enabled: true
 
 
 # Default values for direktiv.
