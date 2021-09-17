@@ -57,6 +57,22 @@ flow:
     #     name: service-template
 
 
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+registry: "docker.io"
+pullPolicy: Always
+imagePullSecrets: []
+
+
+  # -- proxy settings
+http_proxy: ""
+https_proxy: ""
+no_proxy: ""
+
+
+
 kube-prometheus:
   alertmanager:
     enabled: false
@@ -94,20 +110,6 @@ prometheus:
 # Default values for direktiv.
 replicaCount: 1
 
-nodeSelector: {}
-tolerations: []
-affinity: {}
-
-registry: "docker.io"
-pullPolicy: Always
-imagePullSecrets: []
-
-
-
-# proxy settings
-http_proxy: ""
-https_proxy: ""
-no_proxy: ""
 
 # autoscaling:
 #   enabled: false

@@ -158,7 +158,6 @@ spec:
           configMap:
             name:  {{ include "direktiv.fullname" . }}-config-fluentbit
       {{- with .Values.nodeSelector }}
-
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
