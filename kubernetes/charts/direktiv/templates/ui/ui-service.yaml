@@ -1,4 +1,3 @@
-{{- if .Values.withUI -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -18,4 +17,3 @@ spec:
       name: ui
   selector:
     {{- include "direktiv.selectorLabelsUI" . | nindent 4 }}
-{{- end }}

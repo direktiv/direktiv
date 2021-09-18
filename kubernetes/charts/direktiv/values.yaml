@@ -57,9 +57,7 @@ flow:
     #     name: service-template
 
 thanos:
-  enabled: true
-
-prometheus:
+  # -- install Thanos
   enabled: true
 
 nodeSelector: {}
@@ -76,6 +74,20 @@ http_proxy: ""
 https_proxy: ""
 # -- no proxy proxy settings
 no_proxy: ""
+
+# -- secrets sidecar in flow pod
+secrets:
+  image: "vorteil/secrets"
+  tag: ""
+  db: ""
+  extraVolumeMounts: []
+
+# -- UI configuration
+ui:
+  image: "vorteil/direktiv-ui"
+  tag: ""
+  certificate: none
+  extraContainers: []
 
 minio-operator:
   tenants:
@@ -122,25 +134,43 @@ kube-prometheus:
       enabled: false
 
 
+# direktiv-tenant-console
+thanos:
+  enabled: true
+  global:
+    storageClass: local-path
+  objstoreConfig: |-
+    type: s3
+    config:
+      bucket: thanos
+      endpoint: direktiv-tenant-console.{{ .Release.Namespace }}.svc.cluster.local:9000
+      access_key: minio
+      secret_key: minio123
+      insecure: true
+  query:
+    dnsDiscovery:
+      sidecarsService: "{{ .Release.Namespace }}-kube-prometheus-prometheus"
+      sidecarsNamespace: "{{ .Release.Namespace }}"
+  bucketweb:
+    enabled: true
+  compactor:
+    enabled: true
+    persistence:
+      storageClass: local-path
+  storegateway:
+    enabled: true
+    persistence:
+      storageClass: local-path
+  ruler:
+    enabled: false
+
+
 
 
 
 
 # Default values for direktiv.
 replicaCount: 1
-
-
-# autoscaling:
-#   enabled: false
-#   minReplicas: 1
-#   maxReplicas: 10
-#   targetCPUUtilizationPercentage: 80
-#   targetMemoryUtilizationPercentage: 80
-
-# support services
-
-withUI: true
-
 
 
 networkPolicies:
@@ -155,29 +185,6 @@ ingress:
   certificate: none
   class: "kong"
   timeout: "900s"
-
-# prometheus config
-prometheus:
-  enabled: true
-  image: "prom/prometheus"
-  targetAnnotations:
-    prometheus.io/port: "2112"
-    prometheus.io/path: "/metrics"
-    prometheus.io/scrape: "true"
-  queryAddress: "http://direktiv-prometheus-service.default:9090"
-
-secrets:
-  image: "vorteil/secrets"
-  tag: ""
-  db: ""
-  extraVolumeMounts: []
-
-# ui config
-ui:
-  image: "vorteil/direktiv-ui"
-  tag: ""
-  certificate: none
-  extraContainers: []
 
 
 

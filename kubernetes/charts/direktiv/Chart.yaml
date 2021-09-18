@@ -31,6 +31,11 @@ dependencies:
       condition: minio.enabled
       repository: "https://operator.min.io/"
       version: "4.2.7"
+    - name: "thanos"
+      condition: thanos.enabled
+      repository: "https://charts.bitnami.com/bitnami"
+      version: "6.0.1"
+
 
 
     # $ helm repo add bitnami https://charts.bitnami.com/bitnami

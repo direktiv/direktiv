@@ -24,7 +24,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: {{ include "direktiv.fullname" . }}-flow-hl
+              name: {{ include "direktiv.fullname" . }}-flow
               port:
                 number: 6666
         - path: /
