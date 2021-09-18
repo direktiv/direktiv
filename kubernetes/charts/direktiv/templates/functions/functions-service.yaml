@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "direktiv.fullname" . }}-internal-hl
+  name: {{ include "direktiv.fullname" . }}-functions-hl
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
-  clusterIP: None
+  type: clusterIP
   ports:
-    - port: 7777
-      name: flow
+    - port: 5555
+      name: grpc
       protocol: TCP
   selector:
-    {{- include "direktiv.selectorLabels" . | nindent 4 }}
+    {{- include "direktiv.selectorLabelsFunctions" . | nindent 4 }}

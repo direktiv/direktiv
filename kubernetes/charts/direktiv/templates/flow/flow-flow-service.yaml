@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "direktiv.fullname" . }}-flow-hl
+  name: {{ include "direktiv.fullname" . }}-flow
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
     konghq.com/plugins: {{ include "direktiv.fullname" . }}-kong-plugin-grpc-gateway
@@ -9,10 +9,10 @@ metadata:
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
-  clusterIP: None
+  type: ClusterIP
   ports:
     - port: 6666
-      name: ingress
+      name: flow
       protocol: TCP
   selector:
     {{- include "direktiv.selectorLabels" . | nindent 4 }}

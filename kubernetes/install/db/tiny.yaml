@@ -4,11 +4,11 @@ replicas:
 
 storage:
   master:
-    count: 2
+    count: 1
     size: 1Gi
     storageClass: local-path
   tserver:
-    count: 2
+    count: 1
     size: 1Gi
     storageClass: local-path
 

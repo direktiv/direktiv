@@ -12,11 +12,9 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if .Values.prometheus.enabled }}
-        {{- with .Values.prometheus.targetAnnotations}}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- end }}
+        prometheus.io/port: "2112"
+        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "true"
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
     spec:
@@ -33,7 +31,7 @@ spec:
 {{- if .Values.flow.extraContainers }}
 {{ toYaml .Values.flow.extraContainers | indent 8}}
 {{- end }}
-        - name: ingress
+        - name: flow
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -55,10 +53,10 @@ spec:
             mountPath: /etc/direktiv/flow-config.yaml
             subPath: flow-config.yaml
           ports:
-            - name: ingress
+            - name: flow
               containerPort: 6666
               protocol: TCP
-            - name: flow
+            - name: internal
               containerPort: 7777
               protocol: TCP
             - name: metrics

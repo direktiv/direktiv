@@ -6,19 +6,16 @@ knative for direktiv
 
 ## Additional Information
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+This chart installs Knative for Direktiv. It configures Knative with sane values in Direktiv's context and
+additional support to provide proxy values for corporate proxies.
 
 ## Installing the Chart
 
-To install the chart with the release name `my-release`:
+To install the chart with the release name `knative`:
 
 ```console
-$ helm repo add foo-bar http://charts.foo-bar.com
-$ helm install my-release foo-bar/knative
+$ helm repo add direktiv https://charts.direktiv.io
+$ helm install knative direktiv/knative
 ```
 
 ## Requirements
@@ -32,11 +29,9 @@ $ helm install my-release foo-bar/knative
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| http_proxy | string | `""` |  |
-| https_proxy | string | `""` |  |
-| kong-external.env.plugins | string | `"grpc-gateway,grpc-stream"` |  |
-| kong-external.env.prefix | string | `"/kong_prefix/"` |  |
-| kong-internal.ingressController.ingressClass | string | `"kong-internal"` |  |
-| kong-internal.proxy.type | string | `"ClusterIP"` |  |
-| no_proxy | string | `""` |  |
+| http_proxy | string | `""` | HTTP proxy information for knative |
+| https_proxy | string | `""` | HTTPS proxy information for knative |
+| kong-external | object | `{"env":{"plugins":"grpc-gateway,grpc-stream","prefix":"/kong_prefix/"}}` | Kong for Direktiv's UI / API |
+| kong-internal | object | `{"ingressController":{"ingressClass":"kong-internal"},"proxy":{"type":"ClusterIP"}}` | Kong for internal services / direktiv functions |
+| no_proxy | string | `"localhost,127.0.0.1,10.0.0.0/8,.svc,.cluster.local"` | No proxy information for knative |
 

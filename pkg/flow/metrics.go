@@ -86,13 +86,13 @@ func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
 func setupPrometheusEndpoint() {
 
-	prometheus.MustRegister(metricsWfInvoked)
-	prometheus.MustRegister(metricsWfSuccess)
-	prometheus.MustRegister(metricsWfFail)
-	prometheus.MustRegister(metricsWfDuration)
-	prometheus.MustRegister(metricsWfStateDuration)
-	prometheus.Unregister(prometheus.NewGoCollector())
-	prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	// prometheus.MustRegister(metricsWfInvoked)
+	// prometheus.MustRegister(metricsWfSuccess)
+	// prometheus.MustRegister(metricsWfFail)
+	// prometheus.MustRegister(metricsWfDuration)
+	// prometheus.MustRegister(metricsWfStateDuration)
+	// prometheus.Unregister(prometheus.NewGoCollector())
+	// prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":2112", nil)

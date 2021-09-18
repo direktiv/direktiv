@@ -70,11 +70,28 @@ registry: "docker.io"
 pullPolicy: Always
 imagePullSecrets: []
 
-
-# -- proxy settings
+# -- http proxy settings
 http_proxy: ""
+# -- https proxy settings
 https_proxy: ""
+# -- no proxy proxy settings
 no_proxy: ""
+
+minio-operator:
+  tenants:
+    - name: direktiv-tenant
+      pools:
+        # -- set to 4 for HA
+        - servers: 1
+          volumesPerServer: 4
+          # -- storage class to use. k3s uses local-path
+          storageClassName: local-path
+          size: 1Gi
+      secrets:
+        enabled: true
+        name: minio-secret
+        accessKey: minio
+        secretKey: minio123
 
 kube-prometheus:
   prometheus:
@@ -105,8 +122,6 @@ kube-prometheus:
       enabled: false
 
 
-minio:
-  enabled: false
 
 
 
@@ -125,9 +140,7 @@ replicaCount: 1
 # support services
 
 withUI: true
-withAPI: true
 
-supportPersist: false
 
 
 networkPolicies:
@@ -153,13 +166,10 @@ prometheus:
     prometheus.io/scrape: "true"
   queryAddress: "http://direktiv-prometheus-service.default:9090"
 
-
-
 secrets:
   image: "vorteil/secrets"
   tag: ""
   db: ""
-  key: "01234567890123456789012345678912"
   extraVolumeMounts: []
 
 # ui config
@@ -169,21 +179,7 @@ ui:
   certificate: none
   extraContainers: []
 
-api:
-  image: vorteil/api
-  tag: ""
-  key: ""
-  certificate: none
-  extraContainers: []
 
-# Set Send and Recv limits for all grpc clients and servers
-# grpc:
-#   server:
-#     maxSendSize: "4194304"
-#     maxRecvSize: "4194304"
-#   client:
-#     maxSendSize: "4194304"
-#     maxRecvSize: "4194304"
 
 functions:
   # namespace to run functions in

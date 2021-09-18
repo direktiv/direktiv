@@ -124,7 +124,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	var err error
 
-	// go setupPrometheusEndpoint()
+	go setupPrometheusEndpoint()
 
 	srv.sugar.Debug("Initializing secrets.")
 	srv.secrets, err = initSecrets()

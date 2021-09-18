@@ -66,6 +66,7 @@ func initPubSub(notifier notifier, database string) (*pubsub, error) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "pubsub error: %v\n", err)
+			panic("pubsub error\n")
 		}
 	}
 
