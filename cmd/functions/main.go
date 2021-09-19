@@ -10,13 +10,11 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {
 
 	dlog.Init()
-	util.Init()
 
 	// start health check
 	go startHealthHandler()

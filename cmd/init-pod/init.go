@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func runAsInit() {
@@ -90,12 +89,12 @@ func runAsInit() {
 	srv.Handler = router
 
 	var err error
-	k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
-	if len(k) > 0 {
-		err = srv.ListenAndServeTLS(c, k)
-	} else {
-		err = srv.ListenAndServe()
-	}
+	// k, c, _ := util.CertsForComponent(util.TLSHttpComponent)
+	// if len(k) > 0 {
+	// 	err = srv.ListenAndServeTLS(c, k)
+	// } else {
+	err = srv.ListenAndServe()
+	// }
 	// err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)

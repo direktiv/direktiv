@@ -20,9 +20,9 @@ type NamespaceSecretDelete struct {
 	mutation *NamespaceSecretMutation
 }
 
-// Where adds a new predicate to the NamespaceSecretDelete builder.
+// Where appends a list predicates to the NamespaceSecretDelete builder.
 func (nsd *NamespaceSecretDelete) Where(ps ...predicate.NamespaceSecret) *NamespaceSecretDelete {
-	nsd.mutation.predicates = append(nsd.mutation.predicates, ps...)
+	nsd.mutation.Where(ps...)
 	return nsd
 }
 
@@ -46,6 +46,9 @@ func (nsd *NamespaceSecretDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(nsd.hooks) - 1; i >= 0; i-- {
+			if nsd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nsd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nsd.mutation); err != nil {

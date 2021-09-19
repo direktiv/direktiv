@@ -25,7 +25,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 
 	internal := &internal{server: srv}
 
-	internal.listener, err = net.Listen("tcp", srv.conf.BindInternal)
+	internal.listener, err = net.Listen("tcp", ":7777")
 	if err != nil {
 		return nil, err
 	}

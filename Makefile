@@ -81,7 +81,16 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 ent: ## Manually regenerates ent database packages.
 	go get entgo.io/ent
 	go generate ./pkg/flow/ent
-	go generate ./pkg/secrets/ent/schema
+	go generate ./pkg/secrets/ent
+	go generate ./pkg/functions/ent
+
+# Helm docs
+
+.PHONY: helm-docs
+helm-docs: ## Generates helm documentation
+helm-docs:
+	GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
+	helm-docs kubernetes/charts
 
 # PROTOC
 
@@ -181,12 +190,6 @@ tail-secrets: ## Tail logs for currently active 'secrets' container.
 	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
 	kubectl logs -f ${FLOW_POD} secrets
-
-.PHONY: tail-api
-tail-api: ## Tail logs for currently active 'api' container.
-	$(eval API_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-api") | .metadata.name'))
-	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
-	kubectl logs -f ${API_POD} api
 
 .PHONY: tail-functions
 tail-functions: ## Tail logs for currently active 'functions' container.

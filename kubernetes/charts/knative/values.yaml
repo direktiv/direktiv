@@ -1,14 +1,19 @@
+# -- HTTP proxy information for knative
 http_proxy: ""
+# -- HTTPS proxy information for knative
 https_proxy: ""
-no_proxy: ""
+# -- No proxy information for knative
+no_proxy: "localhost,127.0.0.1,10.0.0.0/8,.svc,.cluster.local"
 
+# -- Kong for internal services / direktiv functions
 kong-internal:
   proxy:
     type: ClusterIP
   ingressController:
     ingressClass: kong-internal
 
+# -- Kong for Direktiv's UI / API
 kong-external:
   env:
     prefix: /kong_prefix/
-    plugins: "grpc-gateway,grpc-stream"
+    plugins: "grpc-gateway,grpc-stream,key-auth"

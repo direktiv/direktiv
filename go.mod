@@ -33,7 +33,6 @@ require (
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
-	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9

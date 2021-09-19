@@ -16,8 +16,8 @@ import (
 	"github.com/bradfitz/slice"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
-	"github.com/vorteil/direktiv/ent/predicate"
-	entservices "github.com/vorteil/direktiv/ent/services"
+	"github.com/vorteil/direktiv/pkg/functions/ent/predicate"
+	entservices "github.com/vorteil/direktiv/pkg/functions/ent/services"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -1046,40 +1046,10 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 
 	if withGrpc {
 
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivFlowEndpoint,
-			Value: util.FlowEndpoint(),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivMaxServerRcv,
-			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxRcvServer),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivMaxClientRcv,
-			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxRcvClient),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivMaxServerSend,
-			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxSendServer),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivMaxClientSend,
-			Value: fmt.Sprintf("%d", util.GrpcCfg().MaxSendClient),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivFlowTLS,
-			Value: util.GrpcCfg().FlowTLS,
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivFlowMTLS,
-			Value: util.GrpcCfg().FlowMTLS,
-		})
+		// proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		// 	Name:  util.DirektivFlowEndpoint,
+		// 	Value: util.FlowEndpoint(),
+		// })
 
 	}
 
@@ -1196,13 +1166,13 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		},
 	}
 
-	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
-		tlsVolumeMount := corev1.VolumeMount{}
-		tlsVolumeMount.Name = "flowcerts"
-		tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
-		tlsVolumeMount.ReadOnly = true
-		vmounts = append(vmounts, tlsVolumeMount)
-	}
+	// if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+	// 	tlsVolumeMount := corev1.VolumeMount{}
+	// 	tlsVolumeMount.Name = "flowcerts"
+	// 	tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
+	// 	tlsVolumeMount.ReadOnly = true
+	// 	vmounts = append(vmounts, tlsVolumeMount)
+	// }
 
 	// direktiv sidecar
 	ds := corev1.Container{
@@ -1459,15 +1429,15 @@ func createVolumes() []corev1.Volume {
 		},
 	}
 
-	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
-		tlsVolume := corev1.Volume{
-			Name: "flowcerts",
-		}
-		tlsVolume.Secret = &corev1.SecretVolumeSource{
-			SecretName: util.GrpcCfg().FlowTLS,
-		}
-		volumes = append(volumes, tlsVolume)
-	}
+	// if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
+	// 	tlsVolume := corev1.Volume{
+	// 		Name: "flowcerts",
+	// 	}
+	// 	tlsVolume.Secret = &corev1.SecretVolumeSource{
+	// 		SecretName: util.GrpcCfg().FlowTLS,
+	// 	}
+	// 	volumes = append(volumes, tlsVolume)
+	// }
 	return volumes
 
 }

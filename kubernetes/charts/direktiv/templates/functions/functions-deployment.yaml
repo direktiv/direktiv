@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-functions
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}-functions
+spec:
+  replicas: {{ .Values.functions.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabelsFunctions" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "direktiv.selectorLabelsFunctions" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-functions
+      volumes:
+        - name: fluentcfg
+          configMap:
+            name:  {{ include "direktiv.fullname" . }}-config-fluentbit
+        # - name: grpc-config
+        #   configMap:
+        #     name: {{ include "direktiv.fullname" . }}-config-grpc
+        - name: config-file
+          configMap:
+            name: {{ include "direktiv.fullname" . }}-config-functions
+        {{- if ne  .Values.functions.certificate "none" }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.functions.certificate }}
+        {{- end }}
+      containers:
+{{- if .Values.functions.extraContainers }}
+{{ toYaml .Values.functions.extraContainers | indent 8}}
+{{- end }}
+        - name: functions-controller
+          volumeMounts:
+          {{- if ne  .Values.functions.certificate "none" }}
+          - name: certs
+            mountPath: "/etc/direktiv/certs/functions"
+            readOnly: true
+          {{- end }}
+          # - name: grpc-config
+          #   mountPath: /etc/direktiv/grpc-config.yaml
+          #   subPath: grpc-config.yaml
+          - name: config-file
+            mountPath: /etc/direktiv/functions-config.yaml
+            subPath: functions-config.yaml
+          env:
+            {{- if .Values.debug }}
+            - name: DIREKTIV_DEBUG
+              value: "true"
+            {{- end }}
+            - name: DIREKTIV_LOCK_CM
+              value: {{ include "direktiv.fullname" . }}-lock-cm
+            - name: DIREKTIV_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: DIREKTIV_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "direktiv.fullname" . }}
+                  key: db
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1"
+          image: "{{ .Values.registry }}/{{ .Values.functions.image }}:{{ .Values.functions.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: 5555
+              protocol: TCP
+        - name: fluentbit
+          image: fluent/fluent-bit:1.8
+          command: ["/fluent-bit/bin/fluent-bit", "-c", "/etc/fluentbit.cfg"]
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          volumeMounts:
+          - name: fluentcfg
+            mountPath: /etc/fluentbit.cfg
+            subPath: fluentbit.cfg
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+          ports:
+            - name: appport
+              containerPort: 8889
+              protocol: TCP
+            - name: fnport
+              containerPort: 8888
+              protocol: TCP
+          env:
+          - name: PGSSLMODE
+            value: {{ .Values.database.sslmode| quote }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

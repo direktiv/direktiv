@@ -24,10 +24,8 @@ import (
 const parcelSize = 0x100000
 
 type Config struct {
-	Database          string `yaml:"database"`
-	BindFlow          string `yaml:"bind_flow"`
-	BindInternal      string `yaml:"bind_internal"`
-	BindVars          string `yaml:"bind_vars"`
+	FunctionsService  string `yaml:"functions-service"`
+	FlowService       string `yaml:"flow-service"`
 	FunctionsProtocol string `yaml:"functions-protocol"`
 }
 
@@ -44,31 +42,6 @@ func ReadConfig(file string) (*Config, error) {
 	err = yaml.Unmarshal(data, c)
 	if err != nil {
 		return nil, err
-	}
-
-	s := os.Getenv("DATABASE")
-	if s != "" {
-		c.Database = s
-	}
-
-	s = os.Getenv("BIND_FLOW")
-	if s != "" {
-		c.BindFlow = s
-	}
-
-	s = os.Getenv("BIND_INTERNAL")
-	if s != "" {
-		c.BindInternal = s
-	}
-
-	s = os.Getenv("BIND_VARS")
-	if s != "" {
-		c.BindVars = s
-	}
-
-	s = os.Getenv("FUNCTIONS_PROTOCOL")
-	if s != "" {
-		c.FunctionsProtocol = s
 	}
 
 	return c, nil
@@ -99,7 +72,6 @@ type server struct {
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
 	dlog.Init()
-	util.Init()
 
 	srv, err := newServer(logger, conf)
 	if err != nil {
@@ -134,7 +106,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	var err error
 
-	// go setupPrometheusEndpoint()
+	go setupPrometheusEndpoint()
 
 	srv.sugar.Debug("Initializing secrets.")
 	srv.secrets, err = initSecrets()
@@ -145,7 +117,9 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing locks.")
 
-	srv.locks, err = initLocks(srv.conf.Database)
+	db := os.Getenv(util.DBConn)
+
+	srv.locks, err = initLocks(db)
 	if err != nil {
 		return err
 	}
@@ -153,7 +127,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = initPubSub(srv.sugar, srv, srv.conf.Database)
+	srv.pubsub, err = initPubSub(srv.sugar, srv, db)
 	if err != nil {
 		return err
 	}
@@ -161,7 +135,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 
-	srv.db, err = initDatabase(ctx, srv.conf.Database)
+	srv.db, err = initDatabase(ctx, db)
 	if err != nil {
 		return err
 	}
