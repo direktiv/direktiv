@@ -67,7 +67,13 @@ function plugin:access(plugin_conf)
 
   -- your custom code here
   kong.log.inspect(plugin_conf)   -- check the logs for a pretty-printed config!
-  kong.service.request.set_header(plugin_conf.request_header, "this is on a request")
+  kong.response.set_header("Access-Control-Allow-Origin", "*")
+  kong.response.set_header("Access-Control-Allow-Headers", "Content-Type")
+  kong.response.set_header("Content-Type",  "text/event-stream")
+  kong.response.set_header("Cache-Control", "no-cache")
+  kong.response.set_header("Connection", "keep-alive")
+
+
 
 end --]]
 

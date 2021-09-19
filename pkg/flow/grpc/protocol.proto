@@ -47,18 +47,20 @@ service Flow {
 			body: "*"
 		};
 	}
+
 	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {}
 	rpc ServerLogsParcels (ServerLogsRequest) returns (stream ServerLogsResponse) {}
+
 	rpc NamespaceLogs (NamespaceLogsRequest) returns (NamespaceLogsResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/logs"
 		};
 	}
 	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {
-        option (google.api.http) = {
-            get: "/api/stream/flow/namespaces/{namespace}/logs"
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/logs"
 		};
-    }
+	}
 	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/logs/workflows/{path=**}"
@@ -68,7 +70,15 @@ service Flow {
 			}
 		};
 	}
-	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {}
+	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/logs/workflows/{path=**}"
+			additional_bindings {
+				get: "/api/stream/flow/namespaces/{namespace}/logs/workflows/{path}"
+				body: "*"
+			}
+		};
+	}
 	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/directory/{path=**}"
@@ -80,7 +90,17 @@ service Flow {
 			}
 		};
 	}
-	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
+	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/directory/{path=**}"
+			additional_bindings {
+				get: "/api/stream/flow/namespaces/{namespace}/directory/{path}"
+			}
+			additional_bindings {
+				get: "/api/stream/flow/namespaces/{namespace}/directory/"
+			}
+		};
+	}
 	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {
 		option (google.api.http) = {
 			post: "/api/flow/namespaces/{namespace}/directory/{path=**}"
@@ -127,7 +147,16 @@ service Flow {
 			}
 		};
 	}
-	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
+	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/workflow/{path=**}"
+			body: "*"
+			additional_bindings {
+				get: "/api/stream/flow/namespaces/{namespace}/workflow/{path}"
+				body: "*"
+			}
+		};
+	}
 	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {
 		option (google.api.http) = {
 			post: "/api/flow/namespaces/{namespace}/workflow/{path=**}"
@@ -166,21 +195,36 @@ service Flow {
 			body: "*"
 		};
 	}
-	rpc TagsStream (TagsRequest) returns (stream TagsResponse) {}
+	rpc TagsStream (TagsRequest) returns (stream TagsResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/tags/workflow/{path=**}"
+			body: "*"
+		};
+	}
 	rpc Refs (RefsRequest) returns (RefsResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/refs/workflow/{path=**}"
 			body: "*"
 		};
 	}
-	rpc RefsStream (RefsRequest) returns (stream RefsResponse) {}
+	rpc RefsStream (RefsRequest) returns (stream RefsResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/refs/workflow/{path=**}"
+			body: "*"
+		};
+	}
 	rpc Revisions (RevisionsRequest) returns (RevisionsResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/revisions/workflow/{path=**}"
 			body: "*"
 		};
 	}
-	rpc RevisionsStream (RevisionsRequest) returns (stream RevisionsResponse) {}
+	rpc RevisionsStream (RevisionsRequest) returns (stream RevisionsResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/revisions/workflow/{path=**}"
+			body: "*"
+		};
+	}
 	rpc DeleteRevision (DeleteRevisionRequest) returns (google.protobuf.Empty) {}
 	rpc Tag (TagRequest) returns (google.protobuf.Empty) {}
 	rpc Untag (UntagRequest) returns (google.protobuf.Empty) {}
