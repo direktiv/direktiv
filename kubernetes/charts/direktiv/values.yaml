@@ -7,6 +7,26 @@ timeout: 900000
 # -- api key, value 'apikey' required in header
 apikey: ""
 
+networkPolicies:
+  # -- adds network policies
+  enabled: false
+  # -- CIDR for database, excempt from policies
+  db: 0.0.0.0/0
+  # -- CIDR for services, excempt from policies
+  serviceCidr: 0.0.0.0/0
+  # -- CIDR for pods, excempt from policies
+  podCidr: 0.0.0.0/0
+
+ingress:
+  # -- host for external services, only required for TLS
+  host: ""
+  # -- TLS secret
+  certificate: none
+  # -- ingress class
+  class: "kong"
+  # -- timeout for /api route
+  timeout: 900000
+
 database:
   # -- database host
   host: "yb-tservers.yugabyte"
@@ -170,29 +190,6 @@ thanos:
       storageClass: local-path
   ruler:
     enabled: false
-
-
-
-
-
-
-# Default values for direktiv.
-replicaCount: 1
-
-
-networkPolicies:
-  enabled: false
-  # cidr for communication
-  db: 0.0.0.0/0
-  serviceCidr: 0.0.0.0/0
-  podCidr: 0.0.0.0/0
-
-ingress:
-  host: ""
-  certificate: none
-  class: "kong"
-  timeout: "900s"
-
 
 
 functions:

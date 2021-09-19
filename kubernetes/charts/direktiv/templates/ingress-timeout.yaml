@@ -6,8 +6,8 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
 proxy:
   protocol: http
-  read_timeout: {{ .Values.timeout }}
-  connect_timeout: {{ .Values.timeout }}
-  write_timeout: {{ .Values.timeout }}
+  read_timeout: {{ .Values.ingress.timeout }}
+  connect_timeout: {{ .Values.ingress.timeout }}
+  write_timeout: {{ .Values.ingress.timeout }}
   retries: 0
   tls_verify: false

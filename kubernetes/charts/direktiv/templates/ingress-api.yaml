@@ -9,7 +9,9 @@ metadata:
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
     konghq.com/override: {{ include "direktiv.fullname" . }}-ingress-timeout
+    {{- if .Values.apikey }}
     konghq.com/plugins: {{ include "direktiv.fullname" . }}-auth
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.class }}
   {{- if ne .Values.ingress.certificate "none" }}
