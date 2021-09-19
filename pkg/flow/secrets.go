@@ -7,6 +7,7 @@ import (
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type secrets struct {
@@ -18,8 +19,6 @@ func initSecrets() (*secrets, error) {
 
 	secrets := new(secrets)
 
-	/* TODO: uncomment when ready to test with a secrets server
-
 	var err error
 
 	secrets.conn, err = util.GetEndpointTLS(util.TLSSecretsComponent)
@@ -28,8 +27,6 @@ func initSecrets() (*secrets, error) {
 	}
 
 	secrets.client = secretsgrpc.NewSecretsServiceClient(secrets.conn)
-
-	*/
 
 	return secrets, nil
 

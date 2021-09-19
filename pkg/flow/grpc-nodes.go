@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -426,6 +427,116 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = dir
 	resp.Node.Path = path
+
+	return &resp, nil
+
+}
+
+func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNodeAttributesRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	tx, err := flow.db.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(tx)
+
+	nsc := tx.Namespace
+
+	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]bool)
+
+	for _, attr := range d.ino.Attributes {
+		m[attr] = true
+	}
+
+	for _, attr := range req.GetAttributes() {
+		m[attr] = true
+	}
+
+	var attrs []string
+
+	for attr := range m {
+		attrs = append(attrs, attr)
+	}
+
+	sort.Strings(attrs)
+
+	edges := d.ino.Edges
+
+	d.ino, err = d.ino.Update().SetAttributes(attrs).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	d.ino.Edges = edges
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	var resp emptypb.Empty
+
+	return &resp, nil
+
+}
+
+func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNodeAttributesRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	tx, err := flow.db.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(tx)
+
+	nsc := tx.Namespace
+
+	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]bool)
+
+	for _, attr := range d.ino.Attributes {
+		m[attr] = true
+	}
+
+	for _, attr := range req.GetAttributes() {
+		delete(m, attr)
+	}
+
+	var attrs []string
+
+	for attr := range m {
+		attrs = append(attrs, attr)
+	}
+
+	sort.Strings(attrs)
+
+	edges := d.ino.Edges
+
+	d.ino, err = d.ino.Update().SetAttributes(attrs).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	d.ino.Edges = edges
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	var resp emptypb.Empty
 
 	return &resp, nil
 

@@ -221,7 +221,7 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     i.ID,
 		Type:   "Inode",
-		Fields: make([]*Field, 4),
+		Fields: make([]*Field, 5),
 		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
@@ -255,6 +255,14 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Attributes); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "[]string",
+		Name:  "attributes",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

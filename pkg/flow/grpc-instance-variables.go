@@ -16,6 +16,8 @@ import (
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	nsc := flow.db.Namespace
 
 	d, err := flow.traverseToInstanceVariable(ctx, nsc, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
@@ -44,6 +46,8 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 }
 
 func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv grpc.Flow_InstanceVariableParcelsServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
@@ -98,6 +102,8 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 }
 
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -157,6 +163,8 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 }
 
 func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, srv grpc.Flow_InstanceVariablesStreamServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 	phash := ""
@@ -239,6 +247,8 @@ resend:
 
 func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstanceVariableRequest) (*grpc.SetInstanceVariableResponse, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	hash := checksum(req.Data)
 
 	tx, err := flow.db.Tx(ctx)
@@ -289,6 +299,8 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 }
 
 func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
 
@@ -395,6 +407,8 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteInstanceVariableRequest) (*emptypb.Empty, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -443,6 +457,8 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 }
 
 func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameInstanceVariableRequest) (*grpc.RenameInstanceVariableResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {

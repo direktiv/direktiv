@@ -2,11 +2,15 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 type flow struct {
@@ -55,5 +59,50 @@ func (flow *flow) Run() error {
 	}
 
 	return nil
+
+}
+
+func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	var input interface{}
+
+	data := req.GetData()
+
+	err := json.Unmarshal(data, &input)
+	if err != nil {
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("invalid json data: %v", err))
+		return nil, err
+	}
+
+	command := "jq(" + req.GetQuery() + ")"
+
+	results, err := jq(input, command)
+	if err != nil {
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("error executing JQ command: %v", err))
+		return nil, err
+	}
+
+	var strs []string
+
+	for _, result := range results {
+
+		x, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+
+		strs = append(strs, string(x))
+
+	}
+
+	var resp grpc.JQResponse
+
+	resp.Query = req.GetQuery()
+	resp.Data = req.GetData()
+	resp.Results = strs
+
+	return &resp, nil
 
 }

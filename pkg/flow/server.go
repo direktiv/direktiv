@@ -15,7 +15,10 @@ import (
 
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
+	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/metrics"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const parcelSize = 0x100000
@@ -24,6 +27,7 @@ type Config struct {
 	Database          string `yaml:"database"`
 	BindFlow          string `yaml:"bind_flow"`
 	BindInternal      string `yaml:"bind_internal"`
+	BindVars          string `yaml:"bind_vars"`
 	FunctionsProtocol string `yaml:"functions-protocol"`
 }
 
@@ -57,6 +61,11 @@ func ReadConfig(file string) (*Config, error) {
 		c.BindInternal = s
 	}
 
+	s = os.Getenv("BIND_VARS")
+	if s != "" {
+		c.BindVars = s
+	}
+
 	s = os.Getenv("FUNCTIONS_PROTOCOL")
 	if s != "" {
 		c.FunctionsProtocol = s
@@ -82,9 +91,15 @@ type server struct {
 	flow     *flow
 	internal *internal
 	events   *events
+	vars     *vars
+
+	metrics *metrics.Client
 }
 
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
+
+	dlog.Init()
+	util.Init()
 
 	srv, err := newServer(logger, conf)
 	if err != nil {
@@ -138,7 +153,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = initPubSub(srv, srv.conf.Database)
+	srv.pubsub, err = initPubSub(srv.sugar, srv, srv.conf.Database)
 	if err != nil {
 		return err
 	}
@@ -166,6 +181,13 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.events.Close)
 
+	srv.sugar.Debug("Initializing metrics.")
+
+	srv.metrics, err = metrics.NewClient()
+	if err != nil {
+		return err
+	}
+
 	srv.sugar.Debug("Initializing engine.")
 
 	srv.engine, err = initEngine(srv)
@@ -177,10 +199,17 @@ func (srv *server) start(ctx context.Context) error {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
-	wg.Add(2)
+	wg.Add(3)
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	srv.sugar.Debug("Initializing vars server.")
+
+	srv.vars, err = initVarsServer(cctx, srv)
+	if err != nil {
+		return err
+	}
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
@@ -199,6 +228,20 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.vars.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
 
 	go func() {
 		defer wg.Done()

@@ -19,6 +19,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FunctionsServiceClient interface {
+	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
+	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -27,9 +30,6 @@ type FunctionsServiceClient interface {
 	GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error)
 	DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
-	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error)
 	CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -46,6 +46,33 @@ type functionsServiceClient struct {
 
 func NewFunctionsServiceClient(cc grpc.ClientConnInterface) FunctionsServiceClient {
 	return &functionsServiceClient{cc}
+}
+
+func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/StoreRegistry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
+	out := new(GetRegistriesResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/GetRegistries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteRegistry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *functionsServiceClient) ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
@@ -114,33 +141,6 @@ func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunc
 func (c *functionsServiceClient) SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/SetFunctionsTraffic", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/StoreRegistry", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
-	out := new(GetRegistriesResponse)
-	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/GetRegistries", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -315,6 +315,9 @@ func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsReque
 // All implementations must embed UnimplementedFunctionsServiceServer
 // for forward compatibility
 type FunctionsServiceServer interface {
+	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
+	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
+	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
 	ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*empty.Empty, error)
 	UpdateFunction(context.Context, *UpdateFunctionRequest) (*empty.Empty, error)
 	CreateFunction(context.Context, *CreateFunctionRequest) (*empty.Empty, error)
@@ -323,9 +326,6 @@ type FunctionsServiceServer interface {
 	GetFunction(context.Context, *GetFunctionRequest) (*GetFunctionResponse, error)
 	DeleteFunction(context.Context, *GetFunctionRequest) (*empty.Empty, error)
 	SetFunctionsTraffic(context.Context, *SetTrafficRequest) (*empty.Empty, error)
-	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
-	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
-	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
 	CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error)
 	CancelFunctionsPod(context.Context, *CancelPodRequest) (*empty.Empty, error)
 	DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error)
@@ -341,6 +341,15 @@ type FunctionsServiceServer interface {
 type UnimplementedFunctionsServiceServer struct {
 }
 
+func (UnimplementedFunctionsServiceServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
+}
+func (UnimplementedFunctionsServiceServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
+}
+func (UnimplementedFunctionsServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
+}
 func (UnimplementedFunctionsServiceServer) ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReconstructFunction not implemented")
 }
@@ -364,15 +373,6 @@ func (UnimplementedFunctionsServiceServer) DeleteFunction(context.Context, *GetF
 }
 func (UnimplementedFunctionsServiceServer) SetFunctionsTraffic(context.Context, *SetTrafficRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetFunctionsTraffic not implemented")
-}
-func (UnimplementedFunctionsServiceServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
-}
-func (UnimplementedFunctionsServiceServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
-}
-func (UnimplementedFunctionsServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
 }
 func (UnimplementedFunctionsServiceServer) CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFunctionsPod not implemented")
@@ -409,6 +409,60 @@ type UnsafeFunctionsServiceServer interface {
 
 func RegisterFunctionsServiceServer(s grpc.ServiceRegistrar, srv FunctionsServiceServer) {
 	s.RegisterService(&FunctionsService_ServiceDesc, srv)
+}
+
+func _FunctionsService_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StoreRegistryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).StoreRegistry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_functions.FunctionsService/StoreRegistry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FunctionsService_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRegistriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).GetRegistries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_functions.FunctionsService/GetRegistries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FunctionsService_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRegistryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_functions.FunctionsService/DeleteRegistry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_ReconstructFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -551,60 +605,6 @@ func _FunctionsService_SetFunctionsTraffic_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FunctionsServiceServer).SetFunctionsTraffic(ctx, req.(*SetTrafficRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _FunctionsService_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FunctionsServiceServer).StoreRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/direktiv_functions.FunctionsService/StoreRegistry",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _FunctionsService_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRegistriesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FunctionsServiceServer).GetRegistries(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/direktiv_functions.FunctionsService/GetRegistries",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _FunctionsService_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/direktiv_functions.FunctionsService/DeleteRegistry",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -773,6 +773,18 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FunctionsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "StoreRegistry",
+			Handler:    _FunctionsService_StoreRegistry_Handler,
+		},
+		{
+			MethodName: "GetRegistries",
+			Handler:    _FunctionsService_GetRegistries_Handler,
+		},
+		{
+			MethodName: "DeleteRegistry",
+			Handler:    _FunctionsService_DeleteRegistry_Handler,
+		},
+		{
 			MethodName: "ReconstructFunction",
 			Handler:    _FunctionsService_ReconstructFunction_Handler,
 		},
@@ -803,18 +815,6 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetFunctionsTraffic",
 			Handler:    _FunctionsService_SetFunctionsTraffic_Handler,
-		},
-		{
-			MethodName: "StoreRegistry",
-			Handler:    _FunctionsService_StoreRegistry_Handler,
-		},
-		{
-			MethodName: "GetRegistries",
-			Handler:    _FunctionsService_GetRegistries_Handler,
-		},
-		{
-			MethodName: "DeleteRegistry",
-			Handler:    _FunctionsService_DeleteRegistry_Handler,
 		},
 		{
 			MethodName: "CreateFunctionsPod",

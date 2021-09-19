@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -27,6 +28,8 @@ type Inode struct {
 	Name string `json:"name,omitempty"`
 	// Type holds the value of the "type" field.
 	Type string `json:"type,omitempty"`
+	// Attributes holds the value of the "attributes" field.
+	Attributes []string `json:"attributes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InodeQuery when eager-loading is set.
 	Edges            InodeEdges `json:"edges"`
@@ -106,6 +109,8 @@ func (*Inode) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case inode.FieldAttributes:
+			values[i] = new([]byte)
 		case inode.FieldName, inode.FieldType:
 			values[i] = new(sql.NullString)
 		case inode.FieldCreatedAt, inode.FieldUpdatedAt:
@@ -162,6 +167,14 @@ func (i *Inode) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field type", values[j])
 			} else if value.Valid {
 				i.Type = value.String
+			}
+		case inode.FieldAttributes:
+			if value, ok := values[j].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field attributes", values[j])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &i.Attributes); err != nil {
+					return fmt.Errorf("unmarshal field attributes: %w", err)
+				}
 			}
 		case inode.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -240,6 +253,8 @@ func (i *Inode) String() string {
 	builder.WriteString(i.Name)
 	builder.WriteString(", type=")
 	builder.WriteString(i.Type)
+	builder.WriteString(", attributes=")
+	builder.WriteString(fmt.Sprintf("%v", i.Attributes))
 	builder.WriteByte(')')
 	return builder.String()
 }

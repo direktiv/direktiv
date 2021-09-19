@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_flow;
 
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
@@ -15,6 +15,7 @@ message Node {
 	string path = 4;
 	string parent = 5;
 	string type = 6;
+	repeated string attributes = 7;
 }
 
 message DirectoryRequest {
@@ -68,4 +69,16 @@ message RenameNodeRequest {
 message RenameNodeResponse {
 	string namespace = 1;
 	Node node = 2;
+}
+
+message CreateNodeAttributesRequest {
+	string namespace = 1; 
+	string path = 2;
+	repeated string attributes = 3;
+}
+
+message DeleteNodeAttributesRequest {
+	string namespace = 1; 
+	string path = 2;
+	repeated string attributes = 3;
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_flow;
 
 option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
 
@@ -16,33 +16,34 @@ import "pkg/flow/grpc/secrets.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
+import "pkg/flow/grpc/util.proto";
 
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {
 	}
 	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces"
+			get: "/api/flow/namespaces"
 		};
 	}
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {
 		option (google.api.http) = {
-			get: "/api/stream/namespaces"
+			get: "/api/stream/flow/namespaces"
 		};
 	}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{name}"
+			post: "/api/flow/namespaces/{name}"
 		};
 	}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			delete: "/api/namespaces/{name}"
+			delete: "/api/flow/namespaces/{name}"
 		};
 	}
 	rpc RenameNamespace (RenameNamespaceRequest) returns (RenameNamespaceResponse) {
 		option (google.api.http) = {
-			patch: "/api/namespaces/{name}"
+			patch: "/api/flow/namespaces/{name}"
 			body: "*"
 		};
 	}
@@ -50,15 +51,15 @@ service Flow {
 	rpc ServerLogsParcels (ServerLogsRequest) returns (stream ServerLogsResponse) {}
 	rpc NamespaceLogs (NamespaceLogsRequest) returns (NamespaceLogsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/logs"
+			get: "/api/flow/namespaces/{namespace}/logs"
 		};
 	}
 	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {}
 	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflows/{path=**}/logs"
+			get: "/api/flow/namespaces/{namespace}/logs/workflows/{path=**}"
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/workflows/{path}/logs"
+				get: "/api/flow/namespaces/{namespace}/logs/workflows/{path}"
 				body: "*"
 			}
 		};
@@ -66,58 +67,58 @@ service Flow {
 	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {}
 	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/directory/{path=**}"
+			get: "/api/flow/namespaces/{namespace}/directory/{path=**}"
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/directory/{path}"
+				get: "/api/flow/namespaces/{namespace}/directory/{path}"
 			}
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/directory/"
+				get: "/api/flow/namespaces/{namespace}/directory/"
 			}
 		};
 	}
 	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
 	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{namespace}/directory/{path=**}"
+			post: "/api/flow/namespaces/{namespace}/directory/{path=**}"
 			additional_bindings {
-				post: "/api/namespaces/{namespace}/directory/{path}"
+				post: "/api/flow/namespaces/{namespace}/directory/{path}"
 			}
 		};
 	}
 	rpc DeleteNode (DeleteNodeRequest) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			delete: "/api/namespaces/{namespace}/node/{path=**}"
+			delete: "/api/flow/namespaces/{namespace}/node/{path=**}"
 			additional_bindings {
-				delete: "/api/namespaces/{namespace}/node/{path}"
+				delete: "/api/flow/namespaces/{namespace}/node/{path}"
 			}
 		};
 	}
 	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {
 		option (google.api.http) = {
-			patch: "/api/namespaces/{namespace}/node/{old=**}"
+			patch: "/api/flow/namespaces/{namespace}/node/{old=**}"
 			body: "*"
 		};
 	}
 	rpc Node (NodeRequest) returns (NodeResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/node/{path=**}"
+			get: "/api/flow/namespaces/{namespace}/node/{path=**}"
 			body: "*"
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/node/{path}"
+				get: "/api/flow/namespaces/{namespace}/node/{path}"
 				body: "*"
 			}
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/node/"
+				get: "/api/flow/namespaces/{namespace}/node/"
 				body: "*"
 			}
 		};
 	}
 	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}"
+			get: "/api/flow/namespaces/{namespace}/workflow/{path=**}"
 			body: "*"
 			additional_bindings {
-				get: "/api/namespaces/{namespace}/workflow/{path}"
+				get: "/api/flow/namespaces/{namespace}/workflow/{path}"
 				body: "*"
 			}
 		};
@@ -125,47 +126,53 @@ service Flow {
 	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
 	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{namespace}/workflow/{path=**}"
+			post: "/api/flow/namespaces/{namespace}/workflow/{path=**}"
 			body: "*"
 			additional_bindings {
-				post: "/api/namespaces/{namespace}/workflow/{path}"
+				post: "/api/flow/namespaces/{namespace}/workflow/{path}"
 				body: "*"
 			}
 		};
 	}
 	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {
 		option (google.api.http) = {
-			put: "/api/namespaces/{namespace}/workflow/{path=**}"
+			put: "/api/flow/namespaces/{namespace}/workflow/{path=**}"
 			body: "*"
 		};
 	}
 	rpc SaveHead (SaveHeadRequest) returns (SaveHeadResponse) {
 		option (google.api.http) = {
-			patch: "/api/namespaces/{namespace}/workflow/{path=**}/head"
+			patch: "/api/flow/namespaces/{namespace}/head/workflow/{path=**}"
+			additional_bindings {
+				patch: "/api/flow/namespaces/{namespace}/head/workflow/{path}"
+			} 
 		};
 	}
 	rpc DiscardHead (DiscardHeadRequest) returns (DiscardHeadResponse) {
 		option (google.api.http) = {
-			delete: "/api/namespaces/{namespace}/workflow/{path=**}/head"
+			delete: "/api/flow/namespaces/{namespace}/head/workflow/{path=**}"
+			additional_bindings {
+				delete: "/api/flow/namespaces/{namespace}/head/workflow/{path}"
+			} 
 		};
 	}
 	rpc Tags (TagsRequest) returns (TagsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}/tags"
+			get: "/api/flow/namespaces/{namespace}/tags/workflow/{path=**}"
 			body: "*"
 		};
 	}
 	rpc TagsStream (TagsRequest) returns (stream TagsResponse) {}
 	rpc Refs (RefsRequest) returns (RefsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}/refs"
+			get: "/api/flow/namespaces/{namespace}/refs/workflow/{path=**}"
 			body: "*"
 		};
 	}
 	rpc RefsStream (RefsRequest) returns (stream RefsResponse) {}
 	rpc Revisions (RevisionsRequest) returns (RevisionsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/workflow/{path=**}/revisions"
+			get: "/api/flow/namespaces/{namespace}/revisions/workflow/{path=**}"
 			body: "*"
 		};
 	}
@@ -185,77 +192,161 @@ service Flow {
 	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances/{instance}"
+			get: "/api/flow/namespaces/{namespace}/instances/{instance}"
 		};
 	}
 	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
 	rpc Instances (InstancesRequest) returns (InstancesResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances"
+			get: "/api/flow/namespaces/{namespace}/instances"
 		};
 	}
 	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
 	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances/{instance}"
+			get: "/api/flow/namespaces/{namespace}/instances/{instance}/input"
 		};
 	}
 	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances/{instance}"
+			get: "/api/flow/namespaces/{namespace}/instances/{instance}/output"
 		};
 	}
 	rpc InstanceLogs (InstanceLogsRequest) returns (InstanceLogsResponse) {
 		option (google.api.http) = {
-			get: "/api/namespaces/{namespace}/instances/{instance}/logs"
+			get: "/api/flow/namespaces/{namespace}/instances/{instance}/logs"
 		};
 	}
-	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {}
+	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/instances/{instance}/logs"
+		};
+	}
+
 	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{namespace}/workflow/{path=**}/execute"
+			post: "/api/flow/namespaces/{namespace}/execute/workflow/{path=**}"
 			body: "*"
+			additional_bindings {
+				post: "/api/flow/namespaces/{namespace}/execute/workflow/{path}"
+				body: "*"
+			} 
 		};
 	}
 	rpc RunWorkflow (RunWorkflowRequest) returns (stream RunWorkflowResponse) {
 		option (google.api.http) = {
-			post: "/api/namespaces/{namespace}/workflow/{path=**}/run"
+			post: "/api/stream/flow/namespaces/{namespace}/run/workflow/{path=**}"
 			body: "*"
+			additional_bindings {
+				post: "/api/stream/flow/namespaces/{namespace}/run/workflow/{path}"
+				body: "*"
+			} 
 		};
 	}
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			delete: "/api/namespaces/{namespace}/instances/{instance}"
+			delete: "/api/flow/namespaces/{namespace}/instances/{instance}"
 		};
 	}
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
 
 	//
 
-	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
+	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {
+		option (google.api.http) = {
+			get: "/api/flow/namespaces/{namespace}/namespace-variables/{key}"
+		};
+	}
 	rpc NamespaceVariableParcels (NamespaceVariableRequest) returns (stream NamespaceVariableResponse) {}
-	rpc NamespaceVariables (NamespaceVariablesRequest) returns (NamespaceVariablesResponse) {}
+
+	rpc NamespaceVariables (NamespaceVariablesRequest) returns (NamespaceVariablesResponse) {
+		option (google.api.http) = {
+			get: "/api/flow/namespaces/{namespace}/namespace-variables"
+		};
+	}
 	rpc NamespaceVariablesStream (NamespaceVariablesRequest) returns (stream NamespaceVariablesResponse) {}
-	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
+
+	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {
+		option (google.api.http) = {
+			put: "/api/flow/namespaces/{namespace}/namespace-variables/{key}"
+			body: "*"
+		};
+	}
 	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
-	rpc DeleteNamespaceVariable (DeleteNamespaceVariableRequest) returns (google.protobuf.Empty) {}
+
+	rpc DeleteNamespaceVariable (DeleteNamespaceVariableRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			delete: "/api/flow/namespaces/{namespace}/namespace-variables/{key}"
+		};
+	}
+
 	rpc RenameNamespaceVariable (RenameNamespaceVariableRequest) returns (RenameNamespaceVariableResponse) {}
-	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
+
+	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {
+		option (google.api.http) = {
+			get: "/api/flow/namespaces/{namespace}/workflow-variable/{key}/workflow/{path=**}"
+		};
+	}
 	rpc WorkflowVariableParcels (WorkflowVariableRequest) returns (stream WorkflowVariableResponse) {}
-	rpc WorkflowVariables (WorkflowVariablesRequest) returns (WorkflowVariablesResponse) {}
+
+	rpc WorkflowVariables (WorkflowVariablesRequest) returns (WorkflowVariablesResponse) {
+		option (google.api.http) = {
+			get: "/api/flow/namespaces/{namespace}/workflow-variables/workflow/{path=**}"
+		};
+	}
 	rpc WorkflowVariablesStream (WorkflowVariablesRequest) returns (stream WorkflowVariablesResponse) {}
-	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
+
+	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {
+		option (google.api.http) = {
+			put: "/api/flow/namespaces/{namespace}/workflow-variable/{key}/workflow/{path=**}"
+			body: "*"
+		};
+	}
 	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
-	rpc DeleteWorkflowVariable (DeleteWorkflowVariableRequest) returns (google.protobuf.Empty) {}
+
+	rpc DeleteWorkflowVariable (DeleteWorkflowVariableRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			delete: "/api/flow/namespaces/{namespace}/workflow-variable/{key}/workflow/{path=**}"
+		};
+	}
+
 	rpc RenameWorkflowVariable (RenameWorkflowVariableRequest) returns (RenameWorkflowVariableResponse) {}
-	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
+
+	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {
+		option (google.api.http) = {
+			get: "/api/flow/namespaces/{namespace}/instances/{instance}/variables/{key}"
+		};
+	}
 	rpc InstanceVariableParcels (InstanceVariableRequest) returns (stream InstanceVariableResponse) {}
-	rpc InstanceVariables (InstanceVariablesRequest) returns (InstanceVariablesResponse) {}
+
+	rpc InstanceVariables (InstanceVariablesRequest) returns (InstanceVariablesResponse) {
+		option (google.api.http) = {
+			get: "/api/flow/namespaces/{namespace}/instances/{instance}/variables"
+		};
+	}
 	rpc InstanceVariablesStream (InstanceVariablesRequest) returns (stream InstanceVariablesResponse) {}
-	rpc SetInstanceVariable (SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
+
+	rpc SetInstanceVariable (SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {
+		option (google.api.http) = {
+			put: "/api/flow/namespaces/{namespace}/instances/{instance}/variables/{key}"
+			body: "*"
+		};
+	}
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
+
+	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			delete: "/api/flow/namespaces/{namespace}/instances/{instance}/variables/{key}"
+		};
+	}
+
 	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
+
+	rpc JQ (JQRequest) returns (JQResponse) {}
+	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
+	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
+
+	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
 	// COMING SOON:
 	//

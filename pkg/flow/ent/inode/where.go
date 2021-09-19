@@ -510,6 +510,20 @@ func TypeContainsFold(v string) predicate.Inode {
 	})
 }
 
+// AttributesIsNil applies the IsNil predicate on the "attributes" field.
+func AttributesIsNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAttributes)))
+	})
+}
+
+// AttributesNotNil applies the NotNil predicate on the "attributes" field.
+func AttributesNotNil() predicate.Inode {
+	return predicate.Inode(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAttributes)))
+	})
+}
+
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
 func HasNamespace() predicate.Inode {
 	return predicate.Inode(func(s *sql.Selector) {
