@@ -20,6 +20,13 @@ spec:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
+        - path: /api/vars/
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "direktiv.fullname" . }}-vars
+              port:
+                number: 9999
         - path: /api/flow/
           pathType: Prefix
           backend:
