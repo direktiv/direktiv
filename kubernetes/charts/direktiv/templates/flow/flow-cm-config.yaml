@@ -7,8 +7,10 @@ metadata:
 
 data:
   flow-config.yaml: |
-
-      functions-service: {{ include "direktiv.fullname" . }}-functions
-      flow-service: {{ include "direktiv.fullname" . }}-flow
-
-      prometheus-backend:
+      functions-service: {{ include "direktiv.fullname" . }}-functions.{{ .Release.Namespace }}
+      flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
+      {{- if .Values.thanos.enabled }}
+      prometheus-backend: {{ include "direktiv.fullname" . }}-thanos-query-frontend.{{ .Release.Namespace }}
+      {{- else }}
+      prometheus-backend: {{ include "direktiv.fullname" . }}-kube-prometheus-prometheus.{{ .Release.Namespace }}
+      {{- end }}

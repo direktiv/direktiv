@@ -6,9 +6,6 @@ metadata:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
-  {{- if ne  .Values.ui.certificate "none" }}
-    konghq.com/protocol: "https"
-  {{- end }}
 spec:
   ports:
     - port: 8080

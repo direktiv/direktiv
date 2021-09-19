@@ -1,6 +1,12 @@
 # -- enable debug across all direktiv components
 debug: false
 
+# -- api timeouts
+timeout: 900000
+
+# -- api key, value 'apikey' required in header
+apikey: ""
+
 database:
   # -- database host
   host: "yb-tservers.yugabyte"
@@ -58,7 +64,7 @@ flow:
 
 thanos:
   # -- install Thanos
-  enabled: true
+  enabled: false
 
 nodeSelector: {}
 tolerations: []
@@ -90,6 +96,7 @@ ui:
   extraContainers: []
 
 minio-operator:
+  enabled: true
   tenants:
     - name: direktiv-tenant
       pools:
@@ -136,7 +143,7 @@ kube-prometheus:
 
 # direktiv-tenant-console
 thanos:
-  enabled: true
+  enabled: false
   global:
     storageClass: local-path
   objstoreConfig: |-
