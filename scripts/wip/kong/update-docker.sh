@@ -33,5 +33,5 @@ docker push localhost:5000/cong
 
 echo "delete old pods"
 
-kubectl delete pod -l app.kubernetes.io/name=kong-external
+kubectl delete pod -n knative-serving -l app.kubernetes.io/name=kong-external
 # kubectl delete pod -n kong -l app=ingress-kong
