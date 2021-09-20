@@ -111,29 +111,36 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 			case <-pubsub.closer:
 			case notification, more = <-l.Notify:
 				if !more {
-					fmt.Fprintf(os.Stderr, "database listener closed\n")
+					log.Errorf("database listener closed\n")
 					return
 				}
 			}
 
+			log.Debugf("PS RECV")
+
 			if notification == nil {
+				log.Debugf("PS RECV OUT 1")
 				continue
 			}
 
 			req := new(PubsubUpdate)
 			err = json.Unmarshal([]byte(notification.Extra), req)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "unexpected notification on database listener: %v\n", err)
+				log.Errorf("unexpected notification on database listener: %v\n", err)
 				continue
 			}
 
 			handler, exists := pubsub.handlers[req.Handler]
 			if !exists {
-				fmt.Fprintf(os.Stderr, "unexpected notification type on database listener: %v\n", err)
+				log.Errorf("unexpected notification type on database listener: %v\n", err)
 				continue
 			}
 
+			log.Debugf("PS RECV PRE HANDLER")
+
 			handler(req)
+
+			log.Debugf("PS RECV POST HANDLER")
 
 		}
 
@@ -161,6 +168,8 @@ func (pubsub *pubsub) dispatcher() {
 		if !more {
 			return
 		}
+
+		pubsub.log.Debug("PS Pulled Dispatch From Queue")
 
 		b, _ := json.Marshal(req)
 
@@ -241,7 +250,7 @@ func (s *subscription) Wait() bool {
 	select {
 	case _, more := <-s.ch:
 		return more
-	case <-time.After(time.Minute):
+	case <-time.After(time.Second /*time.Minute*/):
 		return true
 	}
 
@@ -423,6 +432,8 @@ func (pubsub *pubsub) SubscribeInode(ino *ent.Inode) *subscription {
 }
 
 func (pubsub *pubsub) NotifyInode(ino *ent.Inode) {
+
+	pubsub.log.Debugf("PS Notify Inode: %s", ino.ID.String())
 
 	pubsub.publish(pubsubNotify(ino.ID.String()))
 
