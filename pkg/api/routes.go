@@ -53,7 +53,7 @@ const (
 	// RN_ListPods                     = "listPods"
 	// RN_DeleteServices               = "deleteServices"
 	// RN_GetService                   = "getService"
-	// RN_CreateService                = "createService"
+	RN_CreateService = "createService"
 	// RN_UpdateService                = "updateService"
 	// RN_UpdateServiceTraffic         = "updateServiceTraffic"
 	// RN_DeleteService                = "deleteService"
@@ -115,7 +115,7 @@ var RouteNames = []string{
 	// RN_WatchServices,
 	// RN_DeleteServices,
 	// RN_GetService,
-	// RN_CreateService,
+	RN_CreateService,
 	// RN_UpdateService,
 	// RN_UpdateServiceTraffic,
 	// RN_DeleteService,

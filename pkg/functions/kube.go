@@ -336,8 +336,8 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 
 }
 
-// StoreFunctions saves or updates functionss which means creating knative services
-// baes on the provided configuration
+// StoreFunctions saves or updates functions which means creating knative services
+// based on the provided configuration
 func (is *functionsServer) CreateFunction(ctx context.Context,
 	in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
 
@@ -1639,8 +1639,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	if min > functionsConfig.MaxScale {
 		min = functionsConfig.MaxScale
 	}
-
-	// TODO: gcp db, pullimagesecrets
 
 	if functionsConfig.Concurrency > 0 {
 		concurrency = int64(functionsConfig.Concurrency)
