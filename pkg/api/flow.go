@@ -38,7 +38,84 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, addr string) 
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
-	r.HandleFunc("/namespaces", h.Namespace)
+
+	handlerPair(r, RN_ListNamespaces, "/namespaces", h.Namespaces, h.NamespacesSSE)
+
+}
+
+func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.NamespacesRequest{
+		Pagination: p,
+	}
+
+	resp, err := h.client.Namespaces(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.NamespacesRequest{
+		Pagination: p,
+	}
+
+	resp, err := h.client.NamespacesStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
 }
 
 func (h *flowHandler) Namespace(w http.ResponseWriter, r *http.Request) {

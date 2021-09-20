@@ -266,6 +266,7 @@ func (h *functionHandler) listServices(
 	}
 
 	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
+
 	if err != nil {
 		ErrResponse(w, err)
 		return
@@ -292,12 +293,14 @@ func (h *functionHandler) deleteService(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	_, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+	// _, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
+	// if err != nil {
+	// 	ErrResponse(w, err)
+	// 	return
+	// }
+	// w.WriteHeader(http.StatusNoContent)
+
+	// respond(w, resp, err)
 
 }
 
@@ -399,11 +402,8 @@ func (h *functionHandler) createService(ns, wf string,
 	}
 
 	// returns an empty body
-	_, err = h.client.CreateFunction(r.Context(), grpcReq)
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
+	resp, err := h.client.CreateFunction(r.Context(), grpcReq)
+	respond(w, resp, err)
 
 	w.WriteHeader(http.StatusCreated)
 
