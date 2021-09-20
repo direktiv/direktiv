@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,9 +20,9 @@ type ErrObject struct {
 	Message string
 }
 
-var grpcErrorHttpCodeMap = map[codes.Code]int{
+var grpcErrorHTTPCodeMap = map[codes.Code]int{
 	codes.Canceled:           http.StatusBadRequest,
-	codes.Unknown:            http.StatusBadRequest,
+	codes.Unknown:            http.StatusInternalServerError,
 	codes.InvalidArgument:    http.StatusNotAcceptable,
 	codes.DeadlineExceeded:   http.StatusBadRequest,
 	codes.NotFound:           http.StatusNotFound,
@@ -43,7 +42,7 @@ var grpcErrorHttpCodeMap = map[codes.Code]int{
 
 // ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes
 func ConvertGRPCStatusCodeToHTTPCode(code codes.Code) int {
-	if val, ok := grpcErrorHttpCodeMap[code]; ok {
+	if val, ok := grpcErrorHTTPCodeMap[code]; ok {
 		return val
 	}
 
@@ -61,20 +60,20 @@ func GenerateErrObject(err error) *ErrObject {
 		eo.Message = err.Error()
 	}
 
-	// Handle Certain Erros
-	if eo.isRegexError() {
-		eo.Message = strings.Replace(eo.Message, `must match regex: ^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`, humanErrorInvalidRegex, 1)
-	}
+	// // Handle Certain Erros
+	// if eo.isRegexError() {
+	// 	eo.Message = strings.Replace(eo.Message, `must match regex: ^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`, humanErrorInvalidRegex, 1)
+	// }
 
 	return eo
 }
 
-func (e *ErrObject) isRegexError() (ok bool) {
-	if e.Code != codes.InvalidArgument {
-		ok = false
-	} else if strings.HasSuffix(e.Message, `^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`) {
-		ok = true
-	}
-
-	return ok
-}
+// func (e *ErrObject) isRegexError() (ok bool) {
+// 	if e.Code != codes.InvalidArgument {
+// 		ok = false
+// 	} else if strings.HasSuffix(e.Message, `^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`) {
+// 		ok = true
+// 	}
+//
+// 	return ok
+// }

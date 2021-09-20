@@ -10,8 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var log *zap.SugaredLogger
-
 // Server struct for API server
 type Server struct {
 	logger *zap.SugaredLogger
@@ -32,9 +30,7 @@ func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 
 	logger.Infof("starting api server")
 
-	log = logger
-
-	r := mux.NewRouter()
+	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	s := &Server{
 		logger: logger,
@@ -52,7 +48,8 @@ func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 	}
 	s.config = conf
 
-	s.functionHandler, err = newFunctionHandler(logger, s.config.FunctionsService)
+	s.functionHandler, err = newFunctionHandler(logger,
+		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
 	if err != nil {
 		logger.Error("can not get functions handler: %v", err)
 		return nil, err
@@ -64,7 +61,7 @@ func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
-	s.prepareRoutes()
+	s.prepareHelperRoutes()
 
 	return s, nil
 
@@ -76,7 +73,7 @@ func (s *Server) Start() error {
 	return s.srv.ListenAndServe()
 }
 
-func (s *Server) prepareRoutes() {
+func (s *Server) prepareHelperRoutes() {
 
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
@@ -84,11 +81,19 @@ func (s *Server) prepareRoutes() {
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodOptions).Name(RN_Preflight)
 
-	// functions
-	s.router.HandleFunc("/api/functions", s.functionHandler.listFunctions).Methods(http.MethodGet).Name(RN_ListServices)
+	// functions ..
+	// s.router.HandleFunc("/api/functions", s.functionHandler.listServices).Methods(http.MethodGet).Name(RN_ListServices)
+	// // s.router.HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
+	// // s.router.HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	// s.router.HandleFunc("/api/functions", s.functionHandler.createService).Methods(http.MethodPost).Name(RN_CreateService)
+	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
+	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
+	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	// s.router.HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
+	// s.router.HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// engine
-	s.router.HandleFunc("/api/flow", s.flowHandler.listFunctions).Methods(http.MethodGet).Name(RN_ListServices)
+	// s.router.HandleFunc("/api/flow", s.flowHandler.listFunctions).Methods(http.MethodGet).Name(RN_ListServices)
 
 	// variables
 

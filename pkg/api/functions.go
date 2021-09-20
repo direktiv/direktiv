@@ -1,9 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/functions/grpc"
 	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
@@ -14,7 +17,8 @@ type functionHandler struct {
 	client grpcfunc.FunctionsServiceClient
 }
 
-func newFunctionHandler(logger *zap.SugaredLogger, addr string) (*functionHandler, error) {
+func newFunctionHandler(logger *zap.SugaredLogger,
+	router *mux.Router, addr string) (*functionHandler, error) {
 
 	funcAddr := fmt.Sprintf("%s:5555", addr)
 	logger.Infof("connecting to functions %s", funcAddr)
@@ -25,10 +29,23 @@ func newFunctionHandler(logger *zap.SugaredLogger, addr string) (*functionHandle
 		return nil, err
 	}
 
-	return &functionHandler{
+	fh := &functionHandler{
 		logger: logger,
 		client: grpcfunc.NewFunctionsServiceClient(conn),
-	}, nil
+	}
+
+	fh.initRoutes(router)
+
+	return fh, err
+
+}
+
+func (h *functionHandler) initRoutes(r *mux.Router) {
+
+	r.HandleFunc("", h.listServices).Methods(http.MethodGet).Name(RN_ListServices)
+	// s.router.HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
+	// s.router.HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	r.HandleFunc("", h.createService).Methods(http.MethodPost).Name(RN_CreateService)
 
 }
 
@@ -200,7 +217,7 @@ func newFunctionHandler(logger *zap.SugaredLogger, addr string) (*functionHandle
 // 			if iinf.Cmd != nil {
 // 				obj.Info.Cmd = *iinf.Cmd
 // 			}
-// 		}listFunctions
+// 		}
 //
 // 		obj.ServiceName = function.GetServiceName()
 // 		obj.Status = function.GetStatus()
@@ -212,44 +229,41 @@ func newFunctionHandler(logger *zap.SugaredLogger, addr string) (*functionHandle
 // 	return out
 // }
 //
-func (h *functionHandler) listFunctions(w http.ResponseWriter, r *http.Request) {
-	h.logger.Infof("LIST FUNCTIONS")
-	w.Write([]byte("LIST FUNCTIONS"))
+// func (h *functionHandler) listFunctions(w http.ResponseWriter, r *http.Request) {
+// 	h.logger.Infof("LIST FUNCTIONS")
+// 	w.Write([]byte("LIST FUNCTIONS"))
+// }
+
+func (h *functionHandler) listServices(w http.ResponseWriter, r *http.Request) {
+
+	// a, err := getFunctionAnnotations(r)
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	w.Write([]byte(err.Error()))
+	// 	return
+	// }
+	//
+	grpcReq := grpcfunc.ListFunctionsRequest{
+		// Annotations: a,
+	}
+
+	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
+	respond(w, resp, err)
+
+	// functions := resp.GetFunctions()
+	// out := prepareFunctionsForResponse(functions)
+	//
+	// l := &functionResponseList{
+	// 	Config:   resp.GetConfig(),
+	// 	Services: out,
+	// }
+	//
+	// if err := json.NewEncoder(w).Encode(l); err != nil {
+	// 	ErrResponse(w, err)
+	// 	return
+	// }
 }
 
-// func (h *Handler) listServices(w http.ResponseWriter, r *http.Request) {
-//
-// 	a, err := getFunctionAnnotations(r)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	grpcReq := grpc.ListFunctionsRequest{
-// 		Annotations: a,
-// 	}
-//
-// 	resp, err := h.s.functions.ListFunctions(r.Context(), &grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	functions := resp.GetFunctions()
-// 	out := prepareFunctionsForResponse(functions)
-//
-// 	l := &functionResponseList{
-// 		Config:   resp.GetConfig(),
-// 		Services: out,
-// 	}
-//
-// 	if err := json.NewEncoder(w).Encode(l); err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-// }
-//
 // func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
 //
 // 	a, err := getFunctionAnnotations(r)
@@ -348,45 +362,43 @@ func (h *functionHandler) listFunctions(w http.ResponseWriter, r *http.Request) 
 // 	}
 // }
 //
-// type createFunctionRequest struct {
-// 	Name      *string `json:"name,omitempty"`
-// 	Namespace *string `json:"namespace,omitempty"`
-// 	Workflow  *string `json:"workflow,omitempty"`
-// 	Image     *string `json:"image,omitempty"`
-// 	Cmd       *string `json:"cmd,omitempty"`
-// 	Size      *int32  `json:"size,omitempty"`
-// 	MinScale  *int32  `json:"minScale,omitempty"`
-// }
-//
-// func (h *Handler) createService(w http.ResponseWriter, r *http.Request) {
-//
-// 	obj := new(createFunctionRequest)
-// 	err := json.NewDecoder(r.Body).Decode(obj)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	grpcReq := new(grpc.CreateFunctionRequest)
-// 	grpcReq.Info = &grpc.BaseInfo{
-// 		Name:      obj.Name,
-// 		Namespace: obj.Namespace,
-// 		Workflow:  obj.Workflow,
-// 		Image:     obj.Image,
-// 		Cmd:       obj.Cmd,
-// 		Size:      obj.Size,
-// 		MinScale:  obj.MinScale,
-// 	}
-//
-// 	// returns an empty body
-// 	_, err = h.s.functions.CreateFunction(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// }
+type createFunctionRequest struct {
+	Name      *string `json:"name,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
+	Workflow  *string `json:"workflow,omitempty"`
+	Image     *string `json:"image,omitempty"`
+	Cmd       *string `json:"cmd,omitempty"`
+	Size      *int32  `json:"size,omitempty"`
+	MinScale  *int32  `json:"minScale,omitempty"`
+}
+
+func (h *functionHandler) createService(w http.ResponseWriter, r *http.Request) {
+
+	obj := new(createFunctionRequest)
+	err := json.NewDecoder(r.Body).Decode(obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := new(grpcfunc.CreateFunctionRequest)
+	grpcReq.Info = &grpc.BaseInfo{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+		Workflow:  obj.Workflow,
+		Image:     obj.Image,
+		Cmd:       obj.Cmd,
+		Size:      obj.Size,
+		MinScale:  obj.MinScale,
+	}
+
+	// returns an empty body
+	resp, err := h.client.CreateFunction(r.Context(), grpcReq)
+	respond(w, resp, err)
+
+}
+
 //
 // type updateServiceRequest struct {
 // 	Image          *string `json:"image,omitempty"`

@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -130,82 +128,6 @@ func marshal(w http.ResponseWriter, x interface{}) {
 
 }
 
-// Errors
-
-const (
-	humanErrorInvalidRegex string = "must be less than 36 characters and may only use lowercase letters, numbers, and “-_”"
-
-	// GenericErrorCode - Reserved status code for generic non grpc errors
-	GenericErrorCode codes.Code = 50
-)
-
-type ErrObject struct {
-	Code    codes.Code
-	Message string
-}
-
-var grpcErrorHttpCodeMap = map[codes.Code]int{
-	codes.Canceled:           http.StatusBadRequest,
-	codes.Unknown:            http.StatusInternalServerError,
-	codes.InvalidArgument:    http.StatusNotAcceptable,
-	codes.DeadlineExceeded:   http.StatusBadRequest,
-	codes.NotFound:           http.StatusNotFound,
-	codes.AlreadyExists:      http.StatusConflict,
-	codes.PermissionDenied:   http.StatusBadRequest,
-	codes.ResourceExhausted:  http.StatusBadRequest,
-	codes.FailedPrecondition: http.StatusBadRequest,
-	codes.Aborted:            http.StatusBadRequest,
-	codes.OutOfRange:         http.StatusBadRequest,
-	codes.Unimplemented:      http.StatusBadRequest,
-	codes.Internal:           http.StatusBadRequest,
-	codes.Unavailable:        http.StatusBadRequest,
-	codes.DataLoss:           http.StatusBadRequest,
-	codes.Unauthenticated:    http.StatusBadRequest,
-	GenericErrorCode:         http.StatusInternalServerError,
-}
-
-// ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes
-func ConvertGRPCStatusCodeToHTTPCode(code codes.Code) int {
-
-	if val, ok := grpcErrorHttpCodeMap[code]; ok {
-		return val
-	}
-
-	return http.StatusInternalServerError
-
-}
-
-// GenerateErrObject - Unwrap grpc errors into ErrorObject
-func GenerateErrObject(err error) *ErrObject {
-
-	eo := new(ErrObject)
-	if st, ok := status.FromError(err); ok {
-		eo.Code = st.Code()
-		eo.Message = st.Message()
-	} else {
-		eo.Code = GenericErrorCode
-		eo.Message = err.Error()
-	}
-
-	// Handle Certain Erros
-	if eo.isRegexError() {
-		eo.Message = strings.Replace(eo.Message, `must match regex: ^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`, humanErrorInvalidRegex, 1)
-	}
-
-	return eo
-
-}
-
-func (e *ErrObject) isRegexError() (ok bool) {
-	if e.Code != codes.InvalidArgument {
-		ok = false
-	} else if strings.HasSuffix(e.Message, `^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`) {
-		ok = true
-	}
-
-	return ok
-}
-
 // SSE Util functions
 
 func sse(w http.ResponseWriter, ch <-chan interface{}) {
@@ -228,7 +150,7 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 			var ok bool
 			err, ok = x.(error)
 			if ok {
-				ErrSSEResponse(w, flusher, err)
+				sseError(w, flusher, err)
 				return
 			}
 
@@ -249,7 +171,7 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 
 }
 
-func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
+func sseError(w http.ResponseWriter, flusher http.Flusher, err error) {
 
 	eo := GenerateErrObject(err)
 
@@ -260,7 +182,7 @@ func ErrSSEResponse(w http.ResponseWriter, flusher http.Flusher, err error) {
 
 	_, err = w.Write([]byte(fmt.Sprintf("event: error\ndata: %s\n\n", string(b))))
 	if err != nil {
-		log.Errorf("FAILED to write sse error: %s", string(b))
+		return
 	}
 
 	flusher.Flush()
