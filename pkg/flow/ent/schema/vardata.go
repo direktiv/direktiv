@@ -20,9 +20,9 @@ func (VarData) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.Int("size").Immutable(),
-		field.String("hash").Immutable(),
-		field.Bytes("data").Immutable(),
+		field.Int("size"),
+		field.String("hash"),
+		field.Bytes("data"),
 	}
 }
 

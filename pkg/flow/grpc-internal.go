@@ -25,7 +25,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 
 	internal := &internal{server: srv}
 
-	internal.listener, err = net.Listen("tcp", srv.conf.BindInternal)
+	internal.listener, err = net.Listen("tcp", ":7777")
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +81,8 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 		internal.sugar.Error(err)
 		return nil, err
 	}
+
+	internal.sugar.Debugf("Handling report action results: %s", this())
 
 	go internal.engine.runState(ctx, im, wakedata, nil)
 

@@ -21,7 +21,7 @@ func initSecrets() (*secrets, error) {
 
 	var err error
 
-	secrets.conn, err = util.GetEndpointTLS(util.TLSSecretsComponent)
+	secrets.conn, err = util.GetEndpointTLS("TODO")
 	if err != nil {
 		return nil, err
 	}

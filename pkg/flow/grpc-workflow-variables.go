@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
+	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -266,14 +268,37 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
-	vdata, err := vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
+	var vdata *ent.VarData
 
-	vref, err := vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(req.GetKey()).Save(ctx)
+	vref, err := d.wf.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
 	if err != nil {
-		return nil, err
+
+		if !ent.IsNotFound(err) {
+			return nil, err
+		}
+
+		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(req.GetKey()).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+
+		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	err = tx.Commit()
@@ -368,14 +393,37 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
-	vdata, err := vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-	if err != nil {
-		return err
-	}
+	var vdata *ent.VarData
 
-	vref, err := vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(req.GetKey()).Save(ctx)
+	vref, err := d.wf.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
 	if err != nil {
-		return err
+
+		if !ent.IsNotFound(err) {
+			return err
+		}
+
+		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		if err != nil {
+			return err
+		}
+
+		_, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(req.GetKey()).Save(ctx)
+		if err != nil {
+			return err
+		}
+
+	} else {
+
+		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
+		if err != nil {
+			return err
+		}
+
+		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	err = tx.Commit()

@@ -35,6 +35,31 @@ func (vdu *VarDataUpdate) SetUpdatedAt(t time.Time) *VarDataUpdate {
 	return vdu
 }
 
+// SetSize sets the "size" field.
+func (vdu *VarDataUpdate) SetSize(i int) *VarDataUpdate {
+	vdu.mutation.ResetSize()
+	vdu.mutation.SetSize(i)
+	return vdu
+}
+
+// AddSize adds i to the "size" field.
+func (vdu *VarDataUpdate) AddSize(i int) *VarDataUpdate {
+	vdu.mutation.AddSize(i)
+	return vdu
+}
+
+// SetHash sets the "hash" field.
+func (vdu *VarDataUpdate) SetHash(s string) *VarDataUpdate {
+	vdu.mutation.SetHash(s)
+	return vdu
+}
+
+// SetData sets the "data" field.
+func (vdu *VarDataUpdate) SetData(b []byte) *VarDataUpdate {
+	vdu.mutation.SetData(b)
+	return vdu
+}
+
 // AddVarrefIDs adds the "varrefs" edge to the VarRef entity by IDs.
 func (vdu *VarDataUpdate) AddVarrefIDs(ids ...uuid.UUID) *VarDataUpdate {
 	vdu.mutation.AddVarrefIDs(ids...)
@@ -164,6 +189,34 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: vardata.FieldUpdatedAt,
 		})
 	}
+	if value, ok := vdu.mutation.Size(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: vardata.FieldSize,
+		})
+	}
+	if value, ok := vdu.mutation.AddedSize(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: vardata.FieldSize,
+		})
+	}
+	if value, ok := vdu.mutation.Hash(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: vardata.FieldHash,
+		})
+	}
+	if value, ok := vdu.mutation.Data(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: vardata.FieldData,
+		})
+	}
 	if vdu.mutation.VarrefsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -240,6 +293,31 @@ type VarDataUpdateOne struct {
 // SetUpdatedAt sets the "updated_at" field.
 func (vduo *VarDataUpdateOne) SetUpdatedAt(t time.Time) *VarDataUpdateOne {
 	vduo.mutation.SetUpdatedAt(t)
+	return vduo
+}
+
+// SetSize sets the "size" field.
+func (vduo *VarDataUpdateOne) SetSize(i int) *VarDataUpdateOne {
+	vduo.mutation.ResetSize()
+	vduo.mutation.SetSize(i)
+	return vduo
+}
+
+// AddSize adds i to the "size" field.
+func (vduo *VarDataUpdateOne) AddSize(i int) *VarDataUpdateOne {
+	vduo.mutation.AddSize(i)
+	return vduo
+}
+
+// SetHash sets the "hash" field.
+func (vduo *VarDataUpdateOne) SetHash(s string) *VarDataUpdateOne {
+	vduo.mutation.SetHash(s)
+	return vduo
+}
+
+// SetData sets the "data" field.
+func (vduo *VarDataUpdateOne) SetData(b []byte) *VarDataUpdateOne {
+	vduo.mutation.SetData(b)
 	return vduo
 }
 
@@ -394,6 +472,34 @@ func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err 
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: vardata.FieldUpdatedAt,
+		})
+	}
+	if value, ok := vduo.mutation.Size(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: vardata.FieldSize,
+		})
+	}
+	if value, ok := vduo.mutation.AddedSize(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: vardata.FieldSize,
+		})
+	}
+	if value, ok := vduo.mutation.Hash(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: vardata.FieldHash,
+		})
+	}
+	if value, ok := vduo.mutation.Data(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: vardata.FieldData,
 		})
 	}
 	if vduo.mutation.VarrefsCleared() {

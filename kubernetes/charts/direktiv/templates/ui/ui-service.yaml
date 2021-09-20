@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ui
+  labels:
+    {{- include "direktiv.labelsUI" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: ui
+  selector:
+    {{- include "direktiv.selectorLabelsUI" . | nindent 4 }}

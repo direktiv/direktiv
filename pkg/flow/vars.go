@@ -38,7 +38,7 @@ func initVarsServer(ctx context.Context, srv *server) (*vars, error) {
 	vars.router.HandleFunc("/api/vars/namespaces/{namespace}/instances/{instance}/vars/{var}", vars.inHandler)
 
 	vars.http = &http.Server{
-		Addr:    srv.conf.BindVars,
+		Addr:    ":9999",
 		Handler: vars.router,
 	}
 

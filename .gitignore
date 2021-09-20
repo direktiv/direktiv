@@ -69,4 +69,9 @@ deploy*.yaml
 kubernetes/charts/knative/charts
 kubernetes/charts/knative/Chart.lock
 
+kubernetes/charts/direktiv/charts
+kubernetes/charts/direktiv/Chart.lock
+
+scripts/devcerts
+
 scripts/wip/kong/proto

@@ -1,0 +1,36 @@
+storage:
+  master:
+    count: 2
+    size: 1Gi
+    storageClass: local-path
+  tserver:
+    count: 2
+    size: 1Gi
+    storageClass: local-path
+
+resource:
+  master:
+    requests:
+      cpu: 0.25
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+  tserver:
+    requests:
+      cpu: 0.25
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+
+enableLoadBalancer: false
+
+authCredentials:
+  ysql:
+    user: "direktiv"
+    password: "direktivdirektiv"
+    database: "direktiv"
+
+tls:
+  enabled: true

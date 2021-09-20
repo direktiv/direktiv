@@ -257,13 +257,21 @@ service Flow {
 			get: "/api/flow/namespaces/{namespace}/instances/{instance}"
 		};
 	}
-	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
+	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/instances/{instance}"
+		};
+	}
 	rpc Instances (InstancesRequest) returns (InstancesResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/instances"
 		};
 	}
-	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
+	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {
+		option (google.api.http) = {
+			get: "/api/stream/flow/namespaces/{namespace}/instances"
+		};
+	}
 	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/instances/{instance}/input"

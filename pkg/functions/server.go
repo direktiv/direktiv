@@ -6,7 +6,7 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
-	"github.com/vorteil/direktiv/ent"
+	"github.com/vorteil/direktiv/pkg/functions/ent"
 
 	"github.com/vorteil/direktiv/pkg/dlog"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
@@ -59,11 +59,6 @@ func StartServer(echan chan error) {
 	logger.Infof("loading config file %s", confFile)
 	cr.readConfig(confFile, &functionsConfig)
 
-	if len(util.FlowEndpoint()) == 0 {
-		logger.Errorf("grpc response to flow is not configured")
-		echan <- fmt.Errorf("grpc response to flow is not configured")
-	}
-
 	// Setup database
 	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
 	if err != nil {
@@ -71,19 +66,17 @@ func StartServer(echan chan error) {
 		echan <- fmt.Errorf("failed to connect database client: %w", err)
 	}
 
-	ctx := context.Background()
-
 	// Run the auto migration tool.
-	if err := db.Schema.Create(ctx); err != nil {
-		logger.Errorf("failed to auto migrate database: %w", err)
-		echan <- fmt.Errorf("failed to auto migrate database: %w", err)
+	if err := db.Schema.Create(context.Background()); err != nil {
+		logger.Errorf("failed to auto migrate database: %v", err)
+		echan <- fmt.Errorf("failed to auto migrate database: %v", err)
 	}
 
 	fServer := functionsServer{
 		db: db,
 	}
 
-	err = util.GrpcStart(&grpcServer, util.TLSFunctionsComponent,
+	err = util.GrpcStart(&grpcServer, "functions",
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
 			igrpc.RegisterFunctionsServiceServer(srv, &fServer)
 			reflection.Register(srv)

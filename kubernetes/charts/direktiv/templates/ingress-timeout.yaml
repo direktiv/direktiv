@@ -5,13 +5,9 @@ metadata:
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 proxy:
-  {{- if ne  .Values.api.certificate "none" }}
-  protocol: https
-  {{- else }}
   protocol: http
-  {{- end }}
-  read_timeout: 900000
-  connect_timeout: 900000
-  write_timeout: 900000
+  read_timeout: {{ .Values.ingress.timeout }}
+  connect_timeout: {{ .Values.ingress.timeout }}
+  write_timeout: {{ .Values.ingress.timeout }}
   retries: 0
   tls_verify: false

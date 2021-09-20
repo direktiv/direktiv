@@ -3,13 +3,10 @@ package flow
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -314,7 +311,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
 
-	engine.sugar.Debugf("Instance failed with uncatchable error: %v", err)
+	engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
 
@@ -607,6 +604,8 @@ func (engine *engine) retryWakeup(data []byte) error {
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
 
+	engine.sugar.Debugf("Handling retry wakeup: %s", this())
+
 	go engine.runState(ctx, im, []byte(msg.Data), nil)
 
 	return nil
@@ -663,15 +662,15 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 func (engine *engine) doPodHTTPRequest(ctx context.Context,
 	ar *functionRequest, hostname, ip string) {
 
-	useTLS := engine.conf.FunctionsProtocol == "https"
-
-	tr := engine.createTransport(useTLS)
+	// useTLS := engine.conf.FunctionsProtocol == "https"
+	//
+	// tr := engine.createTransport(useTLS)
 
 	// configured namespace for workflows
-	addr := fmt.Sprintf("%s://%s:8890", engine.conf.FunctionsProtocol, ip)
-	if useTLS {
-		addr = fmt.Sprintf("%s://%s:8890", engine.conf.FunctionsProtocol, hostname)
-	}
+	addr := fmt.Sprintf("http://%s:8890", ip)
+	// if useTLS {
+	// 	addr = fmt.Sprintf("%s://%s:8890", engine.conf.FunctionsProtocol, hostname)
+	// }
 
 	engine.sugar.Debugf("function request: %v", addr)
 
@@ -699,27 +698,13 @@ func (engine *engine) doPodHTTPRequest(ctx context.Context,
 		req.Header.Add(DirektivFileHeader, str)
 	}
 
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := &http.Client{}
 
 	var (
 		resp *http.Response
 	)
 
-	// if we use https we need to use hostname for the certs to be valid
-	// that can lead to some delays with kubernetes DNS
-	if useTLS {
-		for i := 0; i < 100; i++ {
-			resp, err = client.Do(req)
-			if err != nil && strings.Contains(err.Error(), "connection refused") {
-				time.Sleep(250 * time.Millisecond)
-				continue
-			}
-		}
-	} else {
-		resp, err = client.Do(req)
-	}
+	resp, err = client.Do(req)
 
 	if err != nil {
 		if ctxErr := rctx.Err(); ctxErr != nil {
@@ -750,7 +735,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		err error
 	)
 
-	tr := engine.createTransport(engine.conf.FunctionsProtocol == "https")
+	tr := engine.createTransport()
 
 	// configured namespace for workflows
 	ns := os.Getenv(util.DirektivServiceNamespace)
@@ -767,7 +752,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		}
 	}
 
-	addr := fmt.Sprintf("%s://%s.%s", engine.conf.FunctionsProtocol, svn, ns)
+	addr := fmt.Sprintf("http://%s.%s", svn, ns)
 	engine.sugar.Debugf("function request: %v", addr)
 
 	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
@@ -891,7 +876,7 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 	}
 }
 
-func (engine *engine) createTransport(useTLS bool) *http.Transport {
+func (engine *engine) createTransport() *http.Transport {
 
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -905,30 +890,6 @@ func (engine *engine) createTransport(useTLS bool) *http.Transport {
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
-	}
-
-	if useTLS {
-		rootCAs, _ := x509.SystemCertPool()
-		if rootCAs == nil {
-			rootCAs = x509.NewCertPool()
-		}
-
-		// Read in the cert file. just in case it is the same being used
-		// in the ingress
-		certs, err := ioutil.ReadFile("/etc/direktiv/certs/ca/ca.crt")
-		if err == nil {
-			// Append our cert to the system pool if we have it
-			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-				engine.sugar.Warnf("no certs appended, using system certs only")
-			}
-		}
-
-		// Trust the augmented cert pool in our client
-		config := &tls.Config{
-			RootCAs:    rootCAs,
-			MinVersion: tls.VersionTLS12,
-		}
-		tr.TLSClientConfig = config
 	}
 
 	return tr
@@ -960,6 +921,8 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 		engine.CrashInstance(ctx, im, err)
 		return
 	}
+
+	engine.sugar.Debugf("Handling events wakeup: %s", this())
 
 	go engine.runState(ctx, im, wakedata, nil)
 

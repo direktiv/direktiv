@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
@@ -24,11 +26,11 @@ import (
 const parcelSize = 0x100000
 
 type Config struct {
-	Database          string `yaml:"database"`
-	BindFlow          string `yaml:"bind_flow"`
-	BindInternal      string `yaml:"bind_internal"`
-	BindVars          string `yaml:"bind_vars"`
-	FunctionsProtocol string `yaml:"functions-protocol"`
+	FunctionsService string `yaml:"functions-service"`
+	FlowService      string `yaml:"flow-service"`
+
+	PrometheusBackend string `yaml:"prometheus-backend"`
+	RedisBackend      string `yaml:"redis-backend"`
 }
 
 func ReadConfig(file string) (*Config, error) {
@@ -44,31 +46,6 @@ func ReadConfig(file string) (*Config, error) {
 	err = yaml.Unmarshal(data, c)
 	if err != nil {
 		return nil, err
-	}
-
-	s := os.Getenv("DATABASE")
-	if s != "" {
-		c.Database = s
-	}
-
-	s = os.Getenv("BIND_FLOW")
-	if s != "" {
-		c.BindFlow = s
-	}
-
-	s = os.Getenv("BIND_INTERNAL")
-	if s != "" {
-		c.BindInternal = s
-	}
-
-	s = os.Getenv("BIND_VARS")
-	if s != "" {
-		c.BindVars = s
-	}
-
-	s = os.Getenv("FUNCTIONS_PROTOCOL")
-	if s != "" {
-		c.FunctionsProtocol = s
 	}
 
 	return c, nil
@@ -96,10 +73,62 @@ type server struct {
 	metrics *metrics.Client
 }
 
+func sub() {
+
+	fmt.Println(">>>>>>")
+
+	var redispool *redis.Pool
+	redispool = &redis.Pool{
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", "yb-tservers.yugabyte:6379")
+		},
+	}
+
+	// Get a connection
+	conn := redispool.Get()
+	// defer conn.Close()
+	// Test the connection
+	_, err := conn.Do("PING")
+	if err != nil {
+		log.Fatalf("can't connect to the redis database, got error:\n%v", err)
+	}
+
+	go func() {
+
+		rc := redispool.Get()
+
+		psc := redis.PubSubConn{Conn: rc}
+		if err := psc.PSubscribe("mychannel"); err != nil {
+			log.Printf("ERR %v\n", err)
+		}
+		//
+		// // var msg chan	 []byte
+		//
+		for {
+			switch v := psc.Receive().(type) {
+			default:
+				log.Printf(">> %v", v)
+			case redis.Message:
+				// 	// 	// msg <- v.Data
+				log.Printf("RECEIVE %v", string(v.Data))
+			}
+		}
+
+	}()
+
+	for {
+		log.Printf(">> PUB \n")
+		conn.Do("PUBLISH", "mychannel", "gerke")
+		time.Sleep(1 * time.Second)
+	}
+
+}
+
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
 	dlog.Init()
-	util.Init()
+
+	go sub()
 
 	srv, err := newServer(logger, conf)
 	if err != nil {
@@ -134,18 +163,20 @@ func (srv *server) start(ctx context.Context) error {
 
 	var err error
 
-	// go setupPrometheusEndpoint()
+	go setupPrometheusEndpoint()
 
-	srv.sugar.Debug("Initializing secrets.")
-	srv.secrets, err = initSecrets()
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.secrets.Close)
+	// srv.sugar.Debug("Initializing secrets.")
+	// srv.secrets, err = initSecrets()
+	// if err != nil {
+	// 	return err
+	// }
+	// defer srv.cleanup(srv.secrets.Close)
 
 	srv.sugar.Debug("Initializing locks.")
 
-	srv.locks, err = initLocks(srv.conf.Database)
+	db := os.Getenv(util.DBConn)
+
+	srv.locks, err = initLocks(db)
 	if err != nil {
 		return err
 	}
@@ -153,7 +184,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = initPubSub(srv.sugar, srv, srv.conf.Database)
+	srv.pubsub, err = initPubSub(srv.sugar, srv, db)
 	if err != nil {
 		return err
 	}
@@ -161,7 +192,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 
-	srv.db, err = initDatabase(ctx, srv.conf.Database)
+	srv.db, err = initDatabase(ctx, db)
 	if err != nil {
 		return err
 	}
@@ -294,16 +325,21 @@ func (srv *server) notifyCluster(msg string) error {
 
 	ctx := context.Background()
 
+	// srv.sugar.Debugf("NC PRECONN")
+
 	conn, err := srv.db.DB().Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
+	// srv.sugar.Debugf("NC GOTCONN %s %s", flowSync, msg)
+	//
+
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
 	if err, ok := err.(*pq.Error); ok {
 
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
+		srv.sugar.Errorf("db notification failed: %v", err)
 		if err.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -311,6 +347,8 @@ func (srv *server) notifyCluster(msg string) error {
 		return err
 
 	}
+
+	// srv.sugar.Debugf("NC POSTNOTIFY")
 
 	return err
 

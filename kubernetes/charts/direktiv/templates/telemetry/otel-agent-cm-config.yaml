@@ -1,0 +1,11 @@
+{{- if .Values.opentelemetry.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-otel-agent-config
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  otel-agent-config: |
+{{- .Values.opentelemetry.agentconfig | nindent 4 }}
+{{- end }}

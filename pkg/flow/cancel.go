@@ -35,11 +35,17 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
+	if im.in.Status != StatusPending {
+		return
+	}
+
 	if soft {
 		err = NewCatchableError(code, message)
 	} else {
 		err = NewUncatchableError(code, message)
 	}
+
+	engine.sugar.Debugf("Handling cancel instance: %s", this())
 
 	go engine.runState(ctx, im, nil, err)
 

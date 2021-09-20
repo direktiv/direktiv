@@ -22,3 +22,27 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "v0.4.1"
+
+dependencies:
+    - name: kube-prometheus
+      repository: "https://charts.bitnami.com/bitnami"
+      version: "6.1.8"
+    - name: "minio-operator"
+      condition: minio-operator.enabled
+      repository: "https://operator.min.io/"
+      version: "4.2.7"
+    - name: "thanos"
+      condition: thanos.enabled
+      repository: "https://charts.bitnami.com/bitnami"
+      version: "6.0.1"
+    - name: "redis"
+      condition: redis.enabled
+      repository: "https://charts.bitnami.com/bitnami"
+      version: "15.3.2"
+
+
+
+    # $ helm repo add bitnami https://charts.bitnami.com/bitnami
+    # $ helm install my-release bitnami/kube-prometheus
+    # helm repo add bitnami https://charts.bitnami.com/bitnami
+    # helm install my-release bitnami/thanos

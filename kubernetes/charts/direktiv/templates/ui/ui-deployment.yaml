@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ui
+  labels:
+    {{ include "direktiv.labelsUI" . | nindent 4 }}-ui
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabelsUI" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "direktiv.selectorLabelsUI" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33333
+        runAsGroup: 22222
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      containers:
+{{- if .Values.ui.extraContainers }}
+{{ toYaml .Values.ui.extraContainers | indent 8 }}
+{{- end }}
+        - name: ui
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.25"
+            limits:
+              memory: "2048Mi"
+              cpu: "2"
+          image: "{{ .Values.registry }}/{{ .Values.ui.image }}:{{ .Values.ui.tag | default .Chart.AppVersion }}"
+          env:
+          - name: SERVE_PORT
+            value: "8080"
+          - name: SERVE_ADDRESS
+            value: "0.0.0.0"
+          - name: API_URL
+            value: "/api"
+          - name: KEYCLOAK_URL
+            value: {{ .Values.ui.keycloakUrl }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: ui
+              containerPort: 8080
+              protocol: TCP
+      volumes:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

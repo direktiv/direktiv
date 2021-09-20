@@ -13,6 +13,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
+	github.com/gomodule/redigo v1.8.5 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
@@ -21,6 +22,7 @@ require (
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
+	github.com/norwoodj/helm-docs v1.6.0 // indirect
 	github.com/nxadm/tail v1.4.4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2 // indirect
@@ -32,7 +34,6 @@ require (
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
-	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +17,6 @@ func main() {
 	var err error
 
 	dlog.Init()
-	util.Init()
 
 	logger, err = zap.NewDevelopment()
 	if err != nil {

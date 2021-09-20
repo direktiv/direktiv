@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -29,7 +30,7 @@ func Init() {
 	// startup probes don't work here. reporting success too early
 	// only run if TCP enabled
 	var err error
-	if len(os.Getenv("NO_FLUENTBIT_TCP")) == 0 {
+	if len(os.Getenv(util.DirektivFluentbitTCP)) == 0 {
 
 		for i := 0; i < 60; i++ {
 			log.Printf("connecting to logging service %v\n", appTCP)
@@ -60,7 +61,6 @@ func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 	var err error
 
 	if appLogger == nil {
-
 		appLogger, err = customLogger(appTCP)
 		if err != nil {
 			return nil, err
@@ -85,7 +85,7 @@ func FunctionsLogger() (*zap.SugaredLogger, error) {
 
 func customLogger(tcp string) (*zap.Logger, error) {
 
-	l := os.Getenv("DIREKTIV_DEBUG")
+	l := os.Getenv(util.DirektivDebug)
 
 	inLvl := zapcore.InfoLevel
 	if l == "true" {
