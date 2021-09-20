@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "direktiv.fullname" . }}-metrics
+  name: {{ include "direktiv.fullname" . }}-vars
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
     konghq.com/protocol: "http"
@@ -9,8 +9,8 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
 spec:
   ports:
-    - port: 9998
-      name: flow
+    - port: 9999
+      name: vars
       protocol: TCP
   selector:
     {{- include "direktiv.selectorLabels" . | nindent 4 }}

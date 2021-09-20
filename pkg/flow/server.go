@@ -59,16 +59,17 @@ type server struct {
 
 	redis *redis.Pool
 
-	db       *ent.Client
-	pubsub   *pubsub
-	locks    *locks
-	timers   *timers
-	engine   *engine
-	secrets  *secrets
-	flow     *flow
-	internal *internal
-	events   *events
-	vars     *vars
+	db           *ent.Client
+	pubsub       *pubsub
+	locks        *locks
+	timers       *timers
+	engine       *engine
+	secrets      *secrets
+	flow         *flow
+	internal     *internal
+	events       *events
+	vars         *vars
+	metricServer *metricsServer
 
 	metrics *metrics.Client
 }
@@ -194,6 +195,15 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer srv.cleanup(srv.vars.Close)
+
+	srv.sugar.Debug("Initializing metrics server.")
+
+	srv.metricServer, err = initMetricsServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.metricServer.Close)
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
