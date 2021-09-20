@@ -1,10 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,9 +19,16 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+func this() string {
+	pc, _, _, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+	elems := strings.Split(fn.Name(), ".")
+	return elems[len(elems)-1]
+}
+
 func handlerPair(r *mux.Router, name, path string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
-	r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet)
 	r.HandleFunc(path, sseHandler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet)
 }
 
 func getInt32(r *http.Request, key string) (int32, error) {
@@ -107,12 +118,11 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 nodata:
 
-	w.WriteHeader(http.StatusNoContent)
 	return
 
 }
 
-func marshal(w http.ResponseWriter, x interface{}) {
+func marshal(w io.Writer, x interface{}) {
 
 	data, err := protojson.MarshalOptions{
 		Multiline:       true,
@@ -208,12 +218,11 @@ func sseSetup(w http.ResponseWriter) (http.Flusher, error) {
 
 func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{}) error {
 
-	b, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
+	buf := new(bytes.Buffer)
 
-	return sseWrite(w, flusher, b)
+	marshal(buf, data)
+
+	return sseWrite(w, flusher, buf.Bytes())
 
 }
 

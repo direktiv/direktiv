@@ -45,6 +45,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	ctx := r.Context()
 
 	p, err := pagination(r)
@@ -63,6 +65,8 @@ func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
