@@ -54,7 +54,7 @@ func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
-	s.flowHandler, err = newFlowHandler(logger, s.config.FlowService)
+	s.flowHandler, err = newFlowHandler(logger, r, s.config.FlowService)
 	if err != nil {
 		logger.Error("can not get flow handler: %v", err)
 		return nil, err
