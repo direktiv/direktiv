@@ -10,10 +10,10 @@ import (
 	"go.uber.org/zap"
 )
 
+var logger *zap.SugaredLogger
+
 // Server struct for API server
 type Server struct {
-	logger *zap.SugaredLogger
-
 	router     *mux.Router
 	srv        *http.Server
 	flowClient grpc.FlowClient
@@ -26,14 +26,14 @@ type Server struct {
 }
 
 // NewServer return new API server
-func NewServer(logger *zap.SugaredLogger) (*Server, error) {
+func NewServer(l *zap.SugaredLogger) (*Server, error) {
 
+	logger = l
 	logger.Infof("starting api server")
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	s := &Server{
-		logger: logger,
 		router: r,
 		srv: &http.Server{
 			Handler: r,
@@ -69,7 +69,7 @@ func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 
 // Start starts API server
 func (s *Server) Start() error {
-	s.logger.Infof("start listening")
+	logger.Infof("start listening")
 	return s.srv.ListenAndServe()
 }
 

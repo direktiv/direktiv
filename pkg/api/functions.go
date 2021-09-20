@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/functions/grpc"
 	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
@@ -42,10 +43,18 @@ func newFunctionHandler(logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
-	r.HandleFunc("", h.listServices).Methods(http.MethodGet).Name(RN_ListServices)
-	// s.router.HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
-	// s.router.HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
-	r.HandleFunc("", h.createService).Methods(http.MethodPost).Name(RN_CreateService)
+	// /api/functions
+	r.HandleFunc("", h.listGlobalServices).Methods(http.MethodGet).Name(RN_ListServices)
+	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
+	r.HandleFunc("/{serviceName}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
+
+	// s.Router().HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
+	// s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
+	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
+	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
+	// s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 }
 
@@ -234,17 +243,26 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 // 	w.Write([]byte("LIST FUNCTIONS"))
 // }
 
-func (h *functionHandler) listServices(w http.ResponseWriter, r *http.Request) {
+// var functionsQueryLabelMapping = map[string]string{
+// 	"scope":     functions.ServiceHeaderScope,
+// 	"name":      functions.ServiceHeaderName,
+// 	"namespace": functions.ServiceHeaderNamespace,
+// 	"workflow":  functions.ServiceHeaderWorkflow,
+// }
 
-	// a, err := getFunctionAnnotations(r)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	w.Write([]byte(err.Error()))
-	// 	return
-	// }
-	//
+func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	h.listServices(annotations, w, r)
+
+}
+
+func (h *functionHandler) listServices(
+	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
+
 	grpcReq := grpcfunc.ListFunctionsRequest{
-		// Annotations: a,
+		Annotations: annotations,
 	}
 
 	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
@@ -253,57 +271,36 @@ func (h *functionHandler) listServices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Infof("RESPO %f", resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		ErrResponse(w, err)
+		return
+	}
 
-	// functions := resp.GetFunctions()
-	// out := prepareFunctionsForResponse(functions)
-	//
-	// l := &functionResponseList{
-	// 	Config:   resp.GetConfig(),
-	// 	Services: out,
-	// }
-	//
-	// if err := json.NewEncoder(w).Encode(l); err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
 }
 
-// func (h *Handler) deleteServices(w http.ResponseWriter, r *http.Request) {
-//
-// 	a, err := getFunctionAnnotations(r)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	grpcReq := grpc.ListFunctionsRequest{
-// 		Annotations: a,
-// 	}
-//
-// 	// returns an empty response
-// 	_, err = h.s.functions.DeleteFunctions(r.Context(), &grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// }
-//
-// func (h *Handler) deleteService(w http.ResponseWriter, r *http.Request) {
-//
-// 	sn := mux.Vars(r)["serviceName"]
-// 	grpcReq := new(grpc.GetFunctionRequest)
-// 	grpcReq.ServiceName = &sn
-//
-// 	_, err := h.s.functions.DeleteFunction(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// }
+func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Request) {
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	annotations[functions.ServiceHeaderName] = mux.Vars(r)["serviceName"]
+	h.deleteService(annotations, w, r)
+}
+
+func (h *functionHandler) deleteService(annotations map[string]string,
+	w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := grpcfunc.ListFunctionsRequest{
+		Annotations: annotations,
+	}
+
+	_, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		ErrResponse(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+
+}
+
 //
 // type getFunctionResponse struct {
 // 	Name      string                         `json:"name,omitempty"`
@@ -368,16 +365,19 @@ func (h *functionHandler) listServices(w http.ResponseWriter, r *http.Request) {
 // }
 //
 type createFunctionRequest struct {
-	Name      *string `json:"name,omitempty"`
-	Namespace *string `json:"namespace,omitempty"`
-	Workflow  *string `json:"workflow,omitempty"`
-	Image     *string `json:"image,omitempty"`
-	Cmd       *string `json:"cmd,omitempty"`
-	Size      *int32  `json:"size,omitempty"`
-	MinScale  *int32  `json:"minScale,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	Image    *string `json:"image,omitempty"`
+	Cmd      *string `json:"cmd,omitempty"`
+	Size     *int32  `json:"size,omitempty"`
+	MinScale *int32  `json:"minScale,omitempty"`
 }
 
-func (h *functionHandler) createService(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) createGlobalService(w http.ResponseWriter, r *http.Request) {
+	h.createService("", "", w, r)
+}
+
+func (h *functionHandler) createService(ns, wf string,
+	w http.ResponseWriter, r *http.Request) {
 
 	obj := new(createFunctionRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
@@ -390,8 +390,8 @@ func (h *functionHandler) createService(w http.ResponseWriter, r *http.Request) 
 	grpcReq := new(grpcfunc.CreateFunctionRequest)
 	grpcReq.Info = &grpc.BaseInfo{
 		Name:      obj.Name,
-		Namespace: obj.Namespace,
-		Workflow:  obj.Workflow,
+		Namespace: &ns,
+		Workflow:  &wf,
 		Image:     obj.Image,
 		Cmd:       obj.Cmd,
 		Size:      obj.Size,
@@ -404,6 +404,8 @@ func (h *functionHandler) createService(w http.ResponseWriter, r *http.Request) 
 		ErrResponse(w, err)
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
 
 }
 
