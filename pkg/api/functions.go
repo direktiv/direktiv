@@ -266,16 +266,16 @@ func (h *functionHandler) listServices(
 	}
 
 	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
-
-	if err != nil {
-		ErrResponse(w, err)
-		return
-	}
-
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		ErrResponse(w, err)
-		return
-	}
+	respond(w, resp, err)
+	// if err != nil {
+	// 	ErrResponse(w, err)
+	// 	return
+	// }
+	//
+	// if err := json.NewEncoder(w).Encode(resp); err != nil {
+	// 	ErrResponse(w, err)
+	// 	return
+	// }
 
 }
 
@@ -293,14 +293,8 @@ func (h *functionHandler) deleteService(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	// _, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
-	// if err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
-	// w.WriteHeader(http.StatusNoContent)
-
-	// respond(w, resp, err)
+	resp, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
+	respond(w, resp, err)
 
 }
 
