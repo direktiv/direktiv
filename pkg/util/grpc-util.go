@@ -16,6 +16,7 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(maxSize))
 
 	var options []grpc.DialOption
+	options = append(options, grpc.WithInsecure())
 
 	options = append(options,
 		grpc.WithDefaultCallOptions(additionalCallOptions...))

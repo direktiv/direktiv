@@ -165,12 +165,12 @@ func (srv *server) start(ctx context.Context) error {
 
 	go setupPrometheusEndpoint()
 
-	// srv.sugar.Debug("Initializing secrets.")
-	// srv.secrets, err = initSecrets()
-	// if err != nil {
-	// 	return err
-	// }
-	// defer srv.cleanup(srv.secrets.Close)
+	srv.sugar.Debug("Initializing secrets.")
+	srv.secrets, err = initSecrets()
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.secrets.Close)
 
 	srv.sugar.Debug("Initializing locks.")
 
