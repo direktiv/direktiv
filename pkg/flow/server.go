@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -11,8 +10,6 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-
-	"gopkg.in/yaml.v2"
 
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -23,39 +20,39 @@ import (
 
 const parcelSize = 0x100000
 
-type Config struct {
-	FunctionsService string `yaml:"functions-service"`
-	FlowService      string `yaml:"flow-service"`
-
-	PrometheusBackend string `yaml:"prometheus-backend"`
-	RedisBackend      string `yaml:"redis-backend"`
-}
-
-func ReadConfig(file string) (*Config, error) {
-
-	c := new(Config)
-
-	/* #nosec */
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(data, c)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-
-}
+// type Config struct {
+// 	FunctionsService string `yaml:"functions-service"`
+// 	FlowService      string `yaml:"flow-service"`
+//
+// 	PrometheusBackend string `yaml:"prometheus-backend"`
+// 	RedisBackend      string `yaml:"redis-backend"`
+// }
+//
+// func ReadConfig(file string) (*Config, error) {
+//
+// 	c := new(Config)
+//
+// 	/* #nosec */
+// 	data, err := ioutil.ReadFile(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	err = yaml.Unmarshal(data, c)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	return c, nil
+//
+// }
 
 type server struct {
 	ID uuid.UUID
 
 	logger *zap.Logger
 	sugar  *zap.SugaredLogger
-	conf   *Config
+	conf   *util.Config
 
 	redis *redis.Pool
 
@@ -75,7 +72,7 @@ type server struct {
 	metrics *metrics.Client
 }
 
-func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
+func Run(ctx context.Context, logger *zap.Logger, conf *util.Config) error {
 
 	dlog.Init()
 
@@ -93,7 +90,7 @@ func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
 }
 
-func newServer(logger *zap.Logger, conf *Config) (*server, error) {
+func newServer(logger *zap.Logger, conf *util.Config) (*server, error) {
 
 	srv := new(server)
 	srv.ID = uuid.New()

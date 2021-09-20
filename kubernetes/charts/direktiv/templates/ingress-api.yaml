@@ -24,24 +24,10 @@ spec:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-        - path: /api/vars/
+        - path: /api/
           pathType: Prefix
           backend:
             service:
-              name: {{ include "direktiv.fullname" . }}-vars
+              name: {{ include "direktiv.fullname" . }}-api
               port:
-                number: 9999
-        - path: /api/flow/
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ include "direktiv.fullname" . }}-flow
-              port:
-                number: 6666
-        - path: /api/stream/flow
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ include "direktiv.fullname" . }}-ingress-stream
-              port:
-                number: 6666
+                number: 8080

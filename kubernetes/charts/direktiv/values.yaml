@@ -84,7 +84,24 @@ opentelemetry:
     #       processors: [memory_limiter, batch]
     #       exporters: [otlp]
 
-
+api:
+  replicas: 1
+  extraContainers: []
+  # -- image for api pod
+  image: "vorteil/flow"
+  # -- image tag for api pod
+  tag: ""
+  # -- extra container in api pod
+  extraContainers: []
+  # -- extra volume mounts in api pod
+  extraVolumeMounts:
+    # - name: service-template
+    #   mountPath: /etc/config
+  # -- extra volumes in api pod
+  extraVolumes:
+    # - name: service-template
+    #   configMap:
+    #     name: service-template
 
 networkPolicies:
   # -- adds network policies

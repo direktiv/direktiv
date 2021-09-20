@@ -71,6 +71,7 @@ kubernetes/charts/knative/Chart.lock
 
 kubernetes/charts/direktiv/charts
 kubernetes/charts/direktiv/Chart.lock
+kubernetes/charts/direktiv/tmpcharts
 
 scripts/devcerts
 
