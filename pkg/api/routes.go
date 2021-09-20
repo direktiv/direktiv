@@ -4,7 +4,7 @@ package api
 const (
 	RN_Preflight = "preflight"
 	// RN_HealthCheck                  = "healthCheck"
-	// RN_ListNamespaces               = "listNamespaces"
+	RN_ListNamespaces = "listNamespaces"
 	// RN_AddNamespace                 = "addNamespace"
 	// RN_DeleteNamespace              = "deleteNamespace"
 	// RN_NamespaceEvent               = "namespaceEvent"
@@ -51,7 +51,7 @@ const (
 	// RN_WatchPods                    = "watchPods"
 	// RN_WatchLogs                    = "watchLogs"
 	// RN_ListPods                     = "listPods"
-	// RN_DeleteServices               = "deleteServices"
+	RN_DeleteServices = "deleteServices"
 	// RN_GetService                   = "getService"
 	RN_CreateService = "createService"
 	// RN_UpdateService                = "updateService"
@@ -113,7 +113,7 @@ var RouteNames = []string{
 	// RN_JQPlayground,
 	RN_ListServices,
 	// RN_WatchServices,
-	// RN_DeleteServices,
+	RN_DeleteServices,
 	// RN_GetService,
 	RN_CreateService,
 	// RN_UpdateService,
