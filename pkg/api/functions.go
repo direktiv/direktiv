@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/functions/grpc"
 	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
@@ -16,7 +17,8 @@ type functionHandler struct {
 	client grpcfunc.FunctionsServiceClient
 }
 
-func newFunctionHandler(logger *zap.SugaredLogger, addr string) (*functionHandler, error) {
+func newFunctionHandler(logger *zap.SugaredLogger,
+	router *mux.Router, addr string) (*functionHandler, error) {
 
 	funcAddr := fmt.Sprintf("%s:5555", addr)
 	logger.Infof("connecting to functions %s", funcAddr)
@@ -27,10 +29,23 @@ func newFunctionHandler(logger *zap.SugaredLogger, addr string) (*functionHandle
 		return nil, err
 	}
 
-	return &functionHandler{
+	fh := &functionHandler{
 		logger: logger,
 		client: grpcfunc.NewFunctionsServiceClient(conn),
-	}, nil
+	}
+
+	fh.initRoutes(router)
+
+	return fh, err
+
+}
+
+func (h *functionHandler) initRoutes(r *mux.Router) {
+
+	r.HandleFunc("", h.listServices).Methods(http.MethodGet).Name(RN_ListServices)
+	// s.router.HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
+	// s.router.HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	r.HandleFunc("", h.createService).Methods(http.MethodPost).Name(RN_CreateService)
 
 }
 
