@@ -14,3 +14,4 @@ data:
       {{- else }}
       prometheus-backend: {{ include "direktiv.fullname" . }}-kube-prometheus-prometheus.{{ .Release.Namespace }}
       {{- end }}
+      redis-backend: {{ .Values.redis.address }}
