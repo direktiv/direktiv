@@ -4,7 +4,7 @@ package api
 const (
 	RN_Preflight = "preflight"
 	// RN_HealthCheck                  = "healthCheck"
-	// RN_ListNamespaces               = "listNamespaces"
+	RN_ListNamespaces = "listNamespaces"
 	// RN_AddNamespace                 = "addNamespace"
 	// RN_DeleteNamespace              = "deleteNamespace"
 	// RN_NamespaceEvent               = "namespaceEvent"

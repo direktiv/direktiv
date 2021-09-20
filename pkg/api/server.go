@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var log *zap.SugaredLogger
+
 // Server struct for API server
 type Server struct {
 	logger *zap.SugaredLogger
@@ -29,6 +31,8 @@ type Server struct {
 func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 
 	logger.Infof("starting api server")
+
+	log = logger
 
 	r := mux.NewRouter()
 
