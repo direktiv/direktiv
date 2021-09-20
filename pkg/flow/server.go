@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -15,7 +14,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -59,6 +57,8 @@ type server struct {
 	sugar  *zap.SugaredLogger
 	conf   *Config
 
+	redis *redis.Pool
+
 	db       *ent.Client
 	pubsub   *pubsub
 	locks    *locks
@@ -73,62 +73,9 @@ type server struct {
 	metrics *metrics.Client
 }
 
-func sub() {
-
-	fmt.Println(">>>>>>")
-
-	var redispool *redis.Pool
-	redispool = &redis.Pool{
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", "yb-tservers.yugabyte:6379")
-		},
-	}
-
-	// Get a connection
-	conn := redispool.Get()
-	// defer conn.Close()
-	// Test the connection
-	_, err := conn.Do("PING")
-	if err != nil {
-		log.Fatalf("can't connect to the redis database, got error:\n%v", err)
-	}
-
-	go func() {
-
-		rc := redispool.Get()
-
-		psc := redis.PubSubConn{Conn: rc}
-		if err := psc.PSubscribe("mychannel"); err != nil {
-			log.Printf("ERR %v\n", err)
-		}
-		//
-		// // var msg chan	 []byte
-		//
-		for {
-			switch v := psc.Receive().(type) {
-			default:
-				log.Printf(">> %v", v)
-			case redis.Message:
-				// 	// 	// msg <- v.Data
-				log.Printf("RECEIVE %v", string(v.Data))
-			}
-		}
-
-	}()
-
-	for {
-		log.Printf(">> PUB \n")
-		conn.Do("PUBLISH", "mychannel", "gerke")
-		time.Sleep(1 * time.Second)
-	}
-
-}
-
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
 	dlog.Init()
-
-	go sub()
 
 	srv, err := newServer(logger, conf)
 	if err != nil {
@@ -164,6 +111,12 @@ func (srv *server) start(ctx context.Context) error {
 	var err error
 
 	go setupPrometheusEndpoint()
+
+	srv.redis = &redis.Pool{
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", srv.conf.RedisBackend)
+		},
+	}
 
 	// srv.sugar.Debug("Initializing secrets.")
 	// srv.secrets, err = initSecrets()
@@ -321,34 +274,41 @@ func (srv *server) cleanup(closer func() error) {
 
 }
 
+func (srv *server) redisPool() *redis.Pool {
+	return srv.redis
+}
+
 func (srv *server) notifyCluster(msg string) error {
 
-	ctx := context.Background()
+	conn := srv.redis.Get()
+	// TODO: do we need to flush or close this conn?
 
-	// srv.sugar.Debugf("NC PRECONN")
-
-	conn, err := srv.db.DB().Conn(ctx)
+	_, err := conn.Do("PUBLISH", flowSync, msg)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
 
-	// srv.sugar.Debugf("NC GOTCONN %s %s", flowSync, msg)
-	//
+	/*
 
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
-	if err, ok := err.(*pq.Error); ok {
+		conn, err := srv.db.DB().Conn(ctx)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
 
-		srv.sugar.Errorf("db notification failed: %v", err)
-		if err.Code == "57014" {
-			return fmt.Errorf("canceled query")
+		_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
+		if err, ok := err.(*pq.Error); ok {
+
+			srv.sugar.Errorf("db notification failed: %v", err)
+			if err.Code == "57014" {
+				return fmt.Errorf("canceled query")
+			}
+
+			return err
+
 		}
 
-		return err
-
-	}
-
-	// srv.sugar.Debugf("NC POSTNOTIFY")
+	*/
 
 	return err
 
@@ -356,27 +316,39 @@ func (srv *server) notifyCluster(msg string) error {
 
 func (srv *server) notifyHostname(hostname, msg string) error {
 
-	ctx := context.Background()
-
-	conn, err := srv.db.DB().Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+	conn := srv.redis.Get()
+	// TODO: do we need to flush or close this conn?
 
 	channel := fmt.Sprintf("hostname:%s", hostname)
 
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-	if err, ok := err.(*pq.Error); ok {
+	_, err := conn.Do("PUBLISH", channel, msg)
+	if err != nil {
+		return err
+	}
 
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
-		if err.Code == "57014" {
-			return fmt.Errorf("canceled query")
+	/*
+
+		conn, err := srv.db.DB().Conn(ctx)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+
+		channel := fmt.Sprintf("hostname:%s", hostname)
+
+		_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
+		if err, ok := err.(*pq.Error); ok {
+
+			fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
+			if err.Code == "57014" {
+				return fmt.Errorf("canceled query")
+			}
+
+			return err
+
 		}
 
-		return err
-
-	}
+	*/
 
 	return err
 

@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"go.uber.org/zap"
 )
@@ -59,25 +59,28 @@ type PubsubUpdate struct {
 const flowSync = "flowsync"
 
 type notifier interface {
+	redisPool() *redis.Pool
 	notifyCluster(string) error
 	notifyHostname(string, string) error
 }
 
 func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pubsub, error) {
 
-	reportProblem := func(ev pq.ListenerEventType, err error) {
-		if err != nil {
-			log.Errorf("pubsub error: %v\n", err)
-			os.Exit(1)
-		}
-	}
+	// reportProblem := func(ev pq.ListenerEventType, err error) {
+	// 	if err != nil {
+	// 		log.Errorf("pubsub error: %v\n", err)
+	// 		os.Exit(1)
+	// 	}
+	// }
 
-	listener := pq.NewListener(database, 10*time.Second,
-		time.Minute, reportProblem)
-	err := listener.Listen(flowSync)
-	if err != nil {
-		return nil, err
-	}
+	// listener := pq.NewListener(database, 10*time.Second,
+	// 	time.Minute, reportProblem)
+	// err := listener.Listen(flowSync)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	var err error
 
 	pubsub := new(pubsub)
 	pubsub.id = uuid.New()
@@ -97,54 +100,99 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 
 	pubsub.handlers = make(map[string]func(*PubsubUpdate))
 
-	go func(l *pq.Listener) {
+	pool := notifier.redisPool()
 
-		defer pubsub.Close()
-		defer l.UnlistenAll()
+	conn := pool.Get()
 
-		for {
+	_, err = conn.Do("PING")
+	if err != nil {
+		return nil, fmt.Errorf("can't connect to redis, got error:\n%v", err)
+	}
 
-			var more bool
-			var notification *pq.Notification
+	go func() {
 
-			select {
-			case <-pubsub.closer:
-			case notification, more = <-l.Notify:
-				if !more {
-					log.Errorf("database listener closed\n")
-					return
-				}
-			}
+		rc := pool.Get()
 
-			log.Debugf("PS RECV")
-
-			if notification == nil {
-				log.Debugf("PS RECV OUT 1")
-				continue
-			}
-
-			req := new(PubsubUpdate)
-			err = json.Unmarshal([]byte(notification.Extra), req)
-			if err != nil {
-				log.Errorf("unexpected notification on database listener: %v\n", err)
-				continue
-			}
-
-			handler, exists := pubsub.handlers[req.Handler]
-			if !exists {
-				log.Errorf("unexpected notification type on database listener: %v\n", err)
-				continue
-			}
-
-			log.Debugf("PS RECV PRE HANDLER")
-
-			handler(req)
-
-			log.Debugf("PS RECV POST HANDLER")
-
+		psc := redis.PubSubConn{Conn: rc}
+		if err := psc.PSubscribe(flowSync); err != nil {
+			log.Error(err.Error())
 		}
 
-	}(listener)
+		for {
+			switch v := psc.Receive().(type) {
+			default:
+				data, _ := json.Marshal(v)
+				log.Debug(string(data))
+			case redis.Message:
+				req := new(PubsubUpdate)
+				err = json.Unmarshal(v.Data, req)
+				if err != nil {
+					log.Error(fmt.Sprintf("Unexpected notification on database listener: %v", err))
+				} else {
+					handler, exists := pubsub.handlers[req.Handler]
+					if !exists {
+						log.Errorf("unexpected notification type on database listener: %v\n", err)
+						continue
+					}
+					handler(req)
+				}
+			}
+		}
+
+	}()
+
+	/*
+
+		go func(l *pq.Listener) {
+
+			defer pubsub.Close()
+			defer l.UnlistenAll()
+
+			for {
+
+				var more bool
+				var notification *pq.Notification
+
+				select {
+				case <-pubsub.closer:
+				case notification, more = <-l.Notify:
+					if !more {
+						log.Errorf("database listener closed\n")
+						return
+					}
+				}
+
+				log.Debugf("PS RECV")
+
+				if notification == nil {
+					log.Debugf("PS RECV OUT 1")
+					continue
+				}
+
+				req := new(PubsubUpdate)
+				err = json.Unmarshal([]byte(notification.Extra), req)
+				if err != nil {
+					log.Errorf("unexpected notification on database listener: %v\n", err)
+					continue
+				}
+
+				handler, exists := pubsub.handlers[req.Handler]
+				if !exists {
+					log.Errorf("unexpected notification type on database listener: %v\n", err)
+					continue
+				}
+
+				log.Debugf("PS RECV PRE HANDLER")
+
+				handler(req)
+
+				log.Debugf("PS RECV POST HANDLER")
+
+			}
+
+		}(listener)
+
+	*/
 
 	return pubsub, nil
 
@@ -168,8 +216,6 @@ func (pubsub *pubsub) dispatcher() {
 		if !more {
 			return
 		}
-
-		pubsub.log.Debug("PS Pulled Dispatch From Queue")
 
 		b, _ := json.Marshal(req)
 
@@ -250,7 +296,7 @@ func (s *subscription) Wait() bool {
 	select {
 	case _, more := <-s.ch:
 		return more
-	case <-time.After(time.Second /*time.Minute*/):
+	case <-time.After(time.Minute):
 		return true
 	}
 
