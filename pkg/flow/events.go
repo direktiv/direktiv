@@ -245,7 +245,7 @@ func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
 			eventsData []byte
 		)
 
-		err := rows.Scan(&id, &events, &eventID)
+		err := rows.Scan(&id, &eventsData, &eventID)
 		if err != nil {
 			events.sugar.Errorf("can not scan result: %v", err)
 			continue
@@ -356,7 +356,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 			continue
 		}
 
-		// events.sugar.Debugf("event listener %d is candidate", id)
+		events.sugar.Debugf("event listener %s is candidate", id.String())
 
 		var eventMap map[string]interface{}
 		err = json.Unmarshal(singleEvent, &eventMap)
@@ -378,7 +378,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		// check filters
 		if !matchesExtensions(eventMap, m) {
-			// events.sugar.Debugf("event listener %d does not match", id)
+			events.sugar.Debugf("event listener %d does not match", id)
 			unlock()
 			continue
 		}

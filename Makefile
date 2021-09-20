@@ -181,13 +181,19 @@ purge-images: ## Purge images from knative cache by matching $REGEX.
 
 .PHONY: tail-flow
 tail-flow: ## Tail logs for currently active 'flow' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl logs -f ${FLOW_POD} ingress
+	kubectl logs -f ${FLOW_POD} flow
+
+.PHONY: fwd-flow
+fwd-flow: ## Tail logs for currently active 'flow' container.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl port-forward ${FLOW_POD} 8080:6666 --address 0.0.0.0
 
 .PHONY: tail-secrets
 tail-secrets: ## Tail logs for currently active 'secrets' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
 	kubectl logs -f ${FLOW_POD} secrets
 
