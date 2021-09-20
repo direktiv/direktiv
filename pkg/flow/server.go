@@ -69,6 +69,7 @@ type server struct {
 	internal *internal
 	events   *events
 	vars     *vars
+	actions  *actions
 
 	metrics *metrics.Client
 }
@@ -183,7 +184,7 @@ func (srv *server) start(ctx context.Context) error {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
-	wg.Add(3)
+	wg.Add(4)
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -205,6 +206,13 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing flow grpc server.")
 
 	srv.flow, err = initFlowServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+
+	srv.sugar.Debug("Initializing actions grpc server.")
+
+	srv.actions, err = initActionsServer(cctx, srv)
 	if err != nil {
 		return err
 	}
@@ -245,6 +253,20 @@ func (srv *server) start(ctx context.Context) error {
 		defer wg.Done()
 		defer cancel()
 		e := srv.flow.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.actions.Run()
 		if e != nil {
 			srv.sugar.Error(err)
 			lock.Lock()
