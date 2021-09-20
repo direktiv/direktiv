@@ -1,22 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "direktiv.fullname" . }}-flow
+  name: {{ include "direktiv.fullname" . }}-api
   labels:
-    {{- include "direktiv.labels" . | nindent 4 }}
+    {{- include "direktiv.labelsAPI" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.flow.replicas }}
+  replicas: {{ .Values.api.replicas }}
   selector:
     matchLabels:
-      {{- include "direktiv.selectorLabels" . | nindent 6 }}
+      {{- include "direktiv.selectorLabelsAPI" . | nindent 6 }}
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "2112"
-        prometheus.io/path: "/metrics"
-        prometheus.io/scrape: "true"
       labels:
-        {{- include "direktiv.selectorLabels" . | nindent 8 }}
+        {{- include "direktiv.selectorLabelsAPI" . | nindent 8 }}
     spec:
       securityContext:
         runAsNonRoot: true
@@ -28,42 +24,33 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
-{{- if .Values.flow.extraContainers }}
-{{ toYaml .Values.flow.extraContainers | indent 8}}
+{{- if .Values.api.extraContainers }}
+{{ toYaml .Values.api.extraContainers | indent 8}}
 {{- end }}
-        - name: flow
+        - name: api
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "250m"
+              memory: "128Mi"
+              cpu: "100m"
             limits:
-              memory: "8192Mi"
-              cpu: "8"
-          image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
+              memory: "1048Mi"
+              cpu: "2"
+          image: "{{ .Values.registry }}/{{ .Values.api.image }}:{{ .Values.api.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
-          command: ["/bin/direktiv", "server", "/etc/direktiv/flow-config.yaml"]
+          # command: ["/bin/server", "server", "/etc/direktiv/flow-config.yaml"]
           volumeMounts:
-          {{- if .Values.flow.extraVolumeMounts -}}
-          {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
+          {{- if .Values.api.extraVolumeMounts -}}
+          {{ toYaml .Values.api.extraVolumeMounts | nindent 10 }}
           {{- end }}
           - name: flow-config
             mountPath: /etc/direktiv/flow-config.yaml
             subPath: flow-config.yaml
           ports:
-            - name: flow
-              containerPort: 6666
-              protocol: TCP
-            - name: internal
-              containerPort: 7777
-              protocol: TCP
-            - name: metrics
-              containerPort: 9998
-              protocol: TCP
-            - name: vars
-              containerPort: 9999
+            - name: api
+              containerPort: 8080
               protocol: TCP
           env:
           - name: DIREKTIV_DEBUG
@@ -111,46 +98,9 @@ spec:
           env:
           - name: PGSSLMODE
             value: {{ .Values.database.sslmode| quote }}
-        - name: secrets
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "1"
-          image: "{{ .Values.registry }}/{{ .Values.secrets.image }}:{{ .Values.secrets.tag | default .Chart.AppVersion }}"
-          command: ["/bin/secrets"]
-          imagePullPolicy: {{ .Values.pullPolicy }}
-          volumeMounts:
-          {{- if .Values.flow.extraVolumeMounts -}}
-          {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
-          {{- end }}
-          ports:
-            - name: secrets
-              containerPort: 2610
-              protocol: TCP
-          env:
-          - name: DIREKTIV_DEBUG
-            value: {{ .Values.debug | quote }}
-          - name: DIREKTIV_SECRETS_DB
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: db
-          - name: DIREKTIV_SECRETS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "direktiv.fullname" . }}
-                key: key
-          - name: PGSSLMODE
-            value: {{ .Values.database.sslmode| quote }}
       volumes:
-        {{- if .Values.flow.extraVolumes }}
-        {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
+        {{- if .Values.api.extraVolumes }}
+        {{ toYaml .Values.api.extraVolumes | nindent 8 }}
         {{- end }}
         - name: flow-config
           configMap:

@@ -290,6 +290,7 @@ var discardHeadCmd = &cobra.Command{
 
 func init() {
 	addPaginationFlags(tagsCmd)
+	addPaginationFlags(workflowCmd)
 }
 
 var tagsCmd = &cobra.Command{

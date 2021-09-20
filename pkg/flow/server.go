@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -11,8 +10,6 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-
-	"gopkg.in/yaml.v2"
 
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -23,57 +20,59 @@ import (
 
 const parcelSize = 0x100000
 
-type Config struct {
-	FunctionsService string `yaml:"functions-service"`
-	FlowService      string `yaml:"flow-service"`
-
-	PrometheusBackend string `yaml:"prometheus-backend"`
-	RedisBackend      string `yaml:"redis-backend"`
-}
-
-func ReadConfig(file string) (*Config, error) {
-
-	c := new(Config)
-
-	/* #nosec */
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(data, c)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-
-}
+// type Config struct {
+// 	FunctionsService string `yaml:"functions-service"`
+// 	FlowService      string `yaml:"flow-service"`
+//
+// 	PrometheusBackend string `yaml:"prometheus-backend"`
+// 	RedisBackend      string `yaml:"redis-backend"`
+// }
+//
+// func ReadConfig(file string) (*Config, error) {
+//
+// 	c := new(Config)
+//
+// 	/* #nosec */
+// 	data, err := ioutil.ReadFile(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	err = yaml.Unmarshal(data, c)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	return c, nil
+//
+// }
 
 type server struct {
 	ID uuid.UUID
 
 	logger *zap.Logger
 	sugar  *zap.SugaredLogger
-	conf   *Config
+	conf   *util.Config
 
 	redis *redis.Pool
 
-	db       *ent.Client
-	pubsub   *pubsub
-	locks    *locks
-	timers   *timers
-	engine   *engine
-	secrets  *secrets
-	flow     *flow
-	internal *internal
-	events   *events
-	vars     *vars
+	db           *ent.Client
+	pubsub       *pubsub
+	locks        *locks
+	timers       *timers
+	engine       *engine
+	secrets      *secrets
+	flow         *flow
+	internal     *internal
+	events       *events
+	vars         *vars
+	actions      *actions
+	metricServer *metricsServer
 
 	metrics *metrics.Client
 }
 
-func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
+func Run(ctx context.Context, logger *zap.Logger, conf *util.Config) error {
 
 	dlog.Init()
 
@@ -91,7 +90,7 @@ func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
 }
 
-func newServer(logger *zap.Logger, conf *Config) (*server, error) {
+func newServer(logger *zap.Logger, conf *util.Config) (*server, error) {
 
 	srv := new(server)
 	srv.ID = uuid.New()
@@ -183,7 +182,7 @@ func (srv *server) start(ctx context.Context) error {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
-	wg.Add(3)
+	wg.Add(4)
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -194,6 +193,15 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer srv.cleanup(srv.vars.Close)
+
+	srv.sugar.Debug("Initializing metrics server.")
+
+	srv.metricServer, err = initMetricsServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.metricServer.Close)
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
@@ -205,6 +213,13 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing flow grpc server.")
 
 	srv.flow, err = initFlowServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+
+	srv.sugar.Debug("Initializing actions grpc server.")
+
+	srv.actions, err = initActionsServer(cctx, srv)
 	if err != nil {
 		return err
 	}
@@ -245,6 +260,20 @@ func (srv *server) start(ctx context.Context) error {
 		defer wg.Done()
 		defer cancel()
 		e := srv.flow.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.actions.Run()
 		if e != nil {
 			srv.sugar.Error(err)
 			lock.Lock()

@@ -33,28 +33,25 @@ function plugin:body_filter(conf)
   ctx.rt_body_chunks = ctx.rt_body_chunks or {}
   ctx.rt_body_chunk_number = ctx.rt_body_chunk_number or 1
 
-  kong.log.debug("!!!! GOT CHUNK === ", chunk or "NO Chunk!")
+  -- kong.log.debug("!!!! GOT CHUNK === ", chunk or "NO Chunk!")
 
   -- Check if response is bonked 
-  kong.log.debug("!!!! response === ", kong.response.get_status())
-  kong.log.debug("!!!! CONTENT TYPE === ", kong.response.get_header("Content-Type"))
-  kong.log.debug("!!!! grpc-message === ", kong.response.get_header("grpc-message") or "Internal Error")
+  -- kong.log.debug("!!!! response === ", kong.response.get_status())
+  -- kong.log.debug("!!!! CONTENT TYPE === ", kong.response.get_header("Content-Type"))
+  -- kong.log.debug("!!!! grpc-message === ", kong.response.get_header("grpc-message") or "Internal Error")
 
-  -- if kong.response.get_status() ~= 200 then
-  --   kong.log.debug("!!!!!!!!!!!!!!!!! YO YO YO ")
-  --   local errorMsg = kong.response.get_header("grpc-message") or "Internal Error"
-  --   chunk = string.format("error: %s\n\n", errorMsg)
-  --   kong.log.debug("!!!!!!!!!!!!!!!!! YO YO CHUNK =  ", chunk)
+  if kong.response.get_status() ~= 200 then
+    kong.log.debug("Got error from server grpc")
+    local errorMsg = kong.response.get_header("grpc-message") or "Internal Error"
+    chunk = string.format("error: %s\n\n", errorMsg)
+    kong.log.debug("Attempting to set proccessed error: ", chunk)
+    ctx.rt_body_chunks[ctx.rt_body_chunk_number] = chunk
+    ctx.rt_body_chunk_number = ctx.rt_body_chunk_number + 1
 
+    ngx.arg[1] = chunk
+  elseif eof then
+    kong.log.debug("Reached end of file with chunk: ", chunk)
 
-  --   ctx.rt_body_chunks[ctx.rt_body_chunk_number] = chunk
-  --   ctx.rt_body_chunk_number = ctx.rt_body_chunk_number + 1
-
-  --   ngx.arg[1] = chunk
-  --   return kong.response.exit(500, "!!!!!!")
-  -- else
-
-  if eof then
     local body = concat(ctx.rt_body_chunks)
     -- kong.log.debug("body === ", body)
     -- ngx.arg[1] = upper(body)
@@ -63,8 +60,8 @@ function plugin:body_filter(conf)
     ctx.rt_body_chunks[ctx.rt_body_chunk_number] = chunk
     ctx.rt_body_chunk_number = ctx.rt_body_chunk_number + 1
 
-    kong.log.debug("!!!! GOT ctx.rt_body_chunks === ", ctx.rt_body_chunks or "NO ctx.rt_body_chunks!")
-    kong.log.debug("!!!! GOT ctx.rt_body_chunk_number === ", ctx.rt_body_chunk_number or "NO ctx.rt_body_chunk_number!")
+    -- kong.log.debug("!!!! GOT ctx.rt_body_chunks === ", ctx.rt_body_chunks or "NO ctx.rt_body_chunks!")
+    -- kong.log.debug("!!!! GOT ctx.rt_body_chunk_number === ", ctx.rt_body_chunk_number or "NO ctx.rt_body_chunk_number!")
 
     ngx.arg[1] = string.format("data: %s\n\n", chunk)
   end

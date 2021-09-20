@@ -2,14 +2,23 @@ package flow
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/metrics"
 )
+
+type metricsServer struct {
+	*server
+	listener net.Listener
+	http     *http.Server
+	router   *mux.Router
+}
 
 var (
 	metricsWfInvoked = prometheus.NewCounterVec(
@@ -87,16 +96,91 @@ func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
 func setupPrometheusEndpoint() {
 
-	// prometheus.MustRegister(metricsWfInvoked)
-	// prometheus.MustRegister(metricsWfSuccess)
-	// prometheus.MustRegister(metricsWfFail)
-	// prometheus.MustRegister(metricsWfDuration)
-	// prometheus.MustRegister(metricsWfStateDuration)
-	// prometheus.Unregister(prometheus.NewGoCollector())
-	// prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	prometheus.MustRegister(metricsWfInvoked)
+	prometheus.MustRegister(metricsWfSuccess)
+	prometheus.MustRegister(metricsWfFail)
+	prometheus.MustRegister(metricsWfDuration)
+	prometheus.MustRegister(metricsWfStateDuration)
+	prometheus.Unregister(prometheus.NewGoCollector())
+	prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":2112", nil)
+
+}
+
+func (m *metricsServer) Close() error {
+
+	err := m.http.Close()
+	if err != nil {
+		if err != http.ErrServerClosed {
+			return err
+		}
+	}
+
+	err = m.listener.Close()
+	if err != nil {
+		if err != net.ErrClosed {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func (m *metricsServer) Run() error {
+
+	err := m.http.Serve(m.listener)
+	if err != nil {
+		if err != http.ErrServerClosed {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func initMetricsServer(ctx context.Context, srv *server) (*metricsServer, error) {
+
+	var err error
+
+	m := new(metricsServer)
+
+	m.server = srv
+	m.listener, err = net.Listen("tcp", "0.0.0.0:9998")
+	if err != nil {
+		return nil, err
+	}
+
+	m.router = mux.NewRouter()
+
+	// vars.router.HandleFunc("/api/vars/namespaces/{namespace}/vars/{var}", vars.nsHandler)
+	// vars.router.HandleFunc("/api/vars/namespaces/{namespace}/workflows/{path:.*}/vars/{var}", vars.wfHandler)
+	// vars.router.HandleFunc("/api/vars/namespaces/{namespace}/instances/{instance}/vars/{var}", vars.inHandler)
+
+	m.http = &http.Server{
+		Addr:    ":9998",
+		Handler: m.router,
+	}
+
+	go func() {
+
+		defer func() {
+			_ = recover()
+		}()
+
+		<-ctx.Done()
+
+		err := m.Close()
+		if err != nil {
+			m.sugar.Error(err)
+		}
+
+	}()
+
+	return m, nil
 
 }
 
@@ -191,13 +275,9 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		return
 	}
 
-	wf, err := engine.InstanceWorkflow(ctx, im)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
+	workflow := im.in.As
 
-	reportStateEnd(ns.Name, wf.ID.String(), im.logic.ID(), im.in.Edges.Runtime.StateBeginTime)
+	reportStateEnd(ns.Name, workflow, im.logic.ID(), im.in.Edges.Runtime.StateBeginTime)
 
 	if im.Step() == 0 {
 		return
@@ -209,8 +289,8 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 	args := new(metrics.InsertRecordArgs)
 
-	args.Namespace = ns.ID.String()
-	args.Workflow = wf.ID.String()
+	args.Namespace = ns.Name
+	args.Workflow = workflow
 	args.Instance = im.ID().String()
 
 	caller := engine.InstanceCaller(ctx, im)
@@ -252,15 +332,9 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 		return
 	}
 
-	wf, err := engine.InstanceWorkflow(ctx, im)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
-
 	t := im.StateBeginTime()
-	namespace := ns.ID.String()
-	workflow := wf.ID.String()
+	namespace := ns.Name
+	workflow := im.in.As
 
 	now := time.Now()
 	empty := time.Time{}

@@ -18,6 +18,8 @@ import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
 
+import "pkg/flow/grpc/registries.proto";
+
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {
 	}
@@ -447,4 +449,11 @@ service Internal {
 	rpc SetWorkflowVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc InstanceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
+}
+
+service Actions {
+	rpc SetNamespaceRegistry (SetNamespaceRegistryRequest) returns (google.protobuf.Empty) {}
+	rpc DeleteNamespaceRegistry (DeleteNamespaceRegistryRequest) returns (google.protobuf.Empty) {}
+	rpc NamespaceRegistries (NamespaceRegistriesRequest) returns (NamespaceRegistriesResponse) {}
+	rpc NamespaceRegistriesStream (NamespaceRegistriesRequest) returns (stream NamespaceRegistriesResponse) {}
 }

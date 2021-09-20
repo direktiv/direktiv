@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -165,7 +166,7 @@ var serverCmd = &cobra.Command{
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
 
-		conf, err := flow.ReadConfig(args[0])
+		conf, err := util.ReadConfig(args[0])
 		if err != nil {
 			exit(err)
 		}
