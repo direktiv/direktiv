@@ -22,7 +22,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/functions"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 	"github.com/vorteil/direktiv/pkg/util"
 )
@@ -32,8 +31,6 @@ type engine struct {
 	cancellers     map[string]func()
 	cancellersLock sync.Mutex
 	stateLogics    map[model.StateType]func(*model.Workflow, model.State) (stateLogic, error)
-
-	functionsClient igrpc.FunctionsServiceClient // TODO: move somewhere else
 }
 
 func initEngine(srv *server) (*engine, error) {
@@ -635,7 +632,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:
-		hostname, ip, err := engine.addPodFunction(ctx, engine.functionsClient, ar)
+		hostname, ip, err := engine.addPodFunction(ctx, engine.actions.client, ar)
 		if err != nil {
 			return NewInternalError(err)
 		}
@@ -821,9 +818,9 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
-							!engine.isKnativeFunction(engine.functionsClient, ar.Container.ID,
+							!engine.isKnativeFunction(engine.actions.client, ar.Container.ID,
 								ar.Workflow.Namespace, ar.Workflow.ID) {
-							err := createKnativeFunction(engine.functionsClient, ar)
+							err := createKnativeFunction(engine.actions.client, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								engine.sugar.Errorf("can not create knative function: %v", err)
 								engine.reportError(ar, err)

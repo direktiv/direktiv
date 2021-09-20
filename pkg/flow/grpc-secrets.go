@@ -2,8 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -52,9 +50,6 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 	resp.Namespace = ns.Name
 	resp.Secrets = new(grpc.Secrets)
 	resp.Secrets.PageInfo = new(grpc.PageInfo)
-
-	data, _ := json.MarshalIndent(cx, "", "  ")
-	fmt.Println("CX", string(data))
 
 	err = atob(cx, &resp.Secrets)
 	if err != nil {

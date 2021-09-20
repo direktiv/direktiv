@@ -593,6 +593,24 @@ func (pubsub *pubsub) NotifyNamespaceSecrets(ns *ent.Namespace) {
 
 }
 
+func (pubsub *pubsub) namespaceRegistries(ns *ent.Namespace) string {
+
+	return fmt.Sprintf("registries:%s", ns.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeNamespaceRegistries(ns *ent.Namespace) *subscription {
+
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceRegistries(ns))
+
+}
+
+func (pubsub *pubsub) NotifyNamespaceRegistries(ns *ent.Namespace) {
+
+	pubsub.publish(pubsubNotify(pubsub.namespaceRegistries(ns)))
+
+}
+
 func (pubsub *pubsub) instanceLogs(in *ent.Instance) string {
 
 	return fmt.Sprintf("instlogs:%s", in.ID.String())
