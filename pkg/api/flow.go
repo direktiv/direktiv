@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
@@ -14,7 +15,7 @@ type flowHandler struct {
 	client grpc.FlowClient
 }
 
-func newFlowHandler(logger *zap.SugaredLogger, addr string) (*flowHandler, error) {
+func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, addr string) (*flowHandler, error) {
 
 	flowAddr := fmt.Sprintf("%s:6666", addr)
 	logger.Infof("connecting to flow %s", flowAddr)
@@ -25,10 +26,24 @@ func newFlowHandler(logger *zap.SugaredLogger, addr string) (*flowHandler, error
 		return nil, err
 	}
 
-	return &flowHandler{
+	h := &flowHandler{
 		logger: logger,
 		client: grpc.NewFlowClient(conn),
-	}, nil
+	}
+
+	h.initRoutes(router)
+
+	return h, nil
+
+}
+
+func (h *flowHandler) initRoutes(r *mux.Router) {
+	r.HandleFunc("/namespaces", h.Namespace)
+}
+
+func (h *flowHandler) Namespace(w http.ResponseWriter, r *http.Request) {
+
+	// name := "" // TODO
 
 }
 
