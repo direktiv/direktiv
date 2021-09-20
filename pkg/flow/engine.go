@@ -311,7 +311,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
 
-	engine.sugar.Debugf("Instance failed with uncatchable error: %v", err)
+	engine.sugar.Errorf("Instance failed with uncatchable error: %v", err)
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Instance failed with uncatchable error: %s", err.Error())
 
@@ -603,6 +603,8 @@ func (engine *engine) retryWakeup(data []byte) error {
 	}
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
+
+	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, []byte(msg.Data), nil)
 
@@ -919,6 +921,8 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 		engine.CrashInstance(ctx, im, err)
 		return
 	}
+
+	engine.sugar.Debugf("Handling events wakeup: %s", this())
 
 	go engine.runState(ctx, im, wakedata, nil)
 

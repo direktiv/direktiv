@@ -82,6 +82,8 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 		return nil, err
 	}
 
+	internal.sugar.Debugf("Handling report action results: %s", this())
+
 	go internal.engine.runState(ctx, im, wakedata, nil)
 
 	var resp emptypb.Empty

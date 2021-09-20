@@ -325,16 +325,21 @@ func (srv *server) notifyCluster(msg string) error {
 
 	ctx := context.Background()
 
+	// srv.sugar.Debugf("NC PRECONN")
+
 	conn, err := srv.db.DB().Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
+	// srv.sugar.Debugf("NC GOTCONN %s %s", flowSync, msg)
+	//
+
 	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
 	if err, ok := err.(*pq.Error); ok {
 
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
+		srv.sugar.Errorf("db notification failed: %v", err)
 		if err.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -342,6 +347,8 @@ func (srv *server) notifyCluster(msg string) error {
 		return err
 
 	}
+
+	// srv.sugar.Debugf("NC POSTNOTIFY")
 
 	return err
 

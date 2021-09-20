@@ -48,8 +48,7 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var tailing bool
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -86,19 +85,21 @@ resend:
 		return err
 	}
 
-	nhash = checksum(resp)
-	if nhash != phash {
+	if len(resp.Edges) != 0 || !tailing {
+
+		tailing = true
+
 		err = srv.Send(resp)
 		if err != nil {
 			return err
 		}
-	}
-	phash = nhash
 
-	p = new(pagination)
-	p.after = resp.PageInfo.EndCursor
-	p.order = porder
-	p.filter = pfilter
+		p = new(pagination)
+		p.after = resp.PageInfo.EndCursor
+		p.order = porder
+		p.filter = pfilter
+
+	}
 
 	more := sub.Wait()
 	if !more {
@@ -157,8 +158,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var tailing bool
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -203,19 +203,21 @@ resend:
 
 	resp.Namespace = namespace
 
-	nhash = checksum(resp)
-	if nhash != phash {
+	if len(resp.Edges) != 0 || !tailing {
+
+		tailing = true
+
 		err = srv.Send(resp)
 		if err != nil {
 			return err
 		}
-	}
-	phash = nhash
 
-	p = new(pagination)
-	p.after = resp.PageInfo.EndCursor
-	p.order = porder
-	p.filter = pfilter
+		p = new(pagination)
+		p.after = resp.PageInfo.EndCursor
+		p.order = porder
+		p.filter = pfilter
+
+	}
 
 	more := sub.Wait()
 	if !more {
@@ -272,8 +274,7 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var tailing bool
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -316,19 +317,21 @@ resend:
 	resp.Namespace = d.namespace()
 	resp.Path = d.path
 
-	nhash = checksum(resp)
-	if nhash != phash {
+	if len(resp.Edges) != 0 || !tailing {
+
+		tailing = true
+
 		err = srv.Send(resp)
 		if err != nil {
 			return err
 		}
-	}
-	phash = nhash
 
-	p = new(pagination)
-	p.after = resp.PageInfo.EndCursor
-	p.order = porder
-	p.filter = pfilter
+		p = new(pagination)
+		p.after = resp.PageInfo.EndCursor
+		p.order = porder
+		p.filter = pfilter
+
+	}
 
 	more := sub.Wait()
 	if !more {
@@ -385,8 +388,7 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var tailing bool
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
@@ -429,19 +431,21 @@ resend:
 	resp.Namespace = d.namespace()
 	resp.Instance = d.in.ID.String()
 
-	nhash = checksum(resp)
-	if nhash != phash {
+	if len(resp.Edges) != 0 || !tailing {
+
+		tailing = true
+
 		err = srv.Send(resp)
 		if err != nil {
 			return err
 		}
-	}
-	phash = nhash
 
-	p = new(pagination)
-	p.after = resp.PageInfo.EndCursor
-	p.order = porder
-	p.filter = pfilter
+		p = new(pagination)
+		p.after = resp.PageInfo.EndCursor
+		p.order = porder
+		p.filter = pfilter
+
+	}
 
 	more := sub.Wait()
 	if !more {
