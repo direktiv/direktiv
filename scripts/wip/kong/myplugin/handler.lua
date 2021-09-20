@@ -39,7 +39,21 @@ function plugin:body_filter(conf)
   kong.log.debug("!!!! response === ", kong.response.get_status())
   kong.log.debug("!!!! CONTENT TYPE === ", kong.response.get_header("Content-Type"))
   kong.log.debug("!!!! grpc-message === ", kong.response.get_header("grpc-message") or "Internal Error")
-    
+
+  -- if kong.response.get_status() ~= 200 then
+  --   kong.log.debug("!!!!!!!!!!!!!!!!! YO YO YO ")
+  --   local errorMsg = kong.response.get_header("grpc-message") or "Internal Error"
+  --   chunk = string.format("error: %s\n\n", errorMsg)
+  --   kong.log.debug("!!!!!!!!!!!!!!!!! YO YO CHUNK =  ", chunk)
+
+
+  --   ctx.rt_body_chunks[ctx.rt_body_chunk_number] = chunk
+  --   ctx.rt_body_chunk_number = ctx.rt_body_chunk_number + 1
+
+  --   ngx.arg[1] = chunk
+  --   return kong.response.exit(500, "!!!!!!")
+  -- else
+
   if eof then
     local body = concat(ctx.rt_body_chunks)
     -- kong.log.debug("body === ", body)
