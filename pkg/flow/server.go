@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
@@ -24,9 +26,11 @@ import (
 const parcelSize = 0x100000
 
 type Config struct {
-	FunctionsService  string `yaml:"functions-service"`
-	FlowService       string `yaml:"flow-service"`
-	FunctionsProtocol string `yaml:"functions-protocol"`
+	FunctionsService string `yaml:"functions-service"`
+	FlowService      string `yaml:"flow-service"`
+
+	PrometheusBackend string `yaml:"prometheus-backend"`
+	RedisBackend      string `yaml:"redis-backend"`
 }
 
 func ReadConfig(file string) (*Config, error) {
@@ -69,9 +73,62 @@ type server struct {
 	metrics *metrics.Client
 }
 
+func sub() {
+
+	fmt.Println(">>>>>>")
+
+	var redispool *redis.Pool
+	redispool = &redis.Pool{
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", "yb-tservers.yugabyte:6379")
+		},
+	}
+
+	// Get a connection
+	conn := redispool.Get()
+	// defer conn.Close()
+	// Test the connection
+	_, err := conn.Do("PING")
+	if err != nil {
+		log.Fatalf("can't connect to the redis database, got error:\n%v", err)
+	}
+
+	go func() {
+
+		rc := redispool.Get()
+
+		psc := redis.PubSubConn{Conn: rc}
+		if err := psc.PSubscribe("mychannel"); err != nil {
+			log.Printf("ERR %v\n", err)
+		}
+		//
+		// // var msg chan	 []byte
+		//
+		for {
+			switch v := psc.Receive().(type) {
+			default:
+				log.Printf(">> %v", v)
+			case redis.Message:
+				// 	// 	// msg <- v.Data
+				log.Printf("RECEIVE %v", string(v.Data))
+			}
+		}
+
+	}()
+
+	for {
+		log.Printf(">> PUB \n")
+		conn.Do("PUBLISH", "mychannel", "gerke")
+		time.Sleep(1 * time.Second)
+	}
+
+}
+
 func Run(ctx context.Context, logger *zap.Logger, conf *Config) error {
 
 	dlog.Init()
+
+	go sub()
 
 	srv, err := newServer(logger, conf)
 	if err != nil {

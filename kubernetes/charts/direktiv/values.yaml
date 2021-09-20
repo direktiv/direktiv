@@ -7,6 +7,14 @@ timeout: 900000
 # -- api key, value 'apikey' required in header
 apikey: ""
 
+redis:
+  # -- install redis from dependency chart
+  enabled: true
+  # -- address for redis client, if redis.enabled this should change to direktiv-redis-master:6379
+  address: direktiv-redis-headless:6379
+  # -- storage-class, defaults to k3s' local-path
+  storageClass: local-path
+
 opentelemetry:
   # -- enable opentelemetry tracing
   enabled: false
