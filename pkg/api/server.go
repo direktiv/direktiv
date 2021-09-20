@@ -25,6 +25,11 @@ type Server struct {
 	flowHandler     *flowHandler
 }
 
+// GetRouter is a getter for s.router
+func (s *Server) GetRouter() *mux.Router {
+	return s.router
+}
+
 // NewServer return new API server
 func NewServer(logger *zap.SugaredLogger) (*Server, error) {
 
