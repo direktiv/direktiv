@@ -13,6 +13,8 @@ type Config struct {
 
 	PrometheusBackend string `yaml:"prometheus-backend"`
 	RedisBackend      string `yaml:"redis-backend"`
+
+	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
 }
 
 // ReadConfig reads direktiv config file
