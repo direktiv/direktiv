@@ -4,10 +4,10 @@ package grpc
 
 import (
 	context "context"
-	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,10 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SecretsServiceClient interface {
-	StoreSecret(ctx context.Context, in *SecretsStoreRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	StoreSecret(ctx context.Context, in *SecretsStoreRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RetrieveSecret(ctx context.Context, in *SecretsRetrieveRequest, opts ...grpc.CallOption) (*SecretsRetrieveResponse, error)
-	DeleteSecret(ctx context.Context, in *SecretsDeleteRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	DeleteSecrets(ctx context.Context, in *DeleteSecretsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteSecret(ctx context.Context, in *SecretsDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteSecrets(ctx context.Context, in *DeleteSecretsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetSecrets(ctx context.Context, in *GetSecretsRequest, opts ...grpc.CallOption) (*GetSecretsResponse, error)
 }
 
@@ -34,8 +34,8 @@ func NewSecretsServiceClient(cc grpc.ClientConnInterface) SecretsServiceClient {
 	return &secretsServiceClient{cc}
 }
 
-func (c *secretsServiceClient) StoreSecret(ctx context.Context, in *SecretsStoreRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *secretsServiceClient) StoreSecret(ctx context.Context, in *SecretsStoreRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/grpc.SecretsService/StoreSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *secretsServiceClient) RetrieveSecret(ctx context.Context, in *SecretsRe
 	return out, nil
 }
 
-func (c *secretsServiceClient) DeleteSecret(ctx context.Context, in *SecretsDeleteRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *secretsServiceClient) DeleteSecret(ctx context.Context, in *SecretsDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/grpc.SecretsService/DeleteSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,8 +61,8 @@ func (c *secretsServiceClient) DeleteSecret(ctx context.Context, in *SecretsDele
 	return out, nil
 }
 
-func (c *secretsServiceClient) DeleteSecrets(ctx context.Context, in *DeleteSecretsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *secretsServiceClient) DeleteSecrets(ctx context.Context, in *DeleteSecretsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/grpc.SecretsService/DeleteSecrets", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -83,10 +83,10 @@ func (c *secretsServiceClient) GetSecrets(ctx context.Context, in *GetSecretsReq
 // All implementations must embed UnimplementedSecretsServiceServer
 // for forward compatibility
 type SecretsServiceServer interface {
-	StoreSecret(context.Context, *SecretsStoreRequest) (*empty.Empty, error)
+	StoreSecret(context.Context, *SecretsStoreRequest) (*emptypb.Empty, error)
 	RetrieveSecret(context.Context, *SecretsRetrieveRequest) (*SecretsRetrieveResponse, error)
-	DeleteSecret(context.Context, *SecretsDeleteRequest) (*empty.Empty, error)
-	DeleteSecrets(context.Context, *DeleteSecretsRequest) (*empty.Empty, error)
+	DeleteSecret(context.Context, *SecretsDeleteRequest) (*emptypb.Empty, error)
+	DeleteSecrets(context.Context, *DeleteSecretsRequest) (*emptypb.Empty, error)
 	GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error)
 	mustEmbedUnimplementedSecretsServiceServer()
 }
@@ -95,16 +95,16 @@ type SecretsServiceServer interface {
 type UnimplementedSecretsServiceServer struct {
 }
 
-func (UnimplementedSecretsServiceServer) StoreSecret(context.Context, *SecretsStoreRequest) (*empty.Empty, error) {
+func (UnimplementedSecretsServiceServer) StoreSecret(context.Context, *SecretsStoreRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreSecret not implemented")
 }
 func (UnimplementedSecretsServiceServer) RetrieveSecret(context.Context, *SecretsRetrieveRequest) (*SecretsRetrieveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RetrieveSecret not implemented")
 }
-func (UnimplementedSecretsServiceServer) DeleteSecret(context.Context, *SecretsDeleteRequest) (*empty.Empty, error) {
+func (UnimplementedSecretsServiceServer) DeleteSecret(context.Context, *SecretsDeleteRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
 }
-func (UnimplementedSecretsServiceServer) DeleteSecrets(context.Context, *DeleteSecretsRequest) (*empty.Empty, error) {
+func (UnimplementedSecretsServiceServer) DeleteSecrets(context.Context, *DeleteSecretsRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecrets not implemented")
 }
 func (UnimplementedSecretsServiceServer) GetSecrets(context.Context, *GetSecretsRequest) (*GetSecretsResponse, error) {

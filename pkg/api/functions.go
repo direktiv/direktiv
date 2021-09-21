@@ -1,3 +1,30 @@
+// Package classification Direktiv API.
+//
+// direktiv api
+//
+// Terms Of Service:
+//
+//     Schemes: http, https
+//     Host: localhost
+//     Version: 1.0.0
+//     Contact: info@direktiv.io
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Security:
+//     - api_key:
+//
+//     SecurityDefinitions:
+//     api_key:
+//          type: apiKey
+//          name: KEY
+//          in: header
+//
+// swagger:meta
 package api
 
 import (
@@ -46,12 +73,30 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
 	handlerPair(r, RN_ListPods, "/{svn}/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
+	// swagger:operation GET /api/functions getFunctions
+	// ---
+	// summary: Returns list of global functions.
+	// description: Returns list of global Knative functions with 'global-' prefix.
+	// responses:
+	//   "201":
+	//     "description": "service created"
+	//   "500":
+	//     "description": "internal error"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
+
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-	r.HandleFunc("/{svn}/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
+	r.HandleFunc("/{svn}/revision/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
+
+	// namespace
+	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateService)
+	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetService)
+	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateService)
+	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	r.HandleFunc("/namespaces/{ns}/services/{svn}/revision/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 }
 
@@ -333,6 +378,14 @@ func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Req
 	h.deleteService(annotations, w, r)
 }
 
+func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.Request) {
+	logger.Infof("COMING IN!!!!!!!!!!!!!!!")
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+	h.deleteService(annotations, w, r)
+}
+
 func (h *functionHandler) deleteService(annotations map[string]string,
 	w http.ResponseWriter, r *http.Request) {
 
@@ -373,6 +426,11 @@ func (h *functionHandler) getGlobalService(w http.ResponseWriter, r *http.Reques
 		mux.Vars(r)["svn"]), w, r)
 }
 
+func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
+	h.getService(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
+		mux.Vars(r)["svn"]), w, r)
+}
+
 func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.Request) {
 
 	grpcReq := new(grpc.GetFunctionRequest)
@@ -410,7 +468,7 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 		})
 	}
 
-	respond(w, out, err)
+	respondStruct(w, out, http.StatusOK, nil)
 
 }
 
@@ -426,14 +484,17 @@ func (h *functionHandler) createGlobalService(w http.ResponseWriter, r *http.Req
 	h.createService("", "", w, r)
 }
 
+func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
+	h.createService(mux.Vars(r)["ns"], "", w, r)
+}
+
 func (h *functionHandler) createService(ns, wf string,
 	w http.ResponseWriter, r *http.Request) {
 
 	obj := new(createFunctionRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		respond(w, nil, err)
 		return
 	}
 
@@ -452,8 +513,6 @@ func (h *functionHandler) createService(ns, wf string,
 	resp, err := h.client.CreateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
 
-	w.WriteHeader(http.StatusCreated)
-
 }
 
 type updateServiceRequest struct {
@@ -469,13 +528,17 @@ func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Req
 		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
 }
 
+func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.Request) {
+	h.updateService(fmt.Sprintf("%s-%s-%s",
+		functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"]), w, r)
+}
+
 func (h *functionHandler) updateService(svc string, w http.ResponseWriter, r *http.Request) {
 
 	obj := new(updateServiceRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		respond(w, nil, err)
 		return
 	}
 
@@ -511,6 +574,12 @@ func (h *functionHandler) updateGlobalServiceTraffic(w http.ResponseWriter,
 
 }
 
+func (h *functionHandler) updateNamespaceServiceTraffic(w http.ResponseWriter,
+	r *http.Request) {
+	h.updateServiceTraffic(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
+		mux.Vars(r)["svn"]), w, r)
+}
+
 func (h *functionHandler) updateServiceTraffic(svc string,
 	w http.ResponseWriter, r *http.Request) {
 
@@ -522,7 +591,7 @@ func (h *functionHandler) updateServiceTraffic(svc string,
 	}
 
 	if obj.Values == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		respond(w, nil, fmt.Errorf("no traffic values"))
 		return
 	}
 
@@ -547,6 +616,12 @@ func (h *functionHandler) updateServiceTraffic(svc string,
 func (h *functionHandler) deleteGlobalRevision(w http.ResponseWriter, r *http.Request) {
 	h.deleteRevision(fmt.Sprintf("%s-%s-%s",
 		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
+}
+
+func (h *functionHandler) deleteNamespaceRevision(w http.ResponseWriter, r *http.Request) {
+	h.deleteRevision(fmt.Sprintf("%s-%s-%s-%s",
+		functions.PrefixNamespace, mux.Vars(r)["ns"],
+		mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
 }
 
 func (h *functionHandler) deleteRevision(rev string,
