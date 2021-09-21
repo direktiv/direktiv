@@ -48,10 +48,21 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
 	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
-	pathHandlerPair(r, RN_GetWorkflowLogs, "", h.GetNode, h.GetNodeSSE)
 	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
+	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-workflow", h.UpdateWorkflow)
+	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
+	pathHandler(r, http.MethodPost, RN_DiscardWorkflow, "discard-workflow", h.DiscardWorkflow)
 	pathHandler(r, http.MethodDelete, RN_DeleteNode, "delete-node", h.DeleteNode)
+	pathHandlerPair(r, RN_GetWorkflowTags, "tags", h.GetTags, h.GetTagsSSE)
+	pathHandlerPair(r, RN_GetWorkflowRefs, "refs", h.GetRefs, h.GetRefsSSE)
+	pathHandlerPair(r, RN_GetWorkflowRefs, "revisions", h.GetRevisions, h.GetRevisionsSSE)
+	pathHandler(r, http.MethodPost, RN_DeleteRevision, "delete-revision", h.DeleteRevision)
+	pathHandler(r, http.MethodPost, RN_Tag, "tag", h.Tag)
+	pathHandler(r, http.MethodPost, RN_Untag, "untag", h.Untag)
+	pathHandler(r, http.MethodPost, RN_Retag, "retag", h.Retag)
+
+	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
 }
 
@@ -337,7 +348,7 @@ func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	path := mux.Vars(r)["path"]
+	path, _ := pathAndRef(r)
 
 	h.logger.Infof("%s %s", path, r.URL.String())
 
@@ -364,7 +375,7 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	path := mux.Vars(r)["path"]
+	path, _ := pathAndRef(r)
 
 	p, err := pagination(r)
 	if err != nil {
@@ -750,6 +761,70 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.UpdateWorkflowRequest{
+		Namespace: namespace,
+		Path:      path,
+		Source:    data,
+	}
+
+	resp, err := h.client.UpdateWorkflow(ctx, in)
+	respond(w, resp, err)
+	return
+
+}
+
+func (h *flowHandler) SaveWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := &grpc.SaveHeadRequest{
+		Namespace: namespace,
+		Path:      path,
+	}
+
+	resp, err := h.client.SaveHead(ctx, in)
+	respond(w, resp, err)
+	return
+
+}
+
+func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := &grpc.DiscardHeadRequest{
+		Namespace: namespace,
+		Path:      path,
+	}
+
+	resp, err := h.client.DiscardHead(ctx, in)
+	respond(w, resp, err)
+	return
+
+}
+
 func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -764,6 +839,355 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.DeleteNode(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) GetTags(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	h.logger.Infof("%s %s", path, r.URL.String())
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.TagsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Path:       path,
+	}
+
+	resp, err := h.client.Tags(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) GetTagsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.TagsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Path:       path,
+	}
+
+	resp, err := h.client.TagsStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) GetRefs(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	h.logger.Infof("%s %s", path, r.URL.String())
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.RefsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Path:       path,
+	}
+
+	resp, err := h.client.Refs(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) GetRefsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.RefsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Path:       path,
+	}
+
+	resp, err := h.client.RefsStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) GetRevisions(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	h.logger.Infof("%s %s", path, r.URL.String())
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.RevisionsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Path:       path,
+	}
+
+	resp, err := h.client.Revisions(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) GetRevisionsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.RevisionsRequest{
+		Pagination: p,
+		Namespace:  namespace,
+		Path:       path,
+	}
+
+	resp, err := h.client.RevisionsStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) DeleteRevision(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, ref := pathAndRef(r)
+
+	in := &grpc.DeleteRevisionRequest{
+		Namespace: namespace,
+		Path:      path,
+		Revision:  ref,
+	}
+
+	resp, err := h.client.DeleteRevision(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) Tag(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, ref := pathAndRef(r)
+
+	tag := r.URL.Query().Get("tag")
+
+	in := &grpc.TagRequest{
+		Namespace: namespace,
+		Path:      path,
+		Ref:       ref,
+		Tag:       tag,
+	}
+
+	resp, err := h.client.Tag(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) Untag(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, ref := pathAndRef(r)
+
+	in := &grpc.UntagRequest{
+		Namespace: namespace,
+		Path:      path,
+		Tag:       ref,
+	}
+
+	resp, err := h.client.Untag(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) Retag(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, ref := pathAndRef(r)
+
+	tag := r.URL.Query().Get("tag")
+
+	in := &grpc.RetagRequest{
+		Namespace: namespace,
+		Path:      path,
+		Ref:       ref,
+		Tag:       tag,
+	}
+
+	resp, err := h.client.Retag(ctx, in)
 	respond(w, resp, err)
 
 }
