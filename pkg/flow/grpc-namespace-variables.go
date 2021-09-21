@@ -471,7 +471,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			return err
 		}
 
-		_, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(key).Save(ctx)
+		vref, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(key).Save(ctx)
 		if err != nil {
 			return err
 		}
