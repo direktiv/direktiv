@@ -173,7 +173,7 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		goto nodata
 	}
 
-	marshal(w, resp)
+	marshal(w, resp, true)
 
 nodata:
 
@@ -181,10 +181,10 @@ nodata:
 
 }
 
-func marshal(w io.Writer, x interface{}) {
+func marshal(w io.Writer, x interface{}, multiline bool) {
 
 	data, err := protojson.MarshalOptions{
-		Multiline:       true,
+		Multiline:       multiline,
 		EmitUnpopulated: true,
 	}.Marshal(x.(proto.Message))
 	if err != nil {
@@ -310,7 +310,7 @@ func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{})
 
 	buf := new(bytes.Buffer)
 
-	marshal(buf, data)
+	marshal(buf, data, false)
 
 	return sseWrite(w, flusher, buf.Bytes())
 

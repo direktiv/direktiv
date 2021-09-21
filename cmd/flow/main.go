@@ -69,6 +69,7 @@ func main() {
 	rootCmd.AddCommand(createDirectoryCmd)
 	rootCmd.AddCommand(deleteNodeCmd)
 	rootCmd.AddCommand(renameNodeCmd)
+	rootCmd.AddCommand(nodeCmd)
 
 	rootCmd.AddCommand(workflowCmd)
 	rootCmd.AddCommand(createWorkflowCmd)
@@ -85,6 +86,8 @@ func main() {
 	rootCmd.AddCommand(instanceInputCmd)
 	rootCmd.AddCommand(instanceOutputCmd)
 
+	rootCmd.AddCommand(routerCmd)
+	rootCmd.AddCommand(editRouterCmd)
 	rootCmd.AddCommand(secretsCmd)
 	rootCmd.AddCommand(setSecretCmd)
 	rootCmd.AddCommand(deleteSecretCmd)
