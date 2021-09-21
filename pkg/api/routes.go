@@ -77,7 +77,7 @@ const (
 	RN_UpdateService        = "updateService"
 	RN_UpdateServiceTraffic = "updateServiceTraffic"
 	RN_DeleteService        = "deleteService"
-	RN_DeleteRevision       = "deleteRevision"
+
 	// RN_GetWorkflowFunctions         = "getWorkflowFunctions"
 	// RN_namespaceWorkflowsInvoked    = "namespaceWorkflowsInvoked"
 	// RN_namespaceWorkflowsSuccessful = "namespaceWorkflowsSuccessful"

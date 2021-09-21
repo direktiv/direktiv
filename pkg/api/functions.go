@@ -43,15 +43,15 @@ func newFunctionHandler(logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
-	// /api/functions
-	r.HandleFunc("", h.listGlobalServices).Methods(http.MethodGet).Name(RN_ListServices)
+	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
+	handlerPair(r, RN_ListPods, "/{svn}/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
+
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 	r.HandleFunc("/{svn}/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
-	r.HandleFunc("/{svn}/{rev}/pods", h.listGlobalPods).Methods(http.MethodGet).Name(RN_ListPods)
 
 }
 
@@ -255,6 +255,64 @@ func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Requ
 
 }
 
+func (h *functionHandler) listGlobalServicesSSE(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	h.listServicesSSE(annotations, w, r)
+
+}
+
+func (h *functionHandler) listServicesSSE(
+	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := grpcfunc.WatchFunctionsRequest{
+		Annotations: annotations,
+	}
+
+	client, err := h.client.WatchFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
 func (h *functionHandler) listServices(
 	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
 
@@ -264,17 +322,9 @@ func (h *functionHandler) listServices(
 
 	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
-	// if err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
-	//
-	// if err := json.NewEncoder(w).Encode(resp); err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
-
 }
+
+// sse
 
 func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Request) {
 	annotations := make(map[string]string)
@@ -360,9 +410,8 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 		})
 	}
 
-	if err := json.NewEncoder(w).Encode(out); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	respond(w, out, err)
+
 }
 
 type createFunctionRequest struct {
@@ -468,8 +517,7 @@ func (h *functionHandler) updateServiceTraffic(svc string,
 	obj := new(updateServiceTrafficRequest)
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		respond(w, nil, err)
 		return
 	}
 
@@ -896,6 +944,64 @@ func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request)
 		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
 	h.listPods(annotations, w, r)
+}
+
+func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
+	svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
+	h.listPodsSSE(svc, rev, w, r)
+}
+
+func (h *functionHandler) listPodsSSE(svc, rev string,
+	w http.ResponseWriter, r *http.Request) {
+
+	// serving.knative.dev/revision=global-jensglobal7-00001
+	// serving.knative.dev/service=global-jensglobal7
+
+	grpcReq := &grpc.WatchPodsRequest{
+		ServiceName:  &svc,
+		RevisionName: &rev,
+	}
+
+	client, err := h.client.WatchPods(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
 }
 
 func (h *functionHandler) listPods(annotations map[string]string,
