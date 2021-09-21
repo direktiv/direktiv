@@ -89,7 +89,9 @@ func badRequest(w http.ResponseWriter, err error) {
 func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 	if err != nil {
+
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
+
 		msg := http.StatusText(code)
 		http.Error(w, msg, code)
 		return

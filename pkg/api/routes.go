@@ -50,14 +50,14 @@ const (
 	// RN_WatchNamespaceRevisions      = "watchNamespaceRevisions"
 	// RN_WatchPods                    = "watchPods"
 	// RN_WatchLogs                    = "watchLogs"
-	// RN_ListPods                     = "listPods"
-	RN_DeleteServices = "deleteServices"
-	// RN_GetService                   = "getService"
-	RN_CreateService = "createService"
-	// RN_UpdateService                = "updateService"
-	// RN_UpdateServiceTraffic         = "updateServiceTraffic"
-	// RN_DeleteService                = "deleteService"
-	// RN_DeleteRevision               = "deleteRevision"
+	RN_ListPods             = "listPods"
+	RN_DeleteServices       = "deleteServices"
+	RN_GetService           = "getService"
+	RN_CreateService        = "createService"
+	RN_UpdateService        = "updateService"
+	RN_UpdateServiceTraffic = "updateServiceTraffic"
+	RN_DeleteService        = "deleteService"
+	RN_DeleteRevision       = "deleteRevision"
 	// RN_GetWorkflowFunctions         = "getWorkflowFunctions"
 	// RN_namespaceWorkflowsInvoked    = "namespaceWorkflowsInvoked"
 	// RN_namespaceWorkflowsSuccessful = "namespaceWorkflowsSuccessful"
@@ -114,14 +114,14 @@ var RouteNames = []string{
 	RN_ListServices,
 	// RN_WatchServices,
 	RN_DeleteServices,
-	// RN_GetService,
+	RN_GetService,
 	RN_CreateService,
-	// RN_UpdateService,
-	// RN_UpdateServiceTraffic,
-	// RN_DeleteService,
-	// RN_DeleteRevision,
+	RN_UpdateService,
+	RN_UpdateServiceTraffic,
+	RN_DeleteService,
+	RN_DeleteRevision,
 	// RN_GetWorkflowFunctions,
 	// RN_WatchPods,
-	// RN_ListPods,
+	RN_ListPods,
 	// RN_WatchRevisions,
 }
