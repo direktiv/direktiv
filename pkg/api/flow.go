@@ -1929,7 +1929,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 
 	var done int64
 
-	for done <= total {
+	for done < total {
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, 2*1024*1024)
@@ -1951,6 +1951,9 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 		}
 
 	}
+
+	err = client.CloseSend()
+	respond(w, nil, err)
 
 }
 
@@ -2141,7 +2144,7 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 
 	var done int64
 
-	for done <= total {
+	for done < total {
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, 2*1024*1024)
@@ -2164,6 +2167,9 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 		}
 
 	}
+
+	err = client.CloseSend()
+	respond(w, nil, err)
 
 }
 
@@ -2356,7 +2362,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 
 	var done int64
 
-	for done <= total {
+	for done < total {
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, 2*1024*1024)
@@ -2379,6 +2385,9 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 		}
 
 	}
+
+	err = client.CloseSend()
+	respond(w, nil, err)
 
 }
 
