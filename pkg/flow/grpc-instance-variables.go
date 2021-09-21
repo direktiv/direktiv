@@ -334,6 +334,10 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return err
 	}
 
+	namespace := req.GetNamespace()
+	instance := req.GetInstance()
+	key := req.GetKey()
+
 	totalSize := int(req.GetTotalSize())
 
 	buf := new(bytes.Buffer)
@@ -391,26 +395,26 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
+	d, err := flow.getInstance(ctx, nsc, namespace, instance, false)
 	if err != nil {
 		return err
 	}
 
 	var vdata *ent.VarData
 
-	vref, err := d.in.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
+	vref, err := d.in.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
 	if err != nil {
 
 		if !ent.IsNotFound(err) {
 			return err
 		}
 
-		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		vdata, err = vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
 		if err != nil {
 			return err
 		}
 
-		_, err = vrefc.Create().SetVardata(vdata).SetInstance(d.in).SetName(req.GetKey()).Save(ctx)
+		_, err = vrefc.Create().SetVardata(vdata).SetInstance(d.in).SetName(key).Save(ctx)
 		if err != nil {
 			return err
 		}
@@ -422,7 +426,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 			return err
 		}
 
-		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		vdata, err = vdata.Update().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
 		if err != nil {
 			return err
 		}
