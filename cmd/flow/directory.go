@@ -9,6 +9,34 @@ func init() {
 	addPaginationFlags(directoryCmd)
 }
 
+var nodeCmd = &cobra.Command{
+	Use:  "node NAMESPACE PATH",
+	Args: cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		namespace := args[0]
+		path := args[1]
+
+		c, closer, err := client()
+		if err != nil {
+			exit(err)
+		}
+		defer closer.Close()
+
+		req := &grpc.NodeRequest{
+			Namespace: namespace,
+			Path:      path,
+		}
+
+		resp, err := c.Node(ctx, req)
+		if err != nil {
+			exit(err)
+		}
+
+		print(resp)
+
+	},
+}
+
 var directoryCmd = &cobra.Command{
 	Use:  "directory NAMESPACE PATH",
 	Args: cobra.ExactArgs(2),

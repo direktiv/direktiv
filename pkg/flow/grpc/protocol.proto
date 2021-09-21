@@ -236,10 +236,24 @@ service Flow {
 	rpc EditRouter (EditRouterRequest) returns (EditRouterResponse) {}
 	rpc ValidateRef (ValidateRefRequest) returns (ValidateRefResponse) {}
 	rpc ValidateRouter (ValidateRouterRequest) returns (ValidateRouterResponse) {}
-	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
+	rpc Secrets (SecretsRequest) returns (SecretsResponse) {
+        option (google.api.http) = {
+            get: "/api/flow/namespaces/{namespace}/secrets"
+        };
+    }
 	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
-	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
-	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
+	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {
+        option (google.api.http) = {
+            post: "/api/flow/namespaces/{namespace}/secrets",
+            body: "*"
+        };
+    }
+	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/flow/namespaces/{namespace}/secrets",
+            body: "*"
+        };
+    }
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {
 		option (google.api.http) = {
 			get: "/api/flow/namespaces/{namespace}/instances/{instance}"
@@ -400,7 +414,12 @@ service Flow {
 
 	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
 
-	rpc JQ (JQRequest) returns (JQResponse) {}
+	rpc JQ (JQRequest) returns (JQResponse) {
+        option (google.api.http) = {
+            post: "/api/flow/jq-playground"
+            body: "*"
+        };
+    }
 	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
 	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
 

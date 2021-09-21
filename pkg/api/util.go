@@ -1,10 +1,16 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,9 +21,73 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+func this() string {
+	pc, _, _, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+	elems := strings.Split(fn.Name(), ".")
+	return elems[len(elems)-1]
+}
+
 func handlerPair(r *mux.Router, name, path string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
-	r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet)
 	r.HandleFunc(path, sseHandler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet)
+}
+
+func pathHandler(r *mux.Router, method, name, op string, handler func(http.ResponseWriter, *http.Request)) {
+
+	root := "/namespaces/{ns}/tree"
+	path := root + "/{path:.*}"
+
+	r1 := r.HandleFunc(root, handler).Name(name).Methods(method)
+	r2 := r.HandleFunc(path, handler).Name(name).Methods(method)
+
+	if op != "" {
+		r1.Queries("op", op)
+		r2.Queries("op", op)
+	}
+
+}
+
+func pathHandlerSSE(r *mux.Router, name, op string, handler func(http.ResponseWriter, *http.Request)) {
+
+	root := "/namespaces/{ns}/tree"
+	path := root + "/{path:.*}"
+
+	r1 := r.HandleFunc(root, handler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r2 := r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+
+	if op != "" {
+		r1.Queries("op", op)
+		r2.Queries("op", op)
+	}
+
+}
+
+func pathHandlerPair(r *mux.Router, name, op string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
+	pathHandler(r, http.MethodGet, name, op, handler)
+	pathHandlerSSE(r, name, op, handler)
+}
+
+func loadRawBody(r *http.Request) ([]byte, error) {
+
+	limit := int64(1024 * 1024 * 32)
+
+	if r.ContentLength > 0 {
+		if r.ContentLength > limit {
+			return nil, errors.New("request payload too large")
+		}
+		limit = r.ContentLength
+	}
+
+	rdr := io.LimitReader(r.Body, limit)
+
+	data, err := ioutil.ReadAll(rdr)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+
 }
 
 func getInt32(r *http.Request, key string) (int32, error) {
@@ -105,19 +175,18 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		goto nodata
 	}
 
-	marshal(w, resp)
+	marshal(w, resp, true)
 
 nodata:
 
-	w.WriteHeader(http.StatusNoContent)
 	return
 
 }
 
-func marshal(w http.ResponseWriter, x interface{}) {
+func marshal(w io.Writer, x interface{}, multiline bool) {
 
 	data, err := protojson.MarshalOptions{
-		Multiline:       true,
+		Multiline:       multiline,
 		EmitUnpopulated: true,
 	}.Marshal(x.(proto.Message))
 	if err != nil {
@@ -127,6 +196,37 @@ func marshal(w http.ResponseWriter, x interface{}) {
 	s := string(data)
 
 	fmt.Fprintf(w, "%s", s)
+
+}
+
+func unmarshalBody(r *http.Request, x interface{}) error {
+
+	limit := int64(1024 * 1024 * 32)
+
+	if r.ContentLength > 0 {
+		if r.ContentLength > limit {
+			return errors.New("request payload too large")
+		}
+		limit = r.ContentLength
+	}
+
+	dec := json.NewDecoder(io.LimitReader(r.Body, limit))
+	dec.DisallowUnknownFields()
+
+	err := dec.Decode(x)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func pathAndRef(r *http.Request) (string, string) {
+
+	path, _ := mux.Vars(r)["path"]
+	ref := r.URL.Query().Get("ref")
+	return path, ref
 
 }
 
@@ -210,12 +310,11 @@ func sseSetup(w http.ResponseWriter) (http.Flusher, error) {
 
 func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{}) error {
 
-	b, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
+	buf := new(bytes.Buffer)
 
-	return sseWrite(w, flusher, b)
+	marshal(buf, data, false)
+
+	return sseWrite(w, flusher, buf.Bytes())
 
 }
 
