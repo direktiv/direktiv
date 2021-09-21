@@ -4,9 +4,12 @@ package api
 const (
 	RN_Preflight = "preflight"
 	// RN_HealthCheck                  = "healthCheck"
-	// RN_ListNamespaces               = "listNamespaces"
-	// RN_AddNamespace                 = "addNamespace"
-	// RN_DeleteNamespace              = "deleteNamespace"
+	RN_ListNamespaces  = "listNamespaces"
+	RN_AddNamespace    = "addNamespace"
+	RN_DeleteNamespace = "deleteNamespace"
+	RN_GetNode         = "getNode"
+	RN_CreateNode      = "createNode"
+	RN_DeleteNode      = "deleteNode"
 	// RN_NamespaceEvent               = "namespaceEvent"
 	// RN_ListSecrets                  = "listSecrets"
 	// RN_CreateSecret                 = "createSecret"
@@ -27,7 +30,6 @@ const (
 	// RN_ListInstances                = "listInstances"
 	// RN_GetInstance                  = "getInstance"
 	// RN_CancelInstance               = "cancelInstance"
-	// RN_GetInstanceLogs              = "getInstanceLogs"
 	// RN_ListActionTemplateFolders    = "listActionTemplateFolders"
 	// RN_ListActionTemplates          = "listActionTemplates"
 	// RN_GetActionTemplate            = "getActionTemplate"
@@ -39,7 +41,10 @@ const (
 	// RN_SetWorkflowVariable          = "setWorkflowVariable"
 	// RN_ListNamespaceVariables       = "listNamespaceVariables"
 	// RN_GetNamespaceVariable         = "getNamespaceVariable"
-	// RN_GetNamespaceLogs             = "getNamespaceLogs"
+	RN_GetServerLogs    = "getServerLogs"
+	RN_GetNamespaceLogs = "getNamespaceLogs"
+	RN_GetWorkflowLogs  = "getWorkflowLogs"
+	RN_GetInstanceLogs  = "getInstanceLogs"
 	// RN_SetNamespaceVariable         = "setNamespaceVariable"
 	// RN_JQPlayground                 = "jqPlayground"
 	RN_ListServices = "listServices"
@@ -51,7 +56,7 @@ const (
 	// RN_WatchPods                    = "watchPods"
 	// RN_WatchLogs                    = "watchLogs"
 	// RN_ListPods                     = "listPods"
-	// RN_DeleteServices               = "deleteServices"
+	RN_DeleteServices = "deleteServices"
 	// RN_GetService                   = "getService"
 	RN_CreateService = "createService"
 	// RN_UpdateService                = "updateService"
@@ -113,7 +118,7 @@ var RouteNames = []string{
 	// RN_JQPlayground,
 	RN_ListServices,
 	// RN_WatchServices,
-	// RN_DeleteServices,
+	RN_DeleteServices,
 	// RN_GetService,
 	RN_CreateService,
 	// RN_UpdateService,

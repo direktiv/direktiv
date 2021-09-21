@@ -22,7 +22,7 @@ type ErrObject struct {
 
 var grpcErrorHTTPCodeMap = map[codes.Code]int{
 	codes.Canceled:           http.StatusBadRequest,
-	codes.Unknown:            http.StatusBadRequest,
+	codes.Unknown:            http.StatusInternalServerError,
 	codes.InvalidArgument:    http.StatusNotAcceptable,
 	codes.DeadlineExceeded:   http.StatusBadRequest,
 	codes.NotFound:           http.StatusNotFound,
