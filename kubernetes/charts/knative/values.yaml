@@ -16,4 +16,4 @@ kong-internal:
 kong-external:
   env:
     prefix: /kong_prefix/
-    plugins: "grpc-gateway,grpc-stream,key-auth"
+    plugins: "key-auth,request-transformer"

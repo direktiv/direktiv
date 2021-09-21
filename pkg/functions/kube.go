@@ -717,7 +717,7 @@ func (is *functionsServer) UpdateFunction(ctx context.Context,
 		in.GetServiceName(), metav1.GetOptions{})
 	if err != nil {
 		logger.Errorf("error getting knative service: %v", err)
-		return nil, err
+		return nil, k8sToGRPCError(err)
 	}
 
 	// create ksvc service
@@ -1272,14 +1272,14 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		logger.Errorf("error getting clientset for knative: %v", err)
-		return resp, err
+		return resp, k8sToGRPCError(err)
 	}
 
 	svc, err := cs.ServingV1().Services(functionsConfig.Namespace).Get(context.Background(),
 		name, metav1.GetOptions{})
 	if err != nil {
 		logger.Errorf("error getting knative service: %v", err)
-		return resp, err
+		return resp, k8sToGRPCError(err)
 	}
 
 	// traffic map
@@ -1304,12 +1304,13 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 	resp.Name = &n
 	resp.Namespace = &namespace
 	resp.Workflow = &workflow
+	resp.Scope = &strings.Split(name, "-")[0]
 
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
 		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
 	if err != nil {
 		logger.Errorf("error getting knative service: %v", err)
-		return resp, err
+		return resp, k8sToGRPCError(err)
 	}
 
 	fn := func(rev v1.Revision) *igrpc.Revision {
@@ -1338,6 +1339,9 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		// name
 		svn := rev.Name
 		info.Name = &svn
+
+		ss := strings.Split(rev.Name, "-")
+		info.Rev = &ss[len(ss)-1]
 
 		// replicas
 		if rev.Status.ActualReplicas != nil {
@@ -1465,7 +1469,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 		svn, metav1.GetOptions{})
 	if err != nil {
 		flog.Errorf("error getting knative service: %v", err)
-		return nil, err
+		return nil, k8sToGRPCError(err)
 	}
 
 	spec := metav1.ObjectMeta{

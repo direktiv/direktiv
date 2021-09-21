@@ -43,18 +43,15 @@ func newFunctionHandler(logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
-	// /api/functions
-	r.HandleFunc("", h.listGlobalServices).Methods(http.MethodGet).Name(RN_ListServices)
-	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
-	r.HandleFunc("/{serviceName}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
+	handlerPair(r, RN_ListPods, "/{svn}/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
-	// s.Router().HandleFunc("/api/functions/pods/", s.handler.listPods).Methods(http.MethodPost).Name(RN_ListPods)
-	// s.Router().HandleFunc("/api/functions/", s.handler.deleteServices).Methods(http.MethodDelete).Name(RN_DeleteServices)
-	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.getService).Methods(http.MethodGet).Name(RN_GetService)
-	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateService).Methods(http.MethodPost).Name(RN_UpdateService)
-	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.updateServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-	// s.Router().HandleFunc("/api/functions/{serviceName}", s.handler.deleteService).Methods(http.MethodDelete).Name(RN_DeleteService)
-	// s.Router().HandleFunc("/api/functionrevisions/{revision}", s.handler.deleteRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
+	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
+	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
+	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
+	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
+	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	r.HandleFunc("/{svn}/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 }
 
@@ -258,6 +255,64 @@ func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Requ
 
 }
 
+func (h *functionHandler) listGlobalServicesSSE(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	h.listServicesSSE(annotations, w, r)
+
+}
+
+func (h *functionHandler) listServicesSSE(
+	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := grpcfunc.WatchFunctionsRequest{
+		Annotations: annotations,
+	}
+
+	client, err := h.client.WatchFunctions(r.Context(), &grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
 func (h *functionHandler) listServices(
 	annotations map[string]string, w http.ResponseWriter, r *http.Request) {
 
@@ -267,22 +322,14 @@ func (h *functionHandler) listServices(
 
 	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
-	// if err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
-	//
-	// if err := json.NewEncoder(w).Encode(resp); err != nil {
-	// 	ErrResponse(w, err)
-	// 	return
-	// }
-
 }
+
+// sse
 
 func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Request) {
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
-	annotations[functions.ServiceHeaderName] = mux.Vars(r)["serviceName"]
+	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
 	h.deleteService(annotations, w, r)
 }
 
@@ -298,69 +345,75 @@ func (h *functionHandler) deleteService(annotations map[string]string,
 
 }
 
-//
-// type getFunctionResponse struct {
-// 	Name      string                         `json:"name,omitempty"`
-// 	Namespace string                         `json:"namespace,omitempty"`
-// 	Workflow  string                         `json:"workflow,omitempty"`
-// 	Config    *grpc.FunctionsConfig          `json:"config,omitempty"`
-// 	Revisions []getFunctionResponse_Revision `json:"revisions,omitempty"`
-// }
-//
-// type getFunctionResponse_Revision struct {
-// 	Name       string            `json:"name,omitempty"`
-// 	Image      string            `json:"image,omitempty"`
-// 	Cmd        string            `json:"cmd,omitempty"`
-// 	Size       int32             `json:"size,omitempty"`
-// 	MinScale   int32             `json:"minScale,omitempty"`
-// 	Generation int64             `json:"generation,omitempty"`
-// 	Created    int64             `json:"created,omitempty"`
-// 	Status     string            `json:"status,omitempty"`
-// 	Conditions []*grpc.Condition `json:"conditions,omitempty"`
-// 	Traffic    int64             `json:"traffic,omitempty"`
-// }
-//
-// func (h *Handler) getService(w http.ResponseWriter, r *http.Request) {
-//
-// 	sn := mux.Vars(r)["serviceName"]
-// 	grpcReq := new(grpc.GetFunctionRequest)
-// 	grpcReq.ServiceName = &sn
-//
-// 	resp, err := h.s.functions.GetFunction(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	out := &getFunctionResponse{
-// 		Name:      resp.GetName(),
-// 		Namespace: resp.GetNamespace(),
-// 		Workflow:  resp.GetWorkflow(),
-// 		Revisions: make([]getFunctionResponse_Revision, 0),
-// 		Config:    resp.GetConfig(),
-// 	}
-//
-// 	for _, rev := range resp.GetRevisions() {
-//
-// 		out.Revisions = append(out.Revisions, getFunctionResponse_Revision{
-// 			Name:       rev.GetName(),
-// 			Image:      rev.GetImage(),
-// 			Cmd:        rev.GetCmd(),
-// 			Size:       rev.GetSize(),
-// 			MinScale:   rev.GetMinScale(),
-// 			Generation: rev.GetGeneration(),
-// 			Created:    rev.GetCreated(),
-// 			Status:     rev.GetStatus(),
-// 			Conditions: rev.GetConditions(),
-// 			Traffic:    rev.GetTraffic(),
-// 		})
-// 	}
-//
-// 	if err := json.NewEncoder(w).Encode(out); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 	}
-// }
-//
+type getFunctionResponse struct {
+	Name      string                        `json:"name,omitempty"`
+	Namespace string                        `json:"namespace,omitempty"`
+	Workflow  string                        `json:"workflow,omitempty"`
+	Config    *grpc.FunctionsConfig         `json:"config,omitempty"`
+	Revisions []getFunctionResponseRevision `json:"revisions,omitempty"`
+	Scope     string                        `json:"scope,omitempty"`
+}
+
+type getFunctionResponseRevision struct {
+	Name       string            `json:"name,omitempty"`
+	Image      string            `json:"image,omitempty"`
+	Cmd        string            `json:"cmd,omitempty"`
+	Size       int32             `json:"size,omitempty"`
+	MinScale   int32             `json:"minScale,omitempty"`
+	Generation int64             `json:"generation,omitempty"`
+	Created    int64             `json:"created,omitempty"`
+	Status     string            `json:"status,omitempty"`
+	Conditions []*grpc.Condition `json:"conditions,omitempty"`
+	Traffic    int64             `json:"traffic,omitempty"`
+	Revision   string            `json:"revision,omitempty"`
+}
+
+func (h *functionHandler) getGlobalService(w http.ResponseWriter, r *http.Request) {
+	h.getService(fmt.Sprintf("%s-%s", functions.PrefixGlobal,
+		mux.Vars(r)["svn"]), w, r)
+}
+
+func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := new(grpc.GetFunctionRequest)
+	grpcReq.ServiceName = &svn
+
+	resp, err := h.client.GetFunction(r.Context(), grpcReq)
+
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	out := &getFunctionResponse{
+		Name:      resp.GetName(),
+		Namespace: resp.GetNamespace(),
+		Workflow:  resp.GetWorkflow(),
+		Revisions: make([]getFunctionResponseRevision, 0),
+		Config:    resp.GetConfig(),
+		Scope:     resp.GetScope(),
+	}
+
+	for _, rev := range resp.GetRevisions() {
+		out.Revisions = append(out.Revisions, getFunctionResponseRevision{
+			Name:       rev.GetName(),
+			Image:      rev.GetImage(),
+			Cmd:        rev.GetCmd(),
+			Size:       rev.GetSize(),
+			MinScale:   rev.GetMinScale(),
+			Generation: rev.GetGeneration(),
+			Created:    rev.GetCreated(),
+			Status:     rev.GetStatus(),
+			Conditions: rev.GetConditions(),
+			Traffic:    rev.GetTraffic(),
+			Revision:   rev.GetRev(),
+		})
+	}
+
+	respond(w, out, err)
+
+}
+
 type createFunctionRequest struct {
 	Name     *string `json:"name,omitempty"`
 	Image    *string `json:"image,omitempty"`
@@ -403,106 +456,111 @@ func (h *functionHandler) createService(ns, wf string,
 
 }
 
-//
-// type updateServiceRequest struct {
-// 	Image          *string `json:"image,omitempty"`
-// 	Cmd            *string `json:"cmd,omitempty"`
-// 	Size           *int32  `json:"size,omitempty"`
-// 	MinScale       *int32  `json:"minScale,omitempty"`
-// 	TrafficPercent int64   `json:"trafficPercent"`
-// }
-//
-// func (h *Handler) updateService(w http.ResponseWriter, r *http.Request) {
-//
-// 	obj := new(updateServiceRequest)
-// 	err := json.NewDecoder(r.Body).Decode(obj)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	sn := mux.Vars(r)["serviceName"]
-//
-// 	grpcReq := new(grpc.UpdateFunctionRequest)
-// 	grpcReq.ServiceName = &sn
-// 	grpcReq.Info = &grpc.BaseInfo{
-// 		Image:    obj.Image,
-// 		Cmd:      obj.Cmd,
-// 		Size:     obj.Size,
-// 		MinScale: obj.MinScale,
-// 	}
-// 	grpcReq.TrafficPercent = &obj.TrafficPercent
-//
-// 	// returns an empty body
-// 	_, err = h.s.functions.UpdateFunction(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// }
-//
-// type updateServiceTrafficRequest struct {
-// 	Values []struct {
-// 		Revision string `json:"revision"`
-// 		Percent  int64  `json:"percent"`
-// 	} `json:"values"`
-// }
-//
-// func (h *Handler) updateServiceTraffic(w http.ResponseWriter, r *http.Request) {
-//
-// 	obj := new(updateServiceTrafficRequest)
-// 	err := json.NewDecoder(r.Body).Decode(obj)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	if obj.Values == nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		return
-// 	}
-//
-// 	sn := mux.Vars(r)["serviceName"]
-// 	grpcReq := &grpc.SetTrafficRequest{
-// 		Name:    &sn,
-// 		Traffic: make([]*grpc.TrafficValue, 0),
-// 	}
-//
-// 	for _, v := range obj.Values {
-// 		x := v
-// 		grpcReq.Traffic = append(grpcReq.Traffic, &grpc.TrafficValue{
-// 			Revision: &x.Revision,
-// 			Percent:  &x.Percent,
-// 		})
-// 	}
-//
-// 	_, err = h.s.functions.SetFunctionsTraffic(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// }
-//
-// func (h *Handler) deleteRevision(w http.ResponseWriter, r *http.Request) {
-//
-// 	rev := mux.Vars(r)["revision"]
-// 	grpcReq := &grpc.DeleteRevisionRequest{
-// 		Revision: &rev,
-// 	}
-//
-// 	_, err := h.s.functions.DeleteRevision(r.Context(), grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	accepted(w)
-// }
-//
+type updateServiceRequest struct {
+	Image          *string `json:"image,omitempty"`
+	Cmd            *string `json:"cmd,omitempty"`
+	Size           *int32  `json:"size,omitempty"`
+	MinScale       *int32  `json:"minScale,omitempty"`
+	TrafficPercent int64   `json:"trafficPercent"`
+}
+
+func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {
+	h.updateService(fmt.Sprintf("%s-%s",
+		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
+}
+
+func (h *functionHandler) updateService(svc string, w http.ResponseWriter, r *http.Request) {
+
+	obj := new(updateServiceRequest)
+	err := json.NewDecoder(r.Body).Decode(obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	grpcReq := new(grpcfunc.UpdateFunctionRequest)
+	grpcReq.ServiceName = &svc
+	grpcReq.Info = &grpc.BaseInfo{
+		Image:    obj.Image,
+		Cmd:      obj.Cmd,
+		Size:     obj.Size,
+		MinScale: obj.MinScale,
+	}
+
+	grpcReq.TrafficPercent = &obj.TrafficPercent
+
+	// returns an empty body
+	resp, err := h.client.UpdateFunction(r.Context(), grpcReq)
+	respond(w, resp, err)
+
+}
+
+type updateServiceTrafficRequest struct {
+	Values []struct {
+		Revision string `json:"revision"`
+		Percent  int64  `json:"percent"`
+	} `json:"values"`
+}
+
+func (h *functionHandler) updateGlobalServiceTraffic(w http.ResponseWriter,
+	r *http.Request) {
+
+	h.updateServiceTraffic(fmt.Sprintf("%s-%s",
+		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
+
+}
+
+func (h *functionHandler) updateServiceTraffic(svc string,
+	w http.ResponseWriter, r *http.Request) {
+
+	obj := new(updateServiceTrafficRequest)
+	err := json.NewDecoder(r.Body).Decode(obj)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	if obj.Values == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	grpcReq := &grpc.SetTrafficRequest{
+		Name:    &svc,
+		Traffic: make([]*grpc.TrafficValue, 0),
+	}
+
+	for _, v := range obj.Values {
+		x := v
+		grpcReq.Traffic = append(grpcReq.Traffic, &grpc.TrafficValue{
+			Revision: &x.Revision,
+			Percent:  &x.Percent,
+		})
+	}
+
+	resp, err := h.client.SetFunctionsTraffic(r.Context(), grpcReq)
+	respond(w, resp, err)
+
+}
+
+func (h *functionHandler) deleteGlobalRevision(w http.ResponseWriter, r *http.Request) {
+	h.deleteRevision(fmt.Sprintf("%s-%s-%s",
+		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
+}
+
+func (h *functionHandler) deleteRevision(rev string,
+	w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := &grpcfunc.DeleteRevisionRequest{
+		Revision: &rev,
+	}
+
+	resp, err := h.client.DeleteRevision(r.Context(), grpcReq)
+	respond(w, resp, err)
+
+}
+
 // type serviceItem struct {
 // 	name, service string
 // }
@@ -880,30 +938,83 @@ func (h *functionHandler) createService(ns, wf string,
 //
 // }
 //
-// func (h *Handler) listPods(w http.ResponseWriter, r *http.Request) {
-//
-// 	a, err := getFunctionAnnotations(r)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-//
-// 	grpcReq := grpc.ListPodsRequest{
-// 		Annotations: a,
-// 	}
-//
-// 	resp, err := h.s.functions.ListPods(r.Context(), &grpcReq)
-// 	if err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-//
-// 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-// 		ErrResponse(w, err)
-// 		return
-// 	}
-// }
+func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request) {
+	annotations := make(map[string]string)
+	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
+		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	h.listPods(annotations, w, r)
+}
+
+func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
+	svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
+	h.listPodsSSE(svc, rev, w, r)
+}
+
+func (h *functionHandler) listPodsSSE(svc, rev string,
+	w http.ResponseWriter, r *http.Request) {
+
+	// serving.knative.dev/revision=global-jensglobal7-00001
+	// serving.knative.dev/service=global-jensglobal7
+
+	grpcReq := &grpc.WatchPodsRequest{
+		ServiceName:  &svc,
+		RevisionName: &rev,
+	}
+
+	client, err := h.client.WatchPods(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+}
+
+func (h *functionHandler) listPods(annotations map[string]string,
+	w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := grpc.ListPodsRequest{
+		Annotations: annotations,
+	}
+
+	resp, err := h.client.ListPods(r.Context(), &grpcReq)
+	respond(w, resp, err)
+}
+
 //
 // func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
 //
