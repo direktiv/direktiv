@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"time"
 
@@ -389,6 +390,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	req, err := srv.Recv()
 	if err != nil {
+		fmt.Println("A")
 		return err
 	}
 
@@ -400,6 +402,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
+			fmt.Println("B")
 			return err
 		}
 
@@ -411,6 +414,10 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 		req, err = srv.Recv()
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			fmt.Println("C")
 			return err
 		}
 
@@ -435,8 +442,6 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 
 	hash := checksum(buf.Bytes())
-
-	flow.sugar.Debugf("XXX")
 
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
