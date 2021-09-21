@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"time"
 
@@ -390,9 +389,11 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	req, err := srv.Recv()
 	if err != nil {
-		fmt.Println("A")
 		return err
 	}
+
+	namespace := req.GetNamespace()
+	key := req.GetKey()
 
 	totalSize := int(req.GetTotalSize())
 
@@ -402,7 +403,6 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 		_, err = io.Copy(buf, bytes.NewReader(req.Data))
 		if err != nil {
-			fmt.Println("B")
 			return err
 		}
 
@@ -417,7 +417,6 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			fmt.Println("C")
 			return err
 		}
 
@@ -453,26 +452,26 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	ns, err := flow.getNamespace(ctx, nsc, namespace)
 	if err != nil {
 		return err
 	}
 
 	var vdata *ent.VarData
 
-	vref, err := ns.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
+	vref, err := ns.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
 	if err != nil {
 
 		if !ent.IsNotFound(err) {
 			return err
 		}
 
-		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		vdata, err = vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
 		if err != nil {
 			return err
 		}
 
-		_, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(req.GetKey()).Save(ctx)
+		_, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(key).Save(ctx)
 		if err != nil {
 			return err
 		}
@@ -484,14 +483,12 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			return err
 		}
 
-		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		vdata, err = vdata.Update().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
 		if err != nil {
 			return err
 		}
 
 	}
-
-	flow.sugar.Debugf("YYY")
 
 	err = tx.Commit()
 	if err != nil {
