@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -44,15 +43,15 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPost)
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
-	handlerPair(r, RN_GetServerLogs, "/logs/server", h.ServerLogs, h.ServerLogsSSE)
-	handlerPair(r, RN_GetNamespaceLogs, "/logs/namespaces/{ns}", h.NamespaceLogs, h.NamespaceLogsSSE)
-	handlerPair(r, RN_GetWorkflowLogs, "/logs/namespaces/{ns}/tree/{path:.*}", h.WorkflowLogs, h.WorkflowLogsSSE)
-	handlerPair(r, RN_GetInstanceLogs, "/logs/namespaces/{ns}/instances/{in}", h.InstanceLogs, h.InstanceLogsSSE)
+	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
+	handlerPair(r, RN_GetNamespaceLogs, "/namespaces/{ns}/logs", h.NamespaceLogs, h.NamespaceLogsSSE)
+	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
-	handlerPair(r, RN_GetNode, "/namespaces/{ns}/tree", h.GetNode, h.GetNodeSSE)
-	handlerPair(r, RN_GetNode, "/namespaces/{ns}/tree/{path:.*}", h.GetNode, h.GetNodeSSE)
-	r.HandleFunc("/namespaces/{ns}/tree/{path:.*}", h.CreateNode).Name(RN_CreateNode).Methods(http.MethodPut)
-	r.HandleFunc("/namespaces/{ns}/tree/{path:.*}", h.DeleteNode).Name(RN_DeleteNode).Methods(http.MethodDelete)
+	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
+	pathHandlerPair(r, RN_GetWorkflowLogs, "", h.GetNode, h.GetNodeSSE)
+	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
+	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
+	pathHandler(r, http.MethodDelete, RN_DeleteNode, "delete-node", h.DeleteNode)
 
 }
 
@@ -339,6 +338,8 @@ func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path := mux.Vars(r)["path"]
+
+	h.logger.Infof("%s %s", path, r.URL.String())
 
 	p, err := pagination(r)
 	if err != nil {
@@ -704,12 +705,7 @@ workflow:
 
 }
 
-type node struct {
-	Type string `json:"type"`
-	Data []byte `json:"data,omitempty"`
-}
-
-func (h *flowHandler) CreateNode(w http.ResponseWriter, r *http.Request) {
+func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -717,42 +713,40 @@ func (h *flowHandler) CreateNode(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
 
-	n := new(node)
-	err := unmarshalBody(r, n)
+	in := &grpc.CreateDirectoryRequest{
+		Namespace: namespace,
+		Path:      path,
+	}
+
+	resp, err := h.client.CreateDirectory(ctx, in)
+	respond(w, resp, err)
+	return
+
+}
+
+func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	data, err := loadRawBody(r)
 	if err != nil {
-		badRequest(w, err)
+		respond(w, nil, err)
 		return
 	}
 
-	switch n.Type {
-
-	case "directory":
-
-		in := &grpc.CreateDirectoryRequest{
-			Namespace: namespace,
-			Path:      path,
-		}
-
-		resp, err := h.client.CreateDirectory(ctx, in)
-		respond(w, resp, err)
-		return
-
-	case "workflow":
-
-		in := &grpc.CreateWorkflowRequest{
-			Namespace: namespace,
-			Path:      path,
-			Source:    n.Data,
-		}
-
-		resp, err := h.client.CreateWorkflow(ctx, in)
-		respond(w, resp, err)
-		return
-
-	default:
-		badRequest(w, errors.New("bad node type should be: 'directory' or 'workflow'"))
-		return
+	in := &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      path,
+		Source:    data,
 	}
+
+	resp, err := h.client.CreateWorkflow(ctx, in)
+	respond(w, resp, err)
+	return
 
 }
 

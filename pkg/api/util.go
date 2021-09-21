@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -30,6 +31,63 @@ func this() string {
 func handlerPair(r *mux.Router, name, path string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
 	r.HandleFunc(path, sseHandler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 	r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet)
+}
+
+func pathHandler(r *mux.Router, method, name, op string, handler func(http.ResponseWriter, *http.Request)) {
+
+	root := "/namespaces/{ns}/tree"
+	path := root + "/{path:.*}"
+
+	r1 := r.HandleFunc(root, handler).Name(name).Methods(method)
+	r2 := r.HandleFunc(path, handler).Name(name).Methods(method)
+
+	if op != "" {
+		r1.Queries("op", op)
+		r2.Queries("op", op)
+	}
+
+}
+
+func pathHandlerSSE(r *mux.Router, name, op string, handler func(http.ResponseWriter, *http.Request)) {
+
+	root := "/namespaces/{ns}/tree"
+	path := root + "/{path:.*}"
+
+	r1 := r.HandleFunc(root, handler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r2 := r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+
+	if op != "" {
+		r1.Queries("op", op)
+		r2.Queries("op", op)
+	}
+
+}
+
+func pathHandlerPair(r *mux.Router, name, op string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
+	pathHandler(r, http.MethodGet, name, op, handler)
+	pathHandlerSSE(r, name, op, handler)
+}
+
+func loadRawBody(r *http.Request) ([]byte, error) {
+
+	limit := int64(1024 * 1024 * 32)
+
+	if r.ContentLength > 0 {
+		if r.ContentLength > limit {
+			return nil, errors.New("request payload too large")
+		}
+		limit = r.ContentLength
+	}
+
+	rdr := io.LimitReader(r.Body, limit)
+
+	data, err := ioutil.ReadAll(rdr)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+
 }
 
 func getInt32(r *http.Request, key string) (int32, error) {
