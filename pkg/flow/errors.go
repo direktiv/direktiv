@@ -136,6 +136,8 @@ func IsNotFound(err error) bool {
 
 func translateError(err error) error {
 
+	fmt.Println(err)
+
 	if IsNotFound(err) {
 		err = status.Error(codes.NotFound, strings.TrimPrefix(err.Error(), "ent: "))
 		return err

@@ -436,6 +436,8 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	hash := checksum(buf.Bytes())
 
+	flow.sugar.Debugf("XXX")
+
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return err
@@ -483,6 +485,8 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		}
 
 	}
+
+	flow.sugar.Debugf("YYY")
 
 	err = tx.Commit()
 	if err != nil {
