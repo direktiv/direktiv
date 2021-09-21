@@ -1857,7 +1857,7 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	in := &grpc.NamespaceVariableRequest{
 		Namespace: namespace,
@@ -1903,7 +1903,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	var rdr io.Reader
 	rdr = r.Body
@@ -1963,7 +1963,7 @@ func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Req
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	in := &grpc.DeleteNamespaceVariableRequest{
 		Namespace: namespace,
@@ -2070,7 +2070,7 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	instance := mux.Vars(r)["instance"]
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	in := &grpc.InstanceVariableRequest{
 		Namespace: namespace,
@@ -2118,7 +2118,7 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	instance := mux.Vars(r)["instance"]
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	var rdr io.Reader
 	rdr = r.Body
@@ -2180,7 +2180,7 @@ func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	instance := mux.Vars(r)["instance"]
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	in := &grpc.DeleteInstanceVariableRequest{
 		Namespace: namespace,
@@ -2288,7 +2288,7 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	in := &grpc.WorkflowVariableRequest{
 		Namespace: namespace,
@@ -2336,7 +2336,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	var rdr io.Reader
 	rdr = r.Body
@@ -2398,7 +2398,7 @@ func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	key := mux.Vars(r)["key"]
+	key := mux.Vars(r)["var"]
 
 	in := &grpc.DeleteWorkflowVariableRequest{
 		Namespace: namespace,

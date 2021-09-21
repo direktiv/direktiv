@@ -148,6 +148,10 @@ func translateError(err error) error {
 			return err
 		}
 
+	}
+
+	if _, ok := err.(*ent.ValidationError); ok {
+
 		if strings.Contains(err.Error(), "validator failed") {
 			err = status.Error(codes.InvalidArgument, "one or more fields has an invalid value")
 			return err

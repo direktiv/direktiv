@@ -414,7 +414,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 			return err
 		}
 
-		_, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(key).Save(ctx)
+		vref, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(key).Save(ctx)
 		if err != nil {
 			return err
 		}

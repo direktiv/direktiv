@@ -414,7 +414,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 			return err
 		}
 
-		_, err = vrefc.Create().SetVardata(vdata).SetInstance(d.in).SetName(key).Save(ctx)
+		vref, err = vrefc.Create().SetVardata(vdata).SetInstance(d.in).SetName(key).Save(ctx)
 		if err != nil {
 			return err
 		}
