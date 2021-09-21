@@ -1693,10 +1693,17 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, ref := pathAndRef(r)
 
+	input, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	in := &grpc.StartWorkflowRequest{
 		Namespace: namespace,
 		Path:      path,
 		Ref:       ref,
+		Input:     input,
 	}
 
 	resp, err := h.client.StartWorkflow(ctx, in)
