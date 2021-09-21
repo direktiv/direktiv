@@ -1959,8 +1959,8 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 
 	}
 
-	err = client.CloseSend()
-	respond(w, nil, err)
+	resp, err := client.CloseAndRecv()
+	respond(w, resp, err)
 
 }
 
@@ -2175,8 +2175,8 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 
 	}
 
-	err = client.CloseSend()
-	respond(w, nil, err)
+	resp, err := client.CloseAndRecv()
+	respond(w, resp, err)
 
 }
 
@@ -2393,8 +2393,8 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 
 	}
 
-	err = client.CloseSend()
-	respond(w, nil, err)
+	resp, err := client.CloseAndRecv()
+	respond(w, resp, err)
 
 }
 

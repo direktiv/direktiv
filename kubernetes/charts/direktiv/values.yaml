@@ -18,8 +18,8 @@ redis:
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
   address: ""
-  # -- installs opentelemtry agent and collector
-  enabled: true
+  # -- enable opentelemetry tracing
+  enabled: false
   # -- config for daemonset agent
   agentconfig: |
     # receivers:

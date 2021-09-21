@@ -30,13 +30,22 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 		return nil, err
 	}
 
-	internal.srv = libgrpc.NewServer(libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-		resp, err = handler(ctx, req)
-		if err != nil {
-			return nil, translateError(err)
-		}
-		return resp, nil
-	}))
+	internal.srv = libgrpc.NewServer(
+		libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
+			resp, err = handler(ctx, req)
+			if err != nil {
+				return nil, translateError(err)
+			}
+			return resp, nil
+		}),
+		libgrpc.StreamInterceptor(func(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
+			err := handler(srv, ss)
+			if err != nil {
+				return translateError(err)
+			}
+			return nil
+		}),
+	)
 
 	grpc.RegisterInternalServer(internal.srv, internal)
 	reflection.Register(internal.srv)

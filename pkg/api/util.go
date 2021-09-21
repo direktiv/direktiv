@@ -179,9 +179,17 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
-		msg := http.StatusText(code)
+		var msg string
+		if code < 500 {
+			msg = err.Error()
+		} else {
+			logger.Errorf("INTERNAL ERROR: %v", err)
+			msg = http.StatusText(code)
+		}
+
 		http.Error(w, msg, code)
 		return
+
 	}
 
 	if resp == nil {
