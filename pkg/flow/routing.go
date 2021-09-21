@@ -6,6 +6,9 @@ import (
 	"math/rand"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
@@ -81,7 +84,7 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 
 		workflow, err := loadSource(ref.Edges.Revision)
 		if err != nil {
-			return nil, err, nil
+			return nil, status.Error(codes.InvalidArgument, err.Error()), nil
 		}
 
 		ms := newMuxStart(workflow)
@@ -100,7 +103,7 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 
 		workflow, err := loadSource(route.Edges.Ref.Edges.Revision)
 		if err != nil {
-			return nil, fmt.Errorf("route to '%s' invalid because revision fails to compile: %v", route.Edges.Ref.Name, err), nil
+			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("route to '%s' invalid because revision fails to compile: %v", route.Edges.Ref.Name, err)), nil
 		}
 
 		ms = newMuxStart(workflow)
@@ -112,7 +115,7 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 			startRef = route.Edges.Ref.Name
 		} else {
 			if startHash != hash {
-				return nil, fmt.Errorf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Edges.Ref.Name), nil
+				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, route.Edges.Ref.Name)), nil
 			}
 		}
 

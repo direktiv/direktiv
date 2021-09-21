@@ -31,6 +31,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
+	resp.EventLogging = d.wf.LogToEvents
 
 	err = atob(d.rev(), &resp.Revision)
 	if err != nil {
@@ -458,7 +459,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 
 	var resp emptypb.Empty
 
-	if d.wf.Live != req.GetLive() {
+	if d.wf.Live == req.GetLive() {
 		rollback(tx)
 		return &resp, nil
 	}
