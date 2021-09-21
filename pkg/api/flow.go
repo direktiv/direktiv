@@ -51,6 +51,14 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
+	handlerPair(r, RN_GetInstance, "/namespaces/{ns}/instances/{instance}", h.Instance, h.InstanceSSE)
+	handlerPair(r, RN_ListInstances, "/namespaces/{ns}/instances", h.Instances, h.InstancesSSE)
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/input", h.InstanceInput).Name(RN_GetInstance).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/output", h.InstanceOutput).Name(RN_GetInstance).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/cancel", h.InstanceCancel).Name(RN_CancelInstance).Methods(http.MethodPost)
+
+	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
+
 	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
 	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
@@ -69,6 +77,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_EditWorkflowRouter, "edit-router", h.EditRouter)
 	pathHandler(r, http.MethodPost, RN_ValidateRef, "validate-ref", h.ValidateRef)
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
+
+	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
@@ -1459,6 +1469,260 @@ func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	in.Key = secret
 
 	resp, err := h.client.DeleteSecret(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	in := &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  instance,
+	}
+
+	resp, err := h.client.Instance(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	in := &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  instance,
+	}
+
+	resp, err := h.client.InstanceStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.InstancesRequest{
+		Namespace:  namespace,
+		Pagination: p,
+	}
+
+	resp, err := h.client.Instances(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.InstancesRequest{
+		Namespace:  namespace,
+		Pagination: p,
+	}
+
+	resp, err := h.client.InstancesStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	in := &grpc.InstanceInputRequest{
+		Namespace: namespace,
+		Instance:  instance,
+	}
+
+	resp, err := h.client.InstanceInput(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	in := &grpc.InstanceOutputRequest{
+		Namespace: namespace,
+		Instance:  instance,
+	}
+
+	resp, err := h.client.InstanceOutput(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	in := &grpc.CancelInstanceRequest{
+		Namespace: namespace,
+		Instance:  instance,
+	}
+
+	resp, err := h.client.CancelInstance(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, ref := pathAndRef(r)
+
+	in := &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      path,
+		Ref:       ref,
+	}
+
+	resp, err := h.client.StartWorkflow(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: data,
+	}
+
+	resp, err := h.client.BroadcastCloudevent(ctx, in)
 	respond(w, resp, err)
 
 }
