@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -43,9 +45,25 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPost)
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
+	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
 	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
 	handlerPair(r, RN_GetNamespaceLogs, "/namespaces/{ns}/logs", h.NamespaceLogs, h.NamespaceLogsSSE)
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
+
+	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.NamespaceVariable).Name(RN_GetNamespaceVariable).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.DeleteNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodDelete)
+	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.SetNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodPut)
+	handlerPair(r, RN_ListNamespaceVariables, "/namespaces/{ns}/vars", h.NamespaceVariables, h.NamespaceVariablesSSE)
+
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.InstanceVariable).Name(RN_GetInstanceVariable).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.DeleteInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodDelete)
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.SetInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodPut)
+	handlerPair(r, RN_ListInstanceVariables, "/namespaces/{ns}/instances/{instance}/vars", h.InstanceVariables, h.InstanceVariablesSSE)
+
+	pathHandlerPair(r, RN_ListWorkflowVariables, "vars", h.WorkflowVariables, h.WorkflowVariablesSSE)
+	pathHandler(r, http.MethodPut, RN_SetWorkflowVariable, "set-var", h.SetWorkflowVariable)
+	pathHandler(r, http.MethodDelete, RN_SetWorkflowVariable, "delete-var", h.DeleteWorkflowVariable)
+	pathHandler(r, http.MethodGet, RN_GetWorkflowVariable, "var", h.WorkflowVariable)
 
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
@@ -1723,6 +1741,660 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 	}
 
 	resp, err := h.client.BroadcastCloudevent(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+
+	in := new(grpc.JQRequest)
+
+	err := unmarshalBody(r, in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	resp, err := h.client.JQ(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.NamespaceVariablesRequest{
+		Namespace:  namespace,
+		Pagination: p,
+	}
+
+	resp, err := h.client.NamespaceVariables(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.NamespaceVariablesRequest{
+		Namespace:  namespace,
+		Pagination: p,
+	}
+
+	resp, err := h.client.NamespaceVariablesStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	key := mux.Vars(r)["key"]
+
+	in := &grpc.NamespaceVariableRequest{
+		Namespace: namespace,
+		Key:       key,
+	}
+
+	resp, err := h.client.NamespaceVariableParcels(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	msg, err := resp.Recv()
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	for {
+
+		packet := msg.Data
+		if len(packet) == 0 {
+			return
+		}
+
+		_, err = io.Copy(w, bytes.NewReader(packet))
+		if err != nil {
+			return
+		}
+
+		msg, err = resp.Recv()
+		if err != nil {
+			return
+		}
+
+	}
+
+}
+
+func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	key := mux.Vars(r)["key"]
+
+	var rdr io.Reader
+	rdr = r.Body
+
+	total := r.ContentLength
+	if total <= 0 {
+		data, err := loadRawBody(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+		total = int64(len(data))
+		rdr = bytes.NewReader(data)
+	}
+
+	rdr = io.LimitReader(rdr, total)
+
+	client, err := h.client.SetNamespaceVariableParcels(ctx)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	var done int64
+
+	for done <= total {
+
+		buf := new(bytes.Buffer)
+		k, err := io.CopyN(buf, rdr, 2*1024*1024)
+		done += k
+		if err != nil && done < total {
+			respond(w, nil, err)
+			return
+		}
+
+		err = client.Send(&grpc.SetNamespaceVariableRequest{
+			Namespace: namespace,
+			Key:       key,
+			TotalSize: total,
+			Data:      buf.Bytes(),
+		})
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+	}
+
+}
+
+func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	key := mux.Vars(r)["key"]
+
+	in := &grpc.DeleteNamespaceVariableRequest{
+		Namespace: namespace,
+		Key:       key,
+	}
+
+	resp, err := h.client.DeleteNamespaceVariable(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.InstanceVariablesRequest{
+		Namespace:  namespace,
+		Instance:   instance,
+		Pagination: p,
+	}
+
+	resp, err := h.client.InstanceVariables(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.InstanceVariablesRequest{
+		Namespace:  namespace,
+		Instance:   instance,
+		Pagination: p,
+	}
+
+	resp, err := h.client.InstanceVariablesStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+	key := mux.Vars(r)["key"]
+
+	in := &grpc.InstanceVariableRequest{
+		Namespace: namespace,
+		Instance:  instance,
+		Key:       key,
+	}
+
+	resp, err := h.client.InstanceVariableParcels(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	msg, err := resp.Recv()
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	for {
+
+		packet := msg.Data
+		if len(packet) == 0 {
+			return
+		}
+
+		_, err = io.Copy(w, bytes.NewReader(packet))
+		if err != nil {
+			return
+		}
+
+		msg, err = resp.Recv()
+		if err != nil {
+			return
+		}
+
+	}
+
+}
+
+func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+	key := mux.Vars(r)["key"]
+
+	var rdr io.Reader
+	rdr = r.Body
+
+	total := r.ContentLength
+	if total <= 0 {
+		data, err := loadRawBody(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+		total = int64(len(data))
+		rdr = bytes.NewReader(data)
+	}
+
+	rdr = io.LimitReader(rdr, total)
+
+	client, err := h.client.SetInstanceVariableParcels(ctx)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	var done int64
+
+	for done <= total {
+
+		buf := new(bytes.Buffer)
+		k, err := io.CopyN(buf, rdr, 2*1024*1024)
+		done += k
+		if err != nil && done < total {
+			respond(w, nil, err)
+			return
+		}
+
+		err = client.Send(&grpc.SetInstanceVariableRequest{
+			Namespace: namespace,
+			Instance:  instance,
+			Key:       key,
+			TotalSize: total,
+			Data:      buf.Bytes(),
+		})
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+	}
+
+}
+
+func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+	key := mux.Vars(r)["key"]
+
+	in := &grpc.DeleteInstanceVariableRequest{
+		Namespace: namespace,
+		Instance:  instance,
+		Key:       key,
+	}
+
+	resp, err := h.client.DeleteInstanceVariable(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.WorkflowVariablesRequest{
+		Namespace:  namespace,
+		Path:       path,
+		Pagination: p,
+	}
+
+	resp, err := h.client.WorkflowVariables(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	p, err := pagination(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.WorkflowVariablesRequest{
+		Namespace:  namespace,
+		Path:       path,
+		Pagination: p,
+	}
+
+	resp, err := h.client.WorkflowVariablesStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
+func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+	key := mux.Vars(r)["key"]
+
+	in := &grpc.WorkflowVariableRequest{
+		Namespace: namespace,
+		Path:      path,
+		Key:       key,
+	}
+
+	resp, err := h.client.WorkflowVariableParcels(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	msg, err := resp.Recv()
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	for {
+
+		packet := msg.Data
+		if len(packet) == 0 {
+			return
+		}
+
+		_, err = io.Copy(w, bytes.NewReader(packet))
+		if err != nil {
+			return
+		}
+
+		msg, err = resp.Recv()
+		if err != nil {
+			return
+		}
+
+	}
+
+}
+
+func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+	key := mux.Vars(r)["key"]
+
+	var rdr io.Reader
+	rdr = r.Body
+
+	total := r.ContentLength
+	if total <= 0 {
+		data, err := loadRawBody(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+		total = int64(len(data))
+		rdr = bytes.NewReader(data)
+	}
+
+	rdr = io.LimitReader(rdr, total)
+
+	client, err := h.client.SetWorkflowVariableParcels(ctx)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	var done int64
+
+	for done <= total {
+
+		buf := new(bytes.Buffer)
+		k, err := io.CopyN(buf, rdr, 2*1024*1024)
+		done += k
+		if err != nil && done < total {
+			respond(w, nil, err)
+			return
+		}
+
+		err = client.Send(&grpc.SetWorkflowVariableRequest{
+			Namespace: namespace,
+			Path:      path,
+			Key:       key,
+			TotalSize: total,
+			Data:      buf.Bytes(),
+		})
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+	}
+
+}
+
+func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+	key := mux.Vars(r)["key"]
+
+	in := &grpc.DeleteWorkflowVariableRequest{
+		Namespace: namespace,
+		Path:      path,
+		Key:       key,
+	}
+
+	resp, err := h.client.DeleteWorkflowVariable(ctx, in)
 	respond(w, resp, err)
 
 }
