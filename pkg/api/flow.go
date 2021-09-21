@@ -96,6 +96,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_ValidateRef, "validate-ref", h.ValidateRef)
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
 
+	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "set-workflow-event-logging", h.SetWorkflowEventLogging)
+	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "toggle", h.ToggleWorkflow)
+
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
@@ -2395,6 +2398,54 @@ func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Requ
 	}
 
 	resp, err := h.client.DeleteWorkflowVariable(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) SetWorkflowEventLogging(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := new(grpc.SetWorkflowEventLoggingRequest)
+
+	err := unmarshalBody(r, in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in.Namespace = namespace
+	in.Path = path
+
+	resp, err := h.client.SetWorkflowEventLogging(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := new(grpc.ToggleWorkflowRequest)
+
+	err := unmarshalBody(r, in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in.Namespace = namespace
+	in.Path = path
+
+	resp, err := h.client.ToggleWorkflow(ctx, in)
 	respond(w, resp, err)
 
 }
