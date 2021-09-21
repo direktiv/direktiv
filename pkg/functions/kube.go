@@ -351,7 +351,7 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 	svc, err := createKnativeFunction(in.GetInfo())
 	if err != nil {
 		logger.Errorf("can not create knative service: %v", err)
-		return &empty, err
+		return &empty, k8sToGRPCError(err)
 	}
 
 	// backup service if not a workflow service

@@ -156,6 +156,23 @@ func badRequest(w http.ResponseWriter, err error) {
 	return
 }
 
+func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error) {
+
+	w.WriteHeader(code)
+
+	if err != nil {
+		msg := http.StatusText(code)
+		http.Error(w, msg, code)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
 func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 	if err != nil {
@@ -175,6 +192,7 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		goto nodata
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	marshal(w, resp, true)
 
 nodata:

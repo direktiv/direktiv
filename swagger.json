@@ -1,0 +1,51 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "direktiv api",
+    "title": "Direktiv API.",
+    "contact": {
+      "email": "info@direktiv.io"
+    },
+    "version": "1.0.0"
+  },
+  "host": "localhost",
+  "paths": {
+    "/api/functions": {
+      "get": {
+        "description": "Returns list of global Knative functions with 'global-' prefix.",
+        "summary": "Returns list of global functions.",
+        "operationId": "getFunctions",
+        "responses": {
+          "201": {
+            "description": "service created"
+          },
+          "500": {
+            "description": "internal error"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "KEY",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ]
+}
