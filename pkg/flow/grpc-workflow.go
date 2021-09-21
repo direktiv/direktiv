@@ -8,6 +8,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entrev "github.com/vorteil/direktiv/pkg/flow/ent/revision"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grpc.WorkflowResponse, error) {
@@ -434,6 +435,93 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	return &resp, nil
+
+}
+
+func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	tx, err := flow.db.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(tx)
+
+	nsc := tx.Namespace
+	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	var resp emptypb.Empty
+
+	if d.wf.Live != req.GetLive() {
+		rollback(tx)
+		return &resp, nil
+	}
+
+	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
+		func() error {
+			wf, err := d.wf.Update().SetLive(req.GetLive()).Save(ctx)
+			if err != nil {
+				return err
+			}
+			d.wf = wf
+
+			return nil
+
+		},
+		tx.Commit,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	live := "disabled"
+	if d.wf.Live {
+		live = "enabled"
+	}
+
+	flow.logToWorkflow(ctx, time.Now(), d.wf, "Workflow is now %s", live)
+	flow.pubsub.NotifyWorkflow(d.wf)
+
+	return &resp, nil
+
+}
+
+func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	tx, err := flow.db.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback(tx)
+
+	nsc := tx.Namespace
+
+	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.wf.Update().SetLogToEvents(req.GetLogger()).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	flow.logToWorkflow(ctx, time.Now(), d.wf, "Workflow now logging to cloudevents: %s", req.GetLogger())
+
+	var resp emptypb.Empty
 
 	return &resp, nil
 

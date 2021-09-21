@@ -436,6 +436,10 @@ service Flow {
 	// LintRevision
 	// LintPayload
 	// Workflow Metrics
+
+	rpc ToggleWorkflow (ToggleWorkflowRequest) returns (google.protobuf.Empty) {}
+	rpc SetWorkflowEventLogging (SetWorkflowEventLoggingRequest) returns (google.protobuf.Empty) {}
+	
 }
 
 service Internal {

@@ -36,6 +36,7 @@ message WorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
 	Revision revision = 3;
+	string eventLogging = 4;
 }
 
 message CreateWorkflowRequest {
@@ -217,4 +218,16 @@ message ValidateRouterResponse {
 	string path = 2;
 	bool invalid = 3;
 	string reason = 4;
+}
+
+message ToggleWorkflowRequest {
+	string namespace = 1;
+	string path = 2;
+	bool live = 3;
+}
+
+message SetWorkflowEventLoggingRequest {
+	string namespace = 1;
+	string path = 2;
+	string logger = 3;
 }
