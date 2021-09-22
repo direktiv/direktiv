@@ -1,6 +1,8 @@
 package util
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -39,26 +41,27 @@ func ReadConfig(file string) (*Config, error) {
 
 func (cfg *Config) GetTelemetryBackendAddr() string {
 
-	return "direktiv-otel-collector.default:4317"
+	fmt.Println(cfg.OpenTelemetryBackend)
 
-	/*
-		if cfg.OpenTelemetryBackend == "" {
-			panic(errors.New("need to configure telemetry"))
-		}
+	if cfg.OpenTelemetryBackend == "" {
+		panic(errors.New("need to configure telemetry"))
+	}
 
-		if cfg.OpenTelemetryBackend == "none" {
-			return ""
-		}
+	if cfg.OpenTelemetryBackend == "none" {
+		return ""
+	}
 
-		if cfg.OpenTelemetryBackend == "host" {
+	if cfg.OpenTelemetryBackend == "host" {
+		/*
 			s := os.Getenv("DIREKTIV_NODE_IP")
 			if s == "" {
 				panic(errors.New("need to configure telemetry environment variable DIREKTIV_NODE_IP"))
 			}
 			return s + ":4317"
-		}
+		*/
+		return "direktiv-otel-collector.default:4317"
+	}
 
-		return cfg.OpenTelemetryBackend
-	*/
+	return cfg.OpenTelemetryBackend
 
 }

@@ -27,7 +27,7 @@ functions:
 
 opentelemetry:
   address: "host"
-  enabled: true
+  enabled: false
   agentconfig: |
     receivers:
       otlp:
