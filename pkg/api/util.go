@@ -346,11 +346,10 @@ func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{})
 
 func sseWrite(w http.ResponseWriter, flusher http.Flusher, data []byte) error {
 
-	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(data))))
+	_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", string(data))))
 	if err != nil {
 		return err
 	}
-
 	flusher.Flush()
 	return nil
 
