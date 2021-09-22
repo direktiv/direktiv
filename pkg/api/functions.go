@@ -77,6 +77,8 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
+	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
+
 	// swagger:operation GET /api/functions getFunctions
 	// ---
 	// summary: Returns list of global functions.
@@ -1179,7 +1181,55 @@ func (h *functionHandler) watchRevisions(svc, rev, scope string,
 // 	}
 // }
 //
-// func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["pod"]
+	grpcReq := new(grpc.WatchLogsRequest)
+	grpcReq.PodName = &sn
+
+	client, err := h.client.WatchLogs(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
 //
 // 	sn := mux.Vars(r)["podName"]
 // 	grpcReq := new(grpc.WatchLogsRequest)
@@ -1328,8 +1378,9 @@ func (h *functionHandler) listPods(annotations map[string]string,
 	respond(w, resp, err)
 }
 
+// func (h *functionHandler) watchPods(w http.ResponseWriter, r *http.Request) {
 //
-// func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
+// }
 //
 // 	sn := mux.Vars(r)["serviceName"]
 // 	rn := mux.Vars(r)["revisionName"]
