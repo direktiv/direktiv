@@ -1714,10 +1714,17 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["ns"]
 	path, ref := pathAndRef(r)
 
+	input, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	in := &grpc.StartWorkflowRequest{
 		Namespace: namespace,
 		Path:      path,
 		Ref:       ref,
+		Input:     input,
 	}
 
 	resp, err := h.client.StartWorkflow(ctx, in)
@@ -2288,7 +2295,7 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	key := mux.Vars(r)["var"]
+	key := r.URL.Query().Get("var")
 
 	in := &grpc.WorkflowVariableRequest{
 		Namespace: namespace,
@@ -2336,7 +2343,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	key := mux.Vars(r)["var"]
+	key := r.URL.Query().Get("var")
 
 	var rdr io.Reader
 	rdr = r.Body
@@ -2398,7 +2405,7 @@ func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	key := mux.Vars(r)["var"]
+	key := r.URL.Query().Get("var")
 
 	in := &grpc.DeleteWorkflowVariableRequest{
 		Namespace: namespace,
