@@ -78,10 +78,20 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	go func() {
 		// timed-out instance retrier
+		<-time.After(1 * time.Minute)
 		ticker := time.NewTicker(5 * time.Minute)
 		for {
 			<-ticker.C
 			go flow.kickExpiredInstances()
+		}
+	}()
+
+	go func() {
+		// function heart-beats
+		ticker := time.NewTicker(10 * time.Minute)
+		for {
+			<-ticker.C
+			go flow.functionsHeartbeat()
 		}
 	}()
 
