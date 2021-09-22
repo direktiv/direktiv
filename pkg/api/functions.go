@@ -74,7 +74,6 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
 	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
@@ -95,6 +94,10 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// namespace
 	handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
 	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revision/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
+
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
@@ -382,6 +385,15 @@ func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.
 
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+	h.listServicesSSE(annotations, w, r)
+
+}
+
+func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
 	h.listServicesSSE(annotations, w, r)
 
@@ -1035,8 +1047,19 @@ func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Req
 	h.watchRevisions(svn, rev, functions.PrefixGlobal, w, r)
 }
 
+func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
+	h.watchRevisions(svn, rev, functions.PrefixNamespace, w, r)
+}
+
 func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
 	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	h.watchRevisions(svn, "", functions.PrefixGlobal, w, r)
+}
+
+func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixGlobal, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
 	h.watchRevisions(svn, "", functions.PrefixGlobal, w, r)
 }
 
