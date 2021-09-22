@@ -5,7 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 
+	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
+	entlog "github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -44,7 +48,80 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		flow.srv.Stop()
 	}()
 
+	go func() {
+		// instance garbage collector
+		ctx := context.Background()
+		<-time.After(2 * time.Minute)
+		for {
+			<-time.After(time.Hour)
+			t := time.Now().Add(time.Hour * -24)
+			_, err := flow.db.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %v", err))
+			}
+		}
+	}()
+
+	go func() {
+		// logs garbage collector
+		ctx := context.Background()
+		<-time.After(3 * time.Minute)
+		for {
+			<-time.After(time.Hour)
+			t := time.Now().Add(time.Hour * -24)
+			_, err := flow.db.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %v", err))
+			}
+		}
+	}()
+
+	go func() {
+		// timed-out instance retrier
+		ticker := time.NewTicker(5 * time.Minute)
+		for {
+			<-ticker.C
+			go flow.kickExpiredInstances()
+		}
+	}()
+
 	return flow, nil
+
+}
+
+func (flow *flow) kickExpiredInstances() {
+
+	ctx := context.Background()
+
+	t := time.Now().Add(-1 * time.Minute)
+
+	list, err := flow.db.InstanceRuntime.Query().
+		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
+		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(StatusPending))).
+		WithInstance().
+		All(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	for i := range list {
+
+		data, err := json.Marshal(&retryMessage{
+			InstanceID: list[i].Edges.Instance.ID.String(),
+			Step:       len(list[i].Flow),
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		err = flow.engine.retryWakeup(data)
+		if err != nil {
+			flow.sugar.Error(err)
+			continue
+		}
+
+	}
 
 }
 

@@ -321,7 +321,23 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 }
 
+func (engine *engine) setEndAt(im *instanceMemory) {
+
+	ctx := context.Background()
+
+	in, err := im.in.Update().SetEndAt(time.Now()).Save(ctx)
+	if err != nil {
+		engine.sugar.Error(err)
+	}
+
+	in.Edges = im.in.Edges
+	im.in = in
+
+}
+
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
+
+	engine.setEndAt(im)
 
 	engine.WakeInstanceCaller(ctx, im)
 	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
@@ -549,9 +565,9 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 type retryMessage struct {
 	InstanceID string
-	State      string
-	Step       int
-	Data       []byte
+	// State      string
+	Step int
+	Data []byte
 }
 
 const retryWakeupFunction = "retryWakeup"
@@ -560,9 +576,9 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 
 	data, _ = json.Marshal(&retryMessage{
 		InstanceID: id,
-		State:      state,
-		Step:       step,
-		Data:       data,
+		// State:      state,
+		Step: step,
+		Data: data,
 	})
 
 	if d := t.Sub(time.Now()); d < time.Second*5 {
