@@ -103,6 +103,55 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
+	// Registry ..
+	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	r.HandleFunc("/namespaces/{namespace}/registries/{reg}", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	r.HandleFunc("/namespaces/{namespace}/registries/{reg}", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+
+}
+
+func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["ns"]
+	reg := mux.Vars(r)["reg"]
+
+	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
+		Namespace: &n,
+		Name:      &reg,
+	})
+
+	respond(w, resp, err)
+}
+
+func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["ns"]
+	reg := mux.Vars(r)["reg"]
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+
+	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
+		Namespace: &n,
+		Name:      &reg,
+		Data:      []byte(d["data"]),
+	})
+
+	respond(w, resp, err)
+
+}
+
+func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["ns"]
+
+	var resp *grpc.GetRegistriesResponse
+	resp, err := h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
+		Namespace: &n,
+	})
+
+	respond(w, resp, err)
 }
 
 // import (
@@ -186,7 +235,13 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 // 	if svc != "" {
 // 		// Split namespaced service name
 // 		if strings.HasPrefix(svc, functions.PrefixNamespace) {
-// 			if strings.Count(svc, "-") < 2 {
+// 			if strings.Count(svc,
+// 	resp, err = h.s.functions.StoreRegistry(ctx, &grpc.StoreRegistryRequest{
+// 		Namespace: &n,
+// 		Name:      &st.Name,
+// 		Data:      []byte(st.Data),
+// 	})
+// "-") < 2 {
 // 				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
 // 			}
 //
@@ -987,8 +1042,6 @@ func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Re
 
 func (h *functionHandler) watchRevisions(svc, rev, scope string,
 	w http.ResponseWriter, r *http.Request) {
-
-	// logger.Debugf("API %v %v %v", svc, )
 
 	grpcReq := &grpc.WatchRevisionsRequest{
 		ServiceName:  &svc,
