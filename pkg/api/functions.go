@@ -71,7 +71,20 @@ func newFunctionHandler(logger *zap.SugaredLogger,
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
-	handlerPair(r, RN_ListPods, "/{svn}/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
+	handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
+
+	r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+
+	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+
+	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+
+	// s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
+	// s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
+
+	// handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}", h.listGlobalPods, h.listGlobalPodsSSE)
 
 	// swagger:operation GET /api/functions getFunctions
 	// ---
@@ -80,10 +93,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   "201":
 	//     "description": "service created"
-	//   "500":
-	//     "description": "internal error"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
-
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
@@ -91,12 +101,15 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/{svn}/revision/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
-	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateService)
-	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteServices)
-	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetService)
-	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateService)
-	r.HandleFunc("/namespaces/{ns}/services/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-	r.HandleFunc("/namespaces/{ns}/services/{svn}/revision/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
+	handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
+	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revision/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
+
+	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revision/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 }
 
@@ -300,6 +313,33 @@ func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Requ
 
 }
 
+func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
+	h.listServices(annotations, w, r)
+
+}
+
+func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
+	h.listServicesSSE(annotations, w, r)
+
+}
+
+func (h *functionHandler) listGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+	h.listServicesSSE(annotations, w, r)
+
+}
+
 func (h *functionHandler) listGlobalServicesSSE(w http.ResponseWriter, r *http.Request) {
 
 	annotations := make(map[string]string)
@@ -379,7 +419,6 @@ func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Req
 }
 
 func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.Request) {
-	logger.Infof("COMING IN!!!!!!!!!!!!!!!")
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
@@ -426,9 +465,65 @@ func (h *functionHandler) getGlobalService(w http.ResponseWriter, r *http.Reques
 		mux.Vars(r)["svn"]), w, r)
 }
 
+func (h *functionHandler) getGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	annotations[functions.ServiceHeaderName] = fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	h.getServiceSSE(annotations, w, r)
+}
+
 func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
 	h.getService(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
 		mux.Vars(r)["svn"]), w, r)
+}
+
+func (h *functionHandler) getServiceSSE(annotations map[string]string,
+	w http.ResponseWriter, r *http.Request) {
+
+	grpcReq := &grpcfunc.WatchFunctionsRequest{
+		Annotations: annotations,
+	}
+
+	fmt.Printf("STARTWATCHING API")
+	client, err := h.client.WatchFunctions(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+			fmt.Printf("STARTWATCHING API2")
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
 }
 
 func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.Request) {
@@ -886,8 +981,16 @@ func (h *functionHandler) deleteRevision(rev string,
 // 		}
 // 	}
 // }
-//
-// func (h *Handler) watchRevisions(w http.ResponseWriter, r *http.Request) {
+
+func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
+	// jens
+}
+
+func (h *functionHandler) watchRevisions(annotations map[string]string,
+	w http.ResponseWriter, r *http.Request) {
+	// jens
+}
+
 // 	sn := mux.Vars(r)["serviceName"]
 // 	rn := mux.Vars(r)["revisionName"]
 //
@@ -1021,17 +1124,29 @@ func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request)
 	h.listPods(annotations, w, r)
 }
 
+func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Request) {
+	annotations := make(map[string]string)
+	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
+		functions.PrefixNamespace, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
+	h.listPods(annotations, w, r)
+}
+
 func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
 	svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
 	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
 	h.listPodsSSE(svc, rev, w, r)
 }
 
+func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Request) {
+	svc := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
+	h.listPodsSSE(svc, rev, w, r)
+}
+
 func (h *functionHandler) listPodsSSE(svc, rev string,
 	w http.ResponseWriter, r *http.Request) {
-
-	// serving.knative.dev/revision=global-jensglobal7-00001
-	// serving.knative.dev/service=global-jensglobal7
 
 	grpcReq := &grpc.WatchPodsRequest{
 		ServiceName:  &svc,

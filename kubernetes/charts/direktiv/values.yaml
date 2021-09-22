@@ -19,7 +19,7 @@ opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
   address: ""
   # -- installs opentelemtry agent and collector
-  enabled: true
+  enabled: false
   # -- config for daemonset agent
   agentconfig: |
     # receivers:

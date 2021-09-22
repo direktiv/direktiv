@@ -64,10 +64,11 @@ const (
 	RN_SetNamespaceVariable   = "setNamespaceVariable"
 	RN_JQPlayground           = "jqPlayground"
 	RN_ListServices           = "listServices"
-	// RN_WatchServices                = "watchServices"
+	RN_ListNamespaceServices  = "listNamespacesServices"
+	RN_WatchServices          = "watchServices"
 	// RN_WatchInstanceServices        = "watchInstanceServices"
 	// RN_WatchNamespaceServices       = "watchNamespaceServices"
-	// RN_WatchRevisions               = "watchRevisions"
+	RN_WatchRevisions = "watchRevisions"
 	// RN_WatchNamespaceRevisions      = "watchNamespaceRevisions"
 	// RN_WatchPods                    = "watchPods"
 	// RN_WatchLogs                    = "watchLogs"
@@ -78,6 +79,14 @@ const (
 	RN_UpdateService        = "updateService"
 	RN_UpdateServiceTraffic = "updateServiceTraffic"
 	RN_DeleteService        = "deleteService"
+
+	RN_ListNamespacePods             = "listNamespacePods"
+	RN_CreateNamespaceService        = "createNamespaceService"
+	RN_DeleteNamespaceServices       = "deleteNamespaceService"
+	RN_GetNamespaceService           = "getNamespaceService"
+	RN_UpdateNamespaceService        = "updateNamespaceService"
+	RN_UpdateNamespaceServiceTraffic = "updateNamespaceServiceTraffic"
+	RN_DeleteNamespaceRevision       = "deleteNamespaceRevision"
 
 	// RN_GetWorkflowFunctions         = "getWorkflowFunctions"
 	// RN_namespaceWorkflowsInvoked    = "namespaceWorkflowsInvoked"
@@ -133,7 +142,8 @@ var RouteNames = []string{
 	// RN_SetNamespaceVariable,
 	// RN_JQPlayground,
 	RN_ListServices,
-	// RN_WatchServices,
+	RN_ListNamespaceServices,
+	RN_WatchServices,
 	RN_DeleteServices,
 	RN_GetService,
 	RN_CreateService,
@@ -144,5 +154,13 @@ var RouteNames = []string{
 	// RN_GetWorkflowFunctions,
 	// RN_WatchPods,
 	RN_ListPods,
-	// RN_WatchRevisions,
+	RN_ListNamespacePods,
+	RN_ListNamespacePods,
+	RN_CreateNamespaceService,
+	RN_DeleteNamespaceServices,
+	RN_GetNamespaceService,
+	RN_UpdateNamespaceService,
+	RN_UpdateNamespaceServiceTraffic,
+	RN_DeleteNamespaceRevision,
+	RN_WatchRevisions,
 }

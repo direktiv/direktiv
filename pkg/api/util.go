@@ -161,6 +161,7 @@ func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error)
 	w.WriteHeader(code)
 
 	if err != nil {
+		logger.Errorf("grpc error: %v", err.Error())
 		msg := http.StatusText(code)
 		http.Error(w, msg, code)
 		return
