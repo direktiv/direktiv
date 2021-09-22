@@ -1059,8 +1059,8 @@ func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Re
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
-	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixGlobal, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
-	h.watchRevisions(svn, "", functions.PrefixGlobal, w, r)
+	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+	h.watchRevisions(svn, "", functions.PrefixNamespace, w, r)
 }
 
 func (h *functionHandler) watchRevisions(svc, rev, scope string,
