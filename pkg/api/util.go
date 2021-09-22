@@ -178,16 +178,17 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 	if err != nil {
 
+		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
 		var msg string
-		if code < 500 {
-			msg = err.Error()
-		} else {
-			logger.Errorf("INTERNAL ERROR: %v", err)
-			msg = http.StatusText(code)
-		}
+		// if code < 500 {
+		// 	msg = err.Error()
+		// } else {
+		// 	msg = http.StatusText(code)
+		// }
 
+		msg = err.Error()
 		http.Error(w, msg, code)
 		return
 
@@ -347,11 +348,10 @@ func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{})
 
 func sseWrite(w http.ResponseWriter, flusher http.Flusher, data []byte) error {
 
-	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(data))))
+	_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", string(data))))
 	if err != nil {
 		return err
 	}
-
 	flusher.Flush()
 	return nil
 

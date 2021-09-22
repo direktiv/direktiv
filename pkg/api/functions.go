@@ -71,20 +71,13 @@ func newFunctionHandler(logger *zap.SugaredLogger,
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
-	handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
+	handlerPair(r, RN_ListPods, "/{svn}/revisions/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
-	r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
+	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
-	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
-	// s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
-	// s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
-
-	// handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}", h.listGlobalPods, h.listGlobalPodsSSE)
+	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
 	// swagger:operation GET /api/functions getFunctions
 	// ---
@@ -98,19 +91,94 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-	r.HandleFunc("/{svn}/revision/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
+	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
 	handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
-	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revision/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
+	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revisions/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
+
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
-	r.HandleFunc("/namespaces/{ns}/function/{svn}/revision/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
+	// workflow
+	// handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
+	// handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revision/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
+	//
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	//
+	// r.HandleFunc("/namespaces/{ns}/workflow/{wf}", h.createWorkflowService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
+	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
+
+	// Registry ..
+	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	r.HandleFunc("/namespaces/{ns}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	r.HandleFunc("/namespaces/{ns}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+
+}
+
+func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["ns"]
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
+		Namespace: &n,
+		Name:      &reg,
+	})
+
+	respond(w, resp, err)
+}
+
+func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request) {
+
+	n := mux.Vars(r)["ns"]
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
+		Namespace: &n,
+		Name:      &reg,
+		Data:      []byte(d["data"]),
+	})
+
+	respond(w, resp, err)
+
+}
+
+func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["ns"]
+
+	var resp *grpc.GetRegistriesResponse
+	resp, err := h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
+		Namespace: &n,
+	})
+
+	respond(w, resp, err)
 }
 
 // import (
@@ -194,7 +262,13 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 // 	if svc != "" {
 // 		// Split namespaced service name
 // 		if strings.HasPrefix(svc, functions.PrefixNamespace) {
-// 			if strings.Count(svc, "-") < 2 {
+// 			if strings.Count(svc,
+// 	resp, err = h.s.functions.StoreRegistry(ctx, &grpc.StoreRegistryRequest{
+// 		Namespace: &n,
+// 		Name:      &st.Name,
+// 		Data:      []byte(st.Data),
+// 	})
+// "-") < 2 {
 // 				return nil, fmt.Errorf("service name is incorrect format, does not include scope and name")
 // 			}
 //
@@ -331,10 +405,19 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 
 }
 
-func (h *functionHandler) listGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
 
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
+	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
+	h.listServicesSSE(annotations, w, r)
+
+}
+
+func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *http.Request) {
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
 	h.listServicesSSE(annotations, w, r)
 
@@ -484,7 +567,6 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	fmt.Printf("STARTWATCHING API")
 	client, err := h.client.WatchFunctions(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
@@ -510,7 +592,6 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		defer close(ch)
 
 		for {
-			fmt.Printf("STARTWATCHING API2")
 			x, err := client.Recv()
 			if err != nil {
 				ch <- err
@@ -982,13 +1063,77 @@ func (h *functionHandler) deleteRevision(rev string,
 // 	}
 // }
 
-func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
-	// jens
+func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
+	h.watchRevisions(svn, rev, functions.PrefixGlobal, w, r)
 }
 
-func (h *functionHandler) watchRevisions(annotations map[string]string,
+func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
+	h.watchRevisions(svn, rev, functions.PrefixNamespace, w, r)
+}
+
+func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	h.watchRevisions(svn, "", functions.PrefixGlobal, w, r)
+}
+
+func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
+	h.watchRevisions(svn, "", functions.PrefixNamespace, w, r)
+}
+
+func (h *functionHandler) watchRevisions(svc, rev, scope string,
 	w http.ResponseWriter, r *http.Request) {
-	// jens
+
+	grpcReq := &grpc.WatchRevisionsRequest{
+		ServiceName:  &svc,
+		RevisionName: &rev,
+		Scope:        &scope,
+	}
+
+	client, err := h.client.WatchRevisions(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
 }
 
 // 	sn := mux.Vars(r)["serviceName"]
@@ -1056,7 +1201,55 @@ func (h *functionHandler) watchRevisions(annotations map[string]string,
 // 	}
 // }
 //
-// func (h *Handler) watchLogs(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
+
+	sn := mux.Vars(r)["pod"]
+	grpcReq := new(grpc.WatchLogsRequest)
+	grpcReq.PodName = &sn
+
+	client, err := h.client.WatchLogs(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
+}
+
 //
 // 	sn := mux.Vars(r)["podName"]
 // 	grpcReq := new(grpc.WatchLogsRequest)
@@ -1205,8 +1398,9 @@ func (h *functionHandler) listPods(annotations map[string]string,
 	respond(w, resp, err)
 }
 
+// func (h *functionHandler) watchPods(w http.ResponseWriter, r *http.Request) {
 //
-// func (h *Handler) watchPods(w http.ResponseWriter, r *http.Request) {
+// }
 //
 // 	sn := mux.Vars(r)["serviceName"]
 // 	rn := mux.Vars(r)["revisionName"]

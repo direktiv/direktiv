@@ -84,6 +84,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
 	pathHandler(r, http.MethodPost, RN_DiscardWorkflow, "discard-workflow", h.DiscardWorkflow)
 	pathHandler(r, http.MethodDelete, RN_DeleteNode, "delete-node", h.DeleteNode)
+
+	pathHandler(r, http.MethodPut, RN_CreateNodeAttributes, "create-node-attributes", h.CreateNodeAttributes)
+	pathHandler(r, http.MethodDelete, RN_DeleteNodeAttributes, "delete-node-attributes", h.DeleteNodeAttributes)
+
 	pathHandlerPair(r, RN_GetWorkflowTags, "tags", h.GetTags, h.GetTagsSSE)
 	pathHandlerPair(r, RN_GetWorkflowRefs, "refs", h.GetRefs, h.GetRefsSSE)
 	pathHandlerPair(r, RN_GetWorkflowRefs, "revisions", h.GetRevisions, h.GetRevisionsSSE)
@@ -1168,6 +1172,50 @@ func (h *flowHandler) DeleteRevision(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.client.DeleteRevision(ctx, in)
 	respond(w, resp, err)
 
+}
+
+func (h *flowHandler) CreateNodeAttributes(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := new(grpc.CreateNodeAttributesRequest)
+
+	err := unmarshalBody(r, in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in.Namespace = namespace
+	in.Path = path
+
+	resp, err := h.client.CreateNodeAttributes(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) DeleteNodeAttributes(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := new(grpc.DeleteNodeAttributesRequest)
+
+	err := unmarshalBody(r, in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in.Namespace = namespace
+	in.Path = path
+
+	resp, err := h.client.DeleteNodeAttributes(ctx, in)
+	respond(w, resp, err)
 }
 
 func (h *flowHandler) Tag(w http.ResponseWriter, r *http.Request) {

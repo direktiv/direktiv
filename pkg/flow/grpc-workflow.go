@@ -165,6 +165,8 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	// CREATE HERE
+
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Created workflow '%s'.", path)
 	flow.pubsub.NotifyInode(d.ino)
 
