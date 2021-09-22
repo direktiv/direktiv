@@ -23,6 +23,8 @@ type Server struct {
 	//handlers
 	functionHandler *functionHandler
 	flowHandler     *flowHandler
+
+	telend func()
 }
 
 // NewServer return new API server
@@ -48,16 +50,25 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	}
 	s.config = conf
 
+	logger.Debug("Initializing telemetry.")
+	s.telend, err = util.InitTelemetry(s.config, "direktiv", "direktiv/api")
+	if err != nil {
+		return nil, err
+	}
+	r.Use(util.TelemetryMiddleware)
+
 	s.functionHandler, err = newFunctionHandler(logger,
 		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
 	if err != nil {
 		logger.Error("can not get functions handler: %v", err)
+		s.telend()
 		return nil, err
 	}
 
 	s.flowHandler, err = newFlowHandler(logger, r, s.config.FlowService)
 	if err != nil {
 		logger.Error("can not get flow handler: %v", err)
+		s.telend()
 		return nil, err
 	}
 
@@ -69,6 +80,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 
 // Start starts API server
 func (s *Server) Start() error {
+	defer s.telend()
 	logger.Infof("start listening")
 	return s.srv.ListenAndServe()
 }

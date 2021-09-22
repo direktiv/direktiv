@@ -3,8 +3,10 @@ package util
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp"
@@ -18,6 +20,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
+
+var TelemetryMiddleware = func(h http.Handler) http.Handler {
+	return h
+}
 
 var telemetryUnaryServerInterceptor grpc.UnaryServerInterceptor
 var telemetryStreamServerInterceptor grpc.StreamServerInterceptor
@@ -191,6 +197,8 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 
 	telemetryStreamServerInterceptor = func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 
+		ctx := ss.Context()
+
 		prop := otel.GetTextMapPropagator()
 		requestMetadata, _ := metadata.FromIncomingContext(ctx)
 		metadataCopy := requestMetadata.Copy()
@@ -213,7 +221,41 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 
 	}
 
+	TelemetryMiddleware = func(h http.Handler) http.Handler {
+		return &telemetryHandler{
+			imName: imName,
+			next:   h,
+		}
+	}
+
 	return telemetryWaiter(tp, bsp), nil
+
+}
+
+type telemetryHandler struct {
+	imName string
+	next   http.Handler
+}
+
+func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	prop := otel.GetTextMapPropagator()
+	requestMetadata, _ := metadata.FromIncomingContext(ctx)
+	metadataCopy := requestMetadata.Copy()
+	carrier := &grpcMetadataTMC{&metadataCopy}
+	ctx = prop.Extract(ctx, carrier)
+
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer(h.imName)
+
+	ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	subr := r.WithContext(ctx)
+
+	h.next.ServeHTTP(w, subr)
 
 }
 
