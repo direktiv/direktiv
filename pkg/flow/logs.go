@@ -10,6 +10,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func logsOrder(p *pagination) ent.LogMsgPaginateOption {
@@ -58,6 +59,8 @@ func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a .
 
 	msg = fmt.Sprintf(msg, a...)
 
+	util.Trace(ctx, msg)
+
 	_, err := logc.Create().SetMsg(msg).SetT(t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
@@ -73,6 +76,8 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Name
 	logc := srv.db.LogMsg
 
 	msg = fmt.Sprintf(msg, a...)
+
+	util.Trace(ctx, msg)
 
 	_, err := logc.Create().SetMsg(msg).SetNamespace(ns).SetT(t).Save(ctx)
 	if err != nil {
@@ -90,6 +95,8 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, wf *ent.Workf
 
 	msg = fmt.Sprintf(msg, a...)
 
+	util.Trace(ctx, msg)
+
 	_, err := logc.Create().SetMsg(msg).SetWorkflow(wf).SetT(t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
@@ -105,6 +112,8 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 	logc := srv.db.LogMsg
 
 	msg = fmt.Sprintf(msg, a...)
+
+	util.Trace(ctx, msg)
 
 	_, err := logc.Create().SetMsg(msg).SetInstance(in).SetT(t).Save(ctx)
 	if err != nil {

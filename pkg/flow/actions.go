@@ -44,22 +44,9 @@ func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
 		return nil, err
 	}
 
-	actions.srv = libgrpc.NewServer(
-		libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-			resp, err = handler(ctx, req)
-			if err != nil {
-				return nil, translateError(err)
-			}
-			return resp, nil
-		}),
-		libgrpc.StreamInterceptor(func(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-			err := handler(srv, ss)
-			if err != nil {
-				return translateError(err)
-			}
-			return nil
-		}),
-	)
+	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+
+	actions.srv = libgrpc.NewServer(opts...)
 
 	grpc.RegisterActionsServer(actions.srv, actions)
 	reflection.Register(actions.srv)

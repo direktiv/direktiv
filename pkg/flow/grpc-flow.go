@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -31,22 +32,9 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		return nil, err
 	}
 
-	flow.srv = libgrpc.NewServer(
-		libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-			resp, err = handler(ctx, req)
-			if err != nil {
-				return nil, translateError(err)
-			}
-			return resp, nil
-		}),
-		libgrpc.StreamInterceptor(func(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-			err := handler(srv, ss)
-			if err != nil {
-				return translateError(err)
-			}
-			return nil
-		}),
-	)
+	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+
+	flow.srv = libgrpc.NewServer(opts...)
 
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
