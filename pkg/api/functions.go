@@ -105,14 +105,23 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	// Registry ..
 	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
-	r.HandleFunc("/namespaces/{namespace}/registries/{reg}", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
-	r.HandleFunc("/namespaces/{namespace}/registries/{reg}", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+	r.HandleFunc("/namespaces/{namespace}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	r.HandleFunc("/namespaces/{namespace}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 }
 
 func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
 	n := mux.Vars(r)["ns"]
-	reg := mux.Vars(r)["reg"]
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	fmt.Println(reg)
 
 	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
 		Namespace: &n,
@@ -124,7 +133,6 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 
 func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request) {
 	n := mux.Vars(r)["ns"]
-	reg := mux.Vars(r)["reg"]
 
 	d := make(map[string]string)
 
@@ -132,6 +140,9 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		respond(w, nil, err)
 	}
+	reg := d["reg"]
+
+	fmt.Println(reg)
 
 	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
 		Namespace: &n,
