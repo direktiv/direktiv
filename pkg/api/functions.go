@@ -110,8 +110,8 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	// Registry ..
 	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
-	r.HandleFunc("/namespaces/{namespace}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
-	r.HandleFunc("/namespaces/{namespace}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+	r.HandleFunc("/namespaces/{ns}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	r.HandleFunc("/namespaces/{ns}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 }
 
@@ -126,8 +126,6 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	fmt.Println(reg)
-
 	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
 		Namespace: &n,
 		Name:      &reg,
@@ -137,8 +135,8 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request) {
-	n := mux.Vars(r)["ns"]
 
+	n := mux.Vars(r)["ns"]
 	d := make(map[string]string)
 
 	err := json.NewDecoder(r.Body).Decode(&d)
@@ -146,8 +144,6 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 		respond(w, nil, err)
 	}
 	reg := d["reg"]
-
-	fmt.Println(reg)
 
 	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
 		Namespace: &n,
@@ -556,7 +552,6 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	fmt.Printf("STARTWATCHING API")
 	client, err := h.client.WatchFunctions(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
@@ -582,7 +577,6 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		defer close(ch)
 
 		for {
-			fmt.Printf("STARTWATCHING API2")
 			x, err := client.Recv()
 			if err != nil {
 				ch <- err
