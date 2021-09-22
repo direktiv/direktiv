@@ -43,14 +43,6 @@ spec:
         volumeMounts:
         - name: otel-agent-config-vol
           mountPath: /conf
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 0.0.0.0:13133 # Health Check extension default port.
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 0.0.0.0:13133 # Health Check extension default port.
       volumes:
         - configMap:
             name: {{ include "direktiv.fullname" . }}-otel-agent-config
