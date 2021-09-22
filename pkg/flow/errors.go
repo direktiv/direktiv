@@ -159,6 +159,11 @@ func translateError(err error) error {
 
 	}
 
+	if strings.Contains(err.Error(), "already exists") {
+		err = status.Error(codes.AlreadyExists, "resource already exists")
+		return err
+	}
+
 	fmt.Println("TRANSLATE", err)
 
 	return err

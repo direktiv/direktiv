@@ -62,9 +62,6 @@ spec:
             - name: metrics
               containerPort: 9998
               protocol: TCP
-            - name: vars
-              containerPort: 9999
-              protocol: TCP
           env:
           - name: DIREKTIV_NODE_IP
             valueFrom:

@@ -382,6 +382,8 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 
 	labels := labels.Set(l).String()
 
+	logger.Debugf("LABESL %v", labels)
+
 	for {
 		if done, err := is.watcherFunctions(cs, labels, out); err != nil {
 			logger.Errorf("function watcher channel failed to restart: %s", err.Error())

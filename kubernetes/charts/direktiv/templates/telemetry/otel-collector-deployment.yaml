@@ -47,14 +47,6 @@ spec:
           mountPath: /conf
 #        - name: otel-collector-secrets
 #          mountPath: /secrets
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 13133 # Health Check extension default port.
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 13133 # Health Check extension default port.
       volumes:
         - configMap:
             name: {{ include "direktiv.fullname" . }}-otel-collector-config
