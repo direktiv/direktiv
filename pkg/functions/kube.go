@@ -382,8 +382,6 @@ func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out i
 
 	labels := labels.Set(l).String()
 
-	logger.Debugf("LABESL %v", labels)
-
 	for {
 		if done, err := is.watcherFunctions(cs, labels, out); err != nil {
 			logger.Errorf("function watcher channel failed to restart: %s", err.Error())
@@ -493,11 +491,12 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 	}
 
 	l := map[string]string{
-		ServiceKnativeHeaderName: *in.ServiceName,
+		ServiceKnativeHeaderName: in.GetServiceName(),
+		ServiceHeaderScope:       in.GetScope(),
 	}
 
 	if in.GetRevisionName() != "" {
-		revisionFilter = *in.RevisionName
+		revisionFilter = in.GetRevisionName()
 	}
 
 	labels := labels.Set(l).String()
@@ -518,6 +517,9 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 
 func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.FunctionsService_WatchRevisionsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
+
+	logger.Debugf(">> %v %v", labels, revisionFilter)
+
 	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector:  labels,
 		TimeoutSeconds: &timeout,

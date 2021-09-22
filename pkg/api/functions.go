@@ -73,18 +73,10 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
 	handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
-	r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
-	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// r.HandleFunc("/{svn}", h.listGlobalServiceSSE).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
-	// s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
-	// s.Router().HandleFunc("/api/watch/functions/{serviceName}/revisions/{revisionName}", s.handler.watchRevisions).Methods(http.MethodGet).Name(RN_WatchRevisions)
-
-	// handlerPair(r, RN_ListPods, "/{svn}/revision/{rev}", h.listGlobalPods, h.listGlobalPodsSSE)
+	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	// swagger:operation GET /api/functions getFunctions
 	// ---
@@ -109,7 +101,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
-	r.HandleFunc("/namespaces/{ns}/function/{svn}/revision/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 }
 
@@ -331,7 +323,7 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 
 }
 
-func (h *functionHandler) listGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
+func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
 
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
@@ -982,13 +974,68 @@ func (h *functionHandler) deleteRevision(rev string,
 // 	}
 // }
 
-func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
-	// jens
+func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	rev := fmt.Sprintf("%s-%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
+	h.watchRevisions(svn, rev, functions.PrefixGlobal, w, r)
 }
 
-func (h *functionHandler) watchRevisions(annotations map[string]string,
+func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
+	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
+	h.watchRevisions(svn, "", functions.PrefixGlobal, w, r)
+}
+
+func (h *functionHandler) watchRevisions(svc, rev, scope string,
 	w http.ResponseWriter, r *http.Request) {
-	// jens
+
+	// logger.Debugf("API %v %v %v", svc, )
+
+	grpcReq := &grpc.WatchRevisionsRequest{
+		ServiceName:  &svc,
+		RevisionName: &rev,
+		Scope:        &scope,
+	}
+
+	client, err := h.client.WatchRevisions(r.Context(), grpcReq)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	ch := make(chan interface{}, 1)
+
+	defer func() {
+
+		_ = client.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := client.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+
 }
 
 // 	sn := mux.Vars(r)["serviceName"]
