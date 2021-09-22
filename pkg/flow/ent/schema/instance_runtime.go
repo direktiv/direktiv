@@ -27,6 +27,8 @@ func (InstanceRuntime) Fields() []ent.Field {
 		field.Time("deadline").Optional(),
 		field.Int("attempts").Optional(),
 		field.String("caller_data").Optional(),
+		field.String("instanceContext").Optional(),
+		field.String("stateContext").Optional(),
 	}
 }
 

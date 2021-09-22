@@ -211,7 +211,7 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		ctx, span := tr.Start(ctx, info.FullMethod, trace.WithSpanKind(trace.SpanKindServer))
 		defer span.End()
 
-		err = handler(ctx, ss)
+		err = handler(srv, ss)
 		if err != nil {
 			s, _ := status.FromError(err)
 			span.SetStatus(codes.Code(s.Code()), s.Message())

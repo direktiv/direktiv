@@ -3835,6 +3835,8 @@ type InstanceRuntimeMutation struct {
 	attempts        *int
 	addattempts     *int
 	caller_data     *string
+	instanceContext *string
+	stateContext    *string
 	clearedFields   map[string]struct{}
 	instance        *uuid.UUID
 	clearedinstance bool
@@ -4415,6 +4417,104 @@ func (m *InstanceRuntimeMutation) ResetCallerData() {
 	delete(m.clearedFields, instanceruntime.FieldCallerData)
 }
 
+// SetInstanceContext sets the "instanceContext" field.
+func (m *InstanceRuntimeMutation) SetInstanceContext(s string) {
+	m.instanceContext = &s
+}
+
+// InstanceContext returns the value of the "instanceContext" field in the mutation.
+func (m *InstanceRuntimeMutation) InstanceContext() (r string, exists bool) {
+	v := m.instanceContext
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceContext returns the old "instanceContext" field's value of the InstanceRuntime entity.
+// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceRuntimeMutation) OldInstanceContext(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldInstanceContext is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldInstanceContext requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceContext: %w", err)
+	}
+	return oldValue.InstanceContext, nil
+}
+
+// ClearInstanceContext clears the value of the "instanceContext" field.
+func (m *InstanceRuntimeMutation) ClearInstanceContext() {
+	m.instanceContext = nil
+	m.clearedFields[instanceruntime.FieldInstanceContext] = struct{}{}
+}
+
+// InstanceContextCleared returns if the "instanceContext" field was cleared in this mutation.
+func (m *InstanceRuntimeMutation) InstanceContextCleared() bool {
+	_, ok := m.clearedFields[instanceruntime.FieldInstanceContext]
+	return ok
+}
+
+// ResetInstanceContext resets all changes to the "instanceContext" field.
+func (m *InstanceRuntimeMutation) ResetInstanceContext() {
+	m.instanceContext = nil
+	delete(m.clearedFields, instanceruntime.FieldInstanceContext)
+}
+
+// SetStateContext sets the "stateContext" field.
+func (m *InstanceRuntimeMutation) SetStateContext(s string) {
+	m.stateContext = &s
+}
+
+// StateContext returns the value of the "stateContext" field in the mutation.
+func (m *InstanceRuntimeMutation) StateContext() (r string, exists bool) {
+	v := m.stateContext
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateContext returns the old "stateContext" field's value of the InstanceRuntime entity.
+// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceRuntimeMutation) OldStateContext(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStateContext is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStateContext requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateContext: %w", err)
+	}
+	return oldValue.StateContext, nil
+}
+
+// ClearStateContext clears the value of the "stateContext" field.
+func (m *InstanceRuntimeMutation) ClearStateContext() {
+	m.stateContext = nil
+	m.clearedFields[instanceruntime.FieldStateContext] = struct{}{}
+}
+
+// StateContextCleared returns if the "stateContext" field was cleared in this mutation.
+func (m *InstanceRuntimeMutation) StateContextCleared() bool {
+	_, ok := m.clearedFields[instanceruntime.FieldStateContext]
+	return ok
+}
+
+// ResetStateContext resets all changes to the "stateContext" field.
+func (m *InstanceRuntimeMutation) ResetStateContext() {
+	m.stateContext = nil
+	delete(m.clearedFields, instanceruntime.FieldStateContext)
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by id.
 func (m *InstanceRuntimeMutation) SetInstanceID(id uuid.UUID) {
 	m.instance = &id
@@ -4512,7 +4612,7 @@ func (m *InstanceRuntimeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InstanceRuntimeMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 12)
 	if m.input != nil {
 		fields = append(fields, instanceruntime.FieldInput)
 	}
@@ -4543,6 +4643,12 @@ func (m *InstanceRuntimeMutation) Fields() []string {
 	if m.caller_data != nil {
 		fields = append(fields, instanceruntime.FieldCallerData)
 	}
+	if m.instanceContext != nil {
+		fields = append(fields, instanceruntime.FieldInstanceContext)
+	}
+	if m.stateContext != nil {
+		fields = append(fields, instanceruntime.FieldStateContext)
+	}
 	return fields
 }
 
@@ -4571,6 +4677,10 @@ func (m *InstanceRuntimeMutation) Field(name string) (ent.Value, bool) {
 		return m.Attempts()
 	case instanceruntime.FieldCallerData:
 		return m.CallerData()
+	case instanceruntime.FieldInstanceContext:
+		return m.InstanceContext()
+	case instanceruntime.FieldStateContext:
+		return m.StateContext()
 	}
 	return nil, false
 }
@@ -4600,6 +4710,10 @@ func (m *InstanceRuntimeMutation) OldField(ctx context.Context, name string) (en
 		return m.OldAttempts(ctx)
 	case instanceruntime.FieldCallerData:
 		return m.OldCallerData(ctx)
+	case instanceruntime.FieldInstanceContext:
+		return m.OldInstanceContext(ctx)
+	case instanceruntime.FieldStateContext:
+		return m.OldStateContext(ctx)
 	}
 	return nil, fmt.Errorf("unknown InstanceRuntime field %s", name)
 }
@@ -4679,6 +4793,20 @@ func (m *InstanceRuntimeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCallerData(v)
 		return nil
+	case instanceruntime.FieldInstanceContext:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceContext(v)
+		return nil
+	case instanceruntime.FieldStateContext:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateContext(v)
+		return nil
 	}
 	return fmt.Errorf("unknown InstanceRuntime field %s", name)
 }
@@ -4748,6 +4876,12 @@ func (m *InstanceRuntimeMutation) ClearedFields() []string {
 	if m.FieldCleared(instanceruntime.FieldCallerData) {
 		fields = append(fields, instanceruntime.FieldCallerData)
 	}
+	if m.FieldCleared(instanceruntime.FieldInstanceContext) {
+		fields = append(fields, instanceruntime.FieldInstanceContext)
+	}
+	if m.FieldCleared(instanceruntime.FieldStateContext) {
+		fields = append(fields, instanceruntime.FieldStateContext)
+	}
 	return fields
 }
 
@@ -4786,6 +4920,12 @@ func (m *InstanceRuntimeMutation) ClearField(name string) error {
 	case instanceruntime.FieldCallerData:
 		m.ClearCallerData()
 		return nil
+	case instanceruntime.FieldInstanceContext:
+		m.ClearInstanceContext()
+		return nil
+	case instanceruntime.FieldStateContext:
+		m.ClearStateContext()
+		return nil
 	}
 	return fmt.Errorf("unknown InstanceRuntime nullable field %s", name)
 }
@@ -4823,6 +4963,12 @@ func (m *InstanceRuntimeMutation) ResetField(name string) error {
 		return nil
 	case instanceruntime.FieldCallerData:
 		m.ResetCallerData()
+		return nil
+	case instanceruntime.FieldInstanceContext:
+		m.ResetInstanceContext()
+		return nil
+	case instanceruntime.FieldStateContext:
+		m.ResetStateContext()
 		return nil
 	}
 	return fmt.Errorf("unknown InstanceRuntime field %s", name)

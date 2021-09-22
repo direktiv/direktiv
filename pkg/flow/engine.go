@@ -147,6 +147,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	im.Unwrap()
 
+	ctx, err = traceFullAddWorkflowInstance(ctx, d, im)
+	if err != nil {
+		return nil, err
+	}
+
 	t := time.Now()
 	engine.pubsub.NotifyInstances(d.ns())
 	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
@@ -281,6 +286,12 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	im.SetMemory(nil)
 
+	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
+	if err != nil {
+		return
+	}
+	defer cleanup()
+
 	rt, err = rt.Update().
 		SetFlow(flow).
 		SetController(engine.pubsub.hostname).
@@ -353,6 +364,13 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	var code string
 	var transition *stateTransition
 
+	ctx, cleanup, e2 := traceStateGenericLogicThread(ctx, im)
+	if e2 != nil {
+		err = e2
+		goto failure
+	}
+	defer cleanup()
+
 	if err != nil {
 		goto failure
 	}
@@ -389,6 +407,8 @@ next:
 	return
 
 failure:
+
+	traceStateError(ctx, err)
 
 	var breaker int
 
@@ -556,6 +576,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		engine.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return "", err
 	}
+
+	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
 	engine.queue(im)
 
@@ -937,7 +959,14 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 
 	engine.sugar.Debugf("Handling events wakeup: %s", this())
 
-	go engine.runState(ctx, im, wakedata, nil)
+	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
+	if err != nil {
+		engine.CrashInstance(ctx, im, err)
+		return
+	}
+	defer cleanup()
+
+	engine.runState(ctx, im, wakedata, nil)
 
 }
 
@@ -975,6 +1004,8 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 
 	args.Input = input
 	args.Caller = "cloudevent" // TODO: human readable
+
+	// TODO: TRACE traceEventsInvoked
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {

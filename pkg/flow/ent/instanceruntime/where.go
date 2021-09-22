@@ -157,6 +157,20 @@ func CallerData(v string) predicate.InstanceRuntime {
 	})
 }
 
+// InstanceContext applies equality check predicate on the "instanceContext" field. It's identical to InstanceContextEQ.
+func InstanceContext(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInstanceContext), v))
+	})
+}
+
+// StateContext applies equality check predicate on the "stateContext" field. It's identical to StateContextEQ.
+func StateContext(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStateContext), v))
+	})
+}
+
 // InputEQ applies the EQ predicate on the "input" field.
 func InputEQ(v []byte) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
@@ -1125,6 +1139,256 @@ func CallerDataEqualFold(v string) predicate.InstanceRuntime {
 func CallerDataContainsFold(v string) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldCallerData), v))
+	})
+}
+
+// InstanceContextEQ applies the EQ predicate on the "instanceContext" field.
+func InstanceContextEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextNEQ applies the NEQ predicate on the "instanceContext" field.
+func InstanceContextNEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextIn applies the In predicate on the "instanceContext" field.
+func InstanceContextIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldInstanceContext), v...))
+	})
+}
+
+// InstanceContextNotIn applies the NotIn predicate on the "instanceContext" field.
+func InstanceContextNotIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldInstanceContext), v...))
+	})
+}
+
+// InstanceContextGT applies the GT predicate on the "instanceContext" field.
+func InstanceContextGT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextGTE applies the GTE predicate on the "instanceContext" field.
+func InstanceContextGTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextLT applies the LT predicate on the "instanceContext" field.
+func InstanceContextLT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextLTE applies the LTE predicate on the "instanceContext" field.
+func InstanceContextLTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextContains applies the Contains predicate on the "instanceContext" field.
+func InstanceContextContains(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextHasPrefix applies the HasPrefix predicate on the "instanceContext" field.
+func InstanceContextHasPrefix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextHasSuffix applies the HasSuffix predicate on the "instanceContext" field.
+func InstanceContextHasSuffix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextIsNil applies the IsNil predicate on the "instanceContext" field.
+func InstanceContextIsNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldInstanceContext)))
+	})
+}
+
+// InstanceContextNotNil applies the NotNil predicate on the "instanceContext" field.
+func InstanceContextNotNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldInstanceContext)))
+	})
+}
+
+// InstanceContextEqualFold applies the EqualFold predicate on the "instanceContext" field.
+func InstanceContextEqualFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldInstanceContext), v))
+	})
+}
+
+// InstanceContextContainsFold applies the ContainsFold predicate on the "instanceContext" field.
+func InstanceContextContainsFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldInstanceContext), v))
+	})
+}
+
+// StateContextEQ applies the EQ predicate on the "stateContext" field.
+func StateContextEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextNEQ applies the NEQ predicate on the "stateContext" field.
+func StateContextNEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextIn applies the In predicate on the "stateContext" field.
+func StateContextIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldStateContext), v...))
+	})
+}
+
+// StateContextNotIn applies the NotIn predicate on the "stateContext" field.
+func StateContextNotIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldStateContext), v...))
+	})
+}
+
+// StateContextGT applies the GT predicate on the "stateContext" field.
+func StateContextGT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextGTE applies the GTE predicate on the "stateContext" field.
+func StateContextGTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextLT applies the LT predicate on the "stateContext" field.
+func StateContextLT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextLTE applies the LTE predicate on the "stateContext" field.
+func StateContextLTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextContains applies the Contains predicate on the "stateContext" field.
+func StateContextContains(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextHasPrefix applies the HasPrefix predicate on the "stateContext" field.
+func StateContextHasPrefix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextHasSuffix applies the HasSuffix predicate on the "stateContext" field.
+func StateContextHasSuffix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextIsNil applies the IsNil predicate on the "stateContext" field.
+func StateContextIsNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStateContext)))
+	})
+}
+
+// StateContextNotNil applies the NotNil predicate on the "stateContext" field.
+func StateContextNotNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStateContext)))
+	})
+}
+
+// StateContextEqualFold applies the EqualFold predicate on the "stateContext" field.
+func StateContextEqualFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldStateContext), v))
+	})
+}
+
+// StateContextContainsFold applies the ContainsFold predicate on the "stateContext" field.
+func StateContextContainsFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldStateContext), v))
 	})
 }
 

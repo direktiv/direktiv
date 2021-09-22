@@ -62,12 +62,14 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
-	wakedata, err := json.Marshal(&actionResultPayload{
+	payload := &actionResultPayload{
 		ActionID:     req.GetActionId(),
 		ErrorCode:    req.GetErrorCode(),
 		ErrorMessage: req.GetErrorMessage(),
 		Output:       req.GetOutput(),
-	})
+	}
+
+	wakedata, err := json.Marshal(payload)
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err
@@ -80,6 +82,8 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 	}
 
 	internal.sugar.Debugf("Handling report action results: %s", this())
+
+	traceActionResult(ctx, payload)
 
 	go internal.engine.runState(ctx, im, wakedata, nil)
 
