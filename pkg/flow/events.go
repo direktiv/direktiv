@@ -545,7 +545,7 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
-func (flow *flow) BroadcastEvent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
+func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
 
 	namespace := in.GetNamespace()
 	rawevent := in.GetCloudevent()

@@ -69,6 +69,7 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 	// create secret data, needs to be attached to service account
 	userToken := strings.SplitN(string(in.Data), ":", 2)
 	if len(userToken) != 2 {
+		logger.Errorf("invalid username/token format for registry")
 		return nil, fmt.Errorf("invalid username/token format")
 	}
 

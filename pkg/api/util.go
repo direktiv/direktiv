@@ -156,13 +156,42 @@ func badRequest(w http.ResponseWriter, err error) {
 	return
 }
 
-func respond(w http.ResponseWriter, resp interface{}, err error) {
+func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error) {
+
+	w.WriteHeader(code)
 
 	if err != nil {
-		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
+		logger.Errorf("grpc error: %v", err.Error())
 		msg := http.StatusText(code)
 		http.Error(w, msg, code)
 		return
+	}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func respond(w http.ResponseWriter, resp interface{}, err error) {
+
+	if err != nil {
+
+		// TODO fix grpc to send back useful error code for http translation
+		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
+
+		var msg string
+		// if code < 500 {
+		// 	msg = err.Error()
+		// } else {
+		// 	msg = http.StatusText(code)
+		// }
+
+		msg = err.Error()
+		http.Error(w, msg, code)
+		return
+
 	}
 
 	if resp == nil {
@@ -173,6 +202,7 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		goto nodata
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	marshal(w, resp, true)
 
 nodata:
@@ -318,11 +348,10 @@ func sseWriteJSON(w http.ResponseWriter, flusher http.Flusher, data interface{})
 
 func sseWrite(w http.ResponseWriter, flusher http.Flusher, data []byte) error {
 
-	_, err := w.Write([]byte(fmt.Sprintf("data: %s\n\n", string(data))))
+	_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", string(data))))
 	if err != nil {
 		return err
 	}
-
 	flusher.Flush()
 	return nil
 

@@ -62,10 +62,11 @@ spec:
             - name: metrics
               containerPort: 9998
               protocol: TCP
-            - name: vars
-              containerPort: 9999
-              protocol: TCP
           env:
+          - name: DIREKTIV_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SERVICE_NAMESPACE

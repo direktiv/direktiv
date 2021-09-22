@@ -90,12 +90,12 @@ func (srv *LocalServer) Start() {
 		return
 	}
 
-	err = srv.initPubSub()
-	if err != nil {
-		log.Errorf("Localhost server unable to set up pub/sub: %v", err)
-		Shutdown(ERROR)
-		return
-	}
+	// err = srv.initPubSub()
+	// if err != nil {
+	// 	log.Errorf("Localhost server unable to set up pub/sub: %v", err)
+	// 	Shutdown(ERROR)
+	// 	return
+	// }
 
 	srv.queue = make(chan *inboundRequest, 100)
 	srv.requests = make(map[string]*activeRequest)

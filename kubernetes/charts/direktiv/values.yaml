@@ -16,7 +16,9 @@ redis:
   storageClass: local-path
 
 opentelemetry:
-  # -- enable opentelemetry tracing
+  # -- opentelemetry address where Direktiv is sending data to
+  address: ""
+  # -- installs opentelemtry agent and collector
   enabled: false
   # -- config for daemonset agent
   agentconfig: |

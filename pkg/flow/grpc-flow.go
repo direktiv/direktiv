@@ -31,13 +31,22 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		return nil, err
 	}
 
-	flow.srv = libgrpc.NewServer(libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-		resp, err = handler(ctx, req)
-		if err != nil {
-			return nil, translateError(err)
-		}
-		return resp, nil
-	}))
+	flow.srv = libgrpc.NewServer(
+		libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
+			resp, err = handler(ctx, req)
+			if err != nil {
+				return nil, translateError(err)
+			}
+			return resp, nil
+		}),
+		libgrpc.StreamInterceptor(func(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
+			err := handler(srv, ss)
+			if err != nil {
+				return translateError(err)
+			}
+			return nil
+		}),
+	)
 
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)

@@ -51,10 +51,13 @@ message Revision {
 	optional int64 created = 7;
 
 	optional string status = 8;
-  	repeated Condition conditions = 9;
+  repeated Condition conditions = 9;
 
 	optional int64 traffic = 10;
 
 	int64 desiredReplicas = 11;
 	int64 actualReplicas = 12;
+
+	optional string rev = 13;
+
 }

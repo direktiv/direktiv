@@ -15,3 +15,10 @@ data:
       prometheus-backend: {{ include "direktiv.fullname" . }}-kube-prometheus-prometheus.{{ .Release.Namespace }}
       {{- end }}
       redis-backend: {{ .Values.redis.address }}
+      {{- if .Values.opentelemetry.address }}
+      opentelemetry-backend: {{ .Values.opentelemetry.address }}
+      {{- else if .Values.opentelemetry.enabled }}
+      opentelemetry-backend: host
+      {{- else }}
+      opentelemetry-backend: none
+      {{- end }}

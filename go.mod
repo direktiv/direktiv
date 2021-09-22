@@ -10,10 +10,10 @@ require (
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
-	github.com/fsnotify/fsnotify v1.4.9
+	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
-	github.com/gomodule/redigo v1.8.5 // indirect
+	github.com/gomodule/redigo v1.8.5
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
@@ -22,7 +22,7 @@ require (
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
-	github.com/norwoodj/helm-docs v1.6.0 // indirect
+	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/nxadm/tail v1.4.4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2 // indirect
@@ -41,9 +41,15 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.18.1
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
-	google.golang.org/genproto v0.0.0-20210624195500-8bfb893ecb84
-	google.golang.org/grpc v1.39.0
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/mod v0.5.0 // indirect
+	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
+	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678
+	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/tools v0.1.6 // indirect
+	google.golang.org/api v0.56.0 // indirect
+	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

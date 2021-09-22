@@ -85,6 +85,17 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./pkg/secrets/ent
 	go generate ./pkg/functions/ent
 
+
+# API docs
+
+.PHONY: api-docs
+api-docs: ## Generates API documentation
+api-docs:
+	go get -u github.com/go-swagger/go-swagger/cmd/swagger
+	cd pkg/api
+	swagger generate spec -o ./swagger.json
+	swagger generate markdown --output ./api.md
+
 # Helm docs
 
 .PHONY: helm-docs
