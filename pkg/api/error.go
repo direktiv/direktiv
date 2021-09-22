@@ -42,11 +42,14 @@ var grpcErrorHTTPCodeMap = map[codes.Code]int{
 
 // ConvertGRPCStatusCodeToHTTPCode - Convert Grpc Code errors to http response codes
 func ConvertGRPCStatusCodeToHTTPCode(code codes.Code) int {
+
 	if val, ok := grpcErrorHTTPCodeMap[code]; ok {
+
 		return val
 	}
 
 	return http.StatusInternalServerError
+
 }
 
 // GenerateErrObject - Unwrap grpc errors into ErrorObject

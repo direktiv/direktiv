@@ -334,6 +334,10 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
+	namespace := req.GetNamespace()
+	path := req.GetPath()
+	key := req.GetKey()
+
 	totalSize := int(req.GetTotalSize())
 
 	buf := new(bytes.Buffer)
@@ -353,6 +357,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 
 		req, err = srv.Recv()
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
 			return err
 		}
 
@@ -388,26 +395,26 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
-	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
+	d, err := flow.traverseToWorkflow(ctx, nsc, namespace, path)
 	if err != nil {
 		return err
 	}
 
 	var vdata *ent.VarData
 
-	vref, err := d.wf.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
+	vref, err := d.wf.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
 	if err != nil {
 
 		if !ent.IsNotFound(err) {
 			return err
 		}
 
-		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		vdata, err = vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
 		if err != nil {
 			return err
 		}
 
-		_, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(req.GetKey()).Save(ctx)
+		vref, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(key).Save(ctx)
 		if err != nil {
 			return err
 		}
@@ -419,7 +426,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 			return err
 		}
 
-		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
+		vdata, err = vdata.Update().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
 		if err != nil {
 			return err
 		}

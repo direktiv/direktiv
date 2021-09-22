@@ -142,11 +142,29 @@ func translateError(err error) error {
 	}
 
 	if _, ok := err.(*ent.ConstraintError); ok {
+
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			err = status.Error(codes.AlreadyExists, "resource already exists")
 			return err
 		}
+
 	}
+
+	if _, ok := err.(*ent.ValidationError); ok {
+
+		if strings.Contains(err.Error(), "validator failed") {
+			err = status.Error(codes.InvalidArgument, "one or more fields has an invalid value")
+			return err
+		}
+
+	}
+
+	if strings.Contains(err.Error(), "already exists") {
+		err = status.Error(codes.AlreadyExists, "resource already exists")
+		return err
+	}
+
+	fmt.Println("TRANSLATE", err)
 
 	return err
 

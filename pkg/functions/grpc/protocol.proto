@@ -5,7 +5,6 @@ package direktiv_functions;
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
 import "google/protobuf/empty.proto";
-import "google/api/annotations.proto";
 
 import "pkg/functions/grpc/registries-get.proto";
 import "pkg/functions/grpc/registry-delete.proto";
@@ -30,24 +29,11 @@ import "pkg/functions/grpc/watch-logs.proto";
 
 service FunctionsService {
 
-	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-			put: "/api/functions/namespaces/{namespace}/registries/{registry}"
-      body: "*"
-		};
-  }
+	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
 
-  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {
-    option (google.api.http) = {
-			get: "/api/functions/namespaces/{namespace}/registries"
-		};
-  }
+  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
 
-  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-			delete: "/api/functions/namespaces/{namespace}/registries/{registry}"
-		};
-  }
+  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 
   rpc ReconstructFunction(ReconstructFunctionRequest) returns (google.protobuf.Empty)  {}
   rpc UpdateFunction(UpdateFunctionRequest) returns (google.protobuf.Empty)  {}
