@@ -564,6 +564,9 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 			svn := rev.Name
 			info.Name = &svn
 
+			ss := strings.Split(rev.Name, "-")
+			info.Rev = &ss[len(ss)-1]
+
 			// replicas
 			if rev.Status.ActualReplicas != nil {
 				info.ActualReplicas = int64(*rev.Status.ActualReplicas)
