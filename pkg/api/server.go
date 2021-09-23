@@ -27,6 +27,11 @@ type Server struct {
 	telend func()
 }
 
+// GetRouter is a getter for s.router
+func (s *Server) GetRouter() *mux.Router {
+	return s.router
+}
+
 // NewServer return new API server
 func NewServer(l *zap.SugaredLogger) (*Server, error) {
 
