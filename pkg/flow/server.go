@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
 	"time"
 
@@ -176,14 +175,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.vars.Close)
-
-	srv.sugar.Debug("Initializing metrics server.")
-
-	srv.metricServer, err = initMetricsServer(cctx, srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.metricServer.Close)
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
@@ -443,7 +434,6 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryS
 }
 
 func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-	fmt.Println("XXX", reflect.TypeOf(srv))
 	err := handler(srv, ss)
 	if err != nil {
 		return translateError(err)

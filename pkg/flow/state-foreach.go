@@ -195,14 +195,10 @@ func (sl *foreachStateLogic) doAll(ctx context.Context, engine *engine, im *inst
 		logics = append(logics, logic)
 	}
 
-	var data []byte
-	data, err = json.Marshal(logics)
+	err = engine.SetMemory(ctx, im, logics)
 	if err != nil {
-		err = NewInternalError(err)
 		return
 	}
-
-	im.SetMemory(data)
 
 	return
 
@@ -225,14 +221,10 @@ func (sl *foreachStateLogic) doSpecific(ctx context.Context, engine *engine, im 
 	}
 	logics[idx] = logic
 
-	var data []byte
-	data, err = json.Marshal(logics)
+	err = engine.SetMemory(ctx, im, logics)
 	if err != nil {
-		err = NewInternalError(err)
 		return
 	}
-
-	im.SetMemory(data)
 
 	return
 
@@ -371,7 +363,10 @@ func (sl *foreachStateLogic) Run(ctx context.Context, engine *engine, im *instan
 
 	}
 
-	im.SetMemory(logics)
+	err = engine.SetMemory(ctx, im, logics)
+	if err != nil {
+		return
+	}
 
 	return
 
@@ -397,7 +392,10 @@ func (sl *foreachStateLogic) scheduleRetry(ctx context.Context, engine *engine, 
 	logics[idx].Attempts++
 	logics[idx].ID = ""
 
-	im.SetMemory(logics)
+	err = engine.SetMemory(ctx, im, logics)
+	if err != nil {
+		return err
+	}
 
 	r := &foreachStateLogicRetry{
 		Idx:    idx,

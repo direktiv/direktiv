@@ -42,7 +42,8 @@ type LocalServer struct {
 
 func (srv *LocalServer) initFlow() error {
 
-	conn, err := util.GetEndpointTLS(os.Getenv(util.DirektivFlowEndpoint))
+	conn, err := util.GetEndpointTLS(fmt.Sprintf("%s:7777",
+		os.Getenv(util.DirektivFlowEndpoint)))
 	if err != nil {
 		return err
 	}
