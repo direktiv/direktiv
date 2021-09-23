@@ -90,7 +90,7 @@ func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, 
 		return children
 	}
 
-	if sl.state.Action.Function != "" {
+	if sl.state.Action.Function != "" && sd.Id != "" {
 
 		var uid ksuid.KSUID
 		err = uid.UnmarshalText([]byte(sd.Id))
@@ -184,7 +184,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
-		ar.Container.Service = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, im.in.Edges.Namespace.ID.String(), con.KnativeService)
+		ar.Container.Service = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, im.in.Edges.Namespace.Name, con.KnativeService)
 	case model.GlobalKnativeFunctionType:
 		con := fn.(*model.GlobalFunctionDefinition)
 		ar.Container.Files = con.Files
@@ -256,7 +256,10 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 				Id:       subflowID,
 				Attempts: attempt,
 			}
-			im.SetMemory(sd)
+			err = engine.SetMemory(ctx, im, sd)
+			if err != nil {
+				return
+			}
 		}
 	case model.NamespacedKnativeFunctionType:
 		fallthrough
@@ -272,7 +275,10 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			Attempts: attempt,
 		}
 
-		im.SetMemory(sd)
+		err = engine.SetMemory(ctx, im, sd)
+		if err != nil {
+			return
+		}
 
 		var ar *functionRequest
 		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async)
@@ -311,7 +317,10 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			Attempts: attempt,
 		}
 
-		im.SetMemory(sd)
+		err = engine.SetMemory(ctx, im, sd)
+		if err != nil {
+			return
+		}
 
 		var ar *functionRequest
 		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async)
@@ -389,6 +398,8 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		err = NewInternalError(err)
 		return
 	}
+
+	fmt.Println("MEMORY", sd, im.in.Edges.Runtime.Memory)
 
 	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
 	if err != nil {
@@ -484,7 +495,10 @@ func (sl *actionStateLogic) scheduleRetry(ctx context.Context, engine *engine, i
 	sd.Op = "retry"
 	sd.Id = ""
 
-	im.SetMemory(sd)
+	err = engine.SetMemory(ctx, im, sd)
+	if err != nil {
+		return err
+	}
 
 	data := sd.Marshal()
 

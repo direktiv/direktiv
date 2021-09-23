@@ -31,6 +31,10 @@ const (
 	FieldAttempts = "attempts"
 	// FieldCallerData holds the string denoting the caller_data field in the database.
 	FieldCallerData = "caller_data"
+	// FieldInstanceContext holds the string denoting the instancecontext field in the database.
+	FieldInstanceContext = "instance_context"
+	// FieldStateContext holds the string denoting the statecontext field in the database.
+	FieldStateContext = "state_context"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
 	// EdgeCaller holds the string denoting the caller edge name in mutations.
@@ -66,6 +70,8 @@ var Columns = []string{
 	FieldDeadline,
 	FieldAttempts,
 	FieldCallerData,
+	FieldInstanceContext,
+	FieldStateContext,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "instance_runtimes"

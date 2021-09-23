@@ -16,7 +16,11 @@ data:
       {{- end }}
       redis-backend: {{ .Values.redis.address }}
       {{- if .Values.opentelemetry.address }}
+      {{- if .Values.opentelemetry.enabled }}
       opentelemetry-backend: {{ .Values.opentelemetry.address }}
+      {{- else }}
+      opentelemetry-backend: none
+      {{- end }}
       {{- else if .Values.opentelemetry.enabled }}
       opentelemetry-backend: host
       {{- else }}

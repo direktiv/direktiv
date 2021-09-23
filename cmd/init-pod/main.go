@@ -44,6 +44,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	/*
+		telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
+		if err != nil {
+			return err
+		}
+		defer telend()
+	*/
+
 	if lifecycle == "init" {
 		runAsInit()
 	} else if lifecycle == "run" {

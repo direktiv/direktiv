@@ -39,6 +39,10 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.opentelemetry.io/otel v0.20.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp v0.20.0 // indirect
+	go.opentelemetry.io/otel/sdk v0.20.0 // indirect
+	go.opentelemetry.io/otel/trace v0.20.0 // indirect
 	go.uber.org/zap v1.18.1
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect

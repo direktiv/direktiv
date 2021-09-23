@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -415,6 +416,9 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 		query = query.WithRuntime()
 	}
 	in, err := query.Only(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	in.Edges.Namespace = ns
 
@@ -648,5 +652,27 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 	d.vdata = vref.Edges.Vardata
 
 	return d, nil
+
+}
+
+func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {
+
+	im.SetMemory(x)
+
+	data, err := json.Marshal(x)
+	if err != nil {
+		panic(err)
+	}
+	s := string(data)
+
+	ir, err := im.in.Edges.Runtime.Update().SetMemory(s).Save(ctx)
+	if err != nil {
+		return NewInternalError(err)
+	}
+
+	ir.Edges = im.in.Edges.Runtime.Edges
+	im.in.Edges.Runtime = ir
+
+	return nil
 
 }

@@ -39,6 +39,10 @@ type InstanceRuntime struct {
 	Attempts int `json:"attempts,omitempty"`
 	// CallerData holds the value of the "caller_data" field.
 	CallerData string `json:"caller_data,omitempty"`
+	// InstanceContext holds the value of the "instanceContext" field.
+	InstanceContext string `json:"instanceContext,omitempty"`
+	// StateContext holds the value of the "stateContext" field.
+	StateContext string `json:"stateContext,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceRuntimeQuery when eager-loading is set.
 	Edges             InstanceRuntimeEdges `json:"edges"`
@@ -94,7 +98,7 @@ func (*InstanceRuntime) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case instanceruntime.FieldAttempts:
 			values[i] = new(sql.NullInt64)
-		case instanceruntime.FieldData, instanceruntime.FieldController, instanceruntime.FieldMemory, instanceruntime.FieldOutput, instanceruntime.FieldCallerData:
+		case instanceruntime.FieldData, instanceruntime.FieldController, instanceruntime.FieldMemory, instanceruntime.FieldOutput, instanceruntime.FieldCallerData, instanceruntime.FieldInstanceContext, instanceruntime.FieldStateContext:
 			values[i] = new(sql.NullString)
 		case instanceruntime.FieldStateBeginTime, instanceruntime.FieldDeadline:
 			values[i] = new(sql.NullTime)
@@ -187,6 +191,18 @@ func (ir *InstanceRuntime) assignValues(columns []string, values []interface{}) 
 			} else if value.Valid {
 				ir.CallerData = value.String
 			}
+		case instanceruntime.FieldInstanceContext:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field instanceContext", values[i])
+			} else if value.Valid {
+				ir.InstanceContext = value.String
+			}
+		case instanceruntime.FieldStateContext:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field stateContext", values[i])
+			} else if value.Valid {
+				ir.StateContext = value.String
+			}
 		case instanceruntime.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_runtime", values[i])
@@ -259,6 +275,10 @@ func (ir *InstanceRuntime) String() string {
 	builder.WriteString(fmt.Sprintf("%v", ir.Attempts))
 	builder.WriteString(", caller_data=")
 	builder.WriteString(ir.CallerData)
+	builder.WriteString(", instanceContext=")
+	builder.WriteString(ir.InstanceContext)
+	builder.WriteString(", stateContext=")
+	builder.WriteString(ir.StateContext)
 	builder.WriteByte(')')
 	return builder.String()
 }

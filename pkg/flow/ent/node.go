@@ -459,7 +459,7 @@ func (ir *InstanceRuntime) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     ir.ID,
 		Type:   "InstanceRuntime",
-		Fields: make([]*Field, 10),
+		Fields: make([]*Field, 12),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -541,6 +541,22 @@ func (ir *InstanceRuntime) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "caller_data",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ir.InstanceContext); err != nil {
+		return nil, err
+	}
+	node.Fields[10] = &Field{
+		Type:  "string",
+		Name:  "instanceContext",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ir.StateContext); err != nil {
+		return nil, err
+	}
+	node.Fields[11] = &Field{
+		Type:  "string",
+		Name:  "stateContext",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

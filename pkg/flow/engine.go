@@ -147,6 +147,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	im.Unwrap()
 
+	ctx, err = traceFullAddWorkflowInstance(ctx, d, im)
+	if err != nil {
+		return nil, err
+	}
+
 	t := time.Now()
 	engine.pubsub.NotifyInstances(d.ns())
 	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
@@ -279,7 +284,16 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	rt := im.in.Edges.Runtime
 	edges := rt.Edges
 
-	im.SetMemory(nil)
+	err = engine.SetMemory(ctx, im, nil)
+	if err != nil {
+		return
+	}
+
+	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
+	if err != nil {
+		return
+	}
+	defer cleanup()
 
 	rt, err = rt.Update().
 		SetFlow(flow).
@@ -321,7 +335,23 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 }
 
+func (engine *engine) setEndAt(im *instanceMemory) {
+
+	ctx := context.Background()
+
+	in, err := im.in.Update().SetEndAt(time.Now()).Save(ctx)
+	if err != nil {
+		engine.sugar.Error(err)
+	}
+
+	in.Edges = im.in.Edges
+	im.in = in
+
+}
+
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
+
+	engine.setEndAt(im)
 
 	engine.WakeInstanceCaller(ctx, im)
 	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
@@ -336,6 +366,13 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	var code string
 	var transition *stateTransition
+
+	ctx, cleanup, e2 := traceStateGenericLogicThread(ctx, im)
+	if e2 != nil {
+		err = e2
+		goto failure
+	}
+	defer cleanup()
 
 	if err != nil {
 		goto failure
@@ -373,6 +410,8 @@ next:
 	return
 
 failure:
+
+	traceStateError(ctx, err)
 
 	var breaker int
 
@@ -541,6 +580,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		return "", err
 	}
 
+	traceSubflowInvoke(ctx, args.Path, im.ID().String())
+
 	engine.queue(im)
 
 	return im.ID().String(), nil
@@ -549,9 +590,9 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 type retryMessage struct {
 	InstanceID string
-	State      string
-	Step       int
-	Data       []byte
+	// State      string
+	Step int
+	Data []byte
 }
 
 const retryWakeupFunction = "retryWakeup"
@@ -560,9 +601,9 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 
 	data, _ = json.Marshal(&retryMessage{
 		InstanceID: id,
-		State:      state,
-		Step:       step,
-		Data:       data,
+		// State:      state,
+		Step: step,
+		Data: data,
 	})
 
 	if d := t.Sub(time.Now()); d < time.Second*5 {
@@ -807,14 +848,17 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 
-						// we can recreate the function if it is a workflow scope function
-						// if not we can bail right here
-						if ar.Container.Type != model.ReusableContainerFunctionType {
-							engine.reportError(ar,
-								fmt.Errorf("function %s does not exist on scope %v",
-									ar.Container.ID, ar.Container.Type))
-							return
-						}
+						// // recreate if the service if it exists in the database but not knative
+						// if (ar.Container.Type == model.GlobalKnativeFunctionType ||
+						// 	ar.Container.Type == model.NamespacedKnativeFunctionType) &&
+						// 	!isScopedKnativeFunction(we.functionsClient, ar.Container.Service) {
+						// 	err := reconstructScopedKnativeFunction(we.functionsClient, ar.Container.Service)
+						// 	if err != nil {
+						// 		appLog.Errorf("can not create scoped knative function: %v", err)
+						// 		we.reportError(ar, err)
+						// 		return
+						// 	}
+						// }
 
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
@@ -921,7 +965,14 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 
 	engine.sugar.Debugf("Handling events wakeup: %s", this())
 
-	go engine.runState(ctx, im, wakedata, nil)
+	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
+	if err != nil {
+		engine.CrashInstance(ctx, im, err)
+		return
+	}
+	defer cleanup()
+
+	engine.runState(ctx, im, wakedata, nil)
 
 }
 
@@ -959,6 +1010,8 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 
 	args.Input = input
 	args.Caller = "cloudevent" // TODO: human readable
+
+	// TODO: TRACE traceEventsInvoked
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {

@@ -194,6 +194,46 @@ func (iru *InstanceRuntimeUpdate) ClearCallerData() *InstanceRuntimeUpdate {
 	return iru
 }
 
+// SetInstanceContext sets the "instanceContext" field.
+func (iru *InstanceRuntimeUpdate) SetInstanceContext(s string) *InstanceRuntimeUpdate {
+	iru.mutation.SetInstanceContext(s)
+	return iru
+}
+
+// SetNillableInstanceContext sets the "instanceContext" field if the given value is not nil.
+func (iru *InstanceRuntimeUpdate) SetNillableInstanceContext(s *string) *InstanceRuntimeUpdate {
+	if s != nil {
+		iru.SetInstanceContext(*s)
+	}
+	return iru
+}
+
+// ClearInstanceContext clears the value of the "instanceContext" field.
+func (iru *InstanceRuntimeUpdate) ClearInstanceContext() *InstanceRuntimeUpdate {
+	iru.mutation.ClearInstanceContext()
+	return iru
+}
+
+// SetStateContext sets the "stateContext" field.
+func (iru *InstanceRuntimeUpdate) SetStateContext(s string) *InstanceRuntimeUpdate {
+	iru.mutation.SetStateContext(s)
+	return iru
+}
+
+// SetNillableStateContext sets the "stateContext" field if the given value is not nil.
+func (iru *InstanceRuntimeUpdate) SetNillableStateContext(s *string) *InstanceRuntimeUpdate {
+	if s != nil {
+		iru.SetStateContext(*s)
+	}
+	return iru
+}
+
+// ClearStateContext clears the value of the "stateContext" field.
+func (iru *InstanceRuntimeUpdate) ClearStateContext() *InstanceRuntimeUpdate {
+	iru.mutation.ClearStateContext()
+	return iru
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (iru *InstanceRuntimeUpdate) SetInstanceID(id uuid.UUID) *InstanceRuntimeUpdate {
 	iru.mutation.SetInstanceID(id)
@@ -437,6 +477,32 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instanceruntime.FieldCallerData,
+		})
+	}
+	if value, ok := iru.mutation.InstanceContext(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldInstanceContext,
+		})
+	}
+	if iru.mutation.InstanceContextCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instanceruntime.FieldInstanceContext,
+		})
+	}
+	if value, ok := iru.mutation.StateContext(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldStateContext,
+		})
+	}
+	if iru.mutation.StateContextCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instanceruntime.FieldStateContext,
 		})
 	}
 	if iru.mutation.InstanceCleared() {
@@ -690,6 +756,46 @@ func (iruo *InstanceRuntimeUpdateOne) SetNillableCallerData(s *string) *Instance
 // ClearCallerData clears the value of the "caller_data" field.
 func (iruo *InstanceRuntimeUpdateOne) ClearCallerData() *InstanceRuntimeUpdateOne {
 	iruo.mutation.ClearCallerData()
+	return iruo
+}
+
+// SetInstanceContext sets the "instanceContext" field.
+func (iruo *InstanceRuntimeUpdateOne) SetInstanceContext(s string) *InstanceRuntimeUpdateOne {
+	iruo.mutation.SetInstanceContext(s)
+	return iruo
+}
+
+// SetNillableInstanceContext sets the "instanceContext" field if the given value is not nil.
+func (iruo *InstanceRuntimeUpdateOne) SetNillableInstanceContext(s *string) *InstanceRuntimeUpdateOne {
+	if s != nil {
+		iruo.SetInstanceContext(*s)
+	}
+	return iruo
+}
+
+// ClearInstanceContext clears the value of the "instanceContext" field.
+func (iruo *InstanceRuntimeUpdateOne) ClearInstanceContext() *InstanceRuntimeUpdateOne {
+	iruo.mutation.ClearInstanceContext()
+	return iruo
+}
+
+// SetStateContext sets the "stateContext" field.
+func (iruo *InstanceRuntimeUpdateOne) SetStateContext(s string) *InstanceRuntimeUpdateOne {
+	iruo.mutation.SetStateContext(s)
+	return iruo
+}
+
+// SetNillableStateContext sets the "stateContext" field if the given value is not nil.
+func (iruo *InstanceRuntimeUpdateOne) SetNillableStateContext(s *string) *InstanceRuntimeUpdateOne {
+	if s != nil {
+		iruo.SetStateContext(*s)
+	}
+	return iruo
+}
+
+// ClearStateContext clears the value of the "stateContext" field.
+func (iruo *InstanceRuntimeUpdateOne) ClearStateContext() *InstanceRuntimeUpdateOne {
+	iruo.mutation.ClearStateContext()
 	return iruo
 }
 
@@ -960,6 +1066,32 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instanceruntime.FieldCallerData,
+		})
+	}
+	if value, ok := iruo.mutation.InstanceContext(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldInstanceContext,
+		})
+	}
+	if iruo.mutation.InstanceContextCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instanceruntime.FieldInstanceContext,
+		})
+	}
+	if value, ok := iruo.mutation.StateContext(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldStateContext,
+		})
+	}
+	if iruo.mutation.StateContextCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instanceruntime.FieldStateContext,
 		})
 	}
 	if iruo.mutation.InstanceCleared() {

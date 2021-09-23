@@ -47,6 +47,8 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 
 	engine.sugar.Debugf("Handling cancel instance: %s", this())
 
+	// TODO: TRACE cancel
+
 	go engine.runState(ctx, im, nil, err)
 
 }

@@ -189,13 +189,10 @@ func (sl *parallelStateLogic) dispatchActions(ctx context.Context, engine *engin
 
 	}
 
-	var data []byte
-	data, err = json.Marshal(logics)
+	err = engine.SetMemory(ctx, im, logics)
 	if err != nil {
-		return NewInternalError(err)
+		return err
 	}
-
-	im.SetMemory(data)
 
 	return nil
 
@@ -213,7 +210,10 @@ func (sl *parallelStateLogic) doSpecific(ctx context.Context, engine *engine, im
 
 	logics[idx] = logic
 
-	im.SetMemory(logics)
+	err = engine.SetMemory(ctx, im, logics)
+	if err != nil {
+		return err
+	}
 
 	return
 
@@ -360,7 +360,7 @@ func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *insta
 	}
 
 	if !ready {
-		im.SetMemory(logics)
+		err = engine.SetMemory(ctx, im, logics)
 		return
 	}
 
@@ -404,19 +404,16 @@ func (sl *parallelStateLogic) scheduleRetry(ctx context.Context, engine *engine,
 	logics[idx].Attempts++
 	logics[idx].ID = ""
 
-	var data []byte
-	data, err = json.Marshal(logics)
+	err = engine.SetMemory(ctx, im, logics)
 	if err != nil {
-		return NewInternalError(err)
+		return err
 	}
-
-	im.SetMemory(logics)
 
 	r := &parallelStateLogicRetry{
 		Idx:    idx,
 		Logics: logics,
 	}
-	data = r.Marshal()
+	data := r.Marshal()
 
 	t := time.Now().Add(d)
 

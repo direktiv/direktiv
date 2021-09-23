@@ -10,6 +10,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	libgrpc "google.golang.org/grpc"
 
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -81,6 +82,13 @@ func newServer(logger *zap.Logger, conf *util.Config) (*server, error) {
 func (srv *server) start(ctx context.Context) error {
 
 	var err error
+
+	srv.sugar.Debug("Initializing telemetry.")
+	telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
+	if err != nil {
+		return err
+	}
+	defer telend()
 
 	go setupPrometheusEndpoint()
 
@@ -167,14 +175,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.vars.Close)
-
-	srv.sugar.Debug("Initializing metrics server.")
-
-	srv.metricServer, err = initMetricsServer(cctx, srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.metricServer.Close)
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
@@ -423,4 +423,20 @@ func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
 
 	}
 
+}
+
+func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
+	resp, err = handler(ctx, req)
+	if err != nil {
+		return nil, translateError(err)
+	}
+	return resp, nil
+}
+
+func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
+	err := handler(srv, ss)
+	if err != nil {
+		return translateError(err)
+	}
+	return nil
 }

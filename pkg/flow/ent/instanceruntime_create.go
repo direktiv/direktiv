@@ -138,6 +138,34 @@ func (irc *InstanceRuntimeCreate) SetNillableCallerData(s *string) *InstanceRunt
 	return irc
 }
 
+// SetInstanceContext sets the "instanceContext" field.
+func (irc *InstanceRuntimeCreate) SetInstanceContext(s string) *InstanceRuntimeCreate {
+	irc.mutation.SetInstanceContext(s)
+	return irc
+}
+
+// SetNillableInstanceContext sets the "instanceContext" field if the given value is not nil.
+func (irc *InstanceRuntimeCreate) SetNillableInstanceContext(s *string) *InstanceRuntimeCreate {
+	if s != nil {
+		irc.SetInstanceContext(*s)
+	}
+	return irc
+}
+
+// SetStateContext sets the "stateContext" field.
+func (irc *InstanceRuntimeCreate) SetStateContext(s string) *InstanceRuntimeCreate {
+	irc.mutation.SetStateContext(s)
+	return irc
+}
+
+// SetNillableStateContext sets the "stateContext" field if the given value is not nil.
+func (irc *InstanceRuntimeCreate) SetNillableStateContext(s *string) *InstanceRuntimeCreate {
+	if s != nil {
+		irc.SetStateContext(*s)
+	}
+	return irc
+}
+
 // SetID sets the "id" field.
 func (irc *InstanceRuntimeCreate) SetID(u uuid.UUID) *InstanceRuntimeCreate {
 	irc.mutation.SetID(u)
@@ -378,6 +406,22 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 			Column: instanceruntime.FieldCallerData,
 		})
 		_node.CallerData = value
+	}
+	if value, ok := irc.mutation.InstanceContext(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldInstanceContext,
+		})
+		_node.InstanceContext = value
+	}
+	if value, ok := irc.mutation.StateContext(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldStateContext,
+		})
+		_node.StateContext = value
 	}
 	if nodes := irc.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

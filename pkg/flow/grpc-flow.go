@@ -5,8 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 
+	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
+	entlog "github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -31,22 +36,9 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		return nil, err
 	}
 
-	flow.srv = libgrpc.NewServer(
-		libgrpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-			resp, err = handler(ctx, req)
-			if err != nil {
-				return nil, translateError(err)
-			}
-			return resp, nil
-		}),
-		libgrpc.StreamInterceptor(func(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-			err := handler(srv, ss)
-			if err != nil {
-				return translateError(err)
-			}
-			return nil
-		}),
-	)
+	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+
+	flow.srv = libgrpc.NewServer(opts...)
 
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
@@ -56,7 +48,90 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		flow.srv.Stop()
 	}()
 
+	go func() {
+		// instance garbage collector
+		ctx := context.Background()
+		<-time.After(2 * time.Minute)
+		for {
+			<-time.After(time.Hour)
+			t := time.Now().Add(time.Hour * -24)
+			_, err := flow.db.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %v", err))
+			}
+		}
+	}()
+
+	go func() {
+		// logs garbage collector
+		ctx := context.Background()
+		<-time.After(3 * time.Minute)
+		for {
+			<-time.After(time.Hour)
+			t := time.Now().Add(time.Hour * -24)
+			_, err := flow.db.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %v", err))
+			}
+		}
+	}()
+
+	go func() {
+		// timed-out instance retrier
+		<-time.After(1 * time.Minute)
+		ticker := time.NewTicker(5 * time.Minute)
+		for {
+			<-ticker.C
+			go flow.kickExpiredInstances()
+		}
+	}()
+
+	go func() {
+		// function heart-beats
+		ticker := time.NewTicker(10 * time.Minute)
+		for {
+			<-ticker.C
+			go flow.functionsHeartbeat()
+		}
+	}()
+
 	return flow, nil
+
+}
+
+func (flow *flow) kickExpiredInstances() {
+
+	ctx := context.Background()
+
+	t := time.Now().Add(-1 * time.Minute)
+
+	list, err := flow.db.InstanceRuntime.Query().
+		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
+		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(StatusPending))).
+		WithInstance().
+		All(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	for i := range list {
+
+		data, err := json.Marshal(&retryMessage{
+			InstanceID: list[i].Edges.Instance.ID.String(),
+			Step:       len(list[i].Flow),
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		err = flow.engine.retryWakeup(data)
+		if err != nil {
+			flow.sugar.Error(err)
+			continue
+		}
+
+	}
 
 }
 
