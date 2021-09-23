@@ -74,10 +74,11 @@ data:
         https: ""
         http: ""
 
-      # grpc-config: {{ include "direktiv.fullname" . }}-config-grpc
-
       # additional sidecar containers
       additionalContainers:
+{{- if .Values.opentelemetry.enabled }}
+{{- include "direktiv.opentelemetry" . | nindent 8 }}
+{{- end }}
 {{- if .Values.functions.extraContainersPod }}
 {{ toYaml .Values.functions.extraContainersPod | indent 8}}
 {{- end }}

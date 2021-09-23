@@ -24,6 +24,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
+{{- if .Values.opentelemetry.enabled }}
+{{ include "direktiv.opentelemetry" . | indent 8 }}
+{{- end }}
 {{- if .Values.api.extraContainers }}
 {{ toYaml .Values.api.extraContainers | indent 8}}
 {{- end }}
@@ -70,38 +73,42 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
-        - name: fluentbit
-          image: fluent/fluent-bit:1.8
-          command: ["/fluent-bit/bin/fluent-bit", "-c", "/etc/fluentbit.cfg"]
-          imagePullPolicy: {{ .Values.pullPolicy }}
-          volumeMounts:
-          - name: fluentcfg
-            mountPath: /etc/fluentbit.cfg
-            subPath: fluentbit.cfg
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "1"
-          ports:
-            - name: appport
-              containerPort: 8889
-              protocol: TCP
-            - name: fnport
-              containerPort: 8888
-              protocol: TCP
-          env:
-          - name: PGSSLMODE
-            value: {{ .Values.database.sslmode| quote }}
+{{ include "direktiv.fluentbit" . | indent 8 }}
+        # - name: fluentbit
+        #   image: fluent/fluent-bit:1.8
+        #   command: ["/fluent-bit/bin/fluent-bit", "-c", "/etc/fluentbit.cfg"]
+        #   imagePullPolicy: {{ .Values.pullPolicy }}
+        #   volumeMounts:
+        #   - name: fluentcfg
+        #     mountPath: /etc/fluentbit.cfg
+        #     subPath: fluentbit.cfg
+        #   securityContext:
+        #     readOnlyRootFilesystem: true
+        #     allowPrivilegeEscalation: false
+        #   resources:
+        #     requests:
+        #       memory: "128Mi"
+        #       cpu: "100m"
+        #     limits:
+        #       memory: "512Mi"
+        #       cpu: "1"
+        #   ports:
+        #     - name: appport
+        #       containerPort: 8889
+        #       protocol: TCP
+        #     - name: fnport
+        #       containerPort: 8888
+        #       protocol: TCP
+        #   env:
+        #   - name: PGSSLMODE
+        #     value: {{ .Values.database.sslmode| quote }}
       volumes:
         {{- if .Values.api.extraVolumes }}
         {{ toYaml .Values.api.extraVolumes | nindent 8 }}
         {{- end }}
+{{- if .Values.opentelemetry.enabled }}
+{{ include "direktiv.opentelemetry.volume" . | indent 8 }}
+{{- end }}
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
