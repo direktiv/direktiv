@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -34,11 +36,13 @@ type LocalServer struct {
 
 	requestsLock sync.Mutex
 	requests     map[string]*activeRequest
+
+	redis *redis.Pool
 }
 
 func (srv *LocalServer) initFlow() error {
 
-	conn, err := util.GetEndpointTLS("flowservice!!!!")
+	conn, err := util.GetEndpointTLS(os.Getenv(util.DirektivFlowEndpoint))
 	if err != nil {
 		return err
 	}
@@ -51,15 +55,47 @@ func (srv *LocalServer) initFlow() error {
 
 func (srv *LocalServer) initPubSub() error {
 
-	addr := os.Getenv("DIREKTIV_DB")
-
 	log.Infof("Connecting to pub/sub service.")
 
-	err := flow.SyncSubscribeTo(logger, addr,
-		flow.CancelActionMessage, srv.handlePubSubCancel)
-	if err != nil {
-		return err
+	srv.redis = &redis.Pool{
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", os.Getenv(util.DirektivRedisEndpoint))
+		},
 	}
+
+	conn := srv.redis.Get()
+
+	_, err := conn.Do("PING")
+	if err != nil {
+		return fmt.Errorf("can't connect to redis, got error:\n%v", err)
+	}
+
+	go func() {
+
+		rc := srv.redis.Get()
+
+		psc := redis.PubSubConn{Conn: rc}
+		if err := psc.PSubscribe(flow.CancelActionMessage); err != nil {
+			log.Error(err.Error())
+		}
+
+		for {
+			switch v := psc.Receive().(type) {
+			default:
+				data, _ := json.Marshal(v)
+				log.Debug(string(data))
+			case redis.Message:
+				srv.handlePubSubCancel(string(v.Data))
+			}
+		}
+
+	}()
+
+	// err := flow.SyncSubscribeTo(logger, addr,
+	// 	flow.CancelActionMessage, srv.handlePubSubCancel)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 
@@ -101,6 +137,9 @@ func (srv *LocalServer) Start() {
 	srv.requests = make(map[string]*activeRequest)
 
 	srv.router = mux.NewRouter()
+
+	srv.router.Use(util.TelemetryMiddleware)
+
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
 

@@ -30,6 +30,14 @@ func main() {
 	sl := new(SignalListener)
 	sl.Start()
 
+	/*
+		telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
+		if err != nil {
+			return err
+		}
+		defer telend()
+	*/
+
 	local := new(LocalServer)
 	local.Start()
 

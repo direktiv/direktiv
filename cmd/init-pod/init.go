@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 func runAsInit() {
@@ -21,6 +22,8 @@ func runAsInit() {
 	srv := new(http.Server)
 
 	router := mux.NewRouter()
+	router.Use(util.TelemetryMiddleware)
+
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
 		lock.Lock()

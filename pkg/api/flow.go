@@ -7,19 +7,21 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	prometheus "github.com/prometheus/client_golang/api"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
 type flowHandler struct {
-	logger *zap.SugaredLogger
-	client grpc.FlowClient
+	logger     *zap.SugaredLogger
+	client     grpc.FlowClient
+	prometheus prometheus.Client
 }
 
-func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, addr string) (*flowHandler, error) {
+func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Config) (*flowHandler, error) {
 
-	flowAddr := fmt.Sprintf("%s:6666", addr)
+	flowAddr := fmt.Sprintf("%s:6666", conf.FlowService)
 	logger.Infof("connecting to flow %s", flowAddr)
 
 	conn, err := util.GetEndpointTLS(flowAddr)
@@ -31,6 +33,13 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, addr string) 
 	h := &flowHandler{
 		logger: logger,
 		client: grpc.NewFlowClient(conn),
+	}
+
+	h.prometheus, err = prometheus.NewClient(prometheus.Config{
+		Address: conf.PrometheusBackend,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	h.initRoutes(router)
@@ -49,6 +58,19 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
 	handlerPair(r, RN_GetNamespaceLogs, "/namespaces/{ns}/logs", h.NamespaceLogs, h.NamespaceLogsSSE)
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
+
+	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-invoked", h.WorkflowMetricsInvoked)
+	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-successful", h.WorkflowMetricsSuccessful)
+	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-failed", h.WorkflowMetricsFailed)
+	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-milliseconds", h.WorkflowMetricsMilliseconds)
+	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-state-milliseconds", h.WorkflowMetricsStateMilliseconds)
+
+	r.HandleFunc("/namespaces/{ns}/metrics/invoked", h.NamespaceMetricsInvoked).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/metrics/invoked", h.NamespaceMetricsSuccessful).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/metrics/invoked", h.NamespaceMetricsFailed).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/metrics/invoked", h.NamespaceMetricsMilliseconds).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+
+	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-sankey", h.MetricsSankey)
 
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.NamespaceVariable).Name(RN_GetNamespaceVariable).Methods(http.MethodGet)
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.DeleteNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodDelete)

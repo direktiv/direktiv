@@ -7,6 +7,12 @@ metadata:
 data:
   functions-config.yaml: |
 
+      # address of flow engine
+      flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
+
+      # redis for pub/sub
+      redis-backend: {{ .Values.redis.address }}
+
       # maximum timeout, needs to be in below knative max
       request-timeout: 600
 
@@ -16,17 +22,11 @@ data:
       # name of the namespace to use for the services/functions
       namespace: {{ .Values.functions.namespace }}
 
-      # db secret for pub/sub
-      sidecar-db: {{ include "direktiv.fullname" . }}-secrets-functions
-
       # pod sidecar name
       sidecar: {{ .Values.functions.sidecar }}
 
       # init pod name
       init-pod: {{ .Values.functions.initPodImage }}
-
-      # tls secret for init pod
-      init-pod-certificate: {{ .Values.functions.initPodCertificate }}
 
       # max number of revisions to keep per namespace or global
       keep-revisions: 3
@@ -58,8 +58,8 @@ data:
       # memory/cpu value defined for different service sizes
       memory:
         small: 64
-        medium: 256
-        large: 512
+        medium: 128
+        large: 256
       cpu:
         small: 0.1
         medium: 0.25
@@ -71,7 +71,7 @@ data:
         https: ""
         http: ""
 
-      grpc-config: {{ include "direktiv.fullname" . }}-config-grpc
+      # grpc-config: {{ include "direktiv.fullname" . }}-config-grpc
 
       # additional sidecar containers
       additionalContainers:
