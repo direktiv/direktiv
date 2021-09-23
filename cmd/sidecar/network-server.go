@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const actionIDHeader = "Direktiv-ActionID"
@@ -22,6 +23,9 @@ type NetworkServer struct {
 func (srv *NetworkServer) Start() {
 
 	srv.router = mux.NewRouter()
+
+	srv.router.Use(util.TelemetryMiddleware)
+
 	srv.router.HandleFunc("/", srv.functions)
 
 	srv.server.Addr = "0.0.0.0:8890"
