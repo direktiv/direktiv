@@ -9,7 +9,7 @@ const (
 
 	DirektivFlowEndpoint      = "DIREKTIV_FLOW_ENDPOINT"
 	DirektivFunctionsEndpoint = "DIREKTIV_FUNCTIONS_ENDPOINT"
-	DirektivIngressEndpoint   = "DIREKTIV_INGRESS_ENDPOINT"
+	DirektivIngressEndpoint   = "DIREKTIV_INTERNAL_ENDPOINT"
 
 	DirektivFluentbitTCP = "NO_FLUENTBIT_TCP"
 )

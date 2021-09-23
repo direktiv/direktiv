@@ -26,10 +26,7 @@ spec:
       volumes:
         - name: fluentcfg
           configMap:
-            name:  {{ include "direktiv.fullname" . }}-config-fluentbit
-        # - name: grpc-config
-        #   configMap:
-        #     name: {{ include "direktiv.fullname" . }}-config-grpc
+            name: {{ include "direktiv.fullname" . }}-config-fluentbit
         - name: config-file
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-functions

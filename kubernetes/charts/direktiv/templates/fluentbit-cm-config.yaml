@@ -11,16 +11,6 @@ data:
         Daemon          off
         Log_Level       info
 
-    [OUTPUT]
-        Name          pgsql
-        Match         functions
-        Host          {{ .Values.database.host }}
-        Port          {{ .Values.database.port }}
-        User          {{ .Values.database.user }}
-        Password      {{ .Values.database.password }}
-        Database      {{ .Values.database.name }}
-        Timestamp_Key ts
-
     [INPUT]
         name    http
         host    0.0.0.0

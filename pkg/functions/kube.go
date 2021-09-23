@@ -1012,6 +1012,8 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 	meta.Annotations[ServiceKnativeHeaderRolloutDuration] =
 		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 
+	meta.Annotations["networking.knative.dev/ingress.class"] = "kong-internal"
+
 	return meta
 }
 
@@ -1052,6 +1054,8 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 	})
 
 	if withGrpc {
+
+
 
 		// proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		// 	Name:  util.DirektivFlowEndpoint,
@@ -1153,33 +1157,12 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	proxy := proxyEnvs(true)
 
-	// append db info
-	proxy = append(proxy, corev1.EnvVar{
-		Name: util.DBConn,
-		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: &corev1.SecretKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: functionsConfig.SidecarDb,
-				},
-				Key: "db",
-			},
-		},
-	})
-
 	vmounts := []corev1.VolumeMount{
 		{
 			Name:      "workdir",
 			MountPath: "/mnt/shared",
 		},
 	}
-
-	// if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
-	// 	tlsVolumeMount := corev1.VolumeMount{}
-	// 	tlsVolumeMount.Name = "flowcerts"
-	// 	tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
-	// 	tlsVolumeMount.ReadOnly = true
-	// 	vmounts = append(vmounts, tlsVolumeMount)
-	// }
 
 	// direktiv sidecar
 	ds := corev1.Container{
@@ -1440,15 +1423,6 @@ func createVolumes() []corev1.Volume {
 		},
 	}
 
-	// if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
-	// 	tlsVolume := corev1.Volume{
-	// 		Name: "flowcerts",
-	// 	}
-	// 	tlsVolume.Secret = &corev1.SecretVolumeSource{
-	// 		SecretName: util.GrpcCfg().FlowTLS,
-	// 	}
-	// 	volumes = append(volumes, tlsVolume)
-	// }
 	return volumes
 
 }
@@ -1531,7 +1505,6 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 		}
 	}
 
-	mountToken := false
 	svc := &v1.Service{
 		Spec: v1.ServiceSpec{
 			RouteSpec: v1.RouteSpec{
@@ -1542,9 +1515,8 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 					ObjectMeta: spec,
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							AutomountServiceAccountToken: &mountToken,
-							Containers:                   containers,
-							Volumes:                      createVolumes(),
+							Containers: containers,
+							Volumes:    createVolumes(),
 						},
 					},
 				},
@@ -1662,7 +1634,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		return nil, err
 	}
 
-	mountToken := false
 	svc := v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -1677,11 +1648,10 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope, int(info.GetSize())),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							AutomountServiceAccountToken: &mountToken,
-							ImagePullSecrets:             createPullSecrets(info.GetNamespace()),
-							ServiceAccountName:           functionsConfig.ServiceAccount,
-							Containers:                   containers,
-							Volumes:                      createVolumes(),
+							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),
+							ServiceAccountName: functionsConfig.ServiceAccount,
+							Containers:         containers,
+							Volumes:            createVolumes(),
 						},
 						ContainerConcurrency: &concurrency,
 						TimeoutSeconds:       &timeoutSec,
