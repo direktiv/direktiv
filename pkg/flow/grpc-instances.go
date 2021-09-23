@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
@@ -62,10 +61,6 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*grpc.InstancesResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-	b, _ := json.MarshalIndent(req, "", "  ")
-	flow.sugar.Debugf("Got Input = %s", string(b))
-	flow.sugar.Debugf("GetPagination AFTER Input = %s", req.GetPagination().GetAfter())
-	flow.sugar.Debugf("GetPagination Input = %+v", req.GetPagination())
 
 	p, err := getPagination(req.Pagination)
 	if err != nil {
