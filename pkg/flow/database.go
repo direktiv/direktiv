@@ -416,6 +416,9 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 		query = query.WithRuntime()
 	}
 	in, err := query.Only(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	in.Edges.Namespace = ns
 
