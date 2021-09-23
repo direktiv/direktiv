@@ -8,7 +8,7 @@ data:
   functions-config.yaml: |
 
       # ingress class for knative functions
-      ingress-class: {{ .Values.flow.ingressClass }}
+      ingress-class: {{ .Values.functions.ingressClass }}
 
       # address of flow engine
       flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
