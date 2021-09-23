@@ -51,7 +51,7 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	handlerPair(r, RN_ListNamespaces, "/namespaces", h.Namespaces, h.NamespacesSSE)
-	r.HandleFunc("/namespaces", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPost)
+	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
 	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
@@ -216,13 +216,10 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
 
-	in := &grpc.CreateNamespaceRequest{}
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		badRequest(w, err)
-		return
+	in := &grpc.CreateNamespaceRequest{
+		Name: namespace,
 	}
 
 	resp, err := h.client.CreateNamespace(ctx, in)
