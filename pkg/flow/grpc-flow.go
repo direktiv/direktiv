@@ -88,10 +88,10 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	go func() {
 		// function heart-beats
-		ticker := time.NewTicker(10 * time.Minute)
+		ticker := time.NewTicker(1 * time.Minute) // TODO: not this every one minute.
 		for {
-			<-ticker.C
 			go flow.functionsHeartbeat()
+			<-ticker.C
 		}
 	}()
 

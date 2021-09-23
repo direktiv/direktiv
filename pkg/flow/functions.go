@@ -3,16 +3,9 @@ package flow
 import (
 	"context"
 
+	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/model"
 )
-
-type heartbeatTuple struct {
-	NamespaceName      string
-	NamespaceID        string
-	WorkflowPath       string
-	WorkflowID         string
-	FunctionDefinition *model.ReusableFunctionDefinition
-}
 
 func (flow *flow) functionsHeartbeat() {
 
@@ -34,7 +27,7 @@ func (flow *flow) functionsHeartbeat() {
 
 		for _, wf := range wfs {
 
-			var tuples = make([]*heartbeatTuple, 0)
+			var tuples = make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
 			d, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
@@ -71,7 +64,7 @@ func (flow *flow) functionsHeartbeat() {
 						continue
 					}
 
-					tuple := &heartbeatTuple{
+					tuple := &functions.HeartbeatTuple{
 						NamespaceName:      ns.Name,
 						NamespaceID:        ns.ID.String(),
 						WorkflowPath:       d.path,
@@ -98,6 +91,20 @@ func (flow *flow) functionsHeartbeat() {
 
 }
 
-func (flow *flow) flushHeartbeatTuples(tuples []*heartbeatTuple) {
+func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
+
+	if len(tuples) == 0 {
+		return
+	}
+
+	s := marshal(tuples)
+
+	conn := flow.server.redis.Get()
+	// TODO: do we need to flush or close this conn?
+
+	_, err := conn.Do("PUBLISH", functions.FunctionsChannel, s)
+	if err != nil {
+		flow.sugar.Error(err)
+	}
 
 }

@@ -28,7 +28,7 @@ func (Revision) Fields() []ent.Field {
 // Edges of the Revision.
 func (Revision) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workflow", Workflow.Type).Ref("revisions").Unique().Required(),
+		edge.From("workflow", Workflow.Type).Ref("revisions").Unique().Required().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("refs", Ref.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("instances", Instance.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}

@@ -92,7 +92,6 @@ var (
 		{Name: "attributes", Type: field.TypeJSON, Nullable: true},
 		{Name: "inode_children", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_inodes", Type: field.TypeUUID, Nullable: true},
-		{Name: "workflow_inode", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// InodesTable holds the schema information for the "inodes" table.
 	InodesTable = &schema.Table{
@@ -110,12 +109,6 @@ var (
 				Symbol:     "inodes_namespaces_inodes",
 				Columns:    []*schema.Column{InodesColumns[7]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "inodes_workflows_inode",
-				Columns:    []*schema.Column{InodesColumns[8]},
-				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -398,6 +391,7 @@ var (
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "live", Type: field.TypeBool, Default: true},
 		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
+		{Name: "inode_workflow", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "namespace_workflows", Type: field.TypeUUID, Nullable: true},
 	}
 	// WorkflowsTable holds the schema information for the "workflows" table.
@@ -407,8 +401,14 @@ var (
 		PrimaryKey: []*schema.Column{WorkflowsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "workflows_namespaces_workflows",
+				Symbol:     "workflows_inodes_workflow",
 				Columns:    []*schema.Column{WorkflowsColumns[3]},
+				RefColumns: []*schema.Column{InodesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "workflows_namespaces_workflows",
+				Columns:    []*schema.Column{WorkflowsColumns[4]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -440,7 +440,6 @@ func init() {
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 	InodesTable.ForeignKeys[0].RefTable = InodesTable
 	InodesTable.ForeignKeys[1].RefTable = NamespacesTable
-	InodesTable.ForeignKeys[2].RefTable = WorkflowsTable
 	InstancesTable.ForeignKeys[0].RefTable = NamespacesTable
 	InstancesTable.ForeignKeys[1].RefTable = RevisionsTable
 	InstancesTable.ForeignKeys[2].RefTable = WorkflowsTable
@@ -458,5 +457,6 @@ func init() {
 	VarRefsTable.ForeignKeys[1].RefTable = NamespacesTable
 	VarRefsTable.ForeignKeys[2].RefTable = VarDataTable
 	VarRefsTable.ForeignKeys[3].RefTable = WorkflowsTable
-	WorkflowsTable.ForeignKeys[0].RefTable = NamespacesTable
+	WorkflowsTable.ForeignKeys[0].RefTable = InodesTable
+	WorkflowsTable.ForeignKeys[1].RefTable = NamespacesTable
 }

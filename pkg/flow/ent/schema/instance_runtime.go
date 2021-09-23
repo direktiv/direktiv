@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -35,7 +36,7 @@ func (InstanceRuntime) Fields() []ent.Field {
 // Edges of the InstanceRuntime.
 func (InstanceRuntime) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("instance", Instance.Type).Ref("runtime").Unique(),
-		edge.From("caller", Instance.Type).Ref("children").Unique(),
+		edge.From("instance", Instance.Type).Ref("runtime").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("caller", Instance.Type).Ref("children").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

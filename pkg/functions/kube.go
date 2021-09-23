@@ -1203,6 +1203,10 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 // GenerateServiceName generates a knative name based on workflow details
 func GenerateServiceName(ns, wf, n string) (string, string, error) {
 
+	wf = strings.TrimPrefix(wf, "/")
+	wf = strings.ReplaceAll(wf, "_", "__")
+	wf = strings.ReplaceAll(wf, "/", "_")
+
 	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
 	if err != nil {
 		return "", "", err

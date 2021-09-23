@@ -437,7 +437,7 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if iu.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   inode.WorkflowTable,
 			Columns: []string{inode.WorkflowColumn},
 			Bidi:    false,
@@ -453,7 +453,7 @@ func (iu *InodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := iu.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   inode.WorkflowTable,
 			Columns: []string{inode.WorkflowColumn},
 			Bidi:    false,
@@ -918,7 +918,7 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 	if iuo.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   inode.WorkflowTable,
 			Columns: []string{inode.WorkflowColumn},
 			Bidi:    false,
@@ -934,7 +934,7 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 	if nodes := iuo.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   inode.WorkflowTable,
 			Columns: []string{inode.WorkflowColumn},
 			Bidi:    false,

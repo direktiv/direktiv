@@ -171,7 +171,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
 		ar.Container.Scale = con.Scale
-		ar.Container.ID = con.ID
+		ar.Container.ID, _, err = functions.GenerateServiceName(im.in.Edges.Namespace.Name, im.in.As, con.ID)
+		if err != nil {
+			panic(err)
+		}
 		ar.Container.Files = con.Files
 	case model.IsolatedContainerFunctionType:
 		con := fn.(*model.IsolatedFunctionDefinition)

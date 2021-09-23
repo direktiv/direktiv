@@ -49,12 +49,12 @@ const (
 	// ParentColumn is the table column denoting the parent relation/edge.
 	ParentColumn = "inode_children"
 	// WorkflowTable is the table that holds the workflow relation/edge.
-	WorkflowTable = "inodes"
+	WorkflowTable = "workflows"
 	// WorkflowInverseTable is the table name for the Workflow entity.
 	// It exists in this package in order to avoid circular dependency with the "workflow" package.
 	WorkflowInverseTable = "workflows"
 	// WorkflowColumn is the table column denoting the workflow relation/edge.
-	WorkflowColumn = "workflow_inode"
+	WorkflowColumn = "inode_workflow"
 )
 
 // Columns holds all SQL columns for inode fields.
@@ -72,7 +72,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"inode_children",
 	"namespace_inodes",
-	"workflow_inode",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

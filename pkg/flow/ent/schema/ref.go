@@ -27,8 +27,8 @@ func (Ref) Fields() []ent.Field {
 // Edges of the Ref.
 func (Ref) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workflow", Workflow.Type).Ref("refs").Unique().Required(),
-		edge.From("revision", Revision.Type).Ref("refs").Unique().Required(),
+		edge.From("workflow", Workflow.Type).Ref("refs").Unique().Required().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("revision", Revision.Type).Ref("refs").Unique().Required().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("routes", Route.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

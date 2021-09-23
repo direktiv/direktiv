@@ -36,12 +36,12 @@ const (
 	// Table holds the table name of the workflow in the database.
 	Table = "workflows"
 	// InodeTable is the table that holds the inode relation/edge.
-	InodeTable = "inodes"
+	InodeTable = "workflows"
 	// InodeInverseTable is the table name for the Inode entity.
 	// It exists in this package in order to avoid circular dependency with the "inode" package.
 	InodeInverseTable = "inodes"
 	// InodeColumn is the table column denoting the inode relation/edge.
-	InodeColumn = "workflow_inode"
+	InodeColumn = "inode_workflow"
 	// NamespaceTable is the table that holds the namespace relation/edge.
 	NamespaceTable = "workflows"
 	// NamespaceInverseTable is the table name for the Namespace entity.
@@ -110,6 +110,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "workflows"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"inode_workflow",
 	"namespace_workflows",
 }
 

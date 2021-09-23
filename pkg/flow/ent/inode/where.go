@@ -614,7 +614,7 @@ func HasWorkflow() predicate.Inode {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(WorkflowTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, WorkflowTable, WorkflowColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, WorkflowTable, WorkflowColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -626,7 +626,7 @@ func HasWorkflowWith(preds ...predicate.Workflow) predicate.Inode {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(WorkflowInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, WorkflowTable, WorkflowColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, WorkflowTable, WorkflowColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

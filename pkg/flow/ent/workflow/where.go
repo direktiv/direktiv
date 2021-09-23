@@ -251,7 +251,7 @@ func HasInode() predicate.Workflow {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InodeTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, InodeTable, InodeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, InodeTable, InodeColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -263,7 +263,7 @@ func HasInodeWith(preds ...predicate.Inode) predicate.Workflow {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InodeInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, InodeTable, InodeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, InodeTable, InodeColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
