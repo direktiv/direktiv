@@ -1892,6 +1892,19 @@ func (is *functionsServer) backupService(serviceName string, opts backupServiceO
 
 	}
 
+	// Delete old record
+	oldRecord, err := is.db.Services.Query().Where(
+		entservices.NameEQ(service.Name),
+	).First(context.Background())
+	if err == nil {
+		blog.Debug("found Old Record, attempting to cleanup old record")
+		err = is.db.Services.DeleteOne(oldRecord).Exec(context.Background())
+		if err != nil {
+			blog.Error("failed to clean up old record")
+			return err
+		}
+	}
+
 	blog.Debug("Created backup service record")
 	newRecord := is.db.Services.Create()
 	newRecord = newRecord.SetName(service.Name)

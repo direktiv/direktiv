@@ -284,7 +284,10 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	rt := im.in.Edges.Runtime
 	edges := rt.Edges
 
-	im.SetMemory(nil)
+	err = engine.SetMemory(ctx, im, nil)
+	if err != nil {
+		return
+	}
 
 	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
 	if err != nil {

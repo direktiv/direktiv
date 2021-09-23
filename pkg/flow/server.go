@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
 	"time"
 
@@ -435,7 +434,6 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryS
 }
 
 func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-	fmt.Println("XXX", reflect.TypeOf(srv))
 	err := handler(srv, ss)
 	if err != nil {
 		return translateError(err)
