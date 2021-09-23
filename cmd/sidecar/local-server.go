@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -37,12 +38,11 @@ type LocalServer struct {
 	requests     map[string]*activeRequest
 
 	redis *redis.Pool
-	conf  *util.Config
 }
 
 func (srv *LocalServer) initFlow() error {
 
-	conn, err := util.GetEndpointTLS("flowservice!!!!")
+	conn, err := util.GetEndpointTLS(os.Getenv(util.DirektivFlowEndpoint))
 	if err != nil {
 		return err
 	}
@@ -55,13 +55,11 @@ func (srv *LocalServer) initFlow() error {
 
 func (srv *LocalServer) initPubSub() error {
 
-	// addr := os.Getenv("DIREKTIV_DB")
-
 	log.Infof("Connecting to pub/sub service.")
 
 	srv.redis = &redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", srv.conf.RedisBackend)
+			return redis.Dial("tcp", os.Getenv(util.DirektivRedisEndpoint))
 		},
 	}
 

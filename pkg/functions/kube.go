@@ -1055,12 +1055,15 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 
 	if withGrpc {
 
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivFlowEndpoint,
+			Value: functionsConfig.FlowService,
+		})
 
-
-		// proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		// 	Name:  util.DirektivFlowEndpoint,
-		// 	Value: util.FlowEndpoint(),
-		// })
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivRedisEndpoint,
+			Value: functionsConfig.RedisBackend,
+		})
 
 	}
 
