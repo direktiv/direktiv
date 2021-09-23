@@ -1012,7 +1012,7 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 	meta.Annotations[ServiceKnativeHeaderRolloutDuration] =
 		fmt.Sprintf("%ds", functionsConfig.RolloutDuration)
 
-	meta.Annotations["networking.knative.dev/ingress.class"] = "kong-internal"
+	meta.Annotations["networking.knative.dev/ingress.class"] = functionsConfig.IngressClass
 
 	return meta
 }

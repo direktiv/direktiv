@@ -184,7 +184,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
-		ar.Container.Service = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, im.in.Edges.Namespace.ID.String(), con.KnativeService)
+		ar.Container.Service = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, im.in.Edges.Namespace.Name, con.KnativeService)
 	case model.GlobalKnativeFunctionType:
 		con := fn.(*model.GlobalFunctionDefinition)
 		ar.Container.Files = con.Files

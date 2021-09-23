@@ -176,14 +176,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.vars.Close)
 
-	srv.sugar.Debug("Initializing metrics server.")
-
-	srv.metricServer, err = initMetricsServer(cctx, srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.metricServer.Close)
-
 	srv.sugar.Debug("Initializing internal grpc server.")
 
 	srv.internal, err = initInternalServer(cctx, srv)

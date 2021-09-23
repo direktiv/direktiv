@@ -293,6 +293,7 @@ thanos:
 functions:
   # namespace to run functions in
   namespace: direktiv-services-direktiv
+  ingressClass: kong-internal 
 
   # images for functions controller, knative sidecar and init-pod
   image: "vorteil/functions"

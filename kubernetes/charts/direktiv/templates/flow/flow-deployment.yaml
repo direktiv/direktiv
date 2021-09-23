@@ -59,9 +59,6 @@ spec:
             - name: internal
               containerPort: 7777
               protocol: TCP
-            - name: metrics
-              containerPort: 9998
-              protocol: TCP
           env:
           - name: DIREKTIV_NODE_IP
             valueFrom:
