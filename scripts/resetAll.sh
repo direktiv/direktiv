@@ -75,6 +75,7 @@ helm install -n knative-serving -f $dir/../kubernetes/charts/knative/debug-knati
 # install database
 # delete stuff first
 kubectl delete --all -n yugabyte persistentvolumeclaims
+kubectl delete --all -n default persistentvolumeclaims
 kubectl delete  job.batch/yugabyte-setup-credentials -n yugabyte
 
 kubectl create namespace yugabyte

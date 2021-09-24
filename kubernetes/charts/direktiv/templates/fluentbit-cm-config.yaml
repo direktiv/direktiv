@@ -14,13 +14,13 @@ data:
     [INPUT]
         name    http
         host    0.0.0.0
-        port    8888
+        port    8877
         tag     functions
 
     [INPUT]
         name  http
         host  0.0.0.0
-        port  8889
+        port  8866
         tag   application
 
     {{ .Values.fluentbit.extraConfig | nindent 4 }}

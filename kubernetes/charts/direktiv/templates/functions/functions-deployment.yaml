@@ -30,25 +30,12 @@ spec:
         - name: config-file
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-functions
-        {{- if ne  .Values.functions.certificate "none" }}
-        - name: certs
-          secret:
-            secretName: {{ .Values.functions.certificate }}
-        {{- end }}
       containers:
 {{- if .Values.functions.extraContainers }}
 {{ toYaml .Values.functions.extraContainers | indent 8}}
 {{- end }}
         - name: functions-controller
           volumeMounts:
-          {{- if ne  .Values.functions.certificate "none" }}
-          - name: certs
-            mountPath: "/etc/direktiv/certs/functions"
-            readOnly: true
-          {{- end }}
-          # - name: grpc-config
-          #   mountPath: /etc/direktiv/grpc-config.yaml
-          #   subPath: grpc-config.yaml
           - name: config-file
             mountPath: /etc/direktiv/functions-config.yaml
             subPath: functions-config.yaml

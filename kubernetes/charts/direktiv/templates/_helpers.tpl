@@ -108,3 +108,67 @@ Create the name of the service account to use
 {{- define "direktiv.serviceAccountName" -}}
 {{- default (include "direktiv.fullname" .) .Values.serviceAccount.name }}
 {{- end }}
+
+{{/*
+otlp sidecar
+*/}}
+{{- define "direktiv.opentelemetry" -}}
+- command:
+    - "/otelcol"
+    - "--config=/conf/otel-agent-config.yaml"
+    - "--mem-ballast-size-mib=165"
+  image: otel/opentelemetry-collector-dev:latest
+  name: otel-agent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  volumeMounts:
+  - name: otel-agent-config-vol
+    mountPath: /conf
+{{- end }}
+
+{{- define "direktiv.opentelemetry.volume" -}}
+- configMap:
+    name: {{ include "direktiv.fullname" . }}-otel-agent-config
+    items:
+      - key: otel-agent-config
+        path: otel-agent-config.yaml
+  name: otel-agent-config-vol
+{{- end }}
+
+
+
+{{/*
+fluentbit sidecar
+*/}}
+{{- define "direktiv.fluentbit" -}}
+- name: fluentbit
+  image: fluent/fluent-bit:1.8
+  command: ["/fluent-bit/bin/fluent-bit", "-c", "/etc/fluentbit.cfg"]
+  imagePullPolicy: {{ .Values.pullPolicy }}
+  volumeMounts:
+  - name: fluentcfg
+    mountPath: /etc/fluentbit.cfg
+    subPath: fluentbit.cfg
+  securityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "1"
+  ports:
+    - name: appport
+      containerPort: 8866
+      protocol: TCP
+    - name: fnport
+      containerPort: 8877
+      protocol: TCP
+{{- end }}

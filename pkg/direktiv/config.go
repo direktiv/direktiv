@@ -17,20 +17,6 @@ const (
 type Config struct {
 	FunctionsService string `yaml:"functions-service"`
 	FlowService      string `yaml:"flow-service"`
-
-	// FunctionsProtocol string `yaml:"functions-protocol"`
-	//
-	// Database struct {
-	// 	DB string
-	// }
-	//
-	// InstanceLogging struct {
-	// 	Driver string
-	// }
-	//
-	// VariablesStorage struct {
-	// 	Driver string
-	// }
 }
 
 // ReadConfig reads the configuration file and overwrites with environment variables if set

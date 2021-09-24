@@ -72,10 +72,8 @@ func StartServer(echan chan error) {
 		return
 	}
 
-	cr := newConfigReader()
-
 	logger.Infof("loading config file %s", confFile)
-	cr.readConfig(confFile, &functionsConfig)
+	readConfig(confFile, &functionsConfig)
 
 	// Setup database
 	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
