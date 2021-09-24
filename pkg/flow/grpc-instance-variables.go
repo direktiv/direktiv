@@ -8,9 +8,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -251,8 +249,6 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	hash := checksum(req.Data)
-
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -263,6 +259,8 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	vrefc := tx.VarRef
 	vdatac := tx.VarData
 
+	key := req.GetKey()
+
 	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
 	if err != nil {
 		return nil, err
@@ -270,35 +268,9 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	var vdata *ent.VarData
 
-	vref, err := d.in.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
+	err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
-
-		if !ent.IsNotFound(err) {
-			return nil, err
-		}
-
-		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = vrefc.Create().SetVardata(vdata).SetInstance(d.in).SetName(req.GetKey()).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-	} else {
-
-		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
+		return nil, err
 	}
 
 	err = tx.Commit()
@@ -306,14 +278,14 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", vref.Name)
+	flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
 	flow.pubsub.NotifyInstanceVariables(d.in)
 
 	var resp grpc.SetInstanceVariableResponse
 
 	resp.Namespace = d.ns().Name
 	resp.Instance = d.in.ID.String()
-	resp.Key = vref.Name
+	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
@@ -383,8 +355,6 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	hash := checksum(buf.Bytes())
-
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return err
@@ -402,35 +372,9 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 	var vdata *ent.VarData
 
-	vref, err := d.in.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
+	err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
-
-		if !ent.IsNotFound(err) {
-			return err
-		}
-
-		vdata, err = vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		vref, err = vrefc.Create().SetVardata(vdata).SetInstance(d.in).SetName(key).Save(ctx)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
-		if err != nil {
-			return err
-		}
-
-		vdata, err = vdata.Update().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-		if err != nil {
-			return err
-		}
-
+		return err
 	}
 
 	err = tx.Commit()
@@ -438,14 +382,14 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Created instnace variable '%s'.", vref.Name)
+	flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
 	flow.pubsub.NotifyInstanceVariables(d.in)
 
 	var resp grpc.SetInstanceVariableResponse
 
 	resp.Namespace = d.ns().Name
 	resp.Instance = d.in.ID.String()
-	resp.Key = vref.Name
+	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
