@@ -20,9 +20,9 @@ opentelemetry1:
 
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
-  address: ""
+  address: "localhost:4317"
   # -- installs opentelemtry agent as sidecar in flow
-  enabled: true
+  enabled: false
   # -- config for daemonset agent
   agentconfig: |
     receivers:
@@ -32,13 +32,15 @@ opentelemetry:
           http:
     exporters:
       otlp:
-        endpoint: "{{ .Values.opentelemetry.address }}"
+        endpoint: "192.168.1.113:14250"
         insecure: true
         sending_queue:
           num_consumers: 4
           queue_size: 100
         retry_on_failure:
           enabled: true
+      logging:
+        loglevel: debug
     processors:
       batch:
       memory_limiter:
@@ -57,7 +59,7 @@ opentelemetry:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [otlp]
+          exporters: [logging, otlp]
 
 api:
   replicas: 1
