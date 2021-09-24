@@ -211,12 +211,62 @@ nodata:
 
 }
 
+func respondJSON(w http.ResponseWriter, resp interface{}, err error) {
+
+	if err != nil {
+
+		// TODO fix grpc to send back useful error code for http translation
+		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
+
+		var msg string
+		// if code < 500 {
+		// 	msg = err.Error()
+		// } else {
+		// 	msg = http.StatusText(code)
+		// }
+
+		msg = err.Error()
+		http.Error(w, msg, code)
+		return
+
+	}
+
+	if resp == nil {
+		goto nodata
+	}
+
+	if _, ok := resp.(*emptypb.Empty); ok {
+		goto nodata
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	marshalJSON(w, resp, true)
+
+nodata:
+
+	return
+
+}
+
 func marshal(w io.Writer, x interface{}, multiline bool) {
 
 	data, err := protojson.MarshalOptions{
 		Multiline:       multiline,
 		EmitUnpopulated: true,
 	}.Marshal(x.(proto.Message))
+	if err != nil {
+		panic(err)
+	}
+
+	s := string(data)
+
+	fmt.Fprintf(w, "%s", s)
+
+}
+
+func marshalJSON(w io.Writer, x interface{}, multiline bool) {
+
+	data, err := json.Marshal(x)
 	if err != nil {
 		panic(err)
 	}
