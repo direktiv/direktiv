@@ -23,7 +23,7 @@ functions:
   image: "functions"
   tag: "latest"
   sidecar: "localhost:5000/sidecar"
-  initPodImage: "localhost:5000/direktiv-init-pod"
+  initPodImage: "localhost:5000/init-pod"
 
 opentelemetry:
   address: "host"
