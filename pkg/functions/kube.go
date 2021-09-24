@@ -1045,10 +1045,9 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 		})
 	}
 
-	// disable tcp logging
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  util.DirektivFluentbitTCP,
-		Value: "true",
+		Name:  util.DirektivLogJSON,
+		Value: functionsConfig.Logging,
 	})
 
 	if withGrpc {
@@ -1430,7 +1429,6 @@ func createVolumes() []corev1.Volume {
 
 	for i := range functionsConfig.extraVolumes {
 		vols := functionsConfig.extraVolumes[i]
-		logger.Debugf("VLUME>>> %v", vols)
 		volumes = append(volumes, vols)
 	}
 

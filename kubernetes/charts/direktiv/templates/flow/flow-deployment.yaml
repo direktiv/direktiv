@@ -64,10 +64,8 @@ spec:
               containerPort: 7777
               protocol: TCP
           env:
-          - name: DIREKTIV_NODE_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.hostIP
+          - name: DIREKTIV_LOG_JSON
+            value: {{ .Values.logging | quote }}
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SERVICE_NAMESPACE
@@ -85,7 +83,6 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
-{{ include "direktiv.fluentbit" . | indent 8 }}
         - name: secrets
           securityContext:
             readOnlyRootFilesystem: true
@@ -109,6 +106,8 @@ spec:
               containerPort: 2610
               protocol: TCP
           env:
+          - name: DIREKTIV_LOG_JSON
+            value: {{ .Values.logging | quote }}
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SECRETS_DB
@@ -133,9 +132,6 @@ spec:
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
-        - name: fluentcfg
-          configMap:
-            name:  {{ include "direktiv.fullname" . }}-config-fluentbit
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

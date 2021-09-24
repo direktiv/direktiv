@@ -12,5 +12,5 @@ const (
 	DirektivFunctionsEndpoint = "DIREKTIV_FUNCTIONS_ENDPOINT"
 	DirektivIngressEndpoint   = "DIREKTIV_INTERNAL_ENDPOINT"
 
-	DirektivFluentbitTCP = "NO_FLUENTBIT_TCP"
+	DirektivLogJSON = "DIREKTIV_LOG_JSON"
 )

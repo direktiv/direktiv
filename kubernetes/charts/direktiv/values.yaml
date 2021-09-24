@@ -1,6 +1,9 @@
 # -- enable debug across all direktiv components
 debug: false
 
+# -- json or console logger
+logging: json
+
 # -- api timeouts
 timeout: 900000
 
@@ -14,9 +17,6 @@ redis:
   address: yb-tservers.yugabyte:6379
   # -- storage-class, defaults to k3s' local-path
   storageClass: local-path
-
-opentelemetry1:
-  enabled: false
 
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to

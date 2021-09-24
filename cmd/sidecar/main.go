@@ -9,23 +9,18 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger *zap.Logger
 var log *zap.SugaredLogger
 
 func main() {
 
 	var err error
 
-	dlog.Init()
-
-	logger, err = zap.NewDevelopment()
+	log, err = dlog.ApplicationLogger("sidecar")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
 		os.Exit(1)
 	}
-	defer logger.Sync()
-
-	log = logger.Sugar()
+	defer log.Sync()
 
 	sl := new(SignalListener)
 	sl.Start()

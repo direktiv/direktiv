@@ -24,9 +24,9 @@ const parcelSize = 0x100000
 type server struct {
 	ID uuid.UUID
 
-	logger *zap.Logger
-	sugar  *zap.SugaredLogger
-	conf   *util.Config
+	sugar    *zap.SugaredLogger
+	fnLogger *zap.SugaredLogger
+	conf     *util.Config
 
 	redis *redis.Pool
 
@@ -46,9 +46,7 @@ type server struct {
 	metrics *metrics.Client
 }
 
-func Run(ctx context.Context, logger *zap.Logger, conf *util.Config) error {
-
-	dlog.Init()
+func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
 
 	srv, err := newServer(logger, conf)
 	if err != nil {
@@ -64,14 +62,20 @@ func Run(ctx context.Context, logger *zap.Logger, conf *util.Config) error {
 
 }
 
-func newServer(logger *zap.Logger, conf *util.Config) (*server, error) {
+func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
+
+	var err error
 
 	srv := new(server)
 	srv.ID = uuid.New()
 
-	srv.logger = logger
-	srv.sugar = logger.Sugar()
+	srv.sugar = logger
 	srv.conf = conf
+
+	srv.fnLogger, err = dlog.FunctionsLogger()
+	if err != nil {
+		return nil, err
+	}
 
 	srv.initJQ()
 

@@ -6,6 +6,8 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
 data:
   functions-config.yaml: |
+      # logging format json/console
+      logging: {{ .Values.logging }}
 
       # ingress class for knative functions
       ingress-class: {{ .Values.functions.ingressClass }}

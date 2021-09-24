@@ -191,6 +191,12 @@ purge-images: ## Purge images from knative cache by matching $REGEX.
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	sudo k3s crictl rmi ${IMAGES}
 
+.PHONY: tail-api
+tail-api: ## Tail logs for currently active 'api' container.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl logs -f ${FLOW_POD} api
+
 .PHONY: tail-flow
 tail-flow: ## Tail logs for currently active 'flow' container.
 	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))

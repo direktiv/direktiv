@@ -1,89 +1,36 @@
 package dlog
 
 import (
-	"bytes"
-	"log"
-	"net/http"
 	"os"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-const (
-	appTCP = "http://127.0.0.1:8866"
-	fnTCP  = "http://127.0.0.1:8877"
-)
-
-var (
-	appLogger, fnLogger *zap.Logger
-)
-
-func Init() {
-
-	if err := zap.RegisterSink("http", NewHTTPSink); err != nil {
-		panic(err)
-	}
-
-	// startup probes don't work here. reporting success too early
-	// only run if TCP enabled
-	var err error
-	if len(os.Getenv(util.DirektivFluentbitTCP)) == 0 {
-
-		for i := 0; i < 60; i++ {
-			log.Printf("connecting to logging service %v\n", appTCP)
-			_, err = http.Post(appTCP, "application/json",
-				bytes.NewBuffer([]byte("")))
-
-			time.Sleep(1 * time.Second)
-
-			if err == nil {
-				break
-			}
-		}
-
-	}
-
-	if err != nil {
-		log.Fatalf("can not start logging: %v", err)
-	}
-
-}
-
 // ApplicationLogger returns logger for applications
 func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 
-	// tcp logger is only available where fluentbit runs as a sidecar
-	// it can be disables by setting NO_FLUENTBIT_TCP in functions
-
-	var err error
-
-	if appLogger == nil {
-		appLogger, err = customLogger(appTCP)
-		if err != nil {
-			return nil, err
-		}
+	appLogger, err := customLogger()
+	if err != nil {
+		return nil, err
 	}
-
 	return appLogger.With(zap.String("component", component)).Sugar(), nil
+
 }
 
 // FunctionsLogger returns logger for functions
 func FunctionsLogger() (*zap.SugaredLogger, error) {
 
-	var err error
-	if fnLogger == nil {
-		fnLogger, err = customLogger(fnTCP)
-		if err != nil {
-			return nil, err
-		}
+	fnLogger, err := customLogger()
+	if err != nil {
+		return nil, err
 	}
 	return fnLogger.With(zap.String("component", "functions")).Sugar(), nil
+
 }
 
-func customLogger(tcp string) (*zap.Logger, error) {
+func customLogger() (*zap.Logger, error) {
 
 	l := os.Getenv(util.DirektivDebug)
 
@@ -92,7 +39,9 @@ func customLogger(tcp string) (*zap.Logger, error) {
 		inLvl = zapcore.DebugLevel
 	}
 
-	consoleOut := zapcore.Lock(os.Stdout)
+	errOut := zapcore.Lock(os.Stderr)
+	// stdOut := zapcore.Lock(os.Stdout)
+
 	logLvl := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= inLvl
 	})
@@ -103,23 +52,15 @@ func customLogger(tcp string) (*zap.Logger, error) {
 	encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
 
-	// tcp
-	tcpEncoder := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+	jsonEncoder := zapcore.NewJSONEncoder(encoderCfg)
 
-	writer, _, err := zap.Open(tcp)
-	if err != nil {
-		return nil, err
-	}
+	core := zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, errOut, logLvl),
+	)
 
-	var core zapcore.Core
-	if len(os.Getenv("NO_FLUENTBIT_TCP")) == 0 {
+	if os.Getenv(util.DirektivLogJSON) == "json" {
 		core = zapcore.NewTee(
-			zapcore.NewCore(consoleEncoder, consoleOut, logLvl),
-			zapcore.NewCore(tcpEncoder, writer, logLvl),
-		)
-	} else {
-		core = zapcore.NewTee(
-			zapcore.NewCore(consoleEncoder, consoleOut, logLvl),
+			zapcore.NewCore(jsonEncoder, errOut, logLvl),
 		)
 	}
 

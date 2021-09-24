@@ -6,17 +6,24 @@ config:
   inputs: |
     [INPUT]
         Name tail
-        Path /var/log/containers/direktiv*.log
+        Path /var/log/containers/direktiv*.log,/var/log/containers/workflow*.log,/var/log/containers/namespace*.log,/var/log/containers/global*.log
         multiline.parser docker, cri
         Tag kube.*
         Mem_Buf_Limit 5MB
         Skip_Long_Lines On
 
   filters: |
-    [FILTER]
-        Name kubernetes
-        Match kube.var.log.containers.direktiv*
-        Merge_Log On
-        Keep_Log Off
-        K8S-Logging.Parser On
-        K8S-Logging.Exclude On
+    # [FILTER]
+    #     Name kubernetes
+    #     Match kube.var.log.containers.direktiv*
+    #     Merge_Log On
+    #     Keep_Log Off
+    #     K8S-Logging.Parser On
+    #     K8S-Logging.Exclude On
+    #     Labels Off
+    #     Annotations Off
+    # [FILTER]
+    #     name        expect
+    #     key_exists  color
+    #     key_exists  $label['name']
+    #     action      exit

@@ -6,13 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/secrets"
 )
 
 func main() {
-
-	dlog.Init()
 
 	backend := "db"
 

@@ -204,10 +204,6 @@ func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 			Name:  util.DirektivNamespace,
 			Value: ns,
 		},
-		{
-			Name:  util.DirektivFluentbitTCP,
-			Value: "true",
-		},
 	}
 
 	return append(e, add...)

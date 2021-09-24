@@ -8,13 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/functions"
 )
 
 func main() {
-
-	dlog.Init()
 
 	// start health check
 	go startHealthHandler()
