@@ -90,6 +90,9 @@ const (
 	RN_UpdateNamespaceServiceTraffic = "updateNamespaceServiceTraffic"
 	RN_DeleteNamespaceRevision       = "deleteNamespaceRevision"
 
+	RN_ListWorkflowServices = "listWorkflowServices"
+	RN_ListWorkflowPods     = "listWorkflowPods"
+
 	// RN_GetWorkflowFunctions         = "getWorkflowFunctions"
 	// RN_namespaceWorkflowsInvoked    = "namespaceWorkflowsInvoked"
 	// RN_namespaceWorkflowsSuccessful = "namespaceWorkflowsSuccessful"
