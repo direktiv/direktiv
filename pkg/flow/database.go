@@ -65,6 +65,9 @@ func (srv *server) getNamespace(ctx context.Context, nsc *ent.NamespaceClient, n
 }
 
 func getInodePath(path string) string {
+	if strings.HasSuffix(path, "/") {
+		path = strings.TrimSuffix(path, "/")
+	}
 	if !strings.HasPrefix(path, "/") {
 		return "/" + path
 	}

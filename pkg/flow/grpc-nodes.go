@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -265,6 +266,10 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	pino, err := flow.getInode(ctx, inoc, ns, dir, req.GetParents())
 	if err != nil {
 		return nil, err
+	}
+
+	if pino.ino.Type != "directory" {
+		return nil, fmt.Errorf("parent node is not a directory")
 	}
 
 	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").Save(ctx)
