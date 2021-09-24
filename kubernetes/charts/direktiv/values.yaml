@@ -88,6 +88,7 @@ opentelemetry:
 
 api:
   replicas: 1
+  kongPlugins: "none"
   extraContainers: []
   # -- image for api pod
   image: "vorteil/flow"
