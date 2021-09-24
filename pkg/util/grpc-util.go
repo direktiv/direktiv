@@ -2,7 +2,9 @@ package util
 
 import (
 	"net"
+	"time"
 
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
 )
 
@@ -13,13 +15,16 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 
 	var additionalCallOptions []grpc.CallOption
 	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallSendMsgSize(maxSize))
-	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(maxSize))
+	additionalCallOptions = append(additionalCallOptions, grpc.MaxCallRecvMsgSize(maxSize),
+		grpc_retry.WithMax(10),
+		grpc_retry.WithPerRetryTimeout(1*time.Second))
 
 	var options []grpc.DialOption
 	options = append(options, grpc.WithInsecure())
 
 	options = append(options,
-		grpc.WithDefaultCallOptions(additionalCallOptions...))
+		grpc.WithDefaultCallOptions(additionalCallOptions...),
+	)
 
 	options = append(options, globalGRPCDialOptions...)
 
