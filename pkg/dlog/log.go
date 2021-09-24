@@ -26,7 +26,7 @@ func FunctionsLogger() (*zap.SugaredLogger, error) {
 	if err != nil {
 		return nil, err
 	}
-	return fnLogger.With(zap.String("component", "functions")).Sugar(), nil
+	return fnLogger.With(zap.String("component", "function")).Sugar(), nil
 
 }
 
@@ -40,7 +40,6 @@ func customLogger() (*zap.Logger, error) {
 	}
 
 	errOut := zapcore.Lock(os.Stderr)
-	// stdOut := zapcore.Lock(os.Stdout)
 
 	logLvl := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= inLvl

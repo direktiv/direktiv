@@ -1,7 +1,9 @@
 config:
   outputs: |
     [OUTPUT]
-        Name stdout
+        Name tcp
+        Host 192.168.1.10
+        Port 5555
 
   inputs: |
     [INPUT]
@@ -12,18 +14,12 @@ config:
         Mem_Buf_Limit 5MB
         Skip_Long_Lines On
 
-  filters: |
-    # [FILTER]
-    #     Name kubernetes
-    #     Match kube.var.log.containers.direktiv*
-    #     Merge_Log On
-    #     Keep_Log Off
-    #     K8S-Logging.Parser On
-    #     K8S-Logging.Exclude On
-    #     Labels Off
-    #     Annotations Off
-    # [FILTER]
-    #     name        expect
-    #     key_exists  color
-    #     key_exists  $label['name']
-    #     action      exit
+  # filters: |
+  #   [FILTER]
+  #       name        expect
+  #       key_exists  log
+  #       Match       *
+  #   [FILTER]
+  #       name        expect
+  #       key_exists  $log['functions']
+  #       Match       *

@@ -115,7 +115,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 	util.Trace(ctx, msg)
 
-	srv.fnLogger.Infof(msg, a...)
+	srv.fnLogger.Infof(msg)
 
 	_, err := logc.Create().SetMsg(msg).SetInstance(in).SetT(t).Save(ctx)
 	if err != nil {
