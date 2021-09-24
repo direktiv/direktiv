@@ -75,7 +75,13 @@ data:
         http: ""
 
       # additional sidecar containers
-      additionalContainers:
+      extraVolumes:
+{{- if .Values.opentelemetry.enabled }}
+{{- include "direktiv.opentelemetry.volume" . | nindent 8 }}
+{{- end }}
+
+      # additional sidecar containers
+      extraContainers:
 {{- if .Values.opentelemetry.enabled }}
 {{- include "direktiv.opentelemetry" . | nindent 8 }}
 {{- end }}

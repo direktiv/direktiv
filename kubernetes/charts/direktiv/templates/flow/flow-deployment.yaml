@@ -15,6 +15,7 @@ spec:
         prometheus.io/port: "2112"
         prometheus.io/path: "/metrics"
         prometheus.io/scrape: "true"
+        prometheus.io/scheme: "http"
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
     spec:

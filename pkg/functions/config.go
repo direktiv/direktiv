@@ -4,8 +4,10 @@ import (
 	"io"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	// "gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
+
+	kyaml "sigs.k8s.io/yaml"
 )
 
 type configReader struct {
@@ -46,7 +48,9 @@ type config struct {
 		HTTPS string `yaml:"https"`
 		HTTP  string `yaml:"http"`
 	} `yaml:"proxy"`
-	AdditionalContainers []v1.Container `yaml:"additionalContainers"`
+
+	ExtraContainers []v1.Container `yaml:"additionalContainers"`
+	ExtraVolumes    []v1.Volume    `yaml:"extraVolumes"`
 }
 
 func newConfigReader() *configReader {
@@ -76,7 +80,7 @@ func readAndSet(path string, target interface{}) {
 		return
 	}
 
-	err = yaml.Unmarshal(buf, target)
+	err = kyaml.Unmarshal(buf, target)
 	if err != nil {
 		logger.Errorf("can not unmarshal config file: %v", err)
 		return

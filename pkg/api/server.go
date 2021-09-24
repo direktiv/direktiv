@@ -55,12 +55,12 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	}
 	s.config = conf
 
-	logger.Debug("Initializing telemetry.")
-	s.telend, err = util.InitTelemetry(s.config, "direktiv", "direktiv/api")
-	if err != nil {
-		return nil, err
-	}
-	r.Use(util.TelemetryMiddleware)
+	// logger.Debug("Initializing telemetry.")
+	// s.telend, err = util.InitTelemetry(s.config, "direktiv", "direktiv/api")
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// r.Use(util.TelemetryMiddleware)
 
 	s.functionHandler, err = newFunctionHandler(logger,
 		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)

@@ -12,7 +12,7 @@ data:
       {{- if .Values.thanos.enabled }}
       prometheus-backend: {{ include "direktiv.fullname" . }}-thanos-query-frontend.{{ .Release.Namespace }}
       {{- else }}
-      prometheus-backend: {{ include "direktiv.fullname" . }}-kube-prometheus-prometheus.{{ .Release.Namespace }}
+      prometheus-backend: {{ include "direktiv.fullname" . }}-prometheus-server
       {{- end }}
       redis-backend: {{ .Values.redis.address }}
       {{- if .Values.opentelemetry.address }}

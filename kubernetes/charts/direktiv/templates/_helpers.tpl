@@ -126,10 +126,6 @@ otlp sidecar
     requests:
       cpu: 100m
       memory: 100Mi
-  ports:
-  - containerPort: 55679
-  - containerPort: 4317
-  - containerPort: 8888
   volumeMounts:
   - name: otel-agent-config-vol
     mountPath: /conf

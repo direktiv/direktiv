@@ -1182,8 +1182,8 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	c := []corev1.Container{uc, ds}
 
-	for i := range functionsConfig.AdditionalContainers {
-		container := functionsConfig.AdditionalContainers[i]
+	for i := range functionsConfig.ExtraContainers {
+		container := functionsConfig.ExtraContainers[i]
 		c = append(c, container)
 	}
 
@@ -1424,6 +1424,11 @@ func createVolumes() []corev1.Volume {
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
+	}
+
+	for i := range functionsConfig.ExtraVolumes {
+		vols := functionsConfig.ExtraVolumes[i]
+		volumes = append(volumes, vols)
 	}
 
 	return volumes

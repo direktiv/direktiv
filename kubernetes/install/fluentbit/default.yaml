@@ -1,0 +1,22 @@
+config:
+  outputs: |
+    [OUTPUT]
+        Name stdout
+
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/direktiv*.log
+        multiline.parser docker, cri
+        Tag kube.*
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines On
+
+  filters: |
+    [FILTER]
+        Name kubernetes
+        Match kube.var.log.containers.direktiv*
+        Merge_Log On
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
