@@ -496,9 +496,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		return
 	}
 
-	engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
-
 	if transition.NextState != "" {
+		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		engine.logToInstance(ctx, time.Now(), im.in, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
@@ -513,8 +512,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
-
-	engine.metricsCompleteInstance(ctx, im)
 
 	var err error
 
@@ -848,18 +845,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				if err, ok := err.Err.(*net.OpError); ok {
 					if _, ok := err.Err.(*net.DNSError); ok {
 
-						// // recreate if the service if it exists in the database but not knative
-						// if (ar.Container.Type == model.GlobalKnativeFunctionType ||
-						// 	ar.Container.Type == model.NamespacedKnativeFunctionType) &&
-						// 	!isScopedKnativeFunction(we.functionsClient, ar.Container.Service) {
-						// 	err := reconstructScopedKnativeFunction(we.functionsClient, ar.Container.Service)
-						// 	if err != nil {
-						// 		appLog.Errorf("can not create scoped knative function: %v", err)
-						// 		we.reportError(ar, err)
-						// 		return
-						// 	}
-						// }
-
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
 							!engine.isKnativeFunction(engine.actions.client, ar.Container.ID,
@@ -867,6 +852,18 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 							err := createKnativeFunction(engine.actions.client, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								engine.sugar.Errorf("can not create knative function: %v", err)
+								engine.reportError(ar, err)
+								return
+							}
+						}
+
+						// recreate if the service if it exists in the database but not knative
+						if (ar.Container.Type == model.GlobalKnativeFunctionType ||
+							ar.Container.Type == model.NamespacedKnativeFunctionType) &&
+							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
+							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
+							if err != nil {
+								engine.sugar.Errorf("can not create scoped knative function: %v", err)
 								engine.reportError(ar, err)
 								return
 							}

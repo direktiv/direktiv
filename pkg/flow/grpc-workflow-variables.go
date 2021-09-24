@@ -247,11 +247,65 @@ resend:
 
 }
 
+type varQuerier interface {
+	QueryVars() *ent.VarRefQuery
+}
+
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) error {
+
+	hash := checksum(data)
+
+	vref, err := q.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
+	if err != nil {
+
+		if !ent.IsNotFound(err) {
+			return err
+		}
+
+		vdata, err := vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		if err != nil {
+			return err
+		}
+
+		query := vrefc.Create().SetVardata(vdata).SetName(key)
+
+		switch q.(type) {
+		case *ent.Namespace:
+			query = query.SetNamespace(q.(*ent.Namespace))
+		case *ent.Workflow:
+			query = query.SetWorkflow(q.(*ent.Workflow))
+		case *ent.Instance:
+			query = query.SetInstance(q.(*ent.Instance))
+		default:
+			panic(errors.New("bad querier"))
+		}
+
+		_, err = query.Save(ctx)
+		if err != nil {
+			return err
+		}
+
+	} else {
+
+		vdata, err := vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
+		if err != nil {
+			return err
+		}
+
+		vdata, err = vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+
+}
+
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	hash := checksum(req.Data)
 
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
@@ -270,35 +324,11 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 
 	var vdata *ent.VarData
 
-	vref, err := d.wf.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
+	key := req.GetKey()
+
+	err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
 	if err != nil {
-
-		if !ent.IsNotFound(err) {
-			return nil, err
-		}
-
-		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(req.GetKey()).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-	} else {
-
-		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
+		return nil, err
 	}
 
 	err = tx.Commit()
@@ -306,14 +336,14 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Created workflow variable '%s'.", vref.Name)
+	flow.logToWorkflow(ctx, time.Now(), d.wf, "Created workflow variable '%s'.", key)
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetWorkflowVariableResponse
 
 	resp.Namespace = d.ns().Name
 	resp.Path = d.path
-	resp.Key = vref.Name
+	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
@@ -383,8 +413,6 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return errors.New("received more data than expected")
 	}
 
-	hash := checksum(buf.Bytes())
-
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return err
@@ -402,35 +430,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 
 	var vdata *ent.VarData
 
-	vref, err := d.wf.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
+	err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
 	if err != nil {
-
-		if !ent.IsNotFound(err) {
-			return err
-		}
-
-		vdata, err = vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		vref, err = vrefc.Create().SetVardata(vdata).SetWorkflow(d.wf).SetName(key).Save(ctx)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
-		if err != nil {
-			return err
-		}
-
-		vdata, err = vdata.Update().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-		if err != nil {
-			return err
-		}
-
+		return err
 	}
 
 	err = tx.Commit()
@@ -438,14 +440,14 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Created workflow variable '%s'.", vref.Name)
+	flow.logToWorkflow(ctx, time.Now(), d.wf, "Created workflow variable '%s'.", key)
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetWorkflowVariableResponse
 
 	resp.Namespace = d.ns().Name
 	resp.Path = d.path
-	resp.Key = vref.Name
+	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash

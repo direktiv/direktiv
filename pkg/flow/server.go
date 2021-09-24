@@ -87,12 +87,12 @@ func (srv *server) start(ctx context.Context) error {
 
 	var err error
 
-	// srv.sugar.Debug("Initializing telemetry.")
-	// telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer telend()
+	srv.sugar.Debug("Initializing telemetry.")
+	telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
+	if err != nil {
+		return err
+	}
+	defer telend()
 
 	go setupPrometheusEndpoint()
 

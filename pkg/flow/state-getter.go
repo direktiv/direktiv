@@ -90,11 +90,23 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 				return nil, NewInternalError(err)
 			}
 
+			// NOTE: this hack seems to be necessary for some reason...
+			wf, err = engine.db.Workflow.Get(ctx, wf.ID)
+			if err != nil {
+				return nil, NewInternalError(err)
+			}
+
 			ref, err = wf.QueryVars().Where(entvar.NameEQ(v.Key)).WithVardata().Only(ctx)
 
 		case "namespace":
 
 			ns, err := engine.InstanceNamespace(ctx, im)
+			if err != nil {
+				return nil, NewInternalError(err)
+			}
+
+			// NOTE: this hack seems to be necessary for some reason...
+			ns, err = engine.db.Namespace.Get(ctx, ns.ID)
 			if err != nil {
 				return nil, NewInternalError(err)
 			}
@@ -115,6 +127,8 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			} else {
 				return nil, NewInternalError(err)
 			}
+		} else if ref == nil {
+			data = make([]byte, 0)
 		} else {
 			data = ref.Edges.Vardata.Data
 		}
