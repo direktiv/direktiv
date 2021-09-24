@@ -496,9 +496,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		return
 	}
 
-	engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
-
 	if transition.NextState != "" {
+		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		engine.logToInstance(ctx, time.Now(), im.in, "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
@@ -513,8 +512,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
-
-	engine.metricsCompleteInstance(ctx, im)
 
 	var err error
 
