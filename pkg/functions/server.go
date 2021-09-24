@@ -5,7 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
+	"sync"
+	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/gomodule/redigo/redis"
 	_ "github.com/lib/pq"
@@ -39,6 +47,10 @@ const (
 type functionsServer struct {
 	igrpc.UnimplementedFunctionsServiceServer
 	db *ent.Client
+
+	reusableCacheLock  sync.Mutex
+	reusableCache      map[string]*cacheTuple
+	reusableCacheIndex map[string]*cacheTuple
 }
 
 // StartServer starts functions grpc server
@@ -79,7 +91,9 @@ func StartServer(echan chan error) {
 	}
 
 	fServer := functionsServer{
-		db: db,
+		db:                 db,
+		reusableCache:      make(map[string]*cacheTuple),
+		reusableCacheIndex: make(map[string]*cacheTuple),
 	}
 
 	err = util.GrpcStart(&grpcServer, "functions",
@@ -103,6 +117,9 @@ func StartServer(echan chan error) {
 	if err != nil {
 		echan <- fmt.Errorf("can't connect to redis, got error:\n%v", err)
 	}
+
+	go fServer.reusableGC()
+	go fServer.orphansGC()
 
 	go func() {
 
@@ -160,9 +177,7 @@ type HeartbeatTuple struct {
 
 func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
-	data, _ := json.Marshal(tuples)
-
-	logger.Info("HEARTBEAT:" + string(data))
+	logger.Debugf("Workflow functions heartbeat received.")
 
 	ctx := context.Background()
 
@@ -187,9 +202,182 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 			},
 		}
 
-		_, err := fServer.CreateFunction(ctx, in)
+		name, _, err := GenerateServiceName(tuple.NamespaceName, path, tuple.FunctionDefinition.ID)
 		if err != nil {
-			logger.Error(err)
+			logger.Errorf("Failed to generate service name for workflow function in heartbeat: %v", err)
+			continue
+		}
+
+		fServer.reusableCacheLock.Lock()
+
+		ct, exists := fServer.reusableCache[tuple.WorkflowID]
+		if exists {
+			ct.Add(name)
+		} else {
+			ct = new(cacheTuple)
+			ct.Add(name)
+			fServer.reusableCache[tuple.WorkflowID] = ct
+		}
+		fServer.reusableCacheIndex[name] = ct
+		fServer.reusableCacheLock.Unlock()
+
+		logger.Debugf("Creating workflow function in heartbeat: %s", name)
+
+		_, err = fServer.CreateFunction(ctx, in)
+		if err != nil {
+			if status.Code(err) != codes.AlreadyExists {
+				logger.Errorf("Failed to create workflow function in heartbeat: %v", err)
+				continue
+			}
+		}
+
+	}
+
+}
+
+func (fServer *functionsServer) reusableGC() {
+
+	ticker := time.NewTicker(time.Minute * 5)
+
+	for {
+
+		<-ticker.C
+
+		logger.Debugf("Reusable heartbeat garbage collector running.")
+
+		cutoff := time.Now().Add(time.Minute * -15)
+
+		fServer.reusableCacheLock.Lock()
+
+		for k, tuple := range fServer.reusableCache {
+
+			if tuple.t.Before(cutoff) {
+				go fServer.reusableFree(k)
+			}
+
+		}
+
+		fServer.reusableCacheLock.Unlock()
+
+	}
+
+}
+
+type cacheTuple struct {
+	t     time.Time
+	names []string
+}
+
+func (ct *cacheTuple) Add(name string) {
+
+	ct.t = time.Now()
+
+	sort.Strings(ct.names)
+
+	idx := sort.SearchStrings(ct.names, name)
+
+	if idx < len(ct.names) && ct.names[idx] == name {
+		return
+	}
+
+	ct.names = append(ct.names, name)
+
+}
+
+func (fServer *functionsServer) reusableFree(k string) {
+
+	fServer.reusableCacheLock.Lock()
+
+	x, exists := fServer.reusableCache[k]
+
+	if exists {
+		delete(fServer.reusableCache, k)
+		for _, name := range x.names {
+			delete(fServer.reusableCacheIndex, name)
+		}
+	}
+
+	fServer.reusableCacheLock.Unlock()
+
+	if !exists {
+		return
+	}
+
+	ctx := context.Background()
+
+	logger.Debugf("Reusable heartbeat garbage collector purging workflow functions: %s", k)
+
+	for i := range x.names {
+
+		name := x.names[i]
+
+		in := &igrpc.GetFunctionRequest{
+			ServiceName: &name,
+		}
+
+		logger.Debugf("Reusable heartbeat garbage collector purging workflow function: %s", name)
+
+		_, err := fServer.DeleteFunction(ctx, in)
+		if err != nil {
+			logger.Errorf("Reusable heartbeat garbage collector failed to purge workflow function: %v", err)
+			continue
+		}
+
+	}
+
+}
+
+func (fServer *functionsServer) orphansGC() {
+
+	ticker := time.NewTicker(time.Minute * 2)
+
+	for {
+
+		<-ticker.C
+
+		logger.Debugf("Reusable orphans garbage collector running.")
+
+		ctx := context.Background()
+
+		filtered := map[string]string{
+			"direktiv.io/scope": "workflow",
+		}
+
+		cs, err := fetchServiceAPI()
+		if err != nil {
+			err = fmt.Errorf("error getting clientset for knative: %v", err)
+			logger.Errorf("Reusable orphans garbage collector failed to list workflow functions: %v", err)
+			continue
+		}
+
+		lo := metav1.ListOptions{LabelSelector: labels.Set(filtered).String()}
+		l, err := cs.ServingV1().Services(functionsConfig.Namespace).List(context.Background(), lo)
+		if err != nil {
+			logger.Errorf("Reusable orphans garbage collector failed to list workflow functions: %v", err)
+			continue
+		}
+
+		for i := range l.Items {
+
+			item := l.Items[i]
+
+			fServer.reusableCacheLock.Lock()
+			_, exists := fServer.reusableCacheIndex[item.Name]
+			fServer.reusableCacheLock.Unlock()
+
+			if !exists {
+
+				logger.Debugf("Reusable orphans garbage collector deleting detected orphan function: %s", item.Name)
+
+				_, err := fServer.DeleteFunction(ctx, &igrpc.GetFunctionRequest{
+					ServiceName: &item.Name,
+				})
+				if err != nil {
+					logger.Errorf("Reusable orphans garbage collector failed to purge orphaned function: %v", err)
+					continue
+				}
+			}
+
 		}
 
 	}
