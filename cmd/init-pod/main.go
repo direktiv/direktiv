@@ -95,7 +95,8 @@ func initialize() error {
 
 func initFlow() error {
 
-	conn, err := util.GetEndpointTLS("service url")
+	conn, err := util.GetEndpointTLS(fmt.Sprintf("%s:7777",
+		os.Getenv(util.DirektivFlowEndpoint)))
 	if err != nil {
 		return err
 	}
