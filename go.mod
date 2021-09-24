@@ -16,6 +16,7 @@ require (
 	github.com/gomodule/redigo v1.8.5
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4

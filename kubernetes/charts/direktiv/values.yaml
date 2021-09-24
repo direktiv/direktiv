@@ -32,7 +32,7 @@ opentelemetry:
           http:
     exporters:
       otlp:
-        endpoint: "otel-collector.default:4317"
+        endpoint: "{{ .Values.opentelemetry.address }}"
         insecure: true
         sending_queue:
           num_consumers: 4

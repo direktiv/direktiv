@@ -518,8 +518,6 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.FunctionsService_WatchRevisionsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
 
-	logger.Debugf(">> %v %v", labels, revisionFilter)
-
 	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector:  labels,
 		TimeoutSeconds: &timeout,
@@ -1182,8 +1180,8 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 
 	c := []corev1.Container{uc, ds}
 
-	for i := range functionsConfig.ExtraContainers {
-		container := functionsConfig.ExtraContainers[i]
+	for i := range functionsConfig.extraContainers {
+		container := functionsConfig.extraContainers[i]
 		c = append(c, container)
 	}
 
@@ -1430,8 +1428,9 @@ func createVolumes() []corev1.Volume {
 		},
 	}
 
-	for i := range functionsConfig.ExtraVolumes {
-		vols := functionsConfig.ExtraVolumes[i]
+	for i := range functionsConfig.extraVolumes {
+		vols := functionsConfig.extraVolumes[i]
+		logger.Debugf("VLUME>>> %v", vols)
 		volumes = append(volumes, vols)
 	}
 
