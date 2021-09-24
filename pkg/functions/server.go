@@ -367,6 +367,10 @@ func (fServer *functionsServer) orphansGC() {
 
 			if !exists {
 
+				if !item.CreationTimestamp.Time.Before(time.Now().Add(time.Minute * -60)) {
+					continue
+				}
+
 				logger.Debugf("Reusable orphans garbage collector deleting detected orphan function: %s", item.Name)
 
 				_, err := fServer.DeleteFunction(ctx, &igrpc.GetFunctionRequest{
