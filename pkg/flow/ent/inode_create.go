@@ -385,7 +385,7 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 	if nodes := ic.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   inode.WorkflowTable,
 			Columns: []string{inode.WorkflowColumn},
 			Bidi:    false,
@@ -399,7 +399,6 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.workflow_inode = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -705,7 +705,7 @@ func (c *InodeClient) QueryWorkflow(i *Inode) *WorkflowQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(inode.Table, inode.FieldID, id),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, inode.WorkflowTable, inode.WorkflowColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, inode.WorkflowTable, inode.WorkflowColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -2133,7 +2133,7 @@ func (c *WorkflowClient) QueryInode(w *Workflow) *InodeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workflow.Table, workflow.FieldID, id),
 			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, workflow.InodeTable, workflow.InodeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, workflow.InodeTable, workflow.InodeColumn),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil

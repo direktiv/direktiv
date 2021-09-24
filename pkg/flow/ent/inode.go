@@ -35,7 +35,6 @@ type Inode struct {
 	Edges            InodeEdges `json:"edges"`
 	inode_children   *uuid.UUID
 	namespace_inodes *uuid.UUID
-	workflow_inode   *uuid.UUID
 }
 
 // InodeEdges holds the relations/edges for other nodes in the graph.
@@ -121,8 +120,6 @@ func (*Inode) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case inode.ForeignKeys[1]: // namespace_inodes
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case inode.ForeignKeys[2]: // workflow_inode
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Inode", columns[i])
 		}
@@ -189,13 +186,6 @@ func (i *Inode) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				i.namespace_inodes = new(uuid.UUID)
 				*i.namespace_inodes = *value.S.(*uuid.UUID)
-			}
-		case inode.ForeignKeys[2]:
-			if value, ok := values[j].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_inode", values[j])
-			} else if value.Valid {
-				i.workflow_inode = new(uuid.UUID)
-				*i.workflow_inode = *value.S.(*uuid.UUID)
 			}
 		}
 	}

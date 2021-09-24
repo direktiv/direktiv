@@ -150,7 +150,7 @@ func (iq *InodeQuery) QueryWorkflow() *WorkflowQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(inode.Table, inode.FieldID, selector),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, inode.WorkflowTable, inode.WorkflowColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, inode.WorkflowTable, inode.WorkflowColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -466,7 +466,7 @@ func (iq *InodeQuery) sqlAll(ctx context.Context) ([]*Inode, error) {
 			iq.withWorkflow != nil,
 		}
 	)
-	if iq.withNamespace != nil || iq.withParent != nil || iq.withWorkflow != nil {
+	if iq.withNamespace != nil || iq.withParent != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -580,31 +580,30 @@ func (iq *InodeQuery) sqlAll(ctx context.Context) ([]*Inode, error) {
 	}
 
 	if query := iq.withWorkflow; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Inode)
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Inode)
 		for i := range nodes {
-			if nodes[i].workflow_inode == nil {
-				continue
-			}
-			fk := *nodes[i].workflow_inode
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
 		}
-		query.Where(workflow.IDIn(ids...))
+		query.withFKs = true
+		query.Where(predicate.Workflow(func(s *sql.Selector) {
+			s.Where(sql.InValues(inode.WorkflowColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
+			fk := n.inode_workflow
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "inode_workflow" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_inode" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.Workflow = n
-			}
+			node.Edges.Workflow = n
 		}
 	}
 

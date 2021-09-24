@@ -36,7 +36,8 @@ func (Inode) Edges() []ent.Edge {
 		edge.From("namespace", Namespace.Type).Ref("inodes").Unique().Required(),
 		edge.To("children", Inode.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("parent", Inode.Type).Ref("children").Unique(),
-		edge.From("workflow", Workflow.Type).Ref("inode").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		// edge.From("workflow", Workflow.Type).Ref("inode").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("workflow", Workflow.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique(),
 	}
 }
 

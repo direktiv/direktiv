@@ -782,8 +782,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		svn, _, err = functions.GenerateServiceName(ar.Workflow.Namespace,
-			ar.Workflow.ID, ar.Container.ID)
+		svn, _, err = functions.GenerateServiceName(ar.Workflow.NamespaceName,
+			ar.Workflow.WorkflowName, ar.Container.ID)
 		if err != nil {
 			engine.sugar.Errorf("can not create service name: %v", err)
 			engine.reportError(ar, err)
@@ -835,7 +835,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
 	// one minute wait max
-	for i := 0; i < 60; i++ {
+	for i := 0; i < 180; i++ {
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -863,7 +863,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
 							!engine.isKnativeFunction(engine.actions.client, ar.Container.ID,
-								ar.Workflow.Namespace, ar.Workflow.ID) {
+								ar.Workflow.NamespaceName, ar.Workflow.WorkflowName) {
 							err := createKnativeFunction(engine.actions.client, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								engine.sugar.Errorf("can not create knative function: %v", err)

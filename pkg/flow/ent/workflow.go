@@ -25,6 +25,7 @@ type Workflow struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowQuery when eager-loading is set.
 	Edges               WorkflowEdges `json:"edges"`
+	inode_workflow      *uuid.UUID
 	namespace_workflows *uuid.UUID
 }
 
@@ -155,7 +156,9 @@ func (*Workflow) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullString)
 		case workflow.FieldID:
 			values[i] = new(uuid.UUID)
-		case workflow.ForeignKeys[0]: // namespace_workflows
+		case workflow.ForeignKeys[0]: // inode_workflow
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case workflow.ForeignKeys[1]: // namespace_workflows
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Workflow", columns[i])
@@ -191,6 +194,13 @@ func (w *Workflow) assignValues(columns []string, values []interface{}) error {
 				w.LogToEvents = value.String
 			}
 		case workflow.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field inode_workflow", values[i])
+			} else if value.Valid {
+				w.inode_workflow = new(uuid.UUID)
+				*w.inode_workflow = *value.S.(*uuid.UUID)
+			}
+		case workflow.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_workflows", values[i])
 			} else if value.Valid {

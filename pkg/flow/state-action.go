@@ -152,6 +152,9 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Workflow.ID = wf.ID.String()
 	ar.Workflow.Timeout = timeout
 
+	ar.Workflow.NamespaceName = im.in.Edges.Namespace.Name
+	ar.Workflow.WorkflowName = im.in.As
+
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
 		ar.Workflow.Namespace = im.in.Edges.Namespace.ID.String()
@@ -172,6 +175,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Size = con.Size
 		ar.Container.Scale = con.Scale
 		ar.Container.ID = con.ID
+		ar.Container.Service, _, err = functions.GenerateServiceName(im.in.Edges.Namespace.Name, im.in.As, con.ID)
+		if err != nil {
+			panic(err)
+		}
 		ar.Container.Files = con.Files
 	case model.IsolatedContainerFunctionType:
 		con := fn.(*model.IsolatedFunctionDefinition)
@@ -398,8 +405,6 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		err = NewInternalError(err)
 		return
 	}
-
-	fmt.Println("MEMORY", sd, im.in.Edges.Runtime.Memory)
 
 	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)
 	if err != nil {

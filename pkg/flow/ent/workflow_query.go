@@ -96,7 +96,7 @@ func (wq *WorkflowQuery) QueryInode() *InodeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workflow.Table, workflow.FieldID, selector),
 			sqlgraph.To(inode.Table, inode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, workflow.InodeTable, workflow.InodeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, workflow.InodeTable, workflow.InodeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(wq.driver.Dialect(), step)
 		return fromU, nil
@@ -653,7 +653,7 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 			wq.withWfevents != nil,
 		}
 	)
-	if wq.withNamespace != nil {
+	if wq.withInode != nil || wq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -680,30 +680,31 @@ func (wq *WorkflowQuery) sqlAll(ctx context.Context) ([]*Workflow, error) {
 	}
 
 	if query := wq.withInode; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[uuid.UUID]*Workflow)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Workflow)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
+			if nodes[i].inode_workflow == nil {
+				continue
+			}
+			fk := *nodes[i].inode_workflow
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		query.withFKs = true
-		query.Where(predicate.Inode(func(s *sql.Selector) {
-			s.Where(sql.InValues(workflow.InodeColumn, fks...))
-		}))
+		query.Where(inode.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.workflow_inode
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "workflow_inode" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "workflow_inode" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v`, n.ID)
 			}
-			node.Edges.Inode = n
+			for i := range nodes {
+				nodes[i].Edges.Inode = n
+			}
 		}
 	}
 

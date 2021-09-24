@@ -60,13 +60,15 @@ type functionContainer struct {
 }
 
 type functionWorkflow struct {
-	Name       string
-	ID         string
-	InstanceID string
-	Namespace  string
-	State      string
-	Step       int
-	Timeout    int
+	Name          string
+	ID            string
+	WorkflowName  string
+	InstanceID    string
+	Namespace     string
+	NamespaceName string
+	State         string
+	Step          int
+	Timeout       int
 }
 
 func (engine *engine) cancelJob(ctx context.Context, client igrpc.FunctionsServiceClient,
@@ -149,8 +151,8 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 	cr := igrpc.CreateFunctionRequest{
 		Info: &igrpc.BaseInfo{
 			Name:      &ir.Container.ID,
-			Namespace: &ir.Workflow.Namespace,
-			Workflow:  &ir.Workflow.ID,
+			Namespace: &ir.Workflow.NamespaceName,
+			Workflow:  &ir.Workflow.WorkflowName,
 			Image:     &ir.Container.Image,
 			Cmd:       &ir.Container.Cmd,
 			Size:      &sz,

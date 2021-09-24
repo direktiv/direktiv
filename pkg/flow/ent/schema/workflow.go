@@ -25,8 +25,9 @@ func (Workflow) Fields() []ent.Field {
 // Edges of the Workflow.
 func (Workflow) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("inode", Inode.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique(),
-		edge.From("namespace", Namespace.Type).Ref("workflows").Unique().Required(),
+		// edge.To("inode", Inode.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique(),
+		edge.From("inode", Inode.Type).Ref("workflow").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.From("namespace", Namespace.Type).Ref("workflows").Unique().Required().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("revisions", Revision.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("refs", Ref.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("instances", Instance.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
