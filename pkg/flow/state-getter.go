@@ -115,6 +115,8 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			} else {
 				return nil, NewInternalError(err)
 			}
+		} else if ref == nil {
+			data = make([]byte, 0)
 		} else {
 			data = ref.Edges.Vardata.Data
 		}

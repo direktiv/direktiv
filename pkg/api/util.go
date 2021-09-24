@@ -64,8 +64,8 @@ func pathHandlerSSE(r *mux.Router, name, op string, handler func(http.ResponseWr
 }
 
 func pathHandlerPair(r *mux.Router, name, op string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
+	pathHandlerSSE(r, name, op, sseHandler)
 	pathHandler(r, http.MethodGet, name, op, handler)
-	pathHandlerSSE(r, name, op, handler)
 }
 
 func loadRawBody(r *http.Request) ([]byte, error) {

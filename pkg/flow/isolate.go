@@ -114,6 +114,38 @@ func (engine *engine) addPodFunction(ctx context.Context,
 
 }
 
+func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClient,
+	serviceName string) bool {
+
+	// search annotations
+	a := make(map[string]string)
+	a[functions.ServiceKnativeHeaderName] = serviceName
+
+	engine.sugar.Debugf("knative function search: %v", a)
+
+	_, err := client.GetFunction(context.Background(), &igrpc.GetFunctionRequest{
+		ServiceName: &serviceName,
+	})
+
+	if err != nil {
+		engine.sugar.Errorf("can not get knative service: %v", err)
+		return false
+	}
+
+	return true
+}
+
+func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
+	serviceName string) error {
+
+	cr := igrpc.ReconstructFunctionRequest{
+		Name: &serviceName,
+	}
+
+	_, err := client.ReconstructFunction(context.Background(), &cr)
+	return err
+}
+
 func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient,
 	name, namespace, workflow string) bool {
 

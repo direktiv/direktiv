@@ -108,8 +108,7 @@ func isScopedKnativeFunction(client igrpc.FunctionsServiceClient,
 
 	// search annotations
 	a := make(map[string]string)
-	// FIXME: make const
-	a["serving.knative.dev/service"] = serviceName
+	a[functions.ServiceKnativeHeaderName] = serviceName
 
 	appLog.Debugf("knative function search: %v", a)
 

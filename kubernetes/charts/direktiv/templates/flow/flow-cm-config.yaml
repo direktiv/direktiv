@@ -12,17 +12,17 @@ data:
       {{- if .Values.thanos.enabled }}
       prometheus-backend: {{ include "direktiv.fullname" . }}-thanos-query-frontend.{{ .Release.Namespace }}
       {{- else }}
-      prometheus-backend: {{ include "direktiv.fullname" . }}-kube-prometheus-prometheus.{{ .Release.Namespace }}
+      prometheus-backend: {{ include "direktiv.fullname" . }}-prometheus-server
       {{- end }}
       redis-backend: {{ .Values.redis.address }}
       {{- if .Values.opentelemetry.address }}
       {{- if .Values.opentelemetry.enabled }}
       opentelemetry-backend: {{ .Values.opentelemetry.address }}
       {{- else }}
-      opentelemetry-backend: none
+      opentelemetry-backend: ""
       {{- end }}
       {{- else if .Values.opentelemetry.enabled }}
-      opentelemetry-backend: host
+      opentelemetry-backend: "localhost:4317"
       {{- else }}
-      opentelemetry-backend: none
+      opentelemetry-backend: ""
       {{- end }}

@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	appTCP = "http://127.0.0.1:8889"
-	fnTCP  = "http://127.0.0.1:8888"
+	appTCP = "http://127.0.0.1:8866"
+	fnTCP  = "http://127.0.0.1:8877"
 )
 
 var (

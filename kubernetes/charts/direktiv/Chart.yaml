@@ -24,9 +24,12 @@ version: 0.1.0
 appVersion: "v0.4.1"
 
 dependencies:
-    - name: kube-prometheus
-      repository: "https://charts.bitnami.com/bitnami"
-      version: "6.1.8"
+    # - name: kube-prometheus
+    #   repository: "https://charts.bitnami.com/bitnami"
+    #   version: "6.1.8"
+    - name: prometheus
+      repository: "https://prometheus-community.github.io/helm-charts"
+      version: "14.7.1"
     - name: "minio-operator"
       condition: minio-operator.enabled
       repository: "https://operator.min.io/"
