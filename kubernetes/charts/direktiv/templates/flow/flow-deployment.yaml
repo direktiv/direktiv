@@ -44,8 +44,8 @@ spec:
               memory: "512Mi"
               cpu: "250m"
             limits:
-              memory: "8192Mi"
-              cpu: "8"
+              memory: "2048Mi"
+              cpu: "4"
           image: "{{ .Values.registry }}/{{ .Values.flow.image }}:{{ .Values.flow.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ["/bin/direktiv", "server", "/etc/direktiv/flow-config.yaml"]
