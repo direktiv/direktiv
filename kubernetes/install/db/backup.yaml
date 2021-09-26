@@ -3,25 +3,28 @@ kind: CronJob
 metadata:
   name: backupdb
   annotations:
-        linkerd.io/inject: disabled
+    linkerd.io/inject: disabled
 spec:
-  schedule: "* * * * *"
+  schedule: '* * * * *'
   jobTemplate:
     spec:
       template:
         metadata:
-                annotations:
-                        linkerd.io/inject: disabled        
+          annotations:
+            linkerd.io/inject: disabled
         spec:
           containers:
-          - name: hello
-            image: localhost:5000/backup
-            imagePullPolicy: IfNotPresent
-            env:
-            - name: PGPASSWORD
-              value: "yugabyte"
-            command:
-            - /bin/sh
-            - -c
-            - date; echo "backup start"; /yugabyte-2.9.0.0/postgres/bin/ysql_dump -d direktiv -h yb-tservers.yugabyte > /tmp/data.sql; ls -la /tmp 
+            - name: hello
+              image: 'localhost:5000/backup'
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PGPASSWORD
+                  value: yugabyte # change yugabyte pwd here and add additional commands, e.g. scp
+              command:
+                - /bin/sh
+                - '-c'
+                - >-
+                  date; echo "backup start";
+                  /yugabyte-2.9.0.0/postgres/bin/ysql_dump -d direktiv -h
+                  yb-tservers.yugabyte > /tmp/data.sql; ls -la /tmp
           restartPolicy: Never
