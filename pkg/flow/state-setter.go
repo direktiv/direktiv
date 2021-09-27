@@ -80,21 +80,19 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, NewInternalError(err)
 		}
 
-		hash := checksum(data)
+		// tx, err := engine.db.Tx(ctx)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// defer rollback(tx)
+		//
+		// vdatac := tx.VarData
+		// vrefc := tx.VarRef
 
-		tx, err := engine.db.Tx(ctx)
-		if err != nil {
-			return nil, err
-		}
-		defer rollback(tx)
+		vdatac := engine.db.VarData
+		vrefc := engine.db.VarRef
 
-		vdatac := tx.VarData
-		vrefc := tx.VarRef
-
-		vdata, err := vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
+		var q varQuerier
 
 		switch v.Scope {
 
@@ -103,41 +101,49 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			fallthrough
 
 		case "instance":
-
-			_, err = vrefc.Create().SetVardata(vdata).SetInstance(im.in).SetName(v.Key).Save(ctx)
-
+			q = im.in
 		case "workflow":
-
 			wf, err := engine.InstanceWorkflow(ctx, im)
 			if err != nil {
 				return nil, err
 			}
 
-			_, err = vrefc.Create().SetVardata(vdata).SetWorkflow(wf).SetName(v.Key).Save(ctx)
+			wf, err = engine.db.Workflow.Get(ctx, wf.ID)
+			if err != nil {
+				return nil, err
+			}
 
+			q = wf
 		case "namespace":
-
 			ns, err := engine.InstanceNamespace(ctx, im)
 			if err != nil {
 				return nil, err
 			}
 
-			_, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(v.Key).Save(ctx)
+			ns, err = engine.db.Namespace.Get(ctx, ns.ID)
+			if err != nil {
+				return nil, err
+			}
 
+			q = ns
 		default:
-
 			return nil, NewInternalError(errors.New("invalid scope"))
+		}
 
+		err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data)
+		if err != nil {
+			return nil, err
 		}
 
 		if err != nil {
 			return nil, err
 		}
 
-		err = tx.Commit()
-		if err != nil {
-			return nil, err
-		}
+		// TODO: make this a transaction?
+		// err = tx.Commit()
+		// if err != nil {
+		// 	return nil, err
+		// }
 
 	}
 

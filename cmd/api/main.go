@@ -9,8 +9,6 @@ import (
 
 func main() {
 
-	dlog.Init()
-
 	logger, err := dlog.ApplicationLogger("api")
 	if err != nil {
 		log.Fatalf("can not get logger: %v", err)

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
@@ -37,14 +38,14 @@ var (
 )
 
 var (
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 )
 
 func main() {
 
 	var err error
 
-	logger, err = zap.NewDevelopment()
+	logger, err = dlog.ApplicationLogger("flow")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
 		os.Exit(1)

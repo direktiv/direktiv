@@ -8,9 +8,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
 	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -310,8 +308,6 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	hash := checksum(req.Data)
-
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return nil, err
@@ -329,35 +325,11 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	var vdata *ent.VarData
 
-	vref, err := ns.QueryVars().Where(varref.NameEQ(req.GetKey())).Only(ctx)
+	key := req.GetKey()
+
+	err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
 	if err != nil {
-
-		if !ent.IsNotFound(err) {
-			return nil, err
-		}
-
-		vdata, err = vdatac.Create().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(req.GetKey()).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-	} else {
-
-		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		vdata, err = vdata.Update().SetSize(len(req.Data)).SetHash(hash).SetData(req.Data).Save(ctx)
-		if err != nil {
-			return nil, err
-		}
-
+		return nil, err
 	}
 
 	err = tx.Commit()
@@ -365,13 +337,13 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", vref.Name)
+	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
 	flow.pubsub.NotifyNamespaceVariables(ns)
 
 	var resp grpc.SetNamespaceVariableResponse
 
 	resp.Namespace = ns.Name
-	resp.Key = vref.Name
+	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
@@ -440,8 +412,6 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		return errors.New("received more data than expected")
 	}
 
-	hash := checksum(buf.Bytes())
-
 	tx, err := flow.db.Tx(ctx)
 	if err != nil {
 		return err
@@ -459,35 +429,9 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	var vdata *ent.VarData
 
-	vref, err := ns.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
+	err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
 	if err != nil {
-
-		if !ent.IsNotFound(err) {
-			return err
-		}
-
-		vdata, err = vdatac.Create().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		vref, err = vrefc.Create().SetVardata(vdata).SetNamespace(ns).SetName(key).Save(ctx)
-		if err != nil {
-			return err
-		}
-
-	} else {
-
-		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
-		if err != nil {
-			return err
-		}
-
-		vdata, err = vdata.Update().SetSize(buf.Len()).SetHash(hash).SetData(buf.Bytes()).Save(ctx)
-		if err != nil {
-			return err
-		}
-
+		return err
 	}
 
 	err = tx.Commit()
@@ -495,13 +439,13 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		return err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", vref.Name)
+	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
 	flow.pubsub.NotifyNamespaceVariables(ns)
 
 	var resp grpc.SetNamespaceVariableResponse
 
 	resp.Namespace = ns.Name
-	resp.Key = vref.Name
+	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
