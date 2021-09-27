@@ -92,7 +92,36 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 
+	// swagger:operation GET /api/functions/{function} getGlobalFunctions
+	// ---
+	// summary: Returns list of global functions.
+	// description: Returns list of global Knative functions with 'global-' prefix.
+	// parameters:
+	// - name: function
+	//   in: path
+	//   description: name of the function
+	//   type: string
+	//   required: true
+	// responses:
+	//   "200":
+	//     "description": "service created"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
+
+	// .// jens
+
+	// swagger:operation POST /api/functions/{function} createGlobalFunction UpdateServiceRequest
+	// ---
+	// summary: Creates a global function.
+	// description: Creates a global Knative function with 'global-' prefix.
+	// parameters:
+	// - name: function
+	//   in: path
+	//   description: name of the function
+	//   type: string
+	//   required: true
+	// responses:
+	//   "200":
+	//     "description": "service created"
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
@@ -498,6 +527,8 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 
 	ctx := r.Context()
 
+	vers := r.URL.Query().Get("version")
+
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
@@ -507,8 +538,11 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	annotations := make(map[string]string)
 
@@ -803,6 +837,9 @@ func (h *functionHandler) createService(ns, nsName, wf, path, rev string,
 
 }
 
+// jens
+
+// swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
 	Image          *string `json:"image,omitempty"`
 	Cmd            *string `json:"cmd,omitempty"`
@@ -1195,6 +1232,8 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 
 	ctx := r.Context()
 
+	vers := r.URL.Query().Get("version")
+
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
@@ -1210,7 +1249,11 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		rev = "00001"
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
+
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 
@@ -1235,6 +1278,7 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	vers := r.URL.Query().Get("version")
 
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
@@ -1244,9 +1288,11 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 		respond(w, nil, err)
 		return
 	}
-
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
 
