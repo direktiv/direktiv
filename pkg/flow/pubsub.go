@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"go.uber.org/zap"
 )
@@ -58,28 +59,25 @@ type PubsubUpdate struct {
 const flowSync = "flowsync"
 
 type notifier interface {
-	// redisPool() *redis.Pool
 	notifyCluster(string) error
 	notifyHostname(string, string) error
 }
 
 func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pubsub, error) {
 
-	// reportProblem := func(ev pq.ListenerEventType, err error) {
-	// 	if err != nil {
-	// 		log.Errorf("pubsub error: %v\n", err)
-	// 		os.Exit(1)
-	// 	}
-	// }
+	reportProblem := func(ev pq.ListenerEventType, err error) {
+		if err != nil {
+			log.Errorf("pubsub error: %v\n", err)
+			os.Exit(1)
+		}
+	}
 
-	// listener := pq.NewListener(database, 10*time.Second,
-	// 	time.Minute, reportProblem)
-	// err := listener.Listen(flowSync)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	var err error
+	listener := pq.NewListener(database, 10*time.Second,
+		time.Minute, reportProblem)
+	err := listener.Listen(flowSync)
+	if err != nil {
+		return nil, err
+	}
 
 	pubsub := new(pubsub)
 	pubsub.id = uuid.New()
@@ -140,58 +138,47 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 	//
 	// }()
 
-	/*
+	go func(l *pq.Listener) {
 
-		go func(l *pq.Listener) {
+		defer pubsub.Close()
+		defer l.UnlistenAll()
 
-			defer pubsub.Close()
-			defer l.UnlistenAll()
+		for {
 
-			for {
+			var more bool
+			var notification *pq.Notification
 
-				var more bool
-				var notification *pq.Notification
-
-				select {
-				case <-pubsub.closer:
-				case notification, more = <-l.Notify:
-					if !more {
-						log.Errorf("database listener closed\n")
-						return
-					}
+			select {
+			case <-pubsub.closer:
+			case notification, more = <-l.Notify:
+				if !more {
+					log.Errorf("database listener closed\n")
+					return
 				}
-
-				log.Debugf("PS RECV")
-
-				if notification == nil {
-					log.Debugf("PS RECV OUT 1")
-					continue
-				}
-
-				req := new(PubsubUpdate)
-				err = json.Unmarshal([]byte(notification.Extra), req)
-				if err != nil {
-					log.Errorf("unexpected notification on database listener: %v\n", err)
-					continue
-				}
-
-				handler, exists := pubsub.handlers[req.Handler]
-				if !exists {
-					log.Errorf("unexpected notification type on database listener: %v\n", err)
-					continue
-				}
-
-				log.Debugf("PS RECV PRE HANDLER")
-
-				handler(req)
-
-				log.Debugf("PS RECV POST HANDLER")
-
 			}
 
-		}(listener)
+			if notification == nil {
+				continue
+			}
 
-	*/
+			req := new(PubsubUpdate)
+			err = json.Unmarshal([]byte(notification.Extra), req)
+			if err != nil {
+				log.Errorf("unexpected notification on database listener: %v\n", err)
+				continue
+			}
+
+			handler, exists := pubsub.handlers[req.Handler]
+			if !exists {
+				log.Errorf("unexpected notification type on database listener: %v\n", err)
+				continue
+			}
+
+			handler(req)
+
+		}
+
+	}(listener)
 
 	return pubsub, nil
 

@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -98,14 +99,23 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		return
 	}
 
-	// s := marshal(tuples)
+	msg := marshal(tuples)
 
-	// conn := flow.server.redis.Get()
-	// TODO: do we need to flush or close this conn?
+	ctx := context.Background()
 
-	// _, err := conn.Do("PUBLISH", functions.FunctionsChannel, s)
-	// if err != nil {
-	// 	flow.sugar.Error(err)
-	// }
+	conn, err := flow.db.DB().Conn(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer conn.Close()
+
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", functions.FunctionsChannel, msg)
+	if err, ok := err.(*pq.Error); ok {
+
+		flow.sugar.Errorf("db notification failed: %v", err)
+		return
+
+	}
 
 }

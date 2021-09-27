@@ -152,6 +152,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	// ar.Workflow.Name = wli.wf.Name
 	ar.Workflow.WorkflowID = wf.ID.String()
 	ar.Workflow.Timeout = timeout
+	ar.Workflow.Revision = im.in.Edges.Revision.Hash
 
 	ar.Workflow.NamespaceName = im.in.Edges.Namespace.Name
 	ar.Workflow.Path = im.in.As
@@ -169,7 +170,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Data = inputData
 
 	wfID := im.in.Edges.Workflow.ID.String()
-	revID := im.in.Edges.Revision.ID.String()
+	revID := im.in.Edges.Revision.Hash
 	nsID := im.in.Edges.Namespace.ID.String()
 
 	switch fnt {

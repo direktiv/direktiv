@@ -268,7 +268,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -372,7 +372,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
 		return err
 	}

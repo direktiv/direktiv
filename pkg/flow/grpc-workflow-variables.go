@@ -251,7 +251,7 @@ type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) error {
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) (*ent.VarData, error) {
 
 	hash := checksum(data)
 
@@ -259,12 +259,12 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	if err != nil {
 
 		if !ent.IsNotFound(err) {
-			return err
+			return nil, err
 		}
 
 		vdata, err := vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		query := vrefc.Create().SetVardata(vdata).SetName(key)
@@ -282,24 +282,26 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 
 		_, err = query.Save(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
+
+		return vdata, nil
 
 	} else {
 
 		vdata, err := vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		vdata, err = vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-	}
+		return vdata, nil
 
-	return nil
+	}
 
 }
 
@@ -326,7 +328,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 
 	key := req.GetKey()
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -430,7 +432,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
 	if err != nil {
 		return err
 	}

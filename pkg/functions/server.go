@@ -2,6 +2,7 @@ package functions
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -13,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/functions/ent"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -116,35 +118,85 @@ func StartServer(echan chan error) {
 	go fServer.reusableGC()
 	go fServer.orphansGC()
 
-	go func() {
+	// go func() {
 
-		// rc := pool.Get()
-		//
-		// psc := redis.PubSubConn{Conn: rc}
-		// if err := psc.PSubscribe(FunctionsChannel); err != nil {
-		// 	logger.Error(err.Error())
-		// }
-		//
-		// for {
-		// 	switch v := psc.Receive().(type) {
-		// 	default:
-		// 		data, _ := json.Marshal(v)
-		// 		logger.Debug(string(data))
-		// 	case redis.Message:
-		//
-		// 		var tuples []*HeartbeatTuple
-		//
-		// 		err = json.Unmarshal(v.Data, &tuples)
-		// 		if err != nil {
-		// 			logger.Error(fmt.Sprintf("Unexpected notification on redis listener: %v", err))
-		// 		} else {
-		// 			go fServer.heartbeat(tuples)
-		// 		}
-		//
-		// 	}
-		// }
+	// 	rc := pool.Get()
 
-	}()
+	// 	psc := redis.PubSubConn{Conn: rc}
+	// 	if err := psc.PSubscribe(FunctionsChannel); err != nil {
+	// 		logger.Error(err.Error())
+	// 	}
+
+	// 	for {
+	// 		switch v := psc.Receive().(type) {
+	// 		default:
+	// 			data, _ := json.Marshal(v)
+	// 			logger.Debug(string(data))
+	// 		case redis.Message:
+
+	// 			var tuples []*HeartbeatTuple
+
+	// 			err = json.Unmarshal(v.Data, &tuples)
+	// 			if err != nil {
+	// 				logger.Error(fmt.Sprintf("Unexpected notification on redis listener: %v", err))
+	// 			} else {
+	// 				go fServer.heartbeat(tuples)
+	// 			}
+
+	// 		}
+	// 	}
+
+	// }()
+
+	reportProblem := func(ev pq.ListenerEventType, err error) {
+		if err != nil {
+			logger.Errorf("pubsub error: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	listener := pq.NewListener(os.Getenv(util.DBConn), 10*time.Second,
+		time.Minute, reportProblem)
+	err = listener.Listen(FunctionsChannel)
+	if err != nil {
+		echan <- err
+		return
+	}
+
+	go func(l *pq.Listener) {
+
+		defer l.UnlistenAll()
+
+		for {
+
+			var more bool
+			var notification *pq.Notification
+
+			select {
+			case notification, more = <-l.Notify:
+				if !more {
+					logger.Errorf("database listener closed\n")
+					return
+				}
+			}
+
+			if notification == nil {
+				continue
+			}
+
+			var tuples []*HeartbeatTuple
+
+			err = json.Unmarshal([]byte(notification.Extra), &tuples)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Unexpected notification on redis listener: %v", err))
+				continue
+			} else {
+				go fServer.heartbeat(tuples)
+			}
+
+		}
+
+	}(listener)
 
 	err = fServer.reconstructServices(context.Background())
 	if err != nil {
