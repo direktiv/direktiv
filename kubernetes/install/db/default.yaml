@@ -21,22 +21,3 @@ pgpool:
         memory: "1Gi"
         cpu: "1"
   adminPassword: "password"
-
-# storage:
-#   master:
-#     count: 2
-#     storageClass: local-path
-#   tserver:
-#     count: 2
-#     storageClass: local-path
-#
-# enableLoadBalancer: false
-#
-# authCredentials:
-#   ysql:
-#     user: "direktiv"
-#     password: "direktivdirektiv"
-#     database: "direktiv"
-#
-# tls:
-#   enabled: true
