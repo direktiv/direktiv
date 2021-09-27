@@ -511,6 +511,8 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 
 	ctx := r.Context()
 
+	vers := r.URL.Query().Get("version")
+
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
@@ -520,8 +522,11 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	annotations := make(map[string]string)
 
@@ -1208,6 +1213,8 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 
 	ctx := r.Context()
 
+	vers := r.URL.Query().Get("version")
+
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
@@ -1223,7 +1230,11 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		rev = "00001"
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
+
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 
@@ -1248,6 +1259,7 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	vers := r.URL.Query().Get("version")
 
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
@@ -1257,9 +1269,11 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 		respond(w, nil, err)
 		return
 	}
-
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
 

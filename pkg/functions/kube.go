@@ -1236,6 +1236,10 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 // GenerateWorkflowServiceName generates a knative name based on workflow details
 func GenerateWorkflowServiceName(wf, rev, svn string) string {
 
+	wf = sanitizeLabel(wf)
+	rev = sanitizeLabel(rev)
+	svn = sanitizeLabel(svn)
+
 	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, rev), hash.FormatV2, nil)
 	if err != nil {
 		panic(err)
