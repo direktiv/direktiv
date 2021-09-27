@@ -24,13 +24,30 @@
       "get": {
         "description": "Returns list of global Knative functions with 'global-' prefix.",
         "summary": "Returns list of global functions.",
-        "operationId": "getFunctions",
+        "operationId": "getFunctions1",
         "responses": {
           "201": {
             "description": "service created"
-          },
-          "500": {
-            "description": "internal error"
+          }
+        }
+      }
+    },
+    "/api/functions/{function}": {
+      "get": {
+        "description": "Returns list of global Knative functions with 'global-' prefix.",
+        "summary": "Returns list of global functions.",
+        "operationId": "getFunctions",
+        "parameters": [
+          {
+            "description": "function name wit out scope prefix",
+            "name": "function",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "service created"
           }
         }
       }

@@ -139,36 +139,3 @@ otlp sidecar
         path: otel-agent-config.yaml
   name: otel-agent-config-vol
 {{- end }}
-
-
-
-{{/*
-fluentbit sidecar
-*/}}
-{{- define "direktiv.fluentbit" -}}
-- name: fluentbit
-  image: fluent/fluent-bit:1.8
-  command: ["/fluent-bit/bin/fluent-bit", "-c", "/etc/fluentbit.cfg"]
-  imagePullPolicy: {{ .Values.pullPolicy }}
-  volumeMounts:
-  - name: fluentcfg
-    mountPath: /etc/fluentbit.cfg
-    subPath: fluentbit.cfg
-  securityContext:
-    readOnlyRootFilesystem: true
-    allowPrivilegeEscalation: false
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "1"
-  ports:
-    - name: appport
-      containerPort: 8866
-      protocol: TCP
-    - name: fnport
-      containerPort: 8877
-      protocol: TCP
-{{- end }}

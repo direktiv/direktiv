@@ -1,18 +1,42 @@
-storage:
-  master:
-    count: 2
-    storageClass: local-path
-  tserver:
-    count: 2
-    storageClass: local-path
+postgresql:
+  username: direktiv
+  password: direktivdirektiv
+  database: direktiv
+  postgresPassword: postgres
+  repmgrPassword: password
+  resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1"
 
-enableLoadBalancer: false
+pgpool:
+  resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1"
+  adminPassword: "password"
 
-authCredentials:
-  ysql:
-    user: "direktiv"
-    password: "direktivdirektiv"
-    database: "direktiv"
-
-tls:
-  enabled: true
+# storage:
+#   master:
+#     count: 2
+#     storageClass: local-path
+#   tserver:
+#     count: 2
+#     storageClass: local-path
+#
+# enableLoadBalancer: false
+#
+# authCredentials:
+#   ysql:
+#     user: "direktiv"
+#     password: "direktivdirektiv"
+#     database: "direktiv"
+#
+# tls:
+#   enabled: true

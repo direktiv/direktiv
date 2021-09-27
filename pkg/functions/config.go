@@ -13,9 +13,9 @@ type configReader struct {
 }
 
 type config struct {
+	Logging         string `yaml:"logging"`
 	IngressClass    string `yaml:"ingress-class"`
 	FlowService     string `yaml:"flow-service"`
-	RedisBackend    string `yaml:"redis-backend"`
 	RequestTimeout  int    `yaml:"request-timeout"`
 	ServiceAccount  string `yaml:"service-account"`
 	Namespace       string `yaml:"namespace"`

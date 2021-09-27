@@ -56,6 +56,8 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+          - name: DIREKTIV_LOG_JSON
+            value: {{ .Values.logging | quote }}
           - name: DIREKTIV_DEBUG
             value: {{ .Values.debug | quote }}
           - name: DIREKTIV_SERVICE_NAMESPACE
@@ -73,35 +75,6 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
-{{ include "direktiv.fluentbit" . | indent 8 }}
-        # - name: fluentbit
-        #   image: fluent/fluent-bit:1.8
-        #   command: ["/fluent-bit/bin/fluent-bit", "-c", "/etc/fluentbit.cfg"]
-        #   imagePullPolicy: {{ .Values.pullPolicy }}
-        #   volumeMounts:
-        #   - name: fluentcfg
-        #     mountPath: /etc/fluentbit.cfg
-        #     subPath: fluentbit.cfg
-        #   securityContext:
-        #     readOnlyRootFilesystem: true
-        #     allowPrivilegeEscalation: false
-        #   resources:
-        #     requests:
-        #       memory: "128Mi"
-        #       cpu: "100m"
-        #     limits:
-        #       memory: "512Mi"
-        #       cpu: "1"
-        #   ports:
-        #     - name: appport
-        #       containerPort: 8889
-        #       protocol: TCP
-        #     - name: fnport
-        #       containerPort: 8888
-        #       protocol: TCP
-        #   env:
-        #   - name: PGSSLMODE
-        #     value: {{ .Values.database.sslmode| quote }}
       volumes:
         {{- if .Values.api.extraVolumes }}
         {{ toYaml .Values.api.extraVolumes | nindent 8 }}
@@ -112,9 +85,6 @@ spec:
         - name: flow-config
           configMap:
             name: {{ include "direktiv.fullname" . }}-config-flow
-        - name: fluentcfg
-          configMap:
-            name:  {{ include "direktiv.fullname" . }}-config-fluentbit
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

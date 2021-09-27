@@ -6,16 +6,15 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
 data:
   functions-config.yaml: |
+      # logging format json/console
+      logging: {{ .Values.logging }}
 
       # ingress class for knative functions
       ingress-class: {{ .Values.functions.ingressClass }}
 
       # address of flow engine
       flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
-
-      # redis for pub/sub
-      redis-backend: "{{ .Values.redis.address }}"
-
+      
       # maximum timeout, needs to be in below knative max
       request-timeout: 600
 

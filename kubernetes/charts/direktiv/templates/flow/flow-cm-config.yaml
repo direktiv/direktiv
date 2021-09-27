@@ -14,7 +14,6 @@ data:
       {{- else }}
       prometheus-backend: {{ include "direktiv.fullname" . }}-prometheus-server
       {{- end }}
-      redis-backend: {{ .Values.redis.address }}
       {{- if .Values.opentelemetry.address }}
       {{- if .Values.opentelemetry.enabled }}
       opentelemetry-backend: {{ .Values.opentelemetry.address }}

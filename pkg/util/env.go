@@ -8,9 +8,8 @@ const (
 	DirektivNamespace        = "DIREKTIV_NAMESPACE"
 
 	DirektivFlowEndpoint      = "DIREKTIV_FLOW_ENDPOINT"
-	DirektivRedisEndpoint     = "DIREKTIV_REDIS_ENDPOINT"
 	DirektivFunctionsEndpoint = "DIREKTIV_FUNCTIONS_ENDPOINT"
 	DirektivIngressEndpoint   = "DIREKTIV_INTERNAL_ENDPOINT"
 
-	DirektivFluentbitTCP = "NO_FLUENTBIT_TCP"
+	DirektivLogJSON = "DIREKTIV_LOG_JSON"
 )

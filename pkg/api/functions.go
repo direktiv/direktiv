@@ -82,7 +82,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
-	// swagger:operation GET /api/functions getFunctions
+	// swagger:operation GET /api/functions getFunctions1
 	// ---
 	// summary: Returns list of global functions.
 	// description: Returns list of global Knative functions with 'global-' prefix.
@@ -91,6 +91,20 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "service created"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
+
+	// swagger:operation GET /api/functions/{function} getFunctions
+	// ---
+	// summary: Returns list of global functions.
+	// description: Returns list of global Knative functions with 'global-' prefix.
+	// parameters:
+	// - name: function
+	//   in: path
+	//	 type: string
+	//   description: function name wit out scope prefix
+	//   required: true
+	// responses:
+	//   "200":
+	//     "description": "service created"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)

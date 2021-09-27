@@ -91,10 +91,17 @@ ent: ## Manually regenerates ent database packages.
 .PHONY: api-docs
 api-docs: ## Generates API documentation
 api-docs:
-	go get -u github.com/go-swagger/go-swagger/cmd/swagger
+	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
 	cd pkg/api
-	swagger generate spec -o ./swagger.json
-	swagger generate markdown --output ./api.md
+	swagger generate spec -o scripts/api/swagger.json
+	echo "1a"
+	swagger generate markdown --output scripts/api/api.md -f scripts/api/swagger.json
+	echo "2a"
+
+.PHONY: api-swagger
+api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to change host for API.
+api-swagger:
+	scripts/api/swagger.sh $(host)
 
 # Helm docs
 
@@ -190,6 +197,12 @@ purge-images: ## Purge images from knative cache by matching $REGEX.
 	$(eval IMAGES := $(shell sudo k3s crictl img -o json | jq '.images[] | select (.repoDigests[] | test(${REGEX})) | .id'))
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	sudo k3s crictl rmi ${IMAGES}
+
+.PHONY: tail-api
+tail-api: ## Tail logs for currently active 'api' container.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl logs -f ${FLOW_POD} api
 
 .PHONY: tail-flow
 tail-flow: ## Tail logs for currently active 'flow' container.

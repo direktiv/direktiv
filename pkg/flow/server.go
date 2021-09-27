@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
@@ -24,11 +23,9 @@ const parcelSize = 0x100000
 type server struct {
 	ID uuid.UUID
 
-	logger *zap.Logger
-	sugar  *zap.SugaredLogger
-	conf   *util.Config
-
-	redis *redis.Pool
+	sugar    *zap.SugaredLogger
+	fnLogger *zap.SugaredLogger
+	conf     *util.Config
 
 	db           *ent.Client
 	pubsub       *pubsub
@@ -46,9 +43,7 @@ type server struct {
 	metrics *metrics.Client
 }
 
-func Run(ctx context.Context, logger *zap.Logger, conf *util.Config) error {
-
-	dlog.Init()
+func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
 
 	srv, err := newServer(logger, conf)
 	if err != nil {
@@ -64,14 +59,20 @@ func Run(ctx context.Context, logger *zap.Logger, conf *util.Config) error {
 
 }
 
-func newServer(logger *zap.Logger, conf *util.Config) (*server, error) {
+func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
+
+	var err error
 
 	srv := new(server)
 	srv.ID = uuid.New()
 
-	srv.logger = logger
-	srv.sugar = logger.Sugar()
+	srv.sugar = logger
 	srv.conf = conf
+
+	srv.fnLogger, err = dlog.FunctionsLogger()
+	if err != nil {
+		return nil, err
+	}
 
 	srv.initJQ()
 
@@ -91,12 +92,6 @@ func (srv *server) start(ctx context.Context) error {
 	defer telend()
 
 	go setupPrometheusEndpoint()
-
-	srv.redis = &redis.Pool{
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", srv.conf.RedisBackend)
-		},
-	}
 
 	srv.sugar.Debug("Initializing secrets.")
 	srv.secrets, err = initSecrets()
@@ -276,19 +271,19 @@ func (srv *server) cleanup(closer func() error) {
 
 }
 
-func (srv *server) redisPool() *redis.Pool {
-	return srv.redis
-}
+// func (srv *server) redisPool() *redis.Pool {
+// 	return srv.redis
+// }
 
 func (srv *server) notifyCluster(msg string) error {
 
-	conn := srv.redis.Get()
-	// TODO: do we need to flush or close this conn?
-
-	_, err := conn.Do("PUBLISH", flowSync, msg)
-	if err != nil {
-		return err
-	}
+	// conn := srv.redis.Get()
+	// // TODO: do we need to flush or close this conn?
+	//
+	// _, err := conn.Do("PUBLISH", flowSync, msg)
+	// if err != nil {
+	// 	return err
+	// }
 
 	/*
 
@@ -312,21 +307,23 @@ func (srv *server) notifyCluster(msg string) error {
 
 	*/
 
-	return err
+	// return err
+
+	return nil
 
 }
 
 func (srv *server) notifyHostname(hostname, msg string) error {
 
-	conn := srv.redis.Get()
-	// TODO: do we need to flush or close this conn?
-
-	channel := fmt.Sprintf("hostname:%s", hostname)
-
-	_, err := conn.Do("PUBLISH", channel, msg)
-	if err != nil {
-		return err
-	}
+	// conn := srv.redis.Get()
+	// // TODO: do we need to flush or close this conn?
+	//
+	// channel := fmt.Sprintf("hostname:%s", hostname)
+	//
+	// _, err := conn.Do("PUBLISH", channel, msg)
+	// if err != nil {
+	// 	return err
+	// }
 
 	/*
 
@@ -352,7 +349,8 @@ func (srv *server) notifyHostname(hostname, msg string) error {
 
 	*/
 
-	return err
+	// return err
+	return nil
 
 }
 

@@ -24,9 +24,6 @@ version: 0.1.0
 appVersion: "v0.4.1"
 
 dependencies:
-    # - name: kube-prometheus
-    #   repository: "https://charts.bitnami.com/bitnami"
-    #   version: "6.1.8"
     - name: prometheus
       repository: "https://prometheus-community.github.io/helm-charts"
       version: "14.7.1"
@@ -38,10 +35,6 @@ dependencies:
       condition: thanos.enabled
       repository: "https://charts.bitnami.com/bitnami"
       version: "6.0.1"
-    - name: "redis"
-      condition: redis.enabled
-      repository: "https://charts.bitnami.com/bitnami"
-      version: "15.3.2"
 
 
 

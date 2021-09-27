@@ -12,8 +12,6 @@ type Config struct {
 	FlowService      string `yaml:"flow-service"`
 
 	PrometheusBackend string `yaml:"prometheus-backend"`
-	RedisBackend      string `yaml:"redis-backend"`
-
 	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
 }
 

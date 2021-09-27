@@ -2,7 +2,6 @@ package functions
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -14,7 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/gomodule/redigo/redis"
 	_ "github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/functions/ent"
 	"github.com/vorteil/direktiv/pkg/model"
@@ -102,49 +100,49 @@ func StartServer(echan chan error) {
 		echan <- err
 	}
 
-	pool := &redis.Pool{
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", functionsConfig.RedisBackend)
-		},
-	}
-
-	conn := pool.Get()
-
-	_, err = conn.Do("PING")
-	if err != nil {
-		echan <- fmt.Errorf("can't connect to redis, got error:\n%v", err)
-	}
+	// pool := &redis.Pool{
+	// 	Dial: func() (redis.Conn, error) {
+	// 		return redis.Dial("tcp", functionsConfig.RedisBackend)
+	// 	},
+	// }
+	//
+	// conn := pool.Get()
+	//
+	// _, err = conn.Do("PING")
+	// if err != nil {
+	// 	echan <- fmt.Errorf("can't connect to redis, got error:\n%v", err)
+	// }
 
 	go fServer.reusableGC()
 	go fServer.orphansGC()
 
 	go func() {
 
-		rc := pool.Get()
-
-		psc := redis.PubSubConn{Conn: rc}
-		if err := psc.PSubscribe(FunctionsChannel); err != nil {
-			logger.Error(err.Error())
-		}
-
-		for {
-			switch v := psc.Receive().(type) {
-			default:
-				data, _ := json.Marshal(v)
-				logger.Debug(string(data))
-			case redis.Message:
-
-				var tuples []*HeartbeatTuple
-
-				err = json.Unmarshal(v.Data, &tuples)
-				if err != nil {
-					logger.Error(fmt.Sprintf("Unexpected notification on redis listener: %v", err))
-				} else {
-					go fServer.heartbeat(tuples)
-				}
-
-			}
-		}
+		// rc := pool.Get()
+		//
+		// psc := redis.PubSubConn{Conn: rc}
+		// if err := psc.PSubscribe(FunctionsChannel); err != nil {
+		// 	logger.Error(err.Error())
+		// }
+		//
+		// for {
+		// 	switch v := psc.Receive().(type) {
+		// 	default:
+		// 		data, _ := json.Marshal(v)
+		// 		logger.Debug(string(data))
+		// 	case redis.Message:
+		//
+		// 		var tuples []*HeartbeatTuple
+		//
+		// 		err = json.Unmarshal(v.Data, &tuples)
+		// 		if err != nil {
+		// 			logger.Error(fmt.Sprintf("Unexpected notification on redis listener: %v", err))
+		// 		} else {
+		// 			go fServer.heartbeat(tuples)
+		// 		}
+		//
+		// 	}
+		// }
 
 	}()
 
