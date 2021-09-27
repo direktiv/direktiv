@@ -97,14 +97,14 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 		return
 	}
 
-	s := marshal(tuples)
+	// s := marshal(tuples)
 
-	conn := flow.server.redis.Get()
+	// conn := flow.server.redis.Get()
 	// TODO: do we need to flush or close this conn?
 
-	_, err := conn.Do("PUBLISH", functions.FunctionsChannel, s)
-	if err != nil {
-		flow.sugar.Error(err)
-	}
+	// _, err := conn.Do("PUBLISH", functions.FunctionsChannel, s)
+	// if err != nil {
+	// 	flow.sugar.Error(err)
+	// }
 
 }

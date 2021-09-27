@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"go.uber.org/zap"
@@ -59,7 +58,7 @@ type PubsubUpdate struct {
 const flowSync = "flowsync"
 
 type notifier interface {
-	redisPool() *redis.Pool
+	// redisPool() *redis.Pool
 	notifyCluster(string) error
 	notifyHostname(string, string) error
 }
@@ -100,46 +99,46 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 
 	pubsub.handlers = make(map[string]func(*PubsubUpdate))
 
-	pool := notifier.redisPool()
-
-	conn := pool.Get()
-
-	_, err = conn.Do("PING")
-	if err != nil {
-		return nil, fmt.Errorf("can't connect to redis, got error:\n%v", err)
-	}
-
-	go func() {
-
-		rc := pool.Get()
-
-		psc := redis.PubSubConn{Conn: rc}
-		if err := psc.PSubscribe(flowSync); err != nil {
-			log.Error(err.Error())
-		}
-
-		for {
-			switch v := psc.Receive().(type) {
-			default:
-				data, _ := json.Marshal(v)
-				log.Debug(string(data))
-			case redis.Message:
-				req := new(PubsubUpdate)
-				err = json.Unmarshal(v.Data, req)
-				if err != nil {
-					log.Error(fmt.Sprintf("Unexpected notification on database listener: %v", err))
-				} else {
-					handler, exists := pubsub.handlers[req.Handler]
-					if !exists {
-						log.Errorf("unexpected notification type on database listener: %v\n", err)
-						continue
-					}
-					handler(req)
-				}
-			}
-		}
-
-	}()
+	// pool := notifier.redisPool()
+	//
+	// conn := pool.Get()
+	//
+	// _, err = conn.Do("PING")
+	// if err != nil {
+	// 	return nil, fmt.Errorf("can't connect to redis, got error:\n%v", err)
+	// }
+	//
+	// go func() {
+	//
+	// 	rc := pool.Get()
+	//
+	// 	psc := redis.PubSubConn{Conn: rc}
+	// 	if err := psc.PSubscribe(flowSync); err != nil {
+	// 		log.Error(err.Error())
+	// 	}
+	//
+	// 	for {
+	// 		switch v := psc.Receive().(type) {
+	// 		default:
+	// 			data, _ := json.Marshal(v)
+	// 			log.Debug(string(data))
+	// 		case redis.Message:
+	// 			req := new(PubsubUpdate)
+	// 			err = json.Unmarshal(v.Data, req)
+	// 			if err != nil {
+	// 				log.Error(fmt.Sprintf("Unexpected notification on database listener: %v", err))
+	// 			} else {
+	// 				handler, exists := pubsub.handlers[req.Handler]
+	// 				if !exists {
+	// 					log.Errorf("unexpected notification type on database listener: %v\n", err)
+	// 					continue
+	// 				}
+	// 				handler(req)
+	// 			}
+	// 		}
+	// 	}
+	//
+	// }()
 
 	/*
 

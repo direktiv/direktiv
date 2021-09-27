@@ -14,10 +14,7 @@ data:
 
       # address of flow engine
       flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
-
-      # redis for pub/sub
-      redis-backend: "{{ .Values.redis.address }}"
-
+      
       # maximum timeout, needs to be in below knative max
       request-timeout: 600
 
