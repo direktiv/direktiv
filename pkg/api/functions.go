@@ -89,20 +89,36 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 
-	// swagger:operation GET /api/functions/{function} getFunctions
+	// swagger:operation GET /api/functions/{function} getGlobalFunctions
 	// ---
 	// summary: Returns list of global functions.
 	// description: Returns list of global Knative functions with 'global-' prefix.
 	// parameters:
 	// - name: function
 	//   in: path
-	//	 type: string
-	//   description: function name wit out scope prefix
+	//   description: name of the function
+	//   type: string
 	//   required: true
 	// responses:
 	//   "200":
 	//     "description": "service created"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
+
+	// .// jens
+
+	// swagger:operation POST /api/functions/{function} createGlobalFunction UpdateServiceRequest
+	// ---
+	// summary: Creates a global function.
+	// description: Creates a global Knative function with 'global-' prefix.
+	// parameters:
+	// - name: function
+	//   in: path
+	//   description: name of the function
+	//   type: string
+	//   required: true
+	// responses:
+	//   "200":
+	//     "description": "service created"
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
@@ -746,6 +762,9 @@ func (h *functionHandler) createService(ns, wf string,
 
 }
 
+// jens
+
+// swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
 	Image          *string `json:"image,omitempty"`
 	Cmd            *string `json:"cmd,omitempty"`
