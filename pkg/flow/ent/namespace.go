@@ -16,7 +16,7 @@ import (
 type Namespace struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"-"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.

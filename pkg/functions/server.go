@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -170,6 +169,7 @@ type HeartbeatTuple struct {
 	NamespaceID        string
 	WorkflowPath       string
 	WorkflowID         string
+	Revision           string
 	FunctionDefinition *model.ReusableFunctionDefinition
 }
 
@@ -183,28 +183,28 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
 		size := int32(tuple.FunctionDefinition.Size)
 		minscale := int32(tuple.FunctionDefinition.Scale)
-		path := tuple.WorkflowPath
-		path = strings.TrimPrefix(path, "/")
-		path = strings.ReplaceAll(path, "_", "__")
-		path = strings.ReplaceAll(path, "/", "_")
 
 		in := &igrpc.CreateFunctionRequest{
 			Info: &igrpc.BaseInfo{
-				Name:      &tuple.FunctionDefinition.ID,
-				Namespace: &tuple.NamespaceName,
-				Workflow:  &path,
-				Image:     &tuple.FunctionDefinition.Image,
-				Cmd:       &tuple.FunctionDefinition.Cmd,
-				Size:      &size,
-				MinScale:  &minscale,
+				Name:          &tuple.FunctionDefinition.ID,
+				Namespace:     &tuple.NamespaceID,
+				Workflow:      &tuple.WorkflowID,
+				Image:         &tuple.FunctionDefinition.Image,
+				Cmd:           &tuple.FunctionDefinition.Cmd,
+				Size:          &size,
+				MinScale:      &minscale,
+				NamespaceName: &tuple.NamespaceName,
+				Path:          &tuple.WorkflowPath,
+				Revision:      &tuple.Revision,
 			},
 		}
 
-		name, _, err := GenerateServiceName(tuple.NamespaceName, path, tuple.FunctionDefinition.ID)
-		if err != nil {
-			logger.Errorf("Failed to generate service name for workflow function in heartbeat: %v", err)
-			continue
-		}
+		name := GenerateWorkflowServiceName(tuple.WorkflowID, tuple.Revision, tuple.FunctionDefinition.ID)
+		// name, _, err := GenerateServiceName(tuple.NamespaceName, path, tuple.FunctionDefinition.ID)
+		// if err != nil {
+		// 	logger.Errorf("Failed to generate service name for workflow function in heartbeat: %v", err)
+		// 	continue
+		// }
 
 		fServer.reusableCacheLock.Lock()
 
@@ -221,7 +221,7 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
 		logger.Debugf("Creating workflow function in heartbeat: %s", name)
 
-		_, err = fServer.CreateFunction(ctx, in)
+		_, err := fServer.CreateFunction(ctx, in)
 		if err != nil {
 			if status.Code(err) != codes.AlreadyExists {
 				logger.Errorf("Failed to create workflow function in heartbeat: %v", err)

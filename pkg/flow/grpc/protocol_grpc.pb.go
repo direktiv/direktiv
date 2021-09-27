@@ -104,6 +104,8 @@ type FlowClient interface {
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
+	ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 }
 
 type flowClient struct {
@@ -1437,6 +1439,24 @@ func (c *flowClient) SetWorkflowEventLogging(ctx context.Context, in *SetWorkflo
 	return out, nil
 }
 
+func (c *flowClient) ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error) {
+	out := new(NamespaceResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ResolveNamespaceUID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error) {
+	out := new(WorkflowResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ResolveWorkflowUID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -1526,6 +1546,8 @@ type FlowServer interface {
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error)
 	SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*empty.Empty, error)
+	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
+	ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -1787,6 +1809,12 @@ func (UnimplementedFlowServer) ToggleWorkflow(context.Context, *ToggleWorkflowRe
 }
 func (UnimplementedFlowServer) SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowEventLogging not implemented")
+}
+func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResolveNamespaceUID not implemented")
+}
+func (UnimplementedFlowServer) ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResolveWorkflowUID not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -3418,6 +3446,42 @@ func _Flow_SetWorkflowEventLogging_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_ResolveNamespaceUID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveNamespaceUIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).ResolveNamespaceUID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/ResolveNamespaceUID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ResolveNamespaceUID(ctx, req.(*ResolveNamespaceUIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_ResolveWorkflowUID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveWorkflowUIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).ResolveWorkflowUID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/ResolveWorkflowUID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ResolveWorkflowUID(ctx, req.(*ResolveWorkflowUIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3668,6 +3732,14 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetWorkflowEventLogging",
 			Handler:    _Flow_SetWorkflowEventLogging_Handler,
+		},
+		{
+			MethodName: "ResolveNamespaceUID",
+			Handler:    _Flow_ResolveNamespaceUID_Handler,
+		},
+		{
+			MethodName: "ResolveWorkflowUID",
+			Handler:    _Flow_ResolveWorkflowUID_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

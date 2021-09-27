@@ -17,7 +17,7 @@ import (
 type Workflow struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"-"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Live holds the value of the "live" field.
 	Live bool `json:"live,omitempty"`
 	// LogToEvents holds the value of the "logToEvents" field.

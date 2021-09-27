@@ -20,7 +20,7 @@ type Namespace struct {
 // Fields of the Namespace.
 func (Namespace) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("name").Match(NameRegex).Annotations(entgql.OrderField("NAME")).Unique(),

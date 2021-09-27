@@ -16,7 +16,7 @@ type Workflow struct {
 // Fields of the Workflow.
 func (Workflow) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
 		field.Bool("live").Default(true),
 		field.String("logToEvents").Optional(),
 	}

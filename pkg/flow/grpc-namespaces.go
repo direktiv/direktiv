@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entns "github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -73,6 +74,35 @@ func namespaceFilter(p *pagination) ent.NamespacePaginateOption {
 
 }
 
+func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveNamespaceUIDRequest) (*grpc.NamespaceResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	nsc := flow.db.Namespace
+
+	id, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	ns, err := nsc.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.NamespaceResponse
+
+	err = atob(ns, &resp.Namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Namespace.Oid = ns.ID.String()
+
+	return &resp, nil
+
+}
+
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -89,6 +119,8 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 	if err != nil {
 		return nil, err
 	}
+
+	resp.Namespace.Oid = ns.ID.String()
 
 	return &resp, nil
 

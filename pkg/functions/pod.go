@@ -289,8 +289,11 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	labels["direktiv.io/job"] = "true"
 
 	labels[ServiceHeaderName] = info.GetName()
-	labels[ServiceHeaderWorkflow] = info.GetName()
-	labels[ServiceHeaderNamespace] = info.GetNamespace()
+	labels[ServiceHeaderWorkflowID] = info.GetWorkflow()
+	labels[ServiceHeaderPath] = info.GetPath()
+	labels[ServiceHeaderRevision] = info.GetRevision()
+	labels[ServiceHeaderNamespaceID] = info.GetNamespace()
+	labels[ServiceHeaderNamespaceName] = info.GetNamespaceName()
 
 	commonJobVars := commonEnvs(in, info.GetNamespace())
 
