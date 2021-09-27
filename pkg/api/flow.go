@@ -53,6 +53,20 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	handlerPair(r, RN_ListNamespaces, "/namespaces", h.Namespaces, h.NamespacesSSE)
+
+	//  swagger:operation PUT /api/namespaces/{ns} CreateNamespace
+	//  ---
+	//  summary: Creates a namespace
+	//  description: Create namespace.
+	//  parameters:
+	//  - in: path
+	//    name: ns
+	//    type: string
+	//    required: true
+	//    description: target namespace name
+	//  responses:
+	//    '200':
+	//      "description": "namespace created"
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
