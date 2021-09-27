@@ -10,7 +10,15 @@ require (
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1
+	github.com/go-openapi/analysis v0.20.1 // indirect
+	github.com/go-openapi/errors v0.20.1 // indirect
+	github.com/go-openapi/jsonreference v0.19.6 // indirect
+	github.com/go-openapi/runtime v0.19.31 // indirect
+	github.com/go-openapi/strfmt v0.20.2 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/go-swagger/go-swagger v0.27.0 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/gomodule/redigo v1.8.5
@@ -20,6 +28,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
@@ -31,15 +40,18 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/qri-io/jsonschema v0.2.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rung/go-safecast v1.0.1
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.9.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	github.com/werf/lockgate v0.0.0-20210423043214-fd4df31c9ab0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.mongodb.org/mongo-driver v1.7.2 // indirect
 	go.opentelemetry.io/otel v0.20.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp v0.20.0 // indirect
 	go.opentelemetry.io/otel/sdk v0.20.0 // indirect
@@ -47,9 +59,9 @@ require (
 	go.uber.org/zap v1.18.1
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/mod v0.5.0 // indirect
-	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
-	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678
+	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/net v0.0.0-20210924151903-3ad01bbaa167 // indirect
+	golang.org/x/sys v0.0.0-20210925032602-92d5a993a665
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.6 // indirect
 	google.golang.org/api v0.56.0 // indirect

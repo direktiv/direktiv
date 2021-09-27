@@ -43,9 +43,10 @@ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 kubectl create namespace knative-serving
 kubectl create namespace direktiv-services-direktiv
+kubectl create namespace postgres
 
 # prepare linkerd
-kubectl annotate ns knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
+kubectl annotate ns postgres knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
 
 exe='cd /certs && step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure \
@@ -74,14 +75,12 @@ helm install -n knative-serving -f $dir/../kubernetes/charts/knative/debug-knati
 
 # install database
 # delete stuff first
-kubectl delete --all -n yugabyte persistentvolumeclaims
+kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
-kubectl delete  job.batch/yugabyte-setup-credentials -n yugabyte
 
-kubectl create namespace yugabyte
-helm repo add yugabytedb https://charts.yugabyte.com
+helm repo add bitnami https://charts.bitnami.com/bitnami
 
-helm install -n yugabyte -f $dir/../kubernetes/install/db/tiny.yaml yugabyte yugabytedb/yugabyte
+helm install -n postgres postgres -f $dir/../kubernetes/install/db/default.yaml bitnami/postgresql-ha
 
 helm dependency update $dir/../kubernetes/charts/direktiv
 

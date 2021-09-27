@@ -10,14 +10,6 @@ timeout: 900000
 # -- api key, value 'apikey' required in header
 apikey: ""
 
-redis:
-  # -- install redis from dependency chart
-  enabled: false
-  # -- address for redis client, if redis.enabled this should change to direktiv-redis-master:6379
-  address: yb-tservers.yugabyte:6379
-  # -- storage-class, defaults to k3s' local-path
-  storageClass: local-path
-
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
   address: "localhost:4317"
@@ -102,9 +94,9 @@ ingress:
 
 database:
   # -- database host
-  host: "yb-tservers.yugabyte"
+  host: "postgres-postgresql-ha-pgpool.postgres"
   # -- database port
-  port: 5433
+  port: 5432
   # -- database user
   user: "direktiv"
   # -- database password
@@ -112,7 +104,7 @@ database:
   # -- database name, auto created if it does not exist
   name: "direktiv"
   # -- sslmode for database
-  sslmode: require
+  sslmode: disable
 
 fluentbit:
   # -- postgres for direktiv services
