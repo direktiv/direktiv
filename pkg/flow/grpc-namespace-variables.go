@@ -327,7 +327,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	key := req.GetKey()
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +429,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
 	if err != nil {
 		return err
 	}

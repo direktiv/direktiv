@@ -12,6 +12,11 @@ message Namespace {
 	google.protobuf.Timestamp created_at = 1;
 	google.protobuf.Timestamp updated_at = 2;
 	string name = 3;
+	string oid = 4;
+}
+
+message ResolveNamespaceUIDRequest {
+	string id = 1;
 }
 
 message NamespaceRequest {

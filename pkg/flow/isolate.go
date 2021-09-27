@@ -61,10 +61,11 @@ type functionContainer struct {
 
 type functionWorkflow struct {
 	Name          string
-	ID            string
-	WorkflowName  string
+	Path          string
+	WorkflowID    string
+	Revision      string
 	InstanceID    string
-	Namespace     string
+	NamespaceID   string
 	NamespaceName string
 	State         string
 	Step          int
@@ -96,13 +97,16 @@ func (engine *engine) addPodFunction(ctx context.Context,
 
 	cr := igrpc.CreatePodRequest{
 		Info: &igrpc.BaseInfo{
-			Name:      &ir.Container.ID,
-			Namespace: &ir.Workflow.Namespace,
-			Workflow:  &ir.Workflow.ID,
-			Image:     &ir.Container.Image,
-			Cmd:       &ir.Container.Cmd,
-			Size:      &sz,
-			MinScale:  &scale,
+			Name:          &ir.Container.ID,
+			Namespace:     &ir.Workflow.NamespaceID,
+			Workflow:      &ir.Workflow.WorkflowID,
+			Image:         &ir.Container.Image,
+			Cmd:           &ir.Container.Cmd,
+			Size:          &sz,
+			MinScale:      &scale,
+			NamespaceName: &ir.Workflow.NamespaceName,
+			Path:          &ir.Workflow.Path,
+			Revision:      &ir.Workflow.Revision,
 		},
 		ActionID:   &ir.ActionID,
 		InstanceID: &ir.Workflow.InstanceID,
@@ -146,14 +150,14 @@ func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
 	return err
 }
 
-func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient,
-	name, namespace, workflow string) bool {
+func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar *functionRequest) bool {
 
 	// search annotations
 	a := make(map[string]string)
-	a[functions.ServiceHeaderName] = name
-	a[functions.ServiceHeaderNamespace] = namespace
-	a[functions.ServiceHeaderWorkflow] = workflow
+	a[functions.ServiceHeaderName] = ar.Container.ID
+	a[functions.ServiceHeaderNamespaceID] = ar.Workflow.NamespaceID
+	a[functions.ServiceHeaderWorkflowID] = ar.Workflow.WorkflowID
+	a[functions.ServiceHeaderRevision] = ar.Workflow.Revision
 	a[functions.ServiceHeaderScope] = functions.PrefixService
 
 	engine.sugar.Debugf("knative function search: %v", a)
@@ -172,6 +176,7 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient,
 	}
 
 	return false
+
 }
 
 func createKnativeFunction(client igrpc.FunctionsServiceClient,
@@ -182,13 +187,16 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 
 	cr := igrpc.CreateFunctionRequest{
 		Info: &igrpc.BaseInfo{
-			Name:      &ir.Container.ID,
-			Namespace: &ir.Workflow.NamespaceName,
-			Workflow:  &ir.Workflow.WorkflowName,
-			Image:     &ir.Container.Image,
-			Cmd:       &ir.Container.Cmd,
-			Size:      &sz,
-			MinScale:  &scale,
+			Name:          &ir.Container.ID,
+			Namespace:     &ir.Workflow.NamespaceID,
+			Workflow:      &ir.Workflow.WorkflowID,
+			Image:         &ir.Container.Image,
+			Cmd:           &ir.Container.Cmd,
+			Size:          &sz,
+			MinScale:      &scale,
+			NamespaceName: &ir.Workflow.NamespaceName,
+			Path:          &ir.Workflow.Path,
+			Revision:      &ir.Workflow.Revision,
 		},
 	}
 
@@ -198,6 +206,7 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 
 }
 
+/*
 func (engine *engine) createKnativeFunctions(client igrpc.FunctionsServiceClient,
 	wfm model.Workflow, ns string) error {
 
@@ -219,13 +228,16 @@ func (engine *engine) createKnativeFunctions(client igrpc.FunctionsServiceClient
 
 			cr := igrpc.CreateFunctionRequest{
 				Info: &igrpc.BaseInfo{
-					Name:      &name,
-					Namespace: &namespace,
-					Workflow:  &model.ID,
-					Image:     &fd.Image,
-					Cmd:       &fd.Cmd,
-					Size:      &sz,
-					MinScale:  &scale,
+					Name:          &name,
+					Namespace:     &namespace,
+					Workflow:      &model.ID,
+					Image:         &fd.Image,
+					Cmd:           &fd.Cmd,
+					Size:          &sz,
+					MinScale:      &scale,
+					NamespaceName: &ir.Workflow.NamespaceName,
+					Path:          &ir.Workflow.Path,
+					Revision:      &ir.Workflow.Revision,
 				},
 			}
 
@@ -240,7 +252,9 @@ func (engine *engine) createKnativeFunctions(client igrpc.FunctionsServiceClient
 
 	return nil
 }
+*/
 
+/*
 func (engine *engine) deleteKnativeFunctions(client igrpc.FunctionsServiceClient,
 	ns, wf, name string) error {
 
@@ -276,3 +290,4 @@ func (engine *engine) deleteKnativeFunctions(client igrpc.FunctionsServiceClient
 	return nil
 
 }
+*/

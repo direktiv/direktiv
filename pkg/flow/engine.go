@@ -22,6 +22,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 	"github.com/vorteil/direktiv/pkg/util"
 )
@@ -779,8 +780,12 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		svn, _, err = functions.GenerateServiceName(ar.Workflow.NamespaceName,
-			ar.Workflow.WorkflowName, ar.Container.ID)
+		svn, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+			Name:      &ar.Container.ID,
+			Namespace: &ar.Workflow.NamespaceID,
+			Workflow:  &ar.Workflow.WorkflowID,
+			Revision:  &ar.Workflow.Revision,
+		})
 		if err != nil {
 			engine.sugar.Errorf("can not create service name: %v", err)
 			engine.reportError(ar, err)
@@ -805,7 +810,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	// add headers
 	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
-	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.Namespace)
+	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.NamespaceName)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
@@ -847,8 +852,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 						// recreate if the service does not exist
 						if ar.Container.Type == model.ReusableContainerFunctionType &&
-							!engine.isKnativeFunction(engine.actions.client, ar.Container.ID,
-								ar.Workflow.NamespaceName, ar.Workflow.WorkflowName) {
+							!engine.isKnativeFunction(engine.actions.client, ar) {
 							err := createKnativeFunction(engine.actions.client, ar)
 							if err != nil && !strings.Contains(err.Error(), "already exists") {
 								engine.sugar.Errorf("can not create knative function: %v", err)

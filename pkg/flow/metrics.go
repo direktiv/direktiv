@@ -208,9 +208,9 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		return
 	}
 
-	if im.Status() != StatusPending {
-		return
-	}
+	// if im.Status() != StatusPending {
+	// 	return
+	// }
 
 	args := new(metrics.InsertRecordArgs)
 

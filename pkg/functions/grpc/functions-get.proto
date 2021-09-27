@@ -17,4 +17,7 @@ message GetFunctionResponse {
 	optional FunctionsConfig config = 4;
 	repeated Revision revisions = 5;
 	optional string scope = 6;
+	optional string namespaceID = 7;
+	optional string path = 8;
+	optional string workflowRevision = 9;
 }

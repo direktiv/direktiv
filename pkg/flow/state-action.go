@@ -13,6 +13,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/senseyeio/duration"
 	"github.com/vorteil/direktiv/pkg/functions"
+	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -149,15 +150,16 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
 	// ar.Workflow.Name = wli.wf.Name
-	ar.Workflow.ID = wf.ID.String()
+	ar.Workflow.WorkflowID = wf.ID.String()
 	ar.Workflow.Timeout = timeout
+	ar.Workflow.Revision = im.in.Edges.Revision.Hash
 
 	ar.Workflow.NamespaceName = im.in.Edges.Namespace.Name
-	ar.Workflow.WorkflowName = im.in.As
+	ar.Workflow.Path = im.in.As
 
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
-		ar.Workflow.Namespace = im.in.Edges.Namespace.ID.String()
+		ar.Workflow.NamespaceID = im.in.Edges.Namespace.ID.String()
 		ar.Workflow.State = stateId
 		ar.Workflow.Step = im.Step()
 	}
@@ -167,6 +169,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
+	wfID := im.in.Edges.Workflow.ID.String()
+	revID := im.in.Edges.Revision.Hash
+	nsID := im.in.Edges.Namespace.ID.String()
+
 	switch fnt {
 	case model.ReusableContainerFunctionType:
 		con := fn.(*model.ReusableFunctionDefinition)
@@ -175,7 +181,12 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Size = con.Size
 		ar.Container.Scale = con.Scale
 		ar.Container.ID = con.ID
-		ar.Container.Service, _, err = functions.GenerateServiceName(im.in.Edges.Namespace.Name, im.in.As, con.ID)
+		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+			Name:      &con.ID,
+			Workflow:  &wfID,
+			Revision:  &revID,
+			Namespace: &nsID,
+		})
 		if err != nil {
 			panic(err)
 		}
@@ -191,12 +202,17 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
-		ar.Container.Service = fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, im.in.Edges.Namespace.Name, con.KnativeService)
+		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+			Name:      &con.ID,
+			Namespace: &nsID,
+		})
 	case model.GlobalKnativeFunctionType:
 		con := fn.(*model.GlobalFunctionDefinition)
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
-		ar.Container.Service = fmt.Sprintf("%s-%s", functions.PrefixGlobal, con.KnativeService)
+		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+			Name: &con.ID,
+		})
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}

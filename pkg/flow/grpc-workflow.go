@@ -11,6 +11,38 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkflowUIDRequest) (*grpc.WorkflowResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	d, err := flow.reverseTraverseToWorkflow(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.WorkflowResponse
+
+	err = atob(d.ino, &resp.Node)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Namespace = d.namespace()
+	resp.Node.Parent = d.dir
+	resp.Node.Path = d.path
+	resp.Oid = d.wf.ID.String()
+
+	// resp.EventLogging = d.wf.LogToEvents
+	//
+	// err = atob(d.rev(), &resp.Revision)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return &resp, nil
+
+}
+
 func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grpc.WorkflowResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -32,6 +64,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
 	resp.EventLogging = d.wf.LogToEvents
+	resp.Oid = d.wf.ID.String()
 
 	err = atob(d.rev(), &resp.Revision)
 	if err != nil {
@@ -71,6 +104,7 @@ resend:
 	resp.Namespace = d.namespace()
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
+	resp.Oid = d.wf.ID.String()
 
 	err = atob(d.rev(), &resp.Revision)
 	if err != nil {

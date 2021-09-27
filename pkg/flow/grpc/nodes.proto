@@ -16,6 +16,7 @@ message Node {
 	string parent = 5;
 	string type = 6;
 	repeated string attributes = 7;
+	string oid = 8;
 }
 
 message DirectoryRequest {
