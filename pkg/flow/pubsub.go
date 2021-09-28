@@ -254,7 +254,9 @@ func (pubsub *pubsub) Disconnect(req *PubsubUpdate) {
 	}
 
 	for sub := range channel {
-		_ = sub.Close()
+		go func(sub *subscription) {
+			_ = sub.Close()
+		}(sub)
 	}
 
 }
