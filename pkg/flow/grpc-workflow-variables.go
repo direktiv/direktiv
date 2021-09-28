@@ -258,7 +258,7 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	vref, err := q.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
 	if err != nil {
 
-		if !ent.IsNotFound(err) {
+		if !IsNotFound(err) {
 			return nil, err
 		}
 

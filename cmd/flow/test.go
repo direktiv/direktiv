@@ -10,11 +10,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
-func init() {
-	testsCmd.AddCommand(testsAllCmd)
-	testsCmd.AddCommand(testsNamespacesCmd)
-}
-
 var testsCmd = &cobra.Command{
 	Use: "tests",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -48,25 +43,31 @@ var testsCmd = &cobra.Command{
 		registerTest("DirectoryStreamDisconnect", []string{"directories", "stream"}, testDirectoryStreamDisconnect)
 		registerTest("DirectoryStreamDisconnectParent", []string{"directories", "stream"}, testDirectoryStreamDisconnectParent)
 		registerTest("DirectoryStreamDisconnectNamespace", []string{"namespaces", "directories", "stream"}, testDirectoryStreamDisconnectNamespace)
-	},
-}
 
-var testsAllCmd = &cobra.Command{
-	Use:  "all",
-	Args: cobra.NoArgs,
+		// TODO: workflow management
+
+		registerTest("StartWorkflow", []string{"instances"}, testStartWorkflow)
+		registerTest("StateLogSimple", []string{"instances"}, testStateLogSimple)
+		registerTest("StateLogJQ", []string{"instances", "jq"}, testStateLogJQ)
+		registerTest("StateLogJQNested", []string{"instances", "jq"}, testStateLogJQNested)
+		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
+		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
+		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
+
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		runTests(tests)
+		if len(args) == 0 {
+			runTests(tests)
+			return
+		}
 
-	},
-}
+		tests := getTests(args...)
+		if len(tests) == 0 {
+			fmt.Println("no results")
+			return
+		}
 
-var testsNamespacesCmd = &cobra.Command{
-	Use:  "namespaces",
-	Args: cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		tests := getTests("namespaces")
 		runTests(tests)
 
 	},
@@ -182,7 +183,7 @@ func (t *testImpl) Name() string {
 }
 
 func (t *testImpl) Labels() []string {
-	return t.labels
+	return append(t.labels, t.name)
 }
 
 func (t *testImpl) Run(ctx context.Context, c grpc.FlowClient) error {

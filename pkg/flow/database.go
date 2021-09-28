@@ -134,7 +134,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 	recurser = func(ino *ent.Inode) error {
 
 		pino, err := ino.Parent(ctx)
-		if ent.IsNotFound(err) || pino == nil {
+		if IsNotFound(err) || pino == nil {
 			d.dir = "/" + d.dir
 			d.path = "/" + d.path
 			return nil
@@ -200,7 +200,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 		query = query.Where(entino.NameEQ(elems[0]))
 		child, err := query.Only(ctx)
 		if err != nil {
-			if ent.IsNotFound(err) {
+			if IsNotFound(err) {
 
 				if createParents && inoc != nil && len(elems) > 1 {
 					child, err = inoc.Create().SetName(elems[0]).SetNamespace(ns).SetParent(ino).SetType("directory").Save(ctx)
@@ -473,7 +473,7 @@ func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceCli
 
 		if err != nil {
 
-			if ent.IsNotFound(err) {
+			if IsNotFound(err) {
 				return nil
 			}
 

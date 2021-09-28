@@ -30,13 +30,6 @@ func testCreateDirectory(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -82,13 +75,6 @@ func testCreateDirectoryDuplicate(ctx context.Context, c grpc.FlowClient) error 
 		return fmt.Errorf("incorrect error from server: %w", err)
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -123,14 +109,6 @@ func testCreateDirectoryFalseDuplicate(ctx context.Context, c grpc.FlowClient) e
 	_, err = c.CreateDirectory(ctx, &grpc.CreateDirectoryRequest{
 		Namespace: namespace,
 		Path:      "/testdir/testdir/testdir",
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name:      namespace,
-		Recursive: true,
 	})
 	if err != nil {
 		return err
@@ -173,13 +151,6 @@ func testCreateDirectoryRoot(ctx context.Context, c grpc.FlowClient) error {
 		return fmt.Errorf("incorrect error from server: %w", err)
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -204,13 +175,6 @@ func testCreateDirectoryRegex(ctx context.Context, c grpc.FlowClient) error {
 	}
 	if status.Code(err) != codes.InvalidArgument {
 		return fmt.Errorf("incorrect error from server: %w", err)
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -241,13 +205,6 @@ func testCreateDirectoryIdempotent(ctx context.Context, c grpc.FlowClient) error
 		Namespace:  namespace,
 		Path:       "/testdir",
 		Idempotent: true,
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
 	})
 	if err != nil {
 		return err
@@ -309,13 +266,6 @@ func testCreateDirectoryParents(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -340,13 +290,6 @@ func testCreateDirectoryNoParent(ctx context.Context, c grpc.FlowClient) error {
 	}
 	if status.Code(err) != codes.NotFound {
 		return fmt.Errorf("incorrect error from server: %w", err)
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -393,13 +336,6 @@ func testCreateDirectoryNonDirectoryParent(ctx context.Context, c grpc.FlowClien
 	}
 	if status.Code(err) != codes.AlreadyExists {
 		return fmt.Errorf("incorrect error from server: %w", err)
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -460,13 +396,6 @@ func testDeleteDirectory(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -517,13 +446,6 @@ func testDeleteDirectoryIdempotent(ctx context.Context, c grpc.FlowClient) error
 		return err
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -555,7 +477,7 @@ func testDeleteDirectoryRecursive(ctx context.Context, c grpc.FlowClient) error 
 	if err == nil {
 		return errors.New("server accepted delete non-empty directory without recursive flag without error")
 	}
-	if status.Code(err) != codes.FailedPrecondition {
+	if status.Code(err) != codes.InvalidArgument {
 		return fmt.Errorf("incorrect error from server: %w", err)
 	}
 
@@ -563,13 +485,6 @@ func testDeleteDirectoryRecursive(ctx context.Context, c grpc.FlowClient) error 
 		Namespace: namespace,
 		Path:      "/testdir",
 		Recursive: true,
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
 	})
 	if err != nil {
 		return err
@@ -597,7 +512,7 @@ func testDeleteDirectoryRoot(ctx context.Context, c grpc.FlowClient) error {
 	if err == nil {
 		return errors.New("server accepted delete root directory without error")
 	}
-	if status.Code(err) != codes.FailedPrecondition {
+	if status.Code(err) != codes.InvalidArgument {
 		return fmt.Errorf("incorrect error from server: %w", err)
 	}
 
@@ -608,15 +523,8 @@ func testDeleteDirectoryRoot(ctx context.Context, c grpc.FlowClient) error {
 	if err == nil {
 		return errors.New("server accepted delete root directory without error")
 	}
-	if status.Code(err) != codes.FailedPrecondition {
+	if status.Code(err) != codes.InvalidArgument {
 		return fmt.Errorf("incorrect error from server: %w", err)
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -794,13 +702,6 @@ func testDirectory(ctx context.Context, c grpc.FlowClient) error {
 		return errors.New("incorrect directory children")
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -870,13 +771,6 @@ func testDirectoryStream(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -928,13 +822,6 @@ func testDirectoryStreamDisconnect(ctx context.Context, c grpc.FlowClient) error
 		return fmt.Errorf("directory stream failed to disconnect when directory was deleted")
 	}
 	if err != io.EOF {
-		return err
-	}
-
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
 		return err
 	}
 
@@ -1000,13 +887,6 @@ func testDirectoryStreamDisconnectParent(ctx context.Context, c grpc.FlowClient)
 		return err
 	}
 
-	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 
 }
@@ -1045,7 +925,8 @@ func testDirectoryStreamDisconnectNamespace(ctx context.Context, c grpc.FlowClie
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: namespace,
+		Name:      namespace,
+		Recursive: true,
 	})
 	if err != nil {
 		return err
