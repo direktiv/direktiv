@@ -14,20 +14,20 @@ spec:
             linkerd.io/inject: disabled
         spec:
           containers:
-            - name: hello
-              image: 'localhost:5000/backup'
+            - name: dbbackup
+              image: 'postgres:13.4'
               imagePullPolicy: IfNotPresent
               env:
                 - name: PGPASSWORD
-                  value: yugabyte # change yugabyte pwd here and add additional commands. the example is bad btw :)
+                  value: direktivdirektiv # change yugabyte pwd here and add additional commands. the example is bad btw :)
               command:
                 - /bin/sh
                 - '-c'
                 - >-
                   date; echo "backup start";
-                  /yugabyte-2.9.0.0/postgres/bin/ysql_dump -d direktiv -h
-                  yb-tservers.yugabyte > /tmp/data.sql; ls -la /tmp;
-                  apt install -y sshpass;
-                  sshpass -p "mypwd" scp -o StrictHostKeyChecking=no /tmp/data.sql username@192.168.0.1:/tmp/data.sql;
+                  /usr/bin/pg_dump -d direktiv -h
+                  postgres-postgresql-ha-pgpool.postgres -f /tmp/data.sql -U direktiv; ls -la /tmp;
+                  apt-get update; apt install -y sshpass;
+                  sshpass -p "pwd" scp -o StrictHostKeyChecking=no /tmp/data.sql username@192.168.1.10:/tmp/data.sql;
                   echo "copied"
           restartPolicy: Never
