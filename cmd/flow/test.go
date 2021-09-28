@@ -136,6 +136,10 @@ func runTests(tests []test) {
 
 	}
 
+	if fail > 0 {
+		os.Exit(1)
+	}
+
 }
 
 func testReset(ctx context.Context, c grpc.FlowClient) error {
