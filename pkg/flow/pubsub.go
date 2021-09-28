@@ -294,6 +294,13 @@ func (s *subscription) Close() error {
 
 	if !s.closed {
 
+		defer func() {
+			r := recover()
+			if r != nil {
+				fmt.Println("PANIC", r)
+			}
+		}()
+
 		s.closed = true
 
 		s.pubsub.mtx.Lock()
@@ -441,7 +448,7 @@ func (pubsub *pubsub) walkInodeKeys(ino *ent.Inode) []string {
 	array = append(array, x.ID.String())
 
 	for x.Edges.Parent != nil {
-		x = ino.Edges.Parent
+		x = x.Edges.Parent
 		array = append(array, x.ID.String())
 	}
 

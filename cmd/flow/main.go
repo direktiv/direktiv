@@ -52,7 +52,7 @@ func main() {
 	}
 	defer logger.Sync()
 
-	serverCmd.Flags().StringVar(&addr, "addr", "localhost:8080", "")
+	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
 
 	rootCmd.AddCommand(serverLogsCmd)
@@ -92,6 +92,8 @@ func main() {
 	rootCmd.AddCommand(secretsCmd)
 	rootCmd.AddCommand(setSecretCmd)
 	rootCmd.AddCommand(deleteSecretCmd)
+
+	rootCmd.AddCommand(testsCmd)
 
 	err = rootCmd.Execute()
 	if err != nil {

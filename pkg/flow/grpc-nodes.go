@@ -361,6 +361,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted directory '%s'.", d.path)
 	flow.pubsub.NotifyInode(d.ino.Edges.Parent)
+	flow.pubsub.CloseInode(d.ino)
 
 respond:
 
