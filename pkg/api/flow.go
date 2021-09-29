@@ -970,12 +970,109 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging setWorkflowCloudEventLogs
+	// Set Cloud Event for Workflow to Log to
+	// When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the
+	// conifgured value.
+	// Workflows can be configured to generate cloud events on their namespace
+	// anything the log parameter produces data. Please find more information on this topic below:
+	// https://docs.direktiv.io/docs/examples/logging.html
+	// ---
+	// summary: Set Cloud Event for Workflow to Log to
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: Cloud Event Logger
+	//   description: Cloud event logger to target
+	//   schema:
+	//     example:
+	//       logger: "mylog"
+	//     type: object
+	//     required:
+	//       - logger
+	//     properties:
+	//       logger:
+	//         type: string
+	//         description: Target Cloud Event
+	// responses:
+	//   '200':
+	//     "description": "successfully update workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "set-workflow-event-logging", h.SetWorkflowEventLogging)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle toggleWorkflow
+	// Toggle's whether or not a workflow is active
+	// Disabled workflows cannot be invoked.
+	// ---
+	// summary: Set Cloud Event for Workflow to Log to
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: Workflow Live Status
+	//   description: Whether or not the workflow is alive or disabled
+	//   schema:
+	//     example:
+	//       live: false
+	//     type: object
+	//     required:
+	//       - live
+	//     properties:
+	//       live:
+	//         type: boolean
+	//         description: Workflow live status
+	// responses:
+	//   '200':
+	//     "description": "successfully update workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "toggle", h.ToggleWorkflow)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=execute executeWorkflow
+	// Executes a workflow with optionally some input provided in the request body as json
+	// ---
+	// summary: Execute a Workflow
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: Workflow Input
+	//   description: The input of this workflow instance
+	//   schema:
+	//     example:
+	//       animals:
+	//         - dog
+	//         - cat
+	//         - snake
+	//     type: object
+	//     properties:
+	// responses:
+	//   '200':
+	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
 	// TODO: SWAGGER-SPEC
