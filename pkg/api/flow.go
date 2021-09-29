@@ -1039,15 +1039,13 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//         description: Workflow live status
 	// responses:
 	//   '200':
-	//     "description": "successfully update workflow"
+	//     "description": "successfully updated workflow live status"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "toggle", h.ToggleWorkflow)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=execute executeWorkflow
 	// Executes a workflow with optionally some input provided in the request body as json
 	// ---
 	// summary: Execute a Workflow
-	// consumes:
-	// - text/plain
 	// parameters:
 	// - in: path
 	//   name: namespace
