@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -154,6 +155,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 	_, err = flow.secrets.client.StoreSecret(ctx, request)
 	if err != nil {
+		fmt.Println("==== FAILED TO STORE SECRET", namespace)
 		return nil, err
 	}
 

@@ -28,7 +28,6 @@ func (NamespaceSecret) Edges() []ent.Edge {
 // Indexes of the secret.
 func (NamespaceSecret) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("ns").Fields("name").
-			Unique(),
+		index.Fields("ns", "name").Unique(),
 	}
 }

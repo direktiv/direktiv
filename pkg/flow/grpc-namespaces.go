@@ -9,7 +9,6 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entns "github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -286,8 +285,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	}
 	defer rollback(tx)
 
-	var namespace string
-
 	nsc := tx.Namespace
 	ns, err := nsc.Query().Where(entns.NameEQ(req.GetName())).Only(ctx)
 	if err != nil {
@@ -317,14 +314,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
-	}
-
-	namespace = ns.ID.String()
-	_, err = flow.server.secrets.client.DeleteSecrets(context.Background(), &secretsgrpc.DeleteSecretsRequest{
-		Namespace: &namespace,
-	})
-	if err != nil {
-		flow.sugar.Error(err)
 	}
 
 	flow.deleteNamespaceSecrets(ns)

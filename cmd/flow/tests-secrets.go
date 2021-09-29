@@ -12,9 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func testSecretsAPI(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testSecretsAPI(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -56,6 +54,7 @@ func testSecretsAPI(ctx context.Context, c grpc.FlowClient) error {
 		Data:      []byte("MySecret"),
 	})
 	if err != nil {
+		fmt.Println("++++++++++++++++++ FAIL", namespace)
 		return err
 	}
 
@@ -104,9 +103,7 @@ func testSecretsAPI(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testInstanceSubflowSecrets(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceSubflowSecrets(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -121,6 +118,7 @@ func testInstanceSubflowSecrets(ctx context.Context, c grpc.FlowClient) error {
 		Data:      []byte("MySecret"),
 	})
 	if err != nil {
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>> FAIL", namespace)
 		return err
 	}
 

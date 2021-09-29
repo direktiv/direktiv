@@ -16,9 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -148,9 +146,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -252,9 +248,7 @@ func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -401,9 +395,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testWorkflowVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testWorkflowVariablesLarge(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -505,9 +497,7 @@ func testWorkflowVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testInstanceNamespaceVariables(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceNamespaceVariables(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -706,9 +696,7 @@ states:
 
 }
 
-func testInstanceWorkflowVariables(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceWorkflowVariables(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -870,9 +858,7 @@ states:
 
 }
 
-func testInstanceInstanceVariables(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceInstanceVariables(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,

@@ -11,9 +11,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
-func testStartWorkflow(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -122,9 +120,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testStateLogSimple(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogSimple(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -216,9 +212,7 @@ states:
 
 }
 
-func testStateLogJQ(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogJQ(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -311,9 +305,7 @@ states:
 
 }
 
-func testStateLogJQNested(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogJQNested(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -406,9 +398,7 @@ states:
 
 }
 
-func testStateLogJQObject(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogJQObject(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -506,9 +496,7 @@ states:
 
 }
 
-func testInstanceSimpleChain(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceSimpleChain(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -588,9 +576,7 @@ states:
 
 }
 
-func testInstanceSwitchLoop(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceSwitchLoop(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
