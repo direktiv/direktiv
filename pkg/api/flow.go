@@ -335,8 +335,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// Delete a namespace variable
 	// ---
 	// summary: Delete a Namespace Variable
-	// consumes:
-	// - text/plain
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -428,8 +426,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// Delete a instance variable
 	// ---
 	// summary: Delete a Instance Variable
-	// consumes:
-	// - text/plain
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -536,8 +532,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// Delete a workflow variable
 	// ---
 	// summary: Delete a Workflow Variable
-	// consumes:
-	// - text/plain
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -758,7 +752,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance output"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/output", h.InstanceOutput).Name(RN_GetInstance).Methods(http.MethodGet)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/cancel cancelInstance
+	// swagger:operation POST /api/namespaces/{namespace}/instances/{instance}/cancel cancelInstance
 	// Cancel a currently pending instance
 	// ---
 	// summary: Cancel a Pending Instance
@@ -778,18 +772,170 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully cancelled instance"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/cancel", h.InstanceCancel).Name(RN_CancelInstance).Methods(http.MethodPost)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation POST /api/namespaces/{namespace}/broadcast broadcastCloudevent
+	// Broadcast a cloud event to a namespace
+	// Cloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.
+	// The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec
+	// ---
+	// summary: Broadcast Cloud Event
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: body
+	//   name: cloudevent
+	//   description: Cloud Event request to be sent.
+	//   schema:
+	//     type: object
+	// responses:
+	//   '200':
+	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs getWorkflowLogs
+	// Get workflow level logs
+	// ---
+	// summary: Get Workflow Level Logs
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow logs"
 	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory createDirectory
+	// Creates a directory at the target path
+	// ---
+	// summary: Create a Directory
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: directory
+	//   type: string
+	//   required: true
+	//   description: 'path to target directory'
+	// responses:
+	//   '200':
+	//     "description": "successfully created directory"
 	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=create-workflow createWorkflow
+	// Creates a workflow at the target path
+	// The body of this request should contain the workflow yaml
+	// ---
+	// summary: Create a Workflow
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: workflow data
+	//   description: Payload that contains the direktiv workflow yaml to create.
+	//   schema:
+	//     type: string
+	//     example: |
+	//       description: A simple no-op state that returns Hello world!
+	//       states:
+	//       - id: helloworld
+	//         type: noop
+	//         transform:
+	//           result: Hello world!
+	// responses:
+	//   '200':
+	//     "description": "successfully created workflow"
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow updateWorkflow
+	// Updates a workflow at the target path
+	// The body of this request should contain the workflow yaml you want to update to.
+	// ---
+	// summary: Update a Workflow
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: workflow data
+	//   description: Payload that contains the updated direktiv workflow yaml.
+	//   schema:
+	//     type: string
+	//     example: |
+	//       description: A simple no-op state that returns Hello world Updated !!!
+	//       states:
+	//       - id: helloworld
+	//         type: noop
+	//         transform:
+	//           result: Hello world Updated !!!
+	// responses:
+	//   '200':
+	//     "description": "successfully updated workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-workflow", h.UpdateWorkflow)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=save-workflow saveWorkflow
+	// Updates a workflow at the target path
+	// ---
+	// summary: Update a Workflow
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: workflow data
+	//   description: Payload that contains both the JSON data to manipulate and jq query.
+	//   schema:
+	//     type: string
+	//     example: |
+	//       description: A simple no-op state that returns Hello world Updated !!!
+	//       states:
+	//       - id: helloworld
+	//         type: noop
+	//         transform:
+	//           result: Hello world Updated !!!
+	// responses:
+	//   '200':
+	//     "description": "successfully update workflow"
 	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_DiscardWorkflow, "discard-workflow", h.DiscardWorkflow)
