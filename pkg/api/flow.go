@@ -52,97 +52,787 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
 
+	// swagger:operation GET /api/namespaces getNamespaces
+	// Gets the list of namespaces
+	// ---
+	// summary: Gets the list of namespaces
+	// responses:
+	//   '200':
+	//     "description": "successfully got list of namespaces"
 	handlerPair(r, RN_ListNamespaces, "/namespaces", h.Namespaces, h.NamespacesSSE)
 
-	//  swagger:operation PUT /api/namespaces/{ns} CreateNamespace
-	//  ---
-	//  summary: Creates a namespace
-	//  description: Create namespace.
-	//  parameters:
-	//  - in: path
-	//    name: ns
-	//    type: string
-	//    required: true
-	//    description: target namespace name
-	//  responses:
-	//    '200':
-	//      "description": "namespace created"
+	// swagger:operation PUT /api/namespaces/{namespace} CreateNamespace
+	// Creates a new namespace
+	// ---
+	// summary: Creates a namespace
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace to create'
+	// responses:
+	//   '200':
+	//     "description": "namespace has been successfully created"
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
+
+	// swagger:operation DELETE /api/namespaces/{namespace} deleteNamespace
+	// Delete a namespace
+	// ---
+	// summary: Delete a namespace
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace to delete'
+	// responses:
+	//   '200':
+	//     "description": "namespace has been successfully deleted"
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
+	// swagger:operation POST /api/jq jqPlayground
+	// JQ Playground is a sandbox where
+	// you can test jq queries with custom data
+	// ---
+	// summary: JQ Playground api to test jq queries
+	// parameters:
+	// - in: body
+	//   name: JQ payload
+	//   description: Payload that contains both the JSON data to manipulate and jq query.
+	//   schema:
+	//     example:
+	//       data: "eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30="
+	//       query: "map(select(. >= 2))"
+	//     type: object
+	//     required:
+	//       - data
+	//       - query
+	//     properties:
+	//       data:
+	//         type: string
+	//         description: JSON data encoded in base64
+	//       query:
+	//         type: string
+	//         description: jq query to manipulate JSON data
+	// responses:
+	//   '200':
+	//     "description": "jq query was successful"
 	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
+
+	// swagger:operation GET /api/logs serverLogs
+	// Gets Direktiv Server Logs
+	// ---
+	// summary: Get Direktiv Server Logs
+	// responses:
+	//   '200':
+	//     "description": "successfully got server logs"
 	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
+
+	// swagger:operation GET /api/namespaces/{namespace}/logs namespaceLogs
+	// Gets Namespace Level Logs
+	// ---
+	// summary: Gets Namespace Level Logs
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace logs"
 	handlerPair(r, RN_GetNamespaceLogs, "/namespaces/{ns}/logs", h.NamespaceLogs, h.NamespaceLogsSSE)
+
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/logs instanceLogs
+	// Gets the logs of an executed instance
+	// ---
+	// summary: Gets Instance Logs
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance id'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance logs"
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-invoked", h.WorkflowMetricsInvoked)
+
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful workflowMetricsSuccessful
+	// Get metrics of a workflow, where the instance was successful
+	// ---
+	// summary: Gets Successful Workflow Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-successful", h.WorkflowMetricsSuccessful)
+
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed workflowMetricsFailed
+	// Get metrics of a workflow, where the instance failed
+	// ---
+	// summary: Gets Failed Workflow Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-failed", h.WorkflowMetricsFailed)
+
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed workflowMetricsMilliseconds
+	// Get the timing metrics of a workflow's instance
+	// This returns a total sum of the milliseconds a workflow has been executed for.
+	// ---
+	// summary: Gets Workflow Time Metrics
+	// parameters:
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-milliseconds", h.WorkflowMetricsMilliseconds)
+
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds workflowMetricsStateMilliseconds
+	// Get the state timing metrics of a workflow's instance
+	// The returns the timing of a individual states in a workflow
+	// ---
+	// summary: Gets a Workflow State Time Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-state-milliseconds", h.WorkflowMetricsStateMilliseconds)
 
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/invoked namespaceMetricsInvoked
+	// Get metrics of invoked workflows in the targeted namespace
+	// ---
+	// summary: Gets Namespace Invoked Workflow Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/invoked", h.NamespaceMetricsInvoked).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/successful namespaceMetricsSuccessful
+	// Get metrics of successful workflows in the targeted namespace
+	// ---
+	// summary: Gets Namespace Successful Workflow Instances Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/successful", h.NamespaceMetricsSuccessful).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/failed namespaceMetricsFailed
+	// Get metrics of failed workflows in the targeted namespace
+	// ---
+	// summary: Gets Namespace Failed Workflow Instances Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/failed", h.NamespaceMetricsFailed).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/milliseconds namespaceMetricsMilliseconds
+	// Get timing metrics of workflows in the targeted namespace
+	// ---
+	// summary: Gets Namespace Workflow Timing Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/milliseconds", h.NamespaceMetricsMilliseconds).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
 
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-sankey", h.MetricsSankey)
 
+	// swagger:operation GET /api/namespaces/{namespace}/vars/{variable} getNamespaceVariable
+	// Get the value sorted in a namespace variable
+	// ---
+	// summary: Get a Namespace Variable
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: variable
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace variable"
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.NamespaceVariable).Name(RN_GetNamespaceVariable).Methods(http.MethodGet)
+
+	// swagger:operation DELETE /api/namespaces/{namespace}/vars/{variable} deleteNamespaceVariable
+	// Delete a namespace variable
+	// ---
+	// summary: Delete a Namespace Variable
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: variable
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted namespace variable"
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.DeleteNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodDelete)
+
+	// swagger:operation PUT /api/namespaces/{namespace}/vars/{variable} setNamespaceVariable
+	// Set the value sorted in a namespace variable.
+	// If the target variable does not exists, it will be created.
+	// Variable data can be anything so long as it can be represented as a string.
+	// ---
+	// summary: Set a Namespace Variable
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: variable
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: body
+	//   name: data
+	//   description: "Payload that contains variable data."
+	//   schema:
+	//     example:
+	//       counter: 0
+	//     type: string
+	// responses:
+	//   '200':
+	//     "description": "successfully set namespace variable"
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.SetNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodPut)
+
+	// swagger:operation GET /api/namespaces/{namespace}/vars getNamespaceVariables
+	// Gets a list of variables in a namespace
+	// ---
+	// summary: Get Namespace Variable List
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace variables"
 	handlerPair(r, RN_ListNamespaceVariables, "/namespaces/{ns}/vars", h.NamespaceVariables, h.NamespaceVariablesSSE)
 
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars/{variable} getInstanceVariable
+	// Get the value sorted in a instance variable
+	// ---
+	// summary: Get a Instance Variable
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: variable
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.InstanceVariable).Name(RN_GetInstanceVariable).Methods(http.MethodGet)
+
+	// swagger:operation DELETE /api/namespaces/{namespace}/instances/{instance}/vars/{variable} deleteInstanceVariable
+	// Delete a instance variable
+	// ---
+	// summary: Delete a Instance Variable
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: variable
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.DeleteInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodDelete)
+
+	// swagger:operation PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable} setInstanceVariable
+	// Set the value sorted in a instance variable.
+	// If the target variable does not exists, it will be created.
+	// Variable data can be anything so long as it can be represented as a string.
+	// ---
+	// summary: Set a Instance Variable
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: variable
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// - in: body
+	//   name: data
+	//   description: "Payload that contains variable data."
+	//   schema:
+	//     example:
+	//       counter: 0
+	//     type: string
+	// responses:
+	//   '200':
+	//     "description": "successfully set instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.SetInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodPut)
+
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars getInstanceVariableList
+	// Gets a list of variables in a instance
+	// ---
+	// summary: Get List of Instance Variable
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance variables"
 	handlerPair(r, RN_ListInstanceVariables, "/namespaces/{ns}/instances/{instance}/vars", h.InstanceVariables, h.InstanceVariablesSSE)
 
-	pathHandlerPair(r, RN_ListWorkflowVariables, "vars", h.WorkflowVariables, h.WorkflowVariablesSSE)
-	pathHandler(r, http.MethodPut, RN_SetWorkflowVariable, "set-var", h.SetWorkflowVariable)
-	pathHandler(r, http.MethodDelete, RN_SetWorkflowVariable, "delete-var", h.DeleteWorkflowVariable)
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=var getWorkflowVariable
+	// Get the value sorted in a workflow variable
+	// ---
+	// summary: Get a Workflow Variable
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: query
+	//   name: var
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow variable"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowVariable, "var", h.WorkflowVariable)
 
+	// swagger:operation DELETE /api/namespaces/{namespace}/tree/{workflow}?op=delete-var deleteWorkflowVariable
+	// Delete a workflow variable
+	// ---
+	// summary: Delete a Workflow Variable
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: query
+	//   name: var
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted workflow variable"
+	pathHandler(r, http.MethodDelete, RN_SetWorkflowVariable, "delete-var", h.DeleteWorkflowVariable)
+
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var setWorkflowVariable
+	// Set the value sorted in a workflow variable.
+	// If the target variable does not exists, it will be created.
+	// Variable data can be anything so long as it can be represented as a string.
+	// ---
+	// summary: Set a Workflow Variable
+	// consumes:
+	// - text/plain
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: query
+	//   name: var
+	//   type: string
+	//   required: true
+	//   description: 'target variable'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: data
+	//   description: "Payload that contains variable data."
+	//   schema:
+	//     example:
+	//       counter: 0
+	//     type: string
+	// responses:
+	//   '200':
+	//     "description": "successfully set workflow variable"
+	pathHandler(r, http.MethodPut, RN_SetWorkflowVariable, "set-var", h.SetWorkflowVariable)
+
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=vars getWorkflowVariableList
+	// Gets a list of variables in a workflow
+	// ---
+	// summary: Get List of Workflow Variables
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow variables"
+	pathHandlerPair(r, RN_ListWorkflowVariables, "vars", h.WorkflowVariables, h.WorkflowVariablesSSE)
+
+	// swagger:operation GET /api/namespaces/{namespace}/secrets getSecrets
+	// Gets the list of namespace secrets
+	// ---
+	// summary: Get List of Namespace Secrets
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace secrets"
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
+
+	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} createSecret
+	// Create a namespace secret
+	// ---
+	// summary: Create a Namespace Secret
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: secret
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// - in: body
+	//   name: Secret Payload
+	//   description: Payload that contains secret data
+	//   schema:
+	//     example:
+	//       data: "8QwFLg%D$qg*3r++`{D<BAp~4mB49^"
+	//     type: object
+	//     required:
+	//       - data
+	//     properties:
+	//       data:
+	//         type: string
+	//         description: Secret data to be set
+	// responses:
+	//   '200':
+	//     "description": "successfully created namespace secret"
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
+
+	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{secret} deleteSecret
+	// Delete a namespace secret
+	// ---
+	// summary: Delete a Namespace Secret
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: secret
+	//   type: string
+	//   required: true
+	//   description: 'target secret'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted namespace secret"
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} getInstance
+	// Gets the details of a executed workflow instance in this namespace
+	// ---
+	// summary: Get a Instance
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance"
 	handlerPair(r, RN_GetInstance, "/namespaces/{ns}/instances/{instance}", h.Instance, h.InstanceSSE)
+
+	// swagger:operation GET /api/namespaces/{namespace}/instances getInstanceList
+	// Gets a list of instances in a namespace
+	// ---
+	// summary: Get List Instances
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace instances"
 	handlerPair(r, RN_ListInstances, "/namespaces/{ns}/instances", h.Instances, h.InstancesSSE)
+
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/input getInstanceInput
+	// Gets the input an instance was provided when executed
+	// ---
+	// summary: Get a Instance Input
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance input"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/input", h.InstanceInput).Name(RN_GetInstance).Methods(http.MethodGet)
+
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/output getInstanceOutput
+	// Gets the output an instance was provided when executed
+	// ---
+	// summary: Get a Instance Output
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance output"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/output", h.InstanceOutput).Name(RN_GetInstance).Methods(http.MethodGet)
+
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/cancel cancelInstance
+	// Cancel a currently pending instance
+	// ---
+	// summary: Cancel a Pending Instance
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully cancelled instance"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/cancel", h.InstanceCancel).Name(RN_CancelInstance).Methods(http.MethodPost)
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-workflow", h.UpdateWorkflow)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_DiscardWorkflow, "discard-workflow", h.DiscardWorkflow)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodDelete, RN_DeleteNode, "delete-node", h.DeleteNode)
 
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPut, RN_CreateNodeAttributes, "create-node-attributes", h.CreateNodeAttributes)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodDelete, RN_DeleteNodeAttributes, "delete-node-attributes", h.DeleteNodeAttributes)
 
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowTags, "tags", h.GetTags, h.GetTagsSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowRefs, "refs", h.GetRefs, h.GetRefsSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowRefs, "revisions", h.GetRevisions, h.GetRevisionsSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_DeleteRevision, "delete-revision", h.DeleteRevision)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_Tag, "tag", h.Tag)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_Untag, "untag", h.Untag)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_Retag, "retag", h.Retag)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowRouter, "router", h.Router, h.RouterSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_EditWorkflowRouter, "edit-router", h.EditRouter)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRef, "validate-ref", h.ValidateRef)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
 
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "set-workflow-event-logging", h.SetWorkflowEventLogging)
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "toggle", h.ToggleWorkflow)
 
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
 }
