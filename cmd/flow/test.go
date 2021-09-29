@@ -46,6 +46,8 @@ var testsCmd = &cobra.Command{
 
 		// TODO: workflow management
 
+		registerTest("SecretsAPI", []string{"secrets"}, testSecretsAPI)
+
 		registerTest("StartWorkflow", []string{"instances"}, testStartWorkflow)
 		registerTest("StateLogSimple", []string{"instances"}, testStateLogSimple)
 		registerTest("StateLogJQ", []string{"instances", "jq"}, testStateLogJQ)
@@ -53,6 +55,17 @@ var testsCmd = &cobra.Command{
 		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
 		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
+
+		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
+
+		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
+		registerTest("NamespaceVariablesLarge", []string{"variables"}, testNamespaceVariablesLarge)
+		registerTest("WorkflowVariablesSmall", []string{"variables"}, testWorkflowVariablesSmall)
+		registerTest("WorkflowVariablesLarge", []string{"variables"}, testWorkflowVariablesLarge)
+
+		registerTest("InstanceNamespaceVariables", []string{"instances", "jq", "variables"}, testInstanceNamespaceVariables)
+		registerTest("InstanceWorkflowVariables", []string{"instances", "jq", "variables"}, testInstanceWorkflowVariables)
+		registerTest("InstanceInstanceVariables", []string{"instances", "jq", "variables"}, testInstanceInstanceVariables)
 
 	},
 	Run: func(cmd *cobra.Command, args []string) {
