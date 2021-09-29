@@ -58,6 +58,9 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 rm -Rf $dir/devcerts/*
 chmod 777 $dir/devcerts
 
+rm -Rf $dir/../kubernetes/charts/direktiv/charts
+rm -Rf $dir/../kubernetes/charts/direktiv/Chart.lock
+
 docker run -v $dir/devcerts:/certs  -i smallstep/step-cli /bin/bash -c "$exe"
 
 helm repo add linkerd https://helm.linkerd.io/stable

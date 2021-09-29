@@ -20,7 +20,7 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 		grpc_retry.WithPerRetryTimeout(1*time.Second))
 
 	var options []grpc.DialOption
-	options = append(options, grpc.WithInsecure())
+	options = append(options, grpc.WithInsecure(), grpc.WithBlock())
 
 	options = append(options,
 		grpc.WithDefaultCallOptions(additionalCallOptions...),
