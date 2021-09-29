@@ -76,10 +76,14 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
 	handlerPair(r, RN_ListPods, "/{svn}/revisions/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
 	// swagger:operation GET /api/functions getFunctions1
@@ -90,6 +94,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   "201":
 	//     "description": "service created"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 
 	// swagger:operation GET /api/functions/{function} getGlobalFunctions
@@ -122,31 +127,49 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   "200":
 	//     "description": "service created"
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
+	// TODO: SWAGGER-SPEC
 	handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
+	// TODO: SWAGGER-SPEC
 	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revisions/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// workflow
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "services", h.listWorkflowServices, h.listWorkflowServicesSSE)
 	pathHandlerPair(r, RN_ListWorkflowServices, "pods", h.listWorkflowPods, h.listWorkflowPodsSSE)
 
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "function", h.singleWorkflowService, h.singleWorkflowServiceSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revisions", h.singleWorkflowServiceRevisions, h.singleWorkflowServiceRevisionsSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revision", h.singleWorkflowServiceRevision, h.singleWorkflowServiceRevisionSSE)
 
 	// TODO: direct control?
@@ -158,8 +181,11 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// Registry ..
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 }
