@@ -4,6 +4,7 @@ postgresql:
   database: direktiv
   postgresPassword: postgres
   repmgrPassword: password
+  syncReplication: true
   resources:
       requests:
         memory: "512Mi"
