@@ -11,9 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func testCreateDirectory(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectory(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -34,9 +32,7 @@ func testCreateDirectory(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testCreateDirectoryDuplicate(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryDuplicate(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -79,9 +75,7 @@ func testCreateDirectoryDuplicate(ctx context.Context, c grpc.FlowClient) error 
 
 }
 
-func testCreateDirectoryFalseDuplicate(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryFalseDuplicate(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -118,9 +112,7 @@ func testCreateDirectoryFalseDuplicate(ctx context.Context, c grpc.FlowClient) e
 
 }
 
-func testCreateDirectoryRoot(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryRoot(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -155,9 +147,7 @@ func testCreateDirectoryRoot(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testCreateDirectoryRegex(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryRegex(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -181,9 +171,7 @@ func testCreateDirectoryRegex(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testCreateDirectoryIdempotent(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryIdempotent(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -214,9 +202,7 @@ func testCreateDirectoryIdempotent(ctx context.Context, c grpc.FlowClient) error
 
 }
 
-func testCreateDirectoryParents(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryParents(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -270,9 +256,7 @@ func testCreateDirectoryParents(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testCreateDirectoryNoParent(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryNoParent(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -296,9 +280,7 @@ func testCreateDirectoryNoParent(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testCreateDirectoryNonDirectoryParent(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testCreateDirectoryNonDirectoryParent(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -342,9 +324,7 @@ func testCreateDirectoryNonDirectoryParent(ctx context.Context, c grpc.FlowClien
 
 }
 
-func testDeleteDirectory(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDeleteDirectory(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -400,9 +380,7 @@ func testDeleteDirectory(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testDeleteDirectoryIdempotent(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDeleteDirectoryIdempotent(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -450,9 +428,7 @@ func testDeleteDirectoryIdempotent(ctx context.Context, c grpc.FlowClient) error
 
 }
 
-func testDeleteDirectoryRecursive(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDeleteDirectoryRecursive(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -494,9 +470,7 @@ func testDeleteDirectoryRecursive(ctx context.Context, c grpc.FlowClient) error 
 
 }
 
-func testDeleteDirectoryRoot(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDeleteDirectoryRoot(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -553,9 +527,7 @@ func compareDirectoryResponse(expect, actual *grpc.DirectoryResponse) error {
 
 }
 
-func testDirectory(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDirectory(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -706,9 +678,7 @@ func testDirectory(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testDirectoryStream(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDirectoryStream(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -775,9 +745,7 @@ func testDirectoryStream(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testDirectoryStreamDisconnect(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDirectoryStreamDisconnect(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -829,9 +797,7 @@ func testDirectoryStreamDisconnect(ctx context.Context, c grpc.FlowClient) error
 
 }
 
-func testDirectoryStreamDisconnectParent(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDirectoryStreamDisconnectParent(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -891,9 +857,7 @@ func testDirectoryStreamDisconnectParent(ctx context.Context, c grpc.FlowClient)
 
 }
 
-func testDirectoryStreamDisconnectNamespace(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testDirectoryStreamDisconnectNamespace(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,

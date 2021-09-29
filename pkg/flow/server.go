@@ -398,6 +398,7 @@ func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
 	resp, err = handler(ctx, req)
 	if err != nil {
+		fmt.Println(">>>", info.FullMethod)
 		return nil, translateError(err)
 	}
 	return resp, nil
@@ -406,6 +407,7 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryS
 func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
 	err := handler(srv, ss)
 	if err != nil {
+		fmt.Println(">>>", info.FullMethod)
 		return translateError(err)
 	}
 	return nil

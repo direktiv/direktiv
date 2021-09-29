@@ -94,6 +94,8 @@ func main() {
 	rootCmd.AddCommand(deleteSecretCmd)
 
 	rootCmd.AddCommand(testsCmd)
+	testsCmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
+	testsCmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
 
 	err = rootCmd.Execute()
 	if err != nil {
