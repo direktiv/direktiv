@@ -11,6 +11,8 @@ metadata:
     konghq.com/override: {{ include "direktiv.fullname" . }}-ingress-timeout
     {{- if .Values.apikey }}
     konghq.com/plugins: {{ include "direktiv.fullname" . }}-auth
+    {{- else if ne .Values.api.kongPlugins "none" }}
+    konghq.com/plugins: {{ .Values.api.kongPlugins }}
     {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.class }}
