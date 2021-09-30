@@ -174,7 +174,7 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 				continue
 			}
 
-			handler(req)
+			go handler(req)
 
 		}
 

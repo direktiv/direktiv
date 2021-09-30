@@ -55,6 +55,7 @@ opentelemetry:
 
 api:
   replicas: 1
+  kongPlugins: "none"
   extraContainers: []
   # -- image for api pod
   image: "vorteil/flow"
@@ -175,6 +176,7 @@ secrets:
 
 # -- UI configuration
 ui:
+  kongPlugins: "none"
   image: "vorteil/direktiv-ui"
   tag: ""
   certificate: none

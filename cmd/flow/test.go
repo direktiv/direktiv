@@ -250,27 +250,46 @@ func runTests(tests []test, solo bool, idx int) error {
 
 func testReset(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
-	namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{})
+	_, err := c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
+		Name:       namespace,
+		Idempotent: true,
+		Recursive:  true,
+	})
 	if err != nil {
 		return err
 	}
 
-	prefix := namespace
-
-	for _, edge := range namespaces.Edges {
-		if strings.HasPrefix(edge.Node.Name, prefix) {
-			_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-				Name:       edge.Node.Name,
-				Idempotent: true,
-				Recursive:  true,
-			})
-			if err != nil {
-				return err
-			}
-		}
-	}
-
 	return nil
+
+	// namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{
+	// 	Pagination: &grpc.Pagination{
+	// 		Filter: &grpc.PageFilter{
+	// 			Field: "NAME",
+	// 			Type:  "CONTAINS",
+	// 			Val:   namespace,
+	// 		},
+	// 	},
+	// })
+	// if err != nil {
+	// 	return err
+	// }
+
+	// prefix := namespace
+
+	// for _, edge := range namespaces.Edges {
+	// 	if strings.HasPrefix(edge.Node.Name, prefix) {
+	// 		_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
+	// 			Name:       edge.Node.Name,
+	// 			Idempotent: true,
+	// 			Recursive:  true,
+	// 		})
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	// return nil
 
 }
 
