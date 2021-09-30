@@ -19,7 +19,7 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: PGPASSWORD
-                  value: direktivdirektiv # change yugabyte pwd here and add additional commands. the example is bad btw :)
+                  value: direktivdirektiv # change pwd here and add additional commands. the example is bad btw :)
               command:
                 - /bin/sh
                 - '-c'
