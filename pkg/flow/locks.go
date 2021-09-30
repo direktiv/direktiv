@@ -64,9 +64,15 @@ func (locks *locks) tryLockDB(id uint64) (bool, *sql.Conn, error) {
 		return false, nil, err
 	}
 
-	conn.QueryRowContext(context.Background(), "SELECT pg_try_advisory_lock($1)", int64(id)).Scan(&gotLock)
+	err = conn.QueryRowContext(context.Background(), "SELECT pg_try_advisory_lock($1)", int64(id)).Scan(&gotLock)
+	if err != nil {
+		return false, nil, err
+	}
 	if !gotLock {
-		conn.Close()
+		err = conn.Close()
+		if err != nil {
+			fmt.Println("CLOSE LOCK CONN ERROR", err)
+		}
 	}
 
 	return gotLock, conn, nil
@@ -162,8 +168,7 @@ func (engine *engine) unlock(key string, conn *sql.Conn) {
 
 	hash, err := hashstructure.Hash(key, hashstructure.FormatV2, nil)
 	if err != nil {
-		engine.sugar.Error(err)
-		return
+		panic(err)
 	}
 
 	engine.cancellersLock.Lock()

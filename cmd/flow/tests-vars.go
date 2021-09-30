@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -592,7 +591,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -622,6 +621,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -647,7 +647,7 @@ states:
 		return err
 	}
 
-	cctx, cancel = context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel = context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err = c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -675,6 +675,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -752,7 +753,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -782,6 +783,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -808,7 +810,7 @@ states:
 		return err
 	}
 
-	cctx, cancel = context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel = context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err = c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -836,6 +838,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -914,7 +917,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -944,6 +947,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -970,7 +974,7 @@ states:
 		return err
 	}
 
-	cctx, cancel = context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel = context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err = c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -998,6 +1002,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)

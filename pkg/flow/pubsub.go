@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -67,7 +68,7 @@ func initPubSub(log *zap.SugaredLogger, notifier notifier, database string) (*pu
 
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			log.Errorf("pubsub error: %v\n", err)
+			log.Errorf("pubsub error: %v %v\n", ev, err)
 			os.Exit(1)
 		}
 	}
@@ -269,7 +270,7 @@ type subscription struct {
 	last   time.Time
 }
 
-func (s *subscription) Wait() bool {
+func (s *subscription) Wait(ctx context.Context) bool {
 
 	t := time.Now()
 	dt := t.Sub(s.last)
@@ -282,6 +283,8 @@ func (s *subscription) Wait() bool {
 	}()
 
 	select {
+	case <-ctx.Done():
+		return false
 	case _, more := <-s.ch:
 		return more
 	case <-time.After(time.Minute):

@@ -120,7 +120,7 @@ resend:
 	}
 	phash = nhash
 
-	more := sub.Wait()
+	more := sub.Wait(ctx)
 	if !more {
 		return nil
 	}
@@ -151,6 +151,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
+
 	defer rollback(tx)
 
 	nsc := tx.Namespace

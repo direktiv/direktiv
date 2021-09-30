@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow"
 
@@ -37,7 +36,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string)
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -151,7 +150,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -244,7 +243,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -337,7 +336,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -432,7 +431,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -533,7 +532,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -618,7 +617,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{

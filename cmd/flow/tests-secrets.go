@@ -118,7 +118,6 @@ func testInstanceSubflowSecrets(ctx context.Context, c grpc.FlowClient, namespac
 		Data:      []byte("MySecret"),
 	})
 	if err != nil {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>> FAIL", namespace)
 		return err
 	}
 
@@ -163,7 +162,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, time.Second*30)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{

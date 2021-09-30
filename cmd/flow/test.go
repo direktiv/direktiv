@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -16,6 +17,8 @@ import (
 
 var skipLongTests bool
 var parallelTests int
+var instanceTimeout time.Duration
+var testTimeout time.Duration
 
 var testsCmd = &cobra.Command{
 	Use: "tests",
@@ -26,9 +29,9 @@ var testsCmd = &cobra.Command{
 		// TODO: rename namespace
 		registerTest("DeleteNamespaceIdempotent", []string{"namespaces"}, testDeleteNamespaceIdempotent)
 		registerTest("DeleteNamespaceRecursive", []string{"namespaces"}, testDeleteNamespaceRecursive)
-		registerTest("NamespacesStream", []string{"namespaces", "stream"}, testNamespacesStream)
-		registerTest("ServerLogs", []string{"namespaces", "logs"}, testServerLogs)
-		registerTest("ServerLogsStream", []string{"namespaces", "logs", "stream"}, testServerLogsStream)
+		registerTest("NamespacesStream", []string{"namespaces", "stream", "race"}, testNamespacesStream)
+		registerTest("ServerLogs", []string{"namespaces", "logs", "race"}, testServerLogs)
+		registerTest("ServerLogsStream", []string{"namespaces", "logs", "stream", "race"}, testServerLogsStream)
 		registerTest("NamespaceLogsStreamDisconnect", []string{"namespaces", "logs", "stream"}, testNamespaceLogsStreamDisconnect)
 		registerTest("CreateDirectory", []string{"directories"}, testCreateDirectory)
 		registerTest("CreateDirectoryDuplicate", []string{"directories", "uniqueness"}, testCreateDirectoryDuplicate)
@@ -137,6 +140,9 @@ func getTests(labels ...string) []test {
 
 func runTestsParallel(tests []test, c int) {
 
+	testsFullReset()
+	defer testsFullReset()
+
 	if c == 1 {
 		err := runTests(tests, true, 0)
 		if err != nil {
@@ -202,6 +208,19 @@ func runTests(tests []test, solo bool, idx int) error {
 
 	for _, test := range tests {
 
+		if !solo {
+			lbls := test.Labels()
+			race := false
+			for _, lbl := range lbls {
+				if lbl == "race" {
+					race = true
+				}
+			}
+			if race {
+				continue
+			}
+		}
+
 		total++
 
 		var buf *bytes.Buffer
@@ -217,7 +236,9 @@ func runTests(tests []test, solo bool, idx int) error {
 		}
 		fmt.Fprint(out, msg)
 
-		err := test.Run(ctx, c, namespace)
+		tctx, cancel := context.WithTimeout(ctx, testTimeout)
+		err := test.Run(tctx, c, namespace)
+		cancel()
 		if err != nil {
 			fail++
 			fmt.Fprint(out, "FAIL\n")
@@ -248,6 +269,50 @@ func runTests(tests []test, solo bool, idx int) error {
 
 }
 
+func testsFullReset() error {
+
+	ctx := context.Background()
+
+	c, closer, err := client()
+	if err != nil {
+		err = fmt.Errorf("failed to get client: %v", err)
+		fmt.Fprintln(os.Stderr, err)
+		return err
+	}
+	defer closer.Close()
+
+	prefix := "test"
+
+	namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{
+		Pagination: &grpc.Pagination{
+			Filter: &grpc.PageFilter{
+				Field: "NAME",
+				Type:  "CONTAINS",
+				Val:   prefix,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, edge := range namespaces.Edges {
+		if strings.HasPrefix(edge.Node.Name, prefix) {
+			_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
+				Name:       edge.Node.Name,
+				Idempotent: true,
+				Recursive:  true,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+
+}
+
 func testReset(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
@@ -260,36 +325,6 @@ func testReset(ctx context.Context, c grpc.FlowClient, namespace string) error {
 	}
 
 	return nil
-
-	// namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{
-	// 	Pagination: &grpc.Pagination{
-	// 		Filter: &grpc.PageFilter{
-	// 			Field: "NAME",
-	// 			Type:  "CONTAINS",
-	// 			Val:   namespace,
-	// 		},
-	// 	},
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-
-	// prefix := namespace
-
-	// for _, edge := range namespaces.Edges {
-	// 	if strings.HasPrefix(edge.Node.Name, prefix) {
-	// 		_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-	// 			Name:       edge.Node.Name,
-	// 			Idempotent: true,
-	// 			Recursive:  true,
-	// 		})
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-
-	// return nil
 
 }
 
