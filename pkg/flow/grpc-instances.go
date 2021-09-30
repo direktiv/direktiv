@@ -6,6 +6,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
@@ -381,5 +382,22 @@ func instancesFilter(p *pagination) ent.InstancePaginateOption {
 		return query, nil
 
 	})
+
+}
+
+func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	d, err := flow.getInstance(ctx, flow.db.Namespace, req.GetNamespace(), req.GetInstance(), false)
+	if err != nil {
+		return nil, err
+	}
+
+	flow.engine.cancelInstance(d.in.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+
+	var resp emptypb.Empty
+
+	return &resp, nil
 
 }
