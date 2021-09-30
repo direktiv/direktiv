@@ -52,7 +52,7 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
 
-	// swagger:operation GET /api/namespaces getNamespaces
+	// swagger:operation GET /api/namespaces Namespaces getNamespaces
 	// Gets the list of namespaces
 	// ---
 	// summary: Gets the list of namespaces
@@ -61,7 +61,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got list of namespaces"
 	handlerPair(r, RN_ListNamespaces, "/namespaces", h.Namespaces, h.NamespacesSSE)
 
-	// swagger:operation PUT /api/namespaces/{namespace} CreateNamespace
+	// swagger:operation PUT /api/namespaces/{namespace} Namespaces createNamespace
 	// Creates a new namespace
 	// ---
 	// summary: Creates a namespace
@@ -76,7 +76,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "namespace has been successfully created"
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
 
-	// swagger:operation DELETE /api/namespaces/{namespace} deleteNamespace
+	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// Delete a namespace
 	// ---
 	// summary: Delete a namespace
@@ -91,7 +91,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "namespace has been successfully deleted"
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
-	// swagger:operation POST /api/jq jqPlayground
+	// swagger:operation POST /api/jq Other jqPlayground
 	// JQ Playground is a sandbox where
 	// you can test jq queries with custom data
 	// ---
@@ -120,7 +120,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "jq query was successful"
 	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
 
-	// swagger:operation GET /api/logs serverLogs
+	// swagger:operation GET /api/logs Logs serverLogs
 	// Gets Direktiv Server Logs
 	// ---
 	// summary: Get Direktiv Server Logs
@@ -129,7 +129,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got server logs"
 	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/logs namespaceLogs
+	// swagger:operation GET /api/namespaces/{namespace}/logs Logs namespaceLogs
 	// Gets Namespace Level Logs
 	// ---
 	// summary: Gets Namespace Level Logs
@@ -144,7 +144,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace logs"
 	handlerPair(r, RN_GetNamespaceLogs, "/namespaces/{ns}/logs", h.NamespaceLogs, h.NamespaceLogsSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/logs instanceLogs
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/logs Logs instanceLogs
 	// Gets the logs of an executed instance
 	// ---
 	// summary: Gets Instance Logs
@@ -167,7 +167,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-invoked", h.WorkflowMetricsInvoked)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful workflowMetricsSuccessful
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful Metrics workflowMetricsSuccessful
 	// Get metrics of a workflow, where the instance was successful
 	// ---
 	// summary: Gets Successful Workflow Metrics
@@ -187,7 +187,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-successful", h.WorkflowMetricsSuccessful)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed workflowMetricsFailed
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed Metrics workflowMetricsFailed
 	// Get metrics of a workflow, where the instance failed
 	// ---
 	// summary: Gets Failed Workflow Metrics
@@ -207,7 +207,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-failed", h.WorkflowMetricsFailed)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed workflowMetricsMilliseconds
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed Metrics workflowMetricsMilliseconds
 	// Get the timing metrics of a workflow's instance
 	// This returns a total sum of the milliseconds a workflow has been executed for.
 	// ---
@@ -228,7 +228,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-milliseconds", h.WorkflowMetricsMilliseconds)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds workflowMetricsStateMilliseconds
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds Metrics workflowMetricsStateMilliseconds
 	// Get the state timing metrics of a workflow's instance
 	// The returns the timing of a individual states in a workflow
 	// ---
@@ -249,7 +249,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-state-milliseconds", h.WorkflowMetricsStateMilliseconds)
 
-	// swagger:operation GET /api/namespaces/{namespace}/metrics/invoked namespaceMetricsInvoked
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/invoked Metrics namespaceMetricsInvoked
 	// Get metrics of invoked workflows in the targeted namespace
 	// ---
 	// summary: Gets Namespace Invoked Workflow Metrics
@@ -264,7 +264,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/invoked", h.NamespaceMetricsInvoked).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
 
-	// swagger:operation GET /api/namespaces/{namespace}/metrics/successful namespaceMetricsSuccessful
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/successful Metrics namespaceMetricsSuccessful
 	// Get metrics of successful workflows in the targeted namespace
 	// ---
 	// summary: Gets Namespace Successful Workflow Instances Metrics
@@ -279,7 +279,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/successful", h.NamespaceMetricsSuccessful).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
 
-	// swagger:operation GET /api/namespaces/{namespace}/metrics/failed namespaceMetricsFailed
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/failed Metrics namespaceMetricsFailed
 	// Get metrics of failed workflows in the targeted namespace
 	// ---
 	// summary: Gets Namespace Failed Workflow Instances Metrics
@@ -294,7 +294,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/failed", h.NamespaceMetricsFailed).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
 
-	// swagger:operation GET /api/namespaces/{namespace}/metrics/milliseconds namespaceMetricsMilliseconds
+	// swagger:operation GET /api/namespaces/{namespace}/metrics/milliseconds Metrics namespaceMetricsMilliseconds
 	// Get timing metrics of workflows in the targeted namespace
 	// ---
 	// summary: Gets Namespace Workflow Timing Metrics
@@ -311,7 +311,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-sankey", h.MetricsSankey)
 
-	// swagger:operation GET /api/namespaces/{namespace}/vars/{variable} getNamespaceVariable
+	// swagger:operation GET /api/namespaces/{namespace}/vars/{variable} Variables getNamespaceVariable
 	// Get the value sorted in a namespace variable
 	// ---
 	// summary: Get a Namespace Variable
@@ -331,7 +331,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace variable"
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.NamespaceVariable).Name(RN_GetNamespaceVariable).Methods(http.MethodGet)
 
-	// swagger:operation DELETE /api/namespaces/{namespace}/vars/{variable} deleteNamespaceVariable
+	// swagger:operation DELETE /api/namespaces/{namespace}/vars/{variable} Variables deleteNamespaceVariable
 	// Delete a namespace variable
 	// ---
 	// summary: Delete a Namespace Variable
@@ -351,7 +351,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully deleted namespace variable"
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.DeleteNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodDelete)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/vars/{variable} setNamespaceVariable
+	// swagger:operation PUT /api/namespaces/{namespace}/vars/{variable} Variables setNamespaceVariable
 	// Set the value sorted in a namespace variable.
 	// If the target variable does not exists, it will be created.
 	// Variable data can be anything so long as it can be represented as a string.
@@ -382,7 +382,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully set namespace variable"
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.SetNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodPut)
 
-	// swagger:operation GET /api/namespaces/{namespace}/vars getNamespaceVariables
+	// swagger:operation GET /api/namespaces/{namespace}/vars Variables getNamespaceVariables
 	// Gets a list of variables in a namespace
 	// ---
 	// summary: Get Namespace Variable List
@@ -397,7 +397,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace variables"
 	handlerPair(r, RN_ListNamespaceVariables, "/namespaces/{ns}/vars", h.NamespaceVariables, h.NamespaceVariablesSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars/{variable} getInstanceVariable
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars/{variable} Variables getInstanceVariable
 	// Get the value sorted in a instance variable
 	// ---
 	// summary: Get a Instance Variable
@@ -422,7 +422,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.InstanceVariable).Name(RN_GetInstanceVariable).Methods(http.MethodGet)
 
-	// swagger:operation DELETE /api/namespaces/{namespace}/instances/{instance}/vars/{variable} deleteInstanceVariable
+	// swagger:operation DELETE /api/namespaces/{namespace}/instances/{instance}/vars/{variable} Variables deleteInstanceVariable
 	// Delete a instance variable
 	// ---
 	// summary: Delete a Instance Variable
@@ -447,7 +447,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully deleted instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.DeleteInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodDelete)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable} setInstanceVariable
+	// swagger:operation PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable} Variables setInstanceVariable
 	// Set the value sorted in a instance variable.
 	// If the target variable does not exists, it will be created.
 	// Variable data can be anything so long as it can be represented as a string.
@@ -483,7 +483,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully set instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.SetInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodPut)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars getInstanceVariableList
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars Variables getInstanceVariableList
 	// Gets a list of variables in a instance
 	// ---
 	// summary: Get List of Instance Variable
@@ -503,7 +503,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance variables"
 	handlerPair(r, RN_ListInstanceVariables, "/namespaces/{ns}/instances/{instance}/vars", h.InstanceVariables, h.InstanceVariablesSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=var getWorkflowVariable
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=var Variables getWorkflowVariable
 	// Get the value sorted in a workflow variable
 	// ---
 	// summary: Get a Workflow Variable
@@ -528,7 +528,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow variable"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowVariable, "var", h.WorkflowVariable)
 
-	// swagger:operation DELETE /api/namespaces/{namespace}/tree/{workflow}?op=delete-var deleteWorkflowVariable
+	// swagger:operation DELETE /api/namespaces/{namespace}/tree/{workflow}?op=delete-var Variables deleteWorkflowVariable
 	// Delete a workflow variable
 	// ---
 	// summary: Delete a Workflow Variable
@@ -553,7 +553,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully deleted workflow variable"
 	pathHandler(r, http.MethodDelete, RN_SetWorkflowVariable, "delete-var", h.DeleteWorkflowVariable)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var setWorkflowVariable
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var Variables setWorkflowVariable
 	// Set the value sorted in a workflow variable.
 	// If the target variable does not exists, it will be created.
 	// Variable data can be anything so long as it can be represented as a string.
@@ -589,7 +589,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully set workflow variable"
 	pathHandler(r, http.MethodPut, RN_SetWorkflowVariable, "set-var", h.SetWorkflowVariable)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=vars getWorkflowVariableList
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=vars Variables getWorkflowVariableList
 	// Gets a list of variables in a workflow
 	// ---
 	// summary: Get List of Workflow Variables
@@ -609,7 +609,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow variables"
 	pathHandlerPair(r, RN_ListWorkflowVariables, "vars", h.WorkflowVariables, h.WorkflowVariablesSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/secrets getSecrets
+	// swagger:operation GET /api/namespaces/{namespace}/secrets Secrets getSecrets
 	// Gets the list of namespace secrets
 	// ---
 	// summary: Get List of Namespace Secrets
@@ -624,7 +624,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace secrets"
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} createSecret
+	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
 	// Create a namespace secret
 	// ---
 	// summary: Create a Namespace Secret
@@ -657,7 +657,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created namespace secret"
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
 
-	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{secret} deleteSecret
+	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{secret} Secrets deleteSecret
 	// Delete a namespace secret
 	// ---
 	// summary: Delete a Namespace Secret
@@ -677,7 +677,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully deleted namespace secret"
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} getInstance
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// Gets the details of a executed workflow instance in this namespace
 	// ---
 	// summary: Get a Instance
@@ -697,7 +697,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance"
 	handlerPair(r, RN_GetInstance, "/namespaces/{ns}/instances/{instance}", h.Instance, h.InstanceSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances getInstanceList
+	// swagger:operation GET /api/namespaces/{namespace}/instances Instances getInstanceList
 	// Gets a list of instances in a namespace
 	// ---
 	// summary: Get List Instances
@@ -712,7 +712,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace instances"
 	handlerPair(r, RN_ListInstances, "/namespaces/{ns}/instances", h.Instances, h.InstancesSSE)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/input getInstanceInput
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/input Instances getInstanceInput
 	// Gets the input an instance was provided when executed
 	// ---
 	// summary: Get a Instance Input
@@ -732,7 +732,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance input"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/input", h.InstanceInput).Name(RN_GetInstance).Methods(http.MethodGet)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/output getInstanceOutput
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/output Instances getInstanceOutput
 	// Gets the output an instance was provided when executed
 	// ---
 	// summary: Get a Instance Output
@@ -752,7 +752,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance output"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/output", h.InstanceOutput).Name(RN_GetInstance).Methods(http.MethodGet)
 
-	// swagger:operation POST /api/namespaces/{namespace}/instances/{instance}/cancel cancelInstance
+	// swagger:operation POST /api/namespaces/{namespace}/instances/{instance}/cancel Instances cancelInstance
 	// Cancel a currently pending instance
 	// ---
 	// summary: Cancel a Pending Instance
@@ -772,7 +772,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully cancelled instance"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/cancel", h.InstanceCancel).Name(RN_CancelInstance).Methods(http.MethodPost)
 
-	// swagger:operation POST /api/namespaces/{namespace}/broadcast broadcastCloudevent
+	// swagger:operation POST /api/namespaces/{namespace}/broadcast Other broadcastCloudevent
 	// Broadcast a cloud event to a namespace
 	// Cloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.
 	// The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec
@@ -794,7 +794,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs getWorkflowLogs
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// Get workflow level logs
 	// ---
 	// summary: Get Workflow Level Logs
@@ -814,7 +814,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got workflow logs"
 	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory createDirectory
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory Directory createDirectory
 	// Creates a directory at the target path
 	// ---
 	// summary: Create a Directory
@@ -834,7 +834,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created directory"
 	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=create-workflow createWorkflow
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=create-workflow Workflows createWorkflow
 	// Creates a workflow at the target path
 	// The body of this request should contain the workflow yaml
 	// ---
@@ -869,7 +869,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created workflow"
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
 
-	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow updateWorkflow
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow Workflows updateWorkflow
 	// Updates a workflow at the target path
 	// The body of this request should contain the workflow yaml you want to update to.
 	// ---
@@ -904,7 +904,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully updated workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-workflow", h.UpdateWorkflow)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=save-workflow saveWorkflow
+	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=save-workflow Workflows saveWorkflow
 	// Updates a workflow at the target path
 	// ---
 	// summary: Update a Workflow
@@ -970,7 +970,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
 
-	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging setWorkflowCloudEventLogs
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// Set Cloud Event for Workflow to Log to
 	// When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the
 	// conifgured value.
@@ -1008,7 +1008,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully update workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "set-workflow-event-logging", h.SetWorkflowEventLogging)
 
-	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle toggleWorkflow
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle Workflows toggleWorkflow
 	// Toggle's whether or not a workflow is active
 	// Disabled workflows cannot be invoked.
 	// ---
@@ -1042,7 +1042,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully updated workflow live status"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "toggle", h.ToggleWorkflow)
 
-	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=execute executeWorkflow
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=execute Workflows executeWorkflow
 	// Executes a workflow with optionally some input provided in the request body as json
 	// ---
 	// summary: Execute a Workflow

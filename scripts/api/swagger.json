@@ -22,55 +22,1552 @@
   "paths": {
     "/api/functions": {
       "get": {
-        "description": "Returns list of global Knative functions with 'global-' prefix.",
-        "summary": "Returns list of global functions.",
-        "operationId": "getFunctions1",
-        "responses": {
-          "201": {
-            "description": "service created"
-          }
-        }
-      }
-    },
-    "/api/functions/{function}": {
-      "get": {
-        "description": "Returns list of global Knative functions with 'global-' prefix.",
-        "summary": "Returns list of global functions.",
-        "operationId": "getGlobalFunctions",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "name of the function",
-            "name": "function",
-            "in": "path",
-            "required": true
-          }
+        "description": "Gets a list of global knative services",
+        "tags": [
+          "Services"
         ],
+        "summary": "Get List of Global Service",
+        "operationId": "getGlobalServiceList",
         "responses": {
           "200": {
-            "description": "service created"
+            "description": "successfully got services list"
           }
         }
       },
       "post": {
-        "description": "Creates a global Knative function with 'global-' prefix.",
+        "description": "Creates global scoped knative service\nService Names are unique on a scope level\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html",
         "tags": [
-          "createGlobalFunction"
+          "Services"
         ],
-        "summary": "Creates a global function.",
-        "operationId": "UpdateServiceRequest",
+        "summary": "Create Global Service",
+        "operationId": "createGlobalService",
+        "parameters": [
+          {
+            "description": "Payload that contains information on new service",
+            "name": "Service",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "image",
+                "cmd",
+                "minScale",
+                "size"
+              ],
+              "properties": {
+                "cmd": {
+                  "type": "string"
+                },
+                "image": {
+                  "description": "Target image a service will use",
+                  "type": "string"
+                },
+                "minScale": {
+                  "description": "Minimum amount of service pods to be live",
+                  "type": "integer"
+                },
+                "name": {
+                  "description": "Name of new service",
+                  "type": "string"
+                },
+                "size": {
+                  "description": "Size of created service pods",
+                  "type": "string",
+                  "enum": [
+                    "small",
+                    "medium",
+                    "large"
+                  ]
+                }
+              },
+              "example": {
+                "cmd": "",
+                "image": "vorteil/request:v12",
+                "minScale": "1",
+                "name": "fast-request",
+                "size": "small"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created service"
+          }
+        }
+      }
+    },
+    "/api/functions/{serviceName}": {
+      "get": {
+        "description": "Get details of a global scoped knative service",
+        "tags": [
+          "Services"
+        ],
+        "summary": "Get Global Service Details",
+        "operationId": "getGlobalService",
         "parameters": [
           {
             "type": "string",
-            "description": "name of the function",
-            "name": "function",
+            "description": "target service name",
+            "name": "serviceName",
             "in": "path",
             "required": true
           }
         ],
         "responses": {
           "200": {
-            "description": "service created"
+            "description": "successfully got service details"
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes global scoped knative service and all its revisions",
+        "tags": [
+          "Services"
+        ],
+        "summary": "Delete Global Service",
+        "operationId": "deleteGlobalService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted service"
+          }
+        }
+      }
+    },
+    "/api/jq": {
+      "post": {
+        "description": "JQ Playground is a sandbox where\nyou can test jq queries with custom data",
+        "tags": [
+          "Other"
+        ],
+        "summary": "JQ Playground api to test jq queries",
+        "operationId": "jqPlayground",
+        "parameters": [
+          {
+            "description": "Payload that contains both the JSON data to manipulate and jq query.",
+            "name": "JQ payload",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "data",
+                "query"
+              ],
+              "properties": {
+                "data": {
+                  "description": "JSON data encoded in base64",
+                  "type": "string"
+                },
+                "query": {
+                  "description": "jq query to manipulate JSON data",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "data": "eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=",
+                "query": "map(select(. \u003e= 2))"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "jq query was successful"
+          }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "description": "Gets Direktiv Server Logs",
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Get Direktiv Server Logs",
+        "operationId": "serverLogs",
+        "responses": {
+          "200": {
+            "description": "successfully got server logs"
+          }
+        }
+      }
+    },
+    "/api/namespaces": {
+      "get": {
+        "description": "Gets the list of namespaces",
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "Gets the list of namespaces",
+        "operationId": "getNamespaces",
+        "responses": {
+          "200": {
+            "description": "successfully got list of namespaces"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}": {
+      "put": {
+        "description": "Creates a new namespace",
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "Creates a namespace",
+        "operationId": "createNamespace",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace to create",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace has been successfully created"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a namespace",
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "Delete a namespace",
+        "operationId": "deleteNamespace",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace to delete",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace has been successfully deleted"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/broadcast": {
+      "post": {
+        "description": "Broadcast a cloud event to a namespace\nCloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.\nThe body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec",
+        "tags": [
+          "Other"
+        ],
+        "summary": "Broadcast Cloud Event",
+        "operationId": "broadcastCloudevent",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Cloud Event request to be sent.",
+            "name": "cloudevent",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully sent cloud event"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances": {
+      "get": {
+        "description": "Gets a list of instances in a namespace",
+        "tags": [
+          "Instances"
+        ],
+        "summary": "Get List Instances",
+        "operationId": "getInstanceList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace instances"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}": {
+      "get": {
+        "description": "Gets the details of a executed workflow instance in this namespace",
+        "tags": [
+          "Instances"
+        ],
+        "summary": "Get a Instance",
+        "operationId": "getInstance",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}/cancel": {
+      "post": {
+        "description": "Cancel a currently pending instance",
+        "tags": [
+          "Instances"
+        ],
+        "summary": "Cancel a Pending Instance",
+        "operationId": "cancelInstance",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully cancelled instance"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}/input": {
+      "get": {
+        "description": "Gets the input an instance was provided when executed",
+        "tags": [
+          "Instances"
+        ],
+        "summary": "Get a Instance Input",
+        "operationId": "getInstanceInput",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance input"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}/logs": {
+      "get": {
+        "description": "Gets the logs of an executed instance",
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Gets Instance Logs",
+        "operationId": "instanceLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance id",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance logs"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}/output": {
+      "get": {
+        "description": "Gets the output an instance was provided when executed",
+        "tags": [
+          "Instances"
+        ],
+        "summary": "Get a Instance Output",
+        "operationId": "getInstanceOutput",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance output"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}/vars": {
+      "get": {
+        "description": "Gets a list of variables in a instance",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Get List of Instance Variable",
+        "operationId": "getInstanceVariableList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance variables"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/instances/{instance}/vars/{variable}": {
+      "get": {
+        "description": "Get the value sorted in a instance variable",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Get a Instance Variable",
+        "operationId": "getInstanceVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "variable",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got instance variable"
+          }
+        }
+      },
+      "put": {
+        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Set a Instance Variable",
+        "operationId": "setInstanceVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "variable",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains variable data.",
+            "name": "data",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "example": {
+                "counter": 0
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully set instance variable"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a instance variable",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Delete a Instance Variable",
+        "operationId": "deleteInstanceVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "variable",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target instance",
+            "name": "instance",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted instance variable"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/logs": {
+      "get": {
+        "description": "Gets Namespace Level Logs",
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Gets Namespace Level Logs",
+        "operationId": "namespaceLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace logs"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/metrics/failed": {
+      "get": {
+        "description": "Get metrics of failed workflows in the targeted namespace",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Namespace Failed Workflow Instances Metrics",
+        "operationId": "namespaceMetricsFailed",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/metrics/invoked": {
+      "get": {
+        "description": "Get metrics of invoked workflows in the targeted namespace",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Namespace Invoked Workflow Metrics",
+        "operationId": "namespaceMetricsInvoked",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/metrics/milliseconds": {
+      "get": {
+        "description": "Get timing metrics of workflows in the targeted namespace",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Namespace Workflow Timing Metrics",
+        "operationId": "namespaceMetricsMilliseconds",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/metrics/successful": {
+      "get": {
+        "description": "Get metrics of successful workflows in the targeted namespace",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Namespace Successful Workflow Instances Metrics",
+        "operationId": "namespaceMetricsSuccessful",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/secrets": {
+      "get": {
+        "description": "Gets the list of namespace secrets",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Get List of Namespace Secrets",
+        "operationId": "getSecrets",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace secrets"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/secrets/{secret}": {
+      "put": {
+        "description": "Create a namespace secret",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Create a Namespace Secret",
+        "operationId": "createSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target secret",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains secret data",
+            "name": "Secret Payload",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "data"
+              ],
+              "properties": {
+                "data": {
+                  "description": "Secret data to be set",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "data": "8QwFLg%D$qg*3r++`{D\u003cBAp~4mB49^"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created namespace secret"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a namespace secret",
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Delete a Namespace Secret",
+        "operationId": "deleteSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target secret",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted namespace secret"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{directory}?op=create-directory": {
+      "put": {
+        "description": "Creates a directory at the target path",
+        "tags": [
+          "Directory"
+        ],
+        "summary": "Create a Directory",
+        "operationId": "createDirectory",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target directory",
+            "name": "directory",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created directory"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=create-workflow": {
+      "put": {
+        "description": "Creates a workflow at the target path\nThe body of this request should contain the workflow yaml",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Create a Workflow",
+        "operationId": "createWorkflow",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains the direktiv workflow yaml to create.",
+            "name": "workflow data",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "example": "description: A simple no-op state that returns Hello world!\nstates:\n- id: helloworld\n  type: noop\n  transform:\n    result: Hello world!\n"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created workflow"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=delete-var": {
+      "delete": {
+        "description": "Delete a workflow variable",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Delete a Workflow Variable",
+        "operationId": "deleteWorkflowVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "var",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted workflow variable"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=execute": {
+      "post": {
+        "description": "Executes a workflow with optionally some input provided in the request body as json",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Execute a Workflow",
+        "operationId": "executeWorkflow",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The input of this workflow instance",
+            "name": "Workflow Input",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "example": {
+                "animals": [
+                  "dog",
+                  "cat",
+                  "snake"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully executed workflow"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=logs": {
+      "get": {
+        "description": "Get workflow level logs",
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Get Workflow Level Logs",
+        "operationId": "getWorkflowLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow logs"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed": {
+      "get": {
+        "description": "Get the timing metrics of a workflow's instance\nThis returns a total sum of the milliseconds a workflow has been executed for.",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Workflow Time Metrics",
+        "operationId": "workflowMetricsMilliseconds",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds": {
+      "get": {
+        "description": "Get the state timing metrics of a workflow's instance\nThe returns the timing of a individual states in a workflow",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets a Workflow State Time Metrics",
+        "operationId": "workflowMetricsStateMilliseconds",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful": {
+      "get": {
+        "description": "Get metrics of a workflow, where the instance was successful",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Successful Workflow Metrics",
+        "operationId": "workflowMetricsSuccessful",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=save-workflow": {
+      "put": {
+        "description": "Updates a workflow at the target path",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Update a Workflow",
+        "operationId": "saveWorkflow",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains both the JSON data to manipulate and jq query.",
+            "name": "workflow data",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "example": "description: A simple no-op state that returns Hello world Updated !!!\nstates:\n- id: helloworld\n  type: noop\n  transform:\n    result: Hello world Updated !!!\n"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully update workflow"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=set-var": {
+      "put": {
+        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Set a Workflow Variable",
+        "operationId": "setWorkflowVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "var",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains variable data.",
+            "name": "data",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "example": {
+                "counter": 0
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully set workflow variable"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging": {
+      "post": {
+        "description": "Set Cloud Event for Workflow to Log to\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the\nconifgured value.\nWorkflows can be configured to generate cloud events on their namespace\nanything the log parameter produces data. Please find more information on this topic below:\nhttps://docs.direktiv.io/docs/examples/logging.html",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Set Cloud Event for Workflow to Log to",
+        "operationId": "setWorkflowCloudEventLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Cloud event logger to target",
+            "name": "Cloud Event Logger",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "logger"
+              ],
+              "properties": {
+                "logger": {
+                  "description": "Target Cloud Event",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "logger": "mylog"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully update workflow"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=toggle": {
+      "post": {
+        "description": "Toggle's whether or not a workflow is active\nDisabled workflows cannot be invoked.",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Set Cloud Event for Workflow to Log to",
+        "operationId": "toggleWorkflow",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Whether or not the workflow is alive or disabled",
+            "name": "Workflow Live Status",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "live"
+              ],
+              "properties": {
+                "live": {
+                  "description": "Workflow live status",
+                  "type": "boolean"
+                }
+              },
+              "example": {
+                "live": false
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully updated workflow live status"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=update-workflow": {
+      "post": {
+        "description": "Updates a workflow at the target path\nThe body of this request should contain the workflow yaml you want to update to.",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Update a Workflow",
+        "operationId": "updateWorkflow",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains the updated direktiv workflow yaml.",
+            "name": "workflow data",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "example": "description: A simple no-op state that returns Hello world Updated !!!\nstates:\n- id: helloworld\n  type: noop\n  transform:\n    result: Hello world Updated !!!\n"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully updated workflow"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=var": {
+      "get": {
+        "description": "Get the value sorted in a workflow variable",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Get a Workflow Variable",
+        "operationId": "getWorkflowVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "var",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow variable"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=vars": {
+      "get": {
+        "description": "Gets a list of variables in a workflow",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Get List of Workflow Variables",
+        "operationId": "getWorkflowVariableList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow variables"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/vars": {
+      "get": {
+        "description": "Gets a list of variables in a namespace",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Get Namespace Variable List",
+        "operationId": "getNamespaceVariables",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace variables"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/vars/{variable}": {
+      "get": {
+        "description": "Get the value sorted in a namespace variable",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Get a Namespace Variable",
+        "operationId": "getNamespaceVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "variable",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace variable"
+          }
+        }
+      },
+      "put": {
+        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "consumes": [
+          "text/plain"
+        ],
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Set a Namespace Variable",
+        "operationId": "setNamespaceVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "variable",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains variable data.",
+            "name": "data",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "example": {
+                "counter": 0
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully set namespace variable"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a namespace variable",
+        "tags": [
+          "Variables"
+        ],
+        "summary": "Delete a Namespace Variable",
+        "operationId": "deleteNamespaceVariable",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target variable",
+            "name": "variable",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted namespace variable"
           }
         }
       }

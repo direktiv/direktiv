@@ -73,6 +73,13 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
+	// swagger:operation GET /api/functions Services getGlobalServiceList
+	// Gets a list of global knative services
+	// ---
+	// summary: Get List of Global Service
+	// responses:
+	//   '200':
+	//     "description": "successfully got services list"
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
 	handlerPair(r, RN_ListPods, "/{svn}/revisions/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
@@ -86,47 +93,86 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
-	// swagger:operation GET /api/functions getFunctions1
+	// swagger:operation POST /api/functions Services createGlobalService
+	// Creates global scoped knative service
+	// Service Names are unique on a scope level
+	// These services can be used as functions in workflows, more about this can be read here:
+	// https://docs.direktiv.io/docs/walkthrough/using-functions.html
 	// ---
-	// summary: Returns list of global functions.
-	// description: Returns list of global Knative functions with 'global-' prefix.
+	// summary: Create Global Service
+	// parameters:
+	// - in: body
+	//   name: Service
+	//   description: Payload that contains information on new service
+	//   required: true
+	//   schema:
+	//     type: object
+	//     example:
+	//       name: "fast-request"
+	//       image: "vorteil/request:v12"
+	//       cmd: ""
+	//       minScale: "1"
+	//       size: "small"
+	//     required:
+	//       - name
+	//       - image
+	//       - cmd
+	//       - minScale
+	//       - size
+	//     properties:
+	//       name:
+	//         type: string
+	//         description: Name of new service
+	//       image:
+	//         type: string
+	//         description: Target image a service will use
+	//       cmd:
+	//         type: string
+	//       minScale:
+	//         type: integer
+	//         description: Minimum amount of service pods to be live
+	//       size:
+	//         type: string
+	//         description: Size of created service pods
+	//         enum:
+	//           - small
+	//           - medium
+	//           - large
 	// responses:
-	//   "201":
-	//     "description": "service created"
+	//   '200':
+	//     "description": "successfully created service"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation DELETE /api/functions/{serviceName} Services deleteGlobalService
+	// Deletes global scoped knative service and all its revisions
+	// ---
+	// summary: Delete Global Service
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted service"
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 
-	// swagger:operation GET /api/functions/{function} getGlobalFunctions
+	// swagger:operation GET /api/functions/{serviceName} Services getGlobalService
+	// Get details of a global scoped knative service
 	// ---
-	// summary: Returns list of global functions.
-	// description: Returns list of global Knative functions with 'global-' prefix.
+	// summary: Get Global Service Details
 	// parameters:
-	// - name: function
-	//   in: path
-	//   description: name of the function
+	// - in: path
+	//   name: serviceName
 	//   type: string
 	//   required: true
+	//   description: 'target service name'
 	// responses:
-	//   "200":
-	//     "description": "service created"
+	//   '200':
+	//     "description": "successfully got service details"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 
-	// .// jens
-
-	// swagger:operation POST /api/functions/{function} createGlobalFunction UpdateServiceRequest
-	// ---
-	// summary: Creates a global function.
-	// description: Creates a global Knative function with 'global-' prefix.
-	// parameters:
-	// - name: function
-	//   in: path
-	//   description: name of the function
-	//   type: string
-	//   required: true
-	// responses:
-	//   "200":
-	//     "description": "service created"
 	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 	// TODO: SWAGGER-SPEC
