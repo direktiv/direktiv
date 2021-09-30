@@ -140,6 +140,10 @@ service Flow {
 
 	rpc ToggleWorkflow (ToggleWorkflowRequest) returns (google.protobuf.Empty) {}
 	rpc SetWorkflowEventLogging (SetWorkflowEventLoggingRequest) returns (google.protobuf.Empty) {}
+
+
+	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
+	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
 	
 }
 

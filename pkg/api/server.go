@@ -62,17 +62,19 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	}
 	r.Use(util.TelemetryMiddleware)
 
-	s.functionHandler, err = newFunctionHandler(logger,
-		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
+	s.flowHandler, err = newFlowHandler(logger, r, s.config)
 	if err != nil {
-		logger.Error("can not get functions handler: %v", err)
+		logger.Error("can not get flow handler: %v", err)
 		s.telend()
 		return nil, err
 	}
 
-	s.flowHandler, err = newFlowHandler(logger, r, s.config)
+	s.flowClient = s.flowHandler.client
+
+	s.functionHandler, err = newFunctionHandler(s, logger,
+		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
 	if err != nil {
-		logger.Error("can not get flow handler: %v", err)
+		logger.Error("can not get functions handler: %v", err)
 		s.telend()
 		return nil, err
 	}

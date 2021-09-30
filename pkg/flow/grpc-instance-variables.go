@@ -7,6 +7,9 @@ import (
 	"io"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -36,7 +39,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	resp.TotalSize = int64(d.vdata.Size)
 
 	if resp.TotalSize > parcelSize {
-		return nil, errors.New("variable too large to return without using the parcelling API")
+		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
 	resp.Data = d.vdata.Data
@@ -268,7 +271,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -372,7 +375,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
 		return err
 	}

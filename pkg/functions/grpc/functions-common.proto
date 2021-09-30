@@ -13,6 +13,10 @@ message BaseInfo {
 
 	optional int32 size = 6;
 	optional int32 minScale = 7;
+
+	optional string namespaceName = 8;
+	optional string path = 9;
+	optional string revision = 10;
 }
 
 message Condition {

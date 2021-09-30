@@ -2,8 +2,10 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entns "github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -73,6 +75,35 @@ func namespaceFilter(p *pagination) ent.NamespacePaginateOption {
 
 }
 
+func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveNamespaceUIDRequest) (*grpc.NamespaceResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	nsc := flow.db.Namespace
+
+	id, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	ns, err := nsc.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.NamespaceResponse
+
+	err = atob(ns, &resp.Namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Namespace.Oid = ns.ID.String()
+
+	return &resp, nil
+
+}
+
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -89,6 +120,8 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 	if err != nil {
 		return nil, err
 	}
+
+	resp.Namespace.Oid = ns.ID.String()
 
 	return &resp, nil
 
@@ -206,7 +239,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 			rollback(tx)
 			goto respond
 		}
-		if !ent.IsNotFound(err) {
+		if !IsNotFound(err) {
 			return nil, err
 		}
 	}
@@ -255,14 +288,23 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	nsc := tx.Namespace
 	ns, err := nsc.Query().Where(entns.NameEQ(req.GetName())).Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) && req.GetIdempotent() {
+		if IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
 			goto respond
 		}
 		return nil, err
 	}
 
-	// TODO: don't delete if namespace has stuff unless 'recursive' explicitly requested
+	if !req.GetRecursive() {
+		k, err := ns.QueryInodes().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if k != 1 { // root dir
+			return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
+		}
+		// TODO: don't delete if namespace has stuff unless 'recursive' explicitly requested
+	}
 
 	err = nsc.DeleteOne(ns).Exec(ctx)
 	if err != nil {

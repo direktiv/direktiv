@@ -33,6 +33,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	igrpc "github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/functions"
 	"github.com/vorteil/direktiv/pkg/functions/grpc"
 	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
@@ -41,11 +42,12 @@ import (
 )
 
 type functionHandler struct {
+	srv    *Server
 	logger *zap.SugaredLogger
 	client grpcfunc.FunctionsServiceClient
 }
 
-func newFunctionHandler(logger *zap.SugaredLogger,
+func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 	router *mux.Router, addr string) (*functionHandler, error) {
 
 	funcAddr := fmt.Sprintf("%s:5555", addr)
@@ -58,6 +60,7 @@ func newFunctionHandler(logger *zap.SugaredLogger,
 	}
 
 	fh := &functionHandler{
+		srv:    srv,
 		logger: logger,
 		client: grpcfunc.NewFunctionsServiceClient(conn),
 	}
@@ -73,10 +76,14 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
 	handlerPair(r, RN_ListPods, "/{svn}/revisions/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
 	// swagger:operation GET /api/functions getFunctions1
@@ -87,47 +94,82 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   "201":
 	//     "description": "service created"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 
-	// swagger:operation GET /api/functions/{function} getFunctions
+	// swagger:operation GET /api/functions/{function} getGlobalFunctions
 	// ---
 	// summary: Returns list of global functions.
 	// description: Returns list of global Knative functions with 'global-' prefix.
 	// parameters:
 	// - name: function
 	//   in: path
-	//	 type: string
-	//   description: function name wit out scope prefix
+	//   description: name of the function
+	//   type: string
 	//   required: true
 	// responses:
 	//   "200":
 	//     "description": "service created"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
+
+	// .// jens
+
+	// swagger:operation POST /api/functions/{function} createGlobalFunction UpdateServiceRequest
+	// ---
+	// summary: Creates a global function.
+	// description: Creates a global Knative function with 'global-' prefix.
+	// parameters:
+	// - name: function
+	//   in: path
+	//   description: name of the function
+	//   type: string
+	//   required: true
+	// responses:
+	//   "200":
+	//     "description": "service created"
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
+	// TODO: SWAGGER-SPEC
 	handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
+	// TODO: SWAGGER-SPEC
 	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revisions/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// workflow
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "services", h.listWorkflowServices, h.listWorkflowServicesSSE)
 	pathHandlerPair(r, RN_ListWorkflowServices, "pods", h.listWorkflowPods, h.listWorkflowPodsSSE)
 
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "function", h.singleWorkflowService, h.singleWorkflowServiceSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revisions", h.singleWorkflowServiceRevisions, h.singleWorkflowServiceRevisionsSSE)
+	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revision", h.singleWorkflowServiceRevision, h.singleWorkflowServiceRevisionSSE)
 
 	// TODO: direct control?
@@ -139,8 +181,11 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// Registry ..
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/namespaces/{ns}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 }
@@ -404,38 +449,78 @@ func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Requ
 
 func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderNamespaceID] = resp.Namespace.GetOid()
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
-	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
 	h.listServices(annotations, w, r)
 
 }
 
 func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderNamespaceID] = resp.Namespace.GetOid()
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
-	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
 	h.listServicesSSE(annotations, w, r)
 
 }
 
 func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
-	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
-	annotations[functions.ServiceHeaderWorkflow] = mux.Vars(r)["path"]
+	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
+
 	h.listServices(annotations, w, r)
 
 }
 
 func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
-	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
-	annotations[functions.ServiceHeaderWorkflow] = mux.Vars(r)["path"]
+	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
+
 	h.listServicesSSE(annotations, w, r)
 
 }
@@ -466,14 +551,29 @@ func (h *functionHandler) singleWorkflowService(w http.ResponseWriter, r *http.R
 
 func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *http.Request) {
 
-	svn := mux.Vars(r)["svn"]
+	ctx := r.Context()
 
-	// TODO: where is namespace?
-	// TODO: where is path?
+	vers := r.URL.Query().Get("version")
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
+	svn := r.URL.Query().Get("svn")
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
 
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
-	annotations[functions.ServiceHeaderName] = svn
+
+	annotations[functions.ServiceKnativeHeaderName] = svc
+
 	h.listServicesSSE(annotations, w, r)
 
 }
@@ -712,14 +812,28 @@ type createFunctionRequest struct {
 }
 
 func (h *functionHandler) createGlobalService(w http.ResponseWriter, r *http.Request) {
-	h.createService("", "", w, r)
+	h.createService("", "", "", "", "", w, r)
 }
 
 func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
-	h.createService(mux.Vars(r)["ns"], "", w, r)
+
+	ctx := r.Context()
+
+	nsName := mux.Vars(r)["ns"]
+
+	resp, err := h.srv.flowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+		Name: nsName,
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	h.createService(resp.Namespace.GetOid(), nsName, "", "", "", w, r)
+
 }
 
-func (h *functionHandler) createService(ns, wf string,
+func (h *functionHandler) createService(ns, nsName, wf, path, rev string,
 	w http.ResponseWriter, r *http.Request) {
 
 	obj := new(createFunctionRequest)
@@ -731,13 +845,16 @@ func (h *functionHandler) createService(ns, wf string,
 
 	grpcReq := new(grpcfunc.CreateFunctionRequest)
 	grpcReq.Info = &grpc.BaseInfo{
-		Name:      obj.Name,
-		Namespace: &ns,
-		Workflow:  &wf,
-		Image:     obj.Image,
-		Cmd:       obj.Cmd,
-		Size:      obj.Size,
-		MinScale:  obj.MinScale,
+		Name:          obj.Name,
+		Namespace:     &ns,
+		Workflow:      &wf,
+		Image:         obj.Image,
+		Cmd:           obj.Cmd,
+		Size:          obj.Size,
+		MinScale:      obj.MinScale,
+		NamespaceName: &nsName,
+		Path:          &path,
+		Revision:      &rev,
 	}
 
 	// returns an empty body
@@ -746,6 +863,9 @@ func (h *functionHandler) createService(ns, wf string,
 
 }
 
+// jens
+
+// swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
 	Image          *string `json:"image,omitempty"`
 	Cmd            *string `json:"cmd,omitempty"`
@@ -1120,14 +1240,12 @@ func (h *functionHandler) deleteRevision(rev string,
 
 func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Request) {
 	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	rev := fmt.Sprintf("%s-%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
-	h.watchRevisions(svn, rev, functions.PrefixGlobal, w, r)
+	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
 	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
-	rev := fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
-	h.watchRevisions(svn, rev, functions.PrefixNamespace, w, r)
+	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r *http.Request) {
@@ -1137,23 +1255,44 @@ func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter, r *http.Request) {
-	svnArg := r.URL.Query().Get("svn")
-	revArg := r.URL.Query().Get("rev")
-	// TODO: this can't be right...
 
-	svn, _, _ := functions.GenerateServiceName(mux.Vars(r)["ns"], mux.Vars(r)["path"], svnArg)
-	rev := fmt.Sprintf("%s-%s", svn, revArg)
-	h.watchRevisions(svn, rev, functions.PrefixWorkflow, w, r)
+	ctx := r.Context()
+
+	vers := r.URL.Query().Get("version")
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svn := r.URL.Query().Get("svn")
+	rev := r.URL.Query().Get("rev")
+	if rev == "" {
+		rev = "00001"
+	}
+
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
+
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+
+	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
+
 }
 
 func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
 	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
-	h.watchRevisions(svn, "", functions.PrefixGlobal, w, r)
+	h.watchRevisions(svn, "" /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
 	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
-	h.watchRevisions(svn, "", functions.PrefixNamespace, w, r)
+	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
@@ -1163,19 +1302,39 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
-	svnArg := r.URL.Query().Get("svn")
-	// TODO: this can't be right...
-	svn, _, _ := functions.GenerateServiceName(mux.Vars(r)["ns"], mux.Vars(r)["path"], svnArg)
-	h.watchRevisions(svn, "", functions.PrefixWorkflow, w, r)
+
+	ctx := r.Context()
+	vers := r.URL.Query().Get("version")
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	if vers == "" {
+		vers = resp.Revision.Hash
+	}
+	svn := r.URL.Query().Get("svn")
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+
+	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
+
 }
 
-func (h *functionHandler) watchRevisions(svc, rev, scope string,
+func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 	w http.ResponseWriter, r *http.Request) {
+
+	if rev != "" {
+		rev = fmt.Sprintf("%s-%s", svc, rev)
+	}
 
 	grpcReq := &grpc.WatchRevisionsRequest{
 		ServiceName:  &svc,
 		RevisionName: &rev,
-		Scope:        &scope,
+		// Scope:        &scope,
 	}
 
 	client, err := h.client.WatchRevisions(r.Context(), grpcReq)
@@ -1402,24 +1561,62 @@ func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	ns := resp.Namespace.GetOid()
+	svn := mux.Vars(r)["svn"]
+
 	annotations := make(map[string]string)
-	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
-		functions.PrefixNamespace, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
-	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
-	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
+
+	svn, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
+		Namespace: &ns,
+		Name:      &svn,
+	})
+
+	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s", svn, mux.Vars(r)["rev"])
+
 	h.listPods(annotations, w, r)
+
 }
 
 func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Request) {
-	annotations := make(map[string]string)
+
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	svn := r.URL.Query().Get("svn")
 	rev := r.URL.Query().Get("rev")
-	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
-		functions.PrefixNamespace, svn, rev)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
-	annotations[functions.ServiceHeaderNamespace] = mux.Vars(r)["ns"]
-	annotations[functions.ServiceHeaderWorkflow] = mux.Vars(r)["path"]
+	if rev == "" {
+		rev = "00001"
+	}
+
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	knrev := fmt.Sprintf("%s-%s", svc, rev)
+
+	annotations := make(map[string]string)
+
+	annotations[functions.ServiceKnativeHeaderRevision] = knrev
+	annotations[functions.ServiceHeaderWorkflowID] = resp.Oid
+
 	h.listPods(annotations, w, r)
+
 }
 
 func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
@@ -1435,12 +1632,29 @@ func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Re
 }
 
 func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      mux.Vars(r)["path"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	svn := r.URL.Query().Get("svn")
-	revArg := r.URL.Query().Get("rev")
-	// TODO: where is path?
-	svc, _, _ := functions.GenerateServiceName(mux.Vars(r)["ns"], mux.Vars(r)["path"], svn)
-	rev := fmt.Sprintf("%s-%s", svc, revArg)
-	h.listPodsSSE(svc, rev, w, r)
+	rev := r.URL.Query().Get("rev")
+	if rev == "" {
+		rev = "00001"
+	}
+
+	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	knrev := fmt.Sprintf("%s-%s", svc, rev)
+
+	h.listPodsSSE(svc, knrev, w, r)
+
 }
 
 func (h *functionHandler) listPodsSSE(svc, rev string,

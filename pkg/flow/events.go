@@ -150,7 +150,7 @@ func (events *events) syncEventDelays() {
 	for {
 		e, err := events.getEarliestEvent(ctx, events.db.CloudEvents)
 		if err != nil {
-			if ent.IsNotFound(err) {
+			if IsNotFound(err) {
 				return
 			}
 

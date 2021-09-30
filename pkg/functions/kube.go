@@ -49,13 +49,16 @@ const (
 // Headers for knative services
 const (
 	// Direktiv Headers
-	ServiceHeaderName         = "direktiv.io/name"
-	ServiceHeaderNamespace    = "direktiv.io/namespace"
-	ServiceHeaderWorkflow     = "direktiv.io/workflow"
-	ServiceHeaderSize         = "direktiv.io/size"
-	ServiceHeaderScale        = "direktiv.io/scale"
-	ServiceTemplateGeneration = "direktiv.io/templateGeneration"
-	ServiceHeaderScope        = "direktiv.io/scope"
+	ServiceHeaderName          = "direktiv.io/name"
+	ServiceHeaderNamespaceID   = "direktiv.io/namespace-id"
+	ServiceHeaderNamespaceName = "direktiv.io/namespace-name"
+	ServiceHeaderWorkflowID    = "direktiv.io/workflow-id"
+	ServiceHeaderPath          = "direktiv.io/path"
+	ServiceHeaderRevision      = "direktiv.io/revision"
+	ServiceHeaderSize          = "direktiv.io/size"
+	ServiceHeaderScale         = "direktiv.io/scale"
+	ServiceTemplateGeneration  = "direktiv.io/templateGeneration"
+	ServiceHeaderScope         = "direktiv.io/scope"
 	// ServiceHeaderScale = "autoscaling.knative.dev/minScale"
 
 	// Serving Headers
@@ -245,6 +248,7 @@ func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.Funct
 
 func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, out igrpc.FunctionsService_WatchPodsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
+
 	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector:  labels,
 		TimeoutSeconds: &timeout,
@@ -355,7 +359,7 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 	}
 
 	// backup service if not a workflow service
-	if svc.ObjectMeta.Labels[ServiceHeaderWorkflow] == "" {
+	if svc.ObjectMeta.Labels[ServiceHeaderWorkflowID] == "" {
 		if err := is.backupService(svc.Name, backupServiceOptions{}); err != nil {
 			logger.Errorf("can not backup knative service: %v", err)
 			return &empty, err
@@ -492,7 +496,7 @@ func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out i
 
 	l := map[string]string{
 		ServiceKnativeHeaderName: in.GetServiceName(),
-		ServiceHeaderScope:       in.GetScope(),
+		// ServiceHeaderScope:       in.GetScope(),
 	}
 
 	if in.GetRevisionName() != "" {
@@ -668,7 +672,7 @@ func (is *functionsServer) SetFunctionsTraffic(ctx context.Context,
 	}
 
 	// backup service
-	if svc.ObjectMeta.Labels[ServiceHeaderWorkflow] == "" {
+	if svc.ObjectMeta.Labels[ServiceHeaderWorkflowID] == "" {
 		if err := is.backupService(svc.Name, backupServiceOptions{
 			patch: true,
 		}); err != nil {
@@ -734,7 +738,7 @@ func (is *functionsServer) UpdateFunction(ctx context.Context,
 	}
 
 	// backup service
-	if svc.ObjectMeta.Labels[ServiceHeaderWorkflow] == "" {
+	if svc.ObjectMeta.Labels[ServiceHeaderWorkflowID] == "" {
 		if err := is.backupService(svc.Name, backupServiceOptions{
 			previousRevisionName: previousSvc.Status.LatestCreatedRevisionName,
 			patch:                true,
@@ -770,8 +774,11 @@ func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
 	fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
 	fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
 	n := s.Labels[ServiceHeaderName]
-	ns := s.Labels[ServiceHeaderNamespace]
-	wf := s.Labels[ServiceHeaderWorkflow]
+	ns := s.Labels[ServiceHeaderNamespaceID]
+	nsName := s.Labels[ServiceHeaderNamespaceName]
+	wf := s.Labels[ServiceHeaderWorkflowID]
+	path := s.Labels[ServiceHeaderPath]
+	rev := s.Labels[ServiceHeaderRevision]
 	img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
 
 	info := &igrpc.BaseInfo{}
@@ -782,84 +789,94 @@ func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
 	info.MinScale = &scale
 	info.Image = &img
 	info.Cmd = &cmd
+	info.NamespaceName = &nsName
+	info.Path = &path
+	info.Revision = &rev
 
 	return info
 }
 
 func filterLabels(annotations map[string]string) map[string]string {
 
-	var (
-		setter uint8
-	)
+	return annotations
 
-	// filter out invalid annotations
-	a := make(map[string]string)
-	for k, v := range annotations {
-		if strings.HasPrefix(k, "direktiv.io/") {
-			a[k] = v
+	/*
+
+		// TODO
+
+		var (
+			setter uint8
+		)
+
+		// filter out invalid annotations
+		a := make(map[string]string)
+		for k, v := range annotations {
+			if strings.HasPrefix(k, "direktiv.io/") {
+				a[k] = v
+			}
+
+			if k == ServiceHeaderName && len(v) > 0 {
+				setter = setter | 1
+			} else if k == ServiceHeaderWorkflowID && len(v) > 0 {
+				setter = setter | 2
+			} else if k == ServiceHeaderNamespaceID && len(v) > 0 {
+				setter = setter | 4
+			}
 		}
 
-		if k == ServiceHeaderName && len(v) > 0 {
-			setter = setter | 1
-		} else if k == ServiceHeaderWorkflow && len(v) > 0 {
-			setter = setter | 2
-		} else if k == ServiceHeaderNamespace && len(v) > 0 {
-			setter = setter | 4
+		var (
+			scope string
+			ok    bool
+		)
+		if scope, ok = annotations[ServiceHeaderScope]; !ok {
+			logger.Errorf("scope not set for list")
+			return make(map[string]string)
 		}
-	}
 
-	var (
-		scope string
-		ok    bool
-	)
-	if scope, ok = annotations[ServiceHeaderScope]; !ok {
-		logger.Errorf("scope not set for list")
-		return make(map[string]string)
-	}
-
-	t := invalidType
-	switch setter {
-	case 7:
-		t = serviceType
-		if scope != PrefixService {
-			t = invalidType
+		t := invalidType
+		switch setter {
+		case 7:
+			t = serviceType
+			if scope != PrefixService {
+				t = invalidType
+			}
+		case 6:
+			t = workflowType
+			if scope != PrefixWorkflow {
+				t = invalidType
+			}
+		case 5:
+			t = namespaceType
+			if scope != PrefixNamespace {
+				t = invalidType
+			}
+		case 4:
+			t = namespaceType
+			if scope != PrefixNamespace {
+				t = invalidType
+			}
+		case 0:
+			t = globalType
+			if scope != PrefixGlobal {
+				t = invalidType
+			}
 		}
-	case 6:
-		t = workflowType
-		if scope != PrefixWorkflow {
-			t = invalidType
-		}
-	case 5:
-		t = namespaceType
-		if scope != PrefixNamespace {
-			t = invalidType
-		}
-	case 4:
-		t = namespaceType
-		if scope != PrefixNamespace {
-			t = invalidType
-		}
-	case 0:
-		t = globalType
-		if scope != PrefixGlobal {
-			t = invalidType
-		}
-	}
 
-	logger.Debugf("request type: %v", setter)
+		logger.Debugf("request type: %v", setter)
 
-	// Skip invalid check if only scope and name are given
-	if setter != 1 && t == invalidType {
-		logger.Errorf("wrong labels for search")
-		return make(map[string]string)
-	}
+		// Skip invalid check if only scope and name are given
+		if setter != 1 && t == invalidType {
+			logger.Errorf("wrong labels for search")
+			return make(map[string]string)
+		}
 
-	// the search is actually on workflow scope
-	if a[ServiceHeaderScope] == PrefixService {
-		a[ServiceHeaderScope] = PrefixWorkflow
-	}
+		// the search is actually on workflow scope
+		if a[ServiceHeaderScope] == PrefixService {
+			a[ServiceHeaderScope] = PrefixWorkflow
+		}
 
-	return a
+		return a
+	*/
 }
 
 func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo, error) {
@@ -952,7 +969,7 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 	return b, nil
 }
 
-func metaSpec(net string, min, max int, ns, wf, name, scope string, size int) metav1.ObjectMeta {
+func metaSpec(net string, min, max int, nsID, nsName, wfID, path, revision, name, scope string, size int) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   functionsConfig.Namespace,
@@ -969,12 +986,15 @@ func metaSpec(net string, min, max int, ns, wf, name, scope string, size int) me
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", min)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", max)
 
-	metaSpec.Labels[ServiceHeaderName] = name
-	if len(wf) > 0 {
-		metaSpec.Labels[ServiceHeaderWorkflow] = wf
+	metaSpec.Labels[ServiceHeaderName] = sanitizeLabel(name)
+	if len(wfID) > 0 {
+		metaSpec.Labels[ServiceHeaderWorkflowID] = sanitizeLabel(wfID)
+		metaSpec.Labels[ServiceHeaderPath] = sanitizeLabel(path)
+		metaSpec.Labels[ServiceHeaderRevision] = sanitizeLabel(revision)
 	}
 
-	metaSpec.Labels[ServiceHeaderNamespace] = ns
+	metaSpec.Labels[ServiceHeaderNamespaceID] = sanitizeLabel(nsID)
+	metaSpec.Labels[ServiceHeaderNamespaceName] = sanitizeLabel(nsName)
 	metaSpec.Labels[ServiceHeaderScope] = scope
 
 	metaSpec.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", min)
@@ -984,7 +1004,20 @@ func metaSpec(net string, min, max int, ns, wf, name, scope string, size int) me
 
 }
 
-func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.ObjectMeta {
+func sanitizeLabel(s string) string {
+	s = strings.TrimPrefix(s, "/")
+	s = strings.TrimSuffix(s, "/")
+	s = strings.ReplaceAll(s, "_", "__")
+	s = strings.ReplaceAll(s, "/", "_")
+
+	if len(s) > 63 {
+		s = s[:63]
+	}
+
+	return s
+}
+
+func meta(svn, name, nsID, nsName, wfID, path, revision string, scale, size int, scope string) metav1.ObjectMeta {
 
 	meta := metav1.ObjectMeta{
 		Name:        svn,
@@ -995,12 +1028,15 @@ func meta(svn, name, ns, wf string, scale, size int, scope string) metav1.Object
 
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 
-	meta.Labels[ServiceHeaderName] = name
-	if len(wf) > 0 {
-		meta.Labels[ServiceHeaderWorkflow] = wf
+	meta.Labels[ServiceHeaderName] = sanitizeLabel(name)
+	if len(wfID) > 0 {
+		meta.Labels[ServiceHeaderWorkflowID] = sanitizeLabel(wfID)
+		meta.Labels[ServiceHeaderPath] = sanitizeLabel(path)
+		meta.Labels[ServiceHeaderRevision] = sanitizeLabel(revision)
 	}
 
-	meta.Labels[ServiceHeaderNamespace] = ns
+	meta.Labels[ServiceHeaderNamespaceID] = sanitizeLabel(nsID)
+	meta.Labels[ServiceHeaderNamespaceName] = sanitizeLabel(nsName)
 	meta.Labels[ServiceHeaderScope] = scope
 
 	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
@@ -1197,33 +1233,40 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 	return versioned.NewForConfig(config)
 }
 
-// GenerateServiceName generates a knative name based on workflow details
-func GenerateServiceName(ns, wf, n string) (string, string, error) {
+// GenerateWorkflowServiceName generates a knative name based on workflow details
+func GenerateWorkflowServiceName(wf, rev, svn string) string {
 
-	wf = strings.TrimPrefix(wf, "/")
-	wf = strings.ReplaceAll(wf, "_", "__")
-	wf = strings.ReplaceAll(wf, "/", "_")
+	wf = sanitizeLabel(wf)
+	rev = sanitizeLabel(rev)
+	svn = sanitizeLabel(svn)
 
-	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", ns, wf, n), hash.FormatV2, nil)
+	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, rev), hash.FormatV2, nil)
 	if err != nil {
-		return "", "", err
+		panic(err)
 	}
+	name := fmt.Sprintf("%s-%d-%s", PrefixWorkflow, h, svn)
 
-	// get scope and create name
-	// workflow
-	name := fmt.Sprintf("%s-%d", PrefixWorkflow, h)
-	scope := PrefixWorkflow
-	if ns == "" {
-		// global
-		name = fmt.Sprintf("%s-%s", PrefixGlobal, n)
-		scope = PrefixGlobal
-	} else if wf == "" {
-		//namespace
+	return name
+
+}
+
+// GenerateServiceName generates a knative name based on workflow details
+func GenerateServiceName(info *igrpc.BaseInfo /* ns, wf, n string*/) (string, string) {
+
+	var name, scope string
+
+	if info.GetWorkflow() != "" {
+		scope = PrefixWorkflow
+		name = GenerateWorkflowServiceName(info.GetWorkflow(), info.GetRevision(), info.GetName())
+	} else if info.GetNamespace() != "" {
 		scope = PrefixNamespace
-		name = fmt.Sprintf("%s-%s-%s", PrefixNamespace, ns, n)
+		name = fmt.Sprintf("%s-%s-%s", PrefixNamespace, info.GetNamespaceName(), info.GetName())
+	} else {
+		scope = PrefixGlobal
+		name = fmt.Sprintf("%s-%s", PrefixGlobal, info.GetName())
 	}
 
-	return name, scope, nil
+	return name, scope
 
 }
 
@@ -1292,12 +1335,18 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 	}
 
 	n := svc.Labels[ServiceHeaderName]
-	namespace := svc.Labels[ServiceHeaderNamespace]
-	workflow := svc.Labels[ServiceHeaderWorkflow]
+	nsID := svc.Labels[ServiceHeaderNamespaceID]
+	nsName := svc.Labels[ServiceHeaderNamespaceName]
+	workflow := svc.Labels[ServiceHeaderWorkflowID]
+	path := svc.Labels[ServiceHeaderPath]
+	revision := svc.Labels[ServiceHeaderRevision]
 
 	resp.Name = &n
-	resp.Namespace = &namespace
+	resp.Namespace = &nsName
+	resp.NamespaceID = &nsID
 	resp.Workflow = &workflow
+	resp.Path = &path
+	resp.WorkflowRevision = &revision
 	resp.Scope = &strings.Split(name, "-")[0]
 
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
@@ -1484,7 +1533,7 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 	spec.Labels[ServiceTemplateGeneration] = fmt.Sprint(gen + 1)
 
 	// Add name if global or namespace service
-	if _, ok := s.Spec.Template.ObjectMeta.Labels[ServiceHeaderWorkflow]; !ok {
+	if _, ok := s.Spec.Template.ObjectMeta.Labels[ServiceHeaderWorkflowID]; !ok {
 		spec.Name = fmt.Sprintf("%s-%s%s", svn, strings.Repeat("0", 5-len(spec.Labels[ServiceTemplateGeneration])), spec.Labels[ServiceTemplateGeneration])
 		flog.Debugf("next revision set to %s", spec.Name)
 	}
@@ -1606,15 +1655,10 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		timeoutSec        = int64(functionsConfig.RequestTimeout)
 	)
 
-	logger.Debugf("info.GetNamespace(),	info.GetWorkflow(), info.GetName() = %s, %s, %s", info.GetNamespace(),
+	logger.Debugf("info.GetNamespace(), info.GetWorkflow(), info.GetName() = %s, %s, %s", info.GetNamespace(),
 		info.GetWorkflow(), info.GetName())
 
-	name, scope, err := GenerateServiceName(info.GetNamespace(),
-		info.GetWorkflow(), info.GetName())
-	if err != nil {
-		logger.Errorf("can not create service name: %v", err)
-		return nil, err
-	}
+	name, scope := GenerateServiceName(info)
 
 	l, err := kubeLock(name, false)
 	if err != nil {
@@ -1649,12 +1693,14 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 			Kind:       "Service",
 		},
 		ObjectMeta: meta(name, info.GetName(),
-			info.GetNamespace(), info.GetWorkflow(), min, int(info.GetSize()), scope),
+			info.GetNamespace(), info.GetNamespaceName(), info.GetWorkflow(), info.GetPath(),
+			info.GetRevision(), min, int(info.GetSize()), scope),
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: metaSpec(functionsConfig.NetShape, min, functionsConfig.MaxScale,
-						info.GetNamespace(), info.GetWorkflow(), info.GetName(), scope, int(info.GetSize())),
+						info.GetNamespace(), info.GetNamespaceName(), info.GetWorkflow(), info.GetPath(),
+						info.GetRevision(), info.GetName(), scope, int(info.GetSize())),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),

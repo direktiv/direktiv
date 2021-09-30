@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 
+	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"github.com/vorteil/direktiv/pkg/dlog"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -110,14 +111,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.locks.Close)
 
-	srv.sugar.Debug("Initializing pub-sub.")
-
-	srv.pubsub, err = initPubSub(srv.sugar, srv, db)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.pubsub.Close)
-
 	srv.sugar.Debug("Initializing database.")
 
 	srv.db, err = initDatabase(ctx, db)
@@ -125,6 +118,14 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.db.Close)
+
+	srv.sugar.Debug("Initializing pub-sub.")
+
+	srv.pubsub, err = initPubSub(srv.sugar, srv, db)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.pubsub.Close)
 
 	srv.sugar.Debug("Initializing timers.")
 
@@ -271,43 +272,27 @@ func (srv *server) cleanup(closer func() error) {
 
 }
 
-// func (srv *server) redisPool() *redis.Pool {
-// 	return srv.redis
-// }
-
 func (srv *server) notifyCluster(msg string) error {
 
-	// conn := srv.redis.Get()
-	// // TODO: do we need to flush or close this conn?
-	//
-	// _, err := conn.Do("PUBLISH", flowSync, msg)
-	// if err != nil {
-	// 	return err
-	// }
+	ctx := context.Background()
 
-	/*
+	conn, err := srv.db.DB().Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
 
-		conn, err := srv.db.DB().Conn(ctx)
-		if err != nil {
-			return err
-		}
-		defer conn.Close()
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
+	if err, ok := err.(*pq.Error); ok {
 
-		_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
-		if err, ok := err.(*pq.Error); ok {
-
-			srv.sugar.Errorf("db notification failed: %v", err)
-			if err.Code == "57014" {
-				return fmt.Errorf("canceled query")
-			}
-
-			return err
-
+		srv.sugar.Errorf("db notification failed: %v", err)
+		if err.Code == "57014" {
+			return fmt.Errorf("canceled query")
 		}
 
-	*/
+		return err
 
-	// return err
+	}
 
 	return nil
 
@@ -315,41 +300,28 @@ func (srv *server) notifyCluster(msg string) error {
 
 func (srv *server) notifyHostname(hostname, msg string) error {
 
-	// conn := srv.redis.Get()
-	// // TODO: do we need to flush or close this conn?
-	//
-	// channel := fmt.Sprintf("hostname:%s", hostname)
-	//
-	// _, err := conn.Do("PUBLISH", channel, msg)
-	// if err != nil {
-	// 	return err
-	// }
+	ctx := context.Background()
 
-	/*
+	conn, err := srv.db.DB().Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
 
-		conn, err := srv.db.DB().Conn(ctx)
-		if err != nil {
-			return err
-		}
-		defer conn.Close()
+	channel := fmt.Sprintf("hostname:%s", hostname)
 
-		channel := fmt.Sprintf("hostname:%s", hostname)
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
+	if err, ok := err.(*pq.Error); ok {
 
-		_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-		if err, ok := err.(*pq.Error); ok {
-
-			fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
-			if err.Code == "57014" {
-				return fmt.Errorf("canceled query")
-			}
-
-			return err
-
+		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
+		if err.Code == "57014" {
+			return fmt.Errorf("canceled query")
 		}
 
-	*/
+		return err
 
-	// return err
+	}
+
 	return nil
 
 }
@@ -426,6 +398,7 @@ func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
 	resp, err = handler(ctx, req)
 	if err != nil {
+		fmt.Println(">>>", info.FullMethod)
 		return nil, translateError(err)
 	}
 	return resp, nil
@@ -434,6 +407,7 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryS
 func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
 	err := handler(srv, ss)
 	if err != nil {
+		fmt.Println(">>>", info.FullMethod)
 		return translateError(err)
 	}
 	return nil

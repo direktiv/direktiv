@@ -3,11 +3,13 @@ package flow
 import (
 	"context"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	entino "github.com/vorteil/direktiv/pkg/flow/ent/inode"
@@ -261,6 +263,10 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	path := getInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 
+	if base == "" || base == "/" {
+		return nil, status.Error(codes.AlreadyExists, "root directory already exists")
+	}
+
 	inoc := tx.Inode
 
 	pino, err := flow.getInode(ctx, inoc, ns, dir, req.GetParents())
@@ -269,7 +275,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	}
 
 	if pino.ino.Type != "directory" {
-		return nil, fmt.Errorf("parent node is not a directory")
+		return nil, status.Error(codes.AlreadyExists, "parent node is not a directory")
 	}
 
 	ino, err := inoc.Create().SetName(base).SetNamespace(ns).SetParent(pino.ino).SetType("directory").Save(ctx)
@@ -278,6 +284,14 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		if ent.IsConstraintError(err) && req.GetIdempotent() {
 			var d *nodeData
 			var e error
+
+			ns, err = flow.getNamespace(ctx, flow.db.Namespace, namespace)
+			if err != nil {
+				return nil, err
+			}
+
+			inoc = flow.db.Inode
+
 			d, e = flow.getInode(ctx, inoc, ns, req.GetPath(), false)
 			if e != nil {
 				return nil, err
@@ -291,6 +305,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 			rollback(tx)
 			goto respond
+
 		}
 
 		return nil, err
@@ -336,7 +351,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
 	if err != nil {
-		if ent.IsNotFound(err) && req.GetIdempotent() {
+		if IsNotFound(err) && req.GetIdempotent() {
 			rollback(tx)
 			goto respond
 		}
@@ -344,10 +359,19 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if d.path == "/" {
-		return nil, errors.New("cannot delete root node")
+		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
 
-	// TODO: don't delete if node has stuff unless 'recursive' explicitly requested
+	if !req.GetRecursive() {
+		k, err := d.ino.QueryChildren().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if k != 0 {
+			return nil, status.Error(codes.InvalidArgument, "refusing to delete non-empty directory without explicit recursive argument")
+		}
+		// TODO: don't delete if directory has stuff unless 'recursive' explicitly requested
+	}
 
 	err = inoc.DeleteOne(d.ino).Exec(ctx)
 	if err != nil {
@@ -361,6 +385,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted directory '%s'.", d.path)
 	flow.pubsub.NotifyInode(d.ino.Edges.Parent)
+	flow.pubsub.CloseInode(d.ino)
 
 respond:
 

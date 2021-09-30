@@ -26,6 +26,10 @@ message NodeResponse {
 	Node node = 2;
 }
 
+message ResolveWorkflowUIDRequest {
+	string id = 1;
+}
+
 message WorkflowRequest {
 	string namespace = 1;
 	string path = 2;	
@@ -37,6 +41,7 @@ message WorkflowResponse {
 	Node node = 2;
 	Revision revision = 3;
 	string eventLogging = 4;
+	string oid = 5;
 }
 
 message CreateWorkflowRequest {

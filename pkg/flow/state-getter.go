@@ -122,7 +122,7 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		var data []byte
 
 		if err != nil {
-			if ent.IsNotFound(err) {
+			if IsNotFound(err) {
 				data = make([]byte, 0)
 			} else {
 				return nil, NewInternalError(err)

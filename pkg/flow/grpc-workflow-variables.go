@@ -12,6 +12,8 @@ import (
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -38,7 +40,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	resp.TotalSize = int64(d.vdata.Size)
 
 	if resp.TotalSize > parcelSize {
-		return nil, errors.New("variable too large to return without using the parcelling API")
+		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
 	resp.Data = d.vdata.Data
@@ -251,20 +253,23 @@ type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) error {
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) (*ent.VarData, error) {
 
-	hash := checksum(data)
+	hash, err := computeHash(data)
+	if err != nil {
+		flow.sugar.Error(err)
+	}
 
 	vref, err := q.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
 	if err != nil {
 
-		if !ent.IsNotFound(err) {
-			return err
+		if !IsNotFound(err) {
+			return nil, err
 		}
 
 		vdata, err := vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		query := vrefc.Create().SetVardata(vdata).SetName(key)
@@ -282,24 +287,26 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 
 		_, err = query.Save(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
+
+		return vdata, nil
 
 	} else {
 
 		vdata, err := vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		vdata, err = vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-	}
+		return vdata, nil
 
-	return nil
+	}
 
 }
 
@@ -326,7 +333,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 
 	key := req.GetKey()
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -430,7 +437,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
 	if err != nil {
 		return err
 	}

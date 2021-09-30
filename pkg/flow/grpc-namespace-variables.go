@@ -11,6 +11,8 @@ import (
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -36,7 +38,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	resp.TotalSize = int64(d.vdata.Size)
 
 	if resp.TotalSize > parcelSize {
-		return nil, errors.New("variable too large to return without using the parcelling API")
+		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
 	resp.Data = d.vdata.Data
@@ -327,7 +329,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	key := req.GetKey()
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +431,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	var vdata *ent.VarData
 
-	err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
+	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
 	if err != nil {
 		return err
 	}
