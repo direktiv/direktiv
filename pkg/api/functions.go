@@ -276,7 +276,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// swagger:operation DELETE /api/functions/{serviceName}/revisions/{revisionGeneration} Services deleteGlobalRevision
 	// Delete a global scoped knative service revision
 	// The target revision generation is the number suffix on a revision
-	// So a revisions named 'global-yeetz-00003' would have the revisionGeneration '00003'
+	// Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
 	// Note: Revisions with traffic cannot be deleted
 	// ---
 	// summary: Delete Global Service Revision
@@ -293,7 +293,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   description: 'target revision generation'
 	// responses:
 	//   '200':
-	//     "description": "successfully got service details"
+	//     "description": "successfully deleted service revision"
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
