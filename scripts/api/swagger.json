@@ -948,34 +948,7 @@
     },
     "/api/functions/{serviceName}/revisions": {
       "get": {
-        "description": "Watch the revision list of a global scoped knative service\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
-        "produces": [
-          "text/event-stream"
-        ],
-        "tags": [
-          "Global Services"
-        ],
-        "summary": "Watch Global Service Revision List",
-        "operationId": "watchGlobalServiceRevisionList",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target service name",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully watching service revisions"
-          }
-        }
-      }
-    },
-    "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
-      "get": {
-        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint",
         "produces": [
           "text/event-stream"
         ],
