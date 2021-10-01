@@ -105,7 +105,7 @@ database:
   # -- database name, auto created if it does not exist
   name: "direktiv"
   # -- sslmode for database
-  sslmode: disable
+  sslmode: require
 
 fluentbit:
   # -- postgres for direktiv services
@@ -199,10 +199,6 @@ minio-operator:
         accessKey: minio
         secretKey: minio123
 
-
-        # namespaces:
-        #   names:
-        #     [ - <string> ]
 prometheus:
   server:
     retention: 96h
@@ -216,7 +212,6 @@ prometheus:
     enabled: false
   kubeStateMetrics:
     enabled: false
-
   serviceAccounts:
     alertmanager:
       create: false

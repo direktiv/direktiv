@@ -46,7 +46,7 @@ kubectl create namespace direktiv-services-direktiv
 kubectl create namespace postgres
 
 # prepare linkerd
-kubectl annotate ns postgres knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
+kubectl annotate ns knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
 
 exe='cd /certs && step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure \
@@ -82,9 +82,22 @@ kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add direktiv https://charts.direktiv.io
 
-helm install -n postgres postgres -f $dir/../kubernetes/install/db/default.yaml bitnami/postgresql-ha
+helm repo update
+helm search repo direktiv
+helm install -n postgres --set singleNamespace=true postgres direktiv/pgo --wait
+kubectl apply -f $dir/../kubernetes/install/db/pg.yaml
 
-helm dependency update $dir/../kubernetes/charts/direktiv
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 countdown
+
+echo ""
+echo "database:
+  host: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)\"
+  port: $(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "pgbouncer-port"}}' | base64 --decode)
+  user: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)\"
+  password: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)\"
+  name: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)\"
+  sslmode: require"
