@@ -122,6 +122,77 @@
           }
         }
       },
+      "post": {
+        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic.",
+        "tags": [
+          "Services"
+        ],
+        "summary": "Create Global Service Revision",
+        "operationId": "updateGlobalService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains information on service revision",
+            "name": "Service",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "image",
+                "cmd",
+                "minScale",
+                "size",
+                "trafficPercent"
+              ],
+              "properties": {
+                "cmd": {
+                  "type": "string"
+                },
+                "image": {
+                  "description": "Target image a service will use",
+                  "type": "string"
+                },
+                "minScale": {
+                  "description": "Minimum amount of service pods to be live",
+                  "type": "integer"
+                },
+                "size": {
+                  "description": "Size of created service pods",
+                  "type": "string",
+                  "enum": [
+                    "small",
+                    "medium",
+                    "large"
+                  ]
+                },
+                "trafficPercent": {
+                  "description": "Traffic percentage new revision will use",
+                  "type": "integer"
+                }
+              },
+              "example": {
+                "cmd": "",
+                "image": "vorteil/request:v10",
+                "minScale": "1",
+                "size": "small",
+                "trafficPercent": 50
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created service revision"
+          }
+        }
+      },
       "delete": {
         "description": "Deletes global scoped knative service and all its revisions",
         "tags": [
@@ -141,6 +212,102 @@
         "responses": {
           "200": {
             "description": "successfully deleted service"
+          }
+        }
+      },
+      "patch": {
+        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic.",
+        "tags": [
+          "Services"
+        ],
+        "summary": "Update Global Service Traffic",
+        "operationId": "updateGlobalServiceTraffic",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains information on service traffic",
+            "name": "Service Traffic",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "values"
+              ],
+              "properties": {
+                "values": {
+                  "description": "List of revision traffic targets",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "percent": {
+                        "description": "Target traffice percentage",
+                        "type": "integer"
+                      },
+                      "revision": {
+                        "description": "Target service revision",
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "values": [
+                  {
+                    "percent": 60,
+                    "revision": "global-fast-request-00002"
+                  },
+                  {
+                    "percent": 40,
+                    "revision": "global-fast-request-00001"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully updated service traffic"
+          }
+        }
+      }
+    },
+    "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
+      "delete": {
+        "description": "Delete a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nSo a revisions named 'global-yeetz-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
+        "tags": [
+          "Services"
+        ],
+        "summary": "Delete Global Service Revision",
+        "operationId": "deleteGlobalRevision",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target revision generation",
+            "name": "revisionGeneration",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got service details"
           }
         }
       }

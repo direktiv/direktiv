@@ -173,11 +173,127 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got service details"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation POST /api/functions/{serviceName} Services updateGlobalService
+	// Creates a new global scoped knative service revision
+	// Revisions are created with a traffic percentage. This percentage controls
+	// how much traffic will be directed to this revision. Traffic can be set to 100
+	// to direct all traffic.
+	// ---
+	// summary: Create Global Service Revision
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: body
+	//   name: Service
+	//   description: Payload that contains information on service revision
+	//   required: true
+	//   schema:
+	//     type: object
+	//     example:
+	//       trafficPercent: 50
+	//       image: "vorteil/request:v10"
+	//       cmd: ""
+	//       minScale: "1"
+	//       size: "small"
+	//     required:
+	//       - image
+	//       - cmd
+	//       - minScale
+	//       - size
+	//       - trafficPercent
+	//     properties:
+	//       trafficPercent:
+	//         type: integer
+	//         description: Traffic percentage new revision will use
+	//       image:
+	//         type: string
+	//         description: Target image a service will use
+	//       cmd:
+	//         type: string
+	//       minScale:
+	//         type: integer
+	//         description: Minimum amount of service pods to be live
+	//       size:
+	//         type: string
+	//         description: Size of created service pods
+	//         enum:
+	//           - small
+	//           - medium
+	//           - large
+	// responses:
+	//   '200':
+	//     "description": "successfully created service revision"
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation PATCH /api/functions/{serviceName} Services updateGlobalServiceTraffic
+	// Update Global Service traffic directed to each revision,
+	// traffic can only be configured between two revisions. All other revisions
+	// will bet set to 0 traffic.
+	// ---
+	// summary: Update Global Service Traffic
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: body
+	//   name: Service Traffic
+	//   description: Payload that contains information on service traffic
+	//   required: true
+	//   schema:
+	//     type: object
+	//     example:
+	//       values:
+	//         - percent: 60
+	//           revision: global-fast-request-00002
+	//         - percent: 40
+	//           revision: global-fast-request-00001
+	//     required:
+	//       - values
+	//     properties:
+	//       values:
+	//         description: List of revision traffic targets
+	//         type: array
+	//         items:
+	//           type: object
+	//           properties:
+	//             percent:
+	//               description: Target traffice percentage
+	//               type: integer
+	//             revision:
+	//               description: Target service revision
+	//               type: string
+	//
+	// responses:
+	//   '200':
+	//     "description": "successfully updated service traffic"
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation DELETE /api/functions/{serviceName}/revisions/{revisionGeneration} Services deleteGlobalRevision
+	// Delete a global scoped knative service revision
+	// The target revision generation is the number suffix on a revision
+	// So a revisions named 'global-yeetz-00003' would have the revisionGeneration '00003'
+	// Note: Revisions with traffic cannot be deleted
+	// ---
+	// summary: Delete Global Service Revision
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: path
+	//   name: revisionGeneration
+	//   type: string
+	//   required: true
+	//   description: 'target revision generation'
+	// responses:
+	//   '200':
+	//     "description": "successfully got service details"
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace

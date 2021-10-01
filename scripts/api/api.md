@@ -122,9 +122,12 @@ direktiv api
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | POST | /api/functions | [create global service](#create-global-service) | Create Global Service |
+| DELETE | /api/functions/{serviceName}/revisions/{revisionGeneration} | [delete global revision](#delete-global-revision) | Delete Global Service Revision |
 | DELETE | /api/functions/{serviceName} | [delete global service](#delete-global-service) | Delete Global Service |
 | GET | /api/functions/{serviceName} | [get global service](#get-global-service) | Get Global Service Details |
 | GET | /api/functions | [get global service list](#get-global-service-list) | Get List of Global Service |
+| POST | /api/functions/{serviceName} | [update global service](#update-global-service) | Create Global Service Revision |
+| PATCH | /api/functions/{serviceName} | [update global service traffic](#update-global-service-traffic) | Update Global Service Traffic |
   
 
 
@@ -404,6 +407,37 @@ The body of this request should contain the workflow yaml
 Status: OK
 
 ###### <span id="create-workflow-200-schema"></span> Schema
+
+### <span id="delete-global-revision"></span> Delete Global Service Revision (*deleteGlobalRevision*)
+
+```
+DELETE /api/functions/{serviceName}/revisions/{revisionGeneration}
+```
+
+Delete a global scoped knative service revision
+The target revision generation is the number suffix on a revision
+So a revisions named 'global-yeetz-00003' would have the revisionGeneration '00003'
+Note: Revisions with traffic cannot be deleted
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| revisionGeneration | `path` | string | `string` |  | ✓ |  | target revision generation |
+| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-global-revision-200) | OK | successfully got service details |  | [schema](#delete-global-revision-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-global-revision-200"></span> 200 - successfully got service details
+Status: OK
+
+###### <span id="delete-global-revision-200-schema"></span> Schema
 
 ### <span id="delete-global-service"></span> Delete Global Service (*deleteGlobalService*)
 
@@ -1464,6 +1498,120 @@ Status: OK
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
 | live | boolean| `bool` | ✓ | | Workflow live status |  |
+
+
+
+### <span id="update-global-service"></span> Create Global Service Revision (*updateGlobalService*)
+
+```
+POST /api/functions/{serviceName}
+```
+
+Creates a new global scoped knative service revision
+Revisions are created with a traffic percentage. This percentage controls
+how much traffic will be directed to this revision. Traffic can be set to 100
+to direct all traffic.
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
+| Service | `body` | [UpdateGlobalServiceBody](#update-global-service-body) | `UpdateGlobalServiceBody` | | ✓ | | Payload that contains information on service revision |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#update-global-service-200) | OK | successfully created service revision |  | [schema](#update-global-service-200-schema) |
+
+#### Responses
+
+
+##### <span id="update-global-service-200"></span> 200 - successfully created service revision
+Status: OK
+
+###### <span id="update-global-service-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="update-global-service-body"></span> UpdateGlobalServiceBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| cmd | string| `string` | ✓ | |  |  |
+| image | string| `string` | ✓ | | Target image a service will use |  |
+| minScale | integer| `int64` | ✓ | | Minimum amount of service pods to be live |  |
+| size | string| `string` | ✓ | | Size of created service pods |  |
+| trafficPercent | integer| `int64` | ✓ | | Traffic percentage new revision will use |  |
+
+
+
+### <span id="update-global-service-traffic"></span> Update Global Service Traffic (*updateGlobalServiceTraffic*)
+
+```
+PATCH /api/functions/{serviceName}
+```
+
+traffic can only be configured between two revisions. All other revisions
+will bet set to 0 traffic.
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
+| Service Traffic | `body` | [UpdateGlobalServiceTrafficBody](#update-global-service-traffic-body) | `UpdateGlobalServiceTrafficBody` | | ✓ | | Payload that contains information on service traffic |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#update-global-service-traffic-200) | OK | successfully updated service traffic |  | [schema](#update-global-service-traffic-200-schema) |
+
+#### Responses
+
+
+##### <span id="update-global-service-traffic-200"></span> 200 - successfully updated service traffic
+Status: OK
+
+###### <span id="update-global-service-traffic-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+
+
+
+**<span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| percent | integer| `int64` |  | | Target traffice percentage |  |
+| revision | string| `string` |  | | Target service revision |  |
 
 
 
