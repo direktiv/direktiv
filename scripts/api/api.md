@@ -23,10 +23,12 @@ direktiv api
 
 ### Consumes
   * application/json
+  * text/event-stream
   * text/plain
 
 ### Produces
   * application/json
+  * text/event-stream
 
 ## Access control
 
@@ -128,6 +130,7 @@ direktiv api
 | GET | /api/functions | [get global service list](#get-global-service-list) | Get List of Global Service |
 | POST | /api/functions/{serviceName} | [update global service](#update-global-service) | Create Global Service Revision |
 | PATCH | /api/functions/{serviceName} | [update global service traffic](#update-global-service-traffic) | Update Global Service Traffic |
+| GET | /api/functions/{serviceName}/revisions/{revisionGeneration} | [watch global revision](#watch-global-revision) | Watch Global Service Revision |
   
 
 
@@ -416,7 +419,7 @@ DELETE /api/functions/{serviceName}/revisions/{revisionGeneration}
 
 Delete a global scoped knative service revision
 The target revision generation is the number suffix on a revision
-So a revisions named 'global-yeetz-00003' would have the revisionGeneration '00003'
+Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
 Note: Revisions with traffic cannot be deleted
 
 #### Parameters
@@ -429,12 +432,12 @@ Note: Revisions with traffic cannot be deleted
 #### All responses
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#delete-global-revision-200) | OK | successfully got service details |  | [schema](#delete-global-revision-200-schema) |
+| [200](#delete-global-revision-200) | OK | successfully deleted service revision |  | [schema](#delete-global-revision-200-schema) |
 
 #### Responses
 
 
-##### <span id="delete-global-revision-200"></span> 200 - successfully got service details
+##### <span id="delete-global-revision-200"></span> 200 - successfully deleted service revision
 Status: OK
 
 ###### <span id="delete-global-revision-200-schema"></span> Schema
@@ -1647,6 +1650,43 @@ The body of this request should contain the workflow yaml you want to update to.
 Status: OK
 
 ###### <span id="update-workflow-200-schema"></span> Schema
+
+### <span id="watch-global-revision"></span> Watch Global Service Revision (*watchGlobalRevision*)
+
+```
+GET /api/functions/{serviceName}/revisions/{revisionGeneration}
+```
+
+Watch a global scoped knative service revision
+The target revision generation is the number suffix on a revision
+Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
+Note: This is a Server-Sent-Event endpoint
+
+#### Consumes
+  * text/event-stream
+
+#### Produces
+  * text/event-stream
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| revisionGeneration | `path` | string | `string` |  | ✓ |  | target revision generation |
+| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#watch-global-revision-200) | OK | successfully watching service revision |  | [schema](#watch-global-revision-200-schema) |
+
+#### Responses
+
+
+##### <span id="watch-global-revision-200"></span> 200 - successfully watching service revision
+Status: OK
+
+###### <span id="watch-global-revision-200-schema"></span> Schema
 
 ### <span id="workflow-metrics-milliseconds"></span> Gets Workflow Time Metrics (*workflowMetricsMilliseconds*)
 

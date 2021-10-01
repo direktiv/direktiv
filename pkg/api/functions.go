@@ -87,7 +87,30 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/{serviceName}/revisions/{revisionGeneration} Services watchGlobalRevision
+	// Watch a global scoped knative service revision
+	// The target revision generation is the number suffix on a revision
+	// Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
+	// Note: This is a Server-Sent-Event endpoint
+	// ---
+	// summary: Watch Global Service Revision
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: path
+	//   name: revisionGeneration
+	//   type: string
+	//   required: true
+	//   description: 'target revision generation'
+	// produces:
+	//    - "text/event-stream"
+	// responses:
+	//   '200':
+	//     "description": "successfully watching service revision"
 	r.HandleFunc("/{svn}/revisions/{rev}", h.watchGlobalRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	// TODO: SWAGGER-SPEC

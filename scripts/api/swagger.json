@@ -282,8 +282,43 @@
       }
     },
     "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
+      "get": {
+        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint",
+        "consumes": [
+          "text/event-stream"
+        ],
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "Services"
+        ],
+        "summary": "Watch Global Service Revision",
+        "operationId": "watchGlobalRevision",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target revision generation",
+            "name": "revisionGeneration",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully watching service revision"
+          }
+        }
+      },
       "delete": {
-        "description": "Delete a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nSo a revisions named 'global-yeetz-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
+        "description": "Delete a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
         "tags": [
           "Services"
         ],
@@ -307,7 +342,7 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully got service details"
+            "description": "successfully deleted service revision"
           }
         }
       }
