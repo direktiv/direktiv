@@ -35,7 +35,7 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 		client: grpc.NewFlowClient(conn),
 	}
 
-	prometheusAddr := fmt.Sprintf("http://%s:9090", conf.PrometheusBackend)
+	prometheusAddr := fmt.Sprintf("http://%s", conf.PrometheusBackend)
 	logger.Infof("connecting to prometheus %s", prometheusAddr)
 	h.prometheus, err = prometheus.NewClient(prometheus.Config{
 		Address: prometheusAddr,
