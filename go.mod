@@ -33,6 +33,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.1
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
+	github.com/norwoodj/helm-docs v1.6.0 // indirect
 	github.com/nxadm/tail v1.4.4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2 // indirect
