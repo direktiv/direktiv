@@ -73,28 +73,90 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 
 func (h *functionHandler) initRoutes(r *mux.Router) {
 
-	// swagger:operation GET /api/functions Services getGlobalServiceList
+	// swagger:operation GET /api/functions getGlobalServiceList
 	// Gets a list of global knative services
 	// ---
-	// summary: Get List of Global Service
+	// summary: Get Global Services List
+	// tags:
+	// - "Global Services"
 	// responses:
 	//   '200':
 	//     "description": "successfully got services list"
 	handlerPair(r, RN_ListServices, "", h.listGlobalServices, h.listGlobalServicesSSE)
+
+	// swagger:operation GET /api/functions/{serviceName}/revisions/{revisionGeneration}/pods listGlobalServiceRevisionPods
+	// List a revisions pods of a global scoped knative service
+	// The target revision generation is the number suffix on a revision
+	// Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
+	// ---
+	// summary: Get Global Service Revision Pods List
+	// tags:
+	// - "Global Services"
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: path
+	//   name: revisionGeneration
+	//   type: string
+	//   required: true
+	//   description: 'target revision generation'
+	// responses:
+	//   '200':
+	//     "description": "successfully got list of a service revision pods"
 	handlerPair(r, RN_ListPods, "/{svn}/revisions/{rev}/pods", h.listGlobalPods, h.listGlobalPodsSSE)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/functions/{serviceName} watchGlobalServiceRevisionList
+	// Watch the revision list of a global scoped knative service
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+	// ---
+	// summary: Watch Global Service Revision
+	// tags:
+	// - "Global Services"
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// produces:
+	//    - "text/event-stream"
+	// responses:
+	//   '200':
+	//     "description": "successfully watching service"
 	r.HandleFunc("/{svn}", h.singleGlobalServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/{serviceName}/revisions watchGlobalServiceRevisionList
+	// Watch the revision list of a global scoped knative service
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+	// ---
+	// summary: Watch Global Service Revision List
+	// tags:
+	// - "Global Services"
+	// parameters:
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// produces:
+	//    - "text/event-stream"
+	// responses:
+	//   '200':
+	//     "description": "successfully watching service revisions"
 	r.HandleFunc("/{svn}/revisions", h.watchGlobalRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
-	// swagger:operation GET /api/functions/{serviceName}/revisions/{revisionGeneration} Services watchGlobalRevision
+	// swagger:operation GET /api/functions/{serviceName}/revisions/{revisionGeneration} watchGlobalServiceRevision
 	// Watch a global scoped knative service revision
 	// The target revision generation is the number suffix on a revision
 	// Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
-	// Note: This is a Server-Sent-Event endpoint
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
 	// ---
 	// summary: Watch Global Service Revision
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: path
 	//   name: serviceName
@@ -116,13 +178,15 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER-SPEC
 	r.HandleFunc("/logs/pod/{pod}", h.watchLogs).Methods(http.MethodGet).Name(RN_WatchLogs)
 
-	// swagger:operation POST /api/functions Services createGlobalService
+	// swagger:operation POST /api/functions createGlobalService
 	// Creates global scoped knative service
 	// Service Names are unique on a scope level
 	// These services can be used as functions in workflows, more about this can be read here:
 	// https://docs.direktiv.io/docs/walkthrough/using-functions.html
 	// ---
 	// summary: Create Global Service
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: body
 	//   name: Service
@@ -166,10 +230,12 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created service"
 	r.HandleFunc("", h.createGlobalService).Methods(http.MethodPost).Name(RN_CreateService)
 
-	// swagger:operation DELETE /api/functions/{serviceName} Services deleteGlobalService
+	// swagger:operation DELETE /api/functions/{serviceName} deleteGlobalService
 	// Deletes global scoped knative service and all its revisions
 	// ---
 	// summary: Delete Global Service
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: path
 	//   name: serviceName
@@ -181,10 +247,12 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully deleted service"
 	r.HandleFunc("/{svn}", h.deleteGlobalService).Methods(http.MethodDelete).Name(RN_DeleteServices)
 
-	// swagger:operation GET /api/functions/{serviceName} Services getGlobalService
+	// swagger:operation GET /api/functions/{serviceName} getGlobalService
 	// Get details of a global scoped knative service
 	// ---
 	// summary: Get Global Service Details
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: path
 	//   name: serviceName
@@ -196,13 +264,15 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got service details"
 	r.HandleFunc("/{svn}", h.getGlobalService).Methods(http.MethodGet).Name(RN_GetService)
 
-	// swagger:operation POST /api/functions/{serviceName} Services updateGlobalService
+	// swagger:operation POST /api/functions/{serviceName} updateGlobalService
 	// Creates a new global scoped knative service revision
 	// Revisions are created with a traffic percentage. This percentage controls
 	// how much traffic will be directed to this revision. Traffic can be set to 100
 	// to direct all traffic.
 	// ---
 	// summary: Create Global Service Revision
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: path
 	//   name: serviceName
@@ -251,12 +321,14 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created service revision"
 	r.HandleFunc("/{svn}", h.updateGlobalService).Methods(http.MethodPost).Name(RN_UpdateService)
 
-	// swagger:operation PATCH /api/functions/{serviceName} Services updateGlobalServiceTraffic
+	// swagger:operation PATCH /api/functions/{serviceName} updateGlobalServiceTraffic
 	// Update Global Service traffic directed to each revision,
 	// traffic can only be configured between two revisions. All other revisions
 	// will bet set to 0 traffic.
 	// ---
 	// summary: Update Global Service Traffic
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: path
 	//   name: serviceName
@@ -296,13 +368,15 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully updated service traffic"
 	r.HandleFunc("/{svn}", h.updateGlobalServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateServiceTraffic)
 
-	// swagger:operation DELETE /api/functions/{serviceName}/revisions/{revisionGeneration} Services deleteGlobalRevision
+	// swagger:operation DELETE /api/functions/{serviceName}/revisions/{revisionGeneration} deleteGlobalRevision
 	// Delete a global scoped knative service revision
 	// The target revision generation is the number suffix on a revision
 	// Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
 	// Note: Revisions with traffic cannot be deleted
 	// ---
 	// summary: Delete Global Service Revision
+	// tags:
+	// - "Global Services"
 	// parameters:
 	// - in: path
 	//   name: serviceName
@@ -320,41 +394,536 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/{svn}/revisions/{rev}", h.deleteGlobalRevision).Methods(http.MethodDelete).Name(RN_DeleteRevision)
 
 	// namespace
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace} getNamespaceServiceList
+	// Gets a list of namespace knative services
+	// ---
+	// summary: Get Namespace Services List
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got services list"
 	handlerPair(r, RN_ListNamespaceServices, "/namespaces/{ns}", h.listNamespaceServices, h.listNamespaceServicesSSE)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}/pods listNamespaceServiceRevisionPods
+	// List a revisions pods of a namespace scoped knative service
+	// The target revision generation is the number suffix on a revision
+	// Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'
+	// ---
+	// summary: Get Namespace Service Revision Pods List
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: path
+	//   name: revisionGeneration
+	//   type: string
+	//   required: true
+	//   description: 'target revision generation'
+	// responses:
+	//   '200':
+	//     "description": "successfully got list of a service revision pods"
 	handlerPair(r, RN_ListNamespacePods, "/namespaces/{ns}/function/{svn}/revisions/{rev}/pods", h.listNamespacePods, h.listNamespacePodsSSE)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName} watchNamespaceServiceRevisionList
+	// Watch the revision list of a namespace scoped knative service
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+	// ---
+	// summary: Watch Namespace Service Revision
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// produces:
+	//    - "text/event-stream"
+	// responses:
+	//   '200':
+	//     "description": "successfully watching service"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions watchNamespaceServiceRevisionList
+	// Watch the revision list of a namespace scoped knative service
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+	// ---
+	// summary: Watch Namespace Service Revision List
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// produces:
+	//    - "text/event-stream"
+	// responses:
+	//   '200':
+	//     "description": "successfully watching service revisions"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration} watchNamespaceServiceRevision
+	// Watch a namespace scoped knative service revision
+	// The target revision generation is the number suffix on a revision
+	// Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+	// ---
+	// summary: Watch Namespace Service Revision
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: path
+	//   name: revisionGeneration
+	//   type: string
+	//   required: true
+	//   description: 'target revision generation'
+	// produces:
+	//    - "text/event-stream"
+	// responses:
+	//   '200':
+	//     "description": "successfully watching service revision"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation POST /api/functions/namespaces/{namespace} createNamespaceService
+	// Creates namespace scoped knative service
+	// Service Names are unique on a scope level
+	// These services can be used as functions in workflows, more about this can be read here:
+	// https://docs.direktiv.io/docs/walkthrough/using-functions.html
+	// ---
+	// summary: Create Namespace Service
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: body
+	//   name: Service
+	//   description: Payload that contains information on new service
+	//   required: true
+	//   schema:
+	//     type: object
+	//     example:
+	//       name: "fast-request"
+	//       image: "vorteil/request:v12"
+	//       cmd: ""
+	//       minScale: "1"
+	//       size: "small"
+	//     required:
+	//       - name
+	//       - image
+	//       - cmd
+	//       - minScale
+	//       - size
+	//     properties:
+	//       name:
+	//         type: string
+	//         description: Name of new service
+	//       image:
+	//         type: string
+	//         description: Target image a service will use
+	//       cmd:
+	//         type: string
+	//       minScale:
+	//         type: integer
+	//         description: Minimum amount of service pods to be live
+	//       size:
+	//         type: string
+	//         description: Size of created service pods
+	//         enum:
+	//           - small
+	//           - medium
+	//           - large
+	// responses:
+	//   '200':
+	//     "description": "successfully created service"
 	r.HandleFunc("/namespaces/{ns}", h.createNamespaceService).Methods(http.MethodPost).Name(RN_CreateNamespaceService)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation DELETE /api/functions/namespaces/{namespace}/function/{serviceName} deleteNamespaceService
+	// Deletes namespace scoped knative service and all its revisions
+	// ---
+	// summary: Delete Namespace Service
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted service"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.deleteNamespaceService).Methods(http.MethodDelete).Name(RN_DeleteNamespaceServices)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName} getNamespaceService
+	// Get details of a namespace scoped knative service
+	// ---
+	// summary: Get Namespace Service Details
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// responses:
+	//   '200':
+	//     "description": "successfully got service details"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.getNamespaceService).Methods(http.MethodGet).Name(RN_GetNamespaceService)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation POST /api/functions/namespaces/{namespace}/function/{serviceName} updateNamespaceService
+	// Creates a new namespace scoped knative service revision
+	// Revisions are created with a traffic percentage. This percentage controls
+	// how much traffic will be directed to this revision. Traffic can be set to 100
+	// to direct all traffic.
+	// ---
+	// summary: Create Namespace Service Revision
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: body
+	//   name: Service
+	//   description: Payload that contains information on service revision
+	//   required: true
+	//   schema:
+	//     type: object
+	//     example:
+	//       trafficPercent: 50
+	//       image: "vorteil/request:v10"
+	//       cmd: ""
+	//       minScale: "1"
+	//       size: "small"
+	//     required:
+	//       - image
+	//       - cmd
+	//       - minScale
+	//       - size
+	//       - trafficPercent
+	//     properties:
+	//       trafficPercent:
+	//         type: integer
+	//         description: Traffic percentage new revision will use
+	//       image:
+	//         type: string
+	//         description: Target image a service will use
+	//       cmd:
+	//         type: string
+	//       minScale:
+	//         type: integer
+	//         description: Minimum amount of service pods to be live
+	//       size:
+	//         type: string
+	//         description: Size of created service pods
+	//         enum:
+	//           - small
+	//           - medium
+	//           - large
+	// responses:
+	//   '200':
+	//     "description": "successfully created service revision"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceService).Methods(http.MethodPost).Name(RN_UpdateNamespaceService)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation PATCH /api/functions/namespaces/{namespace}/function/{serviceName} updateNamespaceServiceTraffic
+	// Update Namespace Service traffic directed to each revision,
+	// traffic can only be configured between two revisions. All other revisions
+	// will bet set to 0 traffic.
+	// ---
+	// summary: Update Namespace Service Traffic
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: body
+	//   name: Service Traffic
+	//   description: Payload that contains information on service traffic
+	//   required: true
+	//   schema:
+	//     type: object
+	//     example:
+	//       values:
+	//         - percent: 60
+	//           revision: namespace-direktiv-fast-request-00002
+	//         - percent: 40
+	//           revision: namespace-direktiv-fast-request-00001
+	//     required:
+	//       - values
+	//     properties:
+	//       values:
+	//         description: List of revision traffic targets
+	//         type: array
+	//         items:
+	//           type: object
+	//           properties:
+	//             percent:
+	//               description: Target traffice percentage
+	//               type: integer
+	//             revision:
+	//               description: Target service revision
+	//               type: string
+	//
+	// responses:
+	//   '200':
+	//     "description": "successfully updated service traffic"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.updateNamespaceServiceTraffic).Methods(http.MethodPatch).Name(RN_UpdateNamespaceServiceTraffic)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation DELETE /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration} deleteNamespaceRevision
+	// Delete a namespace scoped knative service revision
+	// The target revision generation is the number suffix on a revision
+	// Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'
+	// Note: Revisions with traffic cannot be deleted
+	// ---
+	// summary: Delete Namespace Service Revision
+	// tags:
+	// - "Namespace Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: serviceName
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: path
+	//   name: revisionGeneration
+	//   type: string
+	//   required: true
+	//   description: 'target revision generation'
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted service revision"
 	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// workflow
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=services listWorkflowServices
+	// Gets a list of workflow knative services
+	// ---
+	// summary: Get Workflow Services List
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// tags:
+	// - "Workflow Services"
+	// responses:
+	//   '200':
+	//     "description": "successfully got services list"
 	pathHandlerPair(r, RN_ListWorkflowServices, "services", h.listWorkflowServices, h.listWorkflowServicesSSE)
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods listWorkflowServiceRevisionPods
+	// List a revisions pods of a workflow scoped knative service
+	// The target revision generation (rev query) is the number suffix on a revision
+	// Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'
+	// ---
+	// summary: Get Workflow Service Revision Pods List
+	// tags:
+	// - "Workflow Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: query
+	//   name: svn
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: query
+	//   name: rev
+	//   type: string
+	//   required: true
+	//   description: 'target service revison'
+	// responses:
+	//   '200':
+	//     "description": "successfully got list of a service revision pods"
 	pathHandlerPair(r, RN_ListWorkflowServices, "pods", h.listWorkflowPods, h.listWorkflowPodsSSE)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function getWorkflowService
+	// Get a workflow scoped knative service details
+	// Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+	// ---
+	// summary: Get Workflow Service Details
+	// tags:
+	// - "Workflow Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: query
+	//   name: svn
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: query
+	//   name: version
+	//   type: string
+	//   required: true
+	//   description: 'target service version'
+	// responses:
+	//   '200':
+	//     "description": "successfully got service details"
 	pathHandlerPair(r, RN_ListWorkflowServices, "function", h.singleWorkflowService, h.singleWorkflowServiceSSE)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revisions getWorkflowServiceRevisionList
+	// Get the revision list of a workflow scoped knative service
+	// ---
+	// summary: Get Workflow Service Revision List
+	// tags:
+	// - "Workflow Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: query
+	//   name: svn
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: query
+	//   name: version
+	//   type: string
+	//   required: true
+	//   description: 'target service version'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got service revisions"
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revisions", h.singleWorkflowServiceRevisions, h.singleWorkflowServiceRevisionsSSE)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision getWorkflowServiceRevision
+	// Get a workflow scoped knative service revision
+	// This will return details on a single revision
+	// The target revision generation (rev query) is the number suffix on a revision
+	// Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'
+	// ---
+	// summary: Get Workflow Service Revision
+	// tags:
+	// - "Workflow Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: query
+	//   name: svn
+	//   type: string
+	//   required: true
+	//   description: 'target service name'
+	// - in: query
+	//   name: rev
+	//   type: string
+	//   required: true
+	//   description: 'target service revison'
+	// responses:
+	//   '200':
+	//     "description": "successfully got service revision details"
 	pathHandlerPair(r, RN_ListWorkflowServices, "function-revision", h.singleWorkflowServiceRevision, h.singleWorkflowServiceRevisionSSE)
 
 	// TODO: direct control?
@@ -366,11 +935,85 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.deleteNamespaceRevision).Methods(http.MethodDelete).Name(RN_DeleteNamespaceRevision)
 
 	// Registry ..
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation GET /api/namespaces/{namespace}/registries Registries getRegistries
+	// Gets the list of namespace registries
+	// ---
+	// summary: Get List of Namespace Registries
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace registries"
 	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation POST /api/namespaces/{namespace}/registries Registries createRegistry
+	// Create a namespace container registry
+	// This can be used to connect your workflows to private container registries that require tokens
+	// The data property in the body is made up from the registry user and token. It follows the pattern defined below:
+	// data=USER:TOKEN
+	// ---
+	// summary: Create a Namespace Container Registry
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: body
+	//   name: Registry Payload
+	//   description: Payload that contains registry data
+	//   schema:
+	//     type: object
+	//     example:
+	//       data: "admin:8QwFLg%D$qg*"
+	//       reg: "https://prod.customreg.io"
+	//     required:
+	//       - data
+	//       - reg
+	//     properties:
+	//       data:
+	//         type: string
+	//         description: "Target registry connection data containing the user and token."
+	//       reg:
+	//         type: string
+	//         description: Target registry URL
+	// responses:
+	//   '200':
+	//     "description": "successfully created namespace registry"
 	r.HandleFunc("/namespaces/{ns}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation POST /api/namespaces/{namespace}/registries Registries deleteRegistry
+	// Delete a namespace container registry
+	// ---
+	// summary: Delete a Namespace Container Registry
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: body
+	//   name: Registry Payload
+	//   description: Payload that contains registry data
+	//   schema:
+	//     example:
+	//       data: "admin:8QwFLg%D$qg*"
+	//       reg: "https://prod.customreg.io"
+	//     type: object
+	//     required:
+	//       - reg
+	//     properties:
+	//       reg:
+	//         type: string
+	//         description: Target registry URL
+	// responses:
+	//   '200':
+	//     "description": "successfully delete namespace registry"
 	r.HandleFunc("/namespaces/{ns}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
 }
