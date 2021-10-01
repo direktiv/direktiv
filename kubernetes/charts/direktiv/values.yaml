@@ -55,6 +55,7 @@ opentelemetry:
 
 api:
   replicas: 1
+  kongPlugins: "none"
   extraContainers: []
   # -- image for api pod
   image: "vorteil/flow"
@@ -175,6 +176,7 @@ secrets:
 
 # -- UI configuration
 ui:
+  kongPlugins: "none"
   image: "vorteil/direktiv-ui"
   tag: ""
   certificate: none
@@ -224,37 +226,6 @@ prometheus:
       create: false
     server:
       create: true
-
-# kube-prometheus:
-#   prometheus:
-#     enabled: true
-#     replicaCount: 1
-#     thanos:
-#       create: false
-#   alertmanager:
-#     enabled: false
-#   operator:
-#     enabled: true
-#   serviceMonitor:
-#     enabled: true
-  # exporters:
-  #   node-exporter:
-  #     enabled: true
-  #   kube-state-metrics:
-  #     enabled: false
-  #   kubelet:
-  #     enabled: false
-  #   kubeApiServer:
-  #     enabled: false
-  #   kubeControllerManager:
-  #     enabled: false
-  #   kubeScheduler:
-  #     enabled: false
-  #   coreDns:
-  #     enabled: false
-  #   kubeProxy:
-  #     enabled: false
-
 
 # direktiv-tenant-console
 thanos:

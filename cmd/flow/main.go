@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/dlog"
@@ -94,6 +95,10 @@ func main() {
 	rootCmd.AddCommand(deleteSecretCmd)
 
 	rootCmd.AddCommand(testsCmd)
+	testsCmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
+	testsCmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
+	testsCmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
+	testsCmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
 
 	err = rootCmd.Execute()
 	if err != nil {

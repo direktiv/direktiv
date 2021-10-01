@@ -1,14 +1,24 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
+
+var skipLongTests bool
+var parallelTests int
+var instanceTimeout time.Duration
+var testTimeout time.Duration
 
 var testsCmd = &cobra.Command{
 	Use: "tests",
@@ -19,11 +29,10 @@ var testsCmd = &cobra.Command{
 		// TODO: rename namespace
 		registerTest("DeleteNamespaceIdempotent", []string{"namespaces"}, testDeleteNamespaceIdempotent)
 		registerTest("DeleteNamespaceRecursive", []string{"namespaces"}, testDeleteNamespaceRecursive)
-		registerTest("NamespacesStream", []string{"namespaces", "stream"}, testNamespacesStream)
-		registerTest("ServerLogs", []string{"namespaces", "logs"}, testServerLogs)
-		registerTest("ServerLogsStream", []string{"namespaces", "logs", "stream"}, testServerLogsStream)
+		registerTest("NamespacesStream", []string{"namespaces", "stream", "race"}, testNamespacesStream)
+		registerTest("ServerLogs", []string{"namespaces", "logs", "race"}, testServerLogs)
+		registerTest("ServerLogsStream", []string{"namespaces", "logs", "stream", "race"}, testServerLogsStream)
 		registerTest("NamespaceLogsStreamDisconnect", []string{"namespaces", "logs", "stream"}, testNamespaceLogsStreamDisconnect)
-
 		registerTest("CreateDirectory", []string{"directories"}, testCreateDirectory)
 		registerTest("CreateDirectoryDuplicate", []string{"directories", "uniqueness"}, testCreateDirectoryDuplicate)
 		registerTest("CreateDirectoryFalseDuplicate", []string{"directories", "uniqueness"}, testCreateDirectoryFalseDuplicate)
@@ -43,11 +52,7 @@ var testsCmd = &cobra.Command{
 		registerTest("DirectoryStreamDisconnect", []string{"directories", "stream"}, testDirectoryStreamDisconnect)
 		registerTest("DirectoryStreamDisconnectParent", []string{"directories", "stream"}, testDirectoryStreamDisconnectParent)
 		registerTest("DirectoryStreamDisconnectNamespace", []string{"namespaces", "directories", "stream"}, testDirectoryStreamDisconnectNamespace)
-
-		// TODO: workflow management
-
 		registerTest("SecretsAPI", []string{"secrets"}, testSecretsAPI)
-
 		registerTest("StartWorkflow", []string{"instances"}, testStartWorkflow)
 		registerTest("StateLogSimple", []string{"instances"}, testStateLogSimple)
 		registerTest("StateLogJQ", []string{"instances", "jq"}, testStateLogJQ)
@@ -55,25 +60,37 @@ var testsCmd = &cobra.Command{
 		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
 		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
-
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
-
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
-		registerTest("NamespaceVariablesLarge", []string{"variables"}, testNamespaceVariablesLarge)
+		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
 		registerTest("WorkflowVariablesSmall", []string{"variables"}, testWorkflowVariablesSmall)
-		registerTest("WorkflowVariablesLarge", []string{"variables"}, testWorkflowVariablesLarge)
-
+		registerTest("WorkflowVariablesLarge", []string{"variables", "long"}, testWorkflowVariablesLarge)
 		registerTest("InstanceNamespaceVariables", []string{"instances", "jq", "variables"}, testInstanceNamespaceVariables)
 		registerTest("InstanceWorkflowVariables", []string{"instances", "jq", "variables"}, testInstanceWorkflowVariables)
 		registerTest("InstanceInstanceVariables", []string{"instances", "jq", "variables"}, testInstanceInstanceVariables)
 
+		// TODO:
+		/*
+			Error State
+			ValidateState
+			Foreach State
+			Parallel State
+			CloudEvents
+
+			Delay State
+			Crons
+
+			Action Types
+				Global
+				Namespace
+				Reusable
+				Isolate
+
+			Workflow Management Tests (revisions, tags, routers, etc)
+		*/
+
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
-		if len(args) == 0 {
-			runTests(tests)
-			return
-		}
 
 		tests := getTests(args...)
 		if len(tests) == 0 {
@@ -81,7 +98,7 @@ var testsCmd = &cobra.Command{
 			return
 		}
 
-		runTests(tests)
+		runTestsParallel(tests, parallelTests)
 
 	},
 }
@@ -94,75 +111,190 @@ func getTests(labels ...string) []test {
 
 		x := test.Labels()
 
+		var take bool
+		var long bool
+
+		for _, y := range x {
+			if y == "long" {
+				long = true
+			}
+		}
+
 		for _, lbl := range labels {
 			for _, y := range x {
 				if lbl == y {
-					subset = append(subset, test)
-					goto breakout
+					take = true
 				}
 			}
 		}
 
-	breakout:
+		if (take || len(labels) == 0) && (!skipLongTests || !long) {
+			subset = append(subset, test)
+		}
+
 	}
 
 	return subset
 
 }
 
-func runTests(tests []test) {
+func runTestsParallel(tests []test, c int) {
 
-	ctx := context.Background()
+	testsFullReset()
+	defer testsFullReset()
 
-	c, closer, err := client()
+	if c == 1 {
+		err := runTests(tests, true, 0)
+		if err != nil {
+			os.Exit(1)
+		}
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(c)
+
+	var err error
+	var lock sync.Mutex
+
+	for i := 0; i < c; i++ {
+		go func(i int) {
+			defer wg.Done()
+			e := runTests(tests, false, i)
+			lock.Lock()
+			if err != nil && e != nil {
+				err = e
+			}
+			lock.Unlock()
+		}(i)
+	}
+
+	wg.Wait()
+
 	if err != nil {
-		exit(err)
-	}
-	defer closer.Close()
-
-	var total, success, fail int
-
-	for _, test := range tests {
-
-		err = testReset(ctx, c)
-		if err != nil {
-			exit(err)
-		}
-
-		total++
-
-		msg := fmt.Sprintf("Running test %s...", test.Name())
-		if len(msg) < 60 {
-			msg += strings.Repeat(" ", 60-len(msg))
-		}
-		fmt.Fprint(os.Stderr, msg)
-
-		err := test.Run(ctx, c)
-		if err != nil {
-			fail++
-			fmt.Fprint(os.Stderr, "FAIL\n")
-			fmt.Fprintf(os.Stderr, "\tError: %v\n", err)
-		} else {
-			success++
-			fmt.Fprint(os.Stderr, "SUCCESS\n")
-		}
-
-	}
-
-	if fail > 0 {
 		os.Exit(1)
 	}
 
 }
 
-func testReset(ctx context.Context, c grpc.FlowClient) error {
+func runTests(tests []test, solo bool, idx int) error {
 
-	namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{})
+	ctx := context.Background()
+
+	c, closer, err := client()
 	if err != nil {
+		err = fmt.Errorf("failed to get client: %v", err)
+		fmt.Fprintln(os.Stderr, err)
+		return err
+	}
+	defer closer.Close()
+
+	var total, success, fail int
+
+	var out io.Writer
+	out = os.Stderr
+
+	namespace := "test"
+	if !solo {
+		namespace = fmt.Sprintf("test-%d", idx)
+	}
+
+	err = testReset(ctx, c, namespace)
+	if err != nil {
+		err = fmt.Errorf("failed to reset test namespace: %v", err)
+		fmt.Fprintln(os.Stderr, err)
 		return err
 	}
 
-	prefix := testNamespace()
+	for _, test := range tests {
+
+		if !solo {
+			lbls := test.Labels()
+			race := false
+			for _, lbl := range lbls {
+				if lbl == "race" {
+					race = true
+				}
+			}
+			if race {
+				continue
+			}
+		}
+
+		total++
+
+		var buf *bytes.Buffer
+
+		if !solo {
+			buf = new(bytes.Buffer)
+			out = buf
+		}
+
+		msg := fmt.Sprintf("Running test %s...", test.Name())
+		if len(msg) < 60 {
+			msg += strings.Repeat(" ", 60-len(msg))
+		}
+		fmt.Fprint(out, msg)
+
+		tctx, cancel := context.WithTimeout(ctx, testTimeout)
+		err := test.Run(tctx, c, namespace)
+		cancel()
+		if err != nil {
+			fail++
+			fmt.Fprint(out, "FAIL\n")
+			fmt.Fprintf(out, "\tError: %v\n", err)
+		} else {
+			success++
+			fmt.Fprint(out, "SUCCESS\n")
+		}
+
+		if buf != nil {
+			_, _ = io.Copy(os.Stderr, bytes.NewReader(buf.Bytes()))
+		}
+
+		err = testReset(ctx, c, namespace)
+		if err != nil {
+			err = fmt.Errorf("failed to reset test namespace: %v", err)
+			fmt.Fprintln(os.Stderr, err)
+			return err
+		}
+
+	}
+
+	if fail > 0 {
+		return errors.New("tests failed")
+	}
+
+	return nil
+
+}
+
+func testsFullReset() error {
+
+	ctx := context.Background()
+
+	c, closer, err := client()
+	if err != nil {
+		err = fmt.Errorf("failed to get client: %v", err)
+		fmt.Fprintln(os.Stderr, err)
+		return err
+	}
+	defer closer.Close()
+
+	prefix := "test"
+
+	namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{
+		Pagination: &grpc.Pagination{
+			Filter: &grpc.PageFilter{
+				Field: "NAME",
+				Type:  "CONTAINS",
+				Val:   prefix,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
 
 	for _, edge := range namespaces.Edges {
 		if strings.HasPrefix(edge.Node.Name, prefix) {
@@ -181,18 +313,33 @@ func testReset(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
+func testReset(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
+		Name:       namespace,
+		Idempotent: true,
+		Recursive:  true,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 var tests []test
 
 type test interface {
 	Name() string
 	Labels() []string
-	Run(context.Context, grpc.FlowClient) error
+	Run(context.Context, grpc.FlowClient, string) error
 }
 
 type testImpl struct {
 	name   string
 	labels []string
-	run    func(context.Context, grpc.FlowClient) error
+	run    func(context.Context, grpc.FlowClient, string) error
 }
 
 func (t *testImpl) Name() string {
@@ -203,11 +350,11 @@ func (t *testImpl) Labels() []string {
 	return append(t.labels, t.name)
 }
 
-func (t *testImpl) Run(ctx context.Context, c grpc.FlowClient) error {
-	return t.run(ctx, c)
+func (t *testImpl) Run(ctx context.Context, c grpc.FlowClient, namespace string) error {
+	return t.run(ctx, c, namespace)
 }
 
-func registerTest(name string, labels []string, fn func(context.Context, grpc.FlowClient) error) {
+func registerTest(name string, labels []string, fn func(context.Context, grpc.FlowClient, string) error) {
 	tests = append(tests, &testImpl{
 		name:   name,
 		labels: labels,

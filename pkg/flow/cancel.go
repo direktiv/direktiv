@@ -110,8 +110,7 @@ func (engine *engine) cancelRunning(id string) {
 	engine.cancellersLock.Lock()
 	cancel, exists := engine.cancellers[id]
 	if exists {
-		delete(engine.cancellers, id)
-		defer cancel()
+		cancel()
 	}
 	engine.cancellersLock.Unlock()
 

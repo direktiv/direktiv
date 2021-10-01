@@ -8,6 +8,9 @@ metadata:
     {{- if ne .Values.ingress.certificate "none" }}
     ingress.kubernetes.io/force-ssl-redirect: "true"
     {{- end }}
+    {{- if ne .Values.ui.kongPlugins "none" }}
+    konghq.com/plugins: {{ .Values.ui.kongPlugins }}
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.class }}
   {{- if ne .Values.ingress.certificate "none" }}

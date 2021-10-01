@@ -453,7 +453,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 					return nil
 				}
 
-				err = events.deleteWorkflowEventListeners(ctx, d.wf)
+				err = events.deleteWorkflowEventListeners(ctx, events.db.Events, d.wf)
 				if err != nil {
 					events.engine.sugar.Error(err)
 					return nil

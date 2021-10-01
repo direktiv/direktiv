@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -16,9 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -148,9 +145,7 @@ func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -252,9 +247,7 @@ func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -401,9 +394,7 @@ func testWorkflowVariablesSmall(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testWorkflowVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testWorkflowVariablesLarge(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -505,9 +496,7 @@ func testWorkflowVariablesLarge(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testInstanceNamespaceVariables(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceNamespaceVariables(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -602,7 +591,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -632,6 +621,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -657,7 +647,7 @@ states:
 		return err
 	}
 
-	cctx, cancel = context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel = context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err = c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -685,6 +675,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -706,9 +697,7 @@ states:
 
 }
 
-func testInstanceWorkflowVariables(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceWorkflowVariables(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -764,7 +753,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -794,6 +783,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -820,7 +810,7 @@ states:
 		return err
 	}
 
-	cctx, cancel = context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel = context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err = c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -848,6 +838,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -870,9 +861,7 @@ states:
 
 }
 
-func testInstanceInstanceVariables(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceInstanceVariables(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -928,7 +917,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -958,6 +947,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
@@ -984,7 +974,7 @@ states:
 		return err
 	}
 
-	cctx, cancel = context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel = context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err = c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -1012,6 +1002,7 @@ states:
 	if err != nil {
 		return err
 	}
+	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)

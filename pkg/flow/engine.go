@@ -287,11 +287,13 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	err = engine.SetMemory(ctx, im, nil)
 	if err != nil {
+		engine.CrashInstance(ctx, im, err)
 		return
 	}
 
 	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
 	if err != nil {
+		engine.CrashInstance(ctx, im, err)
 		return
 	}
 	defer cleanup()
@@ -343,6 +345,7 @@ func (engine *engine) setEndAt(im *instanceMemory) {
 	in, err := im.in.Update().SetEndAt(time.Now()).Save(ctx)
 	if err != nil {
 		engine.sugar.Error(err)
+		return
 	}
 
 	in.Edges = im.in.Edges
@@ -354,10 +357,10 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 	engine.setEndAt(im)
 
-	engine.WakeInstanceCaller(ctx, im)
 	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
 	engine.metricsCompleteInstance(ctx, im)
 	engine.FreeInstanceMemory(im)
+	engine.WakeInstanceCaller(ctx, im)
 
 }
 

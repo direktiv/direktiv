@@ -6,29 +6,24 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func testNamespace() string {
-	return "test"
-}
-
-func testCreateNamespace(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace() + "-ns"
+func testCreateNamespace(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
@@ -38,19 +33,17 @@ func testCreateNamespace(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace() + "-ns"
+func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
 	}
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err == nil {
 		return errors.New("server accepted duplicate namespace without error")
@@ -60,7 +53,7 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient) error 
 	}
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name:       name,
+		Name:       namespace,
 		Idempotent: true,
 	})
 	if err != nil {
@@ -72,7 +65,7 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient) error 
 			Filter: &grpc.PageFilter{
 				Field: "NAME",
 				Type:  "CONTAINS",
-				Val:   name,
+				Val:   namespace,
 			},
 		},
 	})
@@ -83,7 +76,7 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient) error 
 	var total int
 
 	for _, edge := range resp.Edges {
-		if edge.Node.Name == name {
+		if edge.Node.Name == namespace {
 			total++
 		}
 	}
@@ -96,7 +89,7 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient) error 
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
@@ -106,12 +99,10 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient) error 
 
 }
 
-func testCreateNamespaceRegex(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace()
+func testCreateNamespaceRegex(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name + "/ns",
+		Name: namespace + "/ns",
 	})
 	if err == nil {
 		return errors.New("server accepted bad namespace name without error")
@@ -121,7 +112,7 @@ func testCreateNamespaceRegex(ctx context.Context, c grpc.FlowClient) error {
 	}
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name + "_",
+		Name: namespace + "_",
 	})
 	if err == nil {
 		return errors.New("server accepted bad namespace name without error")
@@ -131,7 +122,7 @@ func testCreateNamespaceRegex(ctx context.Context, c grpc.FlowClient) error {
 	}
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name + "Aa",
+		Name: namespace + "Aa",
 	})
 	if err == nil {
 		return errors.New("server accepted bad namespace name without error")
@@ -144,12 +135,10 @@ func testCreateNamespaceRegex(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace()
+func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name:       name,
+		Name:       namespace,
 		Idempotent: true,
 	})
 	if err != nil {
@@ -157,7 +146,7 @@ func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient) error
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name:       name,
+		Name:       namespace,
 		Idempotent: true,
 	})
 	if err != nil {
@@ -165,14 +154,14 @@ func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient) error
 	}
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name:       name,
+		Name:       namespace,
 		Idempotent: true,
 	})
 	if err != nil {
@@ -180,7 +169,7 @@ func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient) error
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name:       name,
+		Name:       namespace,
 		Idempotent: true,
 	})
 	if err != nil {
@@ -188,7 +177,7 @@ func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient) error
 	}
 
 	_, err = c.Namespace(ctx, &grpc.NamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err == nil {
 		return fmt.Errorf("server still have a namespace that should have been deleted")
@@ -201,19 +190,17 @@ func testDeleteNamespaceIdempotent(ctx context.Context, c grpc.FlowClient) error
 
 }
 
-func testDeleteNamespaceRecursive(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace()
+func testDeleteNamespaceRecursive(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
 	}
 
 	_, err = c.CreateDirectory(ctx, &grpc.CreateDirectoryRequest{
-		Namespace: name,
+		Namespace: namespace,
 		Path:      "/testdir",
 	})
 	if err != nil {
@@ -221,14 +208,14 @@ func testDeleteNamespaceRecursive(ctx context.Context, c grpc.FlowClient) error 
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err == nil {
 		return fmt.Errorf("server deleted a populated namespace without requiring the recursive flag")
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name:      name,
+		Name:      namespace,
 		Recursive: true,
 	})
 	if err != nil {
@@ -236,7 +223,7 @@ func testDeleteNamespaceRecursive(ctx context.Context, c grpc.FlowClient) error 
 	}
 
 	_, err = c.Namespace(ctx, &grpc.NamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err == nil {
 		return fmt.Errorf("server still have a namespace that should have been deleted")
@@ -249,16 +236,14 @@ func testDeleteNamespaceRecursive(ctx context.Context, c grpc.FlowClient) error 
 
 }
 
-func testNamespacesStream(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace()
+func testNamespacesStream(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	client, err := c.NamespacesStream(ctx, &grpc.NamespacesRequest{
 		Pagination: &grpc.Pagination{
 			Filter: &grpc.PageFilter{
 				Field: "NAME",
 				Type:  "CONTAINS",
-				Val:   name,
+				Val:   namespace,
 			},
 		},
 	})
@@ -276,7 +261,7 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient) error {
 	}
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
@@ -291,7 +276,7 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient) error {
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
@@ -314,9 +299,9 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testServerLogs(ctx context.Context, c grpc.FlowClient) error {
+func testServerLogs(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
-	name := testNamespace() + "tsl"
+	name := namespace + "tsl"
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: name,
@@ -357,7 +342,7 @@ func testServerLogs(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testServerLogsStream(ctx context.Context, c grpc.FlowClient) error {
+func testServerLogsStream(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	client, err := c.ServerLogsParcels(ctx, &grpc.ServerLogsRequest{
 		Pagination: &grpc.Pagination{
@@ -374,7 +359,7 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	name := testNamespace() + "tssl"
+	name := namespace + "tssl"
 
 	_, err = c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: name,
@@ -383,21 +368,31 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	resp, err := client.Recv()
-	if err != nil {
-		return err
-	}
+	deadline := time.Now().Add(time.Second*5)
 
-	var k int
+	for {
 
-	for _, edge := range resp.Edges {
-		if strings.Contains(edge.Node.Msg, name) {
-			k++
+		resp, err := client.Recv()
+		if err != nil {
+			return err
 		}
-	}
 
-	if k == 0 {
-		return fmt.Errorf("server logs stream contains no record of recently created namespace")
+		var k int
+
+		for _, edge := range resp.Edges {
+			if strings.Contains(edge.Node.Msg, name) {
+				k++
+			}
+		}
+
+		if k != 0 {
+			break
+		}
+
+		if time.Now().After(deadline) {
+			return fmt.Errorf("server logs stream contains no record of recently created namespace")
+		}
+
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
@@ -407,21 +402,30 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	resp, err = client.Recv()
-	if err != nil {
-		return err
-	}
+	deadline = time.Now().Add(time.Second*5)
 
-	k = 0
-
-	for _, edge := range resp.Edges {
-		if strings.Contains(edge.Node.Msg, name) {
-			k++
+	for {
+		resp, err := client.Recv()
+		if err != nil {
+			return err
 		}
-	}
 
-	if k == 0 {
-		return fmt.Errorf("server logs stream contains no record of recently deleted namespace")
+		k := 0
+
+		for _, edge := range resp.Edges {
+			if strings.Contains(edge.Node.Msg, name) {
+				k++
+			}
+		}
+
+		if k != 0 {
+			break
+		}
+
+		if time.Now().After(deadline) {
+			return fmt.Errorf("server logs stream contains no record of recently deleted namespace")
+		}
+
 	}
 
 	err = client.CloseSend()
@@ -433,19 +437,17 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testNamespaceLogsStreamDisconnect(ctx context.Context, c grpc.FlowClient) error {
-
-	name := testNamespace()
+func testNamespaceLogsStreamDisconnect(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err
 	}
 
 	client, err := c.NamespaceLogsParcels(ctx, &grpc.NamespaceLogsRequest{
-		Namespace: name,
+		Namespace: namespace,
 		Pagination: &grpc.Pagination{
 			Last: 10,
 		},
@@ -461,7 +463,7 @@ func testNamespaceLogsStreamDisconnect(ctx context.Context, c grpc.FlowClient) e
 	}
 
 	_, err = c.DeleteNamespace(ctx, &grpc.DeleteNamespaceRequest{
-		Name: name,
+		Name: namespace,
 	})
 	if err != nil {
 		return err

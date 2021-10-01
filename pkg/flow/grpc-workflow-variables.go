@@ -240,7 +240,7 @@ resend:
 	}
 	phash = nhash
 
-	more := sub.Wait()
+	more := sub.Wait(ctx)
 	if !more {
 		return nil
 	}

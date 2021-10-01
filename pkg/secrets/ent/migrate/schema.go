@@ -22,9 +22,9 @@ var (
 		PrimaryKey: []*schema.Column{NamespaceSecretsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "namespacesecret_name",
+				Name:    "namespacesecret_ns_name",
 				Unique:  true,
-				Columns: []*schema.Column{NamespaceSecretsColumns[2]},
+				Columns: []*schema.Column{NamespaceSecretsColumns[1], NamespaceSecretsColumns[2]},
 			},
 		},
 	}

@@ -132,7 +132,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	carrier := new(Carrier)
 	err := unmarshal(im.in.Edges.Runtime.InstanceContext, carrier)
 	if err != nil {
-		return nil, nil, err
+		return ctx, nil, err
 	}
 
 	ctx = prop.Extract(ctx, carrier)
@@ -145,7 +145,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	rt, err := im.in.Edges.Runtime.Update().SetStateContext(s).Save(ctx)
 	if err != nil {
 		span.End()
-		return nil, nil, err
+		return ctx, nil, err
 	}
 	rt.Edges = im.in.Edges.Runtime.Edges
 	im.in.Edges.Runtime = rt

@@ -4,16 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
-func testStartWorkflow(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -39,7 +36,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient) error {
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -122,9 +119,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient) error {
 
 }
 
-func testStateLogSimple(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogSimple(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -155,7 +150,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -216,9 +211,7 @@ states:
 
 }
 
-func testStateLogJQ(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogJQ(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -250,7 +243,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -311,9 +304,7 @@ states:
 
 }
 
-func testStateLogJQNested(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogJQNested(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -345,7 +336,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -406,9 +397,7 @@ states:
 
 }
 
-func testStateLogJQObject(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testStateLogJQObject(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -442,7 +431,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -506,9 +495,7 @@ states:
 
 }
 
-func testInstanceSimpleChain(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceSimpleChain(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -545,7 +532,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
@@ -588,9 +575,7 @@ states:
 
 }
 
-func testInstanceSwitchLoop(ctx context.Context, c grpc.FlowClient) error {
-
-	namespace := testNamespace()
+func testInstanceSwitchLoop(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -632,7 +617,7 @@ states:
 		return err
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	cctx, cancel := context.WithTimeout(ctx, instanceTimeout)
 	defer cancel()
 
 	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{

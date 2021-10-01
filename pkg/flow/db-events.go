@@ -110,9 +110,9 @@ func (events *events) getWorkflowEventByWorkflowUID(ctx context.Context, evc *en
 
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, wf *ent.Workflow) error {
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow) error {
 
-	_, err := events.db.Events.
+	_, err := evc.
 		Delete().
 		Where(entev.HasWorkflowWith(entwf.ID(wf.ID))).
 		Exec(ctx)
@@ -157,7 +157,7 @@ func (events *events) addWorkflowEventWait(ctx context.Context, ewc *ent.EventsW
 func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.EventsClient,
 	wf *ent.Workflow, ms *muxStart) error {
 
-	err := events.deleteWorkflowEventListeners(ctx, wf)
+	err := events.deleteWorkflowEventListeners(ctx, evc, wf)
 	if err == nil {
 		return err
 	}
