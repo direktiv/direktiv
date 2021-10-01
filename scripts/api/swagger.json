@@ -284,9 +284,6 @@
     "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
       "get": {
         "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint",
-        "consumes": [
-          "text/event-stream"
-        ],
         "produces": [
           "text/event-stream"
         ],

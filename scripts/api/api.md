@@ -1,9 +1,16 @@
+---
+layout: default
+title: API2
+nav_order: 60
+has_children: true
+---
 
+# API
 
 
 # Direktiv API.
 direktiv api
-  
+
 
 ## Informations
 
@@ -13,7 +20,7 @@ direktiv api
 
 ### Contact
 
- info@direktiv.io 
+ info@direktiv.io
 
 ## Content negotiation
 
@@ -23,7 +30,6 @@ direktiv api
 
 ### Consumes
   * application/json
-  * text/event-stream
   * text/plain
 
 ### Produces
@@ -50,7 +56,7 @@ direktiv api
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | PUT | /api/namespaces/{namespace}/tree/{directory}?op=create-directory | [create directory](#create-directory) | Create a Directory |
-  
+
 
 
 ###  instances
@@ -62,7 +68,7 @@ direktiv api
 | GET | /api/namespaces/{namespace}/instances/{instance}/input | [get instance input](#get-instance-input) | Get a Instance Input |
 | GET | /api/namespaces/{namespace}/instances | [get instance list](#get-instance-list) | Get List Instances |
 | GET | /api/namespaces/{namespace}/instances/{instance}/output | [get instance output](#get-instance-output) | Get a Instance Output |
-  
+
 
 
 ###  logs
@@ -73,7 +79,7 @@ direktiv api
 | GET | /api/namespaces/{namespace}/instances/{instance}/logs | [instance logs](#instance-logs) | Gets Instance Logs |
 | GET | /api/namespaces/{namespace}/logs | [namespace logs](#namespace-logs) | Gets Namespace Level Logs |
 | GET | /api/logs | [server logs](#server-logs) | Get Direktiv Server Logs |
-  
+
 
 
 ###  metrics
@@ -87,7 +93,7 @@ direktiv api
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed | [workflow metrics milliseconds](#workflow-metrics-milliseconds) | Gets Workflow Time Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds | [workflow metrics state milliseconds](#workflow-metrics-state-milliseconds) | Gets a Workflow State Time Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful | [workflow metrics successful](#workflow-metrics-successful) | Gets Successful Workflow Metrics |
-  
+
 
 
 ###  namespaces
@@ -97,7 +103,7 @@ direktiv api
 | PUT | /api/namespaces/{namespace} | [create namespace](#create-namespace) | Creates a namespace |
 | DELETE | /api/namespaces/{namespace} | [delete namespace](#delete-namespace) | Delete a namespace |
 | GET | /api/namespaces | [get namespaces](#get-namespaces) | Gets the list of namespaces |
-  
+
 
 
 ###  other
@@ -106,7 +112,7 @@ direktiv api
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
-  
+
 
 
 ###  secrets
@@ -116,7 +122,7 @@ direktiv api
 | PUT | /api/namespaces/{namespace}/secrets/{secret} | [create secret](#create-secret) | Create a Namespace Secret |
 | DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
 | GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
-  
+
 
 
 ###  services
@@ -131,7 +137,7 @@ direktiv api
 | POST | /api/functions/{serviceName} | [update global service](#update-global-service) | Create Global Service Revision |
 | PATCH | /api/functions/{serviceName} | [update global service traffic](#update-global-service-traffic) | Update Global Service Traffic |
 | GET | /api/functions/{serviceName}/revisions/{revisionGeneration} | [watch global revision](#watch-global-revision) | Watch Global Service Revision |
-  
+
 
 
 ###  variables
@@ -150,7 +156,7 @@ direktiv api
 | PUT | /api/namespaces/{namespace}/instances/{instance}/vars/{variable} | [set instance variable](#set-instance-variable) | Set a Instance Variable |
 | PUT | /api/namespaces/{namespace}/vars/{variable} | [set namespace variable](#set-namespace-variable) | Set a Namespace Variable |
 | PUT | /api/namespaces/{namespace}/tree/{workflow}?op=set-var | [set workflow variable](#set-workflow-variable) | Set a Workflow Variable |
-  
+
 
 
 ###  workflows
@@ -163,7 +169,7 @@ direktiv api
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging | [set workflow cloud event logs](#set-workflow-cloud-event-logs) | Set Cloud Event for Workflow to Log to |
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=toggle | [toggle workflow](#toggle-workflow) | Set Cloud Event for Workflow to Log to |
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow | [update workflow](#update-workflow) | Update a Workflow |
-  
+
 
 
 ## Paths
@@ -289,7 +295,7 @@ Status: OK
 **<span id="create-global-service-body"></span> CreateGlobalServiceBody**
 
 
-  
+
 
 
 
@@ -366,7 +372,7 @@ Status: OK
 **<span id="create-secret-body"></span> CreateSecretBody**
 
 
-  
+
 
 
 
@@ -1104,7 +1110,7 @@ Status: OK
 **<span id="jq-playground-body"></span> JqPlaygroundBody**
 
 
-  
+
 
 
 
@@ -1411,7 +1417,7 @@ Status: OK
 **<span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody**
 
 
-  
+
 
 
 
@@ -1492,7 +1498,7 @@ Status: OK
 **<span id="toggle-workflow-body"></span> ToggleWorkflowBody**
 
 
-  
+
 
 
 
@@ -1540,7 +1546,7 @@ Status: OK
 **<span id="update-global-service-body"></span> UpdateGlobalServiceBody**
 
 
-  
+
 
 
 
@@ -1590,7 +1596,7 @@ Status: OK
 **<span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody**
 
 
-  
+
 
 
 
@@ -1605,7 +1611,7 @@ Status: OK
 **<span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0**
 
 
-  
+
 
 
 
@@ -1661,9 +1667,6 @@ Watch a global scoped knative service revision
 The target revision generation is the number suffix on a revision
 Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
 Note: This is a Server-Sent-Event endpoint
-
-#### Consumes
-  * text/event-stream
 
 #### Produces
   * text/event-stream

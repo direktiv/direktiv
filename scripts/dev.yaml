@@ -24,7 +24,9 @@ functions:
   tag: "latest"
   sidecar: "localhost:5000/sidecar"
   initPodImage: "localhost:5000/init-pod"
-# opentelemetry:
+
+opentelemetry:
+  enabled: true
 #   address: "localhost:4317"
 #   agentconfig: |
 #     receivers:
