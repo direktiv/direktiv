@@ -15,19 +15,8 @@ const (
 
 // Config is the configuration for workflow and runner server
 type Config struct {
-	FunctionsProtocol string `yaml:"functions-protocol"`
-
-	Database struct {
-		DB string
-	}
-
-	InstanceLogging struct {
-		Driver string
-	}
-
-	VariablesStorage struct {
-		Driver string
-	}
+	FunctionsService string `yaml:"functions-service"`
+	FlowService      string `yaml:"flow-service"`
 }
 
 // ReadConfig reads the configuration file and overwrites with environment variables if set

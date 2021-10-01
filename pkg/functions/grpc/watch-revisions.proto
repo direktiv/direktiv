@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_functions;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
@@ -9,6 +9,7 @@ import "pkg/functions/grpc/functions-common.proto";
 message WatchRevisionsRequest {
 	optional string ServiceName = 1;
 	optional string RevisionName = 2;
+	optional string scope = 6;
 }
 
 message WatchRevisionsResponse {

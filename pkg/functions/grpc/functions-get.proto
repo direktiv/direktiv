@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_functions;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
@@ -16,4 +16,8 @@ message GetFunctionResponse {
 	optional string workflow = 3;
 	optional FunctionsConfig config = 4;
 	repeated Revision revisions = 5;
+	optional string scope = 6;
+	optional string namespaceID = 7;
+	optional string path = 8;
+	optional string workflowRevision = 9;
 }

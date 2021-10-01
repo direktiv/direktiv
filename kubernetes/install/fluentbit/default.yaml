@@ -1,0 +1,25 @@
+config:
+  outputs: |
+    [OUTPUT]
+        Name tcp
+        Host 192.168.1.10
+        Port 5555
+
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/direktiv*.log,/var/log/containers/workflow*.log,/var/log/containers/namespace*.log,/var/log/containers/global*.log
+        multiline.parser docker, cri
+        Tag kube.*
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines On
+
+  # filters: |
+  #   [FILTER]
+  #       name        expect
+  #       key_exists  log
+  #       Match       *
+  #   [FILTER]
+  #       name        expect
+  #       key_exists  $log['functions']
+  #       Match       *

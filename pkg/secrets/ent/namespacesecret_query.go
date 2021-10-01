@@ -287,8 +287,8 @@ func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *Namesp
 //		Select(namespacesecret.FieldNs).
 //		Scan(ctx, &v)
 //
-func (nsq *NamespaceSecretQuery) Select(field string, fields ...string) *NamespaceSecretSelect {
-	nsq.fields = append([]string{field}, fields...)
+func (nsq *NamespaceSecretQuery) Select(fields ...string) *NamespaceSecretSelect {
+	nsq.fields = append(nsq.fields, fields...)
 	return &NamespaceSecretSelect{NamespaceSecretQuery: nsq}
 }
 
@@ -398,10 +398,14 @@ func (nsq *NamespaceSecretQuery) querySpec() *sqlgraph.QuerySpec {
 func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(nsq.driver.Dialect())
 	t1 := builder.Table(namespacesecret.Table)
-	selector := builder.Select(t1.Columns(namespacesecret.Columns...)...).From(t1)
+	columns := nsq.fields
+	if len(columns) == 0 {
+		columns = namespacesecret.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if nsq.sql != nil {
 		selector = nsq.sql
-		selector.Select(selector.Columns(namespacesecret.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range nsq.predicates {
 		p(selector)
@@ -669,13 +673,24 @@ func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, v interface{}) 
 }
 
 func (nsgb *NamespaceSecretGroupBy) sqlQuery() *sql.Selector {
-	selector := nsgb.sql
-	columns := make([]string, 0, len(nsgb.fields)+len(nsgb.fns))
-	columns = append(columns, nsgb.fields...)
+	selector := nsgb.sql.Select()
+	aggregation := make([]string, 0, len(nsgb.fns))
 	for _, fn := range nsgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(nsgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(nsgb.fields)+len(nsgb.fns))
+		for _, f := range nsgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(nsgb.fields...)...)
 }
 
 // NamespaceSecretSelect is the builder for selecting fields of NamespaceSecret entities.
@@ -891,16 +906,10 @@ func (nss *NamespaceSecretSelect) BoolX(ctx context.Context) bool {
 
 func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := nss.sqlQuery().Query()
+	query, args := nss.sql.Query()
 	if err := nss.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (nss *NamespaceSecretSelect) sqlQuery() sql.Querier {
-	selector := nss.sql
-	selector.Select(selector.Columns(nss.fields...)...)
-	return selector
 }

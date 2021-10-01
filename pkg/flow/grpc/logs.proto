@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+import "google/protobuf/timestamp.proto";
+
+import "pkg/flow/grpc/pagination.proto";
+
+message Log {
+	google.protobuf.Timestamp t = 1;
+	string msg = 3;
+}
+
+message LogsEdge {
+	Log node = 1;
+	string cursor = 2;
+}
+
+message ServerLogsRequest {
+	Pagination pagination = 1;
+}
+
+message ServerLogsResponse {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated LogsEdge edges = 3;
+}
+
+message NamespaceLogsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+}
+
+message NamespaceLogsResponse {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated LogsEdge edges = 3;
+	string namespace = 4;
+}
+
+message WorkflowLogsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string path = 3;
+}
+
+message WorkflowLogsResponse {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated LogsEdge edges = 3;
+	string namespace = 4;
+	string path = 5;
+}
+
+message InstanceLogsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string instance = 3;
+}
+
+message InstanceLogsResponse {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated LogsEdge edges = 3;
+	string namespace = 4;
+	string instance = 5;
+}

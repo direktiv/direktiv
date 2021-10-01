@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ingress-ui
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+  annotations:
+    {{- if ne .Values.ingress.certificate "none" }}
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    {{- end }}
+    {{- if ne .Values.ui.kongPlugins "none" }}
+    konghq.com/plugins: {{ .Values.ui.kongPlugins }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.class }}
+  {{- if ne .Values.ingress.certificate "none" }}
+  tls:
+  - hosts:
+      - {{ .Values.ingress.host }}
+    secretName: {{ .Values.ingress.certificate }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "direktiv.fullname" . }}-ui
+              port:
+                number: 8080

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+message PageInfo {
+	bool hasNextPage = 1;
+	bool hasPreviousPage = 2;
+	string startCursor = 3;
+	string endCursor = 4;
+}
+
+message PageOrder {
+	string field = 1;
+	string direction = 2;
+}
+
+message PageFilter {
+	string field = 1;
+	string type = 2;
+	string val = 3;
+}
+
+message Pagination {
+	string after = 1;
+	int32 first = 2;
+	string before = 3;
+	int32 last = 4;
+	PageOrder order = 5;
+	PageFilter filter = 6;
+}

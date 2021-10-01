@@ -51,21 +51,22 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Selector labels support
+Selector labels api
 */}}
-{{- define "direktiv.selectorLabelsSupport" -}}
-app.kubernetes.io/name: {{ include "direktiv.name" . }}-support
-app.kubernetes.io/instance: {{ .Release.Name }}-support
+{{- define "direktiv.selectorLabelsAPI" -}}
+app.kubernetes.io/name: {{ include "direktiv.name" . }}-api
+app.kubernetes.io/instance: {{ .Release.Name }}-api
 {{- end }}
 
-{{- define "direktiv.labelsSupport" -}}
+{{- define "direktiv.labelsAPI" -}}
 helm.sh/chart: {{ include "direktiv.chart" . }}
-{{ include "direktiv.selectorLabelsSupport" . }}
+{{ include "direktiv.selectorLabelsAPI" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
+
 
 {{/*
 Selector labels functions
@@ -102,47 +103,39 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels api
-*/}}
-{{- define "direktiv.selectorLabelsAPI" -}}
-app.kubernetes.io/name: {{ include "direktiv.name" . }}-api
-app.kubernetes.io/instance: {{ .Release.Name }}-api
-{{- end }}
-
-{{- define "direktiv.labelsAPI" -}}
-helm.sh/chart: {{ include "direktiv.chart" . }}
-{{ include "direktiv.selectorLabelsAPI" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels prometheus
-*/}}
-{{- define "direktiv.selectorLabelsPrometheus" -}}
-app.kubernetes.io/name: {{ include "direktiv.name" . }}-prometheus
-app.kubernetes.io/instance: {{ .Release.Name }}-prometheus
-{{- end }}
-
-{{- define "direktiv.labelsPrometheus" -}}
-helm.sh/chart: {{ include "direktiv.chart" . }}
-{{ include "direktiv.selectorLabelsPrometheus" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-
-{{/*
 Create the name of the service account to use
 */}}
 {{- define "direktiv.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
 {{- default (include "direktiv.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+
+{{/*
+otlp sidecar
+*/}}
+{{- define "direktiv.opentelemetry" -}}
+- command:
+    - "/otelcol"
+    - "--config=/conf/otel-agent-config.yaml"
+    - "--mem-ballast-size-mib=165"
+  image: otel/opentelemetry-collector-dev:latest
+  name: otel-agent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  volumeMounts:
+  - name: otel-agent-config-vol
+    mountPath: /conf
+{{- end }}
+
+{{- define "direktiv.opentelemetry.volume" -}}
+- configMap:
+    name: {{ include "direktiv.fullname" . }}-otel-agent-config
+    items:
+      - key: otel-agent-config
+        path: otel-agent-config.yaml
+  name: otel-agent-config-vol
 {{- end }}

@@ -65,3 +65,15 @@
 *build/docker/functions/functions
 build/docker/all/kubernetes
 deploy*.yaml
+
+kubernetes/charts/knative/charts
+kubernetes/charts/knative/Chart.lock
+
+kubernetes/charts/direktiv/charts
+kubernetes/charts/direktiv/Chart.lock
+kubernetes/charts/direktiv/tmpcharts
+
+scripts/api/swagger_in.json
+scripts/devcerts
+
+scripts/wip/kong/proto

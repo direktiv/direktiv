@@ -20,8 +20,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
 type inboundWorker struct {
@@ -573,13 +572,13 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 
 	step := int32(ir.step)
 
-	_, err := worker.srv.flow.ReportActionResults(ctx, &flow.ReportActionResultsRequest{
-		InstanceId:   &ir.instanceId,
-		Step:         &step,
-		ActionId:     &ir.actionId,
+	_, err := worker.srv.flow.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
+		InstanceId:   ir.instanceId,
+		Step:         step,
+		ActionId:     ir.actionId,
 		Output:       out.data,
-		ErrorCode:    &out.errCode,
-		ErrorMessage: &out.errMsg,
+		ErrorCode:    out.errCode,
+		ErrorMessage: out.errMsg,
 	})
 
 	if err != nil {

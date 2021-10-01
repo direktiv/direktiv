@@ -1,0 +1,40 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: direktiv
+  namespace: postgres
+spec:
+  users:
+    - name: direktiv
+      databases:
+        - direktiv
+  image: >-
+    registry.developers.crunchydata.com/crunchydata/crunchy-postgres-ha:centos8-13.4-0
+  postgresVersion: 13
+  instances:
+    - name: instance1
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  backups:
+    pgbackrest:
+      image: >-
+        registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:centos8-2.33-2
+      repoHost:
+        dedicated: {}
+      repos:
+        - name: repo1
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+  proxy:
+    pgBouncer:
+      image: >-
+        registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:centos8-1.15-2

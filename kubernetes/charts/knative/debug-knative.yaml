@@ -1,0 +1,5 @@
+kong-external:
+  image:
+    pullPolicy: Always
+  env:
+    log_level: "debug"

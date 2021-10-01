@@ -106,7 +106,7 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		return nil, err
 	}
 
-	var status = "pending"
+	var status = instanceStatusPending
 	var errCode, errMsg string
 
 	if mutex {
@@ -122,7 +122,7 @@ func (db *dbManager) addWorkflowInstance(ctx context.Context, ns, workflowID, in
 		wfs, err := tx.WorkflowInstance.
 			Query().
 			Limit(1).
-			Where(workflowinstance.StatusEQ("pending")).
+			Where(workflowinstance.StatusEQ(instanceStatusPending)).
 			Order(ent.Desc(workflowinstance.FieldBeginTime)).All(ctx)
 		if err != nil {
 			return nil, err
@@ -198,7 +198,7 @@ func (db *dbManager) getWorkflowInstanceExpired(ctx context.Context) ([]*ent.Wor
 		Where(
 			workflowinstance.And(
 				workflowinstance.DeadlineLT(t),
-				workflowinstance.StatusEQ("pending"),
+				workflowinstance.StatusEQ(instanceStatusPending),
 			),
 		).
 		All(ctx)

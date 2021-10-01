@@ -1,0 +1,414 @@
+package flow
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"sync"
+	"time"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	libgrpc "google.golang.org/grpc"
+
+	"github.com/lib/pq"
+	_ "github.com/lib/pq" // postgres for ent
+	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/vorteil/direktiv/pkg/metrics"
+	"github.com/vorteil/direktiv/pkg/util"
+)
+
+const parcelSize = 0x100000
+
+type server struct {
+	ID uuid.UUID
+
+	sugar    *zap.SugaredLogger
+	fnLogger *zap.SugaredLogger
+	conf     *util.Config
+
+	db           *ent.Client
+	pubsub       *pubsub
+	locks        *locks
+	timers       *timers
+	engine       *engine
+	secrets      *secrets
+	flow         *flow
+	internal     *internal
+	events       *events
+	vars         *vars
+	actions      *actions
+	metricServer *metricsServer
+
+	metrics *metrics.Client
+}
+
+func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
+
+	srv, err := newServer(logger, conf)
+	if err != nil {
+		return err
+	}
+
+	err = srv.start(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
+
+	var err error
+
+	srv := new(server)
+	srv.ID = uuid.New()
+
+	srv.sugar = logger
+	srv.conf = conf
+
+	srv.fnLogger, err = dlog.FunctionsLogger()
+	if err != nil {
+		return nil, err
+	}
+
+	srv.initJQ()
+
+	return srv, nil
+
+}
+
+func (srv *server) start(ctx context.Context) error {
+
+	var err error
+
+	srv.sugar.Debug("Initializing telemetry.")
+	telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
+	if err != nil {
+		return err
+	}
+	defer telend()
+
+	go setupPrometheusEndpoint()
+
+	srv.sugar.Debug("Initializing secrets.")
+	srv.secrets, err = initSecrets()
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.secrets.Close)
+
+	srv.sugar.Debug("Initializing locks.")
+
+	db := os.Getenv(util.DBConn)
+
+	srv.locks, err = initLocks(db)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.locks.Close)
+
+	srv.sugar.Debug("Initializing database.")
+
+	srv.db, err = initDatabase(ctx, db)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.db.Close)
+
+	srv.sugar.Debug("Initializing pub-sub.")
+
+	srv.pubsub, err = initPubSub(srv.sugar, srv, db)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.pubsub.Close)
+
+	srv.sugar.Debug("Initializing timers.")
+
+	srv.timers, err = initTimers(srv.pubsub)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.timers.Close)
+
+	srv.events, err = initEvents(srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.events.Close)
+
+	srv.sugar.Debug("Initializing metrics.")
+
+	srv.metrics, err = metrics.NewClient()
+	if err != nil {
+		return err
+	}
+
+	srv.sugar.Debug("Initializing engine.")
+
+	srv.engine, err = initEngine(srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.engine.Close)
+
+	var lock sync.Mutex
+	var wg sync.WaitGroup
+
+	wg.Add(4)
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	srv.sugar.Debug("Initializing vars server.")
+
+	srv.vars, err = initVarsServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.vars.Close)
+
+	srv.sugar.Debug("Initializing internal grpc server.")
+
+	srv.internal, err = initInternalServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+
+	srv.sugar.Debug("Initializing flow grpc server.")
+
+	srv.flow, err = initFlowServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+
+	srv.sugar.Debug("Initializing actions grpc server.")
+
+	srv.actions, err = initActionsServer(cctx, srv)
+	if err != nil {
+		return err
+	}
+
+	srv.registerFunctions()
+
+	go srv.cronPoller()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.vars.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.internal.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.flow.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		e := srv.actions.Run()
+		if e != nil {
+			srv.sugar.Error(err)
+			lock.Lock()
+			if err == nil {
+				err = e
+			}
+			lock.Unlock()
+		}
+	}()
+
+	wg.Wait()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (srv *server) cleanup(closer func() error) {
+
+	err := closer()
+	if err != nil {
+		srv.sugar.Error(err)
+	}
+
+}
+
+func (srv *server) notifyCluster(msg string) error {
+
+	ctx := context.Background()
+
+	conn, err := srv.db.DB().Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", flowSync, msg)
+	if err, ok := err.(*pq.Error); ok {
+
+		srv.sugar.Errorf("db notification failed: %v", err)
+		if err.Code == "57014" {
+			return fmt.Errorf("canceled query")
+		}
+
+		return err
+
+	}
+
+	return nil
+
+}
+
+func (srv *server) notifyHostname(hostname, msg string) error {
+
+	ctx := context.Background()
+
+	conn, err := srv.db.DB().Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	channel := fmt.Sprintf("hostname:%s", hostname)
+
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
+	if err, ok := err.(*pq.Error); ok {
+
+		fmt.Fprintf(os.Stderr, "db notification failed: %v", err)
+		if err.Code == "57014" {
+			return fmt.Errorf("canceled query")
+		}
+
+		return err
+
+	}
+
+	return nil
+
+}
+
+func (srv *server) registerFunctions() {
+
+	srv.pubsub.registerFunction(pubsubNotifyFunction, srv.pubsub.Notify)
+	srv.pubsub.registerFunction(pubsubDisconnectFunction, srv.pubsub.Disconnect)
+	srv.pubsub.registerFunction(pubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
+	srv.pubsub.registerFunction(pubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
+	srv.pubsub.registerFunction(pubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
+	srv.pubsub.registerFunction(pubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
+	srv.pubsub.registerFunction(pubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
+
+	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
+	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
+	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
+	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
+
+}
+
+func (srv *server) cronPoller() {
+
+	for {
+		srv.cronPoll()
+		time.Sleep(time.Minute * 15)
+	}
+
+}
+
+func (srv *server) cronPoll() {
+
+	ctx := context.Background()
+
+	wfs, err := srv.db.Workflow.Query().All(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+
+	for _, wf := range wfs {
+		srv.cronPollerWorkflow(wf)
+	}
+
+}
+
+func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
+
+	ctx := context.Background()
+
+	ms, muxErr, err := validateRouter(ctx, wf)
+	if err != nil || muxErr != nil {
+		return
+	}
+
+	if !ms.Enabled || ms.Cron != "" {
+		srv.timers.deleteCronForWorkflow(wf.ID.String())
+	}
+
+	if ms.Cron != "" && ms.Enabled {
+
+		err = srv.timers.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, ms.Cron, []byte(wf.ID.String()))
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		srv.sugar.Debugf("Loaded cron: %s", wf.ID.String())
+
+	}
+
+}
+
+func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
+	resp, err = handler(ctx, req)
+	if err != nil {
+		fmt.Println(">>>", info.FullMethod)
+		return nil, translateError(err)
+	}
+	return resp, nil
+}
+
+func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
+	err := handler(srv, ss)
+	if err != nil {
+		fmt.Println(">>>", info.FullMethod)
+		return translateError(err)
+	}
+	return nil
+}

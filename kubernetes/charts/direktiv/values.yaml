@@ -1,5 +1,156 @@
-# Default values for direktiv.
-replicaCount: 1
+# -- enable debug across all direktiv components
+debug: false
+
+# -- json or console logger
+logging: json
+
+# -- api timeouts
+timeout: 900000
+
+# -- api key, value 'apikey' required in header
+apikey: ""
+
+opentelemetry:
+  # -- opentelemetry address where Direktiv is sending data to
+  address: "localhost:4317"
+  # -- installs opentelemtry agent as sidecar in flow
+  enabled: false
+  # -- config for daemonset agent
+  agentconfig: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+    exporters:
+      otlp:
+        endpoint: "192.168.1.113:14250"
+        insecure: true
+        sending_queue:
+          num_consumers: 4
+          queue_size: 100
+        retry_on_failure:
+          enabled: true
+      logging:
+        loglevel: debug
+    processors:
+      batch:
+      memory_limiter:
+        # Same as --mem-ballast-size-mib CLI argument
+        ballast_size_mib: 165
+        # 80% of maximum memory up to 2G
+        limit_mib: 400
+        # 25% of limit up to 2G
+        spike_limit_mib: 100
+        check_interval: 5s
+    extensions:
+      zpages: {}
+    service:
+      extensions: [zpages]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [logging, otlp]
+
+api:
+  replicas: 1
+  kongPlugins: "none"
+  extraContainers: []
+  # -- image for api pod
+  image: "vorteil/flow"
+  # -- image tag for api pod
+  tag: ""
+  # -- extra container in api pod
+  extraContainers: []
+  # -- extra volume mounts in api pod
+  extraVolumeMounts:
+    # - name: service-template
+    #   mountPath: /etc/config
+  # -- extra volumes in api pod
+  extraVolumes:
+    # - name: service-template
+    #   configMap:
+    #     name: service-template
+
+networkPolicies:
+  # -- adds network policies
+  enabled: false
+  # -- CIDR for database, excempt from policies
+  db: 0.0.0.0/0
+  # -- CIDR for services, excempt from policies
+  serviceCidr: 0.0.0.0/0
+  # -- CIDR for pods, excempt from policies
+  podCidr: 0.0.0.0/0
+
+ingress:
+  # -- host for external services, only required for TLS
+  host: ""
+  # -- TLS secret
+  certificate: none
+  # -- ingress class
+  class: "kong"
+  # -- timeout for /api route
+  timeout: 900000
+
+database:
+  # -- database host
+  host: "postgres-postgresql-ha-pgpool.postgres"
+  # -- database port
+  port: 5432
+  # -- database user
+  user: "direktiv"
+  # -- database password
+  password: "direktivdirektiv"
+  # -- database name, auto created if it does not exist
+  name: "direktiv"
+  # -- sslmode for database
+  sslmode: require
+
+fluentbit:
+  # -- postgres for direktiv services
+  # Append extra output to fluentbit configuration.
+  # There are two log types: application (system), functions (workflows)
+  # these can be matched to new outputs.
+  extraConfig: ""
+  # extraConfig: |
+  #   [OUTPUT]
+  #           name stdout
+  #           match application
+
+
+# -- service account for flow component
+serviceAccount:
+  annotations: {}
+  name: ""
+  # example to annotate for GCP database access
+  #   annotations:
+  #      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
+
+
+# flow config
+flow:
+  # -- number of flow replicas
+  replicas: 1
+  # -- image for flow pod
+  image: "vorteil/flow"
+  # -- image tag for flow pod
+  tag: ""
+  # -- extra container in flow pod
+  extraContainers: []
+  # -- extra volume mounts in flow pod
+  extraVolumeMounts:
+    # - name: service-template
+    #   mountPath: /etc/config
+  # -- extra volumes in flow pod
+  extraVolumes:
+    # - name: service-template
+    #   configMap:
+    #     name: service-template
+
+thanos:
+  # -- install Thanos
+  enabled: false
 
 nodeSelector: {}
 tolerations: []
@@ -9,146 +160,138 @@ registry: "docker.io"
 pullPolicy: Always
 imagePullSecrets: []
 
-# if using proxy the user needs to be a valid IAM user with access to the database
-# e.g. roles/cloudsql.editor. Additionally the service account needs to be mapped
-# to to google with:
-# ccount:
-#   annotations:
-#      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
-serviceAccount:
-  annotations: {}
-  name: ""
-  create: true
-
-# proxy settings
+# -- http proxy settings
 http_proxy: ""
+# -- https proxy settings
 https_proxy: ""
+# -- no proxy proxy settings
 no_proxy: ""
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
-
-# support services
-withSupport: true
-withFlow: true
-withUI: true
-withAPI: true
-
-supportPersist: false
-
-# enable debug
-debug: false
-
-networkPolicies:
-  enabled: false
-  # cidr for communication
-  db: 0.0.0.0/0
-  serviceCidr: 0.0.0.0/0
-  podCidr: 0.0.0.0/0
-
-ingress:
-  host: ""
-  certificate: none
-  class: "contour-external"
-  timeout: "900s"
-
-# prometheus config
-prometheus:
-  enabled: true
-  image: "prom/prometheus"
-  targetAnnotations:
-    prometheus.io/port: "2112"
-    prometheus.io/path: "/metrics"
-    prometheus.io/scrape: "true"
-  queryAddress: "http://direktiv-prometheus-service.default:9090" 
-
-# flow config
-flow:
-  image: "vorteil/flow"
-  tag: ""
-  db: ""
-  functionsProtocol: "http"
-  functionsCA: "none" # change function pod secret too
-  certificates:
-    flow: none
-    mtlsFlow: none
-    ingress: none
-    mtlsIngress: none
-  extraContainers: []
-  extraVolumeMounts:
-    # - name: service-template
-    #   mountPath: /etc/config
-  extraVolumes:
-    # - name: service-template
-    #   configMap:
-    #     name: service-template
-
+# -- secrets sidecar in flow pod
 secrets:
   image: "vorteil/secrets"
   tag: ""
   db: ""
-  key: "01234567890123456789012345678912"
   extraVolumeMounts: []
 
-# ui config
+# -- UI configuration
 ui:
+  kongPlugins: "none"
   image: "vorteil/direktiv-ui"
   tag: ""
   certificate: none
   extraContainers: []
 
-api:
-  image: vorteil/api
-  tag: ""
-  key: ""
-  certificate: none
-  extraContainers: []
+minio-operator:
+  enabled: false
+  tenants:
+    - name: direktiv-tenant
+      pools:
+        # -- set to 4 for HA
+        - servers: 1
+          volumesPerServer: 4
+          # -- storage class to use. k3s uses local-path
+          storageClassName: local-path
+          size: 1Gi
+      secrets:
+        enabled: true
+        name: minio-secret
+        accessKey: minio
+        secretKey: minio123
 
-# Set Send and Recv limits for all grpc clients and servers
-grpc:
+prometheus:
   server:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
-  client:
-    maxSendSize: "4194304"
-    maxRecvSize: "4194304"
+    retention: 96h
+    persistentVolume:
+      enabled: false
+  alertmanager:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  pushgateway:
+    enabled: false
+  kubeStateMetrics:
+    enabled: false
+  serviceAccounts:
+    alertmanager:
+      create: false
+    nodeExporter:
+      create: false
+    pushgateway:
+      create: false
+    server:
+      create: true
+
+# direktiv-tenant-console
+thanos:
+  enabled: false
+  global:
+    storageClass: local-path
+  objstoreConfig: |-
+    type: s3
+    config:
+      bucket: thanos
+      endpoint: direktiv-tenant-console.{{ .Release.Namespace }}.svc.cluster.local:9000
+      access_key: minio
+      secret_key: minio123
+      insecure: true
+  query:
+    dnsDiscovery:
+      sidecarsService: "{{ .Release.Namespace }}-kube-prometheus-prometheus"
+      sidecarsNamespace: "{{ .Release.Namespace }}"
+  bucketweb:
+    enabled: true
+  compactor:
+    enabled: true
+    persistence:
+      storageClass: local-path
+  storegateway:
+    enabled: true
+    persistence:
+      storageClass: local-path
+  ruler:
+    enabled: false
+
 
 functions:
   # namespace to run functions in
   namespace: direktiv-services-direktiv
+  ingressClass: kong-internal
 
   # images for functions controller, knative sidecar and init-pod
   image: "vorteil/functions"
   tag: ""
-  certificate: none
-  mtls: none
 
   sidecar: "vorteil/sidecar"
 
   initPodImage:  "vorteil/direktiv-init-pod"
-  initPodCertificate: none
 
-  # number of controller replicas
+  # -- number of controller replicas
   replicaCount: 1
 
+  # -- Egress/Ingress network limit for functions if supported by network
   netShape: "10M"
 
-  # database connection, required for pub/sub with flow
-  db: ""
-
-  # run pod cleaner for kubernetes < 1.20
+  # -- Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks
   podCleaner: true
 
-  # runtime to use, e.g. gvisor
+  # -- runtime to use, e.g. gvisor on GCP
   runtime: "default"
 
-  # extra container for controller pod
-  # e.g. database containers for google cloud or logging
+  # -- extra containers for function controller, e.g. database containers for google cloud or logging
   extraContainersPod: []
+
+  # -- extra volumes for tasks and knative pods
+  extraVolumes:
+    []
+  #   - configMap:
+  #   name: otel-agent-conf
+  #   items:
+  #     - key: otel-agent-config
+  #       path: otel-agent-config.yaml
+  # name: otel-agent-config-vol
+
+  # -- extra containers for tasks and knative pods
   extraContainers:
     []
     # - name: cloud-sql-proxy
@@ -163,19 +306,3 @@ functions:
     #     requests:
     #       memory: "2Gi"
     #       cpu:    "1"
-
-fluentbit:
-  host:          ""
-  port:          5432
-  user:          ""
-  password:      ""
-  database:      ""
-  sslmode:       prefer
-  extraConfig: ""
-  # append extra output to fluentbit.
-  # there are two logs application, functions
-  # these can be matched to new outputs, e.g.:
-  # extraConfig: |
-  #   [OUTPUT]
-  #           name stdout
-  #           match application

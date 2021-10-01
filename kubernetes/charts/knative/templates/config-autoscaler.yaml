@@ -4,11 +4,11 @@ metadata:
   labels:
     app.kubernetes.io/name: autoscaler
     app.kubernetes.io/part-of: knative-serving
-    app.kubernetes.io/version: 0.25.0
-    serving.knative.dev/release: v0.25.0
+    app.kubernetes.io/version: 0.25.1
+    serving.knative.dev/release: v0.25.1
     {{- include "knative.labels" . | nindent 4 }}
   name: config-autoscaler
-  namespace: knative-serving-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
 data:
   # The Revision ContainerConcurrency field specifies the maximum number
   # of requests the Container can handle at once. Container concurrency

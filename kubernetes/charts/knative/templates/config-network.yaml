@@ -3,10 +3,10 @@ kind: ConfigMap
 metadata:
   annotations:
   labels:
-    serving.knative.dev/release: v0.25.0
+    serving.knative.dev/release: v0.25.1
   {{- include "knative.labels" . | nindent 4 }}
   name: config-network
-  namespace: knative-serving-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
 data:
   # ingress.class specifies the default ingress class
   # to use when not dictated by Route annotation.
@@ -17,7 +17,7 @@ data:
   # will result in undefined behavior.  Therefore it is best to only
   # update this value during the setup of Knative, to avoid getting
   # undefined behavior.
-  ingress.class: "contour.ingress.networking.knative.dev"
+  ingress.class: "kong"
 
   # certificate.class specifies the default Certificate class
   # to use when not dictated by Route annotation.

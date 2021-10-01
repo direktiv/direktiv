@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+message BroadcastCloudeventRequest {
+	string namespace = 1;
+	bytes cloudevent = 2;
+	int64 timer = 3;
+}

@@ -23,5 +23,50 @@ functions:
   image: "functions"
   tag: "latest"
   sidecar: "localhost:5000/sidecar"
-  initPodImage: "localhost:5000/direktiv-init-pod"
+  initPodImage: "localhost:5000/init-pod"
+# opentelemetry:
+#   address: "localhost:4317"
+#   agentconfig: |
+#     receivers:
+#       otlp:
+#         protocols:
+#           grpc:
+#           http:
+#     exporters:
+#       otlp:
+#         endpoint: "192.168.1.113:4317"
+#         insecure: true
+#         sending_queue:
+#           num_consumers: 4
+#           queue_size: 100
+#         retry_on_failure:
+#           enabled: true
+#       logging:
+#         loglevel: debug
+#     processors:
+#       batch:
+#       memory_limiter:
+#         # Same as --mem-ballast-size-mib CLI argument
+#         ballast_size_mib: 165
+#         # 80% of maximum memory up to 2G
+#         limit_mib: 400
+#         # 25% of limit up to 2G
+#         spike_limit_mib: 100
+#         check_interval: 5s
+#     extensions:
+#       zpages: {}
+#     service:
+#       extensions: [zpages]
+#       pipelines:
+#         traces:
+#           receivers: [otlp]
+#           processors: [memory_limiter, batch]
+#           exporters: [logging, otlp]
 
+database:
+  host: "direktiv-pgbouncer.postgres.svc"
+  port: 5432
+  user: "direktiv"
+  password: "}Q_cd;-0}{VRgOaZrO}:2E[|"
+  name: "direktiv"
+  sslmode: require

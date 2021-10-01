@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	"github.com/vorteil/direktiv/pkg/secrets"
-	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {

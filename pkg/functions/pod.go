@@ -204,14 +204,6 @@ func commonEnvs(in *igrpc.CreatePodRequest, ns string) []v1.EnvVar {
 			Name:  util.DirektivNamespace,
 			Value: ns,
 		},
-		{
-			Name:  util.DirektivNamespace,
-			Value: ns,
-		},
-		{
-			Name:  util.DirektivFluentbitTCP,
-			Value: "true",
-		},
 	}
 
 	return append(e, add...)
@@ -293,8 +285,11 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	labels["direktiv.io/job"] = "true"
 
 	labels[ServiceHeaderName] = info.GetName()
-	labels[ServiceHeaderWorkflow] = info.GetName()
-	labels[ServiceHeaderNamespace] = info.GetNamespace()
+	labels[ServiceHeaderWorkflowID] = info.GetWorkflow()
+	labels[ServiceHeaderPath] = info.GetPath()
+	labels[ServiceHeaderRevision] = info.GetRevision()
+	labels[ServiceHeaderNamespaceID] = info.GetNamespace()
+	labels[ServiceHeaderNamespaceName] = info.GetNamespaceName()
 
 	commonJobVars := commonEnvs(in, info.GetNamespace())
 
@@ -315,12 +310,6 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 			Value: "run",
 		})
 
-	// if flow uses tls or mtls we need the certificate
-	// needs to have the same name in direktiv's namespace as it has
-	// in the service namespace
-
-	tlsVolumeMount := v1.VolumeMount{}
-
 	volumes := []v1.Volume{
 		{
 			Name: "workdir",
@@ -335,40 +324,6 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 			Name:      "workdir",
 			MountPath: "/direktiv-data",
 		},
-	}
-
-	if util.GrpcCfg().FlowTLS != "" && util.GrpcCfg().FlowTLS != "none" {
-
-		certName := "flowcerts"
-		tlsVolume := v1.Volume{}
-		tlsVolume.Name = certName
-		tlsVolume.Secret = &v1.SecretVolumeSource{
-			SecretName: util.GrpcCfg().FlowTLS,
-		}
-		volumes = append(volumes, tlsVolume)
-
-		tlsVolumeMount.Name = certName
-		tlsVolumeMount.MountPath = "/etc/direktiv/certs/flow"
-		tlsVolumeMount.ReadOnly = true
-		volumeMounts = append(volumeMounts, tlsVolumeMount)
-	}
-
-	if functionsConfig.InitPodCertificate != "none" &&
-		functionsConfig.InitPodCertificate != "" {
-
-		certName := "podcerts"
-		tlsVolume := v1.Volume{}
-		tlsVolume.Name = certName
-		tlsVolume.Secret = &v1.SecretVolumeSource{
-			SecretName: functionsConfig.InitPodCertificate,
-		}
-		volumes = append(volumes, tlsVolume)
-
-		tlsVolumeMount.Name = certName
-		tlsVolumeMount.MountPath = "/etc/direktiv/certs/http"
-		tlsVolumeMount.ReadOnly = true
-		volumeMounts = append(volumeMounts, tlsVolumeMount)
-
 	}
 
 	mountToken := false

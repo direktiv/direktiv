@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package direktiv_functions;
 
 option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
 
@@ -28,6 +28,13 @@ import "pkg/functions/grpc/watch-logs.proto";
 
 
 service FunctionsService {
+
+	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
+
+  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
+
+  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
+
   rpc ReconstructFunction(ReconstructFunctionRequest) returns (google.protobuf.Empty)  {}
   rpc UpdateFunction(UpdateFunctionRequest) returns (google.protobuf.Empty)  {}
   rpc CreateFunction(CreateFunctionRequest) returns (google.protobuf.Empty)  {}
@@ -36,9 +43,6 @@ service FunctionsService {
   rpc GetFunction(GetFunctionRequest) returns (GetFunctionResponse)  {}
   rpc DeleteFunction(GetFunctionRequest) returns (google.protobuf.Empty)  {}
   rpc SetFunctionsTraffic(SetTrafficRequest) returns (google.protobuf.Empty)  {}
-	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
-  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
-  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
   rpc CreateFunctionsPod(CreatePodRequest) returns (CreatePodResponse)  {}
   rpc CancelFunctionsPod(CancelPodRequest) returns (google.protobuf.Empty)  {}
   rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}

@@ -27,15 +27,15 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: cmd/direkcli/*.go build/api-binary build/flow-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
+binaries: build/flow-binary build/api-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/*.md5
 	rm -f build/*.checksum
 	rm -f build/*-binary
-	rm -f build/api
 	rm -f build/flow
+	rm -f build/api
 	rm -f build/init-pod
 	rm -f build/secrets
 	rm -f build/sidecar
@@ -81,8 +81,33 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
 	go get entgo.io/ent
-	go generate ./ent
-	go generate ./pkg/secrets/ent/schema
+	go generate ./pkg/flow/ent
+	go generate ./pkg/secrets/ent
+	go generate ./pkg/functions/ent
+
+
+# API docs
+
+.PHONY: api-docs
+api-docs: ## Generates API documentation
+api-docs:
+	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
+	cd pkg/api
+	swagger generate spec -o scripts/api/swagger.json
+	swagger generate markdown --output scripts/api/api.md -f scripts/api/swagger.json
+
+.PHONY: api-swagger
+api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to change host for API.
+api-swagger:
+	scripts/api/swagger.sh $(host)
+
+# Helm docs
+
+.PHONY: helm-docs
+helm-docs: ## Generates helm documentation
+helm-docs:
+	GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
+	helm-docs kubernetes/charts
 
 # PROTOC
 
@@ -171,23 +196,29 @@ purge-images: ## Purge images from knative cache by matching $REGEX.
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	sudo k3s crictl rmi ${IMAGES}
 
+.PHONY: tail-api
+tail-api: ## Tail logs for currently active 'api' container.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl logs -f ${FLOW_POD} api
+
 .PHONY: tail-flow
 tail-flow: ## Tail logs for currently active 'flow' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl logs -f ${FLOW_POD} ingress
+	kubectl logs -f ${FLOW_POD} flow
+
+.PHONY: fwd-flow
+fwd-flow: ## Tail logs for currently active 'flow' container.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl port-forward ${FLOW_POD} 8080:6666 --address 0.0.0.0
 
 .PHONY: tail-secrets
 tail-secrets: ## Tail logs for currently active 'secrets' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv") | .metadata.name'))
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
 	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
 	kubectl logs -f ${FLOW_POD} secrets
-
-.PHONY: tail-api
-tail-api: ## Tail logs for currently active 'api' container.
-	$(eval API_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-api") | .metadata.name'))
-	$(eval API_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${API_RS}) | .metadata.name'))
-	kubectl logs -f ${API_POD} api
 
 .PHONY: tail-functions
 tail-functions: ## Tail logs for currently active 'functions' container.

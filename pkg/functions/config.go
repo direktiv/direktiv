@@ -6,31 +6,33 @@ import (
 
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
+	kyaml "sigs.k8s.io/yaml"
 )
 
 type configReader struct {
 }
 
 type config struct {
-	RequestTimeout     int    `yaml:"request-timeout"`
-	ServiceAccount     string `yaml:"service-account"`
-	Namespace          string `yaml:"namespace"`
-	SidecarDb          string `yaml:"sidecar-db"`
-	Sidecar            string `yaml:"sidecar"`
-	PodCleaner         bool   `yaml:"pod-cleaner"`
-	InitPod            string `yaml:"init-pod"`
-	InitPodCertificate string `yaml:"init-pod-certificate"`
-	KeepRevisions      int    `yaml:"keep-revisions"`
-	MaxJobs            int    `yaml:"max-jobs"`
-	MaxScale           int    `yaml:"max-scale"`
-	NetShape           string `yaml:"net-shape"`
-	Database           string `yaml:"db"`
-	RolloutDuration    int    `yaml:"rollout-duration"`
-	Concurrency        int    `yaml:"concurrency"`
-	Storage            int    `yaml:"storage"`
-	Runtime            string `yaml:"runtime"`
-	PodSecret          string `yaml:"pod-secret"`
-	Memory             struct {
+	Logging         string `yaml:"logging"`
+	IngressClass    string `yaml:"ingress-class"`
+	FlowService     string `yaml:"flow-service"`
+	RequestTimeout  int    `yaml:"request-timeout"`
+	ServiceAccount  string `yaml:"service-account"`
+	Namespace       string `yaml:"namespace"`
+	Sidecar         string `yaml:"sidecar"`
+	PodCleaner      bool   `yaml:"pod-cleaner"`
+	InitPod         string `yaml:"init-pod"`
+	KeepRevisions   int    `yaml:"keep-revisions"`
+	MaxJobs         int    `yaml:"max-jobs"`
+	MaxScale        int    `yaml:"max-scale"`
+	NetShape        string `yaml:"net-shape"`
+	Database        string `yaml:"db"`
+	RolloutDuration int    `yaml:"rollout-duration"`
+	Concurrency     int    `yaml:"concurrency"`
+	Storage         int    `yaml:"storage"`
+	Runtime         string `yaml:"runtime"`
+
+	Memory struct {
 		Small  int `yaml:"small"`
 		Medium int `yaml:"medium"`
 		Large  int `yaml:"large"`
@@ -45,15 +47,17 @@ type config struct {
 		HTTPS string `yaml:"https"`
 		HTTP  string `yaml:"http"`
 	} `yaml:"proxy"`
-	GrpcConfig           string         `yaml:"grpc-config"`
-	AdditionalContainers []v1.Container `yaml:"additionalContainers"`
+
+	extraContainers []v1.Container `yaml:"-"`
+	extraVolumes    []v1.Volume    `yaml:"-"`
 }
 
-func newConfigReader() *configReader {
-	return &configReader{}
+type subConfig struct {
+	ExtraContainers []v1.Container `yaml:"extraContainers"`
+	ExtraVolumes    []v1.Volume    `yaml:"extraVolumes"`
 }
 
-func readAndSet(path string, target interface{}) {
+func readConfig(path string, c *config) {
 
 	logger.Debugf("reading config %s", path)
 	file, err := os.Open(path)
@@ -76,14 +80,24 @@ func readAndSet(path string, target interface{}) {
 		return
 	}
 
-	err = yaml.Unmarshal(buf, target)
+	err = yaml.Unmarshal(buf, c)
 	if err != nil {
 		logger.Errorf("can not unmarshal config file: %v", err)
 		return
 	}
 
+	var sc subConfig
+	err = kyaml.Unmarshal(buf, &sc)
+	if err != nil {
+		logger.Errorf("can not unmarshal config file (k8s): %v", err)
+		return
+	}
+
+	c.extraVolumes = sc.ExtraVolumes
+	c.extraContainers = sc.ExtraContainers
+
 }
 
-func (cr *configReader) readConfig(path string, target interface{}) {
-	readAndSet(path, target)
-}
+// func (cr *configReader) readConfig(path string, target interface{}) {
+// 	readAndSet(path, target)
+// }

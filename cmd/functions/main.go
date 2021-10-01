@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/vorteil/direktiv/pkg/functions"
-	_ "github.com/vorteil/direktiv/pkg/util"
 )
 
 func main() {

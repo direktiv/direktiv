@@ -2,9 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name:         config-features
-  namespace:    knative-serving-{{ .Release.Name }}
+  namespace:    {{ .Release.Namespace }}
   labels:
-    serving.knative.dev/release: v0.25.0
+    serving.knative.dev/release: v0.25.1
     {{- include "knative.labels" . | nindent 4 }}
 
 data:
@@ -102,7 +102,7 @@ data:
   # 1. Enabled: enabling tag header based routing
   # 2. Disabled: disabling tag header based routing
   # See: https://knative.dev/docs/serving/feature-flags/#tag-header-based-routing
-  tag-header-based-routing: "disabled"
+  tag-header-based-routing: "enabled"
 
   # Controls whether http2 auto-detection should be enabled or not.
   # 1. Enabled: http2 connection will be attempted via upgrade.
