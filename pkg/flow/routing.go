@@ -210,40 +210,28 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	var muxErr1 error
 	var ms1 *muxStart
 
-	fmt.Println("B0")
-
 	if !hasFlag(flags, rcfNoPriors) {
 		// NOTE: we check router valid before deleting because there's no sense failing the
 		// operation for resulting in an invalid router if the router was already invalid.
 		ms1, muxErr1, err = validateRouter(ctx, wf)
 		if err != nil {
-			fmt.Println("B0-")
 			return err
 		}
 	}
 
-	fmt.Println("B1")
-
 	err = changer()
 	if err != nil {
-		fmt.Println("B1-")
 		return err
 	}
-
-	fmt.Println("B2")
 
 	ms2, muxErr2, err := validateRouter(ctx, wf)
 	if err != nil {
-		fmt.Println("B2-")
 		return err
 	}
-
-	fmt.Println("B3")
 
 	if muxErr2 != nil {
 
 		if muxErr1 == nil || !hasFlag(flags, rcfBreaking) {
-			fmt.Println("B3-")
 			return muxErr2
 		}
 
@@ -253,38 +241,24 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 		ms2 = new(muxStart)
 	}
 
-	fmt.Println("B4")
-
 	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
 
 	if mustReconfigureRouter {
-		fmt.Println("B4-")
 		err = flow.preCommitRouterConfiguration(ctx, evc, wf, ms2)
 		if err != nil {
-			fmt.Println("B4-=")
 			return err
 		}
 	}
 
-	fmt.Println("B5")
-
 	err = commit()
 
-	fmt.Println("B6")
-
 	if err != nil {
-		fmt.Println("B6-")
 		return err
 	}
 
-	fmt.Println("B7")
-
 	if mustReconfigureRouter {
-		fmt.Println("B8")
 		flow.postCommitRouterConfiguration(wf.ID.String(), ms2)
 	}
-
-	fmt.Println("B9")
 
 	return nil
 

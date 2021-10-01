@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -25,13 +26,12 @@ func main() {
 	sl := new(SignalListener)
 	sl.Start()
 
-	/*
-		telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
-		if err != nil {
-			return err
-		}
-		defer telend()
-	*/
+	telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/sidecar")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
+		os.Exit(1)
+	}
+	defer telend()
 
 	local := new(LocalServer)
 	local.Start()
