@@ -5,14 +5,14 @@ https_proxy: ""
 # -- No proxy information for knative
 no_proxy: "localhost,127.0.0.1,10.0.0.0/8,.svc,.cluster.local"
 
-# -- Kong for internal services / direktiv functions
+# -- Kong for internal services / direktiv functions. Based on Kong Helm chart.
 kong-internal:
   proxy:
     type: ClusterIP
   ingressController:
     ingressClass: kong-internal
 
-# -- Kong for Direktiv's UI / API
+# -- Kong for Direktiv's UI / API. Based on Kong Helm chart.
 kong-external:
   env:
     prefix: /kong_prefix/

@@ -6,8 +6,8 @@ knative for direktiv
 
 ## Additional Information
 
-This chart installs Knative for Direktiv. It configures Knative with sane values in Direktiv's context and
-additional support to provide proxy values for corporate proxies.
+This chart installs Knative for Direktiv. It configures Knative with correct values in Direktiv's context and it adds
+ support to provide proxy values for corporate proxies.
 
 ## Installing the Chart
 
@@ -31,7 +31,7 @@ $ helm install knative direktiv/knative
 |-----|------|---------|-------------|
 | http_proxy | string | `""` | HTTP proxy information for knative |
 | https_proxy | string | `""` | HTTPS proxy information for knative |
-| kong-external | object | `{"env":{"plugins":"grpc-gateway,grpc-stream","prefix":"/kong_prefix/"}}` | Kong for Direktiv's UI / API |
-| kong-internal | object | `{"ingressController":{"ingressClass":"kong-internal"},"proxy":{"type":"ClusterIP"}}` | Kong for internal services / direktiv functions |
+| kong-external | object | `{"env":{"plugins":"key-auth,request-transformer","prefix":"/kong_prefix/"}}` | Kong for Direktiv's UI / API. Based on Kong Helm chart. |
+| kong-internal | object | `{"ingressController":{"ingressClass":"kong-internal"},"proxy":{"type":"ClusterIP"}}` | Kong for internal services / direktiv functions. Based on Kong Helm chart. |
 | no_proxy | string | `"localhost,127.0.0.1,10.0.0.0/8,.svc,.cluster.local"` | No proxy information for knative |
 

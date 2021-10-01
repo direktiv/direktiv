@@ -1082,6 +1082,11 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 	}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  util.DirektivOpentelemetry,
+		Value: functionsConfig.OpenTelemetryBackend,
+	})
+
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		Name:  util.DirektivLogJSON,
 		Value: functionsConfig.Logging,
 	})

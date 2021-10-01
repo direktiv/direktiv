@@ -55,6 +55,7 @@ opentelemetry:
 
 api:
   replicas: 1
+  # -- Kong plugins to enable
   kongPlugins: "none"
   extraContainers: []
   # -- image for api pod
