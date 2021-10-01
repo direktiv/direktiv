@@ -14,7 +14,20 @@ data:
 
       # address of flow engine
       flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
-      
+
+      # address of opentelemetry backend
+      {{- if .Values.opentelemetry.address }}
+      {{- if .Values.opentelemetry.enabled }}
+      opentelemetry-backend: {{ .Values.opentelemetry.address }}
+      {{- else }}
+      opentelemetry-backend: ""
+      {{- end }}
+      {{- else if .Values.opentelemetry.enabled }}
+      opentelemetry-backend: "localhost:4317"
+      {{- else }}
+      opentelemetry-backend: ""
+      {{- end }}
+
       # maximum timeout, needs to be in below knative max
       request-timeout: 600
 

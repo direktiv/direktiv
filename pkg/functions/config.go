@@ -13,24 +13,25 @@ type configReader struct {
 }
 
 type config struct {
-	Logging         string `yaml:"logging"`
-	IngressClass    string `yaml:"ingress-class"`
-	FlowService     string `yaml:"flow-service"`
-	RequestTimeout  int    `yaml:"request-timeout"`
-	ServiceAccount  string `yaml:"service-account"`
-	Namespace       string `yaml:"namespace"`
-	Sidecar         string `yaml:"sidecar"`
-	PodCleaner      bool   `yaml:"pod-cleaner"`
-	InitPod         string `yaml:"init-pod"`
-	KeepRevisions   int    `yaml:"keep-revisions"`
-	MaxJobs         int    `yaml:"max-jobs"`
-	MaxScale        int    `yaml:"max-scale"`
-	NetShape        string `yaml:"net-shape"`
-	Database        string `yaml:"db"`
-	RolloutDuration int    `yaml:"rollout-duration"`
-	Concurrency     int    `yaml:"concurrency"`
-	Storage         int    `yaml:"storage"`
-	Runtime         string `yaml:"runtime"`
+	Logging              string `yaml:"logging"`
+	IngressClass         string `yaml:"ingress-class"`
+	FlowService          string `yaml:"flow-service"`
+	RequestTimeout       int    `yaml:"request-timeout"`
+	ServiceAccount       string `yaml:"service-account"`
+	Namespace            string `yaml:"namespace"`
+	Sidecar              string `yaml:"sidecar"`
+	PodCleaner           bool   `yaml:"pod-cleaner"`
+	InitPod              string `yaml:"init-pod"`
+	KeepRevisions        int    `yaml:"keep-revisions"`
+	MaxJobs              int    `yaml:"max-jobs"`
+	MaxScale             int    `yaml:"max-scale"`
+	NetShape             string `yaml:"net-shape"`
+	Database             string `yaml:"db"`
+	RolloutDuration      int    `yaml:"rollout-duration"`
+	Concurrency          int    `yaml:"concurrency"`
+	Storage              int    `yaml:"storage"`
+	Runtime              string `yaml:"runtime"`
+	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
 
 	Memory struct {
 		Small  int `yaml:"small"`

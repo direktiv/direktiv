@@ -11,5 +11,6 @@ const (
 	DirektivFunctionsEndpoint = "DIREKTIV_FUNCTIONS_ENDPOINT"
 	DirektivIngressEndpoint   = "DIREKTIV_INTERNAL_ENDPOINT"
 
-	DirektivLogJSON = "DIREKTIV_LOG_JSON"
+	DirektivLogJSON       = "DIREKTIV_LOG_JSON"
+	DirektivOpentelemetry = "DIREKTIV_OTLP"
 )
