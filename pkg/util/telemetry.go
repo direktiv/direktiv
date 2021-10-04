@@ -80,8 +80,6 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 		return func() {}, nil
 	}
 
-	fmt.Println("TELEMETRY", addr)
-
 	driver := otlpgrpc.NewDriver(
 		otlpgrpc.WithInsecure(),
 		otlpgrpc.WithEndpoint(addr),
