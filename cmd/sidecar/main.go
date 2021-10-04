@@ -26,7 +26,10 @@ func main() {
 	sl := new(SignalListener)
 	sl.Start()
 
-	telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/sidecar")
+	conf := new(util.Config)
+	conf.OpenTelemetryBackend = os.Getenv(util.DirektivOpentelemetry)
+
+	telend, err := util.InitTelemetry(conf, "direktiv", "direktiv/sidecar")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
 		os.Exit(1)
