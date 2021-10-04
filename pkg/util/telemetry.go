@@ -243,17 +243,31 @@ type telemetryHandler struct {
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	ctx := r.Context()
+	/*
+		ctx := r.Context()
+
+		prop := otel.GetTextMapPropagator()
+		requestMetadata, _ := metadata.FromIncomingContext(ctx)
+		metadataCopy := requestMetadata.Copy()
+		carrier := &grpcMetadataTMC{&metadataCopy}
+		ctx = prop.Extract(ctx, carrier)
+
+		tp := otel.GetTracerProvider()
+		tr := tp.Tracer(h.imName)
+
+		ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
+		defer span.End()
+
+		subr := r.WithContext(ctx)
+	*/
 
 	prop := otel.GetTextMapPropagator()
-	requestMetadata, _ := metadata.FromIncomingContext(ctx)
-	metadataCopy := requestMetadata.Copy()
-	carrier := &grpcMetadataTMC{&metadataCopy}
-	ctx = prop.Extract(ctx, carrier)
+	ctx := prop.Extract(r.Context(), &httpCarrier{
+		r: r,
+	})
 
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer(h.imName)
-
 	ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
