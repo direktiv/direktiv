@@ -517,7 +517,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		return nil, err
 	}
 
-	query := inc.Query().Where(entinst.IDEQ(id)).WithNamespace()
+	query := inc.Query().Where(entinst.IDEQ(id)).WithNamespace().WithWorkflow()
 	if load {
 		query = query.WithRuntime()
 	}
