@@ -253,6 +253,8 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
+	srv.sugar.Info("Flow server started.")
+
 	wg.Wait()
 
 	if err != nil {

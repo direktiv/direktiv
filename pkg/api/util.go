@@ -418,3 +418,64 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 	return nil
 
 }
+
+// Swagger Param Wrappers
+
+// swagger:parameters getNamespaces serverLogs namespaceLogs instanceLogs workflowLogs getRegistries getNodes getSecrets getNamespaceVariables getWorkflowVariables getInstanceVariables
+type paginationQueryWrapper struct {
+
+	// in: query
+	After string `json:"after"`
+
+	// in: query
+	First int32 `json:"first"`
+
+	// in: query
+	Before string `json:"before"`
+
+	// in: query
+	Last int32 `json:"last"`
+
+	// PAGE ORDER
+
+	// in: query
+	PageOrderField string `json:"order.field"`
+
+	// in: query
+	PageOrderDirection string `json:"order.direction"`
+
+	// PAGE FILTER
+
+	// in: query
+	PageFilterField string `json:"filter.field"`
+
+	// in: query
+	// description: "Pagination PageFilterDirection"
+	PageFilterType string `json:"filter.type"`
+
+	// in: query
+	// description: "Pagination PageFilterVal"
+	PageFilterVal string `json:"filter.val"`
+}
+
+type paginationBodyWrapper struct {
+
+	// in: query
+	pagination struct {
+		after  string
+		first  int32
+		before string
+		last   int32
+
+		pageOrder struct {
+			field     string
+			direction string
+		}
+
+		pageFilter struct {
+			field string
+			Type  string `json:"type"`
+			val   string
+		}
+	}
+}
