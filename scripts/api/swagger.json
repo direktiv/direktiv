@@ -11,7 +11,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "direktiv api",
+    "description": "Direktiv Open API Specification\nDirektiv Documentation can be found at https://docs.direktiv.io/",
     "title": "Direktiv API.",
     "contact": {
       "email": "info@direktiv.io"
@@ -225,7 +225,7 @@
         }
       },
       "post": {
-        "description": "Creates a new namespace scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic.",
+        "description": "Creates a new namespace scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic",
         "tags": [
           "Namespace Services"
         ],
@@ -332,7 +332,7 @@
         }
       },
       "patch": {
-        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic.",
+        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic",
         "tags": [
           "Namespace Services"
         ],
@@ -788,7 +788,7 @@
         }
       },
       "post": {
-        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic.",
+        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic",
         "tags": [
           "Global Services"
         ],
@@ -881,7 +881,7 @@
         }
       },
       "patch": {
-        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic.",
+        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic",
         "tags": [
           "Global Services"
         ],
@@ -948,7 +948,34 @@
     },
     "/api/functions/{serviceName}/revisions": {
       "get": {
-        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint",
+        "description": "Watch the revision list of a global scoped knative service\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "Global Services"
+        ],
+        "summary": "Watch Global Service Revision List",
+        "operationId": "watchGlobalServiceRevisionList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully watching service revisions"
+          }
+        }
+      }
+    },
+    "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
+      "get": {
+        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
         "produces": [
           "text/event-stream"
         ],
@@ -1496,10 +1523,11 @@
           "Variables"
         ],
         "summary": "Get List of Instance Variable",
-        "operationId": "getInstanceVariableList",
+        "operationId": "getInstanceVariables",
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1507,6 +1535,8 @@
           },
           {
             "type": "string",
+            "format": "int32",
+            "x-go-name": "First",
             "description": "target instance",
             "name": "instance",
             "in": "path",
@@ -1558,7 +1588,7 @@
         }
       },
       "put": {
-        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "description": "Set the value sorted in a instance variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
         "consumes": [
           "text/plain"
         ],
@@ -2164,7 +2194,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed": {
       "get": {
-        "description": "Get the timing metrics of a workflow's instance\nThis returns a total sum of the milliseconds a workflow has been executed for.",
+        "description": "Get the timing metrics of a workflow's instance\nThis returns a total sum of the milliseconds a workflow has been executed for",
         "tags": [
           "Metrics"
         ],
@@ -2288,7 +2318,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-var": {
       "put": {
-        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "description": "Set the value sorted in a workflow variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
         "consumes": [
           "text/plain"
         ],
@@ -2340,7 +2370,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging": {
       "post": {
-        "description": "Set Cloud Event for Workflow to Log to\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the\nconifgured value.\nWorkflows can be configured to generate cloud events on their namespace\nanything the log parameter produces data. Please find more information on this topic below:\nhttps://docs.direktiv.io/docs/examples/logging.html",
+        "description": "Set Cloud Event for Workflow to Log to\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the\nconifgured value\nWorkflows can be configured to generate cloud events on their namespace\nanything the log parameter produces data. Please find more information on this topic below:\nhttps://docs.direktiv.io/docs/examples/logging.html",
         "tags": [
           "Workflows"
         ],
@@ -2391,7 +2421,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=toggle": {
       "post": {
-        "description": "Toggle's whether or not a workflow is active\nDisabled workflows cannot be invoked.",
+        "description": "Toggle's whether or not a workflow is active\nDisabled workflows cannot be invoked",
         "tags": [
           "Workflows"
         ],
@@ -2442,7 +2472,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=update-workflow": {
       "post": {
-        "description": "Updates a workflow at the target path\nThe body of this request should contain the workflow yaml you want to update to.",
+        "description": "Updates a workflow at the target path\nThe body of this request should contain the workflow yaml you want to update to",
         "consumes": [
           "text/plain"
         ],
@@ -2611,7 +2641,7 @@
         }
       },
       "put": {
-        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "description": "Set the value sorted in a namespace variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
         "consumes": [
           "text/plain"
         ],

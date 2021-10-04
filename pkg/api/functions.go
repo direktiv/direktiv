@@ -1,6 +1,7 @@
 // Package classification Direktiv API.
 //
-// direktiv api
+// Direktiv Open API Specification
+// Direktiv Documentation can be found at https://docs.direktiv.io/
 //
 // Terms Of Service:
 //
@@ -268,7 +269,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// Creates a new global scoped knative service revision
 	// Revisions are created with a traffic percentage. This percentage controls
 	// how much traffic will be directed to this revision. Traffic can be set to 100
-	// to direct all traffic.
+	// to direct all traffic
 	// ---
 	// summary: Create Global Service Revision
 	// tags:
@@ -324,7 +325,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// swagger:operation PATCH /api/functions/{serviceName} updateGlobalServiceTraffic
 	// Update Global Service traffic directed to each revision,
 	// traffic can only be configured between two revisions. All other revisions
-	// will bet set to 0 traffic.
+	// will bet set to 0 traffic
 	// ---
 	// summary: Update Global Service Traffic
 	// tags:
@@ -628,7 +629,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// Creates a new namespace scoped knative service revision
 	// Revisions are created with a traffic percentage. This percentage controls
 	// how much traffic will be directed to this revision. Traffic can be set to 100
-	// to direct all traffic.
+	// to direct all traffic
 	// ---
 	// summary: Create Namespace Service Revision
 	// tags:
@@ -689,7 +690,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// swagger:operation PATCH /api/functions/namespaces/{namespace}/function/{serviceName} updateNamespaceServiceTraffic
 	// Update Namespace Service traffic directed to each revision,
 	// traffic can only be configured between two revisions. All other revisions
-	// will bet set to 0 traffic.
+	// will bet set to 0 traffic
 	// ---
 	// summary: Update Namespace Service Traffic
 	// tags:

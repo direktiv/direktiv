@@ -50,65 +50,6 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 
 }
 
-// swagger:parameters getNamespaces serverLogs namespaceLogs instanceLogs workflowLogs getRegistries getNodes getSecrets getNamespaceVariables getWorkflowVariables getInstanceVariables
-type paginationQueryWrapper struct {
-
-	// in: query
-	After string `json:"after"`
-
-	// in: query
-	First int32 `json:"first"`
-
-	// in: query
-	Before string `json:"before"`
-
-	// in: query
-	Last int32 `json:"last"`
-
-	// PAGE ORDER
-
-	// in: query
-	PageOrderField string `json:"order.field"`
-
-	// in: query
-	PageOrderDirection string `json:"order.direction"`
-
-	// PAGE FILTER
-
-	// in: query
-	PageFilterField string `json:"filter.field"`
-
-	// in: query
-	// description: "Pagination PageFilterDirection"
-	PageFilterType string `json:"filter.type"`
-
-	// in: query
-	// description: "Pagination PageFilterVal"
-	PageFilterVal string `json:"filter.val"`
-}
-
-type paginationBodyWrapper struct {
-
-	// in: query
-	pagination struct {
-		after  string
-		first  int32
-		before string
-		last   int32
-
-		pageOrder struct {
-			field     string
-			direction string
-		}
-
-		pageFilter struct {
-			field string
-			Type  string `json:"type"`
-			val   string
-		}
-	}
-}
-
 func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation GET /api/namespaces Namespaces getNamespaces
@@ -285,7 +226,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed Metrics workflowMetricsMilliseconds
 	// Get the timing metrics of a workflow's instance
-	// This returns a total sum of the milliseconds a workflow has been executed for.
+	// This returns a total sum of the milliseconds a workflow has been executed for
 	// ---
 	// summary: Gets Workflow Time Metrics
 	// parameters:
@@ -428,9 +369,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.DeleteNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodDelete)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/vars/{variable} Variables setNamespaceVariable
-	// Set the value sorted in a namespace variable.
-	// If the target variable does not exists, it will be created.
-	// Variable data can be anything so long as it can be represented as a string.
+	// Set the value sorted in a namespace variable
+	// If the target variable does not exists, it will be created
+	// Variable data can be anything so long as it can be represented as a string
 	// ---
 	// summary: Set a Namespace Variable
 	// consumes:
@@ -524,9 +465,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.DeleteInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodDelete)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable} Variables setInstanceVariable
-	// Set the value sorted in a instance variable.
-	// If the target variable does not exists, it will be created.
-	// Variable data can be anything so long as it can be represented as a string.
+	// Set the value sorted in a instance variable
+	// If the target variable does not exists, it will be created
+	// Variable data can be anything so long as it can be represented as a string
 	// ---
 	// summary: Set a Instance Variable
 	// consumes:
@@ -630,9 +571,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodDelete, RN_SetWorkflowVariable, "delete-var", h.DeleteWorkflowVariable)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var Variables setWorkflowVariable
-	// Set the value sorted in a workflow variable.
-	// If the target variable does not exists, it will be created.
-	// Variable data can be anything so long as it can be represented as a string.
+	// Set the value sorted in a workflow variable
+	// If the target variable does not exists, it will be created
+	// Variable data can be anything so long as it can be represented as a string
 	// ---
 	// summary: Set a Workflow Variable
 	// consumes:
@@ -947,7 +888,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow Workflows updateWorkflow
 	// Updates a workflow at the target path
-	// The body of this request should contain the workflow yaml you want to update to.
+	// The body of this request should contain the workflow yaml you want to update to
 	// ---
 	// summary: Update a Workflow
 	// consumes:
@@ -1018,7 +959,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// Set Cloud Event for Workflow to Log to
 	// When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the
-	// conifgured value.
+	// conifgured value
 	// Workflows can be configured to generate cloud events on their namespace
 	// anything the log parameter produces data. Please find more information on this topic below:
 	// https://docs.direktiv.io/docs/examples/logging.html
@@ -1055,7 +996,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle Workflows toggleWorkflow
 	// Toggle's whether or not a workflow is active
-	// Disabled workflows cannot be invoked.
+	// Disabled workflows cannot be invoked
 	// ---
 	// summary: Set Cloud Event for Workflow to Log to
 	// parameters:

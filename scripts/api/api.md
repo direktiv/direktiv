@@ -1,16 +1,10 @@
----
-layout: default
-title: API2
-nav_order: 60
-has_children: true
----
 
-# API
 
 
 # Direktiv API.
-direktiv api
-
+Direktiv Open API Specification
+Direktiv Documentation can be found at https://docs.direktiv.io/
+  
 
 ## Informations
 
@@ -20,7 +14,7 @@ direktiv api
 
 ### Contact
 
- info@direktiv.io
+ info@direktiv.io 
 
 ## Content negotiation
 
@@ -56,6 +50,25 @@ direktiv api
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | PUT | /api/namespaces/{namespace}/tree/{directory}?op=create-directory | [create directory](#create-directory) | Create a Directory |
+| GET | /api/namespaces/{namespace}/tree/{nodePath} | [get nodes](#get-nodes) | Get List of Namespace Nodes |
+  
+
+
+###  global_services
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| POST | /api/functions | [create global service](#create-global-service) | Create Global Service |
+| DELETE | /api/functions/{serviceName}/revisions/{revisionGeneration} | [delete global revision](#delete-global-revision) | Delete Global Service Revision |
+| DELETE | /api/functions/{serviceName} | [delete global service](#delete-global-service) | Delete Global Service |
+| GET | /api/functions/{serviceName} | [get global service](#get-global-service) | Get Global Service Details |
+| GET | /api/functions | [get global service list](#get-global-service-list) | Get Global Services List |
+| GET | /api/functions/{serviceName}/revisions/{revisionGeneration}/pods | [list global service revision pods](#list-global-service-revision-pods) | Get Global Service Revision Pods List |
+| POST | /api/functions/{serviceName} | [update global service](#update-global-service) | Create Global Service Revision |
+| PATCH | /api/functions/{serviceName} | [update global service traffic](#update-global-service-traffic) | Update Global Service Traffic |
+| GET | /api/functions/{serviceName}/revisions/{revisionGeneration} | [watch global service revision](#watch-global-service-revision) | Watch Global Service Revision |
+| GET | /api/functions/{serviceName}/revisions | [watch global service revision list](#watch-global-service-revision-list) | Watch Global Service Revision List |
+  
 
 
 ###  instances
@@ -67,7 +80,7 @@ direktiv api
 | GET | /api/namespaces/{namespace}/instances/{instance}/input | [get instance input](#get-instance-input) | Get a Instance Input |
 | GET | /api/namespaces/{namespace}/instances | [get instance list](#get-instance-list) | Get List Instances |
 | GET | /api/namespaces/{namespace}/instances/{instance}/output | [get instance output](#get-instance-output) | Get a Instance Output |
-
+  
 
 
 ###  logs
@@ -78,7 +91,7 @@ direktiv api
 | GET | /api/namespaces/{namespace}/instances/{instance}/logs | [instance logs](#instance-logs) | Gets Instance Logs |
 | GET | /api/namespaces/{namespace}/logs | [namespace logs](#namespace-logs) | Gets Namespace Level Logs |
 | GET | /api/logs | [server logs](#server-logs) | Get Direktiv Server Logs |
-
+  
 
 
 ###  metrics
@@ -93,7 +106,7 @@ direktiv api
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed | [workflow metrics milliseconds](#workflow-metrics-milliseconds) | Gets Workflow Time Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds | [workflow metrics state milliseconds](#workflow-metrics-state-milliseconds) | Gets a Workflow State Time Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful | [workflow metrics successful](#workflow-metrics-successful) | Gets Successful Workflow Metrics |
-
+  
 
 
 ###  namespace_services
@@ -120,7 +133,7 @@ direktiv api
 | PUT | /api/namespaces/{namespace} | [create namespace](#create-namespace) | Creates a namespace |
 | DELETE | /api/namespaces/{namespace} | [delete namespace](#delete-namespace) | Delete a namespace |
 | GET | /api/namespaces | [get namespaces](#get-namespaces) | Gets the list of namespaces |
-
+  
 
 
 ###  other
@@ -129,32 +142,26 @@ direktiv api
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
-
+  
 
 
 ###  registries
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| PUT | /api/namespaces/{namespace}/secrets/{secret} | [create secret](#create-secret) | Create a Namespace Secret |
-| DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
-| GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
-
+| POST | /api/namespaces/{namespace}/registries | [delete registry](#delete-registry) | Delete a Namespace Container Registry |
+| GET | /api/namespaces/{namespace}/registries | [get registries](#get-registries) | Get List of Namespace Registries |
+  
 
 
 ###  secrets
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| POST | /api/functions | [create global service](#create-global-service) | Create Global Service |
-| DELETE | /api/functions/{serviceName}/revisions/{revisionGeneration} | [delete global revision](#delete-global-revision) | Delete Global Service Revision |
-| DELETE | /api/functions/{serviceName} | [delete global service](#delete-global-service) | Delete Global Service |
-| GET | /api/functions/{serviceName} | [get global service](#get-global-service) | Get Global Service Details |
-| GET | /api/functions | [get global service list](#get-global-service-list) | Get List of Global Service |
-| POST | /api/functions/{serviceName} | [update global service](#update-global-service) | Create Global Service Revision |
-| PATCH | /api/functions/{serviceName} | [update global service traffic](#update-global-service-traffic) | Update Global Service Traffic |
-| GET | /api/functions/{serviceName}/revisions/{revisionGeneration} | [watch global revision](#watch-global-revision) | Watch Global Service Revision |
-
+| PUT | /api/namespaces/{namespace}/secrets/{secret} | [create secret](#create-secret) | Create a Namespace Secret |
+| DELETE | /api/namespaces/{namespace}/secrets/{secret} | [delete secret](#delete-secret) | Delete a Namespace Secret |
+| GET | /api/namespaces/{namespace}/secrets | [get secrets](#get-secrets) | Get List of Namespace Secrets |
+  
 
 
 ###  variables
@@ -165,7 +172,7 @@ direktiv api
 | DELETE | /api/namespaces/{namespace}/vars/{variable} | [delete namespace variable](#delete-namespace-variable) | Delete a Namespace Variable |
 | DELETE | /api/namespaces/{namespace}/tree/{workflow}?op=delete-var | [delete workflow variable](#delete-workflow-variable) | Delete a Workflow Variable |
 | GET | /api/namespaces/{namespace}/instances/{instance}/vars/{variable} | [get instance variable](#get-instance-variable) | Get a Instance Variable |
-| GET | /api/namespaces/{namespace}/instances/{instance}/vars | [get instance variable list](#get-instance-variable-list) | Get List of Instance Variable |
+| GET | /api/namespaces/{namespace}/instances/{instance}/vars | [get instance variables](#get-instance-variables) | Get List of Instance Variable |
 | GET | /api/namespaces/{namespace}/vars/{variable} | [get namespace variable](#get-namespace-variable) | Get a Namespace Variable |
 | GET | /api/namespaces/{namespace}/vars | [get namespace variables](#get-namespace-variables) | Get Namespace Variable List |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=var | [get workflow variable](#get-workflow-variable) | Get a Workflow Variable |
@@ -173,7 +180,7 @@ direktiv api
 | PUT | /api/namespaces/{namespace}/instances/{instance}/vars/{variable} | [set instance variable](#set-instance-variable) | Set a Instance Variable |
 | PUT | /api/namespaces/{namespace}/vars/{variable} | [set namespace variable](#set-namespace-variable) | Set a Namespace Variable |
 | PUT | /api/namespaces/{namespace}/tree/{workflow}?op=set-var | [set workflow variable](#set-workflow-variable) | Set a Workflow Variable |
-
+  
 
 
 ###  workflow_services
@@ -197,7 +204,7 @@ direktiv api
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging | [set workflow cloud event logs](#set-workflow-cloud-event-logs) | Set Cloud Event for Workflow to Log to |
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=toggle | [toggle workflow](#toggle-workflow) | Set Cloud Event for Workflow to Log to |
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow | [update workflow](#update-workflow) | Update a Workflow |
-
+  
 
 
 ## Paths
@@ -323,7 +330,7 @@ Status: OK
 **<span id="create-global-service-body"></span> CreateGlobalServiceBody**
 
 
-
+  
 
 
 
@@ -452,7 +459,7 @@ Status: OK
 **<span id="create-secret-body"></span> CreateSecretBody**
 
 
-
+  
 
 
 
@@ -1018,7 +1025,7 @@ Status: OK
 
 ###### <span id="get-instance-variable-200-schema"></span> Schema
 
-### <span id="get-instance-variable-list"></span> Get List of Instance Variable (*getInstanceVariableList*)
+### <span id="get-instance-variables"></span> Get List of Instance Variable (*getInstanceVariables*)
 
 ```
 GET /api/namespaces/{namespace}/instances/{instance}/vars
@@ -1030,21 +1037,21 @@ Gets a list of variables in a instance
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| instance | `path` | string | `string` |  | ✓ |  | target instance |
+| instance | `path` | int32 (formatted string) | `string` |  | ✓ |  | target instance |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#get-instance-variable-list-200) | OK | successfully got instance variables |  | [schema](#get-instance-variable-list-200-schema) |
+| [200](#get-instance-variables-200) | OK | successfully got instance variables |  | [schema](#get-instance-variables-200-schema) |
 
 #### Responses
 
 
-##### <span id="get-instance-variable-list-200"></span> 200 - successfully got instance variables
+##### <span id="get-instance-variables-200"></span> 200 - successfully got instance variables
 Status: OK
 
-###### <span id="get-instance-variable-list-200-schema"></span> Schema
+###### <span id="get-instance-variables-200-schema"></span> Schema
 
 ### <span id="get-namespace-service"></span> Get Namespace Service Details (*getNamespaceService*)
 
@@ -1513,7 +1520,7 @@ Status: OK
 **<span id="jq-playground-body"></span> JqPlaygroundBody**
 
 
-
+  
 
 
 
@@ -1823,8 +1830,9 @@ Status: OK
 PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable}
 ```
 
-If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Set the value sorted in a instance variable
+If the target variable does not exists, it will be created
+Variable data can be anything so long as it can be represented as a string
 
 #### Consumes
   * text/plain
@@ -1857,8 +1865,9 @@ Status: OK
 PUT /api/namespaces/{namespace}/vars/{variable}
 ```
 
-If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Set the value sorted in a namespace variable
+If the target variable does not exists, it will be created
+Variable data can be anything so long as it can be represented as a string
 
 #### Consumes
   * text/plain
@@ -1892,7 +1901,7 @@ POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging
 
 Set Cloud Event for Workflow to Log to
 When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the
-conifgured value.
+conifgured value
 Workflows can be configured to generate cloud events on their namespace
 anything the log parameter produces data. Please find more information on this topic below:
 https://docs.direktiv.io/docs/examples/logging.html
@@ -1923,7 +1932,7 @@ Status: OK
 **<span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody**
 
 
-
+  
 
 
 
@@ -1941,8 +1950,9 @@ Status: OK
 PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var
 ```
 
-If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Set the value sorted in a workflow variable
+If the target variable does not exists, it will be created
+Variable data can be anything so long as it can be represented as a string
 
 #### Consumes
   * text/plain
@@ -1976,7 +1986,7 @@ POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle
 ```
 
 Toggle's whether or not a workflow is active
-Disabled workflows cannot be invoked.
+Disabled workflows cannot be invoked
 
 #### Parameters
 
@@ -2004,7 +2014,7 @@ Status: OK
 **<span id="toggle-workflow-body"></span> ToggleWorkflowBody**
 
 
-
+  
 
 
 
@@ -2025,7 +2035,7 @@ POST /api/functions/{serviceName}
 Creates a new global scoped knative service revision
 Revisions are created with a traffic percentage. This percentage controls
 how much traffic will be directed to this revision. Traffic can be set to 100
-to direct all traffic.
+to direct all traffic
 
 #### Parameters
 
@@ -2052,7 +2062,7 @@ Status: OK
 **<span id="update-global-service-body"></span> UpdateGlobalServiceBody**
 
 
-
+  
 
 
 
@@ -2075,7 +2085,7 @@ PATCH /api/functions/{serviceName}
 ```
 
 traffic can only be configured between two revisions. All other revisions
-will bet set to 0 traffic.
+will bet set to 0 traffic
 
 #### Parameters
 
@@ -2102,7 +2112,7 @@ Status: OK
 **<span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody**
 
 
-
+  
 
 
 
@@ -2117,7 +2127,7 @@ Status: OK
 **<span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0**
 
 
-
+  
 
 
 
@@ -2139,7 +2149,7 @@ POST /api/functions/namespaces/{namespace}/function/{serviceName}
 Creates a new namespace scoped knative service revision
 Revisions are created with a traffic percentage. This percentage controls
 how much traffic will be directed to this revision. Traffic can be set to 100
-to direct all traffic.
+to direct all traffic
 
 #### Parameters
 
@@ -2190,7 +2200,7 @@ PATCH /api/functions/namespaces/{namespace}/function/{serviceName}
 ```
 
 traffic can only be configured between two revisions. All other revisions
-will bet set to 0 traffic.
+will bet set to 0 traffic
 
 #### Parameters
 
@@ -2253,7 +2263,7 @@ POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow
 ```
 
 Updates a workflow at the target path
-The body of this request should contain the workflow yaml you want to update to.
+The body of this request should contain the workflow yaml you want to update to
 
 #### Consumes
   * text/plain
@@ -2288,6 +2298,38 @@ GET /api/functions/{serviceName}/revisions/{revisionGeneration}
 Watch a global scoped knative service revision
 The target revision generation is the number suffix on a revision
 Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
+Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+
+#### Produces
+  * text/event-stream
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| revisionGeneration | `path` | string | `string` |  | ✓ |  | target revision generation |
+| serviceName | `path` | string | `string` |  | ✓ |  | target service name |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#watch-global-service-revision-200) | OK | successfully watching service revision |  | [schema](#watch-global-service-revision-200-schema) |
+
+#### Responses
+
+
+##### <span id="watch-global-service-revision-200"></span> 200 - successfully watching service revision
+Status: OK
+
+###### <span id="watch-global-service-revision-200-schema"></span> Schema
+
+### <span id="watch-global-service-revision-list"></span> Watch Global Service Revision List (*watchGlobalServiceRevisionList*)
+
+```
+GET /api/functions/{serviceName}/revisions
+```
+
+Watch the revision list of a global scoped knative service
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
 
 #### Produces
@@ -2414,7 +2456,7 @@ GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed
 ```
 
 Get the timing metrics of a workflow's instance
-This returns a total sum of the milliseconds a workflow has been executed for.
+This returns a total sum of the milliseconds a workflow has been executed for
 
 #### Parameters
 
