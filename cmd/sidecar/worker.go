@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type inboundWorker struct {
@@ -104,6 +105,9 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 
 	req.Header.Set(actionIDHeader, ir.actionId)
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
+
+	cleanup := util.TraceHTTPRequest(ctx, req)
+	defer cleanup()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
