@@ -164,7 +164,24 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance logs"
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked
+	// Get metrics of invoked workflow instances
+	// ---
+	// summary: Gets Invoked Workflow Metrics
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// responses:
+	//   '200':
+	//     "description": "successfully got workflow metrics"
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-invoked", h.WorkflowMetricsInvoked)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful Metrics workflowMetricsSuccessful
@@ -209,7 +226,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed Metrics workflowMetricsMilliseconds
 	// Get the timing metrics of a workflow's instance
-	// This returns a total sum of the milliseconds a workflow has been executed for.
+	// This returns a total sum of the milliseconds a workflow has been executed for
 	// ---
 	// summary: Gets Workflow Time Metrics
 	// parameters:
@@ -352,9 +369,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/vars/{var}", h.DeleteNamespaceVariable).Name(RN_SetNamespaceVariable).Methods(http.MethodDelete)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/vars/{variable} Variables setNamespaceVariable
-	// Set the value sorted in a namespace variable.
-	// If the target variable does not exists, it will be created.
-	// Variable data can be anything so long as it can be represented as a string.
+	// Set the value sorted in a namespace variable
+	// If the target variable does not exists, it will be created
+	// Variable data can be anything so long as it can be represented as a string
 	// ---
 	// summary: Set a Namespace Variable
 	// consumes:
@@ -448,9 +465,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.DeleteInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodDelete)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable} Variables setInstanceVariable
-	// Set the value sorted in a instance variable.
-	// If the target variable does not exists, it will be created.
-	// Variable data can be anything so long as it can be represented as a string.
+	// Set the value sorted in a instance variable
+	// If the target variable does not exists, it will be created
+	// Variable data can be anything so long as it can be represented as a string
 	// ---
 	// summary: Set a Instance Variable
 	// consumes:
@@ -483,7 +500,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully set instance variable"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/vars/{var}", h.SetInstanceVariable).Name(RN_SetInstanceVariable).Methods(http.MethodPut)
 
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars Variables getInstanceVariableList
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/vars Variables getInstanceVariables
 	// Gets a list of variables in a instance
 	// ---
 	// summary: Get List of Instance Variable
@@ -554,9 +571,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodDelete, RN_SetWorkflowVariable, "delete-var", h.DeleteWorkflowVariable)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var Variables setWorkflowVariable
-	// Set the value sorted in a workflow variable.
-	// If the target variable does not exists, it will be created.
-	// Variable data can be anything so long as it can be represented as a string.
+	// Set the value sorted in a workflow variable
+	// If the target variable does not exists, it will be created
+	// Variable data can be anything so long as it can be represented as a string
 	// ---
 	// summary: Set a Workflow Variable
 	// consumes:
@@ -589,7 +606,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully set workflow variable"
 	pathHandler(r, http.MethodPut, RN_SetWorkflowVariable, "set-var", h.SetWorkflowVariable)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=vars Variables getWorkflowVariableList
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=vars Variables getWorkflowVariables
 	// Gets a list of variables in a workflow
 	// ---
 	// summary: Get List of Workflow Variables
@@ -871,7 +888,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow Workflows updateWorkflow
 	// Updates a workflow at the target path
-	// The body of this request should contain the workflow yaml you want to update to.
+	// The body of this request should contain the workflow yaml you want to update to
 	// ---
 	// summary: Update a Workflow
 	// consumes:
@@ -904,38 +921,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully updated workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-workflow", h.UpdateWorkflow)
 
-	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=save-workflow Workflows saveWorkflow
-	// Updates a workflow at the target path
-	// ---
-	// summary: Update a Workflow
-	// consumes:
-	// - text/plain
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: workflow
-	//   type: string
-	//   required: true
-	//   description: 'path to target workflow'
-	// - in: body
-	//   name: workflow data
-	//   description: Payload that contains both the JSON data to manipulate and jq query.
-	//   schema:
-	//     type: string
-	//     example: |
-	//       description: A simple no-op state that returns Hello world Updated !!!
-	//       states:
-	//       - id: helloworld
-	//         type: noop
-	//         transform:
-	//           result: Hello world Updated !!!
-	// responses:
-	//   '200':
-	//     "description": "successfully update workflow"
+	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_DiscardWorkflow, "discard-workflow", h.DiscardWorkflow)
@@ -973,7 +959,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// Set Cloud Event for Workflow to Log to
 	// When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the
-	// conifgured value.
+	// conifgured value
 	// Workflows can be configured to generate cloud events on their namespace
 	// anything the log parameter produces data. Please find more information on this topic below:
 	// https://docs.direktiv.io/docs/examples/logging.html
@@ -1010,7 +996,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle Workflows toggleWorkflow
 	// Toggle's whether or not a workflow is active
-	// Disabled workflows cannot be invoked.
+	// Disabled workflows cannot be invoked
 	// ---
 	// summary: Set Cloud Event for Workflow to Log to
 	// parameters:
@@ -1073,7 +1059,27 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
-	// TODO: SWAGGER-SPEC
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{nodePath} Registries getNodes
+	// Gets Workflow and Directory Nodes at nodePath
+	// ---
+	// summary: Get List of Namespace Nodes
+	// tags:
+	// - "Directory"
+	// - "Workflows"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: nodePath
+	//   type: string
+	//   required: true
+	//   description: 'target path in tree'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace nodes"
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
 }

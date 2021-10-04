@@ -11,7 +11,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "direktiv api",
+    "description": "Direktiv Open API Specification\nDirektiv Documentation can be found at https://docs.direktiv.io/",
     "title": "Direktiv API.",
     "contact": {
       "email": "info@direktiv.io"
@@ -24,9 +24,9 @@
       "get": {
         "description": "Gets a list of global knative services",
         "tags": [
-          "Services"
+          "Global Services"
         ],
-        "summary": "Get List of Global Service",
+        "summary": "Get Global Services List",
         "operationId": "getGlobalServiceList",
         "responses": {
           "200": {
@@ -37,7 +37,7 @@
       "post": {
         "description": "Creates global scoped knative service\nService Names are unique on a scope level\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html",
         "tags": [
-          "Services"
+          "Global Services"
         ],
         "summary": "Create Global Service",
         "operationId": "createGlobalService",
@@ -99,11 +99,676 @@
         }
       }
     },
+    "/api/functions/namespaces/{namespace}": {
+      "get": {
+        "description": "Gets a list of namespace knative services",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Get Namespace Services List",
+        "operationId": "getNamespaceServiceList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got services list"
+          }
+        }
+      },
+      "post": {
+        "description": "Creates namespace scoped knative service\nService Names are unique on a scope level\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Create Namespace Service",
+        "operationId": "createNamespaceService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains information on new service",
+            "name": "Service",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "image",
+                "cmd",
+                "minScale",
+                "size"
+              ],
+              "properties": {
+                "cmd": {
+                  "type": "string"
+                },
+                "image": {
+                  "description": "Target image a service will use",
+                  "type": "string"
+                },
+                "minScale": {
+                  "description": "Minimum amount of service pods to be live",
+                  "type": "integer"
+                },
+                "name": {
+                  "description": "Name of new service",
+                  "type": "string"
+                },
+                "size": {
+                  "description": "Size of created service pods",
+                  "type": "string",
+                  "enum": [
+                    "small",
+                    "medium",
+                    "large"
+                  ]
+                }
+              },
+              "example": {
+                "cmd": "",
+                "image": "vorteil/request:v12",
+                "minScale": "1",
+                "name": "fast-request",
+                "size": "small"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created service"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/function/{serviceName}": {
+      "get": {
+        "description": "Get details of a namespace scoped knative service",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Get Namespace Service Details",
+        "operationId": "getNamespaceService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got service details"
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new namespace scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Create Namespace Service Revision",
+        "operationId": "updateNamespaceService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains information on service revision",
+            "name": "Service",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "image",
+                "cmd",
+                "minScale",
+                "size",
+                "trafficPercent"
+              ],
+              "properties": {
+                "cmd": {
+                  "type": "string"
+                },
+                "image": {
+                  "description": "Target image a service will use",
+                  "type": "string"
+                },
+                "minScale": {
+                  "description": "Minimum amount of service pods to be live",
+                  "type": "integer"
+                },
+                "size": {
+                  "description": "Size of created service pods",
+                  "type": "string",
+                  "enum": [
+                    "small",
+                    "medium",
+                    "large"
+                  ]
+                },
+                "trafficPercent": {
+                  "description": "Traffic percentage new revision will use",
+                  "type": "integer"
+                }
+              },
+              "example": {
+                "cmd": "",
+                "image": "vorteil/request:v10",
+                "minScale": "1",
+                "size": "small",
+                "trafficPercent": 50
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully created service revision"
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes namespace scoped knative service and all its revisions",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Delete Namespace Service",
+        "operationId": "deleteNamespaceService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted service"
+          }
+        }
+      },
+      "patch": {
+        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Update Namespace Service Traffic",
+        "operationId": "updateNamespaceServiceTraffic",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains information on service traffic",
+            "name": "Service Traffic",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "values"
+              ],
+              "properties": {
+                "values": {
+                  "description": "List of revision traffic targets",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "percent": {
+                        "description": "Target traffice percentage",
+                        "type": "integer"
+                      },
+                      "revision": {
+                        "description": "Target service revision",
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "values": [
+                  {
+                    "percent": 60,
+                    "revision": "namespace-direktiv-fast-request-00002"
+                  },
+                  {
+                    "percent": 40,
+                    "revision": "namespace-direktiv-fast-request-00001"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully updated service traffic"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions": {
+      "get": {
+        "description": "Watch the revision list of a namespace scoped knative service\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Watch Namespace Service Revision List",
+        "operationId": "watchNamespaceServiceRevisionList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully watching service revisions"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}": {
+      "get": {
+        "description": "Watch a namespace scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Watch Namespace Service Revision",
+        "operationId": "watchNamespaceServiceRevision",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target revision generation",
+            "name": "revisionGeneration",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully watching service revision"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a namespace scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Delete Namespace Service Revision",
+        "operationId": "deleteNamespaceRevision",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target revision generation",
+            "name": "revisionGeneration",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully deleted service revision"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}/pods": {
+      "get": {
+        "description": "List a revisions pods of a namespace scoped knative service\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'",
+        "tags": [
+          "Namespace Services"
+        ],
+        "summary": "Get Namespace Service Revision Pods List",
+        "operationId": "listNamespaceServiceRevisionPods",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target revision generation",
+            "name": "revisionGeneration",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got list of a service revision pods"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function": {
+      "get": {
+        "description": "Get a workflow scoped knative service details\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "tags": [
+          "Workflow Services"
+        ],
+        "summary": "Get Workflow Service Details",
+        "operationId": "getWorkflowService",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "svn",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service version",
+            "name": "version",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got service details"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision": {
+      "get": {
+        "description": "Get a workflow scoped knative service revision\nThis will return details on a single revision\nThe target revision generation (rev query) is the number suffix on a revision\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'",
+        "tags": [
+          "Workflow Services"
+        ],
+        "summary": "Get Workflow Service Revision",
+        "operationId": "getWorkflowServiceRevision",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "svn",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service revison",
+            "name": "rev",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got service revision details"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revisions": {
+      "get": {
+        "description": "Get the revision list of a workflow scoped knative service",
+        "tags": [
+          "Workflow Services"
+        ],
+        "summary": "Get Workflow Service Revision List",
+        "operationId": "getWorkflowServiceRevisionList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "svn",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service version",
+            "name": "version",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got service revisions"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/tree/{workflow}?op=pods": {
+      "get": {
+        "description": "List a revisions pods of a workflow scoped knative service\nThe target revision generation (rev query) is the number suffix on a revision\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'",
+        "tags": [
+          "Workflow Services"
+        ],
+        "summary": "Get Workflow Service Revision Pods List",
+        "operationId": "listWorkflowServiceRevisionPods",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "svn",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target service revison",
+            "name": "rev",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got list of a service revision pods"
+          }
+        }
+      }
+    },
+    "/api/functions/namespaces/{namespace}/tree/{workflow}?op=services": {
+      "get": {
+        "description": "Gets a list of workflow knative services",
+        "tags": [
+          "Workflow Services"
+        ],
+        "summary": "Get Workflow Services List",
+        "operationId": "listWorkflowServices",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got services list"
+          }
+        }
+      }
+    },
     "/api/functions/{serviceName}": {
       "get": {
         "description": "Get details of a global scoped knative service",
         "tags": [
-          "Services"
+          "Global Services"
         ],
         "summary": "Get Global Service Details",
         "operationId": "getGlobalService",
@@ -123,9 +788,9 @@
         }
       },
       "post": {
-        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic.",
+        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic",
         "tags": [
-          "Services"
+          "Global Services"
         ],
         "summary": "Create Global Service Revision",
         "operationId": "updateGlobalService",
@@ -196,7 +861,7 @@
       "delete": {
         "description": "Deletes global scoped knative service and all its revisions",
         "tags": [
-          "Services"
+          "Global Services"
         ],
         "summary": "Delete Global Service",
         "operationId": "deleteGlobalService",
@@ -216,9 +881,9 @@
         }
       },
       "patch": {
-        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic.",
+        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic",
         "tags": [
-          "Services"
+          "Global Services"
         ],
         "summary": "Update Global Service Traffic",
         "operationId": "updateGlobalServiceTraffic",
@@ -281,17 +946,44 @@
         }
       }
     },
-    "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
+    "/api/functions/{serviceName}/revisions": {
       "get": {
-        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint",
+        "description": "Watch the revision list of a global scoped knative service\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
         "produces": [
           "text/event-stream"
         ],
         "tags": [
-          "Services"
+          "Global Services"
+        ],
+        "summary": "Watch Global Service Revision List",
+        "operationId": "watchGlobalServiceRevisionList",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully watching service revisions"
+          }
+        }
+      }
+    },
+    "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
+      "get": {
+        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "Global Services"
         ],
         "summary": "Watch Global Service Revision",
-        "operationId": "watchGlobalRevision",
+        "operationId": "watchGlobalServiceRevision",
         "parameters": [
           {
             "type": "string",
@@ -317,7 +1009,7 @@
       "delete": {
         "description": "Delete a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
         "tags": [
-          "Services"
+          "Global Services"
         ],
         "summary": "Delete Global Service Revision",
         "operationId": "deleteGlobalRevision",
@@ -340,6 +1032,37 @@
         "responses": {
           "200": {
             "description": "successfully deleted service revision"
+          }
+        }
+      }
+    },
+    "/api/functions/{serviceName}/revisions/{revisionGeneration}/pods": {
+      "get": {
+        "description": "List a revisions pods of a global scoped knative service\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'",
+        "tags": [
+          "Global Services"
+        ],
+        "summary": "Get Global Service Revision Pods List",
+        "operationId": "listGlobalServiceRevisionPods",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target service name",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target revision generation",
+            "name": "revisionGeneration",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got list of a service revision pods"
           }
         }
       }
@@ -395,6 +1118,64 @@
         ],
         "summary": "Get Direktiv Server Logs",
         "operationId": "serverLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "After",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "x-go-name": "First",
+            "name": "first",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "Before",
+            "name": "before",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "x-go-name": "Last",
+            "name": "last",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageOrderField",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageOrderDirection",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterField",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterType",
+            "name": "filter.type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterVal",
+            "name": "filter.val",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successfully got server logs"
@@ -410,6 +1191,64 @@
         ],
         "summary": "Gets the list of namespaces",
         "operationId": "getNamespaces",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "After",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "x-go-name": "First",
+            "name": "first",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "Before",
+            "name": "before",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "x-go-name": "Last",
+            "name": "last",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageOrderField",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageOrderDirection",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterField",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterType",
+            "name": "filter.type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterVal",
+            "name": "filter.val",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successfully got list of namespaces"
@@ -623,6 +1462,7 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -630,6 +1470,8 @@
           },
           {
             "type": "string",
+            "format": "int32",
+            "x-go-name": "First",
             "description": "target instance id",
             "name": "instance",
             "in": "path",
@@ -681,10 +1523,11 @@
           "Variables"
         ],
         "summary": "Get List of Instance Variable",
-        "operationId": "getInstanceVariableList",
+        "operationId": "getInstanceVariables",
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -692,6 +1535,8 @@
           },
           {
             "type": "string",
+            "format": "int32",
+            "x-go-name": "First",
             "description": "target instance",
             "name": "instance",
             "in": "path",
@@ -743,7 +1588,7 @@
         }
       },
       "put": {
-        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "description": "Set the value sorted in a instance variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
         "consumes": [
           "text/plain"
         ],
@@ -840,6 +1685,7 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -949,6 +1795,74 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/registries": {
+      "get": {
+        "description": "Gets the list of namespace registries",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Get List of Namespace Registries",
+        "operationId": "getRegistries",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "After",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace registries"
+          }
+        }
+      },
+      "post": {
+        "description": "Delete a namespace container registry",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Delete a Namespace Container Registry",
+        "operationId": "deleteRegistry",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains registry data",
+            "name": "Registry Payload",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "reg"
+              ],
+              "properties": {
+                "reg": {
+                  "description": "Target registry URL",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "data": "admin:8QwFLg%D$qg*",
+                "reg": "https://prod.customreg.io"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully delete namespace registry"
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/secrets": {
       "get": {
         "description": "Gets the list of namespace secrets",
@@ -960,6 +1874,7 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1080,6 +1995,41 @@
         "responses": {
           "200": {
             "description": "successfully created directory"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{nodePath}": {
+      "get": {
+        "description": "Gets Workflow and Directory Nodes at nodePath",
+        "tags": [
+          "Directory",
+          "Workflows"
+        ],
+        "summary": "Get List of Namespace Nodes",
+        "operationId": "getNodes",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "After",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "int32",
+            "x-go-name": "First",
+            "description": "target path in tree",
+            "name": "nodePath",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace nodes"
           }
         }
       }
@@ -1244,7 +2194,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed": {
       "get": {
-        "description": "Get the timing metrics of a workflow's instance\nThis returns a total sum of the milliseconds a workflow has been executed for.",
+        "description": "Get the timing metrics of a workflow's instance\nThis returns a total sum of the milliseconds a workflow has been executed for",
         "tags": [
           "Metrics"
         ],
@@ -1262,6 +2212,37 @@
             "type": "string",
             "description": "target namespace",
             "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow metrics"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked": {
+      "get": {
+        "description": "Get metrics of invoked workflow instances",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Gets Invoked Workflow Metrics",
+        "operationId": "workflowMetricsInvoked",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
             "in": "path",
             "required": true
           }
@@ -1335,52 +2316,9 @@
         }
       }
     },
-    "/api/namespaces/{namespace}/tree/{workflow}?op=save-workflow": {
-      "put": {
-        "description": "Updates a workflow at the target path",
-        "consumes": [
-          "text/plain"
-        ],
-        "tags": [
-          "Workflows"
-        ],
-        "summary": "Update a Workflow",
-        "operationId": "saveWorkflow",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "path to target workflow",
-            "name": "workflow",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Payload that contains both the JSON data to manipulate and jq query.",
-            "name": "workflow data",
-            "in": "body",
-            "schema": {
-              "type": "string",
-              "example": "description: A simple no-op state that returns Hello world Updated !!!\nstates:\n- id: helloworld\n  type: noop\n  transform:\n    result: Hello world Updated !!!\n"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully update workflow"
-          }
-        }
-      }
-    },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-var": {
       "put": {
-        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "description": "Set the value sorted in a workflow variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
         "consumes": [
           "text/plain"
         ],
@@ -1432,7 +2370,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging": {
       "post": {
-        "description": "Set Cloud Event for Workflow to Log to\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the\nconifgured value.\nWorkflows can be configured to generate cloud events on their namespace\nanything the log parameter produces data. Please find more information on this topic below:\nhttps://docs.direktiv.io/docs/examples/logging.html",
+        "description": "Set Cloud Event for Workflow to Log to\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the\nconifgured value\nWorkflows can be configured to generate cloud events on their namespace\nanything the log parameter produces data. Please find more information on this topic below:\nhttps://docs.direktiv.io/docs/examples/logging.html",
         "tags": [
           "Workflows"
         ],
@@ -1483,7 +2421,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=toggle": {
       "post": {
-        "description": "Toggle's whether or not a workflow is active\nDisabled workflows cannot be invoked.",
+        "description": "Toggle's whether or not a workflow is active\nDisabled workflows cannot be invoked",
         "tags": [
           "Workflows"
         ],
@@ -1534,7 +2472,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=update-workflow": {
       "post": {
-        "description": "Updates a workflow at the target path\nThe body of this request should contain the workflow yaml you want to update to.",
+        "description": "Updates a workflow at the target path\nThe body of this request should contain the workflow yaml you want to update to",
         "consumes": [
           "text/plain"
         ],
@@ -1620,10 +2558,11 @@
           "Variables"
         ],
         "summary": "Get List of Workflow Variables",
-        "operationId": "getWorkflowVariableList",
+        "operationId": "getWorkflowVariables",
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1631,6 +2570,8 @@
           },
           {
             "type": "string",
+            "format": "int32",
+            "x-go-name": "First",
             "description": "path to target workflow",
             "name": "workflow",
             "in": "path",
@@ -1655,6 +2596,7 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1699,7 +2641,7 @@
         }
       },
       "put": {
-        "description": "If the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.",
+        "description": "Set the value sorted in a namespace variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
         "consumes": [
           "text/plain"
         ],
