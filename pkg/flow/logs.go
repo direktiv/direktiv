@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"github.com/vorteil/direktiv/pkg/util"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func logsOrder(p *pagination) ent.LogMsgPaginateOption {
@@ -67,6 +68,11 @@ func (srv *server) logToServer(ctx context.Context, t time.Time, msg string, a .
 		return
 	}
 
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	srv.sugar.Infow(msg, "trace", tid)
+
 	srv.pubsub.NotifyServerLogs()
 
 }
@@ -84,6 +90,11 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Name
 		srv.sugar.Error(err)
 		return
 	}
+
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String())
 
 	srv.pubsub.NotifyNamespaceLogs(ns)
 
@@ -103,6 +114,12 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, wf *ent.Workf
 		return
 	}
 
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	ns := wf.Edges.Namespace
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String())
+
 	srv.pubsub.NotifyWorkflowLogs(wf)
 
 }
@@ -115,13 +132,18 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 	util.Trace(ctx, msg)
 
-	srv.fnLogger.Infof(msg)
-
 	_, err := logc.Create().SetMsg(msg).SetInstance(in).SetT(t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
+
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	ns := in.Edges.Namespace
+	wf := in.Edges.Workflow
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", in.As, "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
 
