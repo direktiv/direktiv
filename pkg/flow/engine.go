@@ -743,8 +743,9 @@ func (engine *engine) doPodHTTPRequest(ctx context.Context,
 		resp *http.Response
 	)
 
+	cleanup := util.TraceHTTPRequest(ctx, req)
 	resp, err = client.Do(req)
-
+	cleanup()
 	if err != nil {
 		if ctxErr := rctx.Err(); ctxErr != nil {
 			engine.sugar.Debugf("context error in pod call")
@@ -840,6 +841,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
 	// one minute wait max
+	cleanup := util.TraceHTTPRequest(ctx, req)
+	defer cleanup()
 	for i := 0; i < 180; i++ {
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)

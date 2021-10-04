@@ -29,7 +29,7 @@ func main() {
 	conf := new(util.Config)
 	conf.OpenTelemetryBackend = os.Getenv(util.DirektivOpentelemetry)
 
-	telend, err := util.InitTelemetry(conf, "direktiv", "direktiv/sidecar")
+	telend, err := util.InitTelemetry(conf, "direktiv/sidecar", "direktiv")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
 		os.Exit(1)

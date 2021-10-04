@@ -68,7 +68,11 @@ func (tmc *grpcMetadataTMC) Set(k, v string) {
 	}
 }
 
+var instrumentationName string
+
 func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
+
+	instrumentationName = imName
 
 	var prop propagation.TextMapPropagator
 	prop = propagation.TraceContext{}
@@ -239,17 +243,31 @@ type telemetryHandler struct {
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	ctx := r.Context()
+	/*
+		ctx := r.Context()
+
+		prop := otel.GetTextMapPropagator()
+		requestMetadata, _ := metadata.FromIncomingContext(ctx)
+		metadataCopy := requestMetadata.Copy()
+		carrier := &grpcMetadataTMC{&metadataCopy}
+		ctx = prop.Extract(ctx, carrier)
+
+		tp := otel.GetTracerProvider()
+		tr := tp.Tracer(h.imName)
+
+		ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
+		defer span.End()
+
+		subr := r.WithContext(ctx)
+	*/
 
 	prop := otel.GetTextMapPropagator()
-	requestMetadata, _ := metadata.FromIncomingContext(ctx)
-	metadataCopy := requestMetadata.Copy()
-	carrier := &grpcMetadataTMC{&metadataCopy}
-	ctx = prop.Extract(ctx, carrier)
+	ctx := prop.Extract(r.Context(), &httpCarrier{
+		r: r,
+	})
 
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer(h.imName)
-
 	ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
@@ -294,5 +312,40 @@ func Trace(ctx context.Context, msg string) {
 	}
 
 	span.AddEvent(msg)
+
+}
+
+type httpCarrier struct {
+	r *http.Request
+}
+
+func (c *httpCarrier) Get(key string) string {
+	return c.r.Header.Get(key)
+}
+
+func (c *httpCarrier) Keys() []string {
+	return c.r.Header.Values("oteltmckeys")
+}
+
+func (c *httpCarrier) Set(key, val string) {
+	prev := c.Get(key)
+	if prev == "" {
+		c.r.Header.Add("oteltmckeys", key)
+	}
+	c.r.Header.Set(key, val)
+}
+
+func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
+
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer(instrumentationName)
+	ctx, span := tr.Start(ctx, "function", trace.WithSpanKind(trace.SpanKindClient))
+
+	prop := otel.GetTextMapPropagator()
+	prop.Inject(ctx, &httpCarrier{
+		r: r,
+	})
+
+	return func() { span.End() }
 
 }
