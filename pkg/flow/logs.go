@@ -132,8 +132,6 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 	util.Trace(ctx, msg)
 
-	// srv.fnLogger.Infof(msg)
-
 	_, err := logc.Create().SetMsg(msg).SetInstance(in).SetT(t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
@@ -185,7 +183,6 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s)", im.ID().String(), im.Step(), im.logic.ID())
-	fmt.Println(im.GetMemory() == nil, len(wakedata) == 0, err == nil)
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logToInstance(ctx, time.Now(), im.in, "Running state logic (step:%v) -- %s", im.Step(), im.logic.ID())
 	}
