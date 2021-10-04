@@ -77,3 +77,5 @@ scripts/api/swagger_in.json
 scripts/devcerts
 
 scripts/wip/kong/proto
+
+logs.log
