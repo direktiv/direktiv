@@ -15,7 +15,7 @@ opentelemetry:
   address: "localhost:4317"
   # -- installs opentelemtry agent as sidecar in flow
   enabled: false
-  # -- config for daemonset agent
+  # -- config for sidecar agent
   agentconfig: |
     receivers:
       otlp:
@@ -59,7 +59,7 @@ api:
   kongPlugins: "none"
   extraContainers: []
   # -- image for api pod
-  image: "vorteil/flow"
+  image: "vorteil/api"
   # -- image tag for api pod
   tag: ""
   # -- extra container in api pod

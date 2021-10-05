@@ -5,7 +5,7 @@ metadata:
   annotations:
     linkerd.io/inject: disabled
 spec:
-  schedule: '* * * * *'
+  schedule: '0 */4 * * *'
   jobTemplate:
     spec:
       template:

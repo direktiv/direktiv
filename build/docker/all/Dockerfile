@@ -12,26 +12,28 @@ RUN apk add go
 
 ADD app /app
 
+RUN cd /app && go mod download
+
 RUN cd /app && CGO_LDFLAGS="-static -w -s"  go build  -tags osusergo,netgo  -o /dlapp /app/main.go
 
 RUN curl -fsSL -o /helm.tar.gz https://get.helm.sh/helm-v3.5.3-linux-amd64.tar.gz && tar -C / -xvzf /helm.tar.gz
 
-FROM rancher/k3s:v1.21.4-rc1-k3s1
+FROM rancher/k3s:v1.21.5-k3s1-amd64
+
 COPY --from=build-env /linux-amd64/helm /helm
 COPY --from=build-env /direktiv /direktiv
 COPY --from=build-env /dlapp /dlapp
 
 RUN chmod 755 /dlapp
 
-ADD debug.yaml /
-ADD registry.yaml /
+COPY debug.yaml /
+COPY registry.yaml /
+COPY google-dns.yaml /
+COPY server.sh /
+COPY default_direktiv.vcfg /
 
-ADD google-dns.yaml /
+COPY images.tar.gz /
 
-ADD server.sh /
-
-ADD default_direktiv.vcfg /
-
-ADD config-deployment.yaml /
+COPY pg /pg
 
 ENTRYPOINT ["/dlapp"]

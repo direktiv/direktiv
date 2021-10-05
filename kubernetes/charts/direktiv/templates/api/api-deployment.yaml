@@ -56,6 +56,9 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+          {{- if .Values.api.additionalEnvs }}
+          {{- toYaml .Values.api.additionalEnvs | nindent 10 }}
+          {{- end }}
           - name: DIREKTIV_LOG_JSON
             value: {{ .Values.logging | quote }}
           - name: DIREKTIV_DEBUG

@@ -120,5 +120,4 @@ $ helm install direktiv direktiv/direktiv
 | thanos.storegateway.persistence.storageClass | string | `"local-path"` |  |
 | timeout | int | `900000` | api timeouts |
 | tolerations | list | `[]` |  |
-| ui | object | `{"certificate":"none","extraContainers":[],"image":"vorteil/direktiv-ui","kongPlugins":"none","tag":""}` | UI configuration |
-
+| ui | object | `{"certificate":"none","extraContainers":[],"image":"vorteil/ui","kongPlugins":"none","tag":""}` | UI configuration |
