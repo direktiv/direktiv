@@ -194,7 +194,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	output, err := c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{

@@ -12,6 +12,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1
+	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
 	github.com/go-openapi/analysis v0.20.1 // indirect
 	github.com/go-openapi/errors v0.20.1 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect

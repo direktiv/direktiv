@@ -2,12 +2,17 @@ package api
 
 import (
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
+	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
@@ -1058,6 +1063,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
+
+	// TODO: jon
+	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "wait", h.WaitWorkflow)
+	pathHandler(r, http.MethodGet, RN_ExecuteWorkflow, "wait", h.WaitWorkflow)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{nodePath} Registries getNodes
 	// Gets Workflow and Directory Nodes at nodePath
@@ -2749,6 +2758,163 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.StartWorkflow(ctx, in)
 	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, ref := pathAndRef(r)
+
+	var err error
+	var input []byte
+
+	if r.ContentLength != 0 {
+		input, err = loadRawBody(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+	} else {
+		m := make(map[string]interface{})
+		query := r.URL.Query()
+		for k, v := range query {
+			if strings.HasPrefix(k, "input.") {
+				k = k[6:]
+				if len(v) == 1 {
+					m[k] = v[0]
+				} else {
+					m[k] = v
+				}
+			}
+		}
+		if len(m) > 0 {
+			input, err = json.Marshal(m)
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+		}
+	}
+
+	in := &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      path,
+		Ref:       ref,
+		Input:     input,
+	}
+
+	resp, err := h.client.StartWorkflow(ctx, in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	w.Header().Set("Direktiv-Instance-Id", resp.Instance)
+
+	c, err := h.client.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	defer c.CloseSend()
+
+	for {
+		status, err := c.Recv()
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		if s := status.Instance.GetStatus(); s == flow.StatusComplete {
+
+			_ = c.CloseSend()
+
+			output, err := h.client.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
+				Namespace: namespace,
+				Instance:  resp.Instance,
+			})
+
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+			data := output.Data
+
+			field := r.URL.Query().Get("field")
+			if field != "" {
+				m := make(map[string]interface{})
+				err = json.Unmarshal(data, &m)
+				if err != nil {
+					respond(w, nil, err)
+					return
+				}
+
+				x, exists := m[field]
+				if exists {
+					data, _ = json.Marshal(x)
+				} else {
+					data, _ = json.Marshal(nil)
+				}
+			}
+
+			var x interface{}
+			err = json.Unmarshal(data, &x)
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+			rawo := r.URL.Query().Get("raw-output")
+			if rawo == "true" {
+
+				if x == nil {
+					data = make([]byte, 0)
+				} else if str, ok := x.(string); ok {
+					data = []byte(str)
+					b64, err := base64.StdEncoding.DecodeString(str)
+					if err == nil {
+						data = []byte(b64)
+					}
+				}
+
+			}
+
+			w.Header().Set("Content-Length", fmt.Sprintf("%v", len(data)))
+
+			ctype := r.URL.Query().Get("ctype")
+			if ctype == "" {
+				mtype := mimetype.Detect(data)
+				ctype = mtype.String()
+			}
+
+			w.Header().Set("Content-Type", ctype)
+
+			_, _ = io.Copy(w, bytes.NewReader(data))
+			return
+
+		} else if s == flow.StatusFailed {
+			w.Header().Set("Direktiv-Instance-Error-Code", status.Instance.ErrorCode)
+			w.Header().Set("Direktiv-Instance-Error-Message", status.Instance.ErrorMessage)
+			code := http.StatusInternalServerError
+			http.Error(w, fmt.Sprintf("An error occurred executing instance %s: %s: %s", resp.Instance, status.Instance.ErrorCode, status.Instance.ErrorMessage), code)
+			return
+		} else if s == flow.StatusCrashed {
+			code := http.StatusInternalServerError
+			http.Error(w, fmt.Sprintf("An internal error occurred executing instance: %s", resp.Instance), code)
+			return
+		} else {
+			continue
+		}
+
+	}
 
 }
 
