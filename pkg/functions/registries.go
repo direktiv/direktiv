@@ -151,6 +151,8 @@ func listRegistriesNames(namespace string) []string {
 		registries = append(registries, s.Name)
 	}
 
+	logger.Debugf("registries for namespace: %+v", registries)
+
 	return registries
 
 }

@@ -1708,7 +1708,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 						info.GetRevision(), info.GetName(), scope, int(info.GetSize())),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							ImagePullSecrets:   createPullSecrets(info.GetNamespace()),
+							ImagePullSecrets:   createPullSecrets(info.GetNamespaceName()),
 							ServiceAccountName: functionsConfig.ServiceAccount,
 							Containers:         containers,
 							Volumes:            createVolumes(),
@@ -1745,6 +1745,9 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		logger.Errorf("error creating knative service: %v", err)
 		return nil, err
 	}
+
+	// b, _ := json.MarshalIndent(svc, "", "  ")
+	// fmt.Printf("%v\n", string(b))
 
 	return newSvc, nil
 }
