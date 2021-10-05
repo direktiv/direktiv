@@ -349,3 +349,34 @@ func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
 	return func() { span.End() }
 
 }
+
+type GenericTelemetryCarrier struct {
+	Trace map[string]string
+}
+
+func (c *GenericTelemetryCarrier) Get(key string) string {
+	v, _ := c.Trace[key]
+	return v
+}
+
+func (c *GenericTelemetryCarrier) Keys() []string {
+	var keys []string
+	for k := range c.Trace {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func (c *GenericTelemetryCarrier) Set(key, val string) {
+	c.Trace[key] = val
+}
+
+func TransplantTelemetryContextInformation(a, b context.Context) context.Context {
+	carrier := &GenericTelemetryCarrier{
+		Trace: make(map[string]string),
+	}
+	prop := otel.GetTextMapPropagator()
+	prop.Inject(a, carrier)
+	ctx := prop.Extract(b, carrier)
+	return ctx
+}
