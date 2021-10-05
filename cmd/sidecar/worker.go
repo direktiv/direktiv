@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/vorteil/direktiv/pkg/util"
 )
 
 type inboundWorker struct {
@@ -104,6 +105,9 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 
 	req.Header.Set(actionIDHeader, ir.actionId)
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
+
+	cleanup := util.TraceHTTPRequest(ctx, req)
+	defer cleanup()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -416,6 +420,8 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	// NOTE: rctx exists because we don't want to immediately cancel the function request if our context is cancelled
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	rctx = util.TransplantTelemetryContextInformation(ctx, rctx)
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)

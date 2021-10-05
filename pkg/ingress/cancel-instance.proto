@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package ingress;
-
-option go_package = "github.com/vorteil/direktiv/pkg/ingress";
-
-message CancelWorkflowInstanceRequest {
-	optional string id = 1;
-}

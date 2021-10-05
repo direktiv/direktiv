@@ -56,7 +56,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	s.config = conf
 
 	logger.Debug("Initializing telemetry.")
-	s.telend, err = util.InitTelemetry(s.config, "direktiv", "direktiv/api")
+	s.telend, err = util.InitTelemetry(s.config, "direktiv/api", "direktiv")
 	if err != nil {
 		return nil, err
 	}

@@ -986,15 +986,15 @@ func metaSpec(net string, min, max int, nsID, nsName, wfID, path, revision, name
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", min)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", max)
 
-	metaSpec.Labels[ServiceHeaderName] = sanitizeLabel(name)
+	metaSpec.Labels[ServiceHeaderName] = SanitizeLabel(name)
 	if len(wfID) > 0 {
-		metaSpec.Labels[ServiceHeaderWorkflowID] = sanitizeLabel(wfID)
-		metaSpec.Labels[ServiceHeaderPath] = sanitizeLabel(path)
-		metaSpec.Labels[ServiceHeaderRevision] = sanitizeLabel(revision)
+		metaSpec.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
+		metaSpec.Labels[ServiceHeaderPath] = SanitizeLabel(path)
+		metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(revision)
 	}
 
-	metaSpec.Labels[ServiceHeaderNamespaceID] = sanitizeLabel(nsID)
-	metaSpec.Labels[ServiceHeaderNamespaceName] = sanitizeLabel(nsName)
+	metaSpec.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(nsID)
+	metaSpec.Labels[ServiceHeaderNamespaceName] = SanitizeLabel(nsName)
 	metaSpec.Labels[ServiceHeaderScope] = scope
 
 	metaSpec.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", min)
@@ -1004,7 +1004,7 @@ func metaSpec(net string, min, max int, nsID, nsName, wfID, path, revision, name
 
 }
 
-func sanitizeLabel(s string) string {
+func SanitizeLabel(s string) string {
 	s = strings.TrimPrefix(s, "/")
 	s = strings.TrimSuffix(s, "/")
 	s = strings.ReplaceAll(s, "_", "__")
@@ -1028,15 +1028,15 @@ func meta(svn, name, nsID, nsName, wfID, path, revision string, scale, size int,
 
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 
-	meta.Labels[ServiceHeaderName] = sanitizeLabel(name)
+	meta.Labels[ServiceHeaderName] = SanitizeLabel(name)
 	if len(wfID) > 0 {
-		meta.Labels[ServiceHeaderWorkflowID] = sanitizeLabel(wfID)
-		meta.Labels[ServiceHeaderPath] = sanitizeLabel(path)
-		meta.Labels[ServiceHeaderRevision] = sanitizeLabel(revision)
+		meta.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
+		meta.Labels[ServiceHeaderPath] = SanitizeLabel(path)
+		meta.Labels[ServiceHeaderRevision] = SanitizeLabel(revision)
 	}
 
-	meta.Labels[ServiceHeaderNamespaceID] = sanitizeLabel(nsID)
-	meta.Labels[ServiceHeaderNamespaceName] = sanitizeLabel(nsName)
+	meta.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(nsID)
+	meta.Labels[ServiceHeaderNamespaceName] = SanitizeLabel(nsName)
 	meta.Labels[ServiceHeaderScope] = scope
 
 	meta.Annotations[ServiceHeaderScale] = fmt.Sprintf("%d", scale)
@@ -1241,9 +1241,9 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 // GenerateWorkflowServiceName generates a knative name based on workflow details
 func GenerateWorkflowServiceName(wf, rev, svn string) string {
 
-	wf = sanitizeLabel(wf)
-	rev = sanitizeLabel(rev)
-	svn = sanitizeLabel(svn)
+	wf = SanitizeLabel(wf)
+	rev = SanitizeLabel(rev)
+	svn = SanitizeLabel(svn)
 
 	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, rev), hash.FormatV2, nil)
 	if err != nil {

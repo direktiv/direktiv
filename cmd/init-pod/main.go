@@ -39,13 +39,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	/*
-		telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
-		if err != nil {
-			return err
-		}
-		defer telend()
-	*/
+	conf := new(util.Config)
+	conf.OpenTelemetryBackend = os.Getenv(util.DirektivOpentelemetry)
+
+	telend, err := util.InitTelemetry(conf, "direktiv/init-pod", "direktiv")
+	if err != nil {
+		log.Infof("Error: %v", err)
+		os.Exit(1)
+	}
+	defer telend()
 
 	if lifecycle == "init" {
 		runAsInit()

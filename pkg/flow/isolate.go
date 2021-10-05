@@ -154,11 +154,11 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar 
 
 	// search annotations
 	a := make(map[string]string)
-	a[functions.ServiceHeaderName] = ar.Container.ID
-	a[functions.ServiceHeaderNamespaceID] = ar.Workflow.NamespaceID
-	a[functions.ServiceHeaderWorkflowID] = ar.Workflow.WorkflowID
-	a[functions.ServiceHeaderRevision] = ar.Workflow.Revision
-	a[functions.ServiceHeaderScope] = functions.PrefixService
+	a[functions.ServiceHeaderName] = functions.SanitizeLabel(ar.Container.ID)
+	a[functions.ServiceHeaderNamespaceID] = functions.SanitizeLabel(ar.Workflow.NamespaceID)
+	a[functions.ServiceHeaderWorkflowID] = functions.SanitizeLabel(ar.Workflow.WorkflowID)
+	a[functions.ServiceHeaderRevision] = functions.SanitizeLabel(ar.Workflow.Revision)
+	a[functions.ServiceHeaderScope] = functions.SanitizeLabel(functions.PrefixService)
 
 	engine.sugar.Debugf("knative function search: %v", a)
 

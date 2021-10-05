@@ -86,7 +86,7 @@ func (srv *server) start(ctx context.Context) error {
 	var err error
 
 	srv.sugar.Debug("Initializing telemetry.")
-	telend, err := util.InitTelemetry(srv.conf, "direktiv", "direktiv/flow")
+	telend, err := util.InitTelemetry(srv.conf, "direktiv/flow", "direktiv")
 	if err != nil {
 		return err
 	}
@@ -252,6 +252,8 @@ func (srv *server) start(ctx context.Context) error {
 			lock.Unlock()
 		}
 	}()
+
+	srv.sugar.Info("Flow server started.")
 
 	wg.Wait()
 
