@@ -1,6 +1,10 @@
 pullPolicy: IfNotPresent
 debug: "true"
 
+functions:
+  sidecar: "vorteil/sidecar:v0.5.0"
+  initPodImage:  "vorteil/direktiv-init-pod:v0.5.0"
+
 database:
   # -- database host
   host: "postgres"

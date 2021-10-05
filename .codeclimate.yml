@@ -12,6 +12,7 @@ exclude_patterns:
 - "ent/"
 - "pkg/secrets/ent/"
 - "pkg/metrics/ent"
-- "examples/"
+- "pkg/functions/ent"
+- "pkg/flow/ent"
 - "**/*.pb.go"
 - "ui/"

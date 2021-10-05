@@ -70,9 +70,10 @@ database:
   host: "direktiv-pgbouncer.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "}o(oPT>RGevQ5iZaQu:{Y[*x"
+  password: "}Q_cd;-0}{VRgOaZrO}:2E[|"
   name: "direktiv"
   sslmode: require
+
 
 
 # minio-operator:

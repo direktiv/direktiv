@@ -133,7 +133,7 @@ func main() {
 	}
 
 	writer.Reset()
-	fmt.Println("direktiv ready at http://localhost:8080")
+	fmt.Println("direktiv ready at http://localhost:8080")	
 
 	select {}
 
@@ -240,10 +240,7 @@ func installKnative(kc string) {
 
 	addProxy(f)
 
-	log.Printf("waiting another 10 seconds for k3s\n")
-	time.Sleep(10 * time.Second)
-
-	cmd := exec.Command("/helm", "install", "-f", "/tmp/knative.yaml", "knative", ".")
+	cmd := exec.Command("/helm", "install", "-n", "knative-serving", "--create-namespace", "-f", "/tmp/knative.yaml", "knative", ".")
 	cmd.Dir = "/direktiv/kubernetes/charts/knative"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Stdout = os.Stdout
