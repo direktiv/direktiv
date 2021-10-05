@@ -64,6 +64,8 @@
 *build/docker/init-pod/init-pod
 *build/docker/functions/functions
 build/docker/all/kubernetes
+build/docker/all/*.tar
+build/docker/all/*.tar.gz
 deploy*.yaml
 
 kubernetes/charts/knative/charts

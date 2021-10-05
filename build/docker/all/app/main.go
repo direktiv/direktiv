@@ -43,11 +43,40 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	log.Println("installing direktiv")
+	log.Println("unzip images")
+	cmd := exec.Command("/bin/gunzip", "-v", "/images.tar.gz")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
+	log.Println("untar images")
+	cmd = exec.Command("/bin/tar", "-xvf", "/images.tar")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
+	imgs := []string{"/activator.tar", "/autoscaler.tar", "/controller.tar", "/domain-mapping.tar",
+		"/domain-mapping-webhook.tar", "/webhook.tar", "/queue.tar", "/kongig.tar",
+		"/konglib.tar", "/registry.tar", "/postgres.tar", "/ui.tar", "/api.tar",
+		"/flow.tar", "/init-pod.tar", "/secrets.tar", "/sidecar.tar", "/functions.tar"}
+
+	log.Println("importing images")
+	for i := range imgs {
+		importImage(imgs[i])
+	}
+
+	// show imported images
+	// cmd = exec.Command("/bin/crictl", "images")
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// cmd.Run()
+
+	installKnative(kc)
 
 	runRegistry(kc)
-	applyYaml(kc)
-	patch(kc)
+
+	runDB(kc)
+
 	runHelm(kc)
 
 	config, err := clientcmd.BuildConfigFromFlags("", "/etc/rancher/k3s/k3s.yaml")
@@ -77,7 +106,7 @@ func main() {
 		}
 
 		if len(pods.Items) == 0 {
-			time.Sleep(5 * time.Second)
+			time.Sleep(2 * time.Second)
 			continue
 		}
 
@@ -99,7 +128,7 @@ func main() {
 		if allRun && len(pods.Items) > 0 {
 			break
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second)
 		writer.Clear()
 	}
 
@@ -110,6 +139,27 @@ func main() {
 
 }
 
+func importImage(img string) {
+
+	cmd := exec.Command("/bin/ctr", "images", "import", img)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
+	os.Remove(img)
+
+}
+
+func runDB(kc string) {
+	log.Println("deploying db")
+
+	cmd := exec.Command(kc, "apply", "-f", "/pg")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
+}
+
 type byName []v1.Pod
 
 func (a byName) Len() int           { return len(a) }
@@ -117,24 +167,6 @@ func (a byName) Less(i, j int) bool { return a[i].GetName() < a[j].GetName() }
 func (a byName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 func runHelm(kc string) {
-
-	if os.Getenv("PERSIST") != "" {
-
-		f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-		if err != nil {
-			panic(err)
-		}
-
-		if _, err := f.WriteString("supportPersist: true\n"); err != nil {
-			panic(err)
-		}
-
-		err = f.Close()
-		if err != nil {
-			log.Printf("can not close debug.yaml: %v", err)
-		}
-
-	}
 
 	f, err := os.OpenFile("/debug.yaml", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
@@ -166,16 +198,13 @@ func runHelm(kc string) {
 
 func runRegistry(kc string) {
 
-	// k3s needs a bit to be ready for this, so we wait
-	go func() {
-		time.Sleep(10 * time.Second)
-		log.Printf("applying registry.yaml\n")
-		/* #nosec */
-		cmd := exec.Command(kc, "apply", "-f", "/registry.yaml")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Run()
-	}()
+	log.Println("installing docker repository")
+	log.Printf("applying registry.yaml\n")
+	/* #nosec */
+	cmd := exec.Command(kc, "apply", "-f", "/registry.yaml")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
 
 }
 
@@ -195,7 +224,7 @@ func addProxy(f *os.File) {
 	}
 }
 
-func applyYaml(kc string) {
+func installKnative(kc string) {
 
 	log.Printf("running knative helm\n")
 
@@ -232,25 +261,6 @@ func applyYaml(kc string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
-
-	// apply config-deployment for registry
-	log.Printf("applying config-deployment.yaml\n")
-	/* #nosec */
-	cmd = exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
-
-}
-
-func patch(kc string) {
-
-	log.Printf("patching configmap\n")
-	/* #nosec */
-	cmd := exec.Command(kc, "patch", "configmap/config-network",
-		"--namespace", "knative-serving", "--type", "merge", "--patch",
-		"{\"data\":{\"ingress.class\":\"contour.ingress.networking.knative.dev\"}}")
-	cmd.Run()
 
 }
 

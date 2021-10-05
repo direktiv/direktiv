@@ -11,7 +11,7 @@ flow:
   tag: "latest"
 
 ui:
-  image: "direktiv-ui"
+  image: "ui"
   tag: "latest"
 
 api:
@@ -25,9 +25,9 @@ functions:
   sidecar: "localhost:5000/sidecar"
   initPodImage: "localhost:5000/init-pod"
 
-opentelemetry:
-  enabled: true
-  address: tempo-tempo-distributed-distributor.tempo:4317
+# opentelemetry:
+#   enabled: true
+#   address: tempo-tempo-distributed-distributor.tempo:4317
 #   address: "localhost:4317"
 #   agentconfig: |
 #     receivers:
@@ -67,26 +67,27 @@ opentelemetry:
 #           exporters: [logging, otlp]
 
 database:
-  host: "direktiv-primary.postgres.svc"
+  host: "direktiv-pgbouncer.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "35PKk:dfL>iDigRdi,e1K3G:"
+  password: "}Q_cd;-0}{VRgOaZrO}:2E[|"
   name: "direktiv"
   sslmode: require
 
-minio-operator:
-  enabled: true
-  tenants:
-    - name: direktiv-tenant
-      pools:
-        # -- set to 4 for HA
-        - servers: 1
-          volumesPerServer: 4
-          # -- storage class to use. k3s uses local-path
-          storageClassName: local-path
-          size: 5Gi
-      secrets:
-        enabled: true
-        name: minio-secret
-        accessKey: minio
-        secretKey: ThisIsDirektiv$123
+
+# minio-operator:
+#   enabled: true
+#   tenants:
+#     - name: direktiv-tenant
+#       pools:
+#         # -- set to 4 for HA
+#         - servers: 1
+#           volumesPerServer: 4
+#           # -- storage class to use. k3s uses local-path
+#           storageClassName: local-path
+#           size: 5Gi
+#       secrets:
+#         enabled: true
+#         name: minio-secret
+#         accessKey: minio
+#         secretKey: ThisIsDirektiv$123
