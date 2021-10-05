@@ -421,6 +421,8 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	rctx = util.TransplantTelemetryContextInformation(ctx, rctx)
+
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)
 	go func() {
