@@ -160,7 +160,7 @@ docker-ui: ## Manually clone and build the latest UI.
 		git clone https://github.com/vorteil/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
-		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=direktiv-ui make server; \
+		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \
 	else \
 		cd direktiv-ui && make update-containers RV=${RELEASE}; \
 	fi

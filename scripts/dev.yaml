@@ -11,7 +11,7 @@ flow:
   tag: "latest"
 
 ui:
-  image: "direktiv-ui"
+  image: "ui"
   tag: "latest"
 
 api:

@@ -178,7 +178,7 @@ secrets:
 # -- UI configuration
 ui:
   kongPlugins: "none"
-  image: "vorteil/direktiv-ui"
+  image: "vorteil/ui"
   tag: ""
   certificate: none
   extraContainers: []
