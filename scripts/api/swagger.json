@@ -2585,6 +2585,132 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=wait": {
+      "get": {
+        "description": "Executes a workflow with optionally some input provided in the request body as json\nThis path will wait until the workflow execution has completed and return the instance output\nNOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json\nkey. Only top level json keys are supported when providing input with query parameters",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Await Execute a Workflow",
+        "operationId": "awaitExecuteWorkflow",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way.",
+            "name": "ctype",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "If provided, instead of returning the entire output json the response body will contain the single top-level json field",
+            "name": "field",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "If set to true, will return an empty output as null, a encoded base64 data as decoded binary data, and a quoted json string as a escaped string.",
+            "name": "raw-output",
+            "in": "query"
+          },
+          {
+            "description": "The input of this workflow instance",
+            "name": "Workflow Input",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "example": {
+                "animals": [
+                  "dog",
+                  "cat",
+                  "snake"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully executed workflow"
+          }
+        }
+      },
+      "post": {
+        "description": "Executes a workflow with optionally some input provided in the request body as json\nThis path will wait until the workflow execution has completed and return the instance output\nNOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json\nkey. Only top level json keys are supported when providing input with query parameters. Input query\nparameters are only read if the request has not body",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Await Execute a Workflow With Body",
+        "operationId": "awaitExecuteWorkflowBody",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way.",
+            "name": "ctype",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "If provided, instead of returning the entire output json the response body will contain the single top-level json field",
+            "name": "field",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "If set to true, will return an empty output as null, a encoded base64 data as decoded binary data, and a quoted json string as a escaped string.",
+            "name": "raw-output",
+            "in": "query"
+          },
+          {
+            "description": "The input of this workflow instance",
+            "name": "Workflow Input",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "example": {
+                "animals": [
+                  "dog",
+                  "cat",
+                  "snake"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully executed workflow"
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/vars": {
       "get": {
         "description": "Gets a list of variables in a namespace",

@@ -21,8 +21,8 @@ message Instance {
 	string id = 3;
 	string as = 4;
 	string status = 5;
-	string errCode = 6;
-	string errMessage = 7;
+	string errorCode = 6;
+	string errorMessage = 7;
 }
 
 message InstancesEdge {
