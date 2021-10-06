@@ -217,8 +217,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 GET /api/namespaces/{namespace}/tree/{workflow}?op=wait
 ```
 
-Executes a workflow with optionally some input provided in the request body as json
-This path will wait until the workflow execution has completed and return the instance output
+Executes a workflow. This path will wait until the workflow execution has completed and return the instance output
 NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
 key. Only top level json keys are supported when providing input with query parameters
 
