@@ -1115,8 +1115,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "wait", h.WaitWorkflow)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=wait Workflows awaitExecuteWorkflow
-	// Executes a workflow with optionally some input provided in the request body as json
-	// This path will wait until the workflow execution has completed and return the instance output
+	// Executes a workflow. This path will wait until the workflow execution has completed and return the instance output
 	// NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
 	// key. Only top level json keys are supported when providing input with query parameters
 	// ---
@@ -1147,17 +1146,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   type: boolean
 	//   required: false
 	//   description: "If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string."
-	// - in: body
-	//   name: Workflow Input
-	//   description: The input of this workflow instance
-	//   schema:
-	//     example:
-	//       animals:
-	//         - dog
-	//         - cat
-	//         - snake
-	//     type: object
-	//     properties:
 	// responses:
 	//   '200':
 	//     "description": "successfully executed workflow"
