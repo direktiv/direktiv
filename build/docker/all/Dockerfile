@@ -28,9 +28,6 @@ RUN chmod 755 /dlapp
 
 COPY debug.yaml /
 COPY registry.yaml /
-COPY google-dns.yaml /
-COPY server.sh /
-COPY default_direktiv.vcfg /
 
 COPY images.tar.gz /
 
