@@ -133,7 +133,7 @@ func main() {
 	}
 
 	writer.Reset()
-	fmt.Println("direktiv ready at http://localhost:8080")	
+	fmt.Println("direktiv ready at http://localhost:8080")
 
 	select {}
 
@@ -258,6 +258,14 @@ func installKnative(kc string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
+
+	// apply config-deployment for registry
+	log.Printf("applying config-deployment.yaml\n")
+	/* #nosec */
+	cmd = exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
 
 }
 

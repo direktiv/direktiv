@@ -32,5 +32,6 @@ COPY registry.yaml /
 COPY images.tar.gz /
 
 COPY pg /pg
+COPY config-deployment.yaml /config-deployment.yaml
 
 ENTRYPOINT ["/dlapp"]
