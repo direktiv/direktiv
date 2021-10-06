@@ -1064,8 +1064,103 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
-	// TODO: jon
+	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=wait Workflows awaitExecuteWorkflowBody
+	// Executes a workflow with optionally some input provided in the request body as json
+	// This path will wait until the workflow execution has completed and return the instance output
+	// NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
+	// key. Only top level json keys are supported when providing input with query parameters. Input query
+	// parameters are only read if the request has not body
+	// ---
+	// summary: Await Execute a Workflow With Body
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: query
+	//   name: ctype
+	//   type: string
+	//   description: "Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way."
+	//   required: false
+	// - in: query
+	//   name: field
+	//   type: string
+	//   required: false
+	//   description: 'If provided, instead of returning the entire output json the response body will contain the single top-level json field'
+	// - in: query
+	//   name: raw-output
+	//   type: boolean
+	//   required: false
+	//   description: "If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string."
+	// - in: body
+	//   name: Workflow Input
+	//   description: The input of this workflow instance
+	//   schema:
+	//     example:
+	//       animals:
+	//         - dog
+	//         - cat
+	//         - snake
+	//     type: object
+	//     properties:
+	// responses:
+	//   '200':
+	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "wait", h.WaitWorkflow)
+
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=wait Workflows awaitExecuteWorkflow
+	// Executes a workflow with optionally some input provided in the request body as json
+	// This path will wait until the workflow execution has completed and return the instance output
+	// NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
+	// key. Only top level json keys are supported when providing input with query parameters
+	// ---
+	// summary: Await Execute a Workflow
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: query
+	//   name: ctype
+	//   type: string
+	//   required: false
+	//   description: "Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way."
+	// - in: query
+	//   name: field
+	//   type: string
+	//   required: false
+	//   description: 'If provided, instead of returning the entire output json the response body will contain the single top-level json field'
+	// - in: query
+	//   name: raw-output
+	//   type: boolean
+	//   required: false
+	//   description: "If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string."
+	// - in: body
+	//   name: Workflow Input
+	//   description: The input of this workflow instance
+	//   schema:
+	//     example:
+	//       animals:
+	//         - dog
+	//         - cat
+	//         - snake
+	//     type: object
+	//     properties:
+	// responses:
+	//   '200':
+	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodGet, RN_ExecuteWorkflow, "wait", h.WaitWorkflow)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{nodePath} Registries getNodes
