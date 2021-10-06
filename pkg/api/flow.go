@@ -1147,17 +1147,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   type: boolean
 	//   required: false
 	//   description: "If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string."
-	// - in: body
-	//   name: Workflow Input
-	//   description: The input of this workflow instance
-	//   schema:
-	//     example:
-	//       animals:
-	//         - dog
-	//         - cat
-	//         - snake
-	//     type: object
-	//     properties:
 	// responses:
 	//   '200':
 	//     "description": "successfully executed workflow"

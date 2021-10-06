@@ -230,8 +230,7 @@ key. Only top level json keys are supported when providing input with query para
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 | ctype | `query` | string | `string` |  |  |  | Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way. |
 | field | `query` | string | `string` |  |  |  | If provided, instead of returning the entire output json the response body will contain the single top-level json field |
-| raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, a encoded base64 data as decoded binary data, and a quoted json string as a escaped string. |
-| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
+| raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -266,7 +265,7 @@ parameters are only read if the request has not body
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 | ctype | `query` | string | `string` |  |  |  | Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way. |
 | field | `query` | string | `string` |  |  |  | If provided, instead of returning the entire output json the response body will contain the single top-level json field |
-| raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, a encoded base64 data as decoded binary data, and a quoted json string as a escaped string. |
+| raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
 | Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
 
 #### All responses
