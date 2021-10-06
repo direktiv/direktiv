@@ -624,7 +624,7 @@ states:
 	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	v, err := c.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
@@ -678,7 +678,7 @@ states:
 	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	v, err = c.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
@@ -786,7 +786,7 @@ states:
 	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	v, err := c.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
@@ -841,7 +841,7 @@ states:
 	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	v, err = c.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
@@ -950,7 +950,7 @@ states:
 	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	v, err := c.InstanceVariable(ctx, &grpc.InstanceVariableRequest{
@@ -1005,7 +1005,7 @@ states:
 	cancel()
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	v, err = c.InstanceVariable(ctx, &grpc.InstanceVariableRequest{

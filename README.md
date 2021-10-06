@@ -58,19 +58,18 @@ For more information, documentation and examples visit the [documentation page](
 
 ***Testing Direktiv***:
 
-Download the `direkcli` command-line tool from the [releases page](https://github.com/vorteil/direktiv/releases)  and create your first namespace by running:
+You can test that Direktiv is online manually from the command-line using `cURL`:
 
-`direkcli namespaces create demo`
-
-```bash
-$ direkcli namespaces create demo
-Created namespace: demo
-$ direkcli namespaces list
-+------+
-| NAME |
-+------+
-| demo |
-+------+
+```sh 
+$ curl -vv -X PUT "http://localhost:8080/api/namespaces/demo"
+{
+  "namespace": {
+    "createdAt": "2021-10-06T00:03:22.444884147Z",
+    "updatedAt": "2021-10-06T00:03:22.444884447Z",
+    "name": "demo",
+    "oid": ""
+  }
+}
 ```
 
 ### Kubernetes Install
@@ -82,7 +81,6 @@ For full instructions on how to install Direktiv on a Kubernetes environment go 
 The below example is the minimal configuration needed for a workflow, following the [workflow language specification](https://docs.direktiv.io/docs/specification.html):
 
 ```yaml
-id: helloworld
 states:
 - id: hello
   type: noop
@@ -95,31 +93,35 @@ states:
 The following script does everything required to run the first workflow. This includes creating a namespace & workflow and running the workflow the first time.  
 
 ```bash
-$ direkcli namespaces create demo
-Created namespace: demo
+$ curl -X PUT "http://localhost:8080/api/namespaces/demo"
+{
+  "namespace": {
+    "createdAt": "2021-10-06T00:03:22.444884147Z",
+    "updatedAt": "2021-10-06T00:03:22.444884447Z",
+    "name": "demo",
+    "oid": ""
+  }
+}
 $ cat > helloworld.yml <<- EOF
-id: helloworld
 states:
 - id: hello
   type: noop
   transform: 
     msg: "Hello, jq(.name)!"
 EOF
-$ direkcli workflows create demo helloworld.yml
-Created workflow 'helloworld'
+$ curl -vv -X PUT --data-binary "@helloworld.yml" "http://localhost:8080/api/namespaces/demo/tree/helloworld?op=create-workflow"
+{
+  "namespace": "demo",
+  "node": {...},
+  "revision": {...}
+}
 $ cat > input.json <<- EOF
 {
   "name": "Alan"
 }
 EOF
-$ direkcli workflows execute demo helloworld --input=input.json
-Successfully invoked, Instance ID: demo/helloworld/aqMeFX <---CHANGE_THIS_TO_YOUR_VALUE
-$ direkcli instances get demo/helloworld/aqMeFX
-ID: demo/helloworld/aqMeFX
-Input: {
-  "name": "Alan"
-}
-Output: {"msg":"Hello, Alan!"}
+$ curl -vv -X POST --data-binary "@input.json" "http://localhost:8080/api/namespaces/demo/tree/helloworld?op=wait"
+{"msg":"Hello, Alan!"}
 ```
 
 ### Direktiv plugins
@@ -163,7 +165,6 @@ This is how Direktiv would execute this process:
 The YAML file below shows the structure of the complex workflow:
 
 ```yaml
-id: check-nsfw-image
 description: "Classify an image uploaded to Azure Blob Storage as SFW or NSFW using Google Vision, AWS Lambda and Azure Storage functions"
 start:
   type: event

@@ -199,6 +199,8 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
+| GET | /api/namespaces/{namespace}/tree/{workflow}?op=wait | [await execute workflow](#await-execute-workflow) | Await Execute a Workflow |
+| POST | /api/namespaces/{namespace}/tree/{workflow}?op=wait | [await execute workflow body](#await-execute-workflow-body) | Await Execute a Workflow With Body |
 | PUT | /api/namespaces/{namespace}/tree/{workflow}?op=create-workflow | [create workflow](#create-workflow) | Create a Workflow |
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=execute | [execute workflow](#execute-workflow) | Execute a Workflow |
 | POST | /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging | [set workflow cloud event logs](#set-workflow-cloud-event-logs) | Set Cloud Event for Workflow to Log to |
@@ -208,6 +210,75 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 
 ## Paths
+
+### <span id="await-execute-workflow"></span> Await Execute a Workflow (*awaitExecuteWorkflow*)
+
+```
+GET /api/namespaces/{namespace}/tree/{workflow}?op=wait
+```
+
+Executes a workflow. This path will wait until the workflow execution has completed and return the instance output
+NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
+key. Only top level json keys are supported when providing input with query parameters
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
+| ctype | `query` | string | `string` |  |  |  | Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way. |
+| field | `query` | string | `string` |  |  |  | If provided, instead of returning the entire output json the response body will contain the single top-level json field |
+| raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#await-execute-workflow-200) | OK | successfully executed workflow |  | [schema](#await-execute-workflow-200-schema) |
+
+#### Responses
+
+
+##### <span id="await-execute-workflow-200"></span> 200 - successfully executed workflow
+Status: OK
+
+###### <span id="await-execute-workflow-200-schema"></span> Schema
+
+### <span id="await-execute-workflow-body"></span> Await Execute a Workflow With Body (*awaitExecuteWorkflowBody*)
+
+```
+POST /api/namespaces/{namespace}/tree/{workflow}?op=wait
+```
+
+Executes a workflow with optionally some input provided in the request body as json
+This path will wait until the workflow execution has completed and return the instance output
+NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
+key. Only top level json keys are supported when providing input with query parameters. Input query
+parameters are only read if the request has not body
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
+| ctype | `query` | string | `string` |  |  |  | Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way. |
+| field | `query` | string | `string` |  |  |  | If provided, instead of returning the entire output json the response body will contain the single top-level json field |
+| raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
+| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#await-execute-workflow-body-200) | OK | successfully executed workflow |  | [schema](#await-execute-workflow-body-200-schema) |
+
+#### Responses
+
+
+##### <span id="await-execute-workflow-body-200"></span> 200 - successfully executed workflow
+Status: OK
+
+###### <span id="await-execute-workflow-body-200-schema"></span> Schema
 
 ### <span id="broadcast-cloudevent"></span> Broadcast Cloud Event (*broadcastCloudevent*)
 

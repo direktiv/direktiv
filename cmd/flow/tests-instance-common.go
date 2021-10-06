@@ -68,7 +68,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string)
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	if iresp.Instance.As != "/testwf" {
@@ -182,7 +182,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	logs, err := c.InstanceLogs(ctx, &grpc.InstanceLogsRequest{
@@ -275,7 +275,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	logs, err := c.InstanceLogs(ctx, &grpc.InstanceLogsRequest{
@@ -368,7 +368,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	logs, err := c.InstanceLogs(ctx, &grpc.InstanceLogsRequest{
@@ -463,7 +463,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	logs, err := c.InstanceLogs(ctx, &grpc.InstanceLogsRequest{
@@ -564,7 +564,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	if len(iresp.Flow) != 3 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" || iresp.Flow[2] != "c" {
@@ -649,7 +649,7 @@ states:
 	}
 
 	if iresp.Instance.Status != flow.StatusComplete {
-		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrCode, iresp.Instance.ErrMessage)
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
 	if len(iresp.Flow) != 8 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" || iresp.Flow[2] != "b" ||
