@@ -2,7 +2,7 @@
 
 direktiv helm chart
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.4.1](https://img.shields.io/badge/AppVersion-v0.4.1-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.5.0](https://img.shields.io/badge/AppVersion-v0.5.0-informational?style=flat-square)
 
 ## Additional Information
 
@@ -35,7 +35,7 @@ $ helm install direktiv direktiv/direktiv
 | api.extraContainers | list | `[]` |  |
 | api.extraVolumeMounts | string | `nil` | extra volume mounts in api pod |
 | api.extraVolumes | string | `nil` | extra volumes in api pod |
-| api.image | string | `"vorteil/flow"` | image for api pod |
+| api.image | string | `"vorteil/api"` | image for api pod |
 | api.kongPlugins | string | `"none"` | Kong plugins to enable |
 | api.replicas | int | `1` |  |
 | api.tag | string | `""` | image tag for api pod |
@@ -90,7 +90,7 @@ $ helm install direktiv direktiv/direktiv
 | no_proxy | string | `""` | no proxy proxy settings |
 | nodeSelector | object | `{}` |  |
 | opentelemetry.address | string | `"localhost:4317"` | opentelemetry address where Direktiv is sending data to |
-| opentelemetry.agentconfig | string | `"receivers:\n  otlp:\n    protocols:\n      grpc:\n      http:\nexporters:\n  otlp:\n    endpoint: \"192.168.1.113:14250\"\n    insecure: true\n    sending_queue:\n      num_consumers: 4\n      queue_size: 100\n    retry_on_failure:\n      enabled: true\n  logging:\n    loglevel: debug\nprocessors:\n  batch:\n  memory_limiter:\n    # Same as --mem-ballast-size-mib CLI argument\n    ballast_size_mib: 165\n    # 80% of maximum memory up to 2G\n    limit_mib: 400\n    # 25% of limit up to 2G\n    spike_limit_mib: 100\n    check_interval: 5s\nextensions:\n  zpages: {}\nservice:\n  extensions: [zpages]\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [memory_limiter, batch]\n      exporters: [logging, otlp]\n"` | config for daemonset agent |
+| opentelemetry.agentconfig | string | `"receivers:\n  otlp:\n    protocols:\n      grpc:\n      http:\nexporters:\n  otlp:\n    endpoint: \"192.168.1.113:14250\"\n    insecure: true\n    sending_queue:\n      num_consumers: 4\n      queue_size: 100\n    retry_on_failure:\n      enabled: true\n  logging:\n    loglevel: debug\nprocessors:\n  batch:\n  memory_limiter:\n    # Same as --mem-ballast-size-mib CLI argument\n    ballast_size_mib: 165\n    # 80% of maximum memory up to 2G\n    limit_mib: 400\n    # 25% of limit up to 2G\n    spike_limit_mib: 100\n    check_interval: 5s\nextensions:\n  zpages: {}\nservice:\n  extensions: [zpages]\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [memory_limiter, batch]\n      exporters: [logging, otlp]\n"` | config for sidecar agent |
 | opentelemetry.enabled | bool | `false` | installs opentelemtry agent as sidecar in flow |
 | prometheus.alertmanager.enabled | bool | `false` |  |
 | prometheus.kubeStateMetrics.enabled | bool | `false` |  |
@@ -121,3 +121,4 @@ $ helm install direktiv direktiv/direktiv
 | timeout | int | `900000` | api timeouts |
 | tolerations | list | `[]` |  |
 | ui | object | `{"certificate":"none","extraContainers":[],"image":"vorteil/ui","kongPlugins":"none","tag":""}` | UI configuration |
+
