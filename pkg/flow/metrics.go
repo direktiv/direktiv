@@ -132,7 +132,7 @@ var (
 func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
 	ms := time.Now().Sub(t).Milliseconds()
-	metricsWfStateDuration.WithLabelValues(namespace, workflow, state, namespace).Observe(float64(ms))
+	metricsWfStateDuration.WithLabelValues(namespace, getInodePath(workflow), state, namespace).Observe(float64(ms))
 
 }
 
