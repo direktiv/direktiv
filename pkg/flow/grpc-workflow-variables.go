@@ -343,7 +343,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Created workflow variable '%s'.", key)
+	flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetWorkflowVariableResponse
@@ -447,7 +447,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Created workflow variable '%s'.", key)
+	flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetWorkflowVariableResponse
@@ -511,7 +511,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Deleted workflow variable '%s'.", d.vref.Name)
+	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow variable '%s'.", d.vref.Name)
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp emptypb.Empty
@@ -546,7 +546,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.RenameWorkflowVariableResponse

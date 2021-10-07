@@ -100,7 +100,7 @@ func (srv *server) logToNamespace(ctx context.Context, t time.Time, ns *ent.Name
 
 }
 
-func (srv *server) logToWorkflow(ctx context.Context, t time.Time, wf *ent.Workflow, msg string, a ...interface{}) {
+func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, msg string, a ...interface{}) {
 
 	logc := srv.db.LogMsg
 
@@ -108,7 +108,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, wf *ent.Workf
 
 	util.Trace(ctx, msg)
 
-	_, err := logc.Create().SetMsg(msg).SetWorkflow(wf).SetT(t).Save(ctx)
+	_, err := logc.Create().SetMsg(msg).SetWorkflow(d.wf).SetT(t).Save(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
@@ -117,10 +117,10 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, wf *ent.Workf
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
 
-	ns := wf.Edges.Namespace
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String())
+	ns := d.wf.Edges.Namespace
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", d.wf.ID.String(), "workflow", getInodePath(d.path))
 
-	srv.pubsub.NotifyWorkflowLogs(wf)
+	srv.pubsub.NotifyWorkflowLogs(d.wf)
 
 }
 
@@ -143,7 +143,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 	ns := in.Edges.Namespace
 	wf := in.Edges.Workflow
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", in.As, "instance", in.ID.String())
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", getInodePath(in.As), "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
 
