@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"time"
 
@@ -160,6 +161,10 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), dir)
 	if err != nil {
 		return nil, err
+	}
+
+	if d.ino.Type != "directory" {
+		return nil, errors.New("parent inode is not a directory")
 	}
 
 	inoc := tx.Inode
