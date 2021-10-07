@@ -383,7 +383,12 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted directory '%s'.", d.path)
+	if d.ino.Type == "workflow" {
+		metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Dec()
+		metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
+	}
+
+	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted %s '%s'.", d.ino.Type, d.path)
 	flow.pubsub.NotifyInode(d.ino.Edges.Parent)
 	flow.pubsub.CloseInode(d.ino)
 

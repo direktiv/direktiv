@@ -312,6 +312,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 		count                                       int
 		singleEvent, corBytes, allEvents, signature []byte
 		wf                                          string
+		captured                                    bool
 	)
 
 	db := events.db.DB()
@@ -382,6 +383,8 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 			unlock()
 			continue
 		}
+
+		captured = true
 
 		var ae []map[string]interface{}
 		json.Unmarshal(allEvents, &ae)
@@ -465,6 +468,10 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		}
 
+	}
+
+	if captured {
+		metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
 	}
 
 	return nil
@@ -577,6 +584,8 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace, event *cloudevents.Event, timer int64) error {
 
 	events.logToNamespace(ctx, time.Now(), ns, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+
+	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 
 	// add event to db
 	err := events.addEvent(ctx, events.db.CloudEvents, event, ns, timer)

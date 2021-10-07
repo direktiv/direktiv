@@ -202,6 +202,9 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	// CREATE HERE
 
+	metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Inc()
+	metricsWfUpdated.WithLabelValues(d.ns().Name, path, d.ns().Name).Inc()
+
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Created workflow '%s'.", path)
 	flow.pubsub.NotifyInode(d.ino)
 
@@ -298,6 +301,8 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
+
+	metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
 
 	flow.logToWorkflow(ctx, time.Now(), d.wf, "Updated workflow.")
 	flow.pubsub.NotifyWorkflow(d.wf)
@@ -452,6 +457,8 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
+
+	metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
 
 	flow.logToWorkflow(ctx, time.Now(), d.wf, "Discard unsaved changes to workflow.")
 	flow.pubsub.NotifyWorkflow(d.wf)
