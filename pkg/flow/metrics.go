@@ -28,7 +28,7 @@ var (
 			Name:      "workflows",
 			Help:      "Total number of workflows.",
 		},
-		[]string{"namespace", "tenant"},
+		[]string{"direktiv_namespace", "direktiv_tenant"},
 	)
 
 	metricsWfUpdated = prometheus.NewCounterVec(
@@ -38,7 +38,7 @@ var (
 			Name:      "updated_total",
 			Help:      "Total number of workflows updated.",
 		},
-		[]string{"namespace", "workflow", "tenant"},
+		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)
 
 	metricsCloudEventsReceived = prometheus.NewCounterVec(
@@ -48,7 +48,7 @@ var (
 			Name:      "cloudevents_received",
 			Help:      "Total number of cloudevents received.",
 		},
-		[]string{"namespace", "ce_type", "ce_source", "tenant"},
+		[]string{"direktiv_namespace", "ce_type", "ce_source", "direktiv_tenant"},
 	)
 
 	metricsCloudEventsCaptured = prometheus.NewCounterVec(
@@ -58,7 +58,7 @@ var (
 			Name:      "cloudevents_captured",
 			Help:      "Total number of cloudevents captured.",
 		},
-		[]string{"namespace", "ce_type", "ce_source", "tenant"},
+		[]string{"direktiv_namespace", "ce_type", "ce_source", "direktiv_tenant"},
 	)
 
 	metricsWfInvoked = prometheus.NewCounterVec(
@@ -68,7 +68,7 @@ var (
 			Name:      "invoked_total",
 			Help:      "Total number of workflows invoked.",
 		},
-		[]string{"namespace", "workflow", "tenant"},
+		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)
 
 	metricsWfSuccess = prometheus.NewCounterVec(
@@ -78,7 +78,7 @@ var (
 			Name:      "success_total",
 			Help:      "Total number of workflows sucessfully finished.",
 		},
-		[]string{"namespace", "workflow", "tenant"},
+		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)
 
 	metricsWfFail = prometheus.NewCounterVec(
@@ -88,7 +88,7 @@ var (
 			Name:      "failed_total",
 			Help:      "Total number of workflows failed.",
 		},
-		[]string{"namespace", "workflow", "tenant"},
+		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)
 
 	metricsWfPending = prometheus.NewGaugeVec(
@@ -98,7 +98,7 @@ var (
 			Name:      "pending_total",
 			Help:      "Total number of workflows pending.",
 		},
-		[]string{"namespace", "workflow", "tenant"},
+		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)
 
 	metricsWfDuration = prometheus.NewSummaryVec(
@@ -107,7 +107,7 @@ var (
 			Subsystem: "workflows",
 			Name:      "total_milliseconds",
 			Help:      "Total time workflow has been actively executing.",
-		}, []string{"namespace", "workflow", "tenant"},
+		}, []string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)
 
 	metricsWfStateDuration = prometheus.NewSummaryVec(
@@ -116,7 +116,16 @@ var (
 			Subsystem: "states",
 			Name:      "milliseconds",
 			Help:      "Average time each state spends in execution.",
-		}, []string{"namespace", "workflow", "state", "tenant"},
+		}, []string{"direktiv_namespace", "direktiv_workflow", "state", "direktiv_tenant"},
+	)
+
+	metricsWfOutcome = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "direktiv",
+			Subsystem: "workflows",
+			Name:      "outcomes",
+			Help:      "Results of each workflow instance.",
+		}, []string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant", "direktiv_instance_status", "direktiv_errcode"},
 	)
 )
 
@@ -140,6 +149,7 @@ func setupPrometheusEndpoint() {
 	prometheus.MustRegister(metricsWf)
 	prometheus.MustRegister(metricsWfUpdated)
 	prometheus.MustRegister(metricsWfPending)
+	prometheus.MustRegister(metricsWfOutcome)
 	prometheus.MustRegister(metricsCloudEventsReceived)
 	prometheus.MustRegister(metricsCloudEventsCaptured)
 
@@ -298,7 +308,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 
 	t := im.StateBeginTime()
 	namespace := ns.Name
-	workflow := im.in.As
+	workflow := getInodePath(im.in.As)
 
 	now := time.Now()
 	empty := time.Time{}
@@ -309,6 +319,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()
 	}
 
+	metricsWfOutcome.WithLabelValues(namespace, workflow, namespace, im.in.Status, im.in.ErrorCode).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Dec()
 
 	if t != empty {

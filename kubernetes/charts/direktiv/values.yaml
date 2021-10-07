@@ -201,6 +201,9 @@ minio-operator:
         secretKey: minio123
 
 prometheus:
+  global:
+    scrape_interval: 5s
+    evaluation_interval: 5s
   server:
     retention: 96h
     persistentVolume:
