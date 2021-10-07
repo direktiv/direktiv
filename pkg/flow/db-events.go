@@ -78,7 +78,17 @@ func (events *events) addEvent(ctx context.Context, cevc *ent.CloudEventsClient,
 
 	ev := event.Event(*eventin)
 
-	_, err := cevc.
+	// NOTE: this validate check added to sanitize Azure's dodgy cloudevents.
+	err := ev.Validate()
+	if err != nil && strings.Contains(err.Error(), "dataschema") {
+		ev.SetDataSchema("")
+		err = ev.Validate()
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = cevc.
 		Create().
 		SetEvent(ev).
 		SetNamespace(ns).
