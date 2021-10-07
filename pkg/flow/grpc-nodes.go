@@ -362,7 +362,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
 
-	if !req.GetRecursive() {
+	if !req.GetRecursive() && d.ino.Type == "directory" {
 		k, err := d.ino.QueryChildren().Count(ctx)
 		if err != nil {
 			return nil, err
