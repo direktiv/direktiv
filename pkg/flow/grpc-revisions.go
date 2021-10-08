@@ -180,7 +180,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Deleted workflow revision: %s.", d.rev().ID.String())
+	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow revision: %s.", d.rev().ID.String())
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 	var resp emptypb.Empty

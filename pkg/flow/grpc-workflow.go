@@ -207,6 +207,9 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	// CREATE HERE
 
+	metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Inc()
+	metricsWfUpdated.WithLabelValues(d.ns().Name, path, d.ns().Name).Inc()
+
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Created workflow '%s'.", path)
 	flow.pubsub.NotifyInode(d.ino)
 
@@ -304,7 +307,9 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Updated workflow.")
+	metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
+
+	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Updated workflow.")
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 respond:
@@ -368,7 +373,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Saved workflow: %s.", d.rev().ID.String())
+	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Saved workflow: %s.", d.rev().ID.String())
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 respond:
@@ -458,7 +463,9 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Discard unsaved changes to workflow.")
+	metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
+
+	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Discard unsaved changes to workflow.")
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 respond:
@@ -528,7 +535,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		live = "enabled"
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Workflow is now %s", live)
+	flow.logToWorkflow(ctx, time.Now(), d, "Workflow is now %s", live)
 	flow.pubsub.NotifyWorkflow(d.wf)
 
 	return &resp, nil
@@ -562,7 +569,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d.wf, "Workflow now logging to cloudevents: %s", req.GetLogger())
+	flow.logToWorkflow(ctx, time.Now(), d, "Workflow now logging to cloudevents: %s", req.GetLogger())
 
 	var resp emptypb.Empty
 

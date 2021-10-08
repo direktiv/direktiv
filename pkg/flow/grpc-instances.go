@@ -302,7 +302,6 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		return nil, err
 	}
 
-	metricsWfInvoked.WithLabelValues(args.Namespace, im.in.As, args.Namespace).Inc()
 	flow.engine.queue(im)
 
 	var resp grpc.StartWorkflowResponse

@@ -113,6 +113,14 @@ func (engine *engine) sleepWakeup(data []byte) {
 }
 
 func (engine *engine) queue(im *instanceMemory) {
+
+	namespace := im.in.Edges.Namespace.Name
+	workflow := getInodePath(im.in.As)
+
+	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
+	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()
+
 	// TODO: expand on this
 	go engine.start(im)
+
 }
