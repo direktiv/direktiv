@@ -217,6 +217,20 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
 
+	// check for duplicate file names
+	m := make(map[string]*model.FunctionFileDefinition)
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		k := f.As
+		if k == "" {
+			k = f.Key
+		}
+		if _, exists := m[k]; exists {
+			return nil, fmt.Errorf("multiple files with same name: %s", k)
+		}
+		m[k] = f
+	}
+
 	return ar, nil
 
 }
