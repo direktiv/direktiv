@@ -65,7 +65,7 @@ func (sl *errorStateLogic) Run(ctx context.Context, engine *engine, im *instance
 
 	for i := 0; i < len(a); i++ {
 		var x interface{}
-		x, err = jqObject(im.data, sl.state.Args[i])
+		x, err = jqOne(im.data, sl.state.Args[i])
 		if err != nil {
 			return
 		}
