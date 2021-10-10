@@ -69,6 +69,8 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	if IsNotFound(err) {
 		d = new(instvarData)
+		d.vref = new(ent.VarRef)
+		d.vref.Name = req.GetKey()
 		d.vdata = new(ent.VarData)
 		t := time.Now()
 		d.vdata.Data = make([]byte, 0)

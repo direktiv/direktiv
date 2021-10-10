@@ -70,6 +70,8 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 
 	if IsNotFound(err) {
 		d = new(wfvarData)
+		d.vref = new(ent.VarRef)
+		d.vref.Name = req.GetKey()
 		d.vdata = new(ent.VarData)
 		t := time.Now()
 		d.vdata.Data = make([]byte, 0)

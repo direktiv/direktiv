@@ -68,6 +68,8 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 
 	if IsNotFound(err) {
 		d = new(nsvarData)
+		d.vref = new(ent.VarRef)
+		d.vref.Name = req.GetKey()
 		d.vdata = new(ent.VarData)
 		t := time.Now()
 		d.vdata.Data = make([]byte, 0)
