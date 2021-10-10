@@ -67,15 +67,14 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 	}
 
 	if IsNotFound(err) {
+		d = new(nsvarData)
+		d.vdata = new(ent.VarData)
 		t := time.Now()
 		d.vdata.Data = make([]byte, 0)
 		hash, err := computeHash(d.vdata.Data)
 		if err != nil {
 			internal.sugar.Error(err)
 		}
-
-		d = new(nsvarData)
-		d.vdata = new(ent.VarData)
 		d.vdata.CreatedAt = t
 		d.vdata.UpdatedAt = t
 		d.vdata.Hash = hash
