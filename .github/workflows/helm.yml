@@ -25,6 +25,7 @@ jobs:
         echo "packaging helm for $v"
         helm dependency update kubernetes/charts/direktiv/
         helm package --app-version=$v kubernetes/charts/direktiv/
+        helm dependency update kubernetes/charts/knative
         helm package --app-version=$v kubernetes/charts/knative/
         helm repo index .
         ls -la
