@@ -45,5 +45,5 @@ jobs:
       uses: google-github-actions/upload-cloud-storage@main
       with:
         credentials: ${{ secrets.GCP_BUCKET }}
-        path: ./knative-0.1.0.tgz
+        path: ./knative-0.2.0.tgz
         destination: direktiv_charts/
