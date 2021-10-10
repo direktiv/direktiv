@@ -23,6 +23,7 @@ jobs:
         export version=${{ steps.ptag.outputs.tag }}
         v="${version:1}"
         echo "packaging helm for $v"
+        helm dependency update kubernetes/charts/direktiv/
         helm package --app-version=$v kubernetes/charts/direktiv/
         helm package --app-version=$v kubernetes/charts/knative/
         helm repo index .
