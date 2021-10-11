@@ -67,10 +67,10 @@ functions:
 #           exporters: [logging, otlp]
 
 database:
-  host: "direktiv-pgbouncer.postgres.svc"
+  host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "}Q_cd;-0}{VRgOaZrO}:2E[|"
+  password: "F1<}*+<a;5rMJsS(UXjQS:Ft"
   name: "direktiv"
   sslmode: require
 
