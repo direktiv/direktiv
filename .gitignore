@@ -81,3 +81,5 @@ scripts/devcerts
 scripts/wip/kong/proto
 
 logs.log
+
+scripts/dev.yaml
