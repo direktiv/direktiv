@@ -280,14 +280,14 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	}
 
 	labels := make(map[string]string)
-	labels["direktiv.io/action-id"] = in.GetActionID()
+	labels["direktiv.io/action-id"] = SanitizeLabel(in.GetActionID())
 	labels["direktiv-app"] = "direktiv"
 	labels["direktiv.io/job"] = "true"
 
 	labels[ServiceHeaderName] = info.GetName()
 	labels[ServiceHeaderWorkflowID] = info.GetWorkflow()
-	labels[ServiceHeaderPath] = info.GetPath()
-	labels[ServiceHeaderRevision] = info.GetRevision()
+	labels[ServiceHeaderPath] = SanitizeLabel(info.GetPath())
+	labels[ServiceHeaderRevision] = SanitizeLabel(info.GetRevision())
 	labels[ServiceHeaderNamespaceID] = info.GetNamespace()
 	labels[ServiceHeaderNamespaceName] = info.GetNamespaceName()
 
