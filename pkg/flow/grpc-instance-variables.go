@@ -453,7 +453,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 
 	var vdata *ent.VarData
 
-	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes())
 	if err != nil {
 		return err
 	}

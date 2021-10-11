@@ -63,6 +63,11 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		return err
 	}
 
+	id.nodeData, err = internal.reverseTraverseToInode(ctx, id.in.Edges.Workflow.Edges.Inode.ID.String())
+	if err != nil {
+		return err
+	}
+
 	d, err := internal.traverseToWorkflowVariable(ctx, nsc, id.namespace(), id.path, req.GetKey(), true)
 	if err != nil && !IsNotFound(err) {
 		return err
@@ -451,6 +456,11 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	inc := internal.db.Instance
 
 	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	if err != nil {
+		return err
+	}
+
+	id.nodeData, err = internal.reverseTraverseToInode(ctx, id.in.Edges.Workflow.Edges.Inode.ID.String())
 	if err != nil {
 		return err
 	}
