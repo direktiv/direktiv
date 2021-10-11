@@ -27,7 +27,7 @@ jobs:
         helm package --app-version=$v kubernetes/charts/direktiv/
         helm dependency update kubernetes/charts/knative
         helm package --app-version=$v kubernetes/charts/knative/
-        git clone git@github.com:CrunchyData/postgres-operator-examples.git
+        git clone https://github.com/CrunchyData/postgres-operator-examples.git
         helm package postgres-operator-examples/helm/install/
         helm repo index .
         ls -la
