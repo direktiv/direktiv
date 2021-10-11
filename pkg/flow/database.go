@@ -234,6 +234,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 	}
 
 	d.ino = ino
+	d.ino.Edges.Namespace = ns
 
 	return d, nil
 

@@ -515,10 +515,12 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 
 	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
 		func() error {
+			edges := d.wf.Edges
 			wf, err := d.wf.Update().SetLive(req.GetLive()).Save(ctx)
 			if err != nil {
 				return err
 			}
+			wf.Edges = edges
 			d.wf = wf
 
 			return nil
