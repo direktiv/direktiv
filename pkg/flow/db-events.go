@@ -168,7 +168,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 	wf *ent.Workflow, ms *muxStart) error {
 
 	err := events.deleteWorkflowEventListeners(ctx, evc, wf)
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
