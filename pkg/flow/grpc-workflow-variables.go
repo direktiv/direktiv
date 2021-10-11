@@ -49,6 +49,88 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 
 }
 
+func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_WorkflowVariableParcelsServer) error {
+
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	nsc := internal.db.Namespace
+	inc := internal.db.Instance
+
+	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	if err != nil {
+		return err
+	}
+
+	id.nodeData, err = internal.reverseTraverseToInode(ctx, id.in.Edges.Workflow.Edges.Inode.ID.String())
+	if err != nil {
+		return err
+	}
+
+	d, err := internal.traverseToWorkflowVariable(ctx, nsc, id.namespace(), id.path, req.GetKey(), true)
+	if err != nil && !IsNotFound(err) {
+		return err
+	}
+
+	if IsNotFound(err) {
+		d = new(wfvarData)
+		d.vref = new(ent.VarRef)
+		d.vref.Name = req.GetKey()
+		d.vdata = new(ent.VarData)
+		t := time.Now()
+		d.vdata.Data = make([]byte, 0)
+		hash, err := computeHash(d.vdata.Data)
+		if err != nil {
+			internal.sugar.Error(err)
+		}
+		d.vdata.CreatedAt = t
+		d.vdata.UpdatedAt = t
+		d.vdata.Hash = hash
+		d.vdata.Size = 0
+	}
+
+	rdr := bytes.NewReader(d.vdata.Data)
+
+	for {
+
+		resp := new(grpc.VariableInternalResponse)
+
+		resp.Key = d.vref.Name
+		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+		resp.Checksum = d.vdata.Hash
+		resp.TotalSize = int64(d.vdata.Size)
+
+		buf := new(bytes.Buffer)
+		k, err := io.CopyN(buf, rdr, parcelSize)
+		if err != nil {
+
+			if errors.Is(err, io.EOF) {
+				err = nil
+			}
+
+			if err == nil && k == 0 {
+				return nil
+			}
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+		resp.Data = buf.Bytes()
+
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+
+	}
+
+}
+
 func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv grpc.Flow_WorkflowVariableParcelsServer) error {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -357,6 +439,125 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	resp.TotalSize = int64(vdata.Size)
 
 	return &resp, nil
+
+}
+
+func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkflowVariableParcelsServer) error {
+
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	req, err := srv.Recv()
+	if err != nil {
+		return err
+	}
+
+	inc := internal.db.Instance
+
+	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	if err != nil {
+		return err
+	}
+
+	id.nodeData, err = internal.reverseTraverseToInode(ctx, id.in.Edges.Workflow.Edges.Inode.ID.String())
+	if err != nil {
+		return err
+	}
+
+	namespace := id.namespace()
+	path := id.path
+	key := req.GetKey()
+
+	totalSize := int(req.GetTotalSize())
+
+	buf := new(bytes.Buffer)
+
+	for {
+
+		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		if err != nil {
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		}
+
+		req, err = srv.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		} else {
+			if req == nil {
+				break
+			}
+		}
+
+		if int(req.GetTotalSize()) != totalSize {
+			return errors.New("totalSize changed mid stream")
+		}
+
+	}
+
+	if buf.Len() > totalSize {
+		return errors.New("received more data than expected")
+	}
+
+	tx, err := internal.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(tx)
+
+	nsc := tx.Namespace
+	vrefc := tx.VarRef
+	vdatac := tx.VarData
+
+	d, err := internal.traverseToWorkflow(ctx, nsc, namespace, path)
+	if err != nil {
+		return err
+	}
+
+	var vdata *ent.VarData
+
+	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	internal.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	internal.pubsub.NotifyWorkflowVariables(d.wf)
+
+	var resp grpc.SetVariableInternalResponse
+
+	resp.Key = key
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.Checksum = vdata.Hash
+	resp.TotalSize = int64(vdata.Size)
+
+	err = srv.SendAndClose(&resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 

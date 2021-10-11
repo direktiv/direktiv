@@ -517,14 +517,25 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		return nil, err
 	}
 
-	query := inc.Query().Where(entinst.IDEQ(id)).WithNamespace().WithWorkflow()
+	query := inc.Query().Where(entinst.IDEQ(id)).WithNamespace().WithWorkflow(func(q *ent.WorkflowQuery) {
+		q.WithInode()
+	})
 	if load {
 		query = query.WithRuntime()
 	}
 	in, err := query.Only(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	d := new(instData)
 	d.in = in
+
+	// TODO: check if this is a good place to put this
+	// d.nodeData, err = internal.reverseTraverseToInode(ctx, in.Edges.Workflow.Edges.Inode.ID.String())
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return d, nil
 

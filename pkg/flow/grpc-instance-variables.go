@@ -48,6 +48,83 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 
 }
 
+func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_InstanceVariableParcelsServer) error {
+
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	nsc := internal.db.Namespace
+	inc := internal.db.Instance
+
+	id, err := internal.getInstance(ctx, inc, req.GetInstance(), false)
+	if err != nil {
+		return err
+	}
+
+	d, err := internal.traverseToInstanceVariable(ctx, nsc, id.namespace(), req.GetInstance(), req.GetKey(), true)
+	if err != nil && !IsNotFound(err) {
+		return err
+	}
+
+	if IsNotFound(err) {
+		d = new(instvarData)
+		d.vref = new(ent.VarRef)
+		d.vref.Name = req.GetKey()
+		d.vdata = new(ent.VarData)
+		t := time.Now()
+		d.vdata.Data = make([]byte, 0)
+		hash, err := computeHash(d.vdata.Data)
+		if err != nil {
+			internal.sugar.Error(err)
+		}
+		d.vdata.CreatedAt = t
+		d.vdata.UpdatedAt = t
+		d.vdata.Hash = hash
+		d.vdata.Size = 0
+	}
+
+	rdr := bytes.NewReader(d.vdata.Data)
+
+	for {
+
+		resp := new(grpc.VariableInternalResponse)
+
+		resp.Key = d.vref.Name
+		resp.CreatedAt = timestamppb.New(d.vdata.CreatedAt)
+		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+		resp.Checksum = d.vdata.Hash
+		resp.TotalSize = int64(d.vdata.Size)
+
+		buf := new(bytes.Buffer)
+		k, err := io.CopyN(buf, rdr, parcelSize)
+		if err != nil {
+
+			if errors.Is(err, io.EOF) {
+				err = nil
+			}
+
+			if err == nil && k == 0 {
+				return nil
+			}
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+		resp.Data = buf.Bytes()
+
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+
+	}
+
+}
+
 func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv grpc.Flow_InstanceVariableParcelsServer) error {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -295,6 +372,115 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	resp.TotalSize = int64(vdata.Size)
 
 	return &resp, nil
+
+}
+
+func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstanceVariableParcelsServer) error {
+
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	req, err := srv.Recv()
+	if err != nil {
+		return err
+	}
+
+	inc := internal.db.Instance
+
+	instance := req.GetInstance()
+	key := req.GetKey()
+
+	totalSize := int(req.GetTotalSize())
+
+	buf := new(bytes.Buffer)
+
+	for {
+
+		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		if err != nil {
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		}
+
+		req, err = srv.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		} else {
+			if req == nil {
+				break
+			}
+		}
+
+		if int(req.GetTotalSize()) != totalSize {
+			return errors.New("totalSize changed mid stream")
+		}
+
+	}
+
+	if buf.Len() > totalSize {
+		return errors.New("received more data than expected")
+	}
+
+	tx, err := internal.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(tx)
+
+	inc = tx.Instance
+	vrefc := tx.VarRef
+	vdatac := tx.VarData
+
+	d, err := internal.getInstance(ctx, inc, instance, false)
+	if err != nil {
+		return err
+	}
+
+	var vdata *ent.VarData
+
+	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	internal.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	internal.pubsub.NotifyInstanceVariables(d.in)
+
+	var resp grpc.SetVariableInternalResponse
+
+	resp.Instance = d.in.ID.String()
+	resp.Key = key
+	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+	resp.Checksum = vdata.Hash
+	resp.TotalSize = int64(vdata.Size)
+
+	err = srv.SendAndClose(&resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
