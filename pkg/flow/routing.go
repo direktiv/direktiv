@@ -204,7 +204,7 @@ func hasFlag(flags, flag int) bool {
 	return flags&flag != 0
 }
 
-func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow, flags int, changer, commit func() error) error {
+func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf **ent.Workflow, flags int, changer, commit func() error) error {
 
 	var err error
 	var muxErr1 error
@@ -213,7 +213,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	if !hasFlag(flags, rcfNoPriors) {
 		// NOTE: we check router valid before deleting because there's no sense failing the
 		// operation for resulting in an invalid router if the router was already invalid.
-		ms1, muxErr1, err = validateRouter(ctx, wf)
+		ms1, muxErr1, err = validateRouter(ctx, *wf)
 		if err != nil {
 			return err
 		}
@@ -224,7 +224,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 		return err
 	}
 
-	ms2, muxErr2, err := validateRouter(ctx, wf)
+	ms2, muxErr2, err := validateRouter(ctx, *wf)
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	mustReconfigureRouter := ms1.Hash() != ms2.Hash() || hasFlag(flags, rcfNoPriors)
 
 	if mustReconfigureRouter {
-		err = flow.preCommitRouterConfiguration(ctx, evc, wf, ms2)
+		err = flow.preCommitRouterConfiguration(ctx, evc, *wf, ms2)
 		if err != nil {
 			return err
 		}
@@ -257,7 +257,7 @@ func (flow *flow) configureRouter(ctx context.Context, evc *ent.EventsClient, wf
 	}
 
 	if mustReconfigureRouter {
-		flow.postCommitRouterConfiguration(wf.ID.String(), ms2)
+		flow.postCommitRouterConfiguration((*wf).ID.String(), ms2)
 	}
 
 	return nil

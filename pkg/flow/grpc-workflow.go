@@ -195,7 +195,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, wf, rcfNoPriors,
+	err = flow.configureRouter(ctx, tx.Events, &wf, rcfNoPriors,
 		func() error {
 			return nil
 		},
@@ -269,7 +269,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		goto respond
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
 			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(d.wf).Save(ctx)
@@ -438,7 +438,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
 			err = d.ref.Update().SetRevision(prevrev).Exec(ctx)
@@ -513,13 +513,17 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return &resp, nil
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
+	wfr := &d.wf
+
+	err = flow.configureRouter(ctx, tx.Events, wfr, rcfBreaking,
 		func() error {
-			wf, err := d.wf.Update().SetLive(req.GetLive()).Save(ctx)
+			edges := (*wfr).Edges
+			wf, err := (*wfr).Update().SetLive(req.GetLive()).Save(ctx)
 			if err != nil {
 				return err
 			}
-			d.wf = wf
+			wf.Edges = edges
+			(*wfr) = wf
 
 			return nil
 

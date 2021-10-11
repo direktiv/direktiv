@@ -122,7 +122,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	var routes []*ent.Route
 
-	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
 			muxc := tx.Route
