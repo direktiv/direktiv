@@ -162,7 +162,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, errors.New("cannot delete latest")
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, d.wf, rcfBreaking,
+	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
 			revc := tx.Revision
