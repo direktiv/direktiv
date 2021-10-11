@@ -250,11 +250,6 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 		}
 
 		name := GenerateWorkflowServiceName(tuple.WorkflowID, tuple.Revision, tuple.FunctionDefinition.ID)
-		// name, _, err := GenerateServiceName(tuple.NamespaceName, path, tuple.FunctionDefinition.ID)
-		// if err != nil {
-		// 	logger.Errorf("Failed to generate service name for workflow function in heartbeat: %v", err)
-		// 	continue
-		// }
 
 		fServer.reusableCacheLock.Lock()
 
