@@ -217,9 +217,10 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 GET /api/namespaces/{namespace}/tree/{workflow}?op=wait
 ```
 
-Executes a workflow. This path will wait until the workflow execution has completed and return the instance output
-NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
-key. Only top level json keys are supported when providing input with query parameters
+Executes a workflow. This path will wait until the workflow execution has completed and return the instance output.
+NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json key.
+Only top level json keys are supported when providing input with query parameters.
+
 
 #### Parameters
 
@@ -232,6 +233,7 @@ key. Only top level json keys are supported when providing input with query para
 | raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#await-execute-workflow-200) | OK | successfully executed workflow |  | [schema](#await-execute-workflow-200-schema) |
@@ -250,11 +252,12 @@ Status: OK
 POST /api/namespaces/{namespace}/tree/{workflow}?op=wait
 ```
 
-Executes a workflow with optionally some input provided in the request body as json
-This path will wait until the workflow execution has completed and return the instance output
-NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json
-key. Only top level json keys are supported when providing input with query parameters. Input query
-parameters are only read if the request has not body
+Executes a workflow with optionally some input provided in the request body as json.
+This path will wait until the workflow execution has completed and return the instance output.
+NOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json key.
+Only top level json keys are supported when providing input with query parameters.
+Input query parameters are only read if the request has no body.
+
 
 #### Parameters
 
@@ -268,6 +271,7 @@ parameters are only read if the request has not body
 | Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#await-execute-workflow-body-200) | OK | successfully executed workflow |  | [schema](#await-execute-workflow-body-200-schema) |
@@ -286,9 +290,10 @@ Status: OK
 POST /api/namespaces/{namespace}/broadcast
 ```
 
-Broadcast a cloud event to a namespace
+Broadcast a cloud event to a namespace.
 Cloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.
-The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec
+The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
+
 
 #### Parameters
 
@@ -298,6 +303,7 @@ The body of this request should follow the cloud event core specification define
 | cloudevent | `body` | [interface{}](#interface) | `interface{}` | |  | | Cloud Event request to be sent. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#broadcast-cloudevent-200) | OK | successfully sent cloud event |  | [schema](#broadcast-cloudevent-200-schema) |
@@ -316,7 +322,8 @@ Status: OK
 POST /api/namespaces/{namespace}/instances/{instance}/cancel
 ```
 
-Cancel a currently pending instance
+Cancel a currently pending instance.
+
 
 #### Parameters
 
@@ -326,6 +333,7 @@ Cancel a currently pending instance
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#cancel-instance-200) | OK | successfully cancelled instance |  | [schema](#cancel-instance-200-schema) |
@@ -344,7 +352,8 @@ Status: OK
 PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory
 ```
 
-Creates a directory at the target path
+Creates a directory at the target path.
+
 
 #### Parameters
 
@@ -354,6 +363,7 @@ Creates a directory at the target path
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-directory-200) | OK | successfully created directory |  | [schema](#create-directory-200-schema) |
@@ -372,10 +382,11 @@ Status: OK
 POST /api/functions
 ```
 
-Creates global scoped knative service
-Service Names are unique on a scope level
+Creates global scoped knative service.
+Service Names are unique on a scope level.
 These services can be used as functions in workflows, more about this can be read here:
 https://docs.direktiv.io/docs/walkthrough/using-functions.html
+
 
 #### Parameters
 
@@ -384,6 +395,7 @@ https://docs.direktiv.io/docs/walkthrough/using-functions.html
 | Service | `body` | [CreateGlobalServiceBody](#create-global-service-body) | `CreateGlobalServiceBody` | | ✓ | | Payload that contains information on new service |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-global-service-200) | OK | successfully created service |  | [schema](#create-global-service-200-schema) |
@@ -423,7 +435,8 @@ Status: OK
 PUT /api/namespaces/{namespace}
 ```
 
-Creates a new namespace
+Creates a new namespace.
+
 
 #### Parameters
 
@@ -432,6 +445,7 @@ Creates a new namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace to create |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-namespace-200) | OK | namespace has been successfully created |  | [schema](#create-namespace-200-schema) |
@@ -450,10 +464,11 @@ Status: OK
 POST /api/functions/namespaces/{namespace}
 ```
 
-Creates namespace scoped knative service
-Service Names are unique on a scope level
+Creates namespace scoped knative service.
+Service Names are unique on a scope level.
 These services can be used as functions in workflows, more about this can be read here:
 https://docs.direktiv.io/docs/walkthrough/using-functions.html
+
 
 #### Parameters
 
@@ -463,6 +478,7 @@ https://docs.direktiv.io/docs/walkthrough/using-functions.html
 | Service | `body` | [CreateNamespaceServiceBody](#create-namespace-service-body) | `CreateNamespaceServiceBody` | | ✓ | | Payload that contains information on new service |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-namespace-service-200) | OK | successfully created service |  | [schema](#create-namespace-service-200-schema) |
@@ -502,7 +518,8 @@ Status: OK
 PUT /api/namespaces/{namespace}/secrets/{secret}
 ```
 
-Create a namespace secret
+Create a namespace secret.
+
 
 #### Parameters
 
@@ -513,6 +530,7 @@ Create a namespace secret
 | Secret Payload | `body` | [CreateSecretBody](#create-secret-body) | `CreateSecretBody` | |  | | Payload that contains secret data |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-secret-200) | OK | successfully created namespace secret |  | [schema](#create-secret-200-schema) |
@@ -548,8 +566,9 @@ Status: OK
 PUT /api/namespaces/{namespace}/tree/{workflow}?op=create-workflow
 ```
 
-Creates a workflow at the target path
-The body of this request should contain the workflow yaml
+Creates a workflow at the target path.
+The body of this request should contain the workflow yaml.
+
 
 #### Consumes
   * text/plain
@@ -563,6 +582,7 @@ The body of this request should contain the workflow yaml
 | workflow data | `body` | string | `string` | |  | | Payload that contains the direktiv workflow yaml to create. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-workflow-200) | OK | successfully created workflow |  | [schema](#create-workflow-200-schema) |
@@ -581,10 +601,11 @@ Status: OK
 DELETE /api/functions/{serviceName}/revisions/{revisionGeneration}
 ```
 
-Delete a global scoped knative service revision
-The target revision generation is the number suffix on a revision
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
-Note: Revisions with traffic cannot be deleted
+Delete a global scoped knative service revision.
+The target revision generation is the number suffix on a revision.
+Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Note: Revisions with traffic cannot be deleted.
+
 
 #### Parameters
 
@@ -594,6 +615,7 @@ Note: Revisions with traffic cannot be deleted
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-global-revision-200) | OK | successfully deleted service revision |  | [schema](#delete-global-revision-200-schema) |
@@ -612,7 +634,8 @@ Status: OK
 DELETE /api/functions/{serviceName}
 ```
 
-Deletes global scoped knative service and all its revisions
+Deletes global scoped knative service and all its revisions.
+
 
 #### Parameters
 
@@ -621,6 +644,7 @@ Deletes global scoped knative service and all its revisions
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-global-service-200) | OK | successfully deleted service |  | [schema](#delete-global-service-200-schema) |
@@ -639,7 +663,8 @@ Status: OK
 DELETE /api/namespaces/{namespace}/instances/{instance}/vars/{variable}
 ```
 
-Delete a instance variable
+Delete a instance variable.
+
 
 #### Parameters
 
@@ -650,6 +675,7 @@ Delete a instance variable
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-instance-variable-200) | OK | successfully deleted instance variable |  | [schema](#delete-instance-variable-200-schema) |
@@ -668,7 +694,8 @@ Status: OK
 DELETE /api/namespaces/{namespace}
 ```
 
-Delete a namespace
+Delete a namespace.
+
 
 #### Parameters
 
@@ -677,6 +704,7 @@ Delete a namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace to delete |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-namespace-200) | OK | namespace has been successfully deleted |  | [schema](#delete-namespace-200-schema) |
@@ -695,10 +723,11 @@ Status: OK
 DELETE /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}
 ```
 
-Delete a namespace scoped knative service revision
-The target revision generation is the number suffix on a revision
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'
-Note: Revisions with traffic cannot be deleted
+Delete a namespace scoped knative service revision.
+The target revision generation is the number suffix on a revision.
+Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Note: Revisions with traffic cannot be deleted.
+
 
 #### Parameters
 
@@ -709,6 +738,7 @@ Note: Revisions with traffic cannot be deleted
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-namespace-revision-200) | OK | successfully deleted service revision |  | [schema](#delete-namespace-revision-200-schema) |
@@ -727,7 +757,8 @@ Status: OK
 DELETE /api/functions/namespaces/{namespace}/function/{serviceName}
 ```
 
-Deletes namespace scoped knative service and all its revisions
+Deletes namespace scoped knative service and all its revisions.
+
 
 #### Parameters
 
@@ -737,6 +768,7 @@ Deletes namespace scoped knative service and all its revisions
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-namespace-service-200) | OK | successfully deleted service |  | [schema](#delete-namespace-service-200-schema) |
@@ -755,7 +787,8 @@ Status: OK
 DELETE /api/namespaces/{namespace}/vars/{variable}
 ```
 
-Delete a namespace variable
+Delete a namespace variable.
+
 
 #### Parameters
 
@@ -765,6 +798,7 @@ Delete a namespace variable
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-namespace-variable-200) | OK | successfully deleted namespace variable |  | [schema](#delete-namespace-variable-200-schema) |
@@ -785,6 +819,7 @@ POST /api/namespaces/{namespace}/registries
 
 Delete a namespace container registry
 
+
 #### Parameters
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
@@ -793,6 +828,7 @@ Delete a namespace container registry
 | Registry Payload | `body` | [DeleteRegistryBody](#delete-registry-body) | `DeleteRegistryBody` | |  | | Payload that contains registry data |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-registry-200) | OK | successfully delete namespace registry |  | [schema](#delete-registry-200-schema) |
@@ -828,7 +864,8 @@ Status: OK
 DELETE /api/namespaces/{namespace}/secrets/{secret}
 ```
 
-Delete a namespace secret
+Delete a namespace secret.
+
 
 #### Parameters
 
@@ -838,6 +875,7 @@ Delete a namespace secret
 | secret | `path` | string | `string` |  | ✓ |  | target secret |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-secret-200) | OK | successfully deleted namespace secret |  | [schema](#delete-secret-200-schema) |
@@ -856,7 +894,8 @@ Status: OK
 DELETE /api/namespaces/{namespace}/tree/{workflow}?op=delete-var
 ```
 
-Delete a workflow variable
+Delete a workflow variable.
+
 
 #### Parameters
 
@@ -867,6 +906,7 @@ Delete a workflow variable
 | var | `query` | string | `string` |  | ✓ |  | target variable |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-workflow-variable-200) | OK | successfully deleted workflow variable |  | [schema](#delete-workflow-variable-200-schema) |
@@ -885,7 +925,8 @@ Status: OK
 POST /api/namespaces/{namespace}/tree/{workflow}?op=execute
 ```
 
-Executes a workflow with optionally some input provided in the request body as json
+Executes a workflow with optionally some input provided in the request body as json.
+
 
 #### Parameters
 
@@ -896,6 +937,7 @@ Executes a workflow with optionally some input provided in the request body as j
 | Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#execute-workflow-200) | OK | successfully executed workflow |  | [schema](#execute-workflow-200-schema) |
@@ -914,7 +956,8 @@ Status: OK
 GET /api/functions/{serviceName}
 ```
 
-Get details of a global scoped knative service
+Get details of a global scoped knative service.
+
 
 #### Parameters
 
@@ -923,6 +966,7 @@ Get details of a global scoped knative service
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-global-service-200) | OK | successfully got service details |  | [schema](#get-global-service-200-schema) |
@@ -941,9 +985,11 @@ Status: OK
 GET /api/functions
 ```
 
-Gets a list of global knative services
+Gets a list of global knative services.
+
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-global-service-list-200) | OK | successfully got services list |  | [schema](#get-global-service-list-200-schema) |
@@ -962,7 +1008,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances/{instance}
 ```
 
-Gets the details of a executed workflow instance in this namespace
+Gets the details of a executed workflow instance in this namespace.
+
 
 #### Parameters
 
@@ -972,6 +1019,7 @@ Gets the details of a executed workflow instance in this namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-200) | OK | successfully got instance |  | [schema](#get-instance-200-schema) |
@@ -990,7 +1038,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances/{instance}/input
 ```
 
-Gets the input an instance was provided when executed
+Gets the input an instance was provided when executed.
+
 
 #### Parameters
 
@@ -1000,6 +1049,7 @@ Gets the input an instance was provided when executed
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-input-200) | OK | successfully got instance input |  | [schema](#get-instance-input-200-schema) |
@@ -1018,7 +1068,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances
 ```
 
-Gets a list of instances in a namespace
+Gets a list of instances in a namespace.
+
 
 #### Parameters
 
@@ -1027,6 +1078,7 @@ Gets a list of instances in a namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-list-200) | OK | successfully got namespace instances |  | [schema](#get-instance-list-200-schema) |
@@ -1045,7 +1097,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances/{instance}/output
 ```
 
-Gets the output an instance was provided when executed
+Gets the output an instance was provided when executed.
+
 
 #### Parameters
 
@@ -1055,6 +1108,7 @@ Gets the output an instance was provided when executed
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-output-200) | OK | successfully got instance output |  | [schema](#get-instance-output-200-schema) |
@@ -1073,7 +1127,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances/{instance}/vars/{variable}
 ```
 
-Get the value sorted in a instance variable
+Get the value sorted in a instance variable.
+
 
 #### Parameters
 
@@ -1084,6 +1139,7 @@ Get the value sorted in a instance variable
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-variable-200) | OK | successfully got instance variable |  | [schema](#get-instance-variable-200-schema) |
@@ -1102,7 +1158,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances/{instance}/vars
 ```
 
-Gets a list of variables in a instance
+Gets a list of variables in a instance.
+
 
 #### Parameters
 
@@ -1112,6 +1169,7 @@ Gets a list of variables in a instance
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-variables-200) | OK | successfully got instance variables |  | [schema](#get-instance-variables-200-schema) |
@@ -1130,7 +1188,8 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/function/{serviceName}
 ```
 
-Get details of a namespace scoped knative service
+Get details of a namespace scoped knative service.
+
 
 #### Parameters
 
@@ -1140,6 +1199,7 @@ Get details of a namespace scoped knative service
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-namespace-service-200) | OK | successfully got service details |  | [schema](#get-namespace-service-200-schema) |
@@ -1158,7 +1218,8 @@ Status: OK
 GET /api/functions/namespaces/{namespace}
 ```
 
-Gets a list of namespace knative services
+Gets a list of namespace knative services.
+
 
 #### Parameters
 
@@ -1167,6 +1228,7 @@ Gets a list of namespace knative services
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-namespace-service-list-200) | OK | successfully got services list |  | [schema](#get-namespace-service-list-200-schema) |
@@ -1185,7 +1247,8 @@ Status: OK
 GET /api/namespaces/{namespace}/vars/{variable}
 ```
 
-Get the value sorted in a namespace variable
+Get the value sorted in a namespace variable.
+
 
 #### Parameters
 
@@ -1195,6 +1258,7 @@ Get the value sorted in a namespace variable
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-namespace-variable-200) | OK | successfully got namespace variable |  | [schema](#get-namespace-variable-200-schema) |
@@ -1213,7 +1277,8 @@ Status: OK
 GET /api/namespaces/{namespace}/vars
 ```
 
-Gets a list of variables in a namespace
+Gets a list of variables in a namespace.
+
 
 #### Parameters
 
@@ -1222,6 +1287,7 @@ Gets a list of variables in a namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-namespace-variables-200) | OK | successfully got namespace variables |  | [schema](#get-namespace-variables-200-schema) |
@@ -1240,7 +1306,8 @@ Status: OK
 GET /api/namespaces
 ```
 
-Gets the list of namespaces
+Gets the list of namespaces.
+
 
 #### Parameters
 
@@ -1257,6 +1324,7 @@ Gets the list of namespaces
 | order.field | `query` | string | `string` |  |  |  |  |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-namespaces-200) | OK | successfully got list of namespaces |  | [schema](#get-namespaces-200-schema) |
@@ -1275,7 +1343,8 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{nodePath}
 ```
 
-Gets Workflow and Directory Nodes at nodePath
+Gets Workflow and Directory Nodes at nodePath.
+
 
 #### Parameters
 
@@ -1285,6 +1354,7 @@ Gets Workflow and Directory Nodes at nodePath
 | nodePath | `path` | int32 (formatted string) | `string` |  | ✓ |  | target path in tree |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-nodes-200) | OK | successfully got namespace nodes |  | [schema](#get-nodes-200-schema) |
@@ -1303,7 +1373,8 @@ Status: OK
 GET /api/namespaces/{namespace}/registries
 ```
 
-Gets the list of namespace registries
+Gets the list of namespace registries.
+
 
 #### Parameters
 
@@ -1312,6 +1383,7 @@ Gets the list of namespace registries
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-registries-200) | OK | successfully got namespace registries |  | [schema](#get-registries-200-schema) |
@@ -1330,7 +1402,8 @@ Status: OK
 GET /api/namespaces/{namespace}/secrets
 ```
 
-Gets the list of namespace secrets
+Gets the list of namespace secrets.
+
 
 #### Parameters
 
@@ -1339,6 +1412,7 @@ Gets the list of namespace secrets
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-secrets-200) | OK | successfully got namespace secrets |  | [schema](#get-secrets-200-schema) |
@@ -1357,7 +1431,8 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=logs
 ```
 
-Get workflow level logs
+Get workflow level logs.
+
 
 #### Parameters
 
@@ -1367,6 +1442,7 @@ Get workflow level logs
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-workflow-logs-200) | OK | successfully got workflow logs |  | [schema](#get-workflow-logs-200-schema) |
@@ -1385,8 +1461,9 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function
 ```
 
-Get a workflow scoped knative service details
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+Get a workflow scoped knative service details.
+Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
+
 
 #### Parameters
 
@@ -1398,6 +1475,7 @@ Note: This is a Server-Sent-Event endpoint, and will not work with the default s
 | version | `query` | string | `string` |  | ✓ |  | target service version |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-workflow-service-200) | OK | successfully got service details |  | [schema](#get-workflow-service-200-schema) |
@@ -1416,10 +1494,11 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision
 ```
 
-Get a workflow scoped knative service revision
-This will return details on a single revision
-The target revision generation (rev query) is the number suffix on a revision
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'
+Get a workflow scoped knative service revision.
+This will return details on a single revision.
+The target revision generation (rev query) is the number suffix on a revision.
+Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+
 
 #### Parameters
 
@@ -1431,6 +1510,7 @@ Example: A revisions named 'workflow-10640097968065193909-get-00001' would have 
 | svn | `query` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-workflow-service-revision-200) | OK | successfully got service revision details |  | [schema](#get-workflow-service-revision-200-schema) |
@@ -1449,7 +1529,8 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revisions
 ```
 
-Get the revision list of a workflow scoped knative service
+Get the revision list of a workflow scoped knative service.
+
 
 #### Parameters
 
@@ -1461,6 +1542,7 @@ Get the revision list of a workflow scoped knative service
 | version | `query` | string | `string` |  | ✓ |  | target service version |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-workflow-service-revision-list-200) | OK | successfully got service revisions |  | [schema](#get-workflow-service-revision-list-200-schema) |
@@ -1479,7 +1561,8 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=var
 ```
 
-Get the value sorted in a workflow variable
+Get the value sorted in a workflow variable.
+
 
 #### Parameters
 
@@ -1490,6 +1573,7 @@ Get the value sorted in a workflow variable
 | var | `query` | string | `string` |  | ✓ |  | target variable |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-workflow-variable-200) | OK | successfully got workflow variable |  | [schema](#get-workflow-variable-200-schema) |
@@ -1508,7 +1592,8 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=vars
 ```
 
-Gets a list of variables in a workflow
+Gets a list of variables in a workflow.
+
 
 #### Parameters
 
@@ -1518,6 +1603,7 @@ Gets a list of variables in a workflow
 | workflow | `path` | int32 (formatted string) | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-workflow-variables-200) | OK | successfully got workflow variables |  | [schema](#get-workflow-variables-200-schema) |
@@ -1536,7 +1622,8 @@ Status: OK
 GET /api/namespaces/{namespace}/instances/{instance}/logs
 ```
 
-Gets the logs of an executed instance
+Gets the logs of an executed instance.
+
 
 #### Parameters
 
@@ -1546,6 +1633,7 @@ Gets the logs of an executed instance
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#instance-logs-200) | OK | successfully got instance logs |  | [schema](#instance-logs-200-schema) |
@@ -1564,8 +1652,8 @@ Status: OK
 POST /api/jq
 ```
 
-JQ Playground is a sandbox where
-you can test jq queries with custom data
+JQ Playground is a sandbox where you can test jq queries with custom data.
+
 
 #### Parameters
 
@@ -1574,6 +1662,7 @@ you can test jq queries with custom data
 | JQ payload | `body` | [JqPlaygroundBody](#jq-playground-body) | `JqPlaygroundBody` | |  | | Payload that contains both the JSON data to manipulate and jq query. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#jq-playground-200) | OK | jq query was successful |  | [schema](#jq-playground-200-schema) |
@@ -1610,9 +1699,10 @@ Status: OK
 GET /api/functions/{serviceName}/revisions/{revisionGeneration}/pods
 ```
 
-List a revisions pods of a global scoped knative service
-The target revision generation is the number suffix on a revision
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
+List a revisions pods of a global scoped knative service.
+The target revision generation is the number suffix on a revision.
+Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .
+
 
 #### Parameters
 
@@ -1622,6 +1712,7 @@ Example: A revisions named 'global-fast-request-00003' would have the revisionGe
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#list-global-service-revision-pods-200) | OK | successfully got list of a service revision pods |  | [schema](#list-global-service-revision-pods-200-schema) |
@@ -1640,9 +1731,10 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}/pods
 ```
 
-List a revisions pods of a namespace scoped knative service
-The target revision generation is the number suffix on a revision
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'
+List a revisions pods of a namespace scoped knative service.
+The target revision generation is the number suffix on a revision.
+Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+
 
 #### Parameters
 
@@ -1653,6 +1745,7 @@ Example: A revisions named 'namespace-direktiv-fast-request-00003' would have th
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#list-namespace-service-revision-pods-200) | OK | successfully got list of a service revision pods |  | [schema](#list-namespace-service-revision-pods-200-schema) |
@@ -1671,9 +1764,10 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods
 ```
 
-List a revisions pods of a workflow scoped knative service
-The target revision generation (rev query) is the number suffix on a revision
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'
+List a revisions pods of a workflow scoped knative service.
+The target revision generation (rev query) is the number suffix on a revision.
+Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+
 
 #### Parameters
 
@@ -1685,6 +1779,7 @@ Example: A revisions named 'workflow-10640097968065193909-get-00001' would have 
 | svn | `query` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#list-workflow-service-revision-pods-200) | OK | successfully got list of a service revision pods |  | [schema](#list-workflow-service-revision-pods-200-schema) |
@@ -1703,7 +1798,8 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=services
 ```
 
-Gets a list of workflow knative services
+Gets a list of workflow knative services.
+
 
 #### Parameters
 
@@ -1713,6 +1809,7 @@ Gets a list of workflow knative services
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#list-workflow-services-200) | OK | successfully got services list |  | [schema](#list-workflow-services-200-schema) |
@@ -1731,7 +1828,8 @@ Status: OK
 GET /api/namespaces/{namespace}/logs
 ```
 
-Gets Namespace Level Logs
+Gets Namespace Level Logs.
+
 
 #### Parameters
 
@@ -1740,6 +1838,7 @@ Gets Namespace Level Logs
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#namespace-logs-200) | OK | successfully got namespace logs |  | [schema](#namespace-logs-200-schema) |
@@ -1758,7 +1857,8 @@ Status: OK
 GET /api/namespaces/{namespace}/metrics/failed
 ```
 
-Get metrics of failed workflows in the targeted namespace
+Get metrics of failed workflows in the targeted namespace.
+
 
 #### Parameters
 
@@ -1767,6 +1867,7 @@ Get metrics of failed workflows in the targeted namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#namespace-metrics-failed-200) | OK | successfully got namespace metrics |  | [schema](#namespace-metrics-failed-200-schema) |
@@ -1785,7 +1886,8 @@ Status: OK
 GET /api/namespaces/{namespace}/metrics/invoked
 ```
 
-Get metrics of invoked workflows in the targeted namespace
+Get metrics of invoked workflows in the targeted namespace.
+
 
 #### Parameters
 
@@ -1794,6 +1896,7 @@ Get metrics of invoked workflows in the targeted namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#namespace-metrics-invoked-200) | OK | successfully got namespace metrics |  | [schema](#namespace-metrics-invoked-200-schema) |
@@ -1812,7 +1915,8 @@ Status: OK
 GET /api/namespaces/{namespace}/metrics/milliseconds
 ```
 
-Get timing metrics of workflows in the targeted namespace
+Get timing metrics of workflows in the targeted namespace.
+
 
 #### Parameters
 
@@ -1821,6 +1925,7 @@ Get timing metrics of workflows in the targeted namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#namespace-metrics-milliseconds-200) | OK | successfully got namespace metrics |  | [schema](#namespace-metrics-milliseconds-200-schema) |
@@ -1839,7 +1944,8 @@ Status: OK
 GET /api/namespaces/{namespace}/metrics/successful
 ```
 
-Get metrics of successful workflows in the targeted namespace
+Get metrics of successful workflows in the targeted namespace.
+
 
 #### Parameters
 
@@ -1848,6 +1954,7 @@ Get metrics of successful workflows in the targeted namespace
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#namespace-metrics-successful-200) | OK | successfully got namespace metrics |  | [schema](#namespace-metrics-successful-200-schema) |
@@ -1866,7 +1973,8 @@ Status: OK
 GET /api/logs
 ```
 
-Gets Direktiv Server Logs
+Gets Direktiv Server Logs.
+
 
 #### Parameters
 
@@ -1883,6 +1991,7 @@ Gets Direktiv Server Logs
 | order.field | `query` | string | `string` |  |  |  |  |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#server-logs-200) | OK | successfully got server logs |  | [schema](#server-logs-200-schema) |
@@ -1901,9 +2010,10 @@ Status: OK
 PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable}
 ```
 
-Set the value sorted in a instance variable
-If the target variable does not exists, it will be created
-Variable data can be anything so long as it can be represented as a string
+Set the value sorted in a instance variable.
+If the target variable does not exists, it will be created.
+Variable data can be anything so long as it can be represented as a string.
+
 
 #### Consumes
   * text/plain
@@ -1918,6 +2028,7 @@ Variable data can be anything so long as it can be represented as a string
 | data | `body` | string | `string` | |  | | Payload that contains variable data. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#set-instance-variable-200) | OK | successfully set instance variable |  | [schema](#set-instance-variable-200-schema) |
@@ -1936,9 +2047,10 @@ Status: OK
 PUT /api/namespaces/{namespace}/vars/{variable}
 ```
 
-Set the value sorted in a namespace variable
-If the target variable does not exists, it will be created
-Variable data can be anything so long as it can be represented as a string
+Set the value sorted in a namespace variable.
+If the target variable does not exists, it will be created.
+Variable data can be anything so long as it can be represented as a string.
+
 
 #### Consumes
   * text/plain
@@ -1952,6 +2064,7 @@ Variable data can be anything so long as it can be represented as a string
 | data | `body` | string | `string` | |  | | Payload that contains variable data. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#set-namespace-variable-200) | OK | successfully set namespace variable |  | [schema](#set-namespace-variable-200-schema) |
@@ -1970,12 +2083,12 @@ Status: OK
 POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging
 ```
 
-Set Cloud Event for Workflow to Log to
-When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the
-conifgured value
-Workflows can be configured to generate cloud events on their namespace
-anything the log parameter produces data. Please find more information on this topic below:
+Set Cloud Event for Workflow to Log to.
+When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the configured value.
+Workflows can be configured to generate cloud events on their namespace anything the log parameter produces data.
+Please find more information on this topic here:
 https://docs.direktiv.io/docs/examples/logging.html
+
 
 #### Parameters
 
@@ -1986,6 +2099,7 @@ https://docs.direktiv.io/docs/examples/logging.html
 | Cloud Event Logger | `body` | [SetWorkflowCloudEventLogsBody](#set-workflow-cloud-event-logs-body) | `SetWorkflowCloudEventLogsBody` | |  | | Cloud event logger to target |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#set-workflow-cloud-event-logs-200) | OK | successfully update workflow |  | [schema](#set-workflow-cloud-event-logs-200-schema) |
@@ -2021,9 +2135,10 @@ Status: OK
 PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var
 ```
 
-Set the value sorted in a workflow variable
-If the target variable does not exists, it will be created
-Variable data can be anything so long as it can be represented as a string
+Set the value sorted in a workflow variable.
+If the target variable does not exists, it will be created.
+Variable data can be anything so long as it can be represented as a string.
+
 
 #### Consumes
   * text/plain
@@ -2038,6 +2153,7 @@ Variable data can be anything so long as it can be represented as a string
 | data | `body` | string | `string` | |  | | Payload that contains variable data. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#set-workflow-variable-200) | OK | successfully set workflow variable |  | [schema](#set-workflow-variable-200-schema) |
@@ -2056,8 +2172,9 @@ Status: OK
 POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle
 ```
 
-Toggle's whether or not a workflow is active
-Disabled workflows cannot be invoked
+Toggle's whether or not a workflow is active.
+Disabled workflows cannot be invoked. This includes start event and scheduled workflows.
+
 
 #### Parameters
 
@@ -2068,6 +2185,7 @@ Disabled workflows cannot be invoked
 | Workflow Live Status | `body` | [ToggleWorkflowBody](#toggle-workflow-body) | `ToggleWorkflowBody` | |  | | Whether or not the workflow is alive or disabled |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#toggle-workflow-200) | OK | successfully updated workflow live status |  | [schema](#toggle-workflow-200-schema) |
@@ -2104,9 +2222,9 @@ POST /api/functions/{serviceName}
 ```
 
 Creates a new global scoped knative service revision
-Revisions are created with a traffic percentage. This percentage controls
-how much traffic will be directed to this revision. Traffic can be set to 100
-to direct all traffic
+Revisions are created with a traffic percentage. This percentage controls how much traffic will be directed to this revision.
+Traffic can be set to 100 to direct all traffic.
+
 
 #### Parameters
 
@@ -2116,6 +2234,7 @@ to direct all traffic
 | Service | `body` | [UpdateGlobalServiceBody](#update-global-service-body) | `UpdateGlobalServiceBody` | | ✓ | | Payload that contains information on service revision |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#update-global-service-200) | OK | successfully created service revision |  | [schema](#update-global-service-200-schema) |
@@ -2155,8 +2274,9 @@ Status: OK
 PATCH /api/functions/{serviceName}
 ```
 
-traffic can only be configured between two revisions. All other revisions
-will bet set to 0 traffic
+Update Global Service traffic directed to each revision, traffic can only be configured between two revisions.
+All other revisions will bet set to 0 traffic.
+
 
 #### Parameters
 
@@ -2166,6 +2286,7 @@ will bet set to 0 traffic
 | Service Traffic | `body` | [UpdateGlobalServiceTrafficBody](#update-global-service-traffic-body) | `UpdateGlobalServiceTrafficBody` | | ✓ | | Payload that contains information on service traffic |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#update-global-service-traffic-200) | OK | successfully updated service traffic |  | [schema](#update-global-service-traffic-200-schema) |
@@ -2217,10 +2338,11 @@ Status: OK
 POST /api/functions/namespaces/{namespace}/function/{serviceName}
 ```
 
-Creates a new namespace scoped knative service revision
+Creates a new namespace scoped knative service revision.
 Revisions are created with a traffic percentage. This percentage controls
 how much traffic will be directed to this revision. Traffic can be set to 100
-to direct all traffic
+to direct all traffic.
+
 
 #### Parameters
 
@@ -2231,6 +2353,7 @@ to direct all traffic
 | Service | `body` | [UpdateNamespaceServiceBody](#update-namespace-service-body) | `UpdateNamespaceServiceBody` | | ✓ | | Payload that contains information on service revision |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#update-namespace-service-200) | OK | successfully created service revision |  | [schema](#update-namespace-service-200-schema) |
@@ -2270,8 +2393,10 @@ Status: OK
 PATCH /api/functions/namespaces/{namespace}/function/{serviceName}
 ```
 
+Update Namespace Service traffic directed to each revision,
 traffic can only be configured between two revisions. All other revisions
-will bet set to 0 traffic
+will bet set to 0 traffic.
+
 
 #### Parameters
 
@@ -2282,6 +2407,7 @@ will bet set to 0 traffic
 | Service Traffic | `body` | [UpdateNamespaceServiceTrafficBody](#update-namespace-service-traffic-body) | `UpdateNamespaceServiceTrafficBody` | | ✓ | | Payload that contains information on service traffic |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#update-namespace-service-traffic-200) | OK | successfully updated service traffic |  | [schema](#update-namespace-service-traffic-200-schema) |
@@ -2333,8 +2459,9 @@ Status: OK
 POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow
 ```
 
-Updates a workflow at the target path
-The body of this request should contain the workflow yaml you want to update to
+Updates a workflow at the target path.
+The body of this request should contain the workflow yaml you want to update to.
+
 
 #### Consumes
   * text/plain
@@ -2348,6 +2475,7 @@ The body of this request should contain the workflow yaml you want to update to
 | workflow data | `body` | string | `string` | |  | | Payload that contains the updated direktiv workflow yaml. |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#update-workflow-200) | OK | successfully updated workflow |  | [schema](#update-workflow-200-schema) |
@@ -2366,10 +2494,11 @@ Status: OK
 GET /api/functions/{serviceName}/revisions/{revisionGeneration}
 ```
 
-Watch a global scoped knative service revision
-The target revision generation is the number suffix on a revision
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+Watch a global scoped knative service revision.
+The target revision generation is the number suffix on a revision.
+Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
+
 
 #### Produces
   * text/event-stream
@@ -2382,6 +2511,7 @@ Note: This is a Server-Sent-Event endpoint, and will not work with the default s
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#watch-global-service-revision-200) | OK | successfully watching service revision |  | [schema](#watch-global-service-revision-200-schema) |
@@ -2400,8 +2530,9 @@ Status: OK
 GET /api/functions/{serviceName}/revisions
 ```
 
-Watch the revision list of a global scoped knative service
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+Watch the revision list of a global scoped knative service.
+Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
+
 
 #### Produces
   * text/event-stream
@@ -2413,6 +2544,7 @@ Note: This is a Server-Sent-Event endpoint, and will not work with the default s
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#watch-global-service-revision-list-200) | OK | successfully watching service revisions |  | [schema](#watch-global-service-revision-list-200-schema) |
@@ -2431,10 +2563,11 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}
 ```
 
-Watch a namespace scoped knative service revision
-The target revision generation is the number suffix on a revision
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+Watch a namespace scoped knative service revision.
+The target revision generation is the number suffix on a revision.
+Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
+
 
 #### Produces
   * text/event-stream
@@ -2448,6 +2581,7 @@ Note: This is a Server-Sent-Event endpoint, and will not work with the default s
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#watch-namespace-service-revision-200) | OK | successfully watching service revision |  | [schema](#watch-namespace-service-revision-200-schema) |
@@ -2466,8 +2600,9 @@ Status: OK
 GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions
 ```
 
-Watch the revision list of a namespace scoped knative service
-Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client
+Watch the revision list of a namespace scoped knative service.
+Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
+
 
 #### Produces
   * text/event-stream
@@ -2480,6 +2615,7 @@ Note: This is a Server-Sent-Event endpoint, and will not work with the default s
 | serviceName | `path` | string | `string` |  | ✓ |  | target service name |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#watch-namespace-service-revision-list-200) | OK | successfully watching service revisions |  | [schema](#watch-namespace-service-revision-list-200-schema) |
@@ -2498,7 +2634,8 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked
 ```
 
-Get metrics of invoked workflow instances
+Get metrics of invoked workflow instances.
+
 
 #### Parameters
 
@@ -2508,6 +2645,7 @@ Get metrics of invoked workflow instances
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#workflow-metrics-invoked-200) | OK | successfully got workflow metrics |  | [schema](#workflow-metrics-invoked-200-schema) |
@@ -2526,8 +2664,9 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed
 ```
 
-Get the timing metrics of a workflow's instance
-This returns a total sum of the milliseconds a workflow has been executed for
+Get the timing metrics of a workflow's instance.
+This returns a total sum of the milliseconds a workflow has been executed for.
+
 
 #### Parameters
 
@@ -2537,6 +2676,7 @@ This returns a total sum of the milliseconds a workflow has been executed for
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#workflow-metrics-milliseconds-200) | OK | successfully got workflow metrics |  | [schema](#workflow-metrics-milliseconds-200-schema) |
@@ -2555,8 +2695,9 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds
 ```
 
-Get the state timing metrics of a workflow's instance
-The returns the timing of a individual states in a workflow
+Get the state timing metrics of a workflow's instance.
+This returns the timing of individual states in a workflow.
+
 
 #### Parameters
 
@@ -2566,6 +2707,7 @@ The returns the timing of a individual states in a workflow
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#workflow-metrics-state-milliseconds-200) | OK | successfully got workflow metrics |  | [schema](#workflow-metrics-state-milliseconds-200-schema) |
@@ -2584,7 +2726,8 @@ Status: OK
 GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful
 ```
 
-Get metrics of a workflow, where the instance was successful
+Get metrics of a workflow, where the instance was successful.
+
 
 #### Parameters
 
@@ -2594,6 +2737,7 @@ Get metrics of a workflow, where the instance was successful
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
+
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#workflow-metrics-successful-200) | OK | successfully got workflow metrics |  | [schema](#workflow-metrics-successful-200-schema) |

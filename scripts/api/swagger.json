@@ -22,7 +22,7 @@
   "paths": {
     "/api/functions": {
       "get": {
-        "description": "Gets a list of global knative services",
+        "description": "Gets a list of global knative services.\n",
         "tags": [
           "Global Services"
         ],
@@ -35,7 +35,7 @@
         }
       },
       "post": {
-        "description": "Creates global scoped knative service\nService Names are unique on a scope level\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html",
+        "description": "Creates global scoped knative service.\nService Names are unique on a scope level.\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html\n",
         "tags": [
           "Global Services"
         ],
@@ -101,7 +101,7 @@
     },
     "/api/functions/namespaces/{namespace}": {
       "get": {
-        "description": "Gets a list of namespace knative services",
+        "description": "Gets a list of namespace knative services.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -123,7 +123,7 @@
         }
       },
       "post": {
-        "description": "Creates namespace scoped knative service\nService Names are unique on a scope level\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html",
+        "description": "Creates namespace scoped knative service.\nService Names are unique on a scope level.\nThese services can be used as functions in workflows, more about this can be read here:\nhttps://docs.direktiv.io/docs/walkthrough/using-functions.html\n",
         "tags": [
           "Namespace Services"
         ],
@@ -196,7 +196,7 @@
     },
     "/api/functions/namespaces/{namespace}/function/{serviceName}": {
       "get": {
-        "description": "Get details of a namespace scoped knative service",
+        "description": "Get details of a namespace scoped knative service.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -225,7 +225,7 @@
         }
       },
       "post": {
-        "description": "Creates a new namespace scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic",
+        "description": "Creates a new namespace scoped knative service revision.\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -303,7 +303,7 @@
         }
       },
       "delete": {
-        "description": "Deletes namespace scoped knative service and all its revisions",
+        "description": "Deletes namespace scoped knative service and all its revisions.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -332,7 +332,7 @@
         }
       },
       "patch": {
-        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic",
+        "description": "Update Namespace Service traffic directed to each revision,\ntraffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -406,7 +406,7 @@
     },
     "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions": {
       "get": {
-        "description": "Watch the revision list of a namespace scoped knative service\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "description": "Watch the revision list of a namespace scoped knative service.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "produces": [
           "text/event-stream"
         ],
@@ -440,7 +440,7 @@
     },
     "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}": {
       "get": {
-        "description": "Watch a namespace scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "description": "Watch a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "produces": [
           "text/event-stream"
         ],
@@ -479,7 +479,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
+        "description": "Delete a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -517,7 +517,7 @@
     },
     "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}/pods": {
       "get": {
-        "description": "List a revisions pods of a namespace scoped knative service\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'",
+        "description": "List a revisions pods of a namespace scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -555,7 +555,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function": {
       "get": {
-        "description": "Get a workflow scoped knative service details\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "description": "Get a workflow scoped knative service details.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -600,7 +600,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision": {
       "get": {
-        "description": "Get a workflow scoped knative service revision\nThis will return details on a single revision\nThe target revision generation (rev query) is the number suffix on a revision\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'",
+        "description": "Get a workflow scoped knative service revision.\nThis will return details on a single revision.\nThe target revision generation (rev query) is the number suffix on a revision.\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -645,7 +645,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revisions": {
       "get": {
-        "description": "Get the revision list of a workflow scoped knative service",
+        "description": "Get the revision list of a workflow scoped knative service.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -690,7 +690,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=pods": {
       "get": {
-        "description": "List a revisions pods of a workflow scoped knative service\nThe target revision generation (rev query) is the number suffix on a revision\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'",
+        "description": "List a revisions pods of a workflow scoped knative service.\nThe target revision generation (rev query) is the number suffix on a revision.\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -735,7 +735,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=services": {
       "get": {
-        "description": "Gets a list of workflow knative services",
+        "description": "Gets a list of workflow knative services.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -766,7 +766,7 @@
     },
     "/api/functions/{serviceName}": {
       "get": {
-        "description": "Get details of a global scoped knative service",
+        "description": "Get details of a global scoped knative service.\n",
         "tags": [
           "Global Services"
         ],
@@ -788,7 +788,7 @@
         }
       },
       "post": {
-        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls\nhow much traffic will be directed to this revision. Traffic can be set to 100\nto direct all traffic",
+        "description": "Creates a new global scoped knative service revision\nRevisions are created with a traffic percentage. This percentage controls how much traffic will be directed to this revision.\nTraffic can be set to 100 to direct all traffic.\n",
         "tags": [
           "Global Services"
         ],
@@ -859,7 +859,7 @@
         }
       },
       "delete": {
-        "description": "Deletes global scoped knative service and all its revisions",
+        "description": "Deletes global scoped knative service and all its revisions.\n",
         "tags": [
           "Global Services"
         ],
@@ -881,7 +881,7 @@
         }
       },
       "patch": {
-        "description": "traffic can only be configured between two revisions. All other revisions\nwill bet set to 0 traffic",
+        "description": "Update Global Service traffic directed to each revision, traffic can only be configured between two revisions.\nAll other revisions will bet set to 0 traffic.\n",
         "tags": [
           "Global Services"
         ],
@@ -948,7 +948,7 @@
     },
     "/api/functions/{serviceName}/revisions": {
       "get": {
-        "description": "Watch the revision list of a global scoped knative service\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "description": "Watch the revision list of a global scoped knative service.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "produces": [
           "text/event-stream"
         ],
@@ -975,7 +975,7 @@
     },
     "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
       "get": {
-        "description": "Watch a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client",
+        "description": "Watch a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "produces": [
           "text/event-stream"
         ],
@@ -1007,7 +1007,7 @@
         }
       },
       "delete": {
-        "description": "Delete a global scoped knative service revision\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'\nNote: Revisions with traffic cannot be deleted",
+        "description": "Delete a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
         "tags": [
           "Global Services"
         ],
@@ -1038,7 +1038,7 @@
     },
     "/api/functions/{serviceName}/revisions/{revisionGeneration}/pods": {
       "get": {
-        "description": "List a revisions pods of a global scoped knative service\nThe target revision generation is the number suffix on a revision\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'",
+        "description": "List a revisions pods of a global scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .\n",
         "tags": [
           "Global Services"
         ],
@@ -1069,7 +1069,7 @@
     },
     "/api/jq": {
       "post": {
-        "description": "JQ Playground is a sandbox where\nyou can test jq queries with custom data",
+        "description": "JQ Playground is a sandbox where you can test jq queries with custom data.\n",
         "tags": [
           "Other"
         ],
@@ -1112,7 +1112,7 @@
     },
     "/api/logs": {
       "get": {
-        "description": "Gets Direktiv Server Logs",
+        "description": "Gets Direktiv Server Logs.\n",
         "tags": [
           "Logs"
         ],
@@ -1185,7 +1185,7 @@
     },
     "/api/namespaces": {
       "get": {
-        "description": "Gets the list of namespaces",
+        "description": "Gets the list of namespaces.\n",
         "tags": [
           "Namespaces"
         ],
@@ -1258,7 +1258,7 @@
     },
     "/api/namespaces/{namespace}": {
       "put": {
-        "description": "Creates a new namespace",
+        "description": "Creates a new namespace.\n",
         "tags": [
           "Namespaces"
         ],
@@ -1280,7 +1280,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace",
+        "description": "Delete a namespace.\n",
         "tags": [
           "Namespaces"
         ],
@@ -1304,7 +1304,7 @@
     },
     "/api/namespaces/{namespace}/broadcast": {
       "post": {
-        "description": "Broadcast a cloud event to a namespace\nCloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.\nThe body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec",
+        "description": "Broadcast a cloud event to a namespace.\nCloud events posted to this api will be picked up by any workflows listening to the same event type on the namescape.\nThe body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .\n",
         "tags": [
           "Other"
         ],
@@ -1336,7 +1336,7 @@
     },
     "/api/namespaces/{namespace}/instances": {
       "get": {
-        "description": "Gets a list of instances in a namespace",
+        "description": "Gets a list of instances in a namespace.\n",
         "tags": [
           "Instances"
         ],
@@ -1360,7 +1360,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}": {
       "get": {
-        "description": "Gets the details of a executed workflow instance in this namespace",
+        "description": "Gets the details of a executed workflow instance in this namespace.\n",
         "tags": [
           "Instances"
         ],
@@ -1391,7 +1391,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}/cancel": {
       "post": {
-        "description": "Cancel a currently pending instance",
+        "description": "Cancel a currently pending instance.\n",
         "tags": [
           "Instances"
         ],
@@ -1422,7 +1422,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}/input": {
       "get": {
-        "description": "Gets the input an instance was provided when executed",
+        "description": "Gets the input an instance was provided when executed.\n",
         "tags": [
           "Instances"
         ],
@@ -1453,7 +1453,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}/logs": {
       "get": {
-        "description": "Gets the logs of an executed instance",
+        "description": "Gets the logs of an executed instance.\n",
         "tags": [
           "Logs"
         ],
@@ -1487,7 +1487,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}/output": {
       "get": {
-        "description": "Gets the output an instance was provided when executed",
+        "description": "Gets the output an instance was provided when executed.\n",
         "tags": [
           "Instances"
         ],
@@ -1518,7 +1518,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}/vars": {
       "get": {
-        "description": "Gets a list of variables in a instance",
+        "description": "Gets a list of variables in a instance.\n",
         "tags": [
           "Variables"
         ],
@@ -1552,7 +1552,7 @@
     },
     "/api/namespaces/{namespace}/instances/{instance}/vars/{variable}": {
       "get": {
-        "description": "Get the value sorted in a instance variable",
+        "description": "Get the value sorted in a instance variable.\n",
         "tags": [
           "Variables"
         ],
@@ -1588,7 +1588,7 @@
         }
       },
       "put": {
-        "description": "Set the value sorted in a instance variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
+        "description": "Set the value sorted in a instance variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.\n",
         "consumes": [
           "text/plain"
         ],
@@ -1638,7 +1638,7 @@
         }
       },
       "delete": {
-        "description": "Delete a instance variable",
+        "description": "Delete a instance variable.\n",
         "tags": [
           "Variables"
         ],
@@ -1676,7 +1676,7 @@
     },
     "/api/namespaces/{namespace}/logs": {
       "get": {
-        "description": "Gets Namespace Level Logs",
+        "description": "Gets Namespace Level Logs.\n",
         "tags": [
           "Logs"
         ],
@@ -1701,7 +1701,7 @@
     },
     "/api/namespaces/{namespace}/metrics/failed": {
       "get": {
-        "description": "Get metrics of failed workflows in the targeted namespace",
+        "description": "Get metrics of failed workflows in the targeted namespace.\n",
         "tags": [
           "Metrics"
         ],
@@ -1725,7 +1725,7 @@
     },
     "/api/namespaces/{namespace}/metrics/invoked": {
       "get": {
-        "description": "Get metrics of invoked workflows in the targeted namespace",
+        "description": "Get metrics of invoked workflows in the targeted namespace.\n",
         "tags": [
           "Metrics"
         ],
@@ -1749,7 +1749,7 @@
     },
     "/api/namespaces/{namespace}/metrics/milliseconds": {
       "get": {
-        "description": "Get timing metrics of workflows in the targeted namespace",
+        "description": "Get timing metrics of workflows in the targeted namespace.\n",
         "tags": [
           "Metrics"
         ],
@@ -1773,7 +1773,7 @@
     },
     "/api/namespaces/{namespace}/metrics/successful": {
       "get": {
-        "description": "Get metrics of successful workflows in the targeted namespace",
+        "description": "Get metrics of successful workflows in the targeted namespace.\n",
         "tags": [
           "Metrics"
         ],
@@ -1797,7 +1797,7 @@
     },
     "/api/namespaces/{namespace}/registries": {
       "get": {
-        "description": "Gets the list of namespace registries",
+        "description": "Gets the list of namespace registries.\n",
         "tags": [
           "Registries"
         ],
@@ -1820,7 +1820,7 @@
         }
       },
       "post": {
-        "description": "Delete a namespace container registry",
+        "description": "Delete a namespace container registry\n",
         "tags": [
           "Registries"
         ],
@@ -1865,7 +1865,7 @@
     },
     "/api/namespaces/{namespace}/secrets": {
       "get": {
-        "description": "Gets the list of namespace secrets",
+        "description": "Gets the list of namespace secrets.\n",
         "tags": [
           "Secrets"
         ],
@@ -1890,7 +1890,7 @@
     },
     "/api/namespaces/{namespace}/secrets/{secret}": {
       "put": {
-        "description": "Create a namespace secret",
+        "description": "Create a namespace secret.\n",
         "tags": [
           "Secrets"
         ],
@@ -1939,7 +1939,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace secret",
+        "description": "Delete a namespace secret.\n",
         "tags": [
           "Secrets"
         ],
@@ -1970,7 +1970,7 @@
     },
     "/api/namespaces/{namespace}/tree/{directory}?op=create-directory": {
       "put": {
-        "description": "Creates a directory at the target path",
+        "description": "Creates a directory at the target path.\n",
         "tags": [
           "Directory"
         ],
@@ -2001,7 +2001,7 @@
     },
     "/api/namespaces/{namespace}/tree/{nodePath}": {
       "get": {
-        "description": "Gets Workflow and Directory Nodes at nodePath",
+        "description": "Gets Workflow and Directory Nodes at nodePath.\n",
         "tags": [
           "Directory",
           "Workflows"
@@ -2036,7 +2036,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=create-workflow": {
       "put": {
-        "description": "Creates a workflow at the target path\nThe body of this request should contain the workflow yaml",
+        "description": "Creates a workflow at the target path.\nThe body of this request should contain the workflow yaml.\n",
         "consumes": [
           "text/plain"
         ],
@@ -2079,7 +2079,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=delete-var": {
       "delete": {
-        "description": "Delete a workflow variable",
+        "description": "Delete a workflow variable.\n",
         "tags": [
           "Variables"
         ],
@@ -2117,7 +2117,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=execute": {
       "post": {
-        "description": "Executes a workflow with optionally some input provided in the request body as json",
+        "description": "Executes a workflow with optionally some input provided in the request body as json.\n",
         "tags": [
           "Workflows"
         ],
@@ -2163,7 +2163,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=logs": {
       "get": {
-        "description": "Get workflow level logs",
+        "description": "Get workflow level logs.\n",
         "tags": [
           "Logs"
         ],
@@ -2194,7 +2194,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed": {
       "get": {
-        "description": "Get the timing metrics of a workflow's instance\nThis returns a total sum of the milliseconds a workflow has been executed for",
+        "description": "Get the timing metrics of a workflow's instance.\nThis returns a total sum of the milliseconds a workflow has been executed for.\n",
         "tags": [
           "Metrics"
         ],
@@ -2225,7 +2225,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked": {
       "get": {
-        "description": "Get metrics of invoked workflow instances",
+        "description": "Get metrics of invoked workflow instances.\n",
         "tags": [
           "Metrics"
         ],
@@ -2256,7 +2256,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds": {
       "get": {
-        "description": "Get the state timing metrics of a workflow's instance\nThe returns the timing of a individual states in a workflow",
+        "description": "Get the state timing metrics of a workflow's instance.\nThis returns the timing of individual states in a workflow.\n",
         "tags": [
           "Metrics"
         ],
@@ -2287,7 +2287,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful": {
       "get": {
-        "description": "Get metrics of a workflow, where the instance was successful",
+        "description": "Get metrics of a workflow, where the instance was successful.\n",
         "tags": [
           "Metrics"
         ],
@@ -2318,7 +2318,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-var": {
       "put": {
-        "description": "Set the value sorted in a workflow variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
+        "description": "Set the value sorted in a workflow variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.\n",
         "consumes": [
           "text/plain"
         ],
@@ -2370,7 +2370,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging": {
       "post": {
-        "description": "Set Cloud Event for Workflow to Log to\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the\nconifgured value\nWorkflows can be configured to generate cloud events on their namespace\nanything the log parameter produces data. Please find more information on this topic below:\nhttps://docs.direktiv.io/docs/examples/logging.html",
+        "description": "Set Cloud Event for Workflow to Log to.\nWhen configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the configured value.\nWorkflows can be configured to generate cloud events on their namespace anything the log parameter produces data.\nPlease find more information on this topic here:\nhttps://docs.direktiv.io/docs/examples/logging.html\n",
         "tags": [
           "Workflows"
         ],
@@ -2421,7 +2421,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=toggle": {
       "post": {
-        "description": "Toggle's whether or not a workflow is active\nDisabled workflows cannot be invoked",
+        "description": "Toggle's whether or not a workflow is active.\nDisabled workflows cannot be invoked. This includes start event and scheduled workflows.\n",
         "tags": [
           "Workflows"
         ],
@@ -2472,7 +2472,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=update-workflow": {
       "post": {
-        "description": "Updates a workflow at the target path\nThe body of this request should contain the workflow yaml you want to update to",
+        "description": "Updates a workflow at the target path.\nThe body of this request should contain the workflow yaml you want to update to.\n",
         "consumes": [
           "text/plain"
         ],
@@ -2515,7 +2515,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=var": {
       "get": {
-        "description": "Get the value sorted in a workflow variable",
+        "description": "Get the value sorted in a workflow variable.\n",
         "tags": [
           "Variables"
         ],
@@ -2553,7 +2553,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=vars": {
       "get": {
-        "description": "Gets a list of variables in a workflow",
+        "description": "Gets a list of variables in a workflow.\n",
         "tags": [
           "Variables"
         ],
@@ -2587,7 +2587,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=wait": {
       "get": {
-        "description": "Executes a workflow. This path will wait until the workflow execution has completed and return the instance output\nNOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json\nkey. Only top level json keys are supported when providing input with query parameters",
+        "description": "Executes a workflow. This path will wait until the workflow execution has completed and return the instance output.\nNOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json key.\nOnly top level json keys are supported when providing input with query parameters.\n",
         "tags": [
           "Workflows"
         ],
@@ -2634,7 +2634,7 @@
         }
       },
       "post": {
-        "description": "Executes a workflow with optionally some input provided in the request body as json\nThis path will wait until the workflow execution has completed and return the instance output\nNOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json\nkey. Only top level json keys are supported when providing input with query parameters. Input query\nparameters are only read if the request has not body",
+        "description": "Executes a workflow with optionally some input provided in the request body as json.\nThis path will wait until the workflow execution has completed and return the instance output.\nNOTE: Input can also be provided with the `input.X` query parameters; Where `X` is the json key.\nOnly top level json keys are supported when providing input with query parameters.\nInput query parameters are only read if the request has no body.\n",
         "tags": [
           "Workflows"
         ],
@@ -2698,7 +2698,7 @@
     },
     "/api/namespaces/{namespace}/vars": {
       "get": {
-        "description": "Gets a list of variables in a namespace",
+        "description": "Gets a list of variables in a namespace.\n",
         "tags": [
           "Variables"
         ],
@@ -2723,7 +2723,7 @@
     },
     "/api/namespaces/{namespace}/vars/{variable}": {
       "get": {
-        "description": "Get the value sorted in a namespace variable",
+        "description": "Get the value sorted in a namespace variable.\n",
         "tags": [
           "Variables"
         ],
@@ -2752,7 +2752,7 @@
         }
       },
       "put": {
-        "description": "Set the value sorted in a namespace variable\nIf the target variable does not exists, it will be created\nVariable data can be anything so long as it can be represented as a string",
+        "description": "Set the value sorted in a namespace variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.\n",
         "consumes": [
           "text/plain"
         ],
@@ -2795,7 +2795,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace variable",
+        "description": "Delete a namespace variable.\n",
         "tags": [
           "Variables"
         ],

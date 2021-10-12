@@ -89,12 +89,15 @@ ent: ## Manually regenerates ent database packages.
 # API docs
 
 .PHONY: api-docs
-api-docs: ## Generates API documentation
+api-docs: ## Generates API documentation, (Also fixes markdown tables & description)
 api-docs:
 	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
 	cd pkg/api
 	swagger generate spec -o scripts/api/swagger.json
 	swagger generate markdown --output scripts/api/api.md -f scripts/api/swagger.json
+	echo "Cleanup markdown tables and descriptions"
+	sed -i -z 's/#### All responses\n|/#### All responses\n\n|/g' scripts/api/api.md
+	sed -i -z 's/description: |//g' scripts/api/api.md
 
 .PHONY: api-swagger
 api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to change host for API.
