@@ -110,7 +110,7 @@ func runRequestLimiterLoop() error {
 			if functionsConfig.PodCleaner {
 
 				logger.Debugf("run pod cleaner")
-				lock, err := kubeLock("podclean", true)
+				lock, err := locksmgr.lock("podclean", true)
 				if err != nil {
 					logger.Debugf("can not get pod cleaner lock: %v", err)
 					continue
@@ -119,7 +119,7 @@ func runRequestLimiterLoop() error {
 				l, err := jobs.List(context.Background(),
 					metav1.ListOptions{LabelSelector: "direktiv.io/job=true"})
 				if err != nil {
-					kubeUnlock(lock)
+					locksmgr.unlock("podclean", lock)
 					logger.Errorf("can not list jobs: %v", err)
 					continue
 				}
@@ -139,7 +139,8 @@ func runRequestLimiterLoop() error {
 					}
 				}
 
-				kubeUnlock(lock)
+				locksmgr.unlock("podclean", lock)
+
 			}
 
 		}

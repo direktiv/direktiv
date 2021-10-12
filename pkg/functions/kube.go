@@ -1596,11 +1596,11 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 	flog.Debugf("patching service %s", svn)
 
 	// lock for updates and deletes
-	l, err := kubeLock(svn, false)
+	l, err := locksmgr.lock(svn, false)
 	if err != nil {
 		return nil, err
 	}
-	defer kubeUnlock(l)
+	defer locksmgr.unlock(svn, l)
 
 	svc, err = cs.ServingV1().Services(functionsConfig.Namespace).Patch(context.Background(),
 		svn, types.MergePatchType, b, metav1.PatchOptions{})
@@ -1665,11 +1665,11 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 
 	name, scope := GenerateServiceName(info)
 
-	l, err := kubeLock(name, false)
+	l, err := locksmgr.lock(name, false)
 	if err != nil {
 		return nil, err
 	}
-	defer kubeUnlock(l)
+	defer locksmgr.unlock(name, l)
 
 	logger.Debugf("creating knative service %s", name)
 
@@ -2022,11 +2022,11 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 		return err
 	}
 
-	l, err := kubeLock(name, false)
+	l, err := locksmgr.lock(name, false)
 	if err != nil {
 		return err
 	}
-	defer kubeUnlock(l)
+	defer locksmgr.unlock(name, l)
 
 	var recoveredSVC serviceExportInfo
 	err = json.Unmarshal([]byte(dbSVC.Data), &recoveredSVC)

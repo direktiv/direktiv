@@ -65,14 +65,22 @@ func StartServer(echan chan error) {
 
 	go runPodRequestLimiter()
 
-	err = initKubernetesLock()
+	/*
+		err = initKubernetesLock()
+		if err != nil {
+			echan <- err
+			return
+		}
+	*/
+
+	logger.Infof("loading config file %s", confFile)
+	readConfig(confFile, &functionsConfig)
+
+	err = initLocks(os.Getenv(util.DBConn))
 	if err != nil {
 		echan <- err
 		return
 	}
-
-	logger.Infof("loading config file %s", confFile)
-	readConfig(confFile, &functionsConfig)
 
 	// Setup database
 	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
