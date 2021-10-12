@@ -1048,6 +1048,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 }
 
 func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	n := mux.Vars(r)["ns"]
 
 	d := make(map[string]string)
@@ -1067,6 +1070,8 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	n := mux.Vars(r)["ns"]
 	d := make(map[string]string)
@@ -1088,6 +1093,9 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	n := mux.Vars(r)["ns"]
 
 	var resp *grpc.GetRegistriesResponse
@@ -1298,6 +1306,8 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 
 func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
 	h.listServices(annotations, w, r)
@@ -1305,6 +1315,8 @@ func (h *functionHandler) listGlobalServices(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -1325,6 +1337,8 @@ func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.R
 
 func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	ctx := r.Context()
 
 	resp, err := h.srv.flowClient.Namespace(ctx, &igrpc.NamespaceRequest{
@@ -1343,6 +1357,8 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 }
 
 func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -1364,6 +1380,8 @@ func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Re
 
 func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	ctx := r.Context()
 
 	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
@@ -1384,6 +1402,8 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 
 func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
@@ -1392,6 +1412,8 @@ func (h *functionHandler) singleGlobalServiceSSE(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
@@ -1402,11 +1424,15 @@ func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *ht
 
 func (h *functionHandler) singleWorkflowService(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	http.Error(w, "text/event-stream only", http.StatusBadRequest)
 
 }
 
 func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -1436,6 +1462,8 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 }
 
 func (h *functionHandler) listGlobalServicesSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
@@ -1507,6 +1535,9 @@ func (h *functionHandler) listServices(
 // sse
 
 func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
@@ -1514,6 +1545,9 @@ func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Req
 }
 
 func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
@@ -1556,11 +1590,17 @@ type getFunctionResponseRevision struct {
 }
 
 func (h *functionHandler) getGlobalService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.getService(fmt.Sprintf("%s-%s", functions.PrefixGlobal,
 		mux.Vars(r)["svn"]), w, r)
 }
 
 func (h *functionHandler) getGlobalServiceSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderScope] = functions.PrefixGlobal
 	annotations[functions.ServiceHeaderName] = fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
@@ -1568,6 +1608,9 @@ func (h *functionHandler) getGlobalServiceSSE(w http.ResponseWriter, r *http.Req
 }
 
 func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.getService(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
 		mux.Vars(r)["svn"]), w, r)
 }
@@ -1669,10 +1712,15 @@ type createFunctionRequest struct {
 }
 
 func (h *functionHandler) createGlobalService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.createService("", "", "", "", "", w, r)
 }
 
 func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -1732,11 +1780,17 @@ type updateServiceRequest struct {
 }
 
 func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.updateService(fmt.Sprintf("%s-%s",
 		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
 }
 
 func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.updateService(fmt.Sprintf("%s-%s-%s",
 		functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"]), w, r)
 }
@@ -1777,6 +1831,8 @@ type updateServiceTrafficRequest struct {
 func (h *functionHandler) updateGlobalServiceTraffic(w http.ResponseWriter,
 	r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.updateServiceTraffic(fmt.Sprintf("%s-%s",
 		functions.PrefixGlobal, mux.Vars(r)["svn"]), w, r)
 
@@ -1784,6 +1840,9 @@ func (h *functionHandler) updateGlobalServiceTraffic(w http.ResponseWriter,
 
 func (h *functionHandler) updateNamespaceServiceTraffic(w http.ResponseWriter,
 	r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.updateServiceTraffic(fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"],
 		mux.Vars(r)["svn"]), w, r)
 }
@@ -1822,11 +1881,17 @@ func (h *functionHandler) updateServiceTraffic(svc string,
 }
 
 func (h *functionHandler) deleteGlobalRevision(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.deleteRevision(fmt.Sprintf("%s-%s-%s",
 		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
 }
 
 func (h *functionHandler) deleteNamespaceRevision(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	h.deleteRevision(fmt.Sprintf("%s-%s-%s-%s",
 		functions.PrefixNamespace, mux.Vars(r)["ns"],
 		mux.Vars(r)["svn"], mux.Vars(r)["rev"]), w, r)
@@ -2096,22 +2161,28 @@ func (h *functionHandler) deleteRevision(rev string,
 // }
 
 func (h *functionHandler) watchGlobalRevision(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
 	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
 	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
 	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
 	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	http.Error(w, "text/event-stream only", http.StatusBadRequest)
 
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -2143,22 +2214,32 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 }
 
 func (h *functionHandler) watchGlobalRevisions(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	svn := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
 	h.watchRevisions(svn, "" /*functions.PrefixGlobal,*/, w, r)
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	svn := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
 	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	http.Error(w, "text/event-stream only", http.StatusBadRequest)
 
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 	vers := r.URL.Query().Get("version")
@@ -2303,6 +2384,8 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 //
 func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("Handling request: %s", this())
+
 	sn := mux.Vars(r)["pod"]
 	grpcReq := new(grpc.WatchLogsRequest)
 	grpcReq.PodName = &sn
@@ -2410,6 +2493,9 @@ func (h *functionHandler) watchLogs(w http.ResponseWriter, r *http.Request) {
 // }
 //
 func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	annotations := make(map[string]string)
 	annotations[functions.ServiceKnativeHeaderRevision] = fmt.Sprintf("%s-%s-%s",
 		functions.PrefixGlobal, mux.Vars(r)["svn"], mux.Vars(r)["rev"])
@@ -2418,6 +2504,8 @@ func (h *functionHandler) listGlobalPods(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -2446,6 +2534,8 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -2477,18 +2567,26 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *functionHandler) listGlobalPodsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	svc := fmt.Sprintf("%s-%s", functions.PrefixGlobal, mux.Vars(r)["svn"])
 	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
 	h.listPodsSSE(svc, rev, w, r)
 }
 
 func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
 	svc := fmt.Sprintf("%s-%s-%s", functions.PrefixNamespace, mux.Vars(r)["ns"], mux.Vars(r)["svn"])
 	rev := fmt.Sprintf("%s-%s", svc, mux.Vars(r)["rev"])
 	h.listPodsSSE(svc, rev, w, r)
 }
 
 func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
