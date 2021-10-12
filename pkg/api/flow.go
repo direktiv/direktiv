@@ -679,6 +679,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Create a namespace secret.
 	// summary: Create a Namespace Secret
+	// consumes:
+	// - text/plain
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -692,17 +694,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target secret'
 	// - in: body
 	//   name: Secret Payload
-	//   description: Payload that contains secret data
+	//   description: "Payload that contains secret data."
 	//   schema:
-	//     example:
-	//       data: "8QwFLg%D$qg*3r++`{D<BAp~4mB49^"
-	//     type: object
-	//     required:
-	//       - data
-	//     properties:
-	//       data:
-	//         type: string
-	//         description: Secret data to be set
+	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
+	//     type: string
 	// responses:
 	//   '200':
 	//     "description": "successfully created namespace secret"

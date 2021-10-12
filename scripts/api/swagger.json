@@ -1891,6 +1891,9 @@
     "/api/namespaces/{namespace}/secrets/{secret}": {
       "put": {
         "description": "Create a namespace secret.\n",
+        "consumes": [
+          "text/plain"
+        ],
         "tags": [
           "Secrets"
         ],
@@ -1912,23 +1915,12 @@
             "required": true
           },
           {
-            "description": "Payload that contains secret data",
+            "description": "Payload that contains secret data.",
             "name": "Secret Payload",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "data"
-              ],
-              "properties": {
-                "data": {
-                  "description": "Secret data to be set",
-                  "type": "string"
-                }
-              },
-              "example": {
-                "data": "8QwFLg%D$qg*3r++`{D\u003cBAp~4mB49^"
-              }
+              "type": "string",
+              "example": "7F8E7B0124ACB2BD20B383DE0756C7C0"
             }
           }
         ],

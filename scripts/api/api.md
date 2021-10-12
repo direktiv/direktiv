@@ -527,7 +527,7 @@ Create a namespace secret.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | secret | `path` | string | `string` |  | ✓ |  | target secret |
-| Secret Payload | `body` | [CreateSecretBody](#create-secret-body) | `CreateSecretBody` | |  | | Payload that contains secret data |
+| Secret Payload | `body` | string | `string` | |  | | Payload that contains secret data. |
 
 #### All responses
 
@@ -542,23 +542,6 @@ Create a namespace secret.
 Status: OK
 
 ###### <span id="create-secret-200-schema"></span> Schema
-
-###### Inlined models
-
-**<span id="create-secret-body"></span> CreateSecretBody**
-
-
-  
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| data | string| `string` | ✓ | | Secret data to be set |  |
-
-
 
 ### <span id="create-workflow"></span> Create a Workflow (*createWorkflow*)
 
