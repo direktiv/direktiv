@@ -132,7 +132,7 @@ build_service () {
 			if [ "$rev" -eq "1" ]; then
 				# Create Service
 				data=`echo ${row} | base64 --decode | jq --arg namespace "$NAMESPACE" --arg name "$name" '. + {"namespace": $namespace, "name": $name}'`
-				resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/functions/new --data-raw "$data"`
+				resp=`curl -s -S -X POST $DIREKTIV_API/api/functions/namespaces/$NAMESPACE --data-raw "$data"`
 				status=$?
 				if [ $status -ne 0 ]; then return $status; fi
 				code=`echo $resp | jq '.Code'`
@@ -144,7 +144,7 @@ build_service () {
 			else
 				# Create revision
 				data=`echo ${row} | base64 --decode | jq '. + {"trafficPercent": 100}'`
-				resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/functions/namespace-$NAMESPACE-$name --data-raw "$data"`
+				resp=`curl -s -S -X POST $DIREKTIV_API/api/functions/namespaces/$NAMESPACE/function/$name --data-raw "$data"`
 				status=$?
 			
 				if [ $status -ne 0 ]; then return $status; fi
@@ -162,7 +162,7 @@ build_service () {
 		revisionPrefix="namespace-$NAMESPACE-$name-"
 		trafficData=`echo $traffic | jq --arg revisionPrefix "$revisionPrefix" '{values: [.[] | {"percent": .percent, "revision": ($revisionPrefix + .genSuffix)}]}'`
 		echo "traffic =========== $(echo $trafficData | jq -c ".values")"
-		resp=`curl -s -S -X PATCH $DIREKTIV_API/api/namespaces/$NAMESPACE/functions/namespace-$NAMESPACE-$name --data-raw "$trafficData"`
+		resp=`curl -s -S -X PATCH $DIREKTIV_API/api/functions/namespaces/$NAMESPACE/function/$name --data-raw "$trafficData"`
 		status=$?
 		
 		if [ $status -ne 0 ]; then return $status; fi
@@ -180,12 +180,12 @@ push_variable () {
 
 	if [ -z "$workflow" ]
 	then
-		resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/variables/$name --data-binary "@$var"`
+		resp=`curl -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE/variables/$name --data-binary "@$var"`
 		status=$?
 		
 		if [ $status -ne 0 ]; then return $status; fi
 	else
-		resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/workflows/$workflow/variables/$name --data-binary "@$var"`
+		resp=`curl -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE/tree/$workflow?op=set-var&var=$name --data-binary "@$var"`
 		status=$?
 		
 		if [ $status -ne 0 ]; then return $status; fi
@@ -247,13 +247,16 @@ compile_script () {
 	tmp="/tmp/test-workflow.yaml"
 	echo "$wf" > $tmp
 
-	resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE/workflows -H "Content-Type: text/yaml" --data-binary "@$tmp"`
+	filename="$(basename $script)"
+	filename=${filename%.direktion}
+	
+	resp=`curl -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE/tree/$filename?op=create-workflow -H "Content-Type: text/yaml" --data-binary "@$tmp"`
 	status=$?
 	
 	if [ $status -ne 0 ]; then return $status; fi
 
 	id=`echo "$resp" | jq -r ".id"`
-	resp=`curl -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE/workflows/$id?logEvent=$id -H "Content-Type: text/yaml" --data-binary "@$tmp"`
+	resp=`curl -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE/tree/$filename?op=set-workflow-event-logging -H "Content-Type: text/yaml" --data "{\"logger\": \"$filename\"}"`
 	status=$?
 
 	if [ $status -ne 0 ]; then return $status; fi
@@ -296,13 +299,13 @@ run_test_init_script () {
 
 wipe_namespace () {
 
-	# wipe workflows 
-	resp=`curl -s -S -X GET $DIREKTIV_API/api/namespaces/$NAMESPACE/workflows/`
-	workflows=`echo "$resp" | jq -r '.workflows[].id' 2>/dev/null`
+	# wipe nodes 
+	resp=`curl -s -S -X GET $DIREKTIV_API/api/namespaces/$NAMESPACE/tree/`
+	paths=`echo "$resp" | jq -r '.children.edges[].node.path' 2>/dev/null`
 	status=$?
 	if [ $status -eq 0 ]; then 
-		for workflow in $workflows; do
-			resp=`curl -s -S -X DELETE $DIREKTIV_API/api/namespaces/$NAMESPACE/workflows/$workflow`
+		for path in $paths; do
+			resp=`curl -s -S -X DELETE $DIREKTIV_API/api/namespaces/$NAMESPACE/tree$path`
 		done
 	fi
 
@@ -324,7 +327,7 @@ perform_test () {
 	status=$?
 	if [ $status -ne 0 ]; then return $status; fi
 
-	resp=`curl -I -s -S -X GET $DIREKTIV_API/api/namespaces/$NAMESPACE/workflows/test/execute?wait=true`
+	resp=`curl -I -s -S -X GET $DIREKTIV_API/api/namespaces/$NAMESPACE/tree/test?op=wait`
 	code=`echo "$resp" | head -1 | cut -f2 -d" "`
 
 	if [ $code -ne 200 ] ; then
@@ -379,7 +382,7 @@ perform_individual_tests () {
 
 init_namespace () {
 
-	resp=`curl -I -s -S -X POST $DIREKTIV_API/api/namespaces/$NAMESPACE`
+	resp=`curl -I -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE`
 	code=`echo "$resp" | head -1 | cut -f2 -d" "`
 
 	if [ $code -ne 409 ] && [ $code -ne 200 ]; then
@@ -399,7 +402,7 @@ init_namespace () {
 
 init_secrets () {
 
-	resp=`curl -s -S -X POST $DIREKTIV_API/api/namespaces/test/secrets/ --data '{ "name": "URL_SECRET", "data": "https://docs.direktiv.io"}'`
+	resp=`curl -s -S -X PUT $DIREKTIV_API/api/namespaces/test/secrets/URL_SECRET --data 'https://docs.direktiv.io'`
 	code=`echo "$resp" | head -1 | cut -f2 -d" "`
 	grpcCode=`echo $resp | jq '.Code'`
 	if [[ $grpcCode == "2" ]]; then
