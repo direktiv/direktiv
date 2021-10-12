@@ -43,8 +43,6 @@ spec:
             - name: DIREKTIV_DEBUG
               value: "true"
             {{- end }}
-            - name: DIREKTIV_LOCK_CM
-              value: {{ include "direktiv.fullname" . }}-lock-cm
             - name: DIREKTIV_NAMESPACE
               value: {{ .Release.Namespace }}
             - name: DIREKTIV_DB
