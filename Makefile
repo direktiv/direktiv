@@ -39,6 +39,7 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/init-pod
 	rm -f build/secrets
 	rm -f build/sidecar
+	rm -f build/functions
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete --all ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
@@ -134,16 +135,9 @@ build/%-binary: Makefile ${GO_SOURCE_FILES}
    	touch $@; \
 	fi
 
-build/%.md5: build/%-binary
-	@echo "Calculating md5 checkum of $<..."
-	@md5sum $< build/docker/$*/Dockerfile > $@
-
-build/%-docker.checksum: build/%.md5 ${DOCKER_FILES}
-	@set -e ; if ! cmp --silent build/$*.md5 build/$*-docker.checksum; then echo "Building docker image for $* binary..." && cd build && docker build -t direktiv-$* -f docker/$*/Dockerfile . ; else echo "Skipping docker build due to unchanged $* binary." && touch build/$*-docker.checksum; fi
-	@cp build/$*.md5 build/$*-docker.checksum
-
 .PHONY: image-%
-image-%: build/%-docker.checksum
+image-%: build/%-binary
+	cd build && DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f docker/$*/Dockerfile .
 	@echo "Make $@: SUCCESS"
 
 RELEASE := ""
