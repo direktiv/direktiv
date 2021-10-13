@@ -15,6 +15,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -478,4 +479,79 @@ type paginationBodyWrapper struct {
 			val   string
 		}
 	}
+}
+
+type telemetryHandler struct {
+	srv  *Server
+	next http.Handler
+}
+
+func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	var annotations []interface{}
+	annotations = append(annotations, "trace", tid.String())
+
+	v := mux.Vars(r)
+
+	if s, exists := v["ns"]; exists {
+		annotations = append(annotations, "namespace", s)
+	}
+
+	if s, exists := v["instance"]; exists {
+		annotations = append(annotations, "instance", s)
+	}
+
+	if s, exists := v["path"]; exists {
+		annotations = append(annotations, "workflow", s)
+	}
+
+	if s, exists := v["var"]; exists {
+		annotations = append(annotations, "variable", s)
+	}
+
+	if s, exists := v["secret"]; exists {
+		annotations = append(annotations, "secret", s)
+	}
+
+	if s, exists := v["svn"]; exists {
+		annotations = append(annotations, "service", s)
+	}
+
+	if s, exists := v["rev"]; exists {
+		annotations = append(annotations, "service-revision", s)
+	}
+
+	if s, exists := v["pod"]; exists {
+		annotations = append(annotations, "pod", s)
+	}
+
+	if s := r.URL.Query().Get("op"); s != "" {
+		annotations = append(annotations, "path-operation", s)
+	}
+
+	annotations = append(annotations, "route-name", mux.CurrentRoute(r).GetName())
+	annotations = append(annotations, "http-method", r.Method)
+	annotations = append(annotations, "http-path", r.URL.Path)
+
+	// response
+	// token
+
+	h.srv.logger.Infow("Handling request", annotations...)
+
+	h.next.ServeHTTP(w, r)
+
+}
+
+func (s *Server) logMiddleware(h http.Handler) http.Handler {
+
+	return &telemetryHandler{
+		srv:  s,
+		next: h,
+	}
+
 }

@@ -14,6 +14,7 @@ var logger *zap.SugaredLogger
 
 // Server struct for API server
 type Server struct {
+	logger     *zap.SugaredLogger
 	router     *mux.Router
 	srv        *http.Server
 	flowClient grpc.FlowClient
@@ -41,6 +42,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	s := &Server{
+		logger: l,
 		router: r,
 		srv: &http.Server{
 			Handler: r,
@@ -60,7 +62,7 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.Use(util.TelemetryMiddleware)
+	r.Use(util.TelemetryMiddleware, s.logMiddleware)
 
 	s.flowHandler, err = newFlowHandler(logger, r, s.config)
 	if err != nil {
