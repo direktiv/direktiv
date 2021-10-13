@@ -10,6 +10,10 @@ timeout: 900000
 # -- api key, value 'apikey' required in header
 apikey: ""
 
+# used for encrpytion in the following resources: secrets
+# if set to empty, one will be generated on install
+encryptionKey: ""
+
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
   address: "localhost:4317"
