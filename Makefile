@@ -40,7 +40,7 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/secrets
 	rm -f build/sidecar
 	rm -f build/functions
-1	if helm status direktiv; then helm uninstall direktiv; fi
+	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete --all ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
 
