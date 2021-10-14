@@ -137,6 +137,7 @@ func (events *events) syncEventDelays() {
 	defer syncMtx.Unlock()
 
 	// disable old timer
+	events.timers.mtx.Lock()
 	for i := range events.timers.timers {
 		ti := events.timers.timers[i]
 		if ti.name == "sendEventTimer" {
@@ -144,6 +145,7 @@ func (events *events) syncEventDelays() {
 			break
 		}
 	}
+	events.timers.mtx.Unlock()
 
 	ctx := context.Background()
 
