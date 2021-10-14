@@ -20,7 +20,7 @@ func (Ref) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.Bool("immutable").Default(true).Immutable(),
-		field.String("name").Match(NameRegex).Immutable().Annotations(entgql.OrderField("NAME")),
+		field.String("name").Match(RefRegex).Immutable().Annotations(entgql.OrderField("NAME")),
 	}
 }
 
