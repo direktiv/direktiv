@@ -60,6 +60,7 @@ var testsCmd = &cobra.Command{
 		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
 		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
+		registerTest("InstanceDelayLoop", []string{"instances", "jq", "long"}, testInstanceDelayLoop)
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
 		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
@@ -236,7 +237,15 @@ func runTests(tests []test, solo bool, idx int) error {
 		}
 		fmt.Fprint(out, msg)
 
-		tctx, cancel := context.WithTimeout(ctx, testTimeout)
+		var tctx context.Context
+		var cancel context.CancelFunc
+
+		if test.IsLong() {
+			tctx, cancel = context.WithCancel(ctx)
+		} else {
+			tctx, cancel = context.WithTimeout(ctx, testTimeout)
+		}
+
 		err := test.Run(tctx, c, namespace)
 		cancel()
 		if err != nil {
@@ -333,6 +342,7 @@ var tests []test
 type test interface {
 	Name() string
 	Labels() []string
+	IsLong() bool
 	Run(context.Context, grpc.FlowClient, string) error
 }
 
@@ -344,6 +354,17 @@ type testImpl struct {
 
 func (t *testImpl) Name() string {
 	return t.name
+}
+
+func (t *testImpl) IsLong() bool {
+	lbl := t.Labels()
+	for i := 0; i < len(lbl); i++ {
+		if lbl[i] == "long" {
+			//
+			return true
+		}
+	}
+	return false
 }
 
 func (t *testImpl) Labels() []string {
