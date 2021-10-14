@@ -60,7 +60,8 @@ var testsCmd = &cobra.Command{
 		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
 		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
-		registerTest("InstanceDelayLoop", []string{"instances", "jq", "long"}, testInstanceDelayLoop)
+		registerTest("InstanceDelayLoop", []string{"instances", "long"}, testInstanceDelayLoop)
+		registerTest("InstanceGenerateConsumeEvent", []string{"instances", "event"}, testInstanceGenerateConsumeEvent)
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
 		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
@@ -78,7 +79,6 @@ var testsCmd = &cobra.Command{
 			Parallel State
 			CloudEvents
 
-			Delay State
 			Crons
 
 			Action Types
