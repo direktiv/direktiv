@@ -67,6 +67,10 @@ const (
 	ServiceKnativeHeaderGeneration      = "serving.knative.dev/configurationGeneration"
 	ServiceKnativeHeaderRevision        = "serving.knative.dev/revision"
 	ServiceKnativeHeaderRolloutDuration = "serving.knative.dev/rolloutDuration"
+
+	// Extra Annotations
+	ServiceKongIngressHeaderTimeoutName = "direktiv-functions-timeout"
+	ServiceKongIngressHeaderTimeout     = "konghq.com/override"
 )
 
 // Available prefixes for different scopes
@@ -1720,6 +1724,10 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 			},
 		},
 	}
+
+	// Set kong override timeout annotation
+	svc.ObjectMeta.Annotations[ServiceKongIngressHeaderTimeout] = ServiceKongIngressHeaderTimeoutName
+	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Annotations[ServiceKongIngressHeaderTimeout] = ServiceKongIngressHeaderTimeoutName
 
 	// Manually Keep track of revision on our side to more easily generate names in the future.
 	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Labels[ServiceTemplateGeneration] = "1"
