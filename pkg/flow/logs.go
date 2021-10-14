@@ -118,7 +118,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, ms
 	tid := span.SpanContext().TraceID()
 
 	ns := d.wf.Edges.Namespace
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", d.wf.ID.String(), "workflow", getInodePath(d.path))
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", d.wf.ID.String(), "workflow", GetInodePath(d.path))
 
 	srv.pubsub.NotifyWorkflowLogs(d.wf)
 
@@ -143,7 +143,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 	ns := in.Edges.Namespace
 	wf := in.Edges.Workflow
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", getInodePath(in.As), "instance", in.ID.String())
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", GetInodePath(in.As), "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
 

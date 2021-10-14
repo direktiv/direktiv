@@ -64,7 +64,7 @@ func (srv *server) getNamespace(ctx context.Context, nsc *ent.NamespaceClient, n
 
 }
 
-func getInodePath(path string) string {
+func GetInodePath(path string) string {
 	if strings.HasSuffix(path, "/") {
 		path = strings.TrimSuffix(path, "/")
 	}
@@ -166,7 +166,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.Namespace, path string, createParents bool) (*nodeData, error) {
 
 	d := new(nodeData)
-	d.path = getInodePath(path)
+	d.path = GetInodePath(path)
 	d.dir, d.base = filepath.Split(d.path)
 
 	query := ns.QueryInodes()

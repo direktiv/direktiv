@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/vorteil/direktiv/pkg/flow"
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/status"
@@ -507,7 +508,7 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s, exists := v["path"]; exists {
-		annotations = append(annotations, "workflow", s)
+		annotations = append(annotations, "workflow", flow.GetInodePath(s))
 	}
 
 	if s, exists := v["var"]; exists {
