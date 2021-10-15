@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/flow"
 
 	"github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -494,6 +497,234 @@ states:
 
 	return nil
 
+}
+
+func testInstanceEventAnd(ctx context.Context, c grpc.FlowClient, namespace string) error {
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source: []byte(`
+states:
+- id: eventstart
+  type: eventAnd
+  events:
+  - type: a-checked
+  - type: b-checked
+  transition: a
+- id: a
+  type: noop
+  transform:
+    execute: a
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+	})
+	if err != nil {
+		return err
+	}
+
+	// sleep for workflow to start
+	time.Sleep(time.Second * 1)
+
+	_, err = c.BroadcastCloudevent(ctx, &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: []byte(fmt.Sprintf(aCheckedCloudEvent, "a", uuid.New().String(), "a")),
+	})
+	if err != nil {
+		return err
+	}
+
+	// go is to fast sleep for event broadcast
+	time.Sleep(time.Second * 1)
+
+	// check for instance see if its still pending after one event
+	instance, err := c.Instance(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+
+	if instance.GetInstance().GetStatus() != "pending" {
+		return errors.New("eventAnd ended before the second event was sent.")
+	}
+
+	_, err = c.BroadcastCloudevent(ctx, &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: []byte(fmt.Sprintf(aCheckedCloudEvent, "b", uuid.New().String(), "b")),
+	})
+	if err != nil {
+		return err
+	}
+
+	// go is to fast sleep for event broadcast
+	time.Sleep(time.Second * 1)
+
+	output, err := c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	data := output.GetData()
+
+	var test map[string]string
+
+	err = json.Unmarshal(data, &test)
+	if err != nil {
+		return err
+	}
+
+	if test["execute"] == "a" {
+		return nil
+	}
+
+	return errors.New("eventAnd state did not end properly for expected output")
+}
+
+func testInstanceEventXor(ctx context.Context, c grpc.FlowClient, namespace string) error {
+	a := false
+	b := false
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source: []byte(`
+states:
+- id: eventstart
+  type: eventXor
+  events:
+  - event:
+      type: a-checked
+    transition: a
+  - event:
+      type: b-checked
+    transition: b
+- id: a
+  type: noop
+  transform:
+    execute: a
+- id: b
+  type: noop
+  transform:
+    execute: b
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+	})
+	if err != nil {
+		return err
+	}
+
+	// sleep for workflow to start
+	time.Sleep(time.Second * 1)
+
+	_, err = c.BroadcastCloudevent(ctx, &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: []byte(fmt.Sprintf(aCheckedCloudEvent, "a", uuid.New().String(), "a")),
+	})
+	if err != nil {
+		return err
+	}
+
+	// go is to fast sleep for event broadcast
+	time.Sleep(time.Second * 1)
+
+	output, err := c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	data := output.GetData()
+
+	var testA map[string]string
+
+	err = json.Unmarshal(data, &testA)
+	if err != nil {
+		return err
+	}
+
+	// a ran fine
+	if testA["execute"] == "a" {
+		a = true
+	}
+
+	resp, err = c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+	})
+	if err != nil {
+		return err
+	}
+
+	// go is to fast sleep for event broadcast
+	time.Sleep(time.Second * 1)
+
+	_, err = c.BroadcastCloudevent(ctx, &grpc.BroadcastCloudeventRequest{
+		Namespace:  namespace,
+		Cloudevent: []byte(fmt.Sprintf(aCheckedCloudEvent, "b", uuid.New().String(), "b")),
+	})
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(time.Second * 1)
+
+	output, err = c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+
+	data = output.GetData()
+
+	var testB map[string]string
+
+	err = json.Unmarshal(data, &testB)
+	if err != nil {
+		return err
+	}
+
+	if testB["execute"] == "b" {
+		b = true
+	}
+
+	if a && b {
+		return nil
+	}
+
+	return errors.New("eventXor state was not handled properly during execution")
 }
 
 func testInstanceSimpleChain(ctx context.Context, c grpc.FlowClient, namespace string) error {
