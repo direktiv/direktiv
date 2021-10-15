@@ -516,6 +516,7 @@ states:
   events:
   - type: a-checked
   - type: b-checked
+  transition: a
 - id: a
   type: noop
   transform:
