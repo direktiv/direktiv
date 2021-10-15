@@ -877,7 +877,7 @@ func testInstanceTimeout(ctx context.Context, c grpc.FlowClient, namespace strin
 		Path:      "/testwf",
 		Source: []byte(`
 timeouts: 
-  kill: PT5S
+  kill: PT1S
 states:
   - id: a
     type: delay
@@ -927,11 +927,11 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != flow.StatusFailed {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
-	if len(iresp.Flow) != 2 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" {
+	if len(iresp.Flow) != 1 || iresp.Flow[0] != "a" {
 		return errors.New("instance took unexpected path")
 	}
 

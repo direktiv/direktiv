@@ -16,7 +16,7 @@ import (
 )
 
 var skipLongTests bool
-var persistFailTest bool
+var persistTest bool
 var parallelTests int
 var instanceTimeout time.Duration
 var testTimeout time.Duration
@@ -144,7 +144,9 @@ func getTests(labels ...string) []test {
 func runTestsParallel(tests []test, c int) {
 
 	testsFullReset()
-	defer testsFullReset()
+	if !persistTest || c != 1 {
+		defer testsFullReset()
+	}
 
 	if c == 1 {
 		err := runTests(tests, true, 0)
@@ -209,7 +211,7 @@ func runTests(tests []test, solo bool, idx int) error {
 		return err
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 
 		if !solo {
 			lbls := test.Labels()
@@ -254,10 +256,10 @@ func runTests(tests []test, solo bool, idx int) error {
 			fail++
 			fmt.Fprint(out, "FAIL\n")
 			fmt.Fprintf(out, "\tError: %v\n", err)
-			if persistFailTest {
+			if persistTest && solo {
 				// Exit on first failed
 				fmt.Fprint(out, "Skipping cleanup and aborting tests...\n")
-				os.Exit(1)
+				break
 			}
 		} else {
 			success++
@@ -266,6 +268,12 @@ func runTests(tests []test, solo bool, idx int) error {
 
 		if buf != nil {
 			_, _ = io.Copy(os.Stderr, bytes.NewReader(buf.Bytes()))
+		}
+
+		if (i == len(tests)-1) && persistTest && solo {
+			// Exit on last success
+			fmt.Fprint(out, "Skipping cleanup...\n")
+			break
 		}
 
 		err = testReset(ctx, c, namespace)

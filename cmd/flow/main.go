@@ -96,7 +96,7 @@ func main() {
 
 	rootCmd.AddCommand(testsCmd)
 	testsCmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
-	testsCmd.Flags().BoolVarP(&persistFailTest, "persist-fail", "p", false, "If true, test will stop on first fail and will not cleanup resources")
+	testsCmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
 	testsCmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
 	testsCmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
 	testsCmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
