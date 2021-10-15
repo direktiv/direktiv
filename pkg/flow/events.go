@@ -565,6 +565,27 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
+	// NOTE: this validate check added to sanitize Azure's dodgy cloudevents.
+	err = event.Validate()
+	if err != nil && strings.Contains(err.Error(), "dataschema") {
+		event.SetDataSchema("")
+		err = event.Validate()
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+		}
+	}
+
+	// NOTE: remarshal / unmarshal necessary to overcome issues with cloudevents library.
+	data, err := json.Marshal(event)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+	}
+
+	err = event.UnmarshalJSON(data)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
+	}
+
 	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
 	if err != nil {
 		return nil, err
