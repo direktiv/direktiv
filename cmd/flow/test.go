@@ -71,6 +71,16 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceWorkflowVariables", []string{"instances", "jq", "variables"}, testInstanceWorkflowVariables)
 		registerTest("InstanceInstanceVariables", []string{"instances", "jq", "variables"}, testInstanceInstanceVariables)
 
+		// start types
+		registerTest("StartTypeEvent", []string{"events", "start"}, testStartTypeEvent)
+		registerTest("StartTypeEventAnd", []string{"events", "start"}, testStartTypeEventAnd)
+		registerTest("StartTypeEventXor", []string{"events", "start"}, testStartTypeEventXor)
+		registerTest("StartTypeCron", []string{"cron", "start", "long"}, testStartTypeCron)
+
+		// cloud events
+		registerTest("InstanceEventAnd", []string{"events"}, testInstanceEventAnd)
+		registerTest("InstanceEventXor", []string{"events"}, testInstanceEventXor)
+
 		// TODO:
 		/*
 			Error State
