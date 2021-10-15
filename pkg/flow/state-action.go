@@ -182,10 +182,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Scale = con.Scale
 		ar.Container.ID = con.ID
 		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:      &con.ID,
-			Workflow:  &wfID,
-			Revision:  &revID,
-			Namespace: &nsID,
+			Name:          &con.ID,
+			Workflow:      &wfID,
+			Revision:      &revID,
+			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
 		})
 		if err != nil {
@@ -204,8 +204,8 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:      &con.KnativeService,
-			Namespace: &nsID,
+			Name:          &con.KnativeService,
+			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
 		})
 	case model.GlobalKnativeFunctionType:
@@ -213,7 +213,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:  &con.KnativeService,
+			Name: &con.KnativeService,
 		})
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
