@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/segmentio/ksuid"
 	"github.com/senseyeio/duration"
 	"github.com/vorteil/direktiv/pkg/functions"
@@ -94,7 +93,7 @@ func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, 
 
 	if sl.state.Action.Function != "" && sd.Id != "" {
 
-		var uid uuid.UUID
+		var uid ksuid.KSUID
 		err = uid.UnmarshalText([]byte(sd.Id))
 		if err != nil {
 			engine.sugar.Error(err)
