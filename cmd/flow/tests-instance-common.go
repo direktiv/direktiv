@@ -862,3 +862,79 @@ states:
 	return nil
 
 }
+
+func testInstanceTimeout(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source: []byte(`
+timeouts: 
+  kill: PT5S
+states:
+  - id: a
+    type: delay
+    duration: PT50S
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+	})
+	if err != nil {
+		return err
+	}
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	if len(iresp.Flow) != 2 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" {
+		return errors.New("instance took unexpected path")
+	}
+
+	return nil
+
+}

@@ -62,6 +62,7 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
 		registerTest("InstanceDelayLoop", []string{"instances", "long"}, testInstanceDelayLoop)
 		registerTest("InstanceGenerateConsumeEvent", []string{"instances", "event"}, testInstanceGenerateConsumeEvent)
+		registerTest("InstanceTimeout", []string{"instances"}, testInstanceTimeout)
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
 		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
