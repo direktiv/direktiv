@@ -7,7 +7,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/segmentio/ksuid"
+	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 	"github.com/vorteil/direktiv/pkg/model"
 )
@@ -70,7 +70,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 
 	event := cloudevents.NewEvent(cloudevents.VersionV03)
 
-	uid := ksuid.New()
+	uid := uuid.New()
 	event.SetID(uid.String())
 	event.SetType(sl.state.Event.Type)
 	event.SetSource(sl.state.Event.Source)
