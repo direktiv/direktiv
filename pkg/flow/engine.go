@@ -786,10 +786,10 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	if ar.Container.Type == model.ReusableContainerFunctionType {
 		svn, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:      &ar.Container.ID,
-			Namespace: &ar.Workflow.NamespaceID,
-			Workflow:  &ar.Workflow.WorkflowID,
-			Revision:  &ar.Workflow.Revision,
+			Name:          &ar.Container.ID,
+			Namespace:     &ar.Workflow.NamespaceID,
+			Workflow:      &ar.Workflow.WorkflowID,
+			Revision:      &ar.Workflow.Revision,
 			NamespaceName: &ar.Workflow.NamespaceName,
 		})
 		if err != nil {
