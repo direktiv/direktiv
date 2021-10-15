@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/vorteil/direktiv/pkg/flow"
 
@@ -863,7 +864,7 @@ states:
 
 }
 
-func testInstanceTimeout(ctx context.Context, c grpc.FlowClient, namespace string) error {
+func testInstanceTimeoutKill(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
@@ -874,10 +875,10 @@ func testInstanceTimeout(ctx context.Context, c grpc.FlowClient, namespace strin
 
 	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
 		Namespace: namespace,
-		Path:      "/testwf",
+		Path:      "/testwf-timeout-subflow",
 		Source: []byte(`
 timeouts: 
-  kill: PT1S
+  kill: PT2S
 states:
   - id: a
     type: delay
@@ -888,9 +889,33 @@ states:
 		return err
 	}
 
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+		Source: []byte(fmt.Sprintf(`
+functions:
+- id: sub
+  type: subflow
+  workflow: testwf-timeout-subflow
+states:
+- id: a 
+  type: action
+  action:
+    function: sub
+  catch:
+    - error: "%s"
+      transition: b
+- id: b
+  type: noop
+`, flow.ErrCodeHardTimeout)),
+	})
+	if err != nil {
+		return err
+	}
+
 	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
 		Namespace: namespace,
-		Path:      "/testwf",
+		Path:      "/testwf-timeout",
 	})
 	if err != nil {
 		return err
@@ -927,12 +952,416 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusFailed {
+	if iresp.Instance.Status != flow.StatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
-	if len(iresp.Flow) != 1 || iresp.Flow[0] != "a" {
+	if len(iresp.Flow) != 2 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" {
 		return errors.New("instance took unexpected path")
+	}
+
+	instances, err := c.Instances(ctx, &grpc.InstancesRequest{
+		Namespace: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	inst := new(grpc.Instance)
+	for _, edge := range instances.GetInstances().GetEdges() {
+		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = edge.GetNode()
+		}
+	}
+
+	if inst == nil {
+		return errors.New("testwf-timeout-subflow instance not found")
+	}
+
+	if inst.Status != flow.StatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	}
+
+	if inst.ErrorCode != flow.ErrCodeHardTimeout {
+		return fmt.Errorf("instance error code expected to be %s but was %s", flow.ErrCodeHardTimeout, inst.ErrorCode)
+	}
+
+	return nil
+
+}
+
+func testInstanceTimeoutKillLong(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout-subflow",
+		Source: []byte(`
+timeouts: 
+  kill: PT60S
+states:
+  - id: a
+    type: delay
+    duration: PT80S
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+		Source: []byte(fmt.Sprintf(`
+functions:
+- id: sub
+  type: subflow
+  workflow: testwf-timeout-subflow
+states:
+- id: a 
+  type: action
+  action:
+    function: sub
+  catch:
+    - error: "%s"
+      transition: b
+- id: b
+  type: noop
+`, flow.ErrCodeHardTimeout)),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+	})
+	if err != nil {
+		return err
+	}
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	if len(iresp.Flow) != 2 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" {
+		return errors.New("instance took unexpected path")
+	}
+
+	instances, err := c.Instances(ctx, &grpc.InstancesRequest{
+		Namespace: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	inst := new(grpc.Instance)
+	for _, edge := range instances.GetInstances().GetEdges() {
+		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = edge.GetNode()
+		}
+	}
+
+	if inst == nil {
+		return errors.New("testwf-timeout-subflow instance not found")
+	}
+
+	if inst.Status != flow.StatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	}
+
+	if inst.ErrorCode != flow.ErrCodeHardTimeout {
+		return fmt.Errorf("instance error code expected to be %s but was %s", flow.ErrCodeHardTimeout, inst.ErrorCode)
+	}
+
+	return nil
+
+}
+
+func testInstanceTimeoutInterrupt(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout-subflow",
+		Source: []byte(`
+timeouts: 
+  interrupt: PT2S
+states:
+  - id: a
+    type: delay
+    duration: PT50S
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+		Source: []byte(fmt.Sprintf(`
+functions:
+- id: sub
+  type: subflow
+  workflow: testwf-timeout-subflow
+states:
+- id: a 
+  type: action
+  action:
+    function: sub
+  catch:
+    - error: "%s"
+      transition: b
+- id: b
+  type: noop
+`, flow.ErrCodeSoftTimeout)),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+	})
+	if err != nil {
+		return err
+	}
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	if len(iresp.Flow) != 2 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" {
+		return errors.New("instance took unexpected path")
+	}
+
+	instances, err := c.Instances(ctx, &grpc.InstancesRequest{
+		Namespace: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	inst := new(grpc.Instance)
+	for _, edge := range instances.GetInstances().GetEdges() {
+		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = edge.GetNode()
+		}
+	}
+
+	if inst == nil {
+		return errors.New("testwf-timeout-subflow instance not found")
+	}
+
+	if inst.Status != flow.StatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	}
+
+	if inst.ErrorCode != flow.ErrCodeSoftTimeout {
+		return fmt.Errorf("instance error code expected to be %s but was %s", flow.ErrCodeSoftTimeout, inst.ErrorCode)
+	}
+
+	return nil
+
+}
+
+func testInstanceTimeoutInterruptLong(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout-subflow",
+		Source: []byte(`
+timeouts: 
+  interrupt: PT60S
+states:
+  - id: a
+    type: delay
+    duration: PT80S
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+		Source: []byte(fmt.Sprintf(`
+functions:
+- id: sub
+  type: subflow
+  workflow: testwf-timeout-subflow
+states:
+- id: a 
+  type: action
+  action:
+    function: sub
+  catch:
+    - error: "%s"
+      transition: b
+- id: b
+  type: noop
+`, flow.ErrCodeSoftTimeout)),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf-timeout",
+	})
+	if err != nil {
+		return err
+	}
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	client, err := c.InstanceStream(cctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	if len(iresp.Flow) != 2 || iresp.Flow[0] != "a" || iresp.Flow[1] != "b" {
+		return errors.New("instance took unexpected path")
+	}
+
+	instances, err := c.Instances(ctx, &grpc.InstancesRequest{
+		Namespace: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	inst := new(grpc.Instance)
+	for _, edge := range instances.GetInstances().GetEdges() {
+		if strings.TrimPrefix(edge.GetNode().GetAs(), "/") == "testwf-timeout-subflow" {
+			inst = edge.GetNode()
+		}
+	}
+
+	if inst == nil {
+		return errors.New("testwf-timeout-subflow instance not found")
+	}
+
+	if inst.Status != flow.StatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	}
+
+	if inst.ErrorCode != flow.ErrCodeSoftTimeout {
+		return fmt.Errorf("instance error code expected to be %s but was %s", flow.ErrCodeSoftTimeout, inst.ErrorCode)
 	}
 
 	return nil
