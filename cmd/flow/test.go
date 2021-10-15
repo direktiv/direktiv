@@ -61,7 +61,12 @@ var testsCmd = &cobra.Command{
 		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
 		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
+		registerTest("InstanceEventAnd", []string{"instances", "events"}, testInstanceEventAnd)
+		registerTest("InstanceEventXor", []string{"instances", "events"}, testInstanceEventXor)
+		registerTest("InstanceValidate", []string{"instances"}, testInstanceValidate)
 		registerTest("InstanceDelayLoop", []string{"instances", "long"}, testInstanceDelayLoop)
+		registerTest("InstanceForeach", []string{"instances", "long"}, testInstanceForeach)
+		registerTest("InstanceParallel", []string{"instances", "long"}, testInstanceParallel)
 		registerTest("InstanceGenerateConsumeEvent", []string{"instances", "event"}, testInstanceGenerateConsumeEvent)
 		registerTest("InstanceTimeout", []string{"instances"}, testInstanceTimeout)
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
@@ -79,19 +84,15 @@ var testsCmd = &cobra.Command{
 		registerTest("StartTypeEventXor", []string{"events", "start"}, testStartTypeEventXor)
 		registerTest("StartTypeCron", []string{"cron", "start", "long"}, testStartTypeCron)
 
-		// cloud events
-		registerTest("InstanceEventAnd", []string{"events"}, testInstanceEventAnd)
-		registerTest("InstanceEventXor", []string{"events"}, testInstanceEventXor)
-
 		// TODO:
 		/*
 			Error State
-			ValidateState
-			Foreach State
-			Parallel State
-			CloudEvents
+			ValidateState (done checks if valid or invalid in two different workflows)
+			Foreach State (done runs a foreach for 3 objects)
+			Parallel State (done runs 3 separate workflows 1 mode or with a failing action, 1 mode and with a failing action, 1 mode and with completed actions)
+			CloudEvents (done eventAnd, evenXor and start type events)
 
-			Crons
+			Crons (runs for 3 minutes checks how many instances it created to see if it matched)
 
 			Action Types
 				Global

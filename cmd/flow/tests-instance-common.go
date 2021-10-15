@@ -559,7 +559,7 @@ states:
 	}
 
 	if instance.GetInstance().GetStatus() != "pending" {
-		return errors.New("eventAnd ended before the second event was sent.")
+		return errors.New("eventAnd ended before the second event was sent")
 	}
 
 	_, err = c.BroadcastCloudevent(ctx, &grpc.BroadcastCloudeventRequest{
@@ -594,6 +594,393 @@ states:
 	}
 
 	return errors.New("eventAnd state did not end properly for expected output")
+}
+
+func testInstanceParallel(ctx context.Context, c grpc.FlowClient, namespace string) error {
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	// create workflow that runs two actions one that will fail via post request using and mode but successful on or mode
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwffailed",
+		Source: []byte(`
+functions:
+- id: get
+  image: vorteil/request:v10
+  type: reusable
+states:
+- id: runpara
+  type: parallel
+  actions:
+  - function: get
+    input:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+  - function: get
+    input:
+      method: "GET"
+      url: "jsonplaceholder.typicode.com/todos/1"
+  mode: and
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwfsuccess",
+		Source: []byte(`
+functions:
+- id: get
+  image: vorteil/request:v10
+  type: reusable
+states:
+- id: runpara
+  type: parallel
+  actions:
+  - function: get
+    input:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+  - function: get
+    input:
+      method: "GET"
+      url: "jsonplaceholder.typicode.com/todos/1"
+  mode: or
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwfsuccessand",
+		Source: []byte(`
+functions:
+- id: get
+  image: vorteil/request:v10
+  type: reusable
+states:
+- id: runpara
+  type: parallel
+  actions:
+  - function: get
+    input:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+  - function: get
+    input:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+  mode: and
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	respFailed, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwffailed",
+	})
+	if err != nil {
+		return err
+	}
+
+	respSuccessAnd, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwfsuccessand",
+	})
+	if err != nil {
+		return err
+	}
+
+	respSuccess, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwfsuccess",
+	})
+	if err != nil {
+		return err
+	}
+
+	client, err := c.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  respSuccessAnd.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	// if workflow thats meant to be successful fails
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("parallel instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	client, err = c.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  respSuccess.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	// if workflow thats meant to be successful fails
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("parallel instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	client, err = c.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  respFailed.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	// if workflow thats meant to fail fails
+	if iresp.Instance.Status == flow.StatusFailed {
+		return nil
+	}
+
+	return errors.New("'and' or 'or' mode didnt not finish properly")
+}
+
+func testInstanceForeach(ctx context.Context, c grpc.FlowClient, namespace string) error {
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source: []byte(`
+functions:
+- id: get
+  image: vorteil/request:v10
+  type: reusable
+states:
+- id: fe
+  type: foreach
+  array: 'jq(.x[] | { xp: . })'
+  action:
+    function: get
+    input:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Input:     []byte(`{"x":["0", "1", "2"]}`),
+	})
+	if err != nil {
+		return err
+	}
+
+	client, err := c.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  resp.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.Instance.Status != flow.StatusComplete {
+		return fmt.Errorf("foreach instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
+	}
+
+	return nil
+}
+
+func testInstanceValidate(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source: []byte(`
+states:
+- id: validate-email
+  type: validate
+  subject: jq(.)
+  schema:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+  catch:
+  - error: direktiv.schema.*
+    transition: email-not-valid
+  transition: email-valid
+- id: email-not-valid
+  type: noop
+  transform:
+    result: "Email is not valid."
+- id: email-valid
+  type: noop
+  transform:
+    result: "Email is valid."
+`),
+	})
+	if err != nil {
+		return err
+	}
+
+	// this should be valid
+	respValid, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Input:     []byte(`{"email": "trent.hilliam@vorteil.io"}`),
+	})
+	if err != nil {
+		return err
+	}
+
+	respNotValid, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Input:     []byte(`{"email": "trent.hilliamvorteil.io"}`),
+	})
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(time.Second * 1)
+
+	output, err := c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
+		Namespace: namespace,
+		Instance:  respValid.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	data := output.GetData()
+
+	var testA map[string]string
+
+	err = json.Unmarshal(data, &testA)
+	if err != nil {
+		return err
+	}
+
+	output, err = c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
+		Namespace: namespace,
+		Instance:  respNotValid.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	data = output.GetData()
+
+	var testB map[string]string
+
+	err = json.Unmarshal(data, &testB)
+	if err != nil {
+		return err
+	}
+
+	if testA["result"] == "Email is valid." && testB["result"] == "Email is not valid." {
+		return nil
+	}
+
+	return errors.New("validate state failed could not verify an email")
 }
 
 func testInstanceEventXor(ctx context.Context, c grpc.FlowClient, namespace string) error {
