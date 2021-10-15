@@ -438,10 +438,9 @@ failure:
 
 			t := time.Now()
 
-			var matched bool
-			matched, err = regexp.MatchString(errRegex, cerr.Code)
-			if err != nil {
-				engine.logToInstance(ctx, t, im.in, "Error catching regex failed to compile: %v", err)
+			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
+			if regErr != nil {
+				engine.logToInstance(ctx, t, im.in, "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
