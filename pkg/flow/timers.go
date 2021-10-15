@@ -89,7 +89,7 @@ func (timers *timers) stopTimers() {
 	timers.mtx.Lock()
 	defer timers.mtx.Unlock()
 	for _, timer := range timers.timers {
-		go timers.disableTimer(timer)
+		timers.disableTimer(timer)
 	}
 
 }
@@ -116,12 +116,10 @@ func (timers *timers) prepDisableTimer(timer *timer) string {
 
 }
 
+// must be locked before calling
 func (timers *timers) disableTimer(timer *timer) {
 
 	name := timers.prepDisableTimer(timer)
-
-	timers.mtx.Lock()
-	defer timers.mtx.Unlock()
 
 	delete(timers.timers, name)
 
@@ -132,7 +130,12 @@ func (timers *timers) executeFunction(timer *timer) {
 	timer.fn(timer.data)
 
 	if timer.timerType == timerTypeOneShot {
+
+		timers.mtx.Lock()
+		defer timers.mtx.Unlock()
+
 		timers.disableTimer(timer)
+
 	}
 
 }
