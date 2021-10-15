@@ -16,6 +16,7 @@ import (
 )
 
 var skipLongTests bool
+var persistFailTest bool
 var parallelTests int
 var instanceTimeout time.Duration
 var testTimeout time.Duration
@@ -253,6 +254,11 @@ func runTests(tests []test, solo bool, idx int) error {
 			fail++
 			fmt.Fprint(out, "FAIL\n")
 			fmt.Fprintf(out, "\tError: %v\n", err)
+			if persistFailTest {
+				// Exit on first failed
+				fmt.Fprint(out, "Skipping cleanup and aborting tests...\n")
+				os.Exit(1)
+			}
 		} else {
 			success++
 			fmt.Fprint(out, "SUCCESS\n")
