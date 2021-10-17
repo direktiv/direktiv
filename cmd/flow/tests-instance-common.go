@@ -809,6 +809,130 @@ states:
 	return errors.New("'and' or 'or' mode didnt not finish properly")
 }
 
+func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string) error {
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	// create a workflow with a broken email start instance check if error code exists in instance details
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source: []byte(`
+        description: A simple 'error' state workflow that checks an email attempts to validate it.
+        states:
+        - id: validate-email
+          type: validate
+          subject: jq(.)
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+          catch:
+          - error: direktiv.schema.*
+            transition: email-not-valid 
+          transition: email-valid
+        - id: email-not-valid
+          type: error
+          error: direktiv.schema.*
+          message: "email '.email' is not valid"
+        - id: email-valid
+          type: noop
+          transform: 
+            result: "Email is valid."
+`)})
+	if err != nil {
+		return err
+	}
+
+	respFailed, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Input:     []byte(`{"email": "trent.hilliamvorteil.io"}`),
+	})
+	if err != nil {
+		return err
+	}
+
+	respSuccess, err := c.StartWorkflow(ctx, &grpc.StartWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Input:     []byte(`{"email": "trent.hilliam@vorteil.io"}`),
+	})
+	if err != nil {
+		return err
+	}
+
+	client, err := c.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  respFailed.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	var iresp, x *grpc.InstanceResponse
+
+	for {
+		x, err = client.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.GetInstance().ErrorCode != "direktiv.schema.*" && iresp.GetInstance().ErrorMessage != "email '.email' is not valid" {
+		return fmt.Errorf("error instance did not output the error via instance details")
+	}
+
+	successClient, err := c.InstanceStream(ctx, &grpc.InstanceRequest{
+		Namespace: namespace,
+		Instance:  respSuccess.Instance,
+	})
+	if err != nil {
+		return err
+	}
+	defer successClient.CloseSend()
+
+	for {
+		x, err = successClient.Recv()
+		if err != nil {
+			return err
+		}
+		iresp = x
+
+		if iresp.Instance.Status != flow.StatusPending {
+			break
+		}
+	}
+
+	err = successClient.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	if iresp.GetInstance().ErrorCode != "" && iresp.GetInstance().ErrorMessage != "" {
+		return fmt.Errorf("successfull error instance run still ended up erroring")
+	}
+
+	return nil
+}
+
 func testInstanceForeach(ctx context.Context, c grpc.FlowClient, namespace string) error {
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
