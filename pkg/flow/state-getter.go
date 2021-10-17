@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/flow/ent"
@@ -130,6 +131,12 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		} else if ref == nil {
 			data = make([]byte, 0)
 		} else {
+			if ref.Edges.Vardata == nil {
+				err = &NotFoundError{
+					Label: fmt.Sprintf("variable data not found"),
+				}
+				return nil, err
+			}
 			data = ref.Edges.Vardata.Data
 		}
 
