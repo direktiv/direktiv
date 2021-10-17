@@ -67,6 +67,7 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceDelayLoop", []string{"instances", "long"}, testInstanceDelayLoop)
 		registerTest("InstanceForeach", []string{"instances", "long"}, testInstanceForeach)
 		registerTest("InstanceParallel", []string{"instances", "long"}, testInstanceParallel)
+		registerTest("InstanceError", []string{"instances"}, testInstanceError)
 		registerTest("InstanceGenerateConsumeEvent", []string{"instances", "event"}, testInstanceGenerateConsumeEvent)
 		registerTest("InstanceTimeoutKill", []string{"instances", "timeout"}, testInstanceTimeoutKill)
 		registerTest("InstanceTimeoutKillLong", []string{"instances", "timeout", "long"}, testInstanceTimeoutKillLong)
@@ -89,7 +90,7 @@ var testsCmd = &cobra.Command{
 
 		// TODO:
 		/*
-			Error State
+			Error State (uses a validate state to check email and then gets caught by a catch to the error state)
 			ValidateState (done checks if valid or invalid in two different workflows)
 			Foreach State (done runs a foreach for 3 objects)
 			Parallel State (done runs 3 separate workflows 1 mode or with a failing action, 1 mode and with a failing action, 1 mode and with completed actions)
