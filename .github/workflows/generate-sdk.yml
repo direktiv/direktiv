@@ -12,3 +12,4 @@ jobs:
           path: api
           repository: vorteil/direktivsdk
       - run: ls
+      - run: ls api
