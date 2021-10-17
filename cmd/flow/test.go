@@ -72,6 +72,12 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceTimeoutKillLong", []string{"instances", "timeout", "long"}, testInstanceTimeoutKillLong)
 		registerTest("InstanceTimeoutInterrupt", []string{"instances", "timeout"}, testInstanceTimeoutInterrupt)
 		registerTest("InstanceTimeoutInterruptLong", []string{"instances", "timeout", "long"}, testInstanceTimeoutInterruptLong)
+
+		registerTest("InstanceSubflowRetry", []string{"instances", "retry", "long"}, testInstanceSubflowRetry)
+		registerTest("InstanceActionRetry", []string{"instances", "retry", "long"}, testInstanceActionRetry)
+		registerTest("InstanceNestedRetry", []string{"instances", "retry", "long"}, testInstanceNestedRetry)
+		registerTest("InstanceParallelRetry", []string{"instances", "retry", "long"}, testInstanceParallelRetry)
+
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
 		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
