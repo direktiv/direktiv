@@ -1,0 +1,12 @@
+name: Generate GO SDK from swagger.json
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          name: vorteil/direktivsdk
+      - run: ls
