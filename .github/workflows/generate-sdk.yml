@@ -1,6 +1,6 @@
 name: Generate GO SDK from swagger.json
 on:
-  workflow_dispatch:
+  push:
 jobs:
   build:
     runs-on: ubuntu-latest
