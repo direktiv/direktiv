@@ -6,10 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
-      - run: mkdir api
+      - run: mkdir sdk
       - uses: actions/checkout@v2
         with:
-          path: api
+          path: sdk
           repository: vorteil/direktivsdk
-      - run: ls
-      - run: ls api
+      - run: alias swagger="docker run --rm -it  --user $(id -u):$(id -g) -e GOPATH=$HOME/go:/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger"
+      - run: swagger version
