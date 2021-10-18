@@ -353,8 +353,16 @@ func (flow *flow) cronHandler(data []byte) {
 
 	d, err := flow.reverseTraverseToWorkflow(ctx, id)
 	if err != nil {
+
+		if IsNotFound(err) {
+			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
+			flow.timers.deleteCronForWorkflow(id)
+			return
+		}
+
 		flow.sugar.Error(err)
 		return
+
 	}
 
 	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData("cron"))).Count(ctx)
