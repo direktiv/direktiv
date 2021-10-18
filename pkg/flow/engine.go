@@ -357,7 +357,9 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 	engine.setEndAt(im)
 
-	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
+	if im.logic != nil {
+		engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
+	}
 	engine.metricsCompleteInstance(ctx, im)
 	engine.FreeInstanceMemory(im)
 	engine.WakeInstanceCaller(ctx, im)
