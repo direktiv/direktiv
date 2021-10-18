@@ -524,7 +524,7 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s, exists := v["rev"]; exists {
-		annotations = append(annotations, "service-revision", s)
+		annotations = append(annotations, "servicerevision", s)
 	}
 
 	if s, exists := v["pod"]; exists {
@@ -532,12 +532,12 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s := r.URL.Query().Get("op"); s != "" {
-		annotations = append(annotations, "path-operation", s)
+		annotations = append(annotations, "pathoperation", s)
 	}
 
-	annotations = append(annotations, "route-name", mux.CurrentRoute(r).GetName())
-	annotations = append(annotations, "http-method", r.Method)
-	annotations = append(annotations, "http-path", r.URL.Path)
+	annotations = append(annotations, "routename", mux.CurrentRoute(r).GetName())
+	annotations = append(annotations, "httpmethod", r.Method)
+	annotations = append(annotations, "httppath", r.URL.Path)
 
 	// response
 	// token
