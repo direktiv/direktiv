@@ -173,7 +173,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got instance logs"
-	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
+	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{instance}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked
 	// ---
@@ -1586,7 +1586,7 @@ func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	instance := mux.Vars(r)["in"]
+	instance := mux.Vars(r)["instance"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -1611,7 +1611,7 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	instance := mux.Vars(r)["in"]
+	instance := mux.Vars(r)["instance"]
 
 	p, err := pagination(r)
 	if err != nil {

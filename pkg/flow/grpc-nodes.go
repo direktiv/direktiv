@@ -260,7 +260,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	path := getInodePath(req.GetPath())
+	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 
 	if base == "" || base == "/" {
@@ -420,7 +420,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot rename root node")
 	}
 
-	path := getInodePath(req.GetNew())
+	path := GetInodePath(req.GetNew())
 	if path == "/" {
 		return nil, errors.New("cannot overwrite root node")
 	}

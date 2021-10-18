@@ -156,7 +156,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	defer rollback(tx)
 
 	nsc := tx.Namespace
-	path := getInodePath(req.GetPath())
+	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), dir)
 	if err != nil {
