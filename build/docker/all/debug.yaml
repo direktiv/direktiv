@@ -2,8 +2,8 @@ pullPolicy: IfNotPresent
 debug: "true"
 
 functions:
-  sidecar: "vorteil/sidecar:v0.5.3"
-  initPodImage:  "vorteil/direktiv-init-pod:v0.5.3"
+  sidecar: "vorteil/sidecar:v0.5.4"
+  initPodImage:  "vorteil/direktiv-init-pod:v0.5.4"
 
 database:
   # -- database host
