@@ -82,6 +82,13 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 			return nil, nil, err
 		}
 
+		if ref.Edges.Revision == nil {
+			err = &NotFoundError{
+				Label: fmt.Sprintf("revision not found"),
+			}
+			return nil, nil, err
+		}
+
 		workflow, err := loadSource(ref.Edges.Revision)
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, err.Error()), nil
@@ -91,6 +98,27 @@ func validateRouter(ctx context.Context, wf *ent.Workflow) (*muxStart, error, er
 		ms.Enabled = wf.Live
 
 		return ms, nil, nil
+
+	} else {
+
+		for i := range routes {
+
+			route := routes[i]
+			if route.Edges.Ref == nil {
+				err = &NotFoundError{
+					Label: fmt.Sprintf("ref not found"),
+				}
+				return nil, nil, err
+			}
+
+			if route.Edges.Ref.Edges.Revision == nil {
+				err = &NotFoundError{
+					Label: fmt.Sprintf("revision not found"),
+				}
+				return nil, nil, err
+			}
+
+		}
 
 	}
 
@@ -184,6 +212,13 @@ func (engine *engine) mux(ctx context.Context, nsc *ent.NamespaceClient, namespa
 
 	d.ref, err = query.WithRevision().Only(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	if d.ref.Edges.Revision == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("revision not found"),
+		}
 		return nil, err
 	}
 
@@ -318,8 +353,16 @@ func (flow *flow) cronHandler(data []byte) {
 
 	d, err := flow.reverseTraverseToWorkflow(ctx, id)
 	if err != nil {
+
+		if IsNotFound(err) {
+			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
+			flow.timers.deleteCronForWorkflow(id)
+			return
+		}
+
 		flow.sugar.Error(err)
 		return
+
 	}
 
 	k, err := d.wf.QueryInstances().Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData("cron"))).Count(ctx)
