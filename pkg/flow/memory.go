@@ -173,6 +173,34 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		return nil, err
 	}
 
+	if in.Edges.Namespace == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("namespace not found"),
+		}
+		return nil, err
+	}
+
+	if in.Edges.Workflow == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("workflow not found"),
+		}
+		return nil, err
+	}
+
+	if in.Edges.Revision == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("revision not found"),
+		}
+		return nil, err
+	}
+
+	if in.Edges.Runtime == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("instance runtime data not found"),
+		}
+		return nil, err
+	}
+
 	im := new(instanceMemory)
 	im.in = in
 
