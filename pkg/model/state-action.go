@@ -58,6 +58,11 @@ func (o *ActionState) Validate() error {
 		return errors.New("action required")
 	}
 
+	err := o.Action.Validate()
+	if err != nil {
+		return err
+	}
+
 	if o.Timeout != "" && !isISO8601(o.Timeout) {
 		return errors.New("timeout is not a ISO8601 string")
 	}

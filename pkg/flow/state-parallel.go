@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/segmentio/ksuid"
+	"github.com/google/uuid"
 	"github.com/vorteil/direktiv/pkg/model"
 )
 
@@ -119,7 +119,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 		fallthrough
 	case model.ReusableContainerFunctionType:
 
-		uid := ksuid.New()
+		uid := uuid.New()
 		logic = multiactionTuple{
 			ID:       uid.String(),
 			Type:     "isolate",
@@ -139,7 +139,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 
 	case model.IsolatedContainerFunctionType:
 
-		uid := ksuid.New()
+		uid := uuid.New()
 		logic = multiactionTuple{
 			ID:       uid.String(),
 			Type:     "isolate",

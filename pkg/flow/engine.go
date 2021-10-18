@@ -357,7 +357,9 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 	engine.setEndAt(im)
 
-	engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
+	if im.logic != nil {
+		engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
+	}
 	engine.metricsCompleteInstance(ctx, im)
 	engine.FreeInstanceMemory(im)
 	engine.WakeInstanceCaller(ctx, im)
@@ -438,10 +440,9 @@ failure:
 
 			t := time.Now()
 
-			var matched bool
-			matched, err = regexp.MatchString(errRegex, cerr.Code)
-			if err != nil {
-				engine.logToInstance(ctx, t, im.in, "Error catching regex failed to compile: %v", err)
+			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
+			if regErr != nil {
+				engine.logToInstance(ctx, t, im.in, "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
@@ -786,10 +787,10 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	if ar.Container.Type == model.ReusableContainerFunctionType {
 		svn, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:      &ar.Container.ID,
-			Namespace: &ar.Workflow.NamespaceID,
-			Workflow:  &ar.Workflow.WorkflowID,
-			Revision:  &ar.Workflow.Revision,
+			Name:          &ar.Container.ID,
+			Namespace:     &ar.Workflow.NamespaceID,
+			Workflow:      &ar.Workflow.WorkflowID,
+			Revision:      &ar.Workflow.Revision,
 			NamespaceName: &ar.Workflow.NamespaceName,
 		})
 		if err != nil {

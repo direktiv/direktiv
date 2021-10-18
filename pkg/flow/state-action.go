@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/segmentio/ksuid"
+	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 	"github.com/vorteil/direktiv/pkg/functions"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
@@ -93,7 +93,7 @@ func (sl *actionStateLogic) LivingChildren(ctx context.Context, engine *engine, 
 
 	if sl.state.Action.Function != "" && sd.Id != "" {
 
-		var uid ksuid.KSUID
+		var uid uuid.UUID
 		err = uid.UnmarshalText([]byte(sd.Id))
 		if err != nil {
 			engine.sugar.Error(err)
@@ -140,7 +140,7 @@ func (sd *actionStateSavedata) Marshal() []byte {
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid ksuid.KSUID, async bool) (*functionRequest, error) {
+	uid uuid.UUID, async bool) (*functionRequest, error) {
 
 	wf, err := engine.InstanceWorkflow(ctx, im)
 	if err != nil {
@@ -182,10 +182,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Scale = con.Scale
 		ar.Container.ID = con.ID
 		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:      &con.ID,
-			Workflow:  &wfID,
-			Revision:  &revID,
-			Namespace: &nsID,
+			Name:          &con.ID,
+			Workflow:      &wfID,
+			Revision:      &revID,
+			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
 		})
 		if err != nil {
@@ -204,8 +204,8 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:      &con.KnativeService,
-			Namespace: &nsID,
+			Name:          &con.KnativeService,
+			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
 		})
 	case model.GlobalKnativeFunctionType:
@@ -213,7 +213,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
-			Name:  &con.KnativeService,
+			Name: &con.KnativeService,
 		})
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
@@ -306,7 +306,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		fallthrough
 	case model.ReusableContainerFunctionType:
 
-		uid := ksuid.New()
+		uid := uuid.New()
 
 		sd := &actionStateSavedata{
 			Op:       "do",
@@ -348,7 +348,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 
 	case model.IsolatedContainerFunctionType:
 
-		uid := ksuid.New()
+		uid := uuid.New()
 
 		sd := &actionStateSavedata{
 			Op:       "do",
@@ -460,7 +460,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	case model.NamespacedKnativeFunctionType:
 		fallthrough
 	case model.GlobalKnativeFunctionType:
-		var uid ksuid.KSUID
+		var uid uuid.UUID
 		err = uid.UnmarshalText([]byte(sd.Id))
 		if err != nil {
 			err = NewInternalError(err)

@@ -86,6 +86,8 @@ func (timers *timers) stopTimers() {
 	ctx := timers.cron.Stop()
 	<-ctx.Done()
 
+	timers.mtx.Lock()
+	defer timers.mtx.Unlock()
 	for _, timer := range timers.timers {
 		timers.disableTimer(timer)
 	}
@@ -114,12 +116,10 @@ func (timers *timers) prepDisableTimer(timer *timer) string {
 
 }
 
+// must be locked before calling
 func (timers *timers) disableTimer(timer *timer) {
 
 	name := timers.prepDisableTimer(timer)
-
-	timers.mtx.Lock()
-	defer timers.mtx.Unlock()
 
 	delete(timers.timers, name)
 
@@ -130,7 +130,12 @@ func (timers *timers) executeFunction(timer *timer) {
 	timer.fn(timer.data)
 
 	if timer.timerType == timerTypeOneShot {
+
+		timers.mtx.Lock()
+		defer timers.mtx.Unlock()
+
 		timers.disableTimer(timer)
+
 	}
 
 }
@@ -166,6 +171,9 @@ func (timers *timers) newTimer(name, fn string, data []byte, time *time.Time, pa
 
 // registerFunction adds functions which can be executed by one-shots or crons
 func (timers *timers) registerFunction(name string, fn func([]byte)) {
+
+	timers.mtx.Lock()
+	defer timers.mtx.Unlock()
 
 	if _, ok := timers.fns[name]; ok {
 		panic(fmt.Errorf("function already exists"))
@@ -216,6 +224,9 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 	}
 
 	t.cron.cronID = id
+
+	timers.mtx.Lock()
+	defer timers.mtx.Unlock()
 
 	timers.timers[name] = t
 

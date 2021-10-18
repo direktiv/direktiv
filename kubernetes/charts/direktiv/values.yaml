@@ -274,6 +274,9 @@ functions:
 
   initPodImage:  "vorteil/direktiv-init-pod"
 
+  # kong ingress knative timeout on services
+  timeout: 900000
+
   # -- number of controller replicas
   replicaCount: 1
 
