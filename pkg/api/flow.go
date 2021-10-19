@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -9,7 +10,11 @@ import (
 	"net/http"
 	"strings"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/binding"
+	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/gabriel-vasile/mimetype"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
 	"github.com/vorteil/direktiv/pkg/flow"
@@ -3048,7 +3053,80 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 
-	data, err := loadRawBody(r)
+	ct := r.Header.Get("Content-type")
+
+	// if batch mode we need to parse the body to multiple events
+	if strings.HasPrefix(ct, "application/cloudevents-batch+json") {
+
+		// load body
+		data, err := loadRawBody(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		// gat all events in body, if it fails body is not a list of cloudevents
+		var events []cloudevents.Event
+		err = json.Unmarshal(data, &events)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		var resp *empty.Empty
+
+		// send individual events
+		for i := range events {
+
+			err = events[i].Validate()
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+			d, err := json.Marshal(events[i])
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+			in := &grpc.BroadcastCloudeventRequest{
+				Namespace:  namespace,
+				Cloudevent: d,
+			}
+
+			resp, err = h.client.BroadcastCloudevent(ctx, in)
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+		}
+
+		respond(w, resp, err)
+		return
+
+	}
+
+	m := protocol.NewMessageFromHttpRequest(r)
+	ev, err := binding.ToEvent(context.Background(), m)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	err = ev.Validate()
+
+	// azure hack for dataschema '#' which is an invalid cloudevent
+	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
+		ev.Context.SetDataSchema("")
+	} else if err != nil {
+		// all other validation errors
+		respond(w, nil, err)
+		return
+	}
+
+	data, err := json.Marshal(ev)
 	if err != nil {
 		respond(w, nil, err)
 		return
