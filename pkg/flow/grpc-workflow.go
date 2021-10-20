@@ -425,7 +425,8 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	}
 
 	revc := tx.Revision
-	var rev, prevrev *ent.Revision
+	var rev *ent.Revision
+	var prevrev []*ent.Revision
 
 	if revcount == 1 || refcount > 1 {
 		// already saved, or not discardable, gracefully back out
@@ -433,15 +434,19 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		goto respond
 	}
 
-	prevrev, err = d.wf.QueryRevisions().Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).Only(ctx)
+	prevrev, err = d.wf.QueryRevisions().Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(prevrev) != 1 {
+		return nil, errors.New("revisions list returned more than one")
 	}
 
 	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
-			err = d.ref.Update().SetRevision(prevrev).Exec(ctx)
+			err = d.ref.Update().SetRevision(prevrev[0]).Exec(ctx)
 			if err != nil {
 				return err
 			}
@@ -452,7 +457,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 				return err
 			}
 
-			rev = prevrev
+			rev = prevrev[0]
 
 			return nil
 
