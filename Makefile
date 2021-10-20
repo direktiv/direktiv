@@ -87,6 +87,12 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./pkg/functions/ent
 
 
+# Generate API client inside of pkg api
+.PHONY: api-client
+api-client: ## Generates a golang client to use based off swagger
+api-client: api-docs
+	swagger generate client -t pkg/api -f scripts/api/swagger.json --name direktivsdk
+
 # API docs
 
 .PHONY: api-docs
@@ -94,7 +100,7 @@ api-docs: ## Generates API documentation, (Also fixes markdown tables & descript
 api-docs:
 	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
 	cd pkg/api
-	swagger generate spec -o scripts/api/swagger.json
+	swagger generate spec -o scripts/api/swagger.json -m
 	swagger generate markdown --output scripts/api/api.md -f scripts/api/swagger.json
 	echo "Cleanup markdown tables and descriptions"
 	sed -i -z 's/#### All responses\n|/#### All responses\n\n|/g' scripts/api/api.md

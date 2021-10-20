@@ -25,6 +25,7 @@ var testsCmd = &cobra.Command{
 	Use: "tests",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		registerTest("CreateNamespace", []string{"namespaces"}, testCreateNamespace)
+
 		registerTest("CreateNamespaceDuplicate", []string{"namespaces", "uniqueness"}, testCreateNamespaceDuplicate)
 		registerTest("CreateNamespaceRegex", []string{"namespaces", "regex"}, testCreateNamespaceRegex)
 		// TODO: rename namespace

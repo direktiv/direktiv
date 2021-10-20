@@ -65,6 +65,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got list of namespaces"
+	//   error:
+	//	   "description": "an error has occurred"
 	handlerPair(r, RN_ListNamespaces, "/namespaces", h.Namespaces, h.NamespacesSSE)
 
 	// swagger:operation PUT /api/namespaces/{namespace} Namespaces createNamespace
@@ -79,8 +81,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target namespace to create'
 	// responses:
-	//   '200':
-	//     "description": "namespace has been successfully created"
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
@@ -95,8 +105,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target namespace to delete'
 	// responses:
-	//   '200':
-	//     "description": "namespace has been successfully deleted"
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully deleted"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}", h.DeleteNamespace).Name(RN_DeleteNamespace).Methods(http.MethodDelete)
 
 	// swagger:operation POST /api/jq Other jqPlayground
@@ -124,6 +142,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//         type: string
 	//         description: jq query to manipulate JSON data
 	// responses:
+	//   '500':
+	//     "description": "an unexpected internal error occurred"
+	//   '400':
+	//     "description": "the request was invalid"
 	//   '200':
 	//     "description": "jq query was successful"
 	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
@@ -134,8 +156,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets Direktiv Server Logs.
 	// summary: Get Direktiv Server Logs
 	// responses:
-	//   '200':
-	//     "description": "successfully got server logs"
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got server logs"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/logs Logs namespaceLogs
@@ -172,7 +202,15 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target instance id'
 	// responses:
 	//   '200':
-	//     "description": "successfully got instance logs"
+	//     produces: application/json
+	//     description: "namespace has been successfully created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked
@@ -670,8 +708,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target namespace'
 	// responses:
-	//   '200':
-	//     "description": "successfully got namespace secrets"
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got namespace nodes"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_ListSecrets, "/namespaces/{ns}/secrets", h.Secrets, h.SecretsSSE)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/secrets/{secret} Secrets createSecret
@@ -699,8 +745,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
 	//     type: string
 	// responses:
-	//   '200':
-	//     "description": "successfully created namespace secret"
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.SetSecret).Name(RN_CreateSecret).Methods(http.MethodPut)
 
 	// swagger:operation DELETE /api/namespaces/{namespace}/secrets/{secret} Secrets deleteSecret
@@ -720,8 +774,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target secret'
 	// responses:
-	//   '200':
-	//     "description": "successfully deleted namespace secret"
+	//   200:
+	//     produces: application/json
+	//     description: "namespace has been successfully created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}/secrets/{secret}", h.DeleteSecret).Name(RN_DeleteSecret).Methods(http.MethodDelete)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
@@ -741,8 +803,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target instance'
 	// responses:
-	//   '200':
-	//     "description": "successfully got instance"
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got instance"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_GetInstance, "/namespaces/{ns}/instances/{instance}", h.Instance, h.InstanceSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/instances Instances getInstanceList
@@ -874,6 +944,12 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Creates a directory at the target path.
 	// summary: Create a Directory
 	// parameters:
+	// - in: query
+	//   name: op
+	//   default: create-directory
+	//   type: string
+	//   required: true
+	//   description: the operation for the api
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -885,8 +961,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'path to target directory'
 	// responses:
-	//   '200':
-	//     "description": "successfully created directory"
+	//   200:
+	//     produces: application/json
+	//     description: "directory has been created"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandler(r, http.MethodPut, RN_CreateDirectory, "create-directory", h.CreateDirectory)
 
 	// swagger:operation PUT /api/namespaces/{namespace}/tree/{workflow}?op=create-workflow Workflows createWorkflow
@@ -898,6 +982,12 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// consumes:
 	// - text/plain
 	// parameters:
+	// - in: query
+	//   name: op
+	//   default: create-workflow
+	//   type: string
+	//   required: true
+	//   description: the operation for the api
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -921,8 +1011,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//         transform:
 	//           result: Hello world!
 	// responses:
-	//   '200':
-	//     "description": "successfully created workflow"
+	//   200:
+	//     produces: application/json
+	//     description: "successfully created workflow"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow Workflows updateWorkflow
@@ -965,7 +1063,40 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_DiscardWorkflow, "discard-workflow", h.DiscardWorkflow)
-	// TODO: SWAGGER-SPEC
+
+	// swagger:operation DELETE /api/namespaces/{namespace}/tree/{node}?op=delete-node Node deleteNode
+	// ---
+	// description: |
+	//   Creates a directory at the target path.
+	// summary: Delete a node
+	// parameters:
+	// - in: query
+	//   name: op
+	//   default: delete-node
+	//   type: string
+	//   required: true
+	//   description: the operation for the api
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: node
+	//   type: string
+	//   required: true
+	//   description: 'path to target node'
+	// responses:
+	//   200:
+	//     produces: application/json
+	//     description: "node has been deleted"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandler(r, http.MethodDelete, RN_DeleteNode, "delete-node", h.DeleteNode)
 
 	// TODO: SWAGGER-SPEC
@@ -1075,6 +1206,12 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Executes a workflow with optionally some input provided in the request body as json.
 	// summary: Execute a Workflow
 	// parameters:
+	// - in: query
+	//   name: op
+	//   default: execute
+	//   type: string
+	//   required: true
+	//   description: the operation for the api
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -1097,8 +1234,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     properties:
 	// responses:
-	//   '200':
-	//     "description": "successfully executed workflow"
+	//   200:
+	//     produces: application/json
+	//     description: "node has been deleted"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandler(r, http.MethodPost, RN_ExecuteWorkflow, "execute", h.ExecuteWorkflow)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=wait Workflows awaitExecuteWorkflowBody
@@ -1190,14 +1335,13 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully executed workflow"
 	pathHandler(r, http.MethodGet, RN_ExecuteWorkflow, "wait", h.WaitWorkflow)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{nodePath} Registries getNodes
+	// swagger:operation GET /api/namespaces/{namespace}/tree/{nodePath} Node getNodes
 	// ---
 	// description: |
 	//   Gets Workflow and Directory Nodes at nodePath.
 	// summary: Get List of Namespace Nodes
 	// tags:
-	// - "Directory"
-	// - "Workflows"
+	// - "Node"
 	// parameters:
 	// - in: path
 	//   name: namespace
@@ -1210,8 +1354,16 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target path in tree'
 	// responses:
-	//   '200':
-	//     "description": "successfully got namespace nodes"
+	//   200:
+	//     produces: application/json
+	//     description: "successfully got namespace nodes"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
 }
@@ -1670,6 +1822,7 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 
 func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 
+	h.logger.Debugf("method: %s\nuri: %s\n", r.Method, r.URL.String())
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
