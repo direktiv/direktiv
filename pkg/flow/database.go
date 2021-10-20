@@ -424,6 +424,13 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 		return nil, err
 	}
 
+	if load && in.Edges.Runtime == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("instance runtime not found"),
+		}
+		return nil, err
+	}
+
 	in.Edges.Namespace = ns
 
 	d := new(instData)
@@ -529,6 +536,34 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		return nil, err
 	}
 
+	if in.Edges.Namespace == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("instance namespace not found"),
+		}
+		return nil, err
+	}
+
+	if in.Edges.Workflow == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("instance workflow not found"),
+		}
+		return nil, err
+	}
+
+	if in.Edges.Workflow.Edges.Inode == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("instance workflow's inode not found"),
+		}
+		return nil, err
+	}
+
+	if load && in.Edges.Runtime == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("instance runtime not found"),
+		}
+		return nil, err
+	}
+
 	d := new(instData)
 	d.in = in
 
@@ -565,6 +600,13 @@ func (srv *server) traverseToNamespaceVariable(ctx context.Context, nsc *ent.Nam
 
 	vref, err := query.Only(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	if load && vref.Edges.Vardata == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("variable data not found"),
+		}
 		return nil, err
 	}
 
@@ -609,6 +651,13 @@ func (srv *server) traverseToWorkflowVariable(ctx context.Context, nsc *ent.Name
 		return nil, err
 	}
 
+	if load && vref.Edges.Vardata == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("variable data not found"),
+		}
+		return nil, err
+	}
+
 	if !load {
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
@@ -648,6 +697,13 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 
 	vref, err := query.Only(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	if load && vref.Edges.Vardata == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("variable data not found"),
+		}
 		return nil, err
 	}
 
