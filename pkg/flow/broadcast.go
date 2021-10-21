@@ -60,8 +60,6 @@ func (flow *flow) BroadcastWorkflow(eventType string, ctx context.Context, input
 	event.SetSource("direktiv")
 	event.SetData("application/json", input)
 
-	fmt.Printf("\nns = %+v\n\n", ns)
-
 	return flow.events.BroadcastCloudevent(ctx, ns, &event, 60)
 }
 
