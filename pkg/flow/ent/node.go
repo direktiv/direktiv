@@ -643,7 +643,7 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     n.ID,
 		Type:   "Namespace",
-		Fields: make([]*Field, 3),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
@@ -663,10 +663,18 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "updated_at",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(n.Name); err != nil {
+	if buf, err = json.Marshal(n.Config); err != nil {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "config",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(n.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "name",
 		Value: string(buf),
