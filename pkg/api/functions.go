@@ -2564,7 +2564,7 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 		rev = "00001"
 	}
 
-	vers := r.URL.Query().Get("revision")
+	vers := r.URL.Query().Get("version")
 
 	hash, err := strconv.ParseUint(vers, 10, 64)
 	if err != nil {
@@ -2624,7 +2624,7 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 		rev = "00001"
 	}
 
-	vers := r.URL.Query().Get("revision")
+	vers := r.URL.Query().Get("version")
 
 	hash, err := strconv.ParseUint(vers, 10, 64)
 	if err != nil {
