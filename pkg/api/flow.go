@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -1436,9 +1437,15 @@ func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
+	params := r.URL.Query()
+
+	recursive := false
+	// ignore err if not provided its set by default to false
+	recursive, _ = strconv.ParseBool(params.Get("recursive"))
 
 	in := &grpc.DeleteNamespaceRequest{
-		Name: namespace,
+		Name:      namespace,
+		Recursive: recursive,
 	}
 
 	resp, err := h.client.DeleteNamespace(ctx, in)
