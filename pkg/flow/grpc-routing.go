@@ -151,7 +151,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 			}
 
-			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
 			if err != nil {
 				return err
 			}
@@ -187,6 +187,11 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 	err = atob(routes, &resp.Routes)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range routes {
+		route := routes[i]
+		resp.Routes[i].Ref = route.Edges.Ref.Name
 	}
 
 	return &resp, nil
