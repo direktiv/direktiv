@@ -14,7 +14,6 @@ jobs:
         repository: vorteil/direktiv  # The repository to scan.
         releases-only: false  # We know that all relevant tags have a GitHub release for them.
       id: ptag  # The step ID to refer to later.
-
     - name: build helm chart direktiv
       run: |
         wget https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.11.0_linux_amd64
@@ -24,34 +23,19 @@ jobs:
         v="${version:1}"
         echo "packaging helm for $v"
         helm dependency update kubernetes/charts/direktiv/
-        helm package --app-version=$v kubernetes/charts/direktiv/
+        helm package --app-version=$v --version=$v kubernetes/charts/direktiv/
         helm dependency update kubernetes/charts/knative
-        helm package --app-version=$v kubernetes/charts/knative/
+        helm package --app-version=$v --version=$v kubernetes/charts/knative/
         git clone https://github.com/CrunchyData/postgres-operator-examples.git
-        helm package postgres-operator-examples/helm/install/
-        helm repo index .
+        helm package --app-version=$v --version=$v postgres-operator-examples/helm/install/
+        wget https://${{ secrets.GCP_BUCKET }}.storage.googleapis.com/charts/index.yaml
+        echo "do helm index thing"
+        helm repo index ./ --merge ./index.yaml
         ls -la
-    - id: upload-file
-      uses: google-github-actions/upload-cloud-storage@main
-      with:
-        credentials: ${{ secrets.GCP_BUCKET }}
-        path: ./index.yaml
-        destination: direktiv_charts/
-    - id: upload-file-tar
-      uses: google-github-actions/upload-cloud-storage@main
-      with:
-        credentials: ${{ secrets.GCP_BUCKET }}
-        path: ./direktiv-0.1.0.tgz
-        destination: direktiv_charts/
-    - id: upload-file-tar-knative
-      uses: google-github-actions/upload-cloud-storage@main
-      with:
-        credentials: ${{ secrets.GCP_BUCKET }}
-        path: ./knative-0.2.0.tgz
-        destination: direktiv_charts/
-    - id: upload-file-tar-pgo
-      uses: google-github-actions/upload-cloud-storage@main
-      with:
-        credentials: ${{ secrets.GCP_BUCKET }}
-        path: ./pgo-0.1.0.tgz
-        destination: direktiv_charts/
+        echo ${{ secrets.GCP_CREDENTIALS }} >> ./gcp.raw
+        base64 --decode ./gcp.raw >> ./gcp.key 
+        gcloud auth activate-service-account --key-file=./gcp.key > /dev/null 2>&1
+        gsutil cp ./direktiv-$v.tgz gs://${{ secrets.GCP_BUCKET }}/charts/direktiv-$v.tgz > /dev/null 2>&1
+        gsutil cp ./knative-$v.tgz gs://${{ secrets.GCP_BUCKET }}/charts/knative-$v.tgz > /dev/null 2>&1
+        gsutil cp ./pgo-$v.tgz gs://${{ secrets.GCP_BUCKET }}/charts/pgo-$v.tgz > /dev/null 2>&1
+        gsutil cp ./index.yaml gs://${{ secrets.GCP_BUCKET }}/charts/index.yaml > /dev/null 2>&1
