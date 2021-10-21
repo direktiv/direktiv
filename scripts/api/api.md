@@ -132,7 +132,9 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 |---------|---------|--------|---------|
 | PUT | /api/namespaces/{namespace} | [create namespace](#create-namespace) | Creates a namespace |
 | DELETE | /api/namespaces/{namespace} | [delete namespace](#delete-namespace) | Delete a namespace |
+| GET | /api/namespaces/{namespace}/config | [get namespace config](#get-namespace-config) | Gets a namespace config |
 | GET | /api/namespaces | [get namespaces](#get-namespaces) | Gets the list of namespaces |
+| PATCH | /api/namespaces/{namespace}/config | [set namespace config](#set-namespace-config) | Sets a namespace config |
   
 
 
@@ -520,6 +522,9 @@ PUT /api/namespaces/{namespace}/secrets/{secret}
 
 Create a namespace secret.
 
+
+#### Consumes
+  * text/plain
 
 #### Parameters
 
@@ -1164,6 +1169,35 @@ Gets a list of variables in a instance.
 Status: OK
 
 ###### <span id="get-instance-variables-200-schema"></span> Schema
+
+### <span id="get-namespace-config"></span> Gets a namespace config (*getNamespaceConfig*)
+
+```
+GET /api/namespaces/{namespace}/config
+```
+
+Gets a namespace config.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace to update |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-namespace-config-200) | OK | successfully got namespace config |  | [schema](#get-namespace-config-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-namespace-config-200"></span> 200 - successfully got namespace config
+Status: OK
+
+###### <span id="get-namespace-config-200-schema"></span> Schema
 
 ### <span id="get-namespace-service"></span> Get Namespace Service Details (*getNamespaceService*)
 
@@ -2023,6 +2057,54 @@ Variable data can be anything so long as it can be represented as a string.
 Status: OK
 
 ###### <span id="set-instance-variable-200-schema"></span> Schema
+
+### <span id="set-namespace-config"></span> Sets a namespace config (*setNamespaceConfig*)
+
+```
+PATCH /api/namespaces/{namespace}/config
+```
+
+Sets a namespace config.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace to update |
+| Config Payload | `body` | [SetNamespaceConfigBody](#set-namespace-config-body) | `SetNamespaceConfigBody` | |  | | Payload that contains the config information to set.
+Note: This payload only need to contain the properities you wish to set. |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#set-namespace-config-200) | OK | namespace config has been successfully been updated |  | [schema](#set-namespace-config-200-schema) |
+
+#### Responses
+
+
+##### <span id="set-namespace-config-200"></span> 200 - namespace config has been successfully been updated
+Status: OK
+
+###### <span id="set-namespace-config-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="set-namespace-config-body"></span> SetNamespaceConfigBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| broadcast | [interface{}](#interface)| `interface{}` |  | | Configuration on which direktiv operations will trigger coud events on the namespace |  |
+
+
 
 ### <span id="set-namespace-variable"></span> Set a Namespace Variable (*setNamespaceVariable*)
 
