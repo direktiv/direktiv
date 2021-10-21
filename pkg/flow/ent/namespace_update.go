@@ -40,6 +40,20 @@ func (nu *NamespaceUpdate) SetUpdatedAt(t time.Time) *NamespaceUpdate {
 	return nu
 }
 
+// SetConfig sets the "config" field.
+func (nu *NamespaceUpdate) SetConfig(s string) *NamespaceUpdate {
+	nu.mutation.SetConfig(s)
+	return nu
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (nu *NamespaceUpdate) SetNillableConfig(s *string) *NamespaceUpdate {
+	if s != nil {
+		nu.SetConfig(*s)
+	}
+	return nu
+}
+
 // SetName sets the "name" field.
 func (nu *NamespaceUpdate) SetName(s string) *NamespaceUpdate {
 	nu.mutation.SetName(s)
@@ -369,6 +383,13 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: namespace.FieldUpdatedAt,
+		})
+	}
+	if value, ok := nu.mutation.Config(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: namespace.FieldConfig,
 		})
 	}
 	if value, ok := nu.mutation.Name(); ok {
@@ -727,6 +748,20 @@ func (nuo *NamespaceUpdateOne) SetUpdatedAt(t time.Time) *NamespaceUpdateOne {
 	return nuo
 }
 
+// SetConfig sets the "config" field.
+func (nuo *NamespaceUpdateOne) SetConfig(s string) *NamespaceUpdateOne {
+	nuo.mutation.SetConfig(s)
+	return nuo
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (nuo *NamespaceUpdateOne) SetNillableConfig(s *string) *NamespaceUpdateOne {
+	if s != nil {
+		nuo.SetConfig(*s)
+	}
+	return nuo
+}
+
 // SetName sets the "name" field.
 func (nuo *NamespaceUpdateOne) SetName(s string) *NamespaceUpdateOne {
 	nuo.mutation.SetName(s)
@@ -1080,6 +1115,13 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: namespace.FieldUpdatedAt,
+		})
+	}
+	if value, ok := nuo.mutation.Config(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: namespace.FieldConfig,
 		})
 	}
 	if value, ok := nuo.mutation.Name(); ok {

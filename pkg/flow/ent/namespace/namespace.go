@@ -17,6 +17,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldConfig holds the string denoting the config field in the database.
+	FieldConfig = "config"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// EdgeInodes holds the string denoting the inodes edge name in mutations.
@@ -82,6 +84,7 @@ var Columns = []string{
 	FieldID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldConfig,
 	FieldName,
 }
 
@@ -102,6 +105,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultConfig holds the default value on creation for the "config" field.
+	DefaultConfig string
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
