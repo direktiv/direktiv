@@ -250,6 +250,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	var resp igrpc.CreatePodResponse
 
 	info := in.GetInfo()
+	_, _, hash := GenerateServiceName(info)
 
 	// if MaxJobs
 	var (
@@ -288,7 +289,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	labels[ServiceHeaderName] = info.GetName()
 	labels[ServiceHeaderWorkflowID] = info.GetWorkflow()
 	labels[ServiceHeaderPath] = SanitizeLabel(info.GetPath())
-	labels[ServiceHeaderRevision] = SanitizeLabel(info.GetRevision())
+	labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	labels[ServiceHeaderNamespaceID] = info.GetNamespace()
 	labels[ServiceHeaderNamespaceName] = info.GetNamespaceName()
 

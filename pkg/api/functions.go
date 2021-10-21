@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	igrpc "github.com/vorteil/direktiv/pkg/flow/grpc"
@@ -1447,11 +1448,14 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if vers == "" {
-		vers = resp.Revision.Hash
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
+
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
 
 	annotations := make(map[string]string)
 
@@ -2203,11 +2207,13 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		rev = "00001"
 	}
 
-	if vers == "" {
-		vers = resp.Revision.Hash
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 
@@ -2252,11 +2258,15 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 		respond(w, nil, err)
 		return
 	}
-	if vers == "" {
-		vers = resp.Revision.Hash
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
+
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
 
@@ -2522,7 +2532,7 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 
 	annotations := make(map[string]string)
 
-	svn, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
 		Namespace: &ns,
 		Name:      &svn,
 	})
@@ -2554,7 +2564,16 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 		rev = "00001"
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	vers := r.URL.Query().Get("revision")
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
 	annotations := make(map[string]string)
@@ -2605,7 +2624,16 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 		rev = "00001"
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	vers := r.URL.Query().Get("revision")
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
 	h.listPodsSSE(svc, knrev, w, r)

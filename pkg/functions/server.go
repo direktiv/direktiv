@@ -257,7 +257,7 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 			},
 		}
 
-		name := GenerateWorkflowServiceName(tuple.WorkflowID, tuple.Revision, tuple.FunctionDefinition.ID)
+		name, _ := GenerateWorkflowServiceName(in.Info)
 
 		fServer.reusableCacheLock.Lock()
 
