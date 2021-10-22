@@ -19,6 +19,7 @@ import (
 	"github.com/vorteil/direktiv/pkg/functions/ent/predicate"
 	entservices "github.com/vorteil/direktiv/pkg/functions/ent/services"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
+	"github.com/vorteil/direktiv/pkg/model"
 	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	corev1 "k8s.io/api/core/v1"
@@ -973,7 +974,7 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 	return b, nil
 }
 
-func metaSpec(net string, min, max int, nsID, nsName, wfID, path, revision, name, scope string, size int) metav1.ObjectMeta {
+func metaSpec(net string, min, max int, nsID, nsName, wfID, path, name, scope string, size int, hash string) metav1.ObjectMeta {
 
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   functionsConfig.Namespace,
@@ -994,7 +995,7 @@ func metaSpec(net string, min, max int, nsID, nsName, wfID, path, revision, name
 	if len(wfID) > 0 {
 		metaSpec.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
 		metaSpec.Labels[ServiceHeaderPath] = SanitizeLabel(path)
-		metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(revision)
+		metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	}
 
 	metaSpec.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(nsID)
@@ -1021,7 +1022,7 @@ func SanitizeLabel(s string) string {
 	return s
 }
 
-func meta(svn, name, nsID, nsName, wfID, path, revision string, scale, size int, scope string) metav1.ObjectMeta {
+func meta(svn, name, nsID, nsName, wfID, path string, scale, size int, scope, hash string) metav1.ObjectMeta {
 
 	meta := metav1.ObjectMeta{
 		Name:        svn,
@@ -1036,7 +1037,7 @@ func meta(svn, name, nsID, nsName, wfID, path, revision string, scale, size int,
 	if len(wfID) > 0 {
 		meta.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
 		meta.Labels[ServiceHeaderPath] = SanitizeLabel(path)
-		meta.Labels[ServiceHeaderRevision] = SanitizeLabel(revision)
+		meta.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	}
 
 	meta.Labels[ServiceHeaderNamespaceID] = SanitizeLabel(nsID)
@@ -1242,40 +1243,82 @@ func fetchServiceAPI() (*versioned.Clientset, error) {
 	return versioned.NewForConfig(config)
 }
 
-// GenerateWorkflowServiceName generates a knative name based on workflow details
-func GenerateWorkflowServiceName(wf, rev, svn string) string {
+// AssembleWorkflowServiceName generates a knative name based on workflow details
+func AssembleWorkflowServiceName(wf, svn string, hash uint64) string {
 
 	wf = SanitizeLabel(wf)
-	rev = SanitizeLabel(rev)
+
+	// NOTE: fndef.Files can be safely excluded
+
 	svn = SanitizeLabel(svn)
 
-	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, rev), hash.FormatV2, nil)
-	if err != nil {
-		panic(err)
-	}
-	name := fmt.Sprintf("%s-%d-%s", PrefixWorkflow, h, svn)
+	name := fmt.Sprintf("%s-%d-%s", PrefixWorkflow, hash, svn)
 
 	return name
 
 }
 
-// GenerateServiceName generates a knative name based on workflow details
-func GenerateServiceName(info *igrpc.BaseInfo /* ns, wf, n string*/) (string, string) {
+// GenerateWorkflowServiceName generates a knative name based on workflow details
+func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 
-	var name, scope string
+	wf := SanitizeLabel(info.GetWorkflow())
+	fndef := fndefFromBaseInfo(info)
+
+	// NOTE: fndef.Files can be safely excluded
+
+	var strs []string
+	strs = []string{fndef.Cmd, fndef.ID, fndef.Image, fmt.Sprintf("%v", fndef.Scale), fmt.Sprintf("%v", fndef.Size), fmt.Sprintf("%v", fndef.Type)}
+
+	def, err := json.Marshal(strs)
+	if err != nil {
+		panic(err)
+	}
+
+	svn := SanitizeLabel(fndef.ID)
+
+	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, def), hash.FormatV2, nil)
+	if err != nil {
+		panic(err)
+	}
+	name := fmt.Sprintf("%s-%d-%s", PrefixWorkflow, h, svn)
+
+	return name, fmt.Sprintf("%v", h)
+
+}
+
+func fndefFromBaseInfo(info *igrpc.BaseInfo) *model.ReusableFunctionDefinition {
+	fndef := new(model.ReusableFunctionDefinition)
+	fndef.Cmd = info.GetCmd()
+	// fndef.Files
+	fndef.ID = info.GetName()
+	fndef.Image = info.GetImage()
+	scale := int(info.GetMinScale())
+	fndef.Scale = scale
+	size := int(info.GetSize())
+	fndef.Size = model.Size(size)
+	fndef.Type = model.ReusableContainerFunctionType
+	return fndef
+}
+
+// GenerateServiceName generates a knative name based on workflow details
+func GenerateServiceName(info *igrpc.BaseInfo /* ns, wf, n string*/) (string, string, string) {
+
+	var name, scope, hash string
 
 	if info.GetWorkflow() != "" {
 		scope = PrefixWorkflow
-		name = GenerateWorkflowServiceName(info.GetWorkflow(), info.GetRevision(), info.GetName())
+		name, hash = GenerateWorkflowServiceName(info)
 	} else if info.GetNamespace() != "" {
 		scope = PrefixNamespace
 		name = fmt.Sprintf("%s-%s-%s", PrefixNamespace, info.GetNamespaceName(), info.GetName())
+		hash = ""
 	} else {
 		scope = PrefixGlobal
 		name = fmt.Sprintf("%s-%s", PrefixGlobal, info.GetName())
+		hash = ""
 	}
 
-	return name, scope
+	return name, scope, hash
 
 }
 
@@ -1667,7 +1710,7 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	logger.Debugf("info.GetNamespace(), info.GetWorkflow(), info.GetName() = %s, %s, %s", info.GetNamespace(),
 		info.GetWorkflow(), info.GetName())
 
-	name, scope := GenerateServiceName(info)
+	name, scope, hash := GenerateServiceName(info)
 
 	l, err := locksmgr.lock(name, false)
 	if err != nil {
@@ -1703,13 +1746,13 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		},
 		ObjectMeta: meta(name, info.GetName(),
 			info.GetNamespace(), info.GetNamespaceName(), info.GetWorkflow(), info.GetPath(),
-			info.GetRevision(), min, int(info.GetSize()), scope),
+			min, int(info.GetSize()), scope, hash),
 		Spec: v1.ServiceSpec{
 			ConfigurationSpec: v1.ConfigurationSpec{
 				Template: v1.RevisionTemplateSpec{
 					ObjectMeta: metaSpec(functionsConfig.NetShape, min, functionsConfig.MaxScale,
 						info.GetNamespace(), info.GetNamespaceName(), info.GetWorkflow(), info.GetPath(),
-						info.GetRevision(), info.GetName(), scope, int(info.GetSize())),
+						info.GetName(), scope, int(info.GetSize()), hash),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							ImagePullSecrets:   createPullSecrets(info.GetNamespaceName()),

@@ -181,7 +181,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Size = con.Size
 		ar.Container.Scale = con.Scale
 		ar.Container.ID = con.ID
-		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name:          &con.ID,
 			Workflow:      &wfID,
 			Revision:      &revID,
@@ -203,7 +203,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
-		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name:          &con.KnativeService,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,
@@ -212,7 +212,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.GlobalFunctionDefinition)
 		ar.Container.Files = con.Files
 		ar.Container.ID = con.ID
-		ar.Container.Service, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name: &con.KnativeService,
 		})
 	default:

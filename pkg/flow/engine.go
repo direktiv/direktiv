@@ -821,12 +821,18 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	svn := ar.Container.Service
 
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		svn, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		scale := int32(ar.Container.Scale)
+		size := int32(ar.Container.Size)
+		svn, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name:          &ar.Container.ID,
 			Namespace:     &ar.Workflow.NamespaceID,
 			Workflow:      &ar.Workflow.WorkflowID,
 			Revision:      &ar.Workflow.Revision,
 			NamespaceName: &ar.Workflow.NamespaceName,
+			Cmd:           &ar.Container.Cmd,
+			Image:         &ar.Container.Image,
+			MinScale:      &scale,
+			Size:          &size,
 		})
 		if err != nil {
 			engine.sugar.Errorf("can not create service name: %v", err)
