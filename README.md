@@ -27,7 +27,7 @@ Direktiv is an event-driven container orchestration engine, running on Kubernete
 Additional resources to get started:
 
 - Pre-built plugins are available from [https://github.com/vorteil/direktiv-apps](https://github.com/vorteil/direktiv-apps) - we're working hard to add more every day!
-- Examples for integration your own containers [https://github.com/vorteil/direktiv-apps/tree/main/examples](https://github.com/vorteil/direktiv-apps/tree/main/examples).
+- Examples for integration your own containers [https://github.com/vorteil/direktiv-apps/tree/main/examples](https://github.com/vorteil/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/docs/walkthrough/making-isolates.html).
 
 <table>
   <tr>
