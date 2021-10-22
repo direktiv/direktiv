@@ -24,7 +24,6 @@ jobs:
         with:
           repository: vorteil/direktiv-ui
           path: ui
-          token: ${{ secrets.GG_TOKEN}}
       - run: |
           export RV=${{env.RELEASE_VERSION}}
           echo "RV set to $RV"
