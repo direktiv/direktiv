@@ -74,7 +74,7 @@ $ curl -vv -X PUT "http://localhost:8080/api/namespaces/demo"
 
 ### Kubernetes Install
 
-For full instructions on how to install Direktiv on a Kubernetes environment go to the [installation pages](https://docs.direktiv.io/docs/install.html)
+For full instructions on how to install Direktiv on a Kubernetes environment go to the [installation pages](https://docs.direktiv.io/docs/install/install.html)
 
 ### Workflow specification
 
