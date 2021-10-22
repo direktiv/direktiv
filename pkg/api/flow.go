@@ -3032,13 +3032,13 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		if len(m) > 0 {
-			input, err = json.Marshal(m)
-			if err != nil {
-				respond(w, nil, err)
-				return
-			}
+
+		input, err = json.Marshal(m)
+		if err != nil {
+			respond(w, nil, err)
+			return
 		}
+
 	}
 
 	in := &grpc.StartWorkflowRequest{
