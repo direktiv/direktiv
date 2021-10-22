@@ -116,7 +116,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(StatusPending).SetAs(as).Save(ctx)
+	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(StatusPending).SetAs(util.SanitizeAsField(as)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
