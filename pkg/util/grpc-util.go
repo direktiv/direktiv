@@ -2,6 +2,7 @@ package util
 
 import (
 	"net"
+	"strings"
 	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -93,4 +94,13 @@ func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInter
 
 	return additionalServerOptions
 
+}
+
+// SanitizeAsField removes initial slash if one exists and returns the new value
+func SanitizeAsField(as string) string {
+	if strings.HasPrefix(as, "/") {
+		newas := strings.TrimPrefix(as, "/")
+		return newas
+	}
+	return as
 }

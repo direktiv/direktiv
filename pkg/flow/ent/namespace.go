@@ -21,6 +21,8 @@ type Namespace struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Config holds the value of the "config" field.
+	Config string `json:"config,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -106,7 +108,7 @@ func (*Namespace) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case namespace.FieldName:
+		case namespace.FieldConfig, namespace.FieldName:
 			values[i] = new(sql.NullString)
 		case namespace.FieldCreatedAt, namespace.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -144,6 +146,12 @@ func (n *Namespace) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				n.UpdatedAt = value.Time
+			}
+		case namespace.FieldConfig:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value.Valid {
+				n.Config = value.String
 			}
 		case namespace.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -213,6 +221,8 @@ func (n *Namespace) String() string {
 	builder.WriteString(n.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(n.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", config=")
+	builder.WriteString(n.Config)
 	builder.WriteString(", name=")
 	builder.WriteString(n.Name)
 	builder.WriteByte(')')
