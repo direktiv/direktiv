@@ -25,3 +25,4 @@ data:
       {{- else }}
       opentelemetry-backend: ""
       {{- end }}
+      eventing: {{ .Values.eventing.enabled }}

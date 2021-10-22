@@ -13,6 +13,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -628,6 +629,11 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 		// sending nil as server id so all instances calling it
 		events.pubsub.UpdateEventDelays()
 
+	}
+
+	// if eventing is configured, event goes to knative event service
+	if events.server.conf.Eventing {
+		PublishKnativeEvent(event)
 	}
 
 	return nil

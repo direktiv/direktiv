@@ -16,6 +16,7 @@ import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
+import "pkg/flow/grpc/eventing.proto";
 
 import "pkg/flow/grpc/registries.proto";
 
@@ -144,7 +145,7 @@ service Flow {
 
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
 	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
-	
+
 }
 
 service Internal {
@@ -165,4 +166,8 @@ service Actions {
 	rpc DeleteNamespaceRegistry (DeleteNamespaceRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc NamespaceRegistries (NamespaceRegistriesRequest) returns (NamespaceRegistriesResponse) {}
 	rpc NamespaceRegistriesStream (NamespaceRegistriesRequest) returns (stream NamespaceRegistriesResponse) {}
+}
+
+service Eventing {
+	rpc RequestEvents (EventingRequest) returns (stream CloudEventMap) {}
 }

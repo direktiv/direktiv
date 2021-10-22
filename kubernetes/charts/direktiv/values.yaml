@@ -1,6 +1,10 @@
 # -- enable debug across all direktiv components
 debug: false
 
+# -- knative eventing enabled, requires knative setup and configuration
+eventing:
+  enabled: true
+
 # -- json or console logger
 logging: json
 
