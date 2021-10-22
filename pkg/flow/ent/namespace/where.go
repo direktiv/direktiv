@@ -108,6 +108,13 @@ func UpdatedAt(v time.Time) predicate.Namespace {
 	})
 }
 
+// Config applies equality check predicate on the "config" field. It's identical to ConfigEQ.
+func Config(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldConfig), v))
+	})
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
@@ -264,6 +271,117 @@ func UpdatedAtLT(v time.Time) predicate.Namespace {
 func UpdatedAtLTE(v time.Time) predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// ConfigEQ applies the EQ predicate on the "config" field.
+func ConfigEQ(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigNEQ applies the NEQ predicate on the "config" field.
+func ConfigNEQ(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigIn applies the In predicate on the "config" field.
+func ConfigIn(vs ...string) predicate.Namespace {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Namespace(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldConfig), v...))
+	})
+}
+
+// ConfigNotIn applies the NotIn predicate on the "config" field.
+func ConfigNotIn(vs ...string) predicate.Namespace {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Namespace(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldConfig), v...))
+	})
+}
+
+// ConfigGT applies the GT predicate on the "config" field.
+func ConfigGT(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigGTE applies the GTE predicate on the "config" field.
+func ConfigGTE(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigLT applies the LT predicate on the "config" field.
+func ConfigLT(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigLTE applies the LTE predicate on the "config" field.
+func ConfigLTE(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigContains applies the Contains predicate on the "config" field.
+func ConfigContains(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigHasPrefix applies the HasPrefix predicate on the "config" field.
+func ConfigHasPrefix(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigHasSuffix applies the HasSuffix predicate on the "config" field.
+func ConfigHasSuffix(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigEqualFold applies the EqualFold predicate on the "config" field.
+func ConfigEqualFold(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldConfig), v))
+	})
+}
+
+// ConfigContainsFold applies the ContainsFold predicate on the "config" field.
+func ConfigContainsFold(v string) predicate.Namespace {
+	return predicate.Namespace(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldConfig), v))
 	})
 }
 

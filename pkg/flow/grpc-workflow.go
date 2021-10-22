@@ -229,6 +229,18 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	err = flow.BroadcastWorkflow(BroadcastEventTypeCreate, ctx,
+		broadcastWorkflowInput{
+			Name:   resp.Node.Name,
+			Path:   resp.Node.Path,
+			Parent: resp.Node.Parent,
+			Live:   true,
+		}, d.ns())
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &resp, nil
 
 }
@@ -326,6 +338,18 @@ respond:
 	resp.Node.Path = d.path
 
 	err = atob(rev, &resp.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.BroadcastWorkflow(BroadcastEventTypeUpdate, ctx,
+		broadcastWorkflowInput{
+			Name:   resp.Node.Name,
+			Path:   resp.Node.Path,
+			Parent: resp.Node.Parent,
+			Live:   d.wf.Live,
+		}, d.ns())
+
 	if err != nil {
 		return nil, err
 	}
@@ -537,6 +561,18 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 	live := "disabled"
 	if d.wf.Live {
 		live = "enabled"
+	}
+
+	err = flow.BroadcastWorkflow(BroadcastEventTypeUpdate, ctx,
+		broadcastWorkflowInput{
+			Name:   d.base,
+			Path:   d.path,
+			Parent: d.dir,
+			Live:   d.wf.Live,
+		}, d.ns())
+
+	if err != nil {
+		return nil, err
 	}
 
 	flow.logToWorkflow(ctx, time.Now(), d, "Workflow is now %s", live)

@@ -5,6 +5,8 @@ const (
 	RN_Preflight            = "preflight"
 	RN_ListNamespaces       = "listNamespaces"
 	RN_AddNamespace         = "addNamespace"
+	RN_GetNamespaceConfig   = "getNamespaceConfiguration"
+	RN_SetNamespaceConfig   = "setNamespaceConfiguration"
 	RN_DeleteNamespace      = "deleteNamespace"
 	RN_GetNode              = "getNode"
 	RN_CreateDirectory      = "createDirectory"
