@@ -4642,7 +4642,7 @@ func (c *eventingClient) RequestEvents(ctx context.Context, in *EventingRequest,
 }
 
 type Eventing_RequestEventsClient interface {
-	Recv() (*CloudEventMap, error)
+	Recv() (*CloudEvent, error)
 	grpc.ClientStream
 }
 
@@ -4650,8 +4650,8 @@ type eventingRequestEventsClient struct {
 	grpc.ClientStream
 }
 
-func (x *eventingRequestEventsClient) Recv() (*CloudEventMap, error) {
-	m := new(CloudEventMap)
+func (x *eventingRequestEventsClient) Recv() (*CloudEvent, error) {
+	m := new(CloudEvent)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -4695,7 +4695,7 @@ func _Eventing_RequestEvents_Handler(srv interface{}, stream grpc.ServerStream) 
 }
 
 type Eventing_RequestEventsServer interface {
-	Send(*CloudEventMap) error
+	Send(*CloudEvent) error
 	grpc.ServerStream
 }
 
@@ -4703,7 +4703,7 @@ type eventingRequestEventsServer struct {
 	grpc.ServerStream
 }
 
-func (x *eventingRequestEventsServer) Send(m *CloudEventMap) error {
+func (x *eventingRequestEventsServer) Send(m *CloudEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 

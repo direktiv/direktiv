@@ -169,5 +169,5 @@ service Actions {
 }
 
 service Eventing {
-	rpc RequestEvents (EventingRequest) returns (stream CloudEventMap) {}
+	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
 }

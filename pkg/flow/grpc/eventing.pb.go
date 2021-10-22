@@ -20,16 +20,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type CloudEventMap struct {
+type CloudEvent struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Value map[string]*CloudEventAny `protobuf:"bytes,1,rep,name=value,proto3" json:"value,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Ce []byte `protobuf:"bytes,1,opt,name=ce,proto3" json:"ce,omitempty"`
 }
 
-func (x *CloudEventMap) Reset() {
-	*x = CloudEventMap{}
+func (x *CloudEvent) Reset() {
+	*x = CloudEvent{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -37,13 +37,13 @@ func (x *CloudEventMap) Reset() {
 	}
 }
 
-func (x *CloudEventMap) String() string {
+func (x *CloudEvent) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CloudEventMap) ProtoMessage() {}
+func (*CloudEvent) ProtoMessage() {}
 
-func (x *CloudEventMap) ProtoReflect() protoreflect.Message {
+func (x *CloudEvent) ProtoReflect() protoreflect.Message {
 	mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -55,125 +55,17 @@ func (x *CloudEventMap) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CloudEventMap.ProtoReflect.Descriptor instead.
-func (*CloudEventMap) Descriptor() ([]byte, []int) {
+// Deprecated: Use CloudEvent.ProtoReflect.Descriptor instead.
+func (*CloudEvent) Descriptor() ([]byte, []int) {
 	return file_pkg_flow_grpc_eventing_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CloudEventMap) GetValue() map[string]*CloudEventAny {
+func (x *CloudEvent) GetCe() []byte {
 	if x != nil {
-		return x.Value
+		return x.Ce
 	}
 	return nil
 }
-
-type CloudEventAny struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Value:
-	//	*CloudEventAny_StringValue
-	//	*CloudEventAny_BinaryValue
-	//	*CloudEventAny_IntValue
-	//	*CloudEventAny_MapValue
-	Value isCloudEventAny_Value `protobuf_oneof:"value"`
-}
-
-func (x *CloudEventAny) Reset() {
-	*x = CloudEventAny{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CloudEventAny) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CloudEventAny) ProtoMessage() {}
-
-func (x *CloudEventAny) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CloudEventAny.ProtoReflect.Descriptor instead.
-func (*CloudEventAny) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_eventing_proto_rawDescGZIP(), []int{1}
-}
-
-func (m *CloudEventAny) GetValue() isCloudEventAny_Value {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (x *CloudEventAny) GetStringValue() string {
-	if x, ok := x.GetValue().(*CloudEventAny_StringValue); ok {
-		return x.StringValue
-	}
-	return ""
-}
-
-func (x *CloudEventAny) GetBinaryValue() []byte {
-	if x, ok := x.GetValue().(*CloudEventAny_BinaryValue); ok {
-		return x.BinaryValue
-	}
-	return nil
-}
-
-func (x *CloudEventAny) GetIntValue() uint32 {
-	if x, ok := x.GetValue().(*CloudEventAny_IntValue); ok {
-		return x.IntValue
-	}
-	return 0
-}
-
-func (x *CloudEventAny) GetMapValue() *CloudEventMap {
-	if x, ok := x.GetValue().(*CloudEventAny_MapValue); ok {
-		return x.MapValue
-	}
-	return nil
-}
-
-type isCloudEventAny_Value interface {
-	isCloudEventAny_Value()
-}
-
-type CloudEventAny_StringValue struct {
-	StringValue string `protobuf:"bytes,1,opt,name=string_value,json=stringValue,proto3,oneof"`
-}
-
-type CloudEventAny_BinaryValue struct {
-	BinaryValue []byte `protobuf:"bytes,2,opt,name=binary_value,json=binaryValue,proto3,oneof"`
-}
-
-type CloudEventAny_IntValue struct {
-	IntValue uint32 `protobuf:"varint,3,opt,name=int_value,json=intValue,proto3,oneof"`
-}
-
-type CloudEventAny_MapValue struct {
-	MapValue *CloudEventMap `protobuf:"bytes,4,opt,name=map_value,json=mapValue,proto3,oneof"`
-}
-
-func (*CloudEventAny_StringValue) isCloudEventAny_Value() {}
-
-func (*CloudEventAny_BinaryValue) isCloudEventAny_Value() {}
-
-func (*CloudEventAny_IntValue) isCloudEventAny_Value() {}
-
-func (*CloudEventAny_MapValue) isCloudEventAny_Value() {}
 
 type EventingRequest struct {
 	state         protoimpl.MessageState
@@ -186,7 +78,7 @@ type EventingRequest struct {
 func (x *EventingRequest) Reset() {
 	*x = EventingRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[2]
+		mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -199,7 +91,7 @@ func (x *EventingRequest) String() string {
 func (*EventingRequest) ProtoMessage() {}
 
 func (x *EventingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[2]
+	mi := &file_pkg_flow_grpc_eventing_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -212,7 +104,7 @@ func (x *EventingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventingRequest.ProtoReflect.Descriptor instead.
 func (*EventingRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_eventing_proto_rawDescGZIP(), []int{2}
+	return file_pkg_flow_grpc_eventing_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *EventingRequest) GetUuid() string {
@@ -227,36 +119,15 @@ var File_pkg_flow_grpc_eventing_proto protoreflect.FileDescriptor
 var file_pkg_flow_grpc_eventing_proto_rawDesc = []byte{
 	0x0a, 0x1c, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f,
 	0x65, 0x76, 0x65, 0x6e, 0x74, 0x69, 0x6e, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0d,
-	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x22, 0xa6, 0x01,
-	0x0a, 0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x61, 0x70, 0x12,
-	0x3d, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27,
-	0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x43,
-	0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x61, 0x70, 0x2e, 0x56, 0x61, 0x6c,
-	0x75, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x1a, 0x56,
-	0x0a, 0x0a, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03,
-	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x32,
-	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e,
-	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x43, 0x6c,
-	0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x6e, 0x79, 0x52, 0x05, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0xbe, 0x01, 0x0a, 0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x6e, 0x79, 0x12, 0x23, 0x0a, 0x0c, 0x73, 0x74, 0x72, 0x69,
-	0x6e, 0x67, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00,
-	0x52, 0x0b, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x23, 0x0a,
-	0x0c, 0x62, 0x69, 0x6e, 0x61, 0x72, 0x79, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x0b, 0x62, 0x69, 0x6e, 0x61, 0x72, 0x79, 0x56, 0x61, 0x6c,
-	0x75, 0x65, 0x12, 0x1d, 0x0a, 0x09, 0x69, 0x6e, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x0d, 0x48, 0x00, 0x52, 0x08, 0x69, 0x6e, 0x74, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x12, 0x3b, 0x0a, 0x09, 0x6d, 0x61, 0x70, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f,
-	0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d,
-	0x61, 0x70, 0x48, 0x00, 0x52, 0x08, 0x6d, 0x61, 0x70, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x07,
-	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x25, 0x0a, 0x0f, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x42, 0x2b,
-	0x5a, 0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x6f, 0x72,
-	0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x22, 0x1c, 0x0a,
+	0x0a, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x63,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x02, 0x63, 0x65, 0x22, 0x25, 0x0a, 0x0f, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12,
+	0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75,
+	0x69, 0x64, 0x42, 0x2b, 0x5a, 0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x76, 0x6f, 0x72, 0x74, 0x65, 0x69, 0x6c, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
+	0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -271,22 +142,17 @@ func file_pkg_flow_grpc_eventing_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_eventing_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_eventing_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_pkg_flow_grpc_eventing_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_pkg_flow_grpc_eventing_proto_goTypes = []interface{}{
-	(*CloudEventMap)(nil),   // 0: direktiv_flow.CloudEventMap
-	(*CloudEventAny)(nil),   // 1: direktiv_flow.CloudEventAny
-	(*EventingRequest)(nil), // 2: direktiv_flow.EventingRequest
-	nil,                     // 3: direktiv_flow.CloudEventMap.ValueEntry
+	(*CloudEvent)(nil),      // 0: direktiv_flow.CloudEvent
+	(*EventingRequest)(nil), // 1: direktiv_flow.EventingRequest
 }
 var file_pkg_flow_grpc_eventing_proto_depIdxs = []int32{
-	3, // 0: direktiv_flow.CloudEventMap.value:type_name -> direktiv_flow.CloudEventMap.ValueEntry
-	0, // 1: direktiv_flow.CloudEventAny.map_value:type_name -> direktiv_flow.CloudEventMap
-	1, // 2: direktiv_flow.CloudEventMap.ValueEntry.value:type_name -> direktiv_flow.CloudEventAny
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0, // [0:0] is the sub-list for method output_type
+	0, // [0:0] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_eventing_proto_init() }
@@ -296,7 +162,7 @@ func file_pkg_flow_grpc_eventing_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_pkg_flow_grpc_eventing_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CloudEventMap); i {
+			switch v := v.(*CloudEvent); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -308,18 +174,6 @@ func file_pkg_flow_grpc_eventing_proto_init() {
 			}
 		}
 		file_pkg_flow_grpc_eventing_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CloudEventAny); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_eventing_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventingRequest); i {
 			case 0:
 				return &v.state
@@ -332,19 +186,13 @@ func file_pkg_flow_grpc_eventing_proto_init() {
 			}
 		}
 	}
-	file_pkg_flow_grpc_eventing_proto_msgTypes[1].OneofWrappers = []interface{}{
-		(*CloudEventAny_StringValue)(nil),
-		(*CloudEventAny_BinaryValue)(nil),
-		(*CloudEventAny_IntValue)(nil),
-		(*CloudEventAny_MapValue)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_eventing_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
