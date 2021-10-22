@@ -19,7 +19,7 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +39,11 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 	err = atob(routes, &resp.Routes)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range routes {
+		route := routes[i]
+		resp.Routes[i].Ref = route.Edges.Ref.Name
 	}
 
 	return &resp, nil
@@ -64,7 +69,7 @@ func (flow *flow) RouterStream(req *grpc.RouterRequest, srv grpc.Flow_RouterStre
 
 resend:
 
-	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+	routes, err := d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
 	if err != nil {
 		return err
 	}
@@ -84,6 +89,11 @@ resend:
 	err = atob(routes, &resp.Routes)
 	if err != nil {
 		return err
+	}
+
+	for i := range routes {
+		route := routes[i]
+		resp.Routes[i].Ref = route.Edges.Ref.Name
 	}
 
 	nhash = checksum(resp)
@@ -151,7 +161,7 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 			}
 
-			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).All(ctx)
+			routes, err = d.wf.QueryRoutes().Order(ent.Desc(entmux.FieldWeight)).WithRef().All(ctx)
 			if err != nil {
 				return err
 			}
@@ -189,6 +199,10 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
+	for i := range routes {
+		route := routes[i]
+		resp.Routes[i].Ref = route.Edges.Ref.Name
+	}
 	return &resp, nil
 
 }
