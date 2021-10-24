@@ -9,7 +9,8 @@ require (
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go v1.2.0
-	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gabriel-vasile/mimetype v1.3.1 // indirect

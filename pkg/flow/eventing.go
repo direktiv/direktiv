@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	format "github.com/cloudevents/sdk-go/binding/format/protobuf/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
@@ -18,20 +19,21 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+var knativeClients sync.Map
+
 type eventReceiver struct {
 	logger *zap.SugaredLogger
 	events *events
 	flow   *flow
 
-	clients sync.Map
-
 	igrpc.UnimplementedEventingServer
 }
 
 type client struct {
-	stream     igrpc.Eventing_RequestEventsServer
-	disconnect chan<- bool
+	stream igrpc.Eventing_RequestEventsServer
 }
+
+var publishLogger *zap.SugaredLogger
 
 func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 
@@ -39,6 +41,8 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	publishLogger = logger
 
 	logger.Infof("creating event receiver")
 
@@ -84,6 +88,8 @@ func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
 
 func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Request) {
 
+	rcv.logger.Debugf("namespace knative event")
+
 	ns := mux.Vars(r)["ns"]
 
 	err := rcv.sendToNamespace(ns, r)
@@ -116,7 +122,35 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 }
 
 func PublishKnativeEvent(ce *cloudevents.Event) {
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!EVENT %+v\n", ce)
+
+	var errorClients []string
+
+	knativeClients.Range(func(k, v interface{}) bool {
+		id, _ := k.(string)
+		c, _ := v.(client)
+
+		b, err := format.Protobuf.Marshal(ce)
+		if err != nil {
+			publishLogger.Errorf("can not marshal cloud event: %v", err)
+			return false
+		}
+
+		ce := &igrpc.CloudEvent{
+			Ce: b,
+		}
+
+		if err := c.stream.Send(ce); err != nil {
+			publishLogger.Errorf("can not send event for client %s: %v", id, err)
+			errorClients = append(errorClients, id)
+		}
+		return true
+	})
+
+	// error clients getting removed
+	for _, id := range errorClients {
+		knativeClients.Delete(id)
+	}
+
 }
 
 // func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
@@ -124,18 +158,15 @@ func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc
 
 	rcv.logger.Infof("client connected: %v", req.GetUuid())
 
-	disconnect := make(chan bool)
-	rcv.clients.Store(req.GetUuid(), client{stream: stream, disconnect: disconnect})
+	knativeClients.Store(req.GetUuid(), client{stream: stream})
 
 	ctx := stream.Context()
 
 	for {
 		select {
-		case <-disconnect:
-			rcv.logger.Infof("closing stream for client: %d", req.GetUuid())
-			return nil
 		case <-ctx.Done():
-			rcv.logger.Infof("client %d has disconnected", req.GetUuid())
+			rcv.logger.Infof("client %s has disconnected", req.GetUuid())
+			knativeClients.Delete(req.GetUuid())
 			return nil
 		}
 	}

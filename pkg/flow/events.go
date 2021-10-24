@@ -632,7 +632,8 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 	}
 
 	// if eventing is configured, event goes to knative event service
-	if events.server.conf.Eventing {
+	// if it is from knative sink not
+	if events.server.conf.Eventing && ctx.Value("source") == nil {
 		PublishKnativeEvent(event)
 	}
 
