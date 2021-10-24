@@ -117,8 +117,12 @@ func init() {
 	namespace.DefaultUpdatedAt = namespaceDescUpdatedAt.Default.(func() time.Time)
 	// namespace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	namespace.UpdateDefaultUpdatedAt = namespaceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// namespaceDescConfig is the schema descriptor for config field.
+	namespaceDescConfig := namespaceFields[3].Descriptor()
+	// namespace.DefaultConfig holds the default value on creation for the config field.
+	namespace.DefaultConfig = namespaceDescConfig.Default.(string)
 	// namespaceDescName is the schema descriptor for name field.
-	namespaceDescName := namespaceFields[3].Descriptor()
+	namespaceDescName := namespaceFields[4].Descriptor()
 	// namespace.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	namespace.NameValidator = namespaceDescName.Validators[0].(func(string) error)
 	// namespaceDescID is the schema descriptor for id field.

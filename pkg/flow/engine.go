@@ -116,7 +116,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(StatusPending).SetAs(as).Save(ctx)
+	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(StatusPending).SetAs(util.SanitizeAsField(as)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +158,17 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	engine.logToNamespace(ctx, t, d.ns(), "Workflow '%s' has been triggered by %s.", args.Path, args.Caller)
 	engine.logToWorkflow(ctx, t, d.wfData, "Instance '%s' created by %s.", im.ID().String(), args.Caller)
 	engine.logToInstance(ctx, t, in, "Preparing workflow triggered by %s.", args.Caller)
+
+	// Broadcast Event
+	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
+		broadcastInstanceInput{
+			WorkflowPath: args.Path,
+			InstanceID:   im.ID().String(),
+			Caller:       args.Caller,
+		}, d.ns())
+	if err != nil {
+		return nil, err
+	}
 
 	return im, nil
 
@@ -332,6 +343,18 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	err = engine.SetInstanceFailed(ctx, im, err)
 	if err != nil {
 		engine.sugar.Error(err)
+	}
+
+	if ns, err := im.in.Namespace(ctx); err == nil {
+		broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, ctx, broadcastInstanceInput{
+			WorkflowPath: GetInodePath(im.in.As),
+			InstanceID:   im.in.ID.String(),
+		}, ns)
+		if broadcastErr != nil {
+			engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
+		}
+	} else {
+		engine.sugar.Errorf("Failed to start broadcast: %v", err)
 	}
 
 	engine.TerminateInstance(ctx, im)
@@ -543,6 +566,18 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	engine.pubsub.NotifyInstance(im.in)
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Workflow completed.")
+
+	if ns, err := im.in.Namespace(ctx); err == nil {
+		broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
+			WorkflowPath: GetInodePath(im.in.As),
+			InstanceID:   im.in.ID.String(),
+		}, ns)
+		if broadcastErr != nil {
+			engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
+		}
+	} else {
+		engine.sugar.Errorf("Failed to start broadcast: %v", err)
+	}
 
 	engine.TerminateInstance(ctx, im)
 
@@ -786,12 +821,18 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	svn := ar.Container.Service
 
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		svn, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		scale := int32(ar.Container.Scale)
+		size := int32(ar.Container.Size)
+		svn, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name:          &ar.Container.ID,
 			Namespace:     &ar.Workflow.NamespaceID,
 			Workflow:      &ar.Workflow.WorkflowID,
 			Revision:      &ar.Workflow.Revision,
 			NamespaceName: &ar.Workflow.NamespaceName,
+			Cmd:           &ar.Container.Cmd,
+			Image:         &ar.Container.Image,
+			MinScale:      &scale,
+			Size:          &size,
 		})
 		if err != nil {
 			engine.sugar.Errorf("can not create service name: %v", err)

@@ -332,6 +332,17 @@ respond:
 	resp.Node.Parent = dir
 	resp.Node.Path = path
 
+	// Broadcast
+	err = flow.BroadcastDirectory(BroadcastEventTypeCreate, ctx,
+		broadcastDirectoryInput{
+			Path:   resp.Node.Path,
+			Parent: resp.Node.Parent,
+		}, ns)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &resp, nil
 
 }
@@ -386,6 +397,31 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	if d.ino.Type == "workflow" {
 		metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Dec()
 		metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
+
+		// Broadcast Event
+		err = flow.BroadcastWorkflow(BroadcastEventTypeDelete, ctx,
+			broadcastWorkflowInput{
+				Name:   d.base,
+				Path:   d.path,
+				Parent: d.dir,
+				Live:   false,
+			}, d.ns())
+
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Broadcast Event
+		err = flow.BroadcastDirectory(BroadcastEventTypeDelete, ctx,
+			broadcastDirectoryInput{
+				Path:   d.path,
+				Parent: d.dir,
+			}, d.ns())
+
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted %s '%s'.", d.ino.Type, d.path)
