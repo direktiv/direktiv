@@ -146,12 +146,9 @@ service Flow {
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
 	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
 
-<<<<<<< HEAD
-=======
 	rpc SetNamespaceConfig (SetNamespaceConfigRequest) returns (SetNamespaceConfigResponse) {}
 	rpc GetNamespaceConfig (GetNamespaceConfigRequest) returns (GetNamespaceConfigResponse) {}
-	
->>>>>>> main
+
 }
 
 service Internal {
