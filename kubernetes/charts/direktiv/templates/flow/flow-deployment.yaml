@@ -63,6 +63,11 @@ spec:
             - name: internal
               containerPort: 7777
               protocol: TCP
+            {{- if .Values.eventing.enabled }}
+            - name: grpcevents
+              protocol: TCP
+              containerPort: 3333
+            {{- end }}
           env:
           - name: DIREKTIV_LOG_JSON
             value: {{ .Values.logging | quote }}
