@@ -68,7 +68,7 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 		return
 	}
 
-	event := cloudevents.NewEvent(cloudevents.VersionV03)
+	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	uid := uuid.New()
 	event.SetID(uid.String())

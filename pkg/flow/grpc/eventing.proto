@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+message CloudEvent {
+  bytes ce = 1;
+}
+
+message EventingRequest {
+  string uuid = 1;
+}

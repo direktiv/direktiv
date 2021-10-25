@@ -11,8 +11,10 @@ type Config struct {
 	FunctionsService string `yaml:"functions-service"`
 	FlowService      string `yaml:"flow-service"`
 
-	PrometheusBackend string `yaml:"prometheus-backend"`
+	PrometheusBackend    string `yaml:"prometheus-backend"`
 	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
+
+	Eventing bool `yaml:"eventing"`
 }
 
 // ReadConfig reads direktiv config file
