@@ -19,20 +19,20 @@ jobs:
       - name: test version
         run: |
           echo ${{ env.RELEASE_VERSION }}
-      - name: checkout ui repository for tagging
-        uses: actions/checkout@v2
-        with:
-          repository: vorteil/direktiv-ui
-          path: ui
-      - run: |
-          export RV=${{env.RELEASE_VERSION}}
-          echo "RV set to $RV"
-          if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
-          echo "RV set to $RV"
-          cd ui 
-          git remote set-url origin https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/vorteil/direktiv-ui
-          git tag $RV
-          git push origin $RV
+      # - name: checkout ui repository for tagging
+      #   uses: actions/checkout@v2
+      #   with:
+      #     repository: vorteil/direktiv-ui
+      #     path: ui
+      # - run: |
+      #     export RV=${{env.RELEASE_VERSION}}
+      #     echo "RV set to $RV"
+      #     if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
+      #     echo "RV set to $RV"
+      #     cd ui 
+      #     git remote set-url origin https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/vorteil/direktiv-ui
+      #     git tag $RV
+      #     git push origin $RV
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
