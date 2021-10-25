@@ -1,11 +1,23 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/vorteil/direktiv/pkg/util"
 )
+
+type VarMimeType int
+
+const (
+	VarMimeTypeJSON VarMimeType = iota
+	VarMimeTypePlainText
+	VarMimeTypeOctetStream
+)
+
+var VarMimeTypeStrings = []string{"application/json", "text/plain", "application/octet-stream"}
 
 type SetterState struct {
 	StateCommon `yaml:",inline"`
@@ -15,9 +27,80 @@ type SetterState struct {
 }
 
 type SetterDefinition struct {
-	Scope string      `yaml:"scope,omitempty"`
-	Key   string      `yaml:"key"`
-	Value interface{} `yaml:"value,omitempty"`
+	Scope    string      `yaml:"scope,omitempty"`
+	Key      string      `yaml:"key"`
+	Value    interface{} `yaml:"value,omitempty"`
+	MimeType VarMimeType `yaml:"mimeType,omitempty"`
+}
+
+func (a VarMimeType) String() string {
+	return VarMimeTypeStrings[a]
+}
+
+func ParseVarMimeType(s string) (VarMimeType, error) {
+
+	if s == "" {
+		goto unknown
+	}
+
+	for i := range VarMimeTypeStrings {
+		if VarMimeTypeStrings[i] == s {
+			return VarMimeType(i), nil
+		}
+	}
+
+unknown:
+
+	return VarMimeType(0), fmt.Errorf("unrecognized mime type (should be one of [%s]): %s", strings.Join(VarMimeTypeStrings, ", "), s)
+
+}
+
+func (a VarMimeType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.String())
+}
+
+func (a *VarMimeType) UnmarshalJSON(data []byte) error {
+
+	var s string
+
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	x, err := ParseVarMimeType(s)
+	if err != nil {
+		return err
+	}
+
+	*a = x
+
+	return nil
+
+}
+
+func (a VarMimeType) MarshalYAML() (interface{}, error) {
+	return a.String(), nil
+}
+
+func (a *VarMimeType) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var s string
+
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+
+	x, err := ParseVarMimeType(s)
+	if err != nil {
+		return err
+	}
+
+	*a = x
+
+	return nil
+
 }
 
 func (o *SetterDefinition) Validate() error {
