@@ -30,7 +30,7 @@ jobs:
           if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
           echo "RV set to $RV"
           cd ui 
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/vorteil/direktiv-ui
+          git remote set-url origin https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/vorteil/direktiv-ui
           git tag $RV
           git push origin $RV
       - name: Login to Docker Hub
