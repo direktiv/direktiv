@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/vorteil/direktiv/pkg/flow/ent"
 	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
@@ -335,7 +336,7 @@ type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) (*ent.VarData, bool, error) {
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string) (*ent.VarData, bool, error) {
 
 	hash, err := computeHash(data)
 	if err != nil {
@@ -352,7 +353,17 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 			return nil, false, err
 		}
 
-		vdata, err = vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		vdataBuilder := vdatac.Create().SetSize(len(data)).SetHash(hash)
+		// set mime type if provided
+		if vMimeType != "" {
+			vdataBuilder.SetMimeType(vMimeType)
+		} else {
+			// auto detect
+			mtype := mimetype.Detect(data)
+			vdataBuilder.SetMimeType(mtype.String())
+		}
+
+		vdata, err = vdataBuilder.SetData(data).Save(ctx)
 		if err != nil {
 			return nil, false, err
 		}
@@ -383,7 +394,14 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 			return nil, false, err
 		}
 
-		vdata, err = vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		vdataBuilder := vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data)
+
+		// Update mime type if provided
+		if vMimeType != "" {
+			vdataBuilder.SetMimeType(vMimeType)
+		}
+
+		vdata, err = vdataBuilder.Save(ctx)
 		if err != nil {
 			return nil, false, err
 		}
@@ -450,7 +468,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData(), req.GetMimeType())
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +590,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), req.GetMimeType())
 	if err != nil {
 		return err
 	}
@@ -685,7 +703,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), req.GetMimeType())
 	if err != nil {
 		return err
 	}

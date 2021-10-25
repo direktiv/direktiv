@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/vorteil/direktiv/pkg/model"
 )
 
 // VarData holds the schema definition for the vardata entity.
@@ -23,6 +24,7 @@ func (VarData) Fields() []ent.Field {
 		field.Int("size"),
 		field.String("hash"),
 		field.Bytes("data"),
+		field.String("mime_type").Default(model.DefaultVarMimeType().String()),
 	}
 }
 

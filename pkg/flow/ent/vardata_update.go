@@ -60,6 +60,20 @@ func (vdu *VarDataUpdate) SetData(b []byte) *VarDataUpdate {
 	return vdu
 }
 
+// SetMimeType sets the "mime_type" field.
+func (vdu *VarDataUpdate) SetMimeType(s string) *VarDataUpdate {
+	vdu.mutation.SetMimeType(s)
+	return vdu
+}
+
+// SetNillableMimeType sets the "mime_type" field if the given value is not nil.
+func (vdu *VarDataUpdate) SetNillableMimeType(s *string) *VarDataUpdate {
+	if s != nil {
+		vdu.SetMimeType(*s)
+	}
+	return vdu
+}
+
 // AddVarrefIDs adds the "varrefs" edge to the VarRef entity by IDs.
 func (vdu *VarDataUpdate) AddVarrefIDs(ids ...uuid.UUID) *VarDataUpdate {
 	vdu.mutation.AddVarrefIDs(ids...)
@@ -217,6 +231,13 @@ func (vdu *VarDataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: vardata.FieldData,
 		})
 	}
+	if value, ok := vdu.mutation.MimeType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: vardata.FieldMimeType,
+		})
+	}
 	if vdu.mutation.VarrefsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -318,6 +339,20 @@ func (vduo *VarDataUpdateOne) SetHash(s string) *VarDataUpdateOne {
 // SetData sets the "data" field.
 func (vduo *VarDataUpdateOne) SetData(b []byte) *VarDataUpdateOne {
 	vduo.mutation.SetData(b)
+	return vduo
+}
+
+// SetMimeType sets the "mime_type" field.
+func (vduo *VarDataUpdateOne) SetMimeType(s string) *VarDataUpdateOne {
+	vduo.mutation.SetMimeType(s)
+	return vduo
+}
+
+// SetNillableMimeType sets the "mime_type" field if the given value is not nil.
+func (vduo *VarDataUpdateOne) SetNillableMimeType(s *string) *VarDataUpdateOne {
+	if s != nil {
+		vduo.SetMimeType(*s)
+	}
 	return vduo
 }
 
@@ -500,6 +535,13 @@ func (vduo *VarDataUpdateOne) sqlSave(ctx context.Context) (_node *VarData, err 
 			Type:   field.TypeBytes,
 			Value:  value,
 			Column: vardata.FieldData,
+		})
+	}
+	if value, ok := vduo.mutation.MimeType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: vardata.FieldMimeType,
 		})
 	}
 	if vduo.mutation.VarrefsCleared() {

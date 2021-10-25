@@ -59,6 +59,7 @@ message SetVariableInternalRequest {
 	string key = 2;
 	int64 totalSize = 3;
 	bytes data = 4;
+	string mimeType = 5;
 }
 
 message SetVariableInternalResponse {

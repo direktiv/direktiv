@@ -171,6 +171,10 @@ func init() {
 	vardata.DefaultUpdatedAt = vardataDescUpdatedAt.Default.(func() time.Time)
 	// vardata.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	vardata.UpdateDefaultUpdatedAt = vardataDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// vardataDescMimeType is the schema descriptor for mime_type field.
+	vardataDescMimeType := vardataFields[6].Descriptor()
+	// vardata.DefaultMimeType holds the default value on creation for the mime_type field.
+	vardata.DefaultMimeType = vardataDescMimeType.Default.(string)
 	// vardataDescID is the schema descriptor for id field.
 	vardataDescID := vardataFields[0].Descriptor()
 	// vardata.DefaultID holds the default value on creation for the id field.

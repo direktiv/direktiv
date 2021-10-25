@@ -37,6 +37,10 @@ func (a VarMimeType) String() string {
 	return VarMimeTypeStrings[a]
 }
 
+func DefaultVarMimeType() VarMimeType {
+	return VarMimeTypeJSON
+}
+
 func ParseVarMimeType(s string) (VarMimeType, error) {
 
 	if s == "" {

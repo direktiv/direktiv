@@ -57,6 +57,7 @@ message SetNamespaceVariableRequest {
 	string key = 2;
 	int64 totalSize = 3;
 	bytes data = 4;
+	string mimeType = 5;
 }
 
 message SetNamespaceVariableResponse {
@@ -123,6 +124,7 @@ message SetWorkflowVariableRequest {
 	string key = 3;
 	int64 totalSize = 4;
 	bytes data = 5;
+	string mimeType = 6;
 }
 
 message SetWorkflowVariableResponse {
@@ -193,6 +195,7 @@ message SetInstanceVariableRequest {
 	string key = 3;
 	int64 totalSize = 4;
 	bytes data = 5;
+	string mimeType = 6;
 }
 
 message SetInstanceVariableResponse {

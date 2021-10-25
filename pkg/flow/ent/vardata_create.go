@@ -68,6 +68,20 @@ func (vdc *VarDataCreate) SetData(b []byte) *VarDataCreate {
 	return vdc
 }
 
+// SetMimeType sets the "mime_type" field.
+func (vdc *VarDataCreate) SetMimeType(s string) *VarDataCreate {
+	vdc.mutation.SetMimeType(s)
+	return vdc
+}
+
+// SetNillableMimeType sets the "mime_type" field if the given value is not nil.
+func (vdc *VarDataCreate) SetNillableMimeType(s *string) *VarDataCreate {
+	if s != nil {
+		vdc.SetMimeType(*s)
+	}
+	return vdc
+}
+
 // SetID sets the "id" field.
 func (vdc *VarDataCreate) SetID(u uuid.UUID) *VarDataCreate {
 	vdc.mutation.SetID(u)
@@ -168,6 +182,10 @@ func (vdc *VarDataCreate) defaults() {
 		v := vardata.DefaultUpdatedAt()
 		vdc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := vdc.mutation.MimeType(); !ok {
+		v := vardata.DefaultMimeType
+		vdc.mutation.SetMimeType(v)
+	}
 	if _, ok := vdc.mutation.ID(); !ok {
 		v := vardata.DefaultID()
 		vdc.mutation.SetID(v)
@@ -190,6 +208,9 @@ func (vdc *VarDataCreate) check() error {
 	}
 	if _, ok := vdc.mutation.Data(); !ok {
 		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "data"`)}
+	}
+	if _, ok := vdc.mutation.MimeType(); !ok {
+		return &ValidationError{Name: "mime_type", err: errors.New(`ent: missing required field "mime_type"`)}
 	}
 	return nil
 }
@@ -262,6 +283,14 @@ func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 			Column: vardata.FieldData,
 		})
 		_node.Data = value
+	}
+	if value, ok := vdc.mutation.MimeType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: vardata.FieldMimeType,
+		})
+		_node.MimeType = value
 	}
 	if nodes := vdc.mutation.VarrefsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
