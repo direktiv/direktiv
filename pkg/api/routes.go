@@ -15,6 +15,7 @@ const (
 	RN_SaveWorkflow         = "saveWorkflow"
 	RN_DiscardWorkflow      = "discardWorkflow"
 	RN_DeleteNode           = "deleteNode"
+	RN_RenameNode           = "renameNode"
 	RN_GetWorkflowTags      = "getWorkflowTags"
 	RN_GetWorkflowRevisions = "getWorkflowRevisions"
 	RN_GetWorkflowRefs      = "getWorkflowRefs"
