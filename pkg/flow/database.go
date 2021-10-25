@@ -71,6 +71,7 @@ func GetInodePath(path string) string {
 	if !strings.HasPrefix(path, "/") {
 		return "/" + path
 	}
+	path = filepath.Clean(path)
 	return path
 }
 
