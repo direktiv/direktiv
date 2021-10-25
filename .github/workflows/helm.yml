@@ -28,14 +28,14 @@ jobs:
         helm package --app-version=$v --version=$v kubernetes/charts/knative/
         git clone https://github.com/CrunchyData/postgres-operator-examples.git
         helm package --app-version=$v --version=$v postgres-operator-examples/helm/install/
-        wget https://${{ secrets.GCP_BUCKET }}.storage.googleapis.com/charts/index.yaml
+        wget https://${{ secrets.GCP_BUCKET }}.storage.googleapis.com/index.yaml
         echo "do helm index thing"
         helm repo index ./ --merge ./index.yaml
         ls -la
         echo ${{ secrets.GCP_CREDENTIALS }} >> ./gcp.raw
         base64 --decode ./gcp.raw >> ./gcp.key 
         gcloud auth activate-service-account --key-file=./gcp.key > /dev/null 2>&1
-        gsutil cp ./direktiv-$v.tgz gs://${{ secrets.GCP_BUCKET }}/charts/direktiv-$v.tgz > /dev/null 2>&1
-        gsutil cp ./knative-$v.tgz gs://${{ secrets.GCP_BUCKET }}/charts/knative-$v.tgz > /dev/null 2>&1
-        gsutil cp ./pgo-$v.tgz gs://${{ secrets.GCP_BUCKET }}/charts/pgo-$v.tgz > /dev/null 2>&1
-        gsutil cp ./index.yaml gs://${{ secrets.GCP_BUCKET }}/charts/index.yaml > /dev/null 2>&1
+        gsutil cp ./direktiv-$v.tgz gs://${{ secrets.GCP_BUCKET }}/direktiv-$v.tgz > /dev/null 2>&1
+        gsutil cp ./knative-$v.tgz gs://${{ secrets.GCP_BUCKET }}/knative-$v.tgz > /dev/null 2>&1
+        gsutil cp ./pgo-$v.tgz gs://${{ secrets.GCP_BUCKET }}/pgo-$v.tgz > /dev/null 2>&1
+        gsutil cp ./index.yaml gs://${{ secrets.GCP_BUCKET }}/index.yaml > /dev/null 2>&1
