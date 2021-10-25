@@ -3,7 +3,7 @@ debug: false
 
 # -- knative eventing enabled, requires knative setup and configuration
 eventing:
-  enabled: true
+  enabled: false
 
 # -- json or console logger
 logging: json

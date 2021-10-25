@@ -21,6 +21,10 @@ import (
 
 var knativeClients sync.Map
 
+type EventingCtxKey string
+
+const EventingCtxKeySource EventingCtxKey = "source"
+
 type eventReceiver struct {
 	logger *zap.SugaredLogger
 	events *events
@@ -80,7 +84,7 @@ func (rcv *eventReceiver) sendToNamespace(ns string, r *http.Request) error {
 		return err
 	}
 
-	c := context.WithValue(context.Background(), "source", "eventing")
+	c := context.WithValue(context.Background(), EventingCtxKeySource, "eventing")
 
 	return rcv.events.BroadcastCloudevent(c, namespace, ev, 0)
 
