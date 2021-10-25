@@ -71,7 +71,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string)
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
-	if iresp.Instance.As != "/testwf" {
+	if iresp.Instance.As != "testwf" {
 		return errors.New("instance returned incorrect 'As'")
 	}
 
