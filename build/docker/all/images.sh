@@ -56,30 +56,30 @@ VERSION="v0.5.5"
 
 docker pull $PREFIX/flow
 docker tag $PREFIX/flow vorteil/flow:$VERSION
-docker save --output=flow.tar vorteil/flow
+docker save --output=flow.tar vorteil/flow:$VERSION
 
 docker pull $PREFIX/init-pod
 docker tag $PREFIX/init-pod vorteil/init-pod:$VERSION
-docker save --output=init-pod.tar vorteil/init-pod
+docker save --output=init-pod.tar vorteil/init-pod:$VERSION
 
 docker pull $PREFIX/secrets
 docker tag $PREFIX/secrets vorteil/secrets:$VERSION
-docker save --output=secrets.tar vorteil/secrets
+docker save --output=secrets.tar vorteil/secrets:$VERSION
 
 docker pull $PREFIX/sidecar
 docker tag $PREFIX/sidecar vorteil/sidecar:$VERSION
-docker save --output=sidecar.tar vorteil/sidecar
+docker save --output=sidecar.tar vorteil/sidecar:$VERSION
 
 docker pull $PREFIX/functions
 docker tag $PREFIX/functions vorteil/functions:$VERSION
-docker save --output=functions.tar vorteil/functions
+docker save --output=functions.tar vorteil/functions:$VERSION
 
 docker pull $PREFIX/api
 docker tag $PREFIX/api vorteil/api:$VERSION
-docker save --output=api.tar vorteil/api
+docker save --output=api.tar vorteil/api:$VERSION
 
 docker pull $PREFIX/ui
 docker tag $PREFIX/ui vorteil/ui:$VERSION
-docker save --output=ui.tar vorteil/ui
+docker save --output=ui.tar vorteil/ui:$VERSION
 
 tar -cvzf images.tar.gz *.tar
