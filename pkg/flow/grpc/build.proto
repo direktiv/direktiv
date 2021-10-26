@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+
+message BuildResponse {
+	string build = 1;
+}

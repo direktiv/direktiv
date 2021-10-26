@@ -26,6 +26,7 @@ import "pkg/functions/grpc/watch-functions.proto";
 import "pkg/functions/grpc/watch-pods.proto";
 import "pkg/functions/grpc/watch-logs.proto";
 
+import "pkg/functions/grpc/build.proto";
 
 service FunctionsService {
 
@@ -51,4 +52,6 @@ service FunctionsService {
   rpc WatchRevisions(WatchRevisionsRequest) returns (stream WatchRevisionsResponse)  {}
   rpc WatchLogs(WatchLogsRequest) returns (stream WatchLogsResponse)  {}
   rpc ListPods(ListPodsRequest) returns (ListPodsResponse)  {}
+
+  rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
 }

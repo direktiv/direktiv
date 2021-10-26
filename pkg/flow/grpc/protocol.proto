@@ -20,6 +20,8 @@ import "pkg/flow/grpc/eventing.proto";
 
 import "pkg/flow/grpc/registries.proto";
 
+import "pkg/flow/grpc/build.proto";
+
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
 	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
@@ -148,6 +150,8 @@ service Flow {
 
 	rpc SetNamespaceConfig (SetNamespaceConfigRequest) returns (SetNamespaceConfigResponse) {}
 	rpc GetNamespaceConfig (GetNamespaceConfigRequest) returns (GetNamespaceConfigResponse) {}
+
+	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
 
 }
 
