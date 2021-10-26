@@ -7,7 +7,9 @@ CGO_LDFLAGS := "CGO_LDFLAGS=\"-static -w -s\""
 GO_BUILD_TAGS := "osusergo,netgo"
 GIT_HASH := $(shell git rev-parse --short HEAD)
 GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
-FULL_VERSION := ${RELEASE}${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}
+RELEASE := ""
+RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
+FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")   
 
 .SECONDARY:
 
@@ -145,9 +147,6 @@ build/%-binary: Makefile ${GO_SOURCE_FILES}
 image-%: build/%-binary
 	cd build && DOCKER_BUILDKIT=1 docker build -t direktiv-$* -f docker/$*/Dockerfile .
 	@echo "Make $@: SUCCESS"
-
-RELEASE := ""
-RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 
 .PHONY: push-%
 push-%: image-%
