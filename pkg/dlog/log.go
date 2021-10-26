@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/vorteil/direktiv/pkg/version"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -15,7 +16,7 @@ func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 	if err != nil {
 		return nil, err
 	}
-	return appLogger.With(zap.String("component", component)).Sugar(), nil
+	return appLogger.With(zap.String("component", component), zap.String("build", version.Version)).Sugar(), nil
 
 }
 

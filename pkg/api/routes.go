@@ -67,6 +67,7 @@ const (
 	RN_GetInstanceLogs        = "getInstanceLogs"
 	RN_SetNamespaceVariable   = "setNamespaceVariable"
 	RN_JQPlayground           = "jqPlayground"
+	RN_Version                = "version"
 	RN_ListServices           = "listServices"
 	RN_ListNamespaceServices  = "listNamespacesServices"
 	RN_WatchServices          = "watchServices"

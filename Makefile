@@ -5,6 +5,9 @@
 DOCKER_REPO := "localhost:5000"
 CGO_LDFLAGS := "CGO_LDFLAGS=\"-static -w -s\""
 GO_BUILD_TAGS := "osusergo,netgo"
+GIT_HASH := $(shell git rev-parse --short HEAD)
+GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
+FULL_VERSION := ${RELEASE}${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}
 
 .SECONDARY:
 
@@ -21,6 +24,9 @@ help: ## Prints usage information.
 	@printf "  %-16s %s\n" '$$HELM_CONFIG' "${HELM_CONFIG}"
 	@printf "  %-16s %s\n" '$$REGEX' "${REGEX}"
 	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
+	@printf "  %-16s %s\n" '$$GIT_HASH' "${GIT_HASH}"
+	@printf "  %-16s %s\n" '$$GIT_DIRTY' "${GIT_DIRTY}"
+	@printf "  %-16s %s\n" '$$FULL_VERSION' "${FULL_VERSION}"
 	@echo ""
 	@echo "\033[36mTargets\033[0m"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -129,7 +135,7 @@ protoc:
 build/%-binary: Makefile ${GO_SOURCE_FILES}
 	@set -e ; if [ -d "cmd/$*" ]; then \
 		echo "Building $* binary..."; \
-		export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/vorteil/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \

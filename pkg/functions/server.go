@@ -18,6 +18,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/vorteil/direktiv/pkg/functions/ent"
 	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/vorteil/direktiv/pkg/version"
 
 	"github.com/vorteil/direktiv/pkg/dlog"
 	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
@@ -437,4 +438,10 @@ func (fServer *functionsServer) orphansGC() {
 
 	}
 
+}
+
+func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.BuildResponse, error) {
+	var resp igrpc.BuildResponse
+	resp.Build = version.Version
+	return &resp, nil
 }
