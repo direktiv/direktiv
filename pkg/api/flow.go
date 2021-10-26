@@ -1063,6 +1063,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_ValidateRef, "validate-ref", h.ValidateRef)
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
+	// TODO: SWAGGER_SPEC
+	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
@@ -2100,6 +2102,33 @@ func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
 	respond(w, resp, err)
 	return
 
+}
+
+func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := &grpc.RenameNodeRequest{}
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	err = json.Unmarshal(data, &in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	in.Namespace = namespace
+	in.Old = path
+
+	resp, err := h.client.RenameNode(ctx, in)
+	respond(w, resp, err)
 }
 
 func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {

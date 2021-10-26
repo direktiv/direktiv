@@ -183,15 +183,16 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
-		var msg string
+		// var msg string
 		// if code < 500 {
 		// 	msg = err.Error()
 		// } else {
 		// 	msg = http.StatusText(code)
 		// }
 
-		msg = err.Error()
-		http.Error(w, msg, code)
+		// return only the message part of the grpc error
+		st := status.Convert(err)
+		http.Error(w, st.Message(), code)
 		return
 
 	}
