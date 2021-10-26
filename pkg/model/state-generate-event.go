@@ -90,6 +90,11 @@ func (o *GenerateEventState) Validate() error {
 		return errors.New("event required")
 	}
 
+	err := o.Event.Validate()
+	if err != nil {
+		return err
+	}
+
 	for i, errDef := range o.ErrorDefinitions() {
 		if err := errDef.Validate(); err != nil {
 			return fmt.Errorf("catch[%v] is invalid: %v", i, err)
