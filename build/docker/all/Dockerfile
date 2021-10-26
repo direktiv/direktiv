@@ -26,6 +26,8 @@ COPY --from=build-env /dlapp /dlapp
 
 RUN chmod 755 /dlapp
 
+COPY broker.yaml /
+COPY profile /etc
 COPY debug.yaml /
 COPY registry.yaml /
 

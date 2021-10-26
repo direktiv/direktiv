@@ -1,6 +1,9 @@
 pullPolicy: IfNotPresent
 debug: "true"
 
+eventing:
+  enabled: true
+
 functions:
   sidecar: "vorteil/sidecar:v0.5.6"
   initPodImage:  "vorteil/direktiv-init-pod:v0.5.6"

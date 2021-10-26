@@ -65,12 +65,6 @@ func main() {
 		importImage(imgs[i])
 	}
 
-	// show imported images
-	// cmd = exec.Command("/bin/crictl", "images")
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	// cmd.Run()
-
 	installKnative(kc)
 
 	runRegistry(kc)
@@ -266,6 +260,36 @@ func installKnative(kc string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
+
+	if os.Getenv("EVENTING") != "" {
+		log.Printf("installing knative eventing")
+
+		yamls := []string{
+			"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-crds.yaml",
+			"https://github.com/knative/eventing/releases/download/v0.26.1/eventing-core.yaml",
+			"https://github.com/knative/eventing/releases/download/v0.26.1/mt-channel-broker.yaml",
+			"https://github.com/knative/eventing/releases/download/v0.26.1/in-memory-channel.yaml",
+		}
+
+		for i := range yamls {
+			cmd = exec.Command(kc, "apply", "-f", yamls[i])
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Run()
+		}
+
+		// waiting for controller to be Ready
+		cmd = exec.Command(kc, "wait", "--for=condition=ready", "pod", "-l", "app=mt-broker-controller", "-n", "knative-eventing")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
+
+		cmd = exec.Command(kc, "apply", "-f", "/broker.yaml")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
+
+	}
 
 }
 
