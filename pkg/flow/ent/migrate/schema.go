@@ -11,7 +11,7 @@ var (
 	// CloudEventsColumns holds the columns for the "cloud_events" table.
 	CloudEventsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
-		{Name: "event_id", Type: field.TypeString, Unique: true},
+		{Name: "event_id", Type: field.TypeString},
 		{Name: "event", Type: field.TypeJSON},
 		{Name: "fire", Type: field.TypeTime},
 		{Name: "created", Type: field.TypeTime},
@@ -29,6 +29,13 @@ var (
 				Columns:    []*schema.Column{CloudEventsColumns[6]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cloudevents_event_id_namespace_cloudevents",
+				Unique:  true,
+				Columns: []*schema.Column{CloudEventsColumns[1], CloudEventsColumns[6]},
 			},
 		},
 	}
