@@ -157,13 +157,13 @@ var (
 				Symbol:     "instances_revisions_instances",
 				Columns:    []*schema.Column{InstancesColumns[9]},
 				RefColumns: []*schema.Column{RevisionsColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "instances_workflows_instances",
 				Columns:    []*schema.Column{InstancesColumns[10]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}

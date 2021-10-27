@@ -194,10 +194,11 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 		return nil, err
 	}
 
-	resp.Flow = d.in.Edges.Runtime.Flow
-
-	if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
-		resp.InvokedBy = caller.ID.String()
+	if d.in.Edges.Runtime != nil {
+		resp.Flow = d.in.Edges.Runtime.Flow
+		if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
+			resp.InvokedBy = caller.ID.String()
+		}
 	}
 
 	resp.Namespace = d.namespace()
@@ -206,7 +207,9 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	rwf.Name = d.base
 	rwf.Parent = d.dir
 	rwf.Path = d.path
-	rwf.Revision = d.in.Edges.Revision.ID.String()
+	if d.in.Edges.Revision != nil {
+		rwf.Revision = d.in.Edges.Revision.ID.String()
+	}
 	resp.Workflow = rwf
 
 	return &resp, nil
@@ -252,10 +255,11 @@ resend:
 		return err
 	}
 
-	resp.Flow = d.in.Edges.Runtime.Flow
-
-	if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
-		resp.InvokedBy = caller.ID.String()
+	if d.in.Edges.Runtime != nil {
+		resp.Flow = d.in.Edges.Runtime.Flow
+		if caller := d.in.Edges.Runtime.Edges.Caller; caller != nil {
+			resp.InvokedBy = caller.ID.String()
+		}
 	}
 
 	resp.Namespace = d.namespace()
@@ -264,7 +268,9 @@ resend:
 	rwf.Name = d.base
 	rwf.Parent = d.dir
 	rwf.Path = d.path
-	rwf.Revision = d.in.Edges.Revision.ID.String()
+	if d.in.Edges.Revision != nil {
+		rwf.Revision = d.in.Edges.Revision.ID.String()
+	}
 	resp.Workflow = rwf
 
 	nhash = checksum(resp)
