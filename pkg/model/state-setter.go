@@ -4,20 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/vorteil/direktiv/pkg/util"
 )
 
-type VarMimeType int
-
-const (
-	VarMimeTypeJSON VarMimeType = iota
-	VarMimeTypePlainText
-	VarMimeTypeOctetStream
-)
-
-var VarMimeTypeStrings = []string{"application/json", "text/plain", "application/octet-stream"}
+const DefaultVarMimeType = "application/json"
+const RegexVarMimeType = `\w+\/[-+.\w]+`
 
 type SetterState struct {
 	StateCommon `yaml:",inline"`
@@ -30,87 +23,66 @@ type SetterDefinition struct {
 	Scope    string      `yaml:"scope,omitempty"`
 	Key      string      `yaml:"key"`
 	Value    interface{} `yaml:"value,omitempty"`
-	MimeType VarMimeType `yaml:"mimeType,omitempty"`
+	MimeType string      `yaml:"mimeType,omitempty"`
 }
 
-func (a VarMimeType) String() string {
-	return VarMimeTypeStrings[a]
-}
+func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
 
-func DefaultVarMimeType() VarMimeType {
-	return VarMimeTypeJSON
-}
+	type Alias SetterDefinition
 
-func ParseVarMimeType(s string) (VarMimeType, error) {
-
-	if s == "" {
-		goto unknown
-	}
-
-	for i := range VarMimeTypeStrings {
-		if VarMimeTypeStrings[i] == s {
-			return VarMimeType(i), nil
-		}
-	}
-
-unknown:
-
-	return VarMimeType(0), fmt.Errorf("unrecognized mime type (should be one of [%s]): %s", strings.Join(VarMimeTypeStrings, ", "), s)
-
-}
-
-func (a VarMimeType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.String())
-}
-
-func (a *VarMimeType) UnmarshalJSON(data []byte) error {
-
-	var s string
-
+	fmt.Printf("\ndata = %+v\n\n", string(data))
 	err := json.Unmarshal(data, &s)
 	if err != nil {
 		return err
 	}
 
-	x, err := ParseVarMimeType(s)
-	if err != nil {
-		return err
+	sD := s.(SetterDefinition)
+
+	// Set Default
+	if sD.MimeType == "" {
+		sD.MimeType = DefaultVarMimeType
 	}
 
-	*a = x
+	*a = sD
 
 	return nil
 
 }
 
-func (a VarMimeType) MarshalYAML() (interface{}, error) {
-	return a.String(), nil
-}
+func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
-func (a *VarMimeType) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
-	var s string
+	var s interface{}
 
 	err := unmarshal(&s)
 	if err != nil {
 		return err
 	}
 
-	x, err := ParseVarMimeType(s)
-	if err != nil {
-		return err
+	sD := s.(SetterDefinition)
+
+	// Set Default
+	if sD.MimeType == "" {
+		sD.MimeType = DefaultVarMimeType
 	}
 
-	*a = x
+	*a = sD
 
 	return nil
-
 }
 
 func (o *SetterDefinition) Validate() error {
 
 	if o.Scope == "" {
 		return errors.New(`scope required ("instance", "workflow", or "namespace")`)
+	}
+
+	match, err := regexp.MatchString(RegexVarMimeType, o.MimeType)
+	if err != nil {
+		return errors.New(`regex validation of mime type failed`)
+	}
+
+	if !match {
+		return errors.New(`mimeType is not a valid MIME type string`)
 	}
 
 	switch o.Scope {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/vorteil/direktiv/pkg/model"
@@ -75,9 +76,13 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		var data []byte
 
-		data, err = json.Marshal(x)
-		if err != nil {
-			return nil, NewInternalError(err)
+		if v.MimeType == "text/plain; charset=utf-8" || v.MimeType == "text/plain" {
+			data = []byte(fmt.Sprint(x))
+		} else {
+			data, err = json.Marshal(x)
+			if err != nil {
+				return nil, NewInternalError(err)
+			}
 		}
 
 		// tx, err := engine.db.Tx(ctx)
@@ -130,7 +135,7 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data, v.MimeType.String())
+		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data, v.MimeType)
 		if err != nil {
 			return nil, err
 		}
