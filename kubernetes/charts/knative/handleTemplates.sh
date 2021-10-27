@@ -39,4 +39,4 @@ sed -i '3714,3803d' $dir/templates/serving-core.yaml
 sed -i '1,25d' $dir/templates/serving-core.yaml
 
 # add proxy settings to controller deployment env
-# ed $dir/templates/serving-core.yaml < ed.script
+ed $dir/templates/serving-core.yaml < ed.script

@@ -4285,6 +4285,14 @@ spec:
               cpu: 1000m
               memory: 600Mi
           env:
+{{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+            - name: HTTPS_PROXY
+              value: "{{ .Values.https_proxy }}"
+            - name: HTTP_PROXY
+              value: "{{ .Values.http_proxy }}"
+            - name: NO_PROXY
+              value: "{{ .Values.no_proxy }}"
+{{- end }}
             # Run Activator with GC collection when newly generated memory is 500%.
             - name: GOGC
               value: "500"
