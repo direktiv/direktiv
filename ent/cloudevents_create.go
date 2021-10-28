@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/vorteil/direktiv/ent/cloudevents"
+	"github.com/direktiv/direktiv/ent/cloudevents"
 )
 
 // CloudEventsCreate is the builder for creating a CloudEvents entity.

@@ -8,7 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
 )
 
 // ent aliases to avoid import conflicts in user's code.

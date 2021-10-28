@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/copier"
-	"github.com/vorteil/direktiv/pkg/flow/ent/schema"
+	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 )
 
 type Config struct {

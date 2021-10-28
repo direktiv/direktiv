@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/pkg/metrics/ent/metrics"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
 )
 
 // Metrics is the model entity for the Metrics schema.

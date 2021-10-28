@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"go.uber.org/zap"
 )
 

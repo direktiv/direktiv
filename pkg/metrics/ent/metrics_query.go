@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/pkg/metrics/ent/metrics"
-	"github.com/vorteil/direktiv/pkg/metrics/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/predicate"
 )
 
 // MetricsQuery is the builder for querying Metrics entities.

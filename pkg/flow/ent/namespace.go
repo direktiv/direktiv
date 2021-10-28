@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 )
 
 // Namespace is the model entity for the Namespace schema.

@@ -12,14 +12,14 @@ import (
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
-	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/metrics"
-	"github.com/vorteil/direktiv/pkg/util"
-	"github.com/vorteil/direktiv/pkg/version"
 )
 
 const parcelSize = 0x100000

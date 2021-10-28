@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 type getterStateLogic struct {

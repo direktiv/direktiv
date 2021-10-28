@@ -7,7 +7,7 @@ id: eventgreeting
 functions: 
 - id: greetingFunction
   type: reusable
-  image: vorteil/greeting
+  image: direktiv/greeting
 states:
 - id: Begin
   type: consumeEvent

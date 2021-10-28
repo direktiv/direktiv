@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/vorteil/direktiv/pkg/api"
-	"github.com/vorteil/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/api"
+	"github.com/direktiv/direktiv/pkg/dlog"
 )
 
 func main() {

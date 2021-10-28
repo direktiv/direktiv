@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"

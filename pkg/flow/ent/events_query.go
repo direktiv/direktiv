@@ -13,11 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // EventsQuery is the builder for querying Events entities.

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
 )
 
 // NamespaceSecret is the model entity for the NamespaceSecret schema.

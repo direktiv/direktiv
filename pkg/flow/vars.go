@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 type vars struct {

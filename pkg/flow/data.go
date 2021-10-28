@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/jqer"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/jqer"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

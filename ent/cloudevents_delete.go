@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/ent/cloudevents"
-	"github.com/vorteil/direktiv/ent/predicate"
+	"github.com/direktiv/direktiv/ent/cloudevents"
+	"github.com/direktiv/direktiv/ent/predicate"
 )
 
 // CloudEventsDelete is the builder for deleting a CloudEvents entity.

@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 )
 
 // InstanceRuntimeQuery is the builder for querying InstanceRuntime entities.

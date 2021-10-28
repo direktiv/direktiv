@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/predicate"
 
 	"entgo.io/ent"
 )

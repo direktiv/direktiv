@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"github.com/vorteil/direktiv/pkg/functions/ent/schema"
-	"github.com/vorteil/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/functions/ent/schema"
+	"github.com/direktiv/direktiv/pkg/functions/ent/services"
 )
 
 // The init function reads all schema descriptors with runtime code

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

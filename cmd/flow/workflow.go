@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 var workflowCmd = &cobra.Command{

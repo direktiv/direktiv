@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/ent/workflowevents"
-	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/direktiv/direktiv/ent/workflowevents"
+	"github.com/direktiv/direktiv/ent/workfloweventswait"
 )
 
 // WorkflowEventsWaitCreate is the builder for creating a WorkflowEventsWait entity.

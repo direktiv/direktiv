@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package direktiv_flow;
 
-option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 message BroadcastCloudeventRequest {
 	string namespace = 1;

@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 )
 
 // CloudEventsUpdate is the builder for updating CloudEvents entities.

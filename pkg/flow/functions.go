@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/lib/pq"
-	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 func (flow *flow) functionsHeartbeat() {

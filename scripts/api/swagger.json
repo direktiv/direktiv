@@ -84,7 +84,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v12",
+                "image": "direktiv/request:v12",
                 "minScale": "1",
                 "name": "fast-request",
                 "size": "small"
@@ -179,7 +179,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v12",
+                "image": "direktiv/request:v12",
                 "minScale": "1",
                 "name": "fast-request",
                 "size": "small"
@@ -288,7 +288,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v10",
+                "image": "direktiv/request:v10",
                 "minScale": "1",
                 "size": "small",
                 "trafficPercent": 50
@@ -844,7 +844,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v10",
+                "image": "direktiv/request:v10",
                 "minScale": "1",
                 "size": "small",
                 "trafficPercent": 50

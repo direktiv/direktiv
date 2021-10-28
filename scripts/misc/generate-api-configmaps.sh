@@ -3,7 +3,7 @@
 PWD2=$(pwd)
 
 rm -rf direktiv-apps
-git clone https://github.com/vorteil/direktiv-apps.git
+git clone https://github.com/direktiv/direktiv-apps.git
 cd direktiv-apps/.direktiv/.templates
 
 fromfiles=""

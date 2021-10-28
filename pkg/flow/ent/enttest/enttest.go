@@ -5,9 +5,9 @@ package enttest
 import (
 	"context"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	// required by schema hooks.
-	_ "github.com/vorteil/direktiv/pkg/flow/ent/runtime"
+	_ "github.com/direktiv/direktiv/pkg/flow/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

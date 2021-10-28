@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 )
 
 // EventsWaitCreate is the builder for creating a EventsWait entity.

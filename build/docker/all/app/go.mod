@@ -1,4 +1,4 @@
-module github.com/vorteil/direktiv/build/docker/all
+module github.com/direktiv/direktiv/build/docker/all
 
 go 1.15
 

@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/pkg/functions/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/functions/ent/services"
 )
 
 // ServicesQuery is the builder for querying Services entities.

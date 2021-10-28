@@ -5,8 +5,8 @@ eventing:
   enabled: true
 
 functions:
-  sidecar: "vorteil/sidecar:v0.5.6"
-  initPodImage:  "vorteil/direktiv-init-pod:v0.5.6"
+  sidecar: "direktiv/sidecar:v0.5.6"
+  initPodImage: "direktiv/direktiv-init-pod:v0.5.6"
 
 database:
   # -- database host

@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // InodeQuery is the builder for querying Inode entities.

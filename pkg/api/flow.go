@@ -18,9 +18,9 @@ import (
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
