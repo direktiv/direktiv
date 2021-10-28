@@ -9,11 +9,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // Instance is the model entity for the Instance schema.

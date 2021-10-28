@@ -23,7 +23,7 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
       #- name: make build
       #  run: |
-      #    make push DOCKER_REPO=vorteil RELEASE=${{ steps.get_version.outputs.VERSION }}
+      #    make push DOCKER_REPO=direktiv RELEASE=${{ steps.get_version.outputs.VERSION }}
       # - name: build ui
       #   uses: addnab/docker-run-action@v3
       #   with:
@@ -43,18 +43,18 @@ jobs:
       #     cp -r ui/frontend/build  build/docker/ui
       #     make docker-all
       #     docker images | grep direktiv
-      #     docker tag direktiv vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
-      #     docker push vorteil/direktiv:${{ steps.get_version.outputs.VERSION }}
-      #     docker tag direktiv vorteil/direktiv:latest
-      #     docker push vorteil/direktiv:latest
-      # - name: create vorteil image
+      #     docker tag direktiv direktiv/direktiv:${{ steps.get_version.outputs.VERSION }}
+      #     docker push direktiv/direktiv:${{ steps.get_version.outputs.VERSION }}
+      #     docker tag direktiv direktiv/direktiv:latest
+      #     docker push direktiv/direktiv:latest
+      # - name: create direktiv image
       #   run: |
-      #     wget https://github.com/vorteil/vorteil/releases/latest/download/vorteil_linux-x86.tar.gz
+      #     wget https://github.com/direktiv/direktiv/releases/latest/download/vorteil_linux-x86.tar.gz
       #     tar -xzf vorteil_linux-x86.tar.gz
-      #     ./vorteil projects convert-container vorteil/direktiv:latest d
+      #     ./direktiv projects convert-container direktiv/direktiv:latest d
       #     cp build/default_docker.vcfg d/default.vcfg
       #     cp build/run_pg.sh d/
-      #     ./vorteil packages package -o direktiv.vorteil d
+      #     ./direktiv packages package -o direktiv.direktiv d
       - name: release direktiv
         id: create_release
         uses: actions/create-release@v1
@@ -65,16 +65,16 @@ jobs:
           release_name: Direktiv Release ${{ steps.get_version.outputs.VERSION }}
           draft: true
           prerelease: false
-      # - name: upload vorteil image
+      # - name: upload direktiv image
       #   uses: actions/upload-release-asset@v1
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   with:
       #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./direktiv.vorteil
-      #     asset_name: direktiv.vorteil
+      #     asset_path: ./direktiv.direktiv
+      #     asset_name: direktiv.direktiv
       #     asset_content_type: application/octet-stream
-      #- name: upload vorteil cli
+      #- name: upload direktiv cli
       #  uses: actions/upload-release-asset@v1
       #  env:
       #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,7 +83,7 @@ jobs:
       #    asset_path: ./direkcli-linux
       #    asset_name: direkcli-linux
       #    asset_content_type: application/octet-stream
-      #- name: upload vorteil cli
+      #- name: upload direktiv cli
       #  uses: actions/upload-release-asset@v1
       #  env:
       #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,7 +92,7 @@ jobs:
       #    asset_path: ./direkcli-darwin
       #    asset_name: direkcli-darwin
       #    asset_content_type: application/octet-stream
-      #- name: upload vorteil cli
+      #- name: upload direktiv cli
       #  uses: actions/upload-release-asset@v1
       #  env:
       #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

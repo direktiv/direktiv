@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
-	"github.com/vorteil/direktiv/pkg/version"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/version"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/gorilla/mux"

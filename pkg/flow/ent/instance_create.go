@@ -11,14 +11,14 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // InstanceCreate is the builder for creating a Instance entity.

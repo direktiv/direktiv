@@ -35,11 +35,11 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	igrpc "github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/functions/grpc"
-	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/functions/grpc"
+	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -204,7 +204,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -297,7 +297,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -563,7 +563,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -672,7 +672,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -1116,12 +1116,12 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 // 	"strings"
 // 	"time"
 //
-// 	"github.com/vorteil/direktiv/pkg/functions"
-// 	"github.com/vorteil/direktiv/pkg/model"
+// 	"github.com/direktiv/direktiv/pkg/functions"
+// 	"github.com/direktiv/direktiv/pkg/model"
 //
 // 	"github.com/gorilla/mux"
-// 	"github.com/vorteil/direktiv/pkg/functions/grpc"
-// 	"github.com/vorteil/direktiv/pkg/ingress"
+// 	"github.com/direktiv/direktiv/pkg/functions/grpc"
+// 	"github.com/direktiv/direktiv/pkg/ingress"
 // )
 //
 // type functionAnnotationsRequest struct {

@@ -15,7 +15,7 @@ start:
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: notify
   type: action 

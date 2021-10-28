@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 func runAsInit() {

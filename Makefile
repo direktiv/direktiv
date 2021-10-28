@@ -137,7 +137,7 @@ protoc:
 build/%-binary: Makefile ${GO_SOURCE_FILES}
 	@set -e ; if [ -d "cmd/$*" ]; then \
 		echo "Building $* binary..."; \
-		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/vorteil/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \
@@ -159,7 +159,7 @@ push-%: image-%
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone https://github.com/vorteil/direktiv-ui.git; \
+		git clone https://github.com/direktiv/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
 		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \

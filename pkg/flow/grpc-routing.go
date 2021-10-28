@@ -3,10 +3,10 @@ package flow
 import (
 	"context"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entmux "github.com/vorteil/direktiv/pkg/flow/ent/route"
-	entwf "github.com/vorteil/direktiv/pkg/flow/ent/workflow"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entmux "github.com/direktiv/direktiv/pkg/flow/ent/route"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.RouterResponse, error) {

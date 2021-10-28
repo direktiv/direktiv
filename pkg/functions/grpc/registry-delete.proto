@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package direktiv_functions;
 
-option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 message DeleteRegistryRequest {
 	optional string namespace = 1;

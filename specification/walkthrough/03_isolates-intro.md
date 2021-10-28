@@ -9,7 +9,7 @@ id: httpget
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: getter 
   type: action
@@ -21,7 +21,7 @@ states:
     }'
 ```
 
-This workflow will use the Docker container at https://hub.docker.com/r/vorteil/request to perform a GET request and return the results to the instance data. 
+This workflow will use the Docker container at https://hub.docker.com/r/direktiv/request to perform a GET request and return the results to the instance data. 
 
 Not just any Docker container will work as an Isolate, but it isn't difficult to make one compatible. We'll discuss that later.
 
@@ -58,7 +58,7 @@ Isolate is just a fancy term we use when we run a tiny virtual machine on Vortei
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 ```
 
 To use an Isolate it must first be defined at the top of the workflow definition. Each function definition needs an identifier that must be unique within the workflow definition, and an `image` that references a Docker container to use.
@@ -78,6 +78,6 @@ To use an Isolate it must first be defined at the top of the workflow definition
 
 Like all other states, the Action State requires an `id` and `type` field identifying it as such. But the great thing about the Action State is its ability to run user-made logic in the form of "Isolates". 
 
-The `function` field must reference one of the `functions` defined in the workflow definition. In this example we're using `vorteil/request`, which is a simple container that performs a HTTP request and returns the results. We use a `jq` command specified in the `input` field to generate the input for the Isolate.
+The `function` field must reference one of the `functions` defined in the workflow definition. In this example we're using `direktiv/request`, which is a simple container that performs a HTTP request and returns the results. We use a `jq` command specified in the `input` field to generate the input for the Isolate.
 
 Once the Isolate has completed its task in the Action State the results are stored in the instance data under the `"return"` field.

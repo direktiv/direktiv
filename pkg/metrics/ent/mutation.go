@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/metrics/ent/metrics"
-	"github.com/vorteil/direktiv/pkg/metrics/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/predicate"
 
 	"entgo.io/ent"
 )

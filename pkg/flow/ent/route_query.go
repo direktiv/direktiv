@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // RouteQuery is the builder for querying Route entities.

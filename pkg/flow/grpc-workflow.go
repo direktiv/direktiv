@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entrev "github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

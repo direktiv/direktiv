@@ -19,12 +19,12 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/senseyeio/duration"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/functions"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/model"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type engine struct {

@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 )
 
 // VarData is the model entity for the VarData schema.

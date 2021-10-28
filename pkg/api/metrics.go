@@ -9,7 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

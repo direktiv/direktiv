@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	entref "github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 type muxStart struct {

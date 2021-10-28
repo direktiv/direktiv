@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/functions/ent"
+	"github.com/direktiv/direktiv/pkg/functions/ent"
 )
 
 // The ServicesFunc type is an adapter to allow the use of ordinary

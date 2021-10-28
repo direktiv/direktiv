@@ -31,7 +31,7 @@ Here's a sample error:
 
 ## Example
 
-Have a look at the source code for one of the functions we've used a lot in these articles: https://github.com/vorteil/direktiv-apps/tree/master/requester.
+Have a look at the source code for one of the functions we've used a lot in these articles: https://github.com/direktiv/direktiv-apps/tree/master/requester.
 
 ## FAQs & Other Information 
 

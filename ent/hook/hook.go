@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vorteil/direktiv/ent"
+	"github.com/direktiv/direktiv/ent"
 )
 
 // The CloudEventsFunc type is an adapter to allow the use of ordinary

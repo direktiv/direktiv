@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type GetterState struct {

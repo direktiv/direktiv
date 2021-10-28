@@ -3,14 +3,14 @@
 <br />
 
 <p align="center">
-  <a href="https://github.com/vorteil/direktiv">
-    <img src="assets/images/direktiv-logo.png" alt="vorteil">
+  <a href="https://github.com/direktiv/direktiv">
+    <img src="assets/images/direktiv-logo.png" alt="direktiv">
   </a>
     <h5 align="center">event-driven serverless orchestration</h5>
 </p>
 <hr/>
 
-[![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
+[![Build](https://github.com/direktiv/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/direktiv/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/direktiv/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/direktiv/direktiv)](https://goreportcard.com/report/github.com/direktiv/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
 
 # What is direktiv?
@@ -26,8 +26,8 @@ Direktiv is an event-driven container orchestration engine, running on Kubernete
 
 Additional resources to get started:
 
-- Pre-built plugins are available from [https://github.com/vorteil/direktiv-apps](https://github.com/vorteil/direktiv-apps) - we're working hard to add more every day!
-- Examples for integration your own containers [https://github.com/vorteil/direktiv-apps/tree/main/examples](https://github.com/vorteil/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/docs/walkthrough/making-isolates.html).
+- Pre-built plugins are available from [https://github.com/direktiv/direktiv-apps](https://github.com/direktiv/direktiv-apps) - we're working hard to add more every day!
+- Examples for integration your own containers [https://github.com/direktiv/direktiv-apps/tree/main/examples](https://github.com/direktiv/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/docs/walkthrough/making-isolates.html).
 
 <table>
   <tr>
@@ -62,7 +62,7 @@ Additional resources to get started:
 Getting a local playground environment can be easily done with Docker. The following command starts a docker container with kubernetes. *On startup it can take a few minutes to download all images.* When the installation is done all pods should show "Running" or "Completed".
 
 ```sh
-docker run --privileged -p 8080:80 -ti vorteil/direktiv-kube
+docker run --privileged -p 8080:80 -ti direktiv/direktiv-kube
 ```
 
 ***Testing Installation:***
@@ -128,14 +128,14 @@ $ curl -vv -X POST --data-binary "@input.json" "http://localhost:8080/api/namesp
 
 ## Running a container workflow
 
-The next example uses the vorteil/request container in [https://hub.docker.com/r/vorteil/request](https://hub.docker.com/r/vorteil/request). The container starts a HTTP listener on port 8080 and accepts as input a JSON object containing all the parameters for a HTTP(S) request. It returns the result to the workflow on the same listener. This is the template for how all containers run as part of workflow execution.
+The next example uses the direktiv/request container in [https://hub.docker.com/r/direktiv/request](https://hub.docker.com/r/direktiv/request). The container starts a HTTP listener on port 8080 and accepts as input a JSON object containing all the parameters for a HTTP(S) request. It returns the result to the workflow on the same listener. This is the template for how all containers run as part of workflow execution.
 
 ```bash
 $ cat > bitcoin.yaml <<- EOF
 functions:
   - type: reusable
     id: get-request
-    image: vorteil/request:latest
+    image: direktiv/request:latest
 states:
   - id: get-bitcoin
     type: action
@@ -188,11 +188,11 @@ The UI displays the log output and state of the workflow from start to completio
 
 # Code of Conduct
 
-We have adopted the [Contributor Covenant](https://github.com/vorteil/.github/blob/master/CODE_OF_CONDUCT.md) code of conduct.
+We have adopted the [Contributor Covenant](https://github.com/direktiv/.github/blob/master/CODE_OF_CONDUCT.md) code of conduct.
 
 # Contributing
 
-Any feedback and contributions are welcome. Read our [contributing guidelines](https://github.com/vorteil/.github/blob/master/CONTRIBUTING.md) for details.
+Any feedback and contributions are welcome. Read our [contributing guidelines](https://github.com/direktiv/.github/blob/master/CONTRIBUTING.md) for details.
 
 # License
 
@@ -203,4 +203,4 @@ Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 * The [direktiv.io](https://direktiv.io/) website.
 * The direktiv [documentation](https://docs.direktiv.io/).
 * The direktiv [blog](https://blog.direktiv.io/).
-* The [Godoc](https://godoc.org/github.com/vorteil/direktiv) library documentation.
+* The [Godoc](https://godoc.org/github.com/direktiv/direktiv) library documentation.

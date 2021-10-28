@@ -3,9 +3,9 @@ package flow
 import (
 	"context"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entlog "github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {

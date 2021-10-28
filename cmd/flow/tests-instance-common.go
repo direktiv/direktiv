@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string) error {

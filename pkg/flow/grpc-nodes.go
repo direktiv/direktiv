@@ -11,9 +11,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entino "github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
