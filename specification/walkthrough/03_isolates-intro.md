@@ -1,6 +1,6 @@
 # Introduction to Isolates
 
-Workflows wouldn't be very powerful if they were limited to just the predefined states. That's why Direktiv can run "Isolates": tiny Virtual Machines based on containers and powered by Vorteil.io that are built on demand and scrapped as soon as they've finished. In this article you'll learn about the Action State and get an introduction to Isolates.
+Workflows wouldn't be very powerful if they were limited to just the predefined states. That's why Direktiv can run "Isolates": tiny Virtual Machines based on containers that are built on demand and scrapped as soon as they've finished. In this article you'll learn about the Action State and get an introduction to Isolates.
 
 ## Demo
 
@@ -50,7 +50,7 @@ The JSON structure under `"return"` is the object returned by the GET request.
 
 ## Introduction to Isolates
 
-Isolate is just a fancy term we use when we run a tiny virtual machine on Vorteil.io. Direktiv grabs a Docker container from an available Docker Registry: hub.docker.com unless custom registries are defined (more on that later). It then converts this container into a Vorteil virtual machine to run as a "function". If the container handles input and output according to our Isolate requirements it can do just about anything (more on our Isolate requirements later as well).
+Isolate is just a fancy term we use when we run a tiny virtual machine. Direktiv grabs a Docker container from an available Docker Registry: hub.docker.com unless custom registries are defined (more on that later). It then runs as a "function". If the container handles input and output according to our Isolate requirements it can do just about anything (more on our Isolate requirements later as well).
 
 ### Function Definitions
 
