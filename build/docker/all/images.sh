@@ -52,7 +52,7 @@ docker save --output=postgres.tar postgres:13.4
 # direktiv
 
 PREFIX="localhost:5000"
-VERSION="v0.5.6"
+VERSION="v0.5.7"
 
 docker pull $PREFIX/flow
 docker tag $PREFIX/flow direktiv/flow:$VERSION
