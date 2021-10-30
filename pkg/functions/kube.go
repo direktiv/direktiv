@@ -14,13 +14,13 @@ import (
 	"time"
 
 	"github.com/bradfitz/slice"
-	shellwords "github.com/mattn/go-shellwords"
-	hash "github.com/mitchellh/hashstructure/v2"
 	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
 	entservices "github.com/direktiv/direktiv/pkg/functions/ent/services"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
+	shellwords "github.com/mattn/go-shellwords"
+	hash "github.com/mitchellh/hashstructure/v2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -1102,11 +1102,6 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 			Name:  util.DirektivFlowEndpoint,
 			Value: functionsConfig.FlowService,
 		})
-
-		// proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		// 	Name:  util.DirektivRedisEndpoint,
-		// 	Value: functionsConfig.RedisBackend,
-		// })
 
 	}
 
