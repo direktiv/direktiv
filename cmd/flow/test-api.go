@@ -10,11 +10,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/vorteil/direktiv/pkg/api/client/namespaces"
+	"github.com/direktiv/direktiv/pkg/api/client/namespaces"
 
+	direktivsdk "github.com/direktiv/direktiv/pkg/api/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/spf13/cobra"
-	direktivsdk "github.com/vorteil/direktiv/pkg/api/client"
 )
 
 var testsAPICmd = &cobra.Command{

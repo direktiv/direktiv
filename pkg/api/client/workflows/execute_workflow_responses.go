@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/vorteil/direktiv/pkg/api/models"
+	"github.com/direktiv/direktiv/pkg/api/models"
 )
 
 // ExecuteWorkflowReader is a Reader for the ExecuteWorkflow structure.

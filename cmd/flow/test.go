@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/spf13/cobra"
 )
 
 var skipLongTests bool
@@ -76,6 +76,7 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceTimeoutInterruptLong", []string{"instances", "timeout", "long"}, testInstanceTimeoutInterruptLong)
 
 		registerTest("InstanceSubflowRetry", []string{"instances", "retry", "long"}, testInstanceSubflowRetry)
+		registerTest("InstanceLongRetry", []string{"instances", "retry", "long"}, testInstanceLongRetry)
 		registerTest("InstanceActionRetry", []string{"instances", "retry", "long"}, testInstanceActionRetry)
 		registerTest("InstanceNestedRetry", []string{"instances", "retry", "long"}, testInstanceNestedRetry)
 		registerTest("InstanceParallelRetry", []string{"instances", "retry", "long"}, testInstanceParallelRetry)

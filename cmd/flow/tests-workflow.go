@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
 const simpleWorkflow = `

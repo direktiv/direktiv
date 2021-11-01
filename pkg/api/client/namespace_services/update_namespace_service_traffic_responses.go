@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
-	"github.com/vorteil/direktiv/pkg/api/models"
+	"github.com/direktiv/direktiv/pkg/api/models"
 )
 
 // UpdateNamespaceServiceTrafficReader is a Reader for the UpdateNamespaceServiceTraffic structure.

@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vorteil/direktiv/pkg/api/client/directory"
-	"github.com/vorteil/direktiv/pkg/api/client/instances"
-	"github.com/vorteil/direktiv/pkg/api/client/logs"
-	"github.com/vorteil/direktiv/pkg/api/client/node"
-	"github.com/vorteil/direktiv/pkg/api/client/secrets"
-	"github.com/vorteil/direktiv/pkg/api/client/workflows"
+	"github.com/direktiv/direktiv/pkg/api/client/directory"
+	"github.com/direktiv/direktiv/pkg/api/client/instances"
+	"github.com/direktiv/direktiv/pkg/api/client/logs"
+	"github.com/direktiv/direktiv/pkg/api/client/node"
+	"github.com/direktiv/direktiv/pkg/api/client/secrets"
+	"github.com/direktiv/direktiv/pkg/api/client/workflows"
 
-	direktivsdk "github.com/vorteil/direktiv/pkg/api/client"
-	"github.com/vorteil/direktiv/pkg/api/client/namespaces"
+	direktivsdk "github.com/direktiv/direktiv/pkg/api/client"
+	"github.com/direktiv/direktiv/pkg/api/client/namespaces"
 )
 
 func testAPICreateNamespace(ctx context.Context, c direktivsdk.Direktivsdk, namespace string) error {
