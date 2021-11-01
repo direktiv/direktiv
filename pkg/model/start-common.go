@@ -85,9 +85,9 @@ func getStartFromType(startType string) (StartDefinition, error) {
 	case StartTypeDefault.String():
 		s = new(DefaultStart)
 	case "":
-		err = errors.New("type required")
+		err = errors.New("type required(scheduled, event, eventsXor, eventsAnd, default)")
 	default:
-		err = errors.New("type unimplemented/unrecognized")
+		err = errors.New("type unrecognized(scheduled, event, eventsXor, eventsAnd, default)")
 	}
 
 	return s, err

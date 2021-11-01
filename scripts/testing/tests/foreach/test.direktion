@@ -1,6 +1,6 @@
 workflow test
 
-const get-request = reusable(image: 'vorteil/request:v6')
+const get-request = reusable(image: 'direktiv/request:v6')
 // const debug = service(
 //     scope: "global",
 //     id: "test100",

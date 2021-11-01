@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 )
 
 // The CloudEventsFunc type is an adapter to allow the use of ordinary

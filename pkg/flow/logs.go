@@ -9,8 +9,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -118,7 +118,7 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, ms
 	tid := span.SpanContext().TraceID()
 
 	ns := d.wf.Edges.Namespace
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", d.wf.ID.String(), "workflow", getInodePath(d.path))
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", d.wf.ID.String(), "workflow", GetInodePath(d.path))
 
 	srv.pubsub.NotifyWorkflowLogs(d.wf)
 
@@ -143,7 +143,7 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 
 	ns := in.Edges.Namespace
 	wf := in.Edges.Workflow
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", getInodePath(in.As), "instance", in.ID.String())
+	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", GetInodePath(in.As), "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
 
@@ -191,6 +191,16 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 
 func this() string {
 	pc, _, _, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+	elems := strings.Split(fn.Name(), ".")
+	return elems[len(elems)-1]
+}
+
+func parent() string {
+	pc, _, _, ok := runtime.Caller(2)
+	if !ok {
+		return ""
+	}
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]

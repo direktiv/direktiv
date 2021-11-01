@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/metrics"
 )
 
 type metricsServer struct {
@@ -132,7 +132,7 @@ var (
 func reportStateEnd(namespace, workflow, state string, t time.Time) {
 
 	ms := time.Now().Sub(t).Milliseconds()
-	metricsWfStateDuration.WithLabelValues(namespace, getInodePath(workflow), state, namespace).Observe(float64(ms))
+	metricsWfStateDuration.WithLabelValues(namespace, GetInodePath(workflow), state, namespace).Observe(float64(ms))
 
 }
 
@@ -308,7 +308,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 
 	t := im.StateBeginTime()
 	namespace := ns.Name
-	workflow := getInodePath(im.in.As)
+	workflow := GetInodePath(im.in.As)
 
 	now := time.Now()
 	empty := time.Time{}

@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -347,8 +347,9 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 
 	var vdata *ent.VarData
+	var newVar bool
 
-	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -358,7 +359,12 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 		return nil, err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	if newVar {
+		flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	} else {
+		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance variable '%s'.", key)
+
+	}
 	flow.pubsub.NotifyInstanceVariables(d.in)
 
 	var resp grpc.SetInstanceVariableResponse
@@ -452,8 +458,9 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	var vdata *ent.VarData
+	var newVar bool
 
-	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -463,7 +470,12 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 		return err
 	}
 
-	internal.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	if newVar {
+		internal.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	} else {
+		internal.logToInstance(ctx, time.Now(), d.in, "Updated instance variable '%s'.", key)
+	}
+
 	internal.pubsub.NotifyInstanceVariables(d.in)
 
 	var resp grpc.SetVariableInternalResponse
@@ -560,8 +572,9 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 
 	var vdata *ent.VarData
+	var newVar bool
 
-	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
 	if err != nil {
 		return err
 	}
@@ -571,7 +584,12 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return err
 	}
 
-	flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	if newVar {
+		flow.logToInstance(ctx, time.Now(), d.in, "Created instance variable '%s'.", key)
+	} else {
+		flow.logToInstance(ctx, time.Now(), d.in, "Updated instance variable '%s'.", key)
+	}
+
 	flow.pubsub.NotifyInstanceVariables(d.in)
 
 	var resp grpc.SetInstanceVariableResponse
@@ -637,6 +655,18 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 
 	flow.logToInstance(ctx, time.Now(), d.in, "Deleted instance variable '%s'.", d.vref.Name)
 	flow.pubsub.NotifyInstanceVariables(d.in)
+
+	// Broadcast Event
+	broadcastInput := broadcastVariableInput{
+		Key:        req.GetKey(),
+		InstanceID: req.GetInstance(),
+		TotalSize:  int64(d.vdata.Size),
+		Scope:      BroadcastEventScopeInstance,
+	}
+	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeInstance, ctx, broadcastInput, d.ns())
+	if err != nil {
+		return nil, err
+	}
 
 	var resp emptypb.Empty
 

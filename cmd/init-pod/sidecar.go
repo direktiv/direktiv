@@ -8,7 +8,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	tailfile "github.com/nxadm/tail"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 type errStruct struct {

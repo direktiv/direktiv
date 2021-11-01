@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# k3s download
+
+rm k3s
+wget https://github.com/k3s-io/k3s/releases/download/v1.21.5%2Bk3s2/k3s
+
 # knative
 VERSION=0.25.1
 
@@ -52,34 +57,34 @@ docker save --output=postgres.tar postgres:13.4
 # direktiv
 
 PREFIX="localhost:5000"
-VERSION="v0.5.3"
+VERSION="v0.5.7"
 
 docker pull $PREFIX/flow
-docker tag $PREFIX/flow vorteil/flow:$VERSION
-docker save --output=flow.tar vorteil/flow
+docker tag $PREFIX/flow direktiv/flow:$VERSION
+docker save --output=flow.tar direktiv/flow:$VERSION
 
 docker pull $PREFIX/init-pod
-docker tag $PREFIX/init-pod vorteil/init-pod:$VERSION
-docker save --output=init-pod.tar vorteil/init-pod
+docker tag $PREFIX/init-pod direktiv/init-pod:$VERSION
+docker save --output=init-pod.tar direktiv/init-pod:$VERSION
 
 docker pull $PREFIX/secrets
-docker tag $PREFIX/secrets vorteil/secrets:$VERSION
-docker save --output=secrets.tar vorteil/secrets
+docker tag $PREFIX/secrets direktiv/secrets:$VERSION
+docker save --output=secrets.tar direktiv/secrets:$VERSION
 
 docker pull $PREFIX/sidecar
-docker tag $PREFIX/sidecar vorteil/sidecar:$VERSION
-docker save --output=sidecar.tar vorteil/sidecar
+docker tag $PREFIX/sidecar direktiv/sidecar:$VERSION
+docker save --output=sidecar.tar direktiv/sidecar:$VERSION
 
 docker pull $PREFIX/functions
-docker tag $PREFIX/functions vorteil/functions:$VERSION
-docker save --output=functions.tar vorteil/functions
+docker tag $PREFIX/functions direktiv/functions:$VERSION
+docker save --output=functions.tar direktiv/functions:$VERSION
 
 docker pull $PREFIX/api
-docker tag $PREFIX/api vorteil/api:$VERSION
-docker save --output=api.tar vorteil/api
+docker tag $PREFIX/api direktiv/api:$VERSION
+docker save --output=api.tar direktiv/api:$VERSION
 
 docker pull $PREFIX/ui
-docker tag $PREFIX/ui vorteil/ui:$VERSION
-docker save --output=ui.tar vorteil/ui
+docker tag $PREFIX/ui direktiv/ui:$VERSION
+docker save --output=ui.tar direktiv/ui:$VERSION
 
 tar -cvzf images.tar.gz *.tar

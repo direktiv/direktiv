@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 func (engine *engine) InstanceYield(im *instanceMemory) {
@@ -115,7 +115,7 @@ func (engine *engine) sleepWakeup(data []byte) {
 func (engine *engine) queue(im *instanceMemory) {
 
 	namespace := im.in.Edges.Namespace.Name
-	workflow := getInodePath(im.in.As)
+	workflow := GetInodePath(im.in.As)
 
 	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()

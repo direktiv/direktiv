@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 )
 
 // InstanceRuntimeDelete is the builder for deleting a InstanceRuntime entity.

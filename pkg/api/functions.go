@@ -32,13 +32,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
-	igrpc "github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/functions/grpc"
-	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/functions/grpc"
+	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -203,7 +204,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -296,7 +297,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -562,7 +563,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -671,7 +672,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -1115,12 +1116,12 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 // 	"strings"
 // 	"time"
 //
-// 	"github.com/vorteil/direktiv/pkg/functions"
-// 	"github.com/vorteil/direktiv/pkg/model"
+// 	"github.com/direktiv/direktiv/pkg/functions"
+// 	"github.com/direktiv/direktiv/pkg/model"
 //
 // 	"github.com/gorilla/mux"
-// 	"github.com/vorteil/direktiv/pkg/functions/grpc"
-// 	"github.com/vorteil/direktiv/pkg/ingress"
+// 	"github.com/direktiv/direktiv/pkg/functions/grpc"
+// 	"github.com/direktiv/direktiv/pkg/ingress"
 // )
 //
 // type functionAnnotationsRequest struct {
@@ -1447,11 +1448,14 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if vers == "" {
-		vers = resp.Revision.Hash
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
+
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
 
 	annotations := make(map[string]string)
 
@@ -2203,11 +2207,13 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		rev = "00001"
 	}
 
-	if vers == "" {
-		vers = resp.Revision.Hash
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 
@@ -2252,11 +2258,15 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 		respond(w, nil, err)
 		return
 	}
-	if vers == "" {
-		vers = resp.Revision.Hash
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
+
 	svn := r.URL.Query().Get("svn")
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, vers, svn)
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
 
@@ -2522,7 +2532,7 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 
 	annotations := make(map[string]string)
 
-	svn, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
 		Namespace: &ns,
 		Name:      &svn,
 	})
@@ -2554,7 +2564,16 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 		rev = "00001"
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	vers := r.URL.Query().Get("version")
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
 	annotations := make(map[string]string)
@@ -2605,7 +2624,16 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 		rev = "00001"
 	}
 
-	svc := functions.GenerateWorkflowServiceName(resp.Oid, resp.Revision.Hash, svn)
+	vers := r.URL.Query().Get("version")
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svc := functions.AssembleWorkflowServiceName(resp.Oid, svn, hash)
+
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
 	h.listPodsSSE(svc, knrev, w, r)

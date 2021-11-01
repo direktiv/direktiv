@@ -12,7 +12,7 @@ start:
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: getter 
   type: action

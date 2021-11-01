@@ -2,7 +2,7 @@
 
 direktiv helm chart
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.5.0](https://img.shields.io/badge/AppVersion-v0.5.0-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.5.7](https://img.shields.io/badge/AppVersion-v0.5.7-informational?style=flat-square)
 
 ## Additional Information
 
@@ -35,7 +35,7 @@ $ helm install direktiv direktiv/direktiv
 | api.extraContainers | list | `[]` |  |
 | api.extraVolumeMounts | string | `nil` | extra volume mounts in api pod |
 | api.extraVolumes | string | `nil` | extra volumes in api pod |
-| api.image | string | `"vorteil/api"` | image for api pod |
+| api.image | string | `"direktiv/api"` | image for api pod |
 | api.kongPlugins | string | `"none"` | Kong plugins to enable |
 | api.replicas | int | `1` |  |
 | api.tag | string | `""` | image tag for api pod |
@@ -47,26 +47,32 @@ $ helm install direktiv direktiv/direktiv
 | database.sslmode | string | `"require"` | sslmode for database |
 | database.user | string | `"direktiv"` | database user |
 | debug | bool | `false` | enable debug across all direktiv components |
+| encryptionKey | string | `""` |  if set to empty, one will be generated on install |
+| eventing | object | `{"enabled":false}` | knative eventing enabled, requires knative setup and configuration |
 | flow.extraContainers | list | `[]` | extra container in flow pod |
 | flow.extraVolumeMounts | string | `nil` | extra volume mounts in flow pod |
 | flow.extraVolumes | string | `nil` | extra volumes in flow pod |
-| flow.image | string | `"vorteil/flow"` | image for flow pod |
+| flow.image | string | `"direktiv/flow"` | image for flow pod |
 | flow.replicas | int | `1` | number of flow replicas |
 | flow.tag | string | `""` | image tag for flow pod |
 | fluentbit.extraConfig | string | `""` | postgres for direktiv services Append extra output to fluentbit configuration. There are two log types: application (system), functions (workflows) these can be matched to new outputs. |
 | functions.extraContainers | list | `[]` | extra containers for tasks and knative pods |
 | functions.extraContainersPod | list | `[]` | extra containers for function controller, e.g. database containers for google cloud or logging |
 | functions.extraVolumes | list | `[]` | extra volumes for tasks and knative pods |
-| functions.image | string | `"vorteil/functions"` |  |
+| functions.http_proxy | string | `""` | http_proxy injected as environment variable in functions |
+| functions.https_proxy | string | `""` | https_proxy injected as environment variable in functions |
+| functions.image | string | `"direktiv/functions"` |  |
 | functions.ingressClass | string | `"kong-internal"` |  |
-| functions.initPodImage | string | `"vorteil/direktiv-init-pod"` |  |
+| functions.initPodImage | string | `"direktiv/direktiv-init-pod"` |  |
 | functions.namespace | string | `"direktiv-services-direktiv"` |  |
 | functions.netShape | string | `"10M"` | Egress/Ingress network limit for functions if supported by network |
+| functions.no_proxy | string | `""` | no_proxy injected as environment variable in functions |
 | functions.podCleaner | bool | `true` | Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks |
 | functions.replicaCount | int | `1` | number of controller replicas |
 | functions.runtime | string | `"default"` | runtime to use, e.g. gvisor on GCP |
-| functions.sidecar | string | `"vorteil/sidecar"` |  |
+| functions.sidecar | string | `"direktiv/sidecar"` |  |
 | functions.tag | string | `""` |  |
+| functions.timeout | int | `900000` |  |
 | http_proxy | string | `""` | http proxy settings |
 | https_proxy | string | `""` | https proxy settings |
 | imagePullSecrets | list | `[]` |  |
@@ -93,6 +99,8 @@ $ helm install direktiv direktiv/direktiv
 | opentelemetry.agentconfig | string | `"receivers:\n  otlp:\n    protocols:\n      grpc:\n      http:\nexporters:\n  otlp:\n    endpoint: \"192.168.1.113:14250\"\n    insecure: true\n    sending_queue:\n      num_consumers: 4\n      queue_size: 100\n    retry_on_failure:\n      enabled: true\n  logging:\n    loglevel: debug\nprocessors:\n  batch:\n  memory_limiter:\n    # Same as --mem-ballast-size-mib CLI argument\n    ballast_size_mib: 165\n    # 80% of maximum memory up to 2G\n    limit_mib: 400\n    # 25% of limit up to 2G\n    spike_limit_mib: 100\n    check_interval: 5s\nextensions:\n  zpages: {}\nservice:\n  extensions: [zpages]\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [memory_limiter, batch]\n      exporters: [logging, otlp]\n"` | config for sidecar agent |
 | opentelemetry.enabled | bool | `false` | installs opentelemtry agent as sidecar in flow |
 | prometheus.alertmanager.enabled | bool | `false` |  |
+| prometheus.global.evaluation_interval | string | `"1m"` |  |
+| prometheus.global.scrape_interval | string | `"1m"` |  |
 | prometheus.kubeStateMetrics.enabled | bool | `false` |  |
 | prometheus.nodeExporter.enabled | bool | `false` |  |
 | prometheus.pushgateway.enabled | bool | `false` |  |
@@ -104,7 +112,7 @@ $ helm install direktiv direktiv/direktiv
 | prometheus.serviceAccounts.server.create | bool | `true` |  |
 | pullPolicy | string | `"Always"` |  |
 | registry | string | `"docker.io"` |  |
-| secrets | object | `{"db":"","extraVolumeMounts":[],"image":"vorteil/secrets","tag":""}` | secrets sidecar in flow pod |
+| secrets | object | `{"db":"","extraVolumeMounts":[],"image":"direktiv/secrets","tag":""}` | secrets sidecar in flow pod |
 | serviceAccount | object | `{"annotations":{},"name":""}` | service account for flow component |
 | thanos.bucketweb.enabled | bool | `true` |  |
 | thanos.compactor.enabled | bool | `true` |  |
@@ -120,5 +128,5 @@ $ helm install direktiv direktiv/direktiv
 | thanos.storegateway.persistence.storageClass | string | `"local-path"` |  |
 | timeout | int | `900000` | api timeouts |
 | tolerations | list | `[]` |  |
-| ui | object | `{"certificate":"none","extraContainers":[],"image":"vorteil/ui","kongPlugins":"none","tag":""}` | UI configuration |
+| ui | object | `{"certificate":"none","extraContainers":[],"image":"direktiv/ui","kongPlugins":"none","tag":""}` | UI configuration |
 

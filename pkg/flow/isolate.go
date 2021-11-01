@@ -3,9 +3,9 @@ package flow
 import (
 	"context"
 
-	"github.com/vorteil/direktiv/pkg/functions"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/functions"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 // headers for flow->container communication

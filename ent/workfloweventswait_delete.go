@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/ent/predicate"
-	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/direktiv/direktiv/ent/predicate"
+	"github.com/direktiv/direktiv/ent/workfloweventswait"
 )
 
 // WorkflowEventsWaitDelete is the builder for deleting a WorkflowEventsWait entity.

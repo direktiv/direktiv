@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entrev "github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -156,7 +156,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	defer rollback(tx)
 
 	nsc := tx.Namespace
-	path := getInodePath(req.GetPath())
+	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), dir)
 	if err != nil {
@@ -225,6 +225,18 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	resp.Node.Path = path
 
 	err = atob(rev, &resp.Revision)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.BroadcastWorkflow(BroadcastEventTypeCreate, ctx,
+		broadcastWorkflowInput{
+			Name:   resp.Node.Name,
+			Path:   resp.Node.Path,
+			Parent: resp.Node.Parent,
+			Live:   true,
+		}, d.ns())
+
 	if err != nil {
 		return nil, err
 	}
@@ -330,6 +342,18 @@ respond:
 		return nil, err
 	}
 
+	err = flow.BroadcastWorkflow(BroadcastEventTypeUpdate, ctx,
+		broadcastWorkflowInput{
+			Name:   resp.Node.Name,
+			Path:   resp.Node.Path,
+			Parent: resp.Node.Parent,
+			Live:   d.wf.Live,
+		}, d.ns())
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &resp, nil
 
 }
@@ -425,7 +449,8 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	}
 
 	revc := tx.Revision
-	var rev, prevrev *ent.Revision
+	var rev *ent.Revision
+	var prevrev []*ent.Revision
 
 	if revcount == 1 || refcount > 1 {
 		// already saved, or not discardable, gracefully back out
@@ -433,15 +458,19 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		goto respond
 	}
 
-	prevrev, err = d.wf.QueryRevisions().Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).Only(ctx)
+	prevrev, err = d.wf.QueryRevisions().Order(ent.Desc(entrev.FieldCreatedAt)).Offset(1).Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(prevrev) != 1 {
+		return nil, errors.New("revisions list returned more than one")
 	}
 
 	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
-			err = d.ref.Update().SetRevision(prevrev).Exec(ctx)
+			err = d.ref.Update().SetRevision(prevrev[0]).Exec(ctx)
 			if err != nil {
 				return err
 			}
@@ -452,7 +481,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 				return err
 			}
 
-			rev = prevrev
+			rev = prevrev[0]
 
 			return nil
 
@@ -537,6 +566,18 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 	live := "disabled"
 	if d.wf.Live {
 		live = "enabled"
+	}
+
+	err = flow.BroadcastWorkflow(BroadcastEventTypeUpdate, ctx,
+		broadcastWorkflowInput{
+			Name:   d.base,
+			Path:   d.path,
+			Parent: d.dir,
+			Live:   d.wf.Live,
+		}, d.ns())
+
+	if err != nil {
+		return nil, err
 	}
 
 	flow.logToWorkflow(ctx, time.Now(), d, "Workflow is now %s", live)

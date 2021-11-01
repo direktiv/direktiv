@@ -8,8 +8,8 @@ import (
 	"time"
 
 	shellwords "github.com/mattn/go-shellwords"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -250,6 +250,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	var resp igrpc.CreatePodResponse
 
 	info := in.GetInfo()
+	_, _, hash := GenerateServiceName(info)
 
 	// if MaxJobs
 	var (
@@ -288,7 +289,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	labels[ServiceHeaderName] = info.GetName()
 	labels[ServiceHeaderWorkflowID] = info.GetWorkflow()
 	labels[ServiceHeaderPath] = SanitizeLabel(info.GetPath())
-	labels[ServiceHeaderRevision] = SanitizeLabel(info.GetRevision())
+	labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	labels[ServiceHeaderNamespaceID] = info.GetNamespace()
 	labels[ServiceHeaderNamespaceName] = info.GetNamespaceName()
 

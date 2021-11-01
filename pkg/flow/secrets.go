@@ -5,9 +5,9 @@ import (
 
 	libgrpc "google.golang.org/grpc"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type secrets struct {

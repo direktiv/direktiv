@@ -1,8 +1,8 @@
 package secrets
 
 import (
-	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
-	"github.com/vorteil/direktiv/pkg/secrets/handler"
+	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
+	"github.com/direktiv/direktiv/pkg/secrets/handler"
 	"google.golang.org/grpc"
 )
 

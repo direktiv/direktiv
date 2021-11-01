@@ -7,11 +7,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -335,23 +335,26 @@ type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) (*ent.VarData, error) {
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) (*ent.VarData, bool, error) {
 
 	hash, err := computeHash(data)
 	if err != nil {
 		flow.sugar.Error(err)
 	}
 
+	var vdata *ent.VarData
+	var newVar bool
+
 	vref, err := q.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
 	if err != nil {
 
 		if !IsNotFound(err) {
-			return nil, err
+			return nil, false, err
 		}
 
-		vdata, err := vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		vdata, err = vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		query := vrefc.Create().SetVardata(vdata).SetName(key)
@@ -369,27 +372,58 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 
 		_, err = query.Save(ctx)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
-		return vdata, nil
-
+		newVar = true
 	} else {
 
-		vdata, err := vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
+		vdata, err = vref.QueryVardata().Select(vardata.FieldID).Only(ctx)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		vdata, err = vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-
-		return vdata, nil
 
 	}
 
+	// Broadcast Event
+	ns := new(ent.Namespace)
+	broadcastInput := broadcastVariableInput{
+		Key:       key,
+		TotalSize: int64(vdata.Size),
+	}
+	switch q.(type) {
+	case *ent.Namespace:
+		broadcastInput.Scope = BroadcastEventScopeNamespace
+		ns = q.(*ent.Namespace)
+	case *ent.Workflow:
+		broadcastInput.Scope = BroadcastEventScopeWorkflow
+		d, tErr := flow.reverseTraverseToWorkflow(ctx, q.(*ent.Workflow).ID.String())
+		if tErr != nil {
+			return nil, false, err
+		}
+		broadcastInput.WorkflowPath = d.path
+		ns = d.ns()
+	case *ent.Instance:
+		broadcastInput.Scope = BroadcastEventScopeInstance
+		ns, err = q.(*ent.Instance).Namespace(ctx)
+		if err != nil {
+			return nil, false, err
+		}
+		broadcastInput.InstanceID = q.(*ent.Instance).ID.String()
+	}
+
+	if newVar {
+		err = flow.BroadcastVariable(BroadcastEventTypeCreate, broadcastInput.Scope, ctx, broadcastInput, ns)
+	} else {
+		err = flow.BroadcastVariable(BroadcastEventTypeUpdate, broadcastInput.Scope, ctx, broadcastInput, ns)
+	}
+
+	return vdata, newVar, err
 }
 
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
@@ -415,7 +449,8 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 
 	key := req.GetKey()
 
-	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
+	var newVar bool
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -425,7 +460,12 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	if newVar {
+		flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	} else {
+		flow.logToWorkflow(ctx, time.Now(), d, "Updated workflow variable '%s'.", key)
+	}
+
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetWorkflowVariableResponse
@@ -531,7 +571,8 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 
 	var vdata *ent.VarData
 
-	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	var newVar bool
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -541,7 +582,12 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		return err
 	}
 
-	internal.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	if newVar {
+		internal.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	} else {
+		internal.logToWorkflow(ctx, time.Now(), d, "Updated workflow variable '%s'.", key)
+	}
+
 	internal.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetVariableInternalResponse
@@ -638,7 +684,8 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 
 	var vdata *ent.VarData
 
-	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	var newVar bool
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -648,7 +695,12 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
-	flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	if newVar {
+		flow.logToWorkflow(ctx, time.Now(), d, "Created workflow variable '%s'.", key)
+	} else {
+		flow.logToWorkflow(ctx, time.Now(), d, "Updated workflow variable '%s'.", key)
+	}
+
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
 
 	var resp grpc.SetWorkflowVariableResponse
@@ -714,6 +766,18 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 
 	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow variable '%s'.", d.vref.Name)
 	flow.pubsub.NotifyWorkflowVariables(d.wf)
+
+	// Broadcast Event
+	broadcastInput := broadcastVariableInput{
+		WorkflowPath: req.GetPath(),
+		Key:          req.GetKey(),
+		TotalSize:    int64(d.vdata.Size),
+		Scope:        BroadcastEventScopeWorkflow,
+	}
+	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeNamespace, ctx, broadcastInput, d.ns())
+	if err != nil {
+		return nil, err
+	}
 
 	var resp emptypb.Empty
 

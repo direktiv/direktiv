@@ -11,14 +11,14 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // NamespaceUpdate is the builder for updating Namespace entities.
@@ -37,6 +37,20 @@ func (nu *NamespaceUpdate) Where(ps ...predicate.Namespace) *NamespaceUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (nu *NamespaceUpdate) SetUpdatedAt(t time.Time) *NamespaceUpdate {
 	nu.mutation.SetUpdatedAt(t)
+	return nu
+}
+
+// SetConfig sets the "config" field.
+func (nu *NamespaceUpdate) SetConfig(s string) *NamespaceUpdate {
+	nu.mutation.SetConfig(s)
+	return nu
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (nu *NamespaceUpdate) SetNillableConfig(s *string) *NamespaceUpdate {
+	if s != nil {
+		nu.SetConfig(*s)
+	}
 	return nu
 }
 
@@ -369,6 +383,13 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: namespace.FieldUpdatedAt,
+		})
+	}
+	if value, ok := nu.mutation.Config(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: namespace.FieldConfig,
 		})
 	}
 	if value, ok := nu.mutation.Name(); ok {
@@ -727,6 +748,20 @@ func (nuo *NamespaceUpdateOne) SetUpdatedAt(t time.Time) *NamespaceUpdateOne {
 	return nuo
 }
 
+// SetConfig sets the "config" field.
+func (nuo *NamespaceUpdateOne) SetConfig(s string) *NamespaceUpdateOne {
+	nuo.mutation.SetConfig(s)
+	return nuo
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (nuo *NamespaceUpdateOne) SetNillableConfig(s *string) *NamespaceUpdateOne {
+	if s != nil {
+		nuo.SetConfig(*s)
+	}
+	return nuo
+}
+
 // SetName sets the "name" field.
 func (nuo *NamespaceUpdateOne) SetName(s string) *NamespaceUpdateOne {
 	nuo.mutation.SetName(s)
@@ -1080,6 +1115,13 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: namespace.FieldUpdatedAt,
+		})
+	}
+	if value, ok := nuo.mutation.Config(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: namespace.FieldConfig,
 		})
 	}
 	if value, ok := nuo.mutation.Name(); ok {

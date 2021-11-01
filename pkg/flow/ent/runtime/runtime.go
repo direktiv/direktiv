@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/vorteil/direktiv/pkg/flow/ent/runtime.go
+// The schema-stitching logic is generated in github.com/direktiv/direktiv/pkg/flow/ent/runtime.go
 
 const (
 	Version = "(devel)" // Version of ent codegen.

@@ -11,9 +11,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entino "github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -260,7 +260,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	path := getInodePath(req.GetPath())
+	path := GetInodePath(req.GetPath())
 	dir, base := filepath.Split(path)
 
 	if base == "" || base == "/" {
@@ -332,6 +332,17 @@ respond:
 	resp.Node.Parent = dir
 	resp.Node.Path = path
 
+	// Broadcast
+	err = flow.BroadcastDirectory(BroadcastEventTypeCreate, ctx,
+		broadcastDirectoryInput{
+			Path:   resp.Node.Path,
+			Parent: resp.Node.Parent,
+		}, ns)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &resp, nil
 
 }
@@ -386,6 +397,31 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	if d.ino.Type == "workflow" {
 		metricsWf.WithLabelValues(d.ns().Name, d.ns().Name).Dec()
 		metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
+
+		// Broadcast Event
+		err = flow.BroadcastWorkflow(BroadcastEventTypeDelete, ctx,
+			broadcastWorkflowInput{
+				Name:   d.base,
+				Path:   d.path,
+				Parent: d.dir,
+				Live:   false,
+			}, d.ns())
+
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Broadcast Event
+		err = flow.BroadcastDirectory(BroadcastEventTypeDelete, ctx,
+			broadcastDirectoryInput{
+				Path:   d.path,
+				Parent: d.dir,
+			}, d.ns())
+
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted %s '%s'.", d.ino.Type, d.path)
@@ -420,12 +456,12 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot rename root node")
 	}
 
-	path := getInodePath(req.GetNew())
+	path := GetInodePath(req.GetNew())
 	if path == "/" {
 		return nil, errors.New("cannot overwrite root node")
 	}
 
-	if strings.Contains(path, d.path) {
+	if strings.Contains(path, d.path+"/") {
 		return nil, errors.New("cannot move node into itself")
 	}
 

@@ -11,7 +11,7 @@ var (
 	// CloudEventsColumns holds the columns for the "cloud_events" table.
 	CloudEventsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
-		{Name: "event_id", Type: field.TypeString, Unique: true},
+		{Name: "event_id", Type: field.TypeString},
 		{Name: "event", Type: field.TypeJSON},
 		{Name: "fire", Type: field.TypeTime},
 		{Name: "created", Type: field.TypeTime},
@@ -29,6 +29,13 @@ var (
 				Columns:    []*schema.Column{CloudEventsColumns[6]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cloudevents_event_id_namespace_cloudevents",
+				Unique:  true,
+				Columns: []*schema.Column{CloudEventsColumns[1], CloudEventsColumns[6]},
 			},
 		},
 	}
@@ -238,6 +245,7 @@ var (
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "config", Type: field.TypeString, Default: "\n{\n\t\"broadcast\": {\n\t  \"workflow.create\": false,\n\t  \"workflow.update\": false,\n\t  \"workflow.delete\": false,\n\t  \"directory.create\": false,\n\t  \"directory.delete\": false,\n\t  \"workflow.variable.create\": false,\n\t  \"workflow.variable.update\": false,\n\t  \"workflow.variable.delete\": false,\n\t  \"namespace.variable.create\": false,\n\t  \"namespace.variable.update\": false,\n\t  \"namespace.variable.delete\": false,\n\t  \"instance.variable.create\": false,\n\t  \"instance.variable.update\": false,\n\t  \"instance.variable.delete\": false,\n\t  \"instance.started\": false,\n\t  \"instance.success\": false,\n\t  \"instance.failed\": false\n\t}\n  }\n"},
 		{Name: "name", Type: field.TypeString, Unique: true},
 	}
 	// NamespacesTable holds the schema information for the "namespaces" table.

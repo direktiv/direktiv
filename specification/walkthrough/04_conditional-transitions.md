@@ -9,7 +9,7 @@ id: multiposter
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: ifelse
   type: switch
@@ -151,7 +151,7 @@ id: multiposter
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: poster
   type: foreach

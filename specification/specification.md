@@ -194,7 +194,7 @@ If a `retry` strategy is defined the state will be retried on an uncaught failur
 
 </details>
 
-The Action State runs another workflow as a subflow, or a function as defined in the `functions` section of the workflow definition. Functions may include things such as containers or Vorteil virtual-machines.
+The Action State runs another workflow as a subflow, or a function as defined in the `functions` section of the workflow definition.
 
 The input for the action is determined by an optional `jq` command in the `input` field. If unspecified, the default command is `"."`, which duplicates the entire state data.
 

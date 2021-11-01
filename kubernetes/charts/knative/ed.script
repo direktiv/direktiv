@@ -1,4 +1,4 @@
-4611i
+4288i
 {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
             - name: HTTPS_PROXY
               value: "{{ .Values.https_proxy }}"

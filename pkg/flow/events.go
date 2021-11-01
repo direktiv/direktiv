@@ -13,14 +13,15 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	hash "github.com/mitchellh/hashstructure/v2"
 	glob "github.com/ryanuber/go-glob"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -628,6 +629,12 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 		// sending nil as server id so all instances calling it
 		events.pubsub.UpdateEventDelays()
 
+	}
+
+	// if eventing is configured, event goes to knative event service
+	// if it is from knative sink not
+	if events.server.conf.Eventing && ctx.Value(EventingCtxKeySource) == nil {
+		PublishKnativeEvent(event)
 	}
 
 	return nil

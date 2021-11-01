@@ -2,19 +2,25 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/binding"
+	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
+	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gabriel-vasile/mimetype"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -92,6 +98,68 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
+
+	// swagger:operation PATCH /api/namespaces/{namespace}/config Namespaces setNamespaceConfig
+	// ---
+	// summary: Sets a namespace config
+	// description: |
+	//   Sets a namespace config.
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace to update'
+	// - in: body
+	//   name: Config Payload
+	//   description: |
+	//     Payload that contains the config information to set.
+	//     Note: This payload only need to contain the properities you wish to set.
+	//   schema:
+	//     example:
+	//       broadcast:
+	//         directory.create: false
+	//         directory.delete: false
+	//         instance.failed: false
+	//         instance.started: false
+	//         instance.success: false
+	//         instance.variable.create: false
+	//         instance.variable.delete: false
+	//         instance.variable.update: false
+	//         namespace.variable.create: false
+	//         namespace.variable.delete: false
+	//         namespace.variable.update: false
+	//         workflow.create: false
+	//         workflow.delete: false
+	//         workflow.update: false
+	//         workflow.variable.create: false
+	//         workflow.variable.delete: false
+	//         workflow.variable.update: false
+	//     type: object
+	//     properties:
+	//       broadcast:
+	//         type: object
+	//         description: Configuration on which direktiv operations will trigger coud events on the namespace
+	// responses:
+	//   '200':
+	//     "description": "namespace config has been successfully been updated"
+	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_GetNamespaceConfig).Methods(http.MethodPatch)
+
+	// swagger:operation GET /api/namespaces/{namespace}/config Namespaces getNamespaceConfig
+	// ---
+	// summary: Gets a namespace config
+	// description: |
+	//   Gets a namespace config.
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace to update'
+	// responses:
+	//   '200':
+	//     "description": "successfully got namespace config"
+	r.HandleFunc("/namespaces/{ns}/config", h.GetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodGet)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// ---
@@ -202,16 +270,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target instance id'
 	// responses:
 	//   '200':
-	//     produces: application/json
-	//     description: "namespace has been successfully created"
-	//     schema:
-	//       "$ref": '#/definitions/OkBody'
-	//   default:
-	//     produces: application/json
-	//     description: an error has occurred
-	//     schema:
-	//       "$ref": '#/definitions/ErrorResponse'
-	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{in}/logs", h.InstanceLogs, h.InstanceLogsSSE)
+	//     "description": "successfully got instance logs"
+	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{instance}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked
 	// ---
@@ -1126,6 +1186,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_ValidateRef, "validate-ref", h.ValidateRef)
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
+	// TODO: SWAGGER_SPEC
+	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
@@ -1464,15 +1526,72 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
+func (h *flowHandler) SetNamespaceConfig(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 
-	in := &grpc.DeleteNamespaceRequest{
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.SetNamespaceConfigRequest{
+		Name:   namespace,
+		Config: string(data),
+	}
+
+	grpcResp, err := h.client.SetNamespaceConfig(ctx, in)
+	if err != nil {
+		respond(w, grpcResp, err)
+		return
+	}
+
+	resp := make(map[string]interface{})
+	err = json.Unmarshal([]byte(grpcResp.Config), &resp)
+	respondJSON(w, resp, err)
+}
+
+func (h *flowHandler) GetNamespaceConfig(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	in := &grpc.GetNamespaceConfigRequest{
 		Name: namespace,
+	}
+
+	grpcResp, err := h.client.GetNamespaceConfig(ctx, in)
+	if err != nil {
+		respond(w, grpcResp, err)
+		return
+	}
+
+	resp := make(map[string]interface{})
+	err = json.Unmarshal([]byte(grpcResp.Config), &resp)
+	respondJSON(w, resp, err)
+}
+
+func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	params := r.URL.Query()
+
+	recursive := false
+	// ignore err if not provided its set by default to false
+	recursive, _ = strconv.ParseBool(params.Get("recursive"))
+
+	in := &grpc.DeleteNamespaceRequest{
+		Name:      namespace,
+		Recursive: recursive,
 	}
 
 	resp, err := h.client.DeleteNamespace(ctx, in)
@@ -1738,7 +1857,7 @@ func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	instance := mux.Vars(r)["in"]
+	instance := mux.Vars(r)["instance"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -1763,7 +1882,7 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	instance := mux.Vars(r)["in"]
+	instance := mux.Vars(r)["instance"]
 
 	p, err := pagination(r)
 	if err != nil {
@@ -2128,6 +2247,33 @@ func (h *flowHandler) DiscardWorkflow(w http.ResponseWriter, r *http.Request) {
 	respond(w, resp, err)
 	return
 
+}
+
+func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	in := &grpc.RenameNodeRequest{}
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	err = json.Unmarshal(data, &in)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	in.Namespace = namespace
+	in.Old = path
+
+	resp, err := h.client.RenameNode(ctx, in)
+	respond(w, resp, err)
 }
 
 func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
@@ -3067,13 +3213,13 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		if len(m) > 0 {
-			input, err = json.Marshal(m)
-			if err != nil {
-				respond(w, nil, err)
-				return
-			}
+
+		input, err = json.Marshal(m)
+		if err != nil {
+			respond(w, nil, err)
+			return
 		}
+
 	}
 
 	in := &grpc.StartWorkflowRequest{
@@ -3201,7 +3347,80 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 
-	data, err := loadRawBody(r)
+	ct := r.Header.Get("Content-type")
+
+	// if batch mode we need to parse the body to multiple events
+	if strings.HasPrefix(ct, "application/cloudevents-batch+json") {
+
+		// load body
+		data, err := loadRawBody(r)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		// gat all events in body, if it fails body is not a list of cloudevents
+		var events []cloudevents.Event
+		err = json.Unmarshal(data, &events)
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		var resp *empty.Empty
+
+		// send individual events
+		for i := range events {
+
+			err = events[i].Validate()
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+			d, err := json.Marshal(events[i])
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+			in := &grpc.BroadcastCloudeventRequest{
+				Namespace:  namespace,
+				Cloudevent: d,
+			}
+
+			resp, err = h.client.BroadcastCloudevent(ctx, in)
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+		}
+
+		respond(w, resp, err)
+		return
+
+	}
+
+	m := protocol.NewMessageFromHttpRequest(r)
+	ev, err := binding.ToEvent(context.Background(), m)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	err = ev.Validate()
+
+	// azure hack for dataschema '#' which is an invalid cloudevent
+	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
+		ev.Context.SetDataSchema("")
+	} else if err != nil {
+		// all other validation errors
+		respond(w, nil, err)
+		return
+	}
+
+	data, err := json.Marshal(ev)
 	if err != nil {
 		respond(w, nil, err)
 		return

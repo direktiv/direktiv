@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 type switchStateLogic struct {

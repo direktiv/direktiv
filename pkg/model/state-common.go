@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type RetryDefinition struct {
@@ -172,9 +172,9 @@ func getStateFromType(stype string) (State, error) {
 	case StateTypeSetter.String():
 		s = new(SetterState)
 	case "":
-		err = errors.New("type required")
+		err = errors.New("type required(switch, foreach, consumeEvent, delay, eventsAnd, eventsXor, noop, validate, parallel, getter, setter)")
 	default:
-		err = errors.New("type unimplemented/unrecognized")
+		err = errors.New("type unrecognized(switch, foreach, consumeEvent, delay, eventsAnd, eventsXor, noop, validate, parallel, getter, setter)")
 	}
 
 	return s, err

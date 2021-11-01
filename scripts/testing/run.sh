@@ -7,7 +7,7 @@ GREY='\033[0;37m'
 NC='\033[0m' # No Color
 NL=$'\n'
 
-DIREKTION=$HOME/go/src/github.com/vorteil/direktion/build/direktion
+DIREKTION=$HOME/go/src/github.com/direktiv/direktion/build/direktion
 DIREKTIV_API="http://localhost:80"
 NAMESPACE=test
 

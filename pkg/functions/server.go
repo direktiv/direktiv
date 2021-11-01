@@ -16,12 +16,13 @@ import (
 
 	"github.com/lib/pq"
 	_ "github.com/lib/pq"
-	"github.com/vorteil/direktiv/pkg/functions/ent"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/functions/ent"
+	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/version"
 
-	"github.com/vorteil/direktiv/pkg/dlog"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/dlog"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -257,7 +258,7 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 			},
 		}
 
-		name := GenerateWorkflowServiceName(tuple.WorkflowID, tuple.Revision, tuple.FunctionDefinition.ID)
+		name, _ := GenerateWorkflowServiceName(in.Info)
 
 		fServer.reusableCacheLock.Lock()
 
@@ -437,4 +438,10 @@ func (fServer *functionsServer) orphansGC() {
 
 	}
 
+}
+
+func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.BuildResponse, error) {
+	var resp igrpc.BuildResponse
+	resp.Build = version.Version
+	return &resp, nil
 }

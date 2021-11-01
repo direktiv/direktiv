@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/vorteil/direktiv/pkg/secrets"
+	"github.com/direktiv/direktiv/pkg/secrets"
 )
 
 func main() {

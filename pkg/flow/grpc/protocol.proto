@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package direktiv_flow;
 
-option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
 
@@ -16,8 +16,11 @@ import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
+import "pkg/flow/grpc/eventing.proto";
 
 import "pkg/flow/grpc/registries.proto";
+
+import "pkg/flow/grpc/build.proto";
 
 service Flow {
 	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
@@ -144,7 +147,12 @@ service Flow {
 
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
 	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
-	
+
+	rpc SetNamespaceConfig (SetNamespaceConfigRequest) returns (SetNamespaceConfigResponse) {}
+	rpc GetNamespaceConfig (GetNamespaceConfigRequest) returns (GetNamespaceConfigResponse) {}
+
+	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
+
 }
 
 service Internal {
@@ -165,4 +173,8 @@ service Actions {
 	rpc DeleteNamespaceRegistry (DeleteNamespaceRegistryRequest) returns (google.protobuf.Empty) {}
 	rpc NamespaceRegistries (NamespaceRegistriesRequest) returns (NamespaceRegistriesResponse) {}
 	rpc NamespaceRegistriesStream (NamespaceRegistriesRequest) returns (stream NamespaceRegistriesResponse) {}
+}
+
+service Eventing {
+	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
 }

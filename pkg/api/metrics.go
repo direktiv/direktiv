@@ -9,11 +9,11 @@ import (
 
 	"github.com/gorilla/mux"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func getInodePath(path string) string {
+func GetInodePath(path string) string {
 	if strings.HasSuffix(path, "/") {
 		path = strings.TrimSuffix(path, "/")
 	}
@@ -98,7 +98,7 @@ func (h *flowHandler) WorkflowMetricsInvoked(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	path = getInodePath(path)
+	path = GetInodePath(path)
 
 	resp, err := h.queryPrometheus(ctx, fmt.Sprintf(`direktiv_workflows_invoked_total{direktiv_namespace="%s", direktiv_workflow="%s"}`, namespace, path), time.Now())
 	respondJSON(w, resp, err)
@@ -124,7 +124,7 @@ func (h *flowHandler) WorkflowMetricsSuccessful(w http.ResponseWriter, r *http.R
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	path = getInodePath(path)
+	path = GetInodePath(path)
 
 	resp, err := h.queryPrometheus(ctx, fmt.Sprintf(`direktiv_workflows_success_total{direktiv_namespace="%s", direktiv_workflow="%s"}`, namespace, path), time.Now())
 	respondJSON(w, resp, err)
@@ -150,7 +150,7 @@ func (h *flowHandler) WorkflowMetricsFailed(w http.ResponseWriter, r *http.Reque
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	path = getInodePath(path)
+	path = GetInodePath(path)
 
 	resp, err := h.queryPrometheus(ctx, fmt.Sprintf(`direktiv_workflows_failed_total{direktiv_namespace="%s", direktiv_workflow="%s"}`, namespace, path), time.Now())
 	respondJSON(w, resp, err)
@@ -176,7 +176,7 @@ func (h *flowHandler) WorkflowMetricsMilliseconds(w http.ResponseWriter, r *http
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	path = getInodePath(path)
+	path = GetInodePath(path)
 
 	resp, err := h.queryPrometheus(ctx, fmt.Sprintf(`direktiv_workflows_total_milliseconds_sum{direktiv_namespace="%s", direktiv_workflow="%s"}`, namespace, path), time.Now())
 	respondJSON(w, resp, err)
@@ -190,7 +190,7 @@ func (h *flowHandler) WorkflowMetricsStateMilliseconds(w http.ResponseWriter, r 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
 	path, _ := pathAndRef(r)
-	path = getInodePath(path)
+	path = GetInodePath(path)
 
 	resp, err := h.queryPrometheus(ctx, fmt.Sprintf(`direktiv_states_milliseconds_sum{direktiv_namespace="%s", direktiv_workflow="%s"} / direktiv_states_milliseconds_count{namespace="%s", workflow="%s"}`, namespace, path, namespace, path), time.Now())
 	respondJSON(w, resp, err)

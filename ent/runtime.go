@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/ent/cloudevents"
-	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/schema"
-	"github.com/vorteil/direktiv/ent/services"
-	"github.com/vorteil/direktiv/ent/workflow"
+	"github.com/direktiv/direktiv/ent/cloudevents"
+	"github.com/direktiv/direktiv/ent/namespace"
+	"github.com/direktiv/direktiv/ent/schema"
+	"github.com/direktiv/direktiv/ent/services"
+	"github.com/direktiv/direktiv/ent/workflow"
 )
 
 // The init function reads all schema descriptors with runtime code

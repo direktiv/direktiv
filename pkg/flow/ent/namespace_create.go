@@ -11,13 +11,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // NamespaceCreate is the builder for creating a Namespace entity.
@@ -51,6 +51,20 @@ func (nc *NamespaceCreate) SetUpdatedAt(t time.Time) *NamespaceCreate {
 func (nc *NamespaceCreate) SetNillableUpdatedAt(t *time.Time) *NamespaceCreate {
 	if t != nil {
 		nc.SetUpdatedAt(*t)
+	}
+	return nc
+}
+
+// SetConfig sets the "config" field.
+func (nc *NamespaceCreate) SetConfig(s string) *NamespaceCreate {
+	nc.mutation.SetConfig(s)
+	return nc
+}
+
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (nc *NamespaceCreate) SetNillableConfig(s *string) *NamespaceCreate {
+	if s != nil {
+		nc.SetConfig(*s)
 	}
 	return nc
 }
@@ -236,6 +250,10 @@ func (nc *NamespaceCreate) defaults() {
 		v := namespace.DefaultUpdatedAt()
 		nc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := nc.mutation.Config(); !ok {
+		v := namespace.DefaultConfig
+		nc.mutation.SetConfig(v)
+	}
 	if _, ok := nc.mutation.ID(); !ok {
 		v := namespace.DefaultID()
 		nc.mutation.SetID(v)
@@ -249,6 +267,9 @@ func (nc *NamespaceCreate) check() error {
 	}
 	if _, ok := nc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+	}
+	if _, ok := nc.mutation.Config(); !ok {
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "config"`)}
 	}
 	if _, ok := nc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
@@ -305,6 +326,14 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Column: namespace.FieldUpdatedAt,
 		})
 		_node.UpdatedAt = value
+	}
+	if value, ok := nc.mutation.Config(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: namespace.FieldConfig,
+		})
+		_node.Config = value
 	}
 	if value, ok := nc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

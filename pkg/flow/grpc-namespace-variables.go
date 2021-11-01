@@ -7,10 +7,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -406,7 +406,8 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	key := req.GetKey()
 
-	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
+	var newVar bool
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +417,12 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 		return nil, err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+	if newVar {
+		flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+	} else {
+		flow.logToNamespace(ctx, time.Now(), ns, "Updated namespace variable '%s'.", key)
+	}
+
 	flow.pubsub.NotifyNamespaceVariables(ns)
 
 	var resp grpc.SetNamespaceVariableResponse
@@ -515,7 +521,8 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 
 	var vdata *ent.VarData
 
-	vdata, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
+	var newVar bool
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -525,7 +532,12 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return err
 	}
 
-	internal.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+	if newVar {
+		internal.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+	} else {
+		internal.logToNamespace(ctx, time.Now(), ns, "Updated namespace variable '%s'.", key)
+	}
+
 	internal.pubsub.NotifyNamespaceVariables(ns)
 
 	var resp grpc.SetVariableInternalResponse
@@ -621,7 +633,8 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 
 	var vdata *ent.VarData
 
-	vdata, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
+	var newVar bool
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -631,7 +644,12 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		return err
 	}
 
-	flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+	if newVar {
+		flow.logToNamespace(ctx, time.Now(), ns, "Created namespace variable '%s'.", key)
+	} else {
+		flow.logToNamespace(ctx, time.Now(), ns, "Updated namespace variable '%s'.", key)
+	}
+
 	flow.pubsub.NotifyNamespaceVariables(ns)
 
 	var resp grpc.SetNamespaceVariableResponse
@@ -696,6 +714,18 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Deleted namespace variable '%s'.", d.vref.Name)
 	flow.pubsub.NotifyNamespaceVariables(d.ns())
+
+	// Broadcast Event
+	broadcastInput := broadcastVariableInput{
+		WorkflowPath: "",
+		Key:          req.GetKey(),
+		TotalSize:    int64(d.vdata.Size),
+		Scope:        BroadcastEventScopeNamespace,
+	}
+	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeNamespace, ctx, broadcastInput, d.ns())
+	if err != nil {
+		return nil, err
+	}
 
 	var resp emptypb.Empty
 

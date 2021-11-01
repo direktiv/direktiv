@@ -6,21 +6,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/schema"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -117,8 +117,12 @@ func init() {
 	namespace.DefaultUpdatedAt = namespaceDescUpdatedAt.Default.(func() time.Time)
 	// namespace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	namespace.UpdateDefaultUpdatedAt = namespaceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// namespaceDescConfig is the schema descriptor for config field.
+	namespaceDescConfig := namespaceFields[3].Descriptor()
+	// namespace.DefaultConfig holds the default value on creation for the config field.
+	namespace.DefaultConfig = namespaceDescConfig.Default.(string)
 	// namespaceDescName is the schema descriptor for name field.
-	namespaceDescName := namespaceFields[3].Descriptor()
+	namespaceDescName := namespaceFields[4].Descriptor()
 	// namespace.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	namespace.NameValidator = namespaceDescName.Validators[0].(func(string) error)
 	// namespaceDescID is the schema descriptor for id field.

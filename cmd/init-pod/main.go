@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 

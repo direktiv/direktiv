@@ -11,20 +11,20 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 )
 
 // Noder wraps the basic Node method.
@@ -643,7 +643,7 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     n.ID,
 		Type:   "Namespace",
-		Fields: make([]*Field, 3),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
@@ -663,10 +663,18 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "updated_at",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(n.Name); err != nil {
+	if buf, err = json.Marshal(n.Config); err != nil {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "config",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(n.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "name",
 		Value: string(buf),

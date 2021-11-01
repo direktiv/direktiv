@@ -1,6 +1,6 @@
 workflow test
 
-const request = reusable(image: "vorteil/request:v10")
+const request = reusable(image: "direktiv/request:v10")
 
 call-reusable:
     call(

@@ -84,7 +84,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v12",
+                "image": "direktiv/request:v12",
                 "minScale": "1",
                 "name": "fast-request",
                 "size": "small"
@@ -179,7 +179,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v12",
+                "image": "direktiv/request:v12",
                 "minScale": "1",
                 "name": "fast-request",
                 "size": "small"
@@ -288,7 +288,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v10",
+                "image": "direktiv/request:v10",
                 "minScale": "1",
                 "size": "small",
                 "trafficPercent": 50
@@ -844,7 +844,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v10",
+                "image": "direktiv/request:v10",
                 "minScale": "1",
                 "size": "small",
                 "trafficPercent": 50
@@ -1247,6 +1247,87 @@
         "responses": {
           "200": {
             "description": "successfully sent cloud event"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/config": {
+      "get": {
+        "description": "Gets a namespace config.\n",
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "Gets a namespace config",
+        "operationId": "getNamespaceConfig",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace to update",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace config"
+          }
+        }
+      },
+      "patch": {
+        "description": "Sets a namespace config.\n",
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "Sets a namespace config",
+        "operationId": "setNamespaceConfig",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace to update",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains the config information to set.\nNote: This payload only need to contain the properities you wish to set.\n",
+            "name": "Config Payload",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "broadcast": {
+                  "description": "Configuration on which direktiv operations will trigger coud events on the namespace",
+                  "type": "object"
+                }
+              },
+              "example": {
+                "broadcast": {
+                  "directory.create": false,
+                  "directory.delete": false,
+                  "instance.failed": false,
+                  "instance.started": false,
+                  "instance.success": false,
+                  "instance.variable.create": false,
+                  "instance.variable.delete": false,
+                  "instance.variable.update": false,
+                  "namespace.variable.create": false,
+                  "namespace.variable.delete": false,
+                  "namespace.variable.update": false,
+                  "workflow.create": false,
+                  "workflow.delete": false,
+                  "workflow.update": false,
+                  "workflow.variable.create": false,
+                  "workflow.variable.delete": false,
+                  "workflow.variable.update": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace config has been successfully been updated"
           }
         }
       }

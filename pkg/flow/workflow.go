@@ -3,8 +3,8 @@ package flow
 import (
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 const defaultDeadline = time.Second * 5

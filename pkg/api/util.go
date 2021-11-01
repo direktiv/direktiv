@@ -13,8 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -205,22 +207,16 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
 
-		var msg string
-		if code < 500 {
-			msg = err.Error()
-		} else {
-			msg = http.StatusText(code)
-		}
-		o := &ErrorBody{
-			Code:    code,
-			Message: msg,
-		}
-		data, _ := json.Marshal(&o)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(code)
-		// msg = err.Error()
-		// http.Error(w, msg, code)
-		io.Copy(w, bytes.NewReader(data))
+		// var msg string
+		// if code < 500 {
+		// 	msg = err.Error()
+		// } else {
+		// 	msg = http.StatusText(code)
+		// }
+
+		// return only the message part of the grpc error
+		st := status.Convert(err)
+		http.Error(w, st.Message(), code)
 		return
 
 	}
@@ -510,4 +506,79 @@ type paginationBodyWrapper struct {
 			val   string
 		}
 	}
+}
+
+type telemetryHandler struct {
+	srv  *Server
+	next http.Handler
+}
+
+func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+
+	var annotations []interface{}
+	annotations = append(annotations, "trace", tid.String())
+
+	v := mux.Vars(r)
+
+	if s, exists := v["ns"]; exists {
+		annotations = append(annotations, "namespace", s)
+	}
+
+	if s, exists := v["instance"]; exists {
+		annotations = append(annotations, "instance", s)
+	}
+
+	if s, exists := v["path"]; exists {
+		annotations = append(annotations, "workflow", flow.GetInodePath(s))
+	}
+
+	if s, exists := v["var"]; exists {
+		annotations = append(annotations, "variable", s)
+	}
+
+	if s, exists := v["secret"]; exists {
+		annotations = append(annotations, "secret", s)
+	}
+
+	if s, exists := v["svn"]; exists {
+		annotations = append(annotations, "service", s)
+	}
+
+	if s, exists := v["rev"]; exists {
+		annotations = append(annotations, "servicerevision", s)
+	}
+
+	if s, exists := v["pod"]; exists {
+		annotations = append(annotations, "pod", s)
+	}
+
+	if s := r.URL.Query().Get("op"); s != "" {
+		annotations = append(annotations, "pathoperation", s)
+	}
+
+	annotations = append(annotations, "routename", mux.CurrentRoute(r).GetName())
+	annotations = append(annotations, "httpmethod", r.Method)
+	annotations = append(annotations, "httppath", r.URL.Path)
+
+	// response
+	// token
+
+	h.srv.logger.Infow("Handling request", annotations...)
+
+	h.next.ServeHTTP(w, r)
+
+}
+
+func (s *Server) logMiddleware(h http.Handler) http.Handler {
+
+	return &telemetryHandler{
+		srv:  s,
+		next: h,
+	}
+
 }

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/model"
 )
 
 type setterStateLogic struct {
@@ -130,7 +130,7 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data)
+		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data)
 		if err != nil {
 			return nil, err
 		}

@@ -151,9 +151,9 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	case SubflowFunctionType.String():
 		f = new(SubflowFunctionDefinition)
 	case "":
-		err = errors.New("type required")
+		err = errors.New("type required(reusable, isolated, knative-namespace, knative-global, subflow)")
 	default:
-		err = errors.New("type unimplemented/unrecognized")
+		err = errors.New("type unrecognized(reusable, isolated, knative-namespace, knative-global, subflow)")
 	}
 
 	return f, err

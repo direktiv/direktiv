@@ -10,21 +10,21 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 
 	"entgo.io/ent"
 )
@@ -5615,6 +5615,7 @@ type NamespaceMutation struct {
 	id                 *uuid.UUID
 	created_at         *time.Time
 	updated_at         *time.Time
+	_config            *string
 	name               *string
 	clearedFields      map[string]struct{}
 	inodes             map[uuid.UUID]struct{}
@@ -5795,6 +5796,42 @@ func (m *NamespaceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *NamespaceMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *NamespaceMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *NamespaceMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the Namespace entity.
+// If the Namespace object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NamespaceMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *NamespaceMutation) ResetConfig() {
+	m._config = nil
 }
 
 // SetName sets the "name" field.
@@ -6176,12 +6213,15 @@ func (m *NamespaceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NamespaceMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.created_at != nil {
 		fields = append(fields, namespace.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, namespace.FieldUpdatedAt)
+	}
+	if m._config != nil {
+		fields = append(fields, namespace.FieldConfig)
 	}
 	if m.name != nil {
 		fields = append(fields, namespace.FieldName)
@@ -6198,6 +6238,8 @@ func (m *NamespaceMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case namespace.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case namespace.FieldConfig:
+		return m.Config()
 	case namespace.FieldName:
 		return m.Name()
 	}
@@ -6213,6 +6255,8 @@ func (m *NamespaceMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldCreatedAt(ctx)
 	case namespace.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case namespace.FieldConfig:
+		return m.OldConfig(ctx)
 	case namespace.FieldName:
 		return m.OldName(ctx)
 	}
@@ -6237,6 +6281,13 @@ func (m *NamespaceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case namespace.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
 		return nil
 	case namespace.FieldName:
 		v, ok := value.(string)
@@ -6299,6 +6350,9 @@ func (m *NamespaceMutation) ResetField(name string) error {
 		return nil
 	case namespace.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case namespace.FieldConfig:
+		m.ResetConfig()
 		return nil
 	case namespace.FieldName:
 		m.ResetName()

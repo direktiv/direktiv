@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/vorteil/direktiv/pkg/functions/ent/migrate"
+	"github.com/direktiv/direktiv/pkg/functions/ent/migrate"
 
-	"github.com/vorteil/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/functions/ent/services"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"

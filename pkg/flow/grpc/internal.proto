@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package direktiv_flow;
 
-option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/timestamp.proto";
 
@@ -13,6 +13,25 @@ message ReportActionResultsRequest {
 	string errorCode = 4;
 	string errorMessage = 5;
 	bytes output = 6;
+}
+
+message SetNamespaceConfigRequest {
+	string name = 1;
+	string config = 2;	
+}
+
+message SetNamespaceConfigResponse {
+	string name = 1;
+	string config = 2;	
+}
+
+message GetNamespaceConfigRequest {
+	string name = 1;
+}
+
+message GetNamespaceConfigResponse {
+	string name = 1;
+	string config = 2;	
 }
 
 message ActionLogRequest {

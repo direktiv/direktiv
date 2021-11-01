@@ -4,7 +4,7 @@ package services
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/pkg/functions/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
