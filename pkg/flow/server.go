@@ -357,6 +357,7 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
+	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 }
 

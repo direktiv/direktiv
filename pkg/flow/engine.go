@@ -647,7 +647,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 		go func() {
 			time.Sleep(d)
 			/* #nosec */
-			_ = engine.retryWakeup(data)
+			engine.retryWakeup(data)
 		}()
 		return nil
 	}
@@ -661,20 +661,20 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 
 }
 
-func (engine *engine) retryWakeup(data []byte) error {
+func (engine *engine) retryWakeup(data []byte) {
 
 	msg := new(retryMessage)
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
 		engine.sugar.Error(err)
-		return nil
+		return
 	}
 
 	ctx, im, err := engine.loadInstanceMemory(msg.InstanceID, msg.Step)
 	if err != nil {
 		engine.sugar.Error(err)
-		return nil
+		return
 	}
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
@@ -682,8 +682,6 @@ func (engine *engine) retryWakeup(data []byte) error {
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, []byte(msg.Data), nil)
-
-	return nil
 
 }
 
