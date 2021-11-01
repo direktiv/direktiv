@@ -266,6 +266,16 @@ thanos:
 
 
 functions:
+
+  # -- http_proxy injected as environment variable in functions
+  http_proxy: ""
+
+  # -- https_proxy injected as environment variable in functions
+  https_proxy: ""
+
+  # -- no_proxy injected as environment variable in functions
+  no_proxy: ""
+
   # namespace to run functions in
   namespace: direktiv-services-direktiv
   ingressClass: kong-internal
