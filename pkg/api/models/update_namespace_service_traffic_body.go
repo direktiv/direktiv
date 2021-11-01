@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
+// UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
 // Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
 //
 // swagger:model UpdateNamespaceServiceTrafficBody
@@ -55,8 +55,6 @@ func (m *UpdateNamespaceServiceTrafficBody) validateValues(formats strfmt.Regist
 			if err := m.Values[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("values" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("values" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -89,8 +87,6 @@ func (m *UpdateNamespaceServiceTrafficBody) contextValidateValues(ctx context.Co
 			if err := m.Values[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("values" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("values" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

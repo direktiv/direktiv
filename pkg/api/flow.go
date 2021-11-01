@@ -271,6 +271,13 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got instance logs"
+	//     schema:
+	//       "$ref": '#/definitions/OkBody'
+	//   default:
+	//     produces: application/json
+	//     description: an error has occurred
+	//     schema:
+	//       "$ref": '#/definitions/ErrorResponse'
 	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{instance}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked

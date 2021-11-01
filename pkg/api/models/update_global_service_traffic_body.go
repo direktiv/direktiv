@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody update global service traffic body
+// UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody update global service traffic body
 // Example: {"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
 //
 // swagger:model UpdateGlobalServiceTrafficBody
@@ -55,8 +55,6 @@ func (m *UpdateGlobalServiceTrafficBody) validateValues(formats strfmt.Registry)
 			if err := m.Values[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("values" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("values" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -89,8 +87,6 @@ func (m *UpdateGlobalServiceTrafficBody) contextValidateValues(ctx context.Conte
 			if err := m.Values[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("values" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("values" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

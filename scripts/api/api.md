@@ -152,6 +152,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
+| GET | /api/version | [version](#version) | Returns version information for servers in the cluster. |
   
 
 
@@ -1835,13 +1836,13 @@ Gets the logs of an executed instance.
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#instance-logs-200) | OK | namespace has been successfully created |  | [schema](#instance-logs-200-schema) |
+| [200](#instance-logs-200) | OK | successfully got instance logs |  | [schema](#instance-logs-200-schema) |
 | [default](#instance-logs-default) | | an error has occurred |  | [schema](#instance-logs-default-schema) |
 
 #### Responses
 
 
-##### <span id="instance-logs-200"></span> 200 - namespace has been successfully created
+##### <span id="instance-logs-200"></span> 200 - successfully got instance logs
 Status: OK
 
 ###### <span id="instance-logs-200-schema"></span> Schema
@@ -2761,6 +2762,29 @@ Status: OK
 
 ###### <span id="update-workflow-200-schema"></span> Schema
 
+### <span id="version"></span> Returns version information for servers in the cluster. (*version*)
+
+```
+GET /api/version
+```
+
+Returns version information for servers in the cluster.
+
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#version-200) | OK | version query was successful |  | [schema](#version-200-schema) |
+
+#### Responses
+
+
+##### <span id="version-200"></span> 200 - version query was successful
+Status: OK
+
+###### <span id="version-200-schema"></span> Schema
+
 ### <span id="watch-global-service-revision"></span> Watch Global Service Revision (*watchGlobalServiceRevision*)
 
 ```
@@ -3028,8 +3052,8 @@ Status: OK
 ### <span id="create-global-service-body"></span> CreateGlobalServiceBody
 
 
-> CreateGlobalServiceBody CreateGlobalServiceBody CreateGlobalServiceBody create global service body
-Example: {"cmd":"","image":"vorteil/request:v12","minScale":"1","name":"fast-request","size":"small"}
+> CreateGlobalServiceBody create global service body
+Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
   
 
 
@@ -3052,7 +3076,7 @@ Example: {"cmd":"","image":"vorteil/request:v12","minScale":"1","name":"fast-req
 
 
 > CreateNamespaceServiceBody create namespace service body
-Example: {"cmd":"","image":"vorteil/request:v12","minScale":"1","name":"fast-request","size":"small"}
+Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
   
 
 
@@ -3074,7 +3098,7 @@ Example: {"cmd":"","image":"vorteil/request:v12","minScale":"1","name":"fast-req
 ### <span id="delete-registry-body"></span> DeleteRegistryBody
 
 
-> DeleteRegistryBody DeleteRegistryBody delete registry body
+> DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
 Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
   
 
@@ -3093,7 +3117,10 @@ Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 ### <span id="error-response"></span> ErrorResponse
 
 
+> ErrorResponse ErrorResponse error response
   
+
+
 
 
 
@@ -3101,15 +3128,15 @@ Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| Error | string| `string` |  | |  |  |
-| StatusCode | int64 (formatted integer)| `int64` |  | |  |  |
+| Error | string| `string` |  | | error |  |
+| StatusCode | int64 (formatted integer)| `int64` |  | | status code |  |
 
 
 
 ### <span id="jq-playground-body"></span> JqPlaygroundBody
 
 
-> JqPlaygroundBody jq playground body
+> JqPlaygroundBody JqPlaygroundBody jq playground body
 Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
   
 
@@ -3129,17 +3156,36 @@ Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(sel
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody OkBody ok body
+> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
 
 [OkBody](#ok-body)
 
+### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
+
+
+> SetNamespaceConfigBody SetNamespaceConfigBody set namespace config body
+Example: {"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Broadcast | [interface{}](#interface)| `interface{}` |  | | Configuration on which direktiv operations will trigger coud events on the namespace |  |
+
+
+
 ### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
 
 
-> SetWorkflowCloudEventLogsBody SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
 Example: {"logger":"mylog"}
   
 
@@ -3178,7 +3224,7 @@ Example: {"live":false}
 
 
 > UpdateGlobalServiceBody update global service body
-Example: {"cmd":"","image":"vorteil/request:v10","minScale":"1","size":"small","trafficPercent":50}
+Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
   
 
 
@@ -3200,7 +3246,7 @@ Example: {"cmd":"","image":"vorteil/request:v10","minScale":"1","size":"small","
 ### <span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody
 
 
-> UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody update global service traffic body
+> UpdateGlobalServiceTrafficBody update global service traffic body
 Example: {"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
   
 
@@ -3219,7 +3265,7 @@ Example: {"values":[{"percent":60,"revision":"global-fast-request-00002"},{"perc
 ### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
 
 
-> UpdateGlobalServiceTrafficParamsBodyValuesItems0 UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
+> UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
   
 
 
@@ -3238,8 +3284,8 @@ Example: {"values":[{"percent":60,"revision":"global-fast-request-00002"},{"perc
 ### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
 
 
-> UpdateNamespaceServiceBody update namespace service body
-Example: {"cmd":"","image":"vorteil/request:v10","minScale":"1","size":"small","trafficPercent":50}
+> UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body
+Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
   
 
 
@@ -3261,7 +3307,7 @@ Example: {"cmd":"","image":"vorteil/request:v10","minScale":"1","size":"small","
 ### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
 
 
-> UpdateNamespaceServiceTrafficBody update namespace service traffic body
+> UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
 Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
   
 
@@ -3280,7 +3326,7 @@ Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00
 ### <span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0
 
 
-> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
+> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
   
 
 
@@ -3299,7 +3345,7 @@ Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00
 ### <span id="update-service-request"></span> UpdateServiceRequest
 
 
-> UpdateServiceRequest update service request
+> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
   
 
 
@@ -3310,18 +3356,21 @@ Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` |  | | cmd |  |
-| Image | string| `string` |  | | image |  |
-| MinScale | int32 (formatted integer)| `int32` |  | | min scale |  |
-| Size | int32 (formatted integer)| `int32` |  | | size |  |
-| TrafficPercent | int64 (formatted integer)| `int64` |  | | traffic percent |  |
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | image |  |
+| MinScale | int32 (formatted integer)| `int32` | ✓ | | min scale |  |
+| Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | traffic percent |  |
 
 
 
 ### <span id="update-service-request"></span> updateServiceRequest
 
 
+> UpdateServiceRequest UpdateServiceRequest update service request
   
+
+
 
 
 
@@ -3329,10 +3378,10 @@ Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` |  | |  |  |
-| Image | string| `string` |  | |  |  |
-| MinScale | int32 (formatted integer)| `int32` |  | |  |  |
-| Size | int32 (formatted integer)| `int32` |  | |  |  |
-| TrafficPercent | int64 (formatted integer)| `int64` |  | |  |  |
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | image |  |
+| MinScale | int32 (formatted integer)| `int32` | ✓ | | minScale |  |
+| Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | trafficPercent |  |
 
 

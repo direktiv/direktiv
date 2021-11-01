@@ -111,7 +111,8 @@ func testStartTypeEvent(ctx context.Context, c grpc.FlowClient, namespace string
 
 	instances := resp.GetInstances().GetEdges()
 	for _, instance := range instances {
-		if instance.GetNode().GetAs() == "/testwf" {
+		instanceNode := instance.GetNode().GetAs()
+		if instanceNode == "/testwf" || instanceNode == "testwf" {
 			return nil
 		}
 	}
@@ -165,7 +166,8 @@ func testStartTypeEventAnd(ctx context.Context, c grpc.FlowClient, namespace str
 
 	instances := resp.GetInstances().GetEdges()
 	for _, instance := range instances {
-		if instance.GetNode().GetAs() == "/testwf" {
+		instanceNode := instance.GetNode().GetAs()
+		if instanceNode == "/testwf" || instanceNode == "testwf" {
 			return nil
 		}
 	}
@@ -223,7 +225,8 @@ func testStartTypeEventXor(ctx context.Context, c grpc.FlowClient, namespace str
 	b := false
 
 	for _, instance := range instances {
-		if instance.GetNode().GetAs() == "/testwf" {
+		instanceNode := instance.GetNode().GetAs()
+		if instanceNode == "/testwf" || instanceNode == "testwf" {
 			// check for output
 			output, err := c.InstanceOutput(ctx, &grpc.InstanceOutputRequest{
 				Instance:  instance.GetNode().GetId(),

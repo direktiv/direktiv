@@ -176,6 +176,8 @@ func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error)
 
 }
 
+// OkBody is an arbitrary placeholder response that represents an ok response body
+//
 // swagger:model
 type OkBody map[string]interface{}
 
@@ -206,17 +208,17 @@ func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
-
-		// var msg string
-		// if code < 500 {
-		// 	msg = err.Error()
-		// } else {
-		// 	msg = http.StatusText(code)
-		// }
-
-		// return only the message part of the grpc error
 		st := status.Convert(err)
-		http.Error(w, st.Message(), code)
+
+		o := &ErrorBody{
+			Code:    code,
+			Message: st.Message(),
+		}
+
+		data, _ := json.Marshal(&o)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(code)
+		io.Copy(w, bytes.NewReader(data))
 		return
 
 	}

@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// JqPlaygroundBody JqPlaygroundBody jq playground body
+// JqPlaygroundBody JqPlaygroundBody JqPlaygroundBody jq playground body
 // Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
 //
 // swagger:model JqPlaygroundBody

@@ -11,7 +11,7 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
-// OkBody OkBody OkBody ok body
+// OkBody OkBody OkBody is an arbitrary placeholder response that represents an ok response body
 //
 // swagger:model OkBody
 type OkBody map[string]interface{}

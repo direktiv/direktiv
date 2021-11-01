@@ -58,7 +58,7 @@ func (o *CreateGlobalServiceOK) readResponse(response runtime.ClientResponse, co
 }
 
 /*CreateGlobalServiceBody create global service body
-// Example: {"cmd":"","image":"vorteil/request:v12","minScale":"1","name":"fast-request","size":"small"}
+// Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
 swagger:model CreateGlobalServiceBody
 */
 type CreateGlobalServiceBody struct {

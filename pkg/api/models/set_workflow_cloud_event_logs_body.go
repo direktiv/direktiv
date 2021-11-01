@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SetWorkflowCloudEventLogsBody SetWorkflowCloudEventLogsBody SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+// SetWorkflowCloudEventLogsBody SetWorkflowCloudEventLogsBody set workflow cloud event logs body
 // Example: {"logger":"mylog"}
 //
 // swagger:model SetWorkflowCloudEventLogsBody

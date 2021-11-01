@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
+// DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
 // Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 //
 // swagger:model DeleteRegistryBody

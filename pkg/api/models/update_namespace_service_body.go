@@ -15,8 +15,8 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body
-// Example: {"cmd":"","image":"vorteil/request:v10","minScale":"1","size":"small","trafficPercent":50}
+// UpdateNamespaceServiceBody UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body
+// Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
 //
 // swagger:model UpdateNamespaceServiceBody
 type UpdateNamespaceServiceBody struct {
@@ -35,7 +35,7 @@ type UpdateNamespaceServiceBody struct {
 
 	// Size of created service pods
 	// Required: true
-	// Enum: [[small medium large]]
+	// Enum: [[[small medium large]]]
 	Size *string `json:"size"`
 
 	// Traffic percentage new revision will use
@@ -104,7 +104,7 @@ var updateNamespaceServiceBodyTypeSizePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["[small medium large]"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["[[small medium large]]"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -114,8 +114,8 @@ func init() {
 
 const (
 
-	// UpdateNamespaceServiceBodySizeSmallMediumLarge captures enum value "[small medium large]"
-	UpdateNamespaceServiceBodySizeSmallMediumLarge string = "[small medium large]"
+	// UpdateNamespaceServiceBodySizeSmallMediumLarge captures enum value "[[small medium large]]"
+	UpdateNamespaceServiceBodySizeSmallMediumLarge string = "[[small medium large]]"
 )
 
 // prop value enum

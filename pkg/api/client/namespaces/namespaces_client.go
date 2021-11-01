@@ -34,7 +34,11 @@ type ClientService interface {
 
 	DeleteNamespace(params *DeleteNamespaceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNamespaceOK, error)
 
+	GetNamespaceConfig(params *GetNamespaceConfigParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceConfigOK, error)
+
 	GetNamespaces(params *GetNamespacesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespacesOK, error)
+
+	SetNamespaceConfig(params *SetNamespaceConfigParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetNamespaceConfigOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -122,6 +126,48 @@ func (a *Client) DeleteNamespace(params *DeleteNamespaceParams, authInfo runtime
 }
 
 /*
+  GetNamespaceConfig gets a namespace config
+
+  Gets a namespace config.
+
+*/
+func (a *Client) GetNamespaceConfig(params *GetNamespaceConfigParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetNamespaceConfigOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetNamespaceConfigParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getNamespaceConfig",
+		Method:             "GET",
+		PathPattern:        "/api/namespaces/{namespace}/config",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetNamespaceConfigReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetNamespaceConfigOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getNamespaceConfig: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
   GetNamespaces gets the list of namespaces
 
   Gets the list of namespaces.
@@ -160,6 +206,48 @@ func (a *Client) GetNamespaces(params *GetNamespacesParams, authInfo runtime.Cli
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for getNamespaces: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  SetNamespaceConfig sets a namespace config
+
+  Sets a namespace config.
+
+*/
+func (a *Client) SetNamespaceConfig(params *SetNamespaceConfigParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetNamespaceConfigOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSetNamespaceConfigParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "setNamespaceConfig",
+		Method:             "PATCH",
+		PathPattern:        "/api/namespaces/{namespace}/config",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &SetNamespaceConfigReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SetNamespaceConfigOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for setNamespaceConfig: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

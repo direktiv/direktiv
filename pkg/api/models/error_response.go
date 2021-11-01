@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ErrorResponse error response
+// ErrorResponse ErrorResponse ErrorResponse error response
 //
 // swagger:model ErrorResponse
 type ErrorResponse struct {

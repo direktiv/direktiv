@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
+// UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
 //
 // swagger:model UpdateNamespaceServiceTrafficParamsBodyValuesItems0
 type UpdateNamespaceServiceTrafficParamsBodyValuesItems0 struct {

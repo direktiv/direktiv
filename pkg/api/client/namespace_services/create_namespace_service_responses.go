@@ -58,7 +58,7 @@ func (o *CreateNamespaceServiceOK) readResponse(response runtime.ClientResponse,
 }
 
 /*CreateNamespaceServiceBody create namespace service body
-// Example: {"cmd":"","image":"vorteil/request:v12","minScale":"1","name":"fast-request","size":"small"}
+// Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
 swagger:model CreateNamespaceServiceBody
 */
 type CreateNamespaceServiceBody struct {

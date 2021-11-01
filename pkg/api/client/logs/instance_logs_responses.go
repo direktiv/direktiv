@@ -48,7 +48,7 @@ func NewInstanceLogsOK() *InstanceLogsOK {
 
 /* InstanceLogsOK describes a response with status code 200, with default header values.
 
-namespace has been successfully created
+successfully got instance logs
 */
 type InstanceLogsOK struct {
 	Payload models.OkBody

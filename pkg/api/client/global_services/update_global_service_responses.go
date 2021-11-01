@@ -58,7 +58,7 @@ func (o *UpdateGlobalServiceOK) readResponse(response runtime.ClientResponse, co
 }
 
 /*UpdateGlobalServiceBody update global service body
-// Example: {"cmd":"","image":"vorteil/request:v10","minScale":"1","size":"small","trafficPercent":50}
+// Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
 swagger:model UpdateGlobalServiceBody
 */
 type UpdateGlobalServiceBody struct {

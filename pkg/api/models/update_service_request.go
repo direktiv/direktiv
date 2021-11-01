@@ -8,33 +8,110 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
-// UpdateServiceRequest update service request
+// UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
 //
 // swagger:model updateServiceRequest
 type UpdateServiceRequest struct {
 
 	// cmd
-	Cmd string `json:"cmd,omitempty"`
+	// Required: true
+	Cmd *string `json:"cmd"`
 
 	// image
-	Image string `json:"image,omitempty"`
+	// Required: true
+	Image *string `json:"image"`
 
-	// min scale
-	MinScale int32 `json:"minScale,omitempty"`
+	// minScale
+	// Required: true
+	MinScale *int32 `json:"minScale"`
 
 	// size
-	Size int32 `json:"size,omitempty"`
+	// Required: true
+	Size *int32 `json:"size"`
 
-	// traffic percent
-	TrafficPercent int64 `json:"trafficPercent,omitempty"`
+	// trafficPercent
+	// Required: true
+	TrafficPercent *int64 `json:"trafficPercent"`
 }
 
 // Validate validates this update service request
 func (m *UpdateServiceRequest) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCmd(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateImage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMinScale(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTrafficPercent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UpdateServiceRequest) validateCmd(formats strfmt.Registry) error {
+
+	if err := validate.Required("cmd", "body", m.Cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UpdateServiceRequest) validateImage(formats strfmt.Registry) error {
+
+	if err := validate.Required("image", "body", m.Image); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UpdateServiceRequest) validateMinScale(formats strfmt.Registry) error {
+
+	if err := validate.Required("minScale", "body", m.MinScale); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UpdateServiceRequest) validateSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("size", "body", m.Size); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UpdateServiceRequest) validateTrafficPercent(formats strfmt.Registry) error {
+
+	if err := validate.Required("trafficPercent", "body", m.TrafficPercent); err != nil {
+		return err
+	}
+
 	return nil
 }
 
