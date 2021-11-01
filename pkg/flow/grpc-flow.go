@@ -125,11 +125,7 @@ func (flow *flow) kickExpiredInstances() {
 			panic(err)
 		}
 
-		err = flow.engine.retryWakeup(data)
-		if err != nil {
-			flow.sugar.Error(err)
-			continue
-		}
+		flow.engine.retryWakeup(data)
 
 	}
 
