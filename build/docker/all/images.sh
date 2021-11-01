@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# k3s download
+
+rm k3s
+wget https://github.com/k3s-io/k3s/releases/download/v1.21.5%2Bk3s2/k3s
+
 # knative
 VERSION=0.25.1
 

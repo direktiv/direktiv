@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/antelman107/net-wait-go/wait"
 	"github.com/apoorvam/goterminal"
 	"github.com/olekukonko/tablewriter"
+	"github.com/rootless-containers/rootlesskit/pkg/parent/cgrouputil"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -23,6 +26,11 @@ func main() {
 
 	log.Println("all-in-one version of direktiv")
 
+	// if err := cgrouputil.EvacuateCgroup2("init"); err != nil {
+	// 	fmt.Printf(">> ERR %v", err)
+	// }
+
+	// time.Sleep(10 * time.Minute)
 	kc, err := exec.LookPath("kubectl")
 	if err != nil {
 		panic(err.Error())
@@ -41,6 +49,17 @@ func main() {
 			break
 		}
 		time.Sleep(1 * time.Second)
+	}
+
+	if !wait.New(
+		wait.WithProto("tcp"),
+		wait.WithWait(200*time.Millisecond),
+		wait.WithBreak(50*time.Millisecond),
+		wait.WithDeadline(30*time.Second),
+		wait.WithDebug(true),
+	).Do([]string{"127.0.0.1:6443"}) {
+		log.Fatalf("k3s is not available")
+		return
 	}
 
 	log.Println("unzip images")
@@ -127,7 +146,20 @@ func main() {
 	}
 
 	writer.Reset()
-	fmt.Println("direktiv ready at http://localhost:8080")
+
+	fmt.Println("direktiv connecting services, please wait")
+	for {
+		res, err := http.Get("http://localhost/api/namespaces")
+		if err != nil {
+			time.Sleep(1 * time.Second)
+		}
+		if res.StatusCode == 200 {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	fmt.Println("direktiv ready at http://<HOST-IP>:8080")
 
 	select {}
 
@@ -135,7 +167,7 @@ func main() {
 
 func importImage(img string) {
 
-	cmd := exec.Command("/bin/ctr", "images", "import", img)
+	cmd := exec.Command("/k3s", "ctr", "images", "import", img)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
@@ -296,9 +328,14 @@ func installKnative(kc string) {
 func startingK3s() error {
 
 	log.Println("starting k3s now")
-	cmd := exec.Command("k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
+	cmd := exec.Command("/k3s", "server", "--kube-proxy-arg=conntrack-max-per-core=0",
 		"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
 		"feature-gates=TTLAfterFinished=true")
+
+	if err := cgrouputil.EvacuateCgroup2("init"); err != nil {
+		log.Println("could not evacuate cgroup2")
+		return err
+	}
 
 	// passing env in for http_prox values
 	cmd.Env = os.Environ()
