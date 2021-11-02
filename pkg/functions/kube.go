@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/bradfitz/slice"
+	"github.com/direktiv/direktiv/pkg/functions/ent"
 	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
 	entservices "github.com/direktiv/direktiv/pkg/functions/ent/services"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -21,6 +22,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -337,7 +340,13 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 
 	err := is.reconstructService(name, ctx)
 	if err != nil {
-		logger.Errorf("could not recreate service: %w", err)
+		logger.Errorf("could not recreate service: %v", err)
+
+		// Service backup record not found in database
+		if ent.IsNotFound(err) {
+			return &empty, status.Error(codes.NotFound, "could not recreate service")
+		}
+
 		return &empty, fmt.Errorf("could not recreate service")
 	}
 

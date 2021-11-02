@@ -18,6 +18,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/senseyeio/duration"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -915,6 +917,12 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
 							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
 							if err != nil {
+								if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
+									engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
+									engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
+									return
+								}
+
 								engine.sugar.Errorf("can not create scoped knative function: %v", err)
 								engine.reportError(ar, err)
 								return
