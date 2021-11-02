@@ -34,12 +34,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/functions/grpc"
 	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
@@ -1772,15 +1772,25 @@ func (h *functionHandler) createService(ns, nsName, wf, path, rev string,
 
 }
 
-// jens
-
+// UpdateServiceRequest UpdateServiceRequest update service request
+//
 // swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
-	Image          *string `json:"image,omitempty"`
-	Cmd            *string `json:"cmd,omitempty"`
-	Size           *int32  `json:"size,omitempty"`
-	MinScale       *int32  `json:"minScale,omitempty"`
-	TrafficPercent int64   `json:"trafficPercent"`
+	// image
+	// Required: true
+	Image *string `json:"image,omitempty"`
+	// cmd
+	// Required: true
+	Cmd *string `json:"cmd,omitempty"`
+	// size
+	// Required: true
+	Size *int32 `json:"size,omitempty"`
+	// minScale
+	// Required: true
+	MinScale *int32 `json:"minScale,omitempty"`
+	// trafficPercent
+	// Required: true
+	TrafficPercent int64 `json:"trafficPercent"`
 }
 
 func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -33,6 +34,17 @@ type Server struct {
 // GetRouter is a getter for s.router
 func (s *Server) GetRouter() *mux.Router {
 	return s.router
+}
+
+type mw struct {
+	h http.Handler
+}
+
+func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("REQUEST RECEIVED", r.Method, r.URL.String())
+
+	mw.h.ServeHTTP(w, r)
 }
 
 // NewServer return new API server
@@ -68,6 +80,10 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 	s.config = conf
+
+	r.Use(func(h http.Handler) http.Handler {
+		return &mw{h: h}
+	})
 
 	logger.Debug("Initializing telemetry.")
 	s.telend, err = util.InitTelemetry(s.config, "direktiv/api", "direktiv")
