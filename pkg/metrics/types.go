@@ -19,15 +19,15 @@ var NextEnums = []NextEnum{
 	NextEnd, NextTransition, NextRetry,
 }
 
-// InvokerEnum...
+// InvokerEnum the enum for what invoked the workflow
 type InvokerEnum int
 
 const (
-	// InvokerUnknown...
+	// InvokerUnknown if the invoker is unknown
 	InvokerUnknown InvokerEnum = iota
 )
 
-// InvokerEnumLabels...
+// InvokerEnumLabels an array of all the InvokerEnum
 var InvokerEnumLabels = map[InvokerEnum]string{
 	InvokerUnknown: "unknown",
 }
