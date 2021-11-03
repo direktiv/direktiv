@@ -13,12 +13,15 @@ import (
 )
 
 var (
+	// StringQueryRequiresWrappings whether the string needs to be wrapped
 	StringQueryRequiresWrappings bool
+	// TrimWhitespaceOnQueryStrings whether we need to trim whitespace on query strings
 	TrimWhitespaceOnQueryStrings bool
-	SearchInStrings              bool
-	WrappingBegin                = ""
-	WrappingIncrement            = "{{"
-	WrappingDecrement            = "}}"
+	// SearchInStrings to search in strings
+	SearchInStrings   bool
+	WrappingBegin     = ""
+	WrappingIncrement = "{{"
+	WrappingDecrement = "}}"
 )
 
 /*
@@ -41,6 +44,7 @@ var (
 	WrappingDecrement            = ")"
 */
 
+// Evaluate evaluates the data against the query provided and returns the result
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 
 	if query == nil {

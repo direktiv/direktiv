@@ -12,6 +12,7 @@ import (
 
 const actionIDHeader = "Direktiv-ActionID"
 
+// NetworkServer defines a network server object
 type NetworkServer struct {
 	end     func()
 	local   *LocalServer
@@ -20,6 +21,7 @@ type NetworkServer struct {
 	stopper chan *time.Time
 }
 
+// Start starts the network server for the sidecar
 func (srv *NetworkServer) Start() {
 
 	srv.router = mux.NewRouter()

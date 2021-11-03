@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+// ReusableFunctionDefinition defines a reusable function and the fields it requires
 type ReusableFunctionDefinition struct {
 	Type  FunctionType             `yaml:"type" json:"type"`
 	ID    string                   `yaml:"id" json:"id"`
@@ -17,14 +18,17 @@ type ReusableFunctionDefinition struct {
 	Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
+// GetID returns the ID of a reusable function
 func (o *ReusableFunctionDefinition) GetID() string {
 	return o.ID
 }
 
+// GetType returns the Type of function
 func (o *ReusableFunctionDefinition) GetType() FunctionType {
 	return ReusableContainerFunctionType
 }
 
+// Validate validates the reusable function definition
 func (o *ReusableFunctionDefinition) Validate() error {
 	if o == nil {
 		return nil

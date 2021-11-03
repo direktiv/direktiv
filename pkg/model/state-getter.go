@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+// GetterState defines the state for a getter
 type GetterState struct {
 	StateCommon `yaml:",inline"`
 	Variables   []GetterDefinition `yaml:"variables"`
@@ -14,11 +15,13 @@ type GetterState struct {
 	Transition  string             `yaml:"transition,omitempty"`
 }
 
+// GetterDefinition takes a scope and key to work out where the variable goes
 type GetterDefinition struct {
 	Scope string `yaml:"scope,omitempty"`
 	Key   string `yaml:"key"`
 }
 
+// Validate validates against the getter definition
 func (o *GetterDefinition) Validate() error {
 
 	if o.Scope == "" {
@@ -45,6 +48,7 @@ func (o *GetterDefinition) Validate() error {
 
 }
 
+// GetID returns the ID of the getter state
 func (o *GetterState) GetID() string {
 	return o.ID
 }
@@ -64,6 +68,7 @@ func (o *GetterState) getTransitions() map[string]string {
 	return transitions
 }
 
+// GetTransitions returns all the transitions of a getter state
 func (o *GetterState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
@@ -79,6 +84,7 @@ func (o *GetterState) GetTransitions() []string {
 	return transitions
 }
 
+// Validate validates the arguments against a getter state
 func (o *GetterState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err

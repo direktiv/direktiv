@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	// BroadcastEventTypeCreate...
+	// BroadcastEventTypeCreate is an event type for listening to 'create'
 	BroadcastEventTypeCreate string = "create"
-	// BroadcastEventTypeUpdate...
+	// BroadcastEventTypeUpdate is an event type for listening to 'update'
 	BroadcastEventTypeUpdate string = "update"
-	// BroadcastEventTypeDelete...
+	// BroadcastEventTypeDelete is an event type for listenting to 'delete'
 	BroadcastEventTypeDelete string = "delete"
 
 	BroadcastEventTypeInstanceStarted string = "started"
@@ -23,22 +23,22 @@ const (
 )
 
 const (
-	// BroadcastEventScopeWorkflow...
+	// BroadcastEventScopeWorkflow is the scope in which you want to listen for events
 	BroadcastEventScopeWorkflow string = "workflow"
-	// BroadcastEventScopeNamespace...
+	// BroadcastEventScopeNamespace is the scope in which you want to listen for events
 	BroadcastEventScopeNamespace string = "namespace"
-	// BroadcastEventScopeInstance...
+	// BroadcastEventScopeInstance is the scope in which you want to listen for events
 	BroadcastEventScopeInstance string = "instance"
 )
 
 const (
-	// BroadcastEventPrefixWorkflow...
+	// BroadcastEventPrefixWorkflow is the event prefix that is being broadcasted
 	BroadcastEventPrefixWorkflow string = "workflow"
-	// BroadcastEventPrefixDirectory...
+	// BroadcastEventPrefixDirectory is the event prefix that is being broadcasted
 	BroadcastEventPrefixDirectory string = "directory"
-	// BroadcastEventPrefixVariable...
+	// BroadcastEventPrefixVariable is the event prefix that is being broadcasted
 	BroadcastEventPrefixVariable string = "variable"
-	// BroadcastEventPrefixInstance...
+	// BroadcastEventPrefixInstance is the event prefix that is being broadcasted
 	BroadcastEventPrefixInstance string = "instance"
 )
 

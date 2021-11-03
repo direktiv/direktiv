@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+// GlobalFunctionDefinition defines the object required for a global function
 type GlobalFunctionDefinition struct {
 	Type           FunctionType             `yaml:"type" json:"type"`
 	ID             string                   `yaml:"id" json:"id"`
@@ -14,14 +15,17 @@ type GlobalFunctionDefinition struct {
 	Files          []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
+// GetID returns the id of a global function
 func (o *GlobalFunctionDefinition) GetID() string {
 	return o.ID
 }
 
+// GetType returns the type of a global type
 func (o *GlobalFunctionDefinition) GetType() FunctionType {
 	return GlobalKnativeFunctionType
 }
 
+// Validate validates the global function definition arguments
 func (o *GlobalFunctionDefinition) Validate() error {
 	if o == nil {
 		return nil

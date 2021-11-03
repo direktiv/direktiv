@@ -37,6 +37,7 @@ func NewClient() (*Client, error) {
 	return out, nil
 }
 
+// InsertRecord inserts a metric record into the database
 func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 
 	r := c.db.Metrics.Create()
@@ -56,6 +57,7 @@ func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 	return err
 }
 
+// GetMetrics returns the metrics from the database
 func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
 
 	ctx := context.Background()

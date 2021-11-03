@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+// IsolatedFunctionDefinition defines what an isolated function is.
 type IsolatedFunctionDefinition struct {
 	Type  FunctionType             `yaml:"type" json:"type"`
 	ID    string                   `yaml:"id" json:"id"`
@@ -16,14 +17,17 @@ type IsolatedFunctionDefinition struct {
 	Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
+// GetID returns the id of a isolated function
 func (o *IsolatedFunctionDefinition) GetID() string {
 	return o.ID
 }
 
+// GetType returns the type of a isolated function
 func (o *IsolatedFunctionDefinition) GetType() FunctionType {
 	return IsolatedContainerFunctionType
 }
 
+// Validate validates the isolated function arguments
 func (o *IsolatedFunctionDefinition) Validate() error {
 	if o == nil {
 		return nil
