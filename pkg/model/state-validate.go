@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ValidateState...
+// ValidateState defines the fields that can be used in a validate state
 type ValidateState struct {
 	StateCommon `yaml:",inline"`
 	Subject     string      `yaml:"subject,omitempty"`
@@ -14,7 +14,7 @@ type ValidateState struct {
 	Transition  string      `yaml:"transition,omitempty"`
 }
 
-// GetID...
+// GetID returns the id of a validate state
 func (o *ValidateState) GetID() string {
 	return o.ID
 }
@@ -34,7 +34,7 @@ func (o *ValidateState) getTransitions() map[string]string {
 	return transitions
 }
 
-// GetTransitions...
+// GetTransitions returns all the transitions for a validate state
 func (o *ValidateState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
@@ -50,7 +50,7 @@ func (o *ValidateState) GetTransitions() []string {
 	return transitions
 }
 
-// Validate...
+// Validate validates the validate state
 func (o *ValidateState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err
