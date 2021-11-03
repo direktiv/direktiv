@@ -28,22 +28,25 @@ type SetterDefinition struct {
 
 func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
 
-	type Alias SetterDefinition
+	type SetterDefinitionAlias SetterDefinition
 
-	fmt.Printf("\ndata = %+v\n\n", string(data))
+	var s SetterDefinitionAlias
+
 	err := json.Unmarshal(data, &s)
 	if err != nil {
 		return err
 	}
 
-	sD := s.(SetterDefinition)
-
 	// Set Default
-	if sD.MimeType == "" {
-		sD.MimeType = DefaultVarMimeType
+	if s.MimeType == "" {
+		s.MimeType = DefaultVarMimeType
 	}
 
-	*a = sD
+	// Set Definition
+	a.Key = s.Key
+	a.Scope = s.Scope
+	a.Value = s.Value
+	a.MimeType = s.MimeType
 
 	return nil
 

@@ -3390,6 +3390,9 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Set MimeType
+	w.Header().Set("Content-Type", msg.MimeType)
+
 	for {
 
 		packet := msg.Data
@@ -3603,6 +3606,9 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 		respond(w, resp, err)
 		return
 	}
+
+	// Set MimeType
+	w.Header().Set("Content-Type", msg.MimeType)
 
 	for {
 
@@ -3821,6 +3827,9 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 		respond(w, resp, err)
 		return
 	}
+
+	// Set MimeType
+	w.Header().Set("Content-Type", msg.MimeType)
 
 	for {
 

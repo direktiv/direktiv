@@ -14,6 +14,7 @@ message Variable {
 	google.protobuf.Timestamp updated_at = 3;
 	string checksum = 4;
 	int64 size = 5;
+	string mimeType = 6;
 }
 
 message VariableEdge {
@@ -40,6 +41,7 @@ message NamespaceVariableResponse {
 	string checksum = 5;
 	int64 totalSize = 6;
 	bytes data = 7;
+	string mimeType = 8;
 }
 
 message NamespaceVariablesRequest {
@@ -67,6 +69,7 @@ message SetNamespaceVariableResponse {
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
 	int64 totalSize = 6;
+	string mimeType = 7;
 }
 
 message DeleteNamespaceVariableRequest {
@@ -87,6 +90,7 @@ message RenameNamespaceVariableResponse {
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
 	int64 totalSize = 6;
+	string mimeType = 7;
 }
 
 message WorkflowVariableRequest {
@@ -104,6 +108,7 @@ message WorkflowVariableResponse {
 	string checksum = 6;
 	int64 totalSize = 7;
 	bytes data = 8;
+	string mimeType = 9;
 }
 
 message WorkflowVariablesRequest {
@@ -135,6 +140,7 @@ message SetWorkflowVariableResponse {
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
 	int64 totalSize = 7;
+	string mimeType = 8;
 }
 
 message DeleteWorkflowVariableRequest {
@@ -158,6 +164,7 @@ message RenameWorkflowVariableResponse {
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
 	int64 totalSize = 7;
+	string mimeType = 8;
 }
 
 message InstanceVariableRequest {
@@ -175,6 +182,7 @@ message InstanceVariableResponse {
 	string checksum = 6;
 	int64 totalSize = 7;
 	bytes data = 8;
+	string mimeType = 9;
 }
 
 message InstanceVariablesRequest {
@@ -206,6 +214,7 @@ message SetInstanceVariableResponse {
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
 	int64 totalSize = 7;
+	string mimeType = 8;
 }
 
 message DeleteInstanceVariableRequest {
@@ -229,4 +238,5 @@ message RenameInstanceVariableResponse {
 	google.protobuf.Timestamp updated_at = 5;
 	string checksum = 6;
 	int64 totalSize = 7;
+	string mimeType = 8;
 }

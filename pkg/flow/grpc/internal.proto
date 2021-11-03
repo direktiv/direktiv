@@ -52,6 +52,7 @@ message VariableInternalResponse {
 	string checksum = 5;
 	int64 totalSize = 6;
 	bytes data = 7;
+	string mimeType = 8;
 }
 
 message SetVariableInternalRequest {
@@ -69,4 +70,5 @@ message SetVariableInternalResponse {
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
 	int64 totalSize = 6;
+	string mimeType = 7;
 }

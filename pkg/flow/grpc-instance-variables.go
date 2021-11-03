@@ -37,6 +37,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 	resp.Checksum = d.vdata.Hash
 	resp.TotalSize = int64(d.vdata.Size)
+	resp.MimeType = d.vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
@@ -95,6 +96,7 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -151,6 +153,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -235,6 +238,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 
@@ -376,6 +380,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 
@@ -486,6 +491,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -601,6 +607,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -711,6 +718,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 	resp.Namespace = d.ns().Name
 	resp.TotalSize = int64(d.vdata.Size)
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+	resp.MimeType = d.vdata.MimeType
 
 	return &resp, nil
 

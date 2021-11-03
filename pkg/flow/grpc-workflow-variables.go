@@ -39,6 +39,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 	resp.Checksum = d.vdata.Hash
 	resp.TotalSize = int64(d.vdata.Size)
+	resp.MimeType = d.vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
@@ -102,6 +103,7 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -158,6 +160,7 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -242,6 +245,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 
@@ -495,6 +499,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 
@@ -615,6 +620,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -840,6 +846,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	resp.Namespace = d.ns().Name
 	resp.TotalSize = int64(d.vdata.Size)
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+	resp.MimeType = d.vdata.MimeType
 
 	return &resp, nil
 

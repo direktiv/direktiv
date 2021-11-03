@@ -223,3 +223,40 @@ tail-functions: ## Tail logs for currently active 'functions' container.
 	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
 	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
 	kubectl logs -f ${FUNCTIONS_POD} functions-controller
+
+.PHONY: reboot-api
+reboot-api: ## delete currently active api pod
+	kubectl delete pod -l app.kubernetes.io/instance=direktiv-api
+
+.PHONY: reboot-flow
+reboot-flow: ## delete currently active flow pod
+	kubectl delete pod -l app.kubernetes.io/instance=direktiv
+
+.PHONY: reboot-functions
+reboot-functions: ## delete currently active functions pod
+	kubectl delete pod -l app.kubernetes.io/instance=direktiv-functions
+
+.PHONY: wait-functions
+wait-functions: ## Wait for 'functions' pod to be ready.
+	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
+	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
+	kubectl wait --for=condition=ready pod ${FUNCTIONS_POD}
+
+.PHONY: wait-flow
+wait-flow: ## Wait for 'flow' pod to be ready.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl wait --for=condition=ready pod ${FLOW_POD}
+
+.PHONY: wait-api
+wait-api: ## Wait for 'api' pod to be ready.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl wait --for=condition=ready pod ${FLOW_POD}
+
+.PHONY: upgrade-%
+upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
+	@echo "Upgrading $* pod"
+	@$(MAKE) reboot-$*
+	@$(MAKE) wait-$*
+	@$(MAKE) tail-$*
