@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/ent/cloudevents"
 	"github.com/direktiv/direktiv/ent/namespace"
 	"github.com/direktiv/direktiv/ent/predicate"
@@ -18,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/ent/workflowevents"
 	"github.com/direktiv/direktiv/ent/workfloweventswait"
 	"github.com/direktiv/direktiv/ent/workflowinstance"
+	"github.com/google/uuid"
 
 	"entgo.io/ent"
 )

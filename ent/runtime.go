@@ -5,12 +5,12 @@ package ent
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/ent/cloudevents"
 	"github.com/direktiv/direktiv/ent/namespace"
 	"github.com/direktiv/direktiv/ent/schema"
 	"github.com/direktiv/direktiv/ent/services"
 	"github.com/direktiv/direktiv/ent/workflow"
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code

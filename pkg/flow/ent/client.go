@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent/migrate"
+	"github.com/google/uuid"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
