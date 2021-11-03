@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"go.uber.org/zap"
 )
 

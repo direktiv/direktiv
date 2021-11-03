@@ -12,6 +12,7 @@ import (
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -38,6 +39,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 	resp.Checksum = d.vdata.Hash
 	resp.TotalSize = int64(d.vdata.Size)
+	resp.MimeType = d.vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
@@ -101,6 +103,7 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -157,6 +160,7 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -241,6 +245,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 
@@ -335,7 +340,7 @@ type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte) (*ent.VarData, bool, error) {
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string) (*ent.VarData, bool, error) {
 
 	hash, err := computeHash(data)
 	if err != nil {
@@ -352,7 +357,17 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 			return nil, false, err
 		}
 
-		vdata, err = vdatac.Create().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		vdataBuilder := vdatac.Create().SetSize(len(data)).SetHash(hash)
+		// set mime type if provided
+		if vMimeType != "" {
+			vdataBuilder.SetMimeType(vMimeType)
+		} else {
+			// auto detect
+			mtype := mimetype.Detect(data)
+			vdataBuilder.SetMimeType(mtype.String())
+		}
+
+		vdata, err = vdataBuilder.SetData(data).Save(ctx)
 		if err != nil {
 			return nil, false, err
 		}
@@ -383,7 +398,14 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 			return nil, false, err
 		}
 
-		vdata, err = vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data).Save(ctx)
+		vdataBuilder := vdata.Update().SetSize(len(data)).SetHash(hash).SetData(data)
+
+		// Update mime type if provided
+		if vMimeType != "" {
+			vdataBuilder.SetMimeType(vMimeType)
+		}
+
+		vdata, err = vdataBuilder.Save(ctx)
 		if err != nil {
 			return nil, false, err
 		}
@@ -450,7 +472,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData(), req.GetMimeType())
 	if err != nil {
 		return nil, err
 	}
@@ -477,6 +499,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 
@@ -505,6 +528,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := id.namespace()
 	path := id.path
 	key := req.GetKey()
@@ -572,7 +596,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -597,6 +621,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -618,6 +643,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
 	path := req.GetPath()
 	key := req.GetKey()
@@ -685,7 +711,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -822,6 +848,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	resp.Namespace = d.ns().Name
 	resp.TotalSize = int64(d.vdata.Size)
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+	resp.MimeType = d.vdata.MimeType
 
 	return &resp, nil
 

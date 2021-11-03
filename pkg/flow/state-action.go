@@ -10,11 +10,11 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/senseyeio/duration"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/google/uuid"
+	"github.com/senseyeio/duration"
 )
 
 type actionStateLogic struct {

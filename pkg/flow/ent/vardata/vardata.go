@@ -23,6 +23,8 @@ const (
 	FieldHash = "hash"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
+	// FieldMimeType holds the string denoting the mime_type field in the database.
+	FieldMimeType = "mime_type"
 	// EdgeVarrefs holds the string denoting the varrefs edge name in mutations.
 	EdgeVarrefs = "varrefs"
 	// Table holds the table name of the vardata in the database.
@@ -44,6 +46,7 @@ var Columns = []string{
 	FieldSize,
 	FieldHash,
 	FieldData,
+	FieldMimeType,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -63,6 +66,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultMimeType holds the default value on creation for the "mime_type" field.
+	DefaultMimeType string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/spf13/cobra"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/spf13/cobra"
 )
 
 var workflowCmd = &cobra.Command{

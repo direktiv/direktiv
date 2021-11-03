@@ -1,11 +1,16 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/direktiv/direktiv/pkg/util"
 )
+
+const DefaultVarMimeType = "application/json"
+const RegexVarMimeType = `\w+\/[-+.\w]+`
 
 type SetterState struct {
 	StateCommon `yaml:",inline"`
@@ -15,15 +20,72 @@ type SetterState struct {
 }
 
 type SetterDefinition struct {
-	Scope string      `yaml:"scope,omitempty"`
-	Key   string      `yaml:"key"`
-	Value interface{} `yaml:"value,omitempty"`
+	Scope    string      `yaml:"scope,omitempty"`
+	Key      string      `yaml:"key"`
+	Value    interface{} `yaml:"value,omitempty"`
+	MimeType string      `yaml:"mimeType,omitempty"`
+}
+
+func (a *SetterDefinition) UnmarshalJSON(data []byte) error {
+
+	type SetterDefinitionAlias SetterDefinition
+
+	var s SetterDefinitionAlias
+
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	// Set Default
+	if s.MimeType == "" {
+		s.MimeType = DefaultVarMimeType
+	}
+
+	// Set Definition
+	a.Key = s.Key
+	a.Scope = s.Scope
+	a.Value = s.Value
+	a.MimeType = s.MimeType
+
+	return nil
+
+}
+
+func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var s interface{}
+
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+
+	sD := s.(SetterDefinition)
+
+	// Set Default
+	if sD.MimeType == "" {
+		sD.MimeType = DefaultVarMimeType
+	}
+
+	*a = sD
+
+	return nil
 }
 
 func (o *SetterDefinition) Validate() error {
 
 	if o.Scope == "" {
 		return errors.New(`scope required ("instance", "workflow", or "namespace")`)
+	}
+
+	match, err := regexp.MatchString(RegexVarMimeType, o.MimeType)
+	if err != nil {
+		return errors.New(`regex validation of mime type failed`)
+	}
+
+	if !match {
+		return errors.New(`mimeType is not a valid MIME type string`)
 	}
 
 	switch o.Scope {

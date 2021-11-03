@@ -3571,6 +3571,9 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Set MimeType
+	w.Header().Set("Content-Type", msg.MimeType)
+
 	for {
 
 		packet := msg.Data
@@ -3622,6 +3625,8 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	ctype := r.Header.Get("Content-Type")
+
 	var done int64
 
 	for done < total {
@@ -3639,6 +3644,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 			Key:       key,
 			TotalSize: total,
 			Data:      buf.Bytes(),
+			MimeType:  ctype,
 		})
 		if err != nil {
 			respond(w, nil, err)
@@ -3785,6 +3791,9 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set MimeType
+	w.Header().Set("Content-Type", msg.MimeType)
+
 	for {
 
 		packet := msg.Data
@@ -3837,6 +3846,8 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	ctype := r.Header.Get("Content-Type")
+
 	var done int64
 
 	for done < total {
@@ -3855,6 +3866,7 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 			Key:       key,
 			TotalSize: total,
 			Data:      buf.Bytes(),
+			MimeType:  ctype,
 		})
 		if err != nil {
 			respond(w, nil, err)
@@ -4003,6 +4015,9 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set MimeType
+	w.Header().Set("Content-Type", msg.MimeType)
+
 	for {
 
 		packet := msg.Data
@@ -4055,6 +4070,8 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	ctype := r.Header.Get("Content-Type")
+
 	var done int64
 
 	for done < total {
@@ -4073,6 +4090,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 			Key:       key,
 			TotalSize: total,
 			Data:      buf.Bytes(),
+			MimeType:  ctype,
 		})
 		if err != nil {
 			respond(w, nil, err)

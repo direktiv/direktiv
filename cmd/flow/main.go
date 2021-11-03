@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/secrets/handler"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"

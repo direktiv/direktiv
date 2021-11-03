@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -17,6 +16,7 @@ import (
 	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/google/uuid"
 )
 
 const latest = "latest"

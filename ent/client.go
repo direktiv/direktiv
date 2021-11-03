@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/ent/migrate"
+	"github.com/google/uuid"
 
 	"github.com/direktiv/direktiv/ent/cloudevents"
 	"github.com/direktiv/direktiv/ent/namespace"

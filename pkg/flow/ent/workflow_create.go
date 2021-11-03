@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -20,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/route"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	"github.com/google/uuid"
 )
 
 // WorkflowCreate is the builder for creating a Workflow entity.

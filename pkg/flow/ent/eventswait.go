@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/google/uuid"
 )
 
 // EventsWait is the model entity for the EventsWait schema.

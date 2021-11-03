@@ -9,11 +9,11 @@ import (
 	"io"
 	"os"
 
-	_ "github.com/lib/pq"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/secrets/ent"
 	entc "github.com/direktiv/direktiv/pkg/secrets/ent"
 	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

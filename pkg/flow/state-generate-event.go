@@ -7,9 +7,9 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
-	"github.com/direktiv/direktiv/pkg/model"
 )
 
 // -------------- GenerateEvent State --------------
