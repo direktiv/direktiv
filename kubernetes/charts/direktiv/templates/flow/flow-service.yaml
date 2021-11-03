@@ -21,5 +21,10 @@ spec:
     - port: 9998
       name: metrics
       protocol: TCP
+    {{- if .Values.eventing.enabled }}
+    - port: 3333
+      name: grpcevents
+      protocol: TCP
+    {{- end }}
   selector:
     {{- include "direktiv.selectorLabels" . | nindent 4 }}

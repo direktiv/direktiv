@@ -38,6 +38,7 @@ type FunctionsServiceClient interface {
 	WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error)
 	WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error)
 	ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error)
+	Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
 }
 
 type functionsServiceClient struct {
@@ -311,6 +312,15 @@ func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsReque
 	return out, nil
 }
 
+func (c *functionsServiceClient) Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
+	out := new(BuildResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/Build", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FunctionsServiceServer is the server API for FunctionsService service.
 // All implementations must embed UnimplementedFunctionsServiceServer
 // for forward compatibility
@@ -334,6 +344,7 @@ type FunctionsServiceServer interface {
 	WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error
 	WatchLogs(*WatchLogsRequest, FunctionsService_WatchLogsServer) error
 	ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error)
+	Build(context.Context, *empty.Empty) (*BuildResponse, error)
 	mustEmbedUnimplementedFunctionsServiceServer()
 }
 
@@ -397,6 +408,9 @@ func (UnimplementedFunctionsServiceServer) WatchLogs(*WatchLogsRequest, Function
 }
 func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPods not implemented")
+}
+func (UnimplementedFunctionsServiceServer) Build(context.Context, *empty.Empty) (*BuildResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
 }
 func (UnimplementedFunctionsServiceServer) mustEmbedUnimplementedFunctionsServiceServer() {}
 
@@ -765,6 +779,24 @@ func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FunctionsService_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServiceServer).Build(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_functions.FunctionsService/Build",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServiceServer).Build(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FunctionsService_ServiceDesc is the grpc.ServiceDesc for FunctionsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -831,6 +863,10 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPods",
 			Handler:    _FunctionsService_ListPods_Handler,
+		},
+		{
+			MethodName: "Build",
+			Handler:    _FunctionsService_Build_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

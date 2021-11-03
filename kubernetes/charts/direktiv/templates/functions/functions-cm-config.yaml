@@ -82,9 +82,9 @@ data:
 
       # proxy values
       proxy:
-        no: ""
-        https: ""
-        http: ""
+        no: "{{ .Values.functions.no_proxy }}"
+        https: "{{ .Values.functions.https_proxy }}"
+        http: "{{ .Values.functions.http_proxy }}"
 
       # additional sidecar containers
       extraVolumes:

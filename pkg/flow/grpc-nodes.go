@@ -461,7 +461,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot overwrite root node")
 	}
 
-	if strings.Contains(path, d.path) {
+	if strings.Contains(path, d.path+"/") {
 		return nil, errors.New("cannot move node into itself")
 	}
 

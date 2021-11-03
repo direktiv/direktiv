@@ -13,7 +13,7 @@ id: notifier
 functions:
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: validateInput
   type: validate
@@ -59,7 +59,7 @@ id: worker
 functions: 
 - id: httprequest
   type: reusable
-  image: vorteil/request
+  image: direktiv/request
 states:
 - id: do
   type: action

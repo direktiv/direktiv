@@ -176,22 +176,49 @@ func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error)
 
 }
 
+// OkBody is an arbitrary placeholder response that represents an ok response body
+//
+// swagger:model
+type OkBody map[string]interface{}
+
+// swagger:model
+type ErrorResponse interface {
+	// swagger:name Message
+	Error() string
+	// swagger:name StatusCode
+	StatusCode() int
+}
+
+// swagger: model ErrorBack
+type ErrorBody struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e *ErrorBody) Error() string {
+	return e.Message
+}
+func (e *ErrorBody) StatusCode() int {
+	return e.Code
+}
+
 func respond(w http.ResponseWriter, resp interface{}, err error) {
 
 	if err != nil {
 
 		// TODO fix grpc to send back useful error code for http translation
 		code := ConvertGRPCStatusCodeToHTTPCode(status.Code(err))
+		st := status.Convert(err)
 
-		var msg string
-		// if code < 500 {
-		// 	msg = err.Error()
-		// } else {
-		// 	msg = http.StatusText(code)
-		// }
+		o := &ErrorBody{
+			Code:    code,
+			Message: st.Message(),
+		}
 
-		msg = err.Error()
-		http.Error(w, msg, code)
+		data, _ := json.Marshal(&o)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(code)
+		io.Copy(w, bytes.NewReader(data))
 		return
 
 	}
@@ -423,7 +450,8 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 
 // Swagger Param Wrappers
 
-// swagger:parameters getNamespaces serverLogs namespaceLogs instanceLogs workflowLogs getRegistries getNodes getSecrets getNamespaceVariables getWorkflowVariables getInstanceVariables
+// add getNamespaces serverLogs namespaceLogs instanceLogs workflowLogs getRegistries getNodes getSecrets getNamespaceVariables getWorkflowVariables getInstanceVariables
+// swagger:parameters
 type paginationQueryWrapper struct {
 
 	// in: query

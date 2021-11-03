@@ -18,6 +18,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/senseyeio/duration"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -647,7 +649,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 		go func() {
 			time.Sleep(d)
 			/* #nosec */
-			_ = engine.retryWakeup(data)
+			engine.retryWakeup(data)
 		}()
 		return nil
 	}
@@ -661,20 +663,20 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 
 }
 
-func (engine *engine) retryWakeup(data []byte) error {
+func (engine *engine) retryWakeup(data []byte) {
 
 	msg := new(retryMessage)
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
 		engine.sugar.Error(err)
-		return nil
+		return
 	}
 
 	ctx, im, err := engine.loadInstanceMemory(msg.InstanceID, msg.Step)
 	if err != nil {
 		engine.sugar.Error(err)
-		return nil
+		return
 	}
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
@@ -682,8 +684,6 @@ func (engine *engine) retryWakeup(data []byte) error {
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, []byte(msg.Data), nil)
-
-	return nil
 
 }
 
@@ -917,6 +917,12 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
 							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
 							if err != nil {
+								if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
+									engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
+									engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
+									return
+								}
+
 								engine.sugar.Errorf("can not create scoped knative function: %v", err)
 								engine.reportError(ar, err)
 								return

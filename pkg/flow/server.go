@@ -10,11 +10,14 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 )
@@ -193,6 +196,18 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 
+	if srv.conf.Eventing {
+
+		srv.sugar.Debug("Initializing knative eventing receiver.")
+		rcv, err := newEventReceiver(srv.events, srv.flow)
+		if err != nil {
+			return err
+		}
+
+		// starting the event receiver
+		go rcv.Start()
+	}
+
 	srv.registerFunctions()
 
 	go srv.cronPoller()
@@ -342,6 +357,7 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
+	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 }
 
@@ -400,7 +416,6 @@ func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
 	resp, err = handler(ctx, req)
 	if err != nil {
-		fmt.Println(">>>", info.FullMethod)
 		return nil, translateError(err)
 	}
 	return resp, nil
@@ -409,8 +424,13 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryS
 func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
 	err := handler(srv, ss)
 	if err != nil {
-		fmt.Println(">>>", info.FullMethod)
 		return translateError(err)
 	}
 	return nil
+}
+
+func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResponse, error) {
+	var resp grpc.BuildResponse
+	resp.Build = version.Version
+	return &resp, nil
 }

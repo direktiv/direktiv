@@ -1,10 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/version"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -33,6 +36,17 @@ func (s *Server) GetRouter() *mux.Router {
 	return s.router
 }
 
+type mw struct {
+	h http.Handler
+}
+
+func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("REQUEST RECEIVED", r.Method, r.URL.String())
+
+	mw.h.ServeHTTP(w, r)
+}
+
 // NewServer return new API server
 func NewServer(l *zap.SugaredLogger) (*Server, error) {
 
@@ -50,12 +64,26 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		},
 	}
 
+	// swagger:operation GET /api/version Other version
+	// ---
+	// description: |
+	//   Returns version information for servers in the cluster.
+	// summary: Returns version information for servers in the cluster.
+	// responses:
+	//   '200':
+	//     "description": "version query was successful"
+	r.HandleFunc("/version", s.version).Name(RN_Version).Methods(http.MethodGet)
+
 	// read config
 	conf, err := util.ReadConfig("/etc/direktiv/flow-config.yaml")
 	if err != nil {
 		return nil, err
 	}
 	s.config = conf
+
+	r.Use(func(h http.Handler) http.Handler {
+		return &mw{h: h}
+	})
 
 	logger.Debug("Initializing telemetry.")
 	s.telend, err = util.InitTelemetry(s.config, "direktiv/api", "direktiv")
@@ -84,6 +112,27 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	s.prepareHelperRoutes()
 
 	return s, nil
+
+}
+
+func (s *Server) version(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	m := make(map[string]string)
+	m["api"] = version.Version
+
+	flowResp, _ := s.flowClient.Build(ctx, &emptypb.Empty{})
+	if flowResp != nil {
+		m["flow"] = flowResp.GetBuild()
+	}
+
+	funcsResp, _ := s.functionHandler.client.Build(ctx, &emptypb.Empty{})
+	if flowResp != nil {
+		m["functions"] = funcsResp.GetBuild()
+	}
+
+	respondJSON(w, m, nil)
 
 }
 

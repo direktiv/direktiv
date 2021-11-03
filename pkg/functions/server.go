@@ -16,6 +16,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/functions/ent"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 
@@ -437,4 +438,10 @@ func (fServer *functionsServer) orphansGC() {
 
 	}
 
+}
+
+func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.BuildResponse, error) {
+	var resp igrpc.BuildResponse
+	resp.Build = version.Version
+	return &resp, nil
 }

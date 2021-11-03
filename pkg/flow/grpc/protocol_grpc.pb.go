@@ -108,6 +108,7 @@ type FlowClient interface {
 	ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 	SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error)
 	GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error)
+	Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
 }
 
 type flowClient struct {
@@ -1477,6 +1478,15 @@ func (c *flowClient) GetNamespaceConfig(ctx context.Context, in *GetNamespaceCon
 	return out, nil
 }
 
+func (c *flowClient) Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
+	out := new(BuildResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Build", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -1570,6 +1580,7 @@ type FlowServer interface {
 	ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error)
 	SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error)
 	GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error)
+	Build(context.Context, *empty.Empty) (*BuildResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -1843,6 +1854,9 @@ func (UnimplementedFlowServer) SetNamespaceConfig(context.Context, *SetNamespace
 }
 func (UnimplementedFlowServer) GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceConfig not implemented")
+}
+func (UnimplementedFlowServer) Build(context.Context, *empty.Empty) (*BuildResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -3546,6 +3560,24 @@ func _Flow_GetNamespaceConfig_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).Build(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/Build",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).Build(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3812,6 +3844,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNamespaceConfig",
 			Handler:    _Flow_GetNamespaceConfig_Handler,
+		},
+		{
+			MethodName: "Build",
+			Handler:    _Flow_Build_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
@@ -4677,6 +4713,119 @@ var Actions_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "NamespaceRegistriesStream",
 			Handler:       _Actions_NamespaceRegistriesStream_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "pkg/flow/grpc/protocol.proto",
+}
+
+// EventingClient is the client API for Eventing service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type EventingClient interface {
+	RequestEvents(ctx context.Context, in *EventingRequest, opts ...grpc.CallOption) (Eventing_RequestEventsClient, error)
+}
+
+type eventingClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewEventingClient(cc grpc.ClientConnInterface) EventingClient {
+	return &eventingClient{cc}
+}
+
+func (c *eventingClient) RequestEvents(ctx context.Context, in *EventingRequest, opts ...grpc.CallOption) (Eventing_RequestEventsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Eventing_ServiceDesc.Streams[0], "/direktiv_flow.Eventing/RequestEvents", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &eventingRequestEventsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Eventing_RequestEventsClient interface {
+	Recv() (*CloudEvent, error)
+	grpc.ClientStream
+}
+
+type eventingRequestEventsClient struct {
+	grpc.ClientStream
+}
+
+func (x *eventingRequestEventsClient) Recv() (*CloudEvent, error) {
+	m := new(CloudEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// EventingServer is the server API for Eventing service.
+// All implementations must embed UnimplementedEventingServer
+// for forward compatibility
+type EventingServer interface {
+	RequestEvents(*EventingRequest, Eventing_RequestEventsServer) error
+	mustEmbedUnimplementedEventingServer()
+}
+
+// UnimplementedEventingServer must be embedded to have forward compatible implementations.
+type UnimplementedEventingServer struct {
+}
+
+func (UnimplementedEventingServer) RequestEvents(*EventingRequest, Eventing_RequestEventsServer) error {
+	return status.Errorf(codes.Unimplemented, "method RequestEvents not implemented")
+}
+func (UnimplementedEventingServer) mustEmbedUnimplementedEventingServer() {}
+
+// UnsafeEventingServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to EventingServer will
+// result in compilation errors.
+type UnsafeEventingServer interface {
+	mustEmbedUnimplementedEventingServer()
+}
+
+func RegisterEventingServer(s grpc.ServiceRegistrar, srv EventingServer) {
+	s.RegisterService(&Eventing_ServiceDesc, srv)
+}
+
+func _Eventing_RequestEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(EventingRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(EventingServer).RequestEvents(m, &eventingRequestEventsServer{stream})
+}
+
+type Eventing_RequestEventsServer interface {
+	Send(*CloudEvent) error
+	grpc.ServerStream
+}
+
+type eventingRequestEventsServer struct {
+	grpc.ServerStream
+}
+
+func (x *eventingRequestEventsServer) Send(m *CloudEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+// Eventing_ServiceDesc is the grpc.ServiceDesc for Eventing service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Eventing_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "direktiv_flow.Eventing",
+	HandlerType: (*EventingServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "RequestEvents",
+			Handler:       _Eventing_RequestEvents_Handler,
 			ServerStreams: true,
 		},
 	},

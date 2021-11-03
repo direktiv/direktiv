@@ -7,7 +7,7 @@ id: math
 functions: 
 - id: solveMathExpressionFunction
   type: reusable
-  image: vorteil/solve
+  image: direktiv/solve
 states:
 - id: solve
   type: foreach

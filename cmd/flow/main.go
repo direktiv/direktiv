@@ -95,10 +95,18 @@ func main() {
 	rootCmd.AddCommand(deleteSecretCmd)
 
 	rootCmd.AddCommand(testsCmd)
+	rootCmd.AddCommand(testsAPICmd)
 	testsCmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
+	testsCmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
 	testsCmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
 	testsCmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
 	testsCmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
+
+	testsAPICmd.Flags().BoolVarP(&skipLongTests, "quick", "q", false, "")
+	testsAPICmd.Flags().BoolVarP(&persistTest, "persist-test", "p", false, "If true, test will stop on first fail or last success and will not cleanup resources. Only supported when clients=1")
+	testsAPICmd.Flags().IntVarP(&parallelTests, "clients", "c", 1, "")
+	testsAPICmd.Flags().DurationVarP(&instanceTimeout, "instance-timeout", "t", time.Second*5, "")
+	testsAPICmd.Flags().DurationVarP(&testTimeout, "test-timeout", "T", time.Second*10, "")
 
 	err = rootCmd.Execute()
 	if err != nil {
@@ -193,10 +201,10 @@ func shutdown() {
 	pv, err := ioutil.ReadFile("/proc/version")
 	if err == nil {
 
-		// this is a vorteil machine, so we press poweroff
-		if strings.Contains(string(pv), "#vorteil") {
+		// this is a direktiv machine, so we press poweroff
+		if strings.Contains(string(pv), "#direktiv") {
 
-			log.Printf("vorteil machine, powering off")
+			log.Printf("direktiv machine, powering off")
 
 			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
 				fmt.Println("error shutting down:", err)

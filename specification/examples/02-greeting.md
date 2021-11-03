@@ -1,6 +1,6 @@
 # Greeting
 
-A simple action that uses the docker container `vorteil/greeting`. Which takes a person object as input and outputs a greeting message back.
+A simple action that uses the docker container `direktiv/greeting`. Which takes a person object as input and outputs a greeting message back.
 
 ## Workflow 
 
@@ -9,7 +9,7 @@ id: greeting
 functions: 
 - id: greetingFunction
   type: reusable
-  image: vorteil/greeting
+  image: direktiv/greeting
 states:
 - id: Greet
   type: action

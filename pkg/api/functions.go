@@ -204,7 +204,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -297,7 +297,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -563,7 +563,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -672,7 +672,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -1772,15 +1772,25 @@ func (h *functionHandler) createService(ns, nsName, wf, path, rev string,
 
 }
 
-// jens
-
+// UpdateServiceRequest UpdateServiceRequest update service request
+//
 // swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
-	Image          *string `json:"image,omitempty"`
-	Cmd            *string `json:"cmd,omitempty"`
-	Size           *int32  `json:"size,omitempty"`
-	MinScale       *int32  `json:"minScale,omitempty"`
-	TrafficPercent int64   `json:"trafficPercent"`
+	// image
+	// Required: true
+	Image *string `json:"image,omitempty"`
+	// cmd
+	// Required: true
+	Cmd *string `json:"cmd,omitempty"`
+	// size
+	// Required: true
+	Size *int32 `json:"size,omitempty"`
+	// minScale
+	// Required: true
+	MinScale *int32 `json:"minScale,omitempty"`
+	// trafficPercent
+	// Required: true
+	TrafficPercent int64 `json:"trafficPercent"`
 }
 
 func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {

@@ -84,7 +84,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v12",
+                "image": "direktiv/request:v12",
                 "minScale": "1",
                 "name": "fast-request",
                 "size": "small"
@@ -179,7 +179,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v12",
+                "image": "direktiv/request:v12",
                 "minScale": "1",
                 "name": "fast-request",
                 "size": "small"
@@ -288,7 +288,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v10",
+                "image": "direktiv/request:v10",
                 "minScale": "1",
                 "size": "small",
                 "trafficPercent": 50
@@ -844,7 +844,7 @@
               },
               "example": {
                 "cmd": "",
-                "image": "vorteil/request:v10",
+                "image": "direktiv/request:v10",
                 "minScale": "1",
                 "size": "small",
                 "trafficPercent": 50
@@ -1106,6 +1106,12 @@
         "responses": {
           "200": {
             "description": "jq query was successful"
+          },
+          "400": {
+            "description": "the request was invalid"
+          },
+          "500": {
+            "description": "an unexpected internal error occurred"
           }
         }
       }
@@ -1118,67 +1124,18 @@
         ],
         "summary": "Get Direktiv Server Logs",
         "operationId": "serverLogs",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "After",
-            "name": "after",
-            "in": "query"
-          },
-          {
-            "type": "integer",
-            "format": "int32",
-            "x-go-name": "First",
-            "name": "first",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "Before",
-            "name": "before",
-            "in": "query"
-          },
-          {
-            "type": "integer",
-            "format": "int32",
-            "x-go-name": "Last",
-            "name": "last",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageOrderField",
-            "name": "order.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageOrderDirection",
-            "name": "order.direction",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageFilterField",
-            "name": "filter.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageFilterType",
-            "name": "filter.type",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageFilterVal",
-            "name": "filter.val",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
-            "description": "successfully got server logs"
+            "description": "successfully got server logs",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -1191,64 +1148,6 @@
         ],
         "summary": "Gets the list of namespaces",
         "operationId": "getNamespaces",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "After",
-            "name": "after",
-            "in": "query"
-          },
-          {
-            "type": "integer",
-            "format": "int32",
-            "x-go-name": "First",
-            "name": "first",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "Before",
-            "name": "before",
-            "in": "query"
-          },
-          {
-            "type": "integer",
-            "format": "int32",
-            "x-go-name": "Last",
-            "name": "last",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageOrderField",
-            "name": "order.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageOrderDirection",
-            "name": "order.direction",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageFilterField",
-            "name": "filter.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageFilterType",
-            "name": "filter.type",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "x-go-name": "PageFilterVal",
-            "name": "filter.val",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "successfully got list of namespaces"
@@ -1275,7 +1174,16 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully created"
+            "description": "namespace has been successfully created",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       },
@@ -1297,7 +1205,16 @@
         ],
         "responses": {
           "200": {
-            "description": "namespace has been successfully deleted"
+            "description": "namespace has been successfully deleted",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -1465,7 +1382,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully got instance"
+            "description": "successfully got instance",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -1543,7 +1469,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1551,8 +1476,6 @@
           },
           {
             "type": "string",
-            "format": "int32",
-            "x-go-name": "First",
             "description": "target instance id",
             "name": "instance",
             "in": "path",
@@ -1561,7 +1484,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully got instance logs"
+            "description": "successfully got instance logs",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -1608,7 +1540,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1616,8 +1547,6 @@
           },
           {
             "type": "string",
-            "format": "int32",
-            "x-go-name": "First",
             "description": "target instance",
             "name": "instance",
             "in": "path",
@@ -1766,7 +1695,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1887,7 +1815,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1955,7 +1882,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1964,7 +1890,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully got namespace secrets"
+            "description": "successfully got namespace nodes",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2007,7 +1942,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully created namespace secret"
+            "description": "namespace has been successfully created",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       },
@@ -2036,7 +1980,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully deleted namespace secret"
+            "description": "namespace has been successfully created",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2050,6 +2003,14 @@
         "summary": "Create a Directory",
         "operationId": "createDirectory",
         "parameters": [
+          {
+            "type": "string",
+            "default": "create-directory",
+            "description": "the operation for the api",
+            "name": "op",
+            "in": "query",
+            "required": true
+          },
           {
             "type": "string",
             "description": "target namespace",
@@ -2067,7 +2028,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully created directory"
+            "description": "directory has been created",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2076,15 +2046,13 @@
       "get": {
         "description": "Gets Workflow and Directory Nodes at nodePath.\n",
         "tags": [
-          "Directory",
-          "Workflows"
+          "Node"
         ],
         "summary": "Get List of Namespace Nodes",
         "operationId": "getNodes",
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -2092,8 +2060,6 @@
           },
           {
             "type": "string",
-            "format": "int32",
-            "x-go-name": "First",
             "description": "target path in tree",
             "name": "nodePath",
             "in": "path",
@@ -2102,7 +2068,64 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully got namespace nodes"
+            "description": "successfully got namespace nodes",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/tree/{node}?op=delete-node": {
+      "delete": {
+        "description": "Creates a directory at the target path.\n",
+        "tags": [
+          "Node"
+        ],
+        "summary": "Delete a node",
+        "operationId": "deleteNode",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "delete-node",
+            "description": "the operation for the api",
+            "name": "op",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target node",
+            "name": "node",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "node has been deleted",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2119,6 +2142,14 @@
         "summary": "Create a Workflow",
         "operationId": "createWorkflow",
         "parameters": [
+          {
+            "type": "string",
+            "default": "create-workflow",
+            "description": "the operation for the api",
+            "name": "op",
+            "in": "query",
+            "required": true
+          },
           {
             "type": "string",
             "description": "target namespace",
@@ -2145,7 +2176,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully created workflow"
+            "description": "successfully created workflow",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2199,6 +2239,14 @@
         "parameters": [
           {
             "type": "string",
+            "default": "execute",
+            "description": "the operation for the api",
+            "name": "op",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -2229,7 +2277,16 @@
         ],
         "responses": {
           "200": {
-            "description": "successfully executed workflow"
+            "description": "node has been deleted",
+            "schema": {
+              "$ref": "#/definitions/OkBody"
+            }
+          },
+          "default": {
+            "description": "an error has occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2635,7 +2692,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -2643,8 +2699,6 @@
           },
           {
             "type": "string",
-            "format": "int32",
-            "x-go-name": "First",
             "description": "path to target workflow",
             "name": "workflow",
             "in": "path",
@@ -2780,7 +2834,6 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "After",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -2896,6 +2949,458 @@
           }
         }
       }
+    },
+    "/api/version": {
+      "get": {
+        "description": "Returns version information for servers in the cluster.\n",
+        "tags": [
+          "Other"
+        ],
+        "summary": "Returns version information for servers in the cluster.",
+        "operationId": "version",
+        "responses": {
+          "200": {
+            "description": "version query was successful"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CreateGlobalServiceBody": {
+      "description": "CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "type": "object",
+      "required": [
+        "cmd",
+        "image",
+        "minScale",
+        "name",
+        "size"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "Target image a service will use",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "Minimum amount of service pods to be live",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "MinScale"
+        },
+        "name": {
+          "description": "Name of new service",
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "size": {
+          "description": "Size of created service pods",
+          "type": "string",
+          "enum": [
+            "[small medium large]"
+          ],
+          "x-go-name": "Size"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "CreateNamespaceServiceBody": {
+      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "type": "object",
+      "required": [
+        "cmd",
+        "image",
+        "minScale",
+        "name",
+        "size"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "Target image a service will use",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "Minimum amount of service pods to be live",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "MinScale"
+        },
+        "name": {
+          "description": "Name of new service",
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "size": {
+          "description": "Size of created service pods",
+          "type": "string",
+          "enum": [
+            "[small medium large]"
+          ],
+          "x-go-name": "Size"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "DeleteRegistryBody": {
+      "description": "DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "type": "object",
+      "required": [
+        "reg"
+      ],
+      "properties": {
+        "reg": {
+          "description": "Target registry URL",
+          "type": "string",
+          "x-go-name": "Reg"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "ErrorResponse": {
+      "description": "ErrorResponse ErrorResponse error response",
+      "type": "object",
+      "properties": {
+        "Message": {
+          "description": "error",
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "StatusCode": {
+          "description": "status code",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "JqPlaygroundBody": {
+      "description": "JqPlaygroundBody JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
+      "type": "object",
+      "required": [
+        "data",
+        "query"
+      ],
+      "properties": {
+        "data": {
+          "description": "JSON data encoded in base64",
+          "type": "string",
+          "x-go-name": "Data"
+        },
+        "query": {
+          "description": "jq query to manipulate JSON data",
+          "type": "string",
+          "x-go-name": "Query"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "OkBody": {
+      "description": "OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "SetNamespaceConfigBody": {
+      "description": "SetNamespaceConfigBody SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
+      "type": "object",
+      "properties": {
+        "broadcast": {
+          "description": "Configuration on which direktiv operations will trigger coud events on the namespace",
+          "type": "object",
+          "x-go-name": "Broadcast"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "SetWorkflowCloudEventLogsBody": {
+      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
+      "type": "object",
+      "required": [
+        "logger"
+      ],
+      "properties": {
+        "logger": {
+          "description": "Target Cloud Event",
+          "type": "string",
+          "x-go-name": "Logger"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+    },
+    "ToggleWorkflowBody": {
+      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
+      "type": "object",
+      "required": [
+        "live"
+      ],
+      "properties": {
+        "live": {
+          "description": "Workflow live status",
+          "type": "boolean",
+          "x-go-name": "Live"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+    },
+    "UpdateGlobalServiceBody": {
+      "description": "UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "type": "object",
+      "required": [
+        "cmd",
+        "image",
+        "minScale",
+        "size",
+        "trafficPercent"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "Target image a service will use",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "Minimum amount of service pods to be live",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "MinScale"
+        },
+        "size": {
+          "description": "Size of created service pods",
+          "type": "string",
+          "enum": [
+            "[small medium large]"
+          ],
+          "x-go-name": "Size"
+        },
+        "trafficPercent": {
+          "description": "Traffic percentage new revision will use",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TrafficPercent"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateGlobalServiceTrafficBody": {
+      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
+      "type": "object",
+      "required": [
+        "values"
+      ],
+      "properties": {
+        "values": {
+          "description": "List of revision traffic targets",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateGlobalServiceTrafficParamsBodyValuesItems0"
+          },
+          "x-go-name": "Values"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
+      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
+      "type": "object",
+      "properties": {
+        "percent": {
+          "description": "Target traffice percentage",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Percent"
+        },
+        "revision": {
+          "description": "Target service revision",
+          "type": "string",
+          "x-go-name": "Revision"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateNamespaceServiceBody": {
+      "description": "UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "type": "object",
+      "required": [
+        "cmd",
+        "image",
+        "minScale",
+        "size",
+        "trafficPercent"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "Target image a service will use",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "Minimum amount of service pods to be live",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "MinScale"
+        },
+        "size": {
+          "description": "Size of created service pods",
+          "type": "string",
+          "enum": [
+            "[[small medium large]]"
+          ],
+          "x-go-name": "Size"
+        },
+        "trafficPercent": {
+          "description": "Traffic percentage new revision will use",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TrafficPercent"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "UpdateNamespaceServiceTrafficBody": {
+      "description": "UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
+      "type": "object",
+      "required": [
+        "values"
+      ],
+      "properties": {
+        "values": {
+          "description": "List of revision traffic targets",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateNamespaceServiceTrafficParamsBodyValuesItems0"
+          },
+          "x-go-name": "Values"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
+      "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",
+      "type": "object",
+      "properties": {
+        "percent": {
+          "description": "Target traffice percentage",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Percent"
+        },
+        "revision": {
+          "description": "Target service revision",
+          "type": "string",
+          "x-go-name": "Revision"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+    },
+    "UpdateServiceRequest": {
+      "description": "UpdateServiceRequest UpdateServiceRequest update service request",
+      "type": "object",
+      "required": [
+        "image",
+        "cmd",
+        "size",
+        "minScale",
+        "trafficPercent"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "image",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "minScale",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "MinScale"
+        },
+        "size": {
+          "description": "size",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Size"
+        },
+        "trafficPercent": {
+          "description": "trafficPercent",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TrafficPercent"
+        }
+      },
+      "x-go-name": "updateServiceRequest",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+    },
+    "updateServiceRequest": {
+      "description": "UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request",
+      "type": "object",
+      "required": [
+        "cmd",
+        "image",
+        "minScale",
+        "size",
+        "trafficPercent"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "image",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "min scale",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "MinScale"
+        },
+        "size": {
+          "description": "size",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Size"
+        },
+        "trafficPercent": {
+          "description": "traffic percent",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TrafficPercent"
+        }
+      },
+      "x-go-name": "UpdateServiceRequest",
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     }
   },
   "securityDefinitions": {

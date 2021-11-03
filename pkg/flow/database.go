@@ -57,6 +57,7 @@ func (srv *server) getNamespace(ctx context.Context, nsc *ent.NamespaceClient, n
 	query = query.Where(entns.NameEQ(namespace))
 	ns, err := query.Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -71,6 +72,7 @@ func GetInodePath(path string) string {
 	if !strings.HasPrefix(path, "/") {
 		return "/" + path
 	}
+	path = filepath.Clean(path)
 	return path
 }
 
@@ -91,11 +93,13 @@ func (srv *server) traverseToInode(ctx context.Context, nsc *ent.NamespaceClient
 
 	ns, err := srv.getNamespace(ctx, nsc, namespace)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
 	}
 
 	nd, err := srv.getInode(ctx, nil, ns, path, false)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -107,6 +111,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to parse UUID: %v", parent(), err)
 		return nil, err
 	}
 
@@ -114,11 +119,13 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 
 	ino, err := srv.db.Inode.Get(ctx, uid)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
 		return nil, err
 	}
 
 	ns, err := ino.Namespace(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query inode's namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -156,6 +163,7 @@ func (srv *server) reverseTraverseToInode(ctx context.Context, id string) (*node
 
 	err = recurser(ino)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve parent(s): %v", parent(), err)
 		return nil, err
 	}
 
@@ -173,6 +181,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 	query = query.Where(entino.NameIsNil())
 	rootino, err := query.Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve root inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -230,6 +239,7 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 
 	ino, err := descend(rootino, elems, path)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -243,11 +253,13 @@ func (srv *server) getInode(ctx context.Context, inoc *ent.InodeClient, ns *ent.
 func (srv *server) getWorkflow(ctx context.Context, ino *ent.Inode) (*ent.Workflow, error) {
 
 	if ino.Type != "workflow" {
+		srv.sugar.Debugf("%s inode isn't a workflow", parent())
 		return nil, ErrNotWorkflow
 	}
 
 	wf, err := ino.QueryWorkflow().Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query inode's workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -259,6 +271,7 @@ func (srv *server) getRef(ctx context.Context, wf *ent.Workflow, reference strin
 
 	ref, err := wf.QueryRefs().Where(entref.NameEQ(reference)).Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query workflow ref: %v", parent(), err)
 		return nil, err
 	}
 
@@ -270,6 +283,7 @@ func (srv *server) getRevision(ctx context.Context, ref *ent.Ref) (*ent.Revision
 
 	rev, err := ref.Revision(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query ref's revision: %v", parent(), err)
 		return nil, err
 	}
 
@@ -288,6 +302,7 @@ func (srv *server) traverseToWorkflow(ctx context.Context, nsc *ent.NamespaceCli
 
 	nd, err := srv.traverseToInode(ctx, nsc, namespace, path)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve workflow's inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -296,6 +311,7 @@ func (srv *server) traverseToWorkflow(ctx context.Context, nsc *ent.NamespaceCli
 
 	wf, err := srv.getWorkflow(ctx, wd.ino)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to get workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -314,21 +330,25 @@ func (srv *server) reverseTraverseToWorkflow(ctx context.Context, id string) (*w
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to parse workflow UUID: %v", parent(), err)
 		return nil, err
 	}
 
 	wf, err := srv.db.Workflow.Get(ctx, uid)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query workflow: %v", parent(), err)
 		return nil, err
 	}
 
 	ino, err := wf.Inode(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query workflow's inode: %v", parent(), err)
 		return nil, err
 	}
 
 	nd, err := srv.reverseTraverseToInode(ctx, ino.ID.String())
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve inode's parent(s): %v", parent(), err)
 		return nil, err
 	}
 
@@ -360,6 +380,7 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 
 	wd, err := srv.traverseToWorkflow(ctx, nsc, namespace, path)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -371,6 +392,7 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 
 	ref, err := srv.getRef(ctx, wd.wf, reference)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve workflow ref: %v", parent(), err)
 		return nil, err
 	}
 
@@ -379,6 +401,7 @@ func (srv *server) traverseToRef(ctx context.Context, nsc *ent.NamespaceClient, 
 
 	rev, err := srv.getRevision(ctx, ref)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve ref revision: %v", parent(), err)
 		return nil, err
 	}
 
@@ -407,11 +430,13 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 
 	id, err := uuid.Parse(instance)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to parse UUID: %v", parent(), err)
 		return nil, err
 	}
 
 	ns, err := srv.getNamespace(ctx, nsc, namespace)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -421,6 +446,7 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 	}
 	in, err := query.Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query instance: %v", parent(), err)
 		return nil, err
 	}
 
@@ -428,6 +454,7 @@ func (srv *server) getInstance(ctx context.Context, nsc *ent.NamespaceClient, na
 		err = &NotFoundError{
 			Label: fmt.Sprintf("instance runtime not found"),
 		}
+		srv.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
 		return nil, err
 	}
 
@@ -444,29 +471,34 @@ func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceCli
 
 	d, err := srv.getInstance(ctx, nsc, namespace, instance, false)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
 		return nil, err
 	}
 
 	rt, err := d.in.QueryRuntime().Select(entirt.FieldFlow).WithCaller().Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
 		return nil, err
 	}
 	d.in.Edges.Runtime = rt
 
 	rev, err := d.in.QueryRevision().Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query instance revision: %v", parent(), err)
 		return nil, err
 	}
 	d.in.Edges.Revision = rev
 
 	wf, err := d.in.QueryWorkflow().Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query instance workflow: %v", parent(), err)
 		return nil, err
 	}
 	d.in.Edges.Workflow = wf
 
 	ino, err := wf.QueryInode().Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query workflow inode: %v", parent(), err)
 		return nil, err
 	}
 	wf.Edges.Inode = ino
@@ -504,6 +536,7 @@ func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceCli
 
 	err = recurser(ino)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve parent(s): %v", parent(), err)
 		return nil, err
 	}
 
@@ -522,6 +555,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 
 	id, err := uuid.Parse(instance)
 	if err != nil {
+		internal.sugar.Debugf("%s failed to parse UUID: %v", parent(), err)
 		return nil, err
 	}
 
@@ -533,6 +567,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 	}
 	in, err := query.Only(ctx)
 	if err != nil {
+		internal.sugar.Debugf("%s failed to query instance: %v", parent(), err)
 		return nil, err
 	}
 
@@ -540,6 +575,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		err = &NotFoundError{
 			Label: fmt.Sprintf("instance namespace not found"),
 		}
+		internal.sugar.Debugf("%s failed to query instance namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -547,6 +583,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		err = &NotFoundError{
 			Label: fmt.Sprintf("instance workflow not found"),
 		}
+		internal.sugar.Debugf("%s failed to query instance workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -554,6 +591,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		err = &NotFoundError{
 			Label: fmt.Sprintf("instance workflow's inode not found"),
 		}
+		internal.sugar.Debugf("%s failed to query workflow inode: %v", parent(), err)
 		return nil, err
 	}
 
@@ -561,6 +599,7 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		err = &NotFoundError{
 			Label: fmt.Sprintf("instance runtime not found"),
 		}
+		internal.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
 		return nil, err
 	}
 
@@ -590,6 +629,7 @@ func (srv *server) traverseToNamespaceVariable(ctx context.Context, nsc *ent.Nam
 
 	ns, err := srv.getNamespace(ctx, nsc, namespace)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
 		return nil, err
 	}
 
@@ -600,6 +640,7 @@ func (srv *server) traverseToNamespaceVariable(ctx context.Context, nsc *ent.Nam
 
 	vref, err := query.Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query variable ref: %v", parent(), err)
 		return nil, err
 	}
 
@@ -607,12 +648,14 @@ func (srv *server) traverseToNamespaceVariable(ctx context.Context, nsc *ent.Nam
 		err = &NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
+		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
 		return nil, err
 	}
 
 	if !load {
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
+			srv.sugar.Debugf("%s failed to query variable metadata: %v", parent(), err)
 			return nil, err
 		}
 		vref.Edges.Vardata = vdata
@@ -638,6 +681,7 @@ func (srv *server) traverseToWorkflowVariable(ctx context.Context, nsc *ent.Name
 
 	wd, err := srv.traverseToWorkflow(ctx, nsc, namespace, path)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
 		return nil, err
 	}
 
@@ -648,6 +692,7 @@ func (srv *server) traverseToWorkflowVariable(ctx context.Context, nsc *ent.Name
 
 	vref, err := query.Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query variable ref: %v", parent(), err)
 		return nil, err
 	}
 
@@ -655,12 +700,14 @@ func (srv *server) traverseToWorkflowVariable(ctx context.Context, nsc *ent.Name
 		err = &NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
+		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
 		return nil, err
 	}
 
 	if !load {
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
+			srv.sugar.Debugf("%s failed to query variable metadata: %v", parent(), err)
 			return nil, err
 		}
 		vref.Edges.Vardata = vdata
@@ -687,6 +734,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 
 	wd, err := srv.getInstance(ctx, nsc, namespace, instance, false)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
 		return nil, err
 	}
 
@@ -697,6 +745,7 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 
 	vref, err := query.Only(ctx)
 	if err != nil {
+		srv.sugar.Debugf("%s failed to query variable ref: %v", parent(), err)
 		return nil, err
 	}
 
@@ -704,12 +753,14 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 		err = &NotFoundError{
 			Label: fmt.Sprintf("variable data not found"),
 		}
+		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
 		return nil, err
 	}
 
 	if !load {
 		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
 		if err != nil {
+			srv.sugar.Debugf("%s failed to query variable metadata: %v", parent(), err)
 			return nil, err
 		}
 		vref.Edges.Vardata = vdata
