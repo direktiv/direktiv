@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/ent/workflow"
 	"github.com/direktiv/direktiv/ent/workflowevents"
 	"github.com/direktiv/direktiv/ent/workflowinstance"
+	"github.com/google/uuid"
 )
 
 // WorkflowEvents is the model entity for the WorkflowEvents schema.

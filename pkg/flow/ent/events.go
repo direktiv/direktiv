@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	"github.com/google/uuid"
 )
 
 // Events is the model entity for the Events schema.

@@ -5,7 +5,6 @@ package ent
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -21,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -171,6 +171,10 @@ func init() {
 	vardata.DefaultUpdatedAt = vardataDescUpdatedAt.Default.(func() time.Time)
 	// vardata.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	vardata.UpdateDefaultUpdatedAt = vardataDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// vardataDescMimeType is the schema descriptor for mime_type field.
+	vardataDescMimeType := vardataFields[6].Descriptor()
+	// vardata.DefaultMimeType holds the default value on creation for the mime_type field.
+	vardata.DefaultMimeType = vardataDescMimeType.Default.(string)
 	// vardataDescID is the schema descriptor for id field.
 	vardataDescID := vardataFields[0].Descriptor()
 	// vardata.DefaultID holds the default value on creation for the id field.

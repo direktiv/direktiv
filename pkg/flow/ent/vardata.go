@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/google/uuid"
 )
 
 // VarData is the model entity for the VarData schema.
@@ -27,6 +27,8 @@ type VarData struct {
 	Hash string `json:"hash,omitempty"`
 	// Data holds the value of the "data" field.
 	Data []byte `json:"data,omitempty"`
+	// MimeType holds the value of the "mime_type" field.
+	MimeType string `json:"mime_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the VarDataQuery when eager-loading is set.
 	Edges VarDataEdges `json:"edges"`
@@ -59,7 +61,7 @@ func (*VarData) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case vardata.FieldSize:
 			values[i] = new(sql.NullInt64)
-		case vardata.FieldHash:
+		case vardata.FieldHash, vardata.FieldMimeType:
 			values[i] = new(sql.NullString)
 		case vardata.FieldCreatedAt, vardata.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -116,6 +118,12 @@ func (vd *VarData) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil {
 				vd.Data = *value
 			}
+		case vardata.FieldMimeType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field mime_type", values[i])
+			} else if value.Valid {
+				vd.MimeType = value.String
+			}
 		}
 	}
 	return nil
@@ -159,6 +167,8 @@ func (vd *VarData) String() string {
 	builder.WriteString(vd.Hash)
 	builder.WriteString(", data=")
 	builder.WriteString(fmt.Sprintf("%v", vd.Data))
+	builder.WriteString(", mime_type=")
+	builder.WriteString(vd.MimeType)
 	builder.WriteByte(')')
 	return builder.String()
 }

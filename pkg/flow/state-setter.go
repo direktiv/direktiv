@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
+
+	b64 "encoding/base64"
 
 	"github.com/direktiv/direktiv/pkg/model"
 )
@@ -75,9 +78,19 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		var data []byte
 
-		data, err = json.Marshal(x)
-		if err != nil {
-			return nil, NewInternalError(err)
+		if encodedData, ok := x.(string); ok && v.MimeType == "application/octet-stream" {
+			decodedData, decodeErr := b64.StdEncoding.DecodeString(encodedData)
+			if decodeErr != nil {
+				return nil, NewInternalError(fmt.Errorf("could not decode variable '%s' base64 string %w", v.Key, err))
+			}
+			data = decodedData
+		} else if v.MimeType == "text/plain; charset=utf-8" || v.MimeType == "text/plain" {
+			data = []byte(fmt.Sprint(x))
+		} else {
+			data, err = json.Marshal(x)
+			if err != nil {
+				return nil, NewInternalError(err)
+			}
 		}
 
 		// tx, err := engine.db.Tx(ctx)
@@ -130,7 +143,7 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data)
+		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data, v.MimeType)
 		if err != nil {
 			return nil, err
 		}

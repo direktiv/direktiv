@@ -10,12 +10,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/ent/predicate"
 	"github.com/direktiv/direktiv/ent/workflow"
 	"github.com/direktiv/direktiv/ent/workflowevents"
 	"github.com/direktiv/direktiv/ent/workfloweventswait"
 	"github.com/direktiv/direktiv/ent/workflowinstance"
+	"github.com/google/uuid"
 )
 
 // WorkflowEventsUpdate is the builder for updating WorkflowEvents entities.

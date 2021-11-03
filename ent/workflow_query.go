@@ -12,12 +12,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/ent/namespace"
 	"github.com/direktiv/direktiv/ent/predicate"
 	"github.com/direktiv/direktiv/ent/workflow"
 	"github.com/direktiv/direktiv/ent/workflowevents"
 	"github.com/direktiv/direktiv/ent/workflowinstance"
+	"github.com/google/uuid"
 )
 
 // WorkflowQuery is the builder for querying Workflow entities.
