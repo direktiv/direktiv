@@ -7,12 +7,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -528,6 +528,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := id.namespace()
 	path := id.path
 	key := req.GetKey()
@@ -595,7 +596,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), req.GetMimeType())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -642,6 +643,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
 	path := req.GetPath()
 	key := req.GetKey()
@@ -709,7 +711,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), req.GetMimeType())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}

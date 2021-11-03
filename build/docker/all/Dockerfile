@@ -1,6 +1,6 @@
 FROM alpine/git as build-env
 
-#RUN git clone https://github.com/vorteil/direktiv.git /direktiv
+#RUN git clone https://github.com/direktiv/direktiv.git /direktiv
 
 RUN mkdir /direktiv
 

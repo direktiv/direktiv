@@ -4,7 +4,7 @@ package namespacesecret
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

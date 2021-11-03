@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

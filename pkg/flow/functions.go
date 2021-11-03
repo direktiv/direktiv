@@ -3,9 +3,9 @@ package flow
 import (
 	"context"
 
+	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/lib/pq"
-	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/model"
 )
 
 func (flow *flow) functionsHeartbeat() {

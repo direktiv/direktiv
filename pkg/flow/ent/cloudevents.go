@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
 )
 
 // CloudEvents is the model entity for the CloudEvents schema.

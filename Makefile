@@ -154,7 +154,7 @@ push-%: image-%
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone https://github.com/vorteil/direktiv-ui.git; \
+		git clone https://github.com/direktiv/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
 		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \

@@ -10,11 +10,11 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
 )
 
 // LogMsgCreate is the builder for creating a LogMsg entity.

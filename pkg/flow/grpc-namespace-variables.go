@@ -7,10 +7,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -461,6 +461,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := id.namespace()
 	key := req.GetKey()
 
@@ -527,7 +528,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), req.GetMimeType())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -574,6 +575,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
 	key := req.GetKey()
 
@@ -640,7 +642,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), req.GetMimeType())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/pkg/metrics/ent/metrics"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
 )
 
 // MetricsCreate is the builder for creating a Metrics entity.

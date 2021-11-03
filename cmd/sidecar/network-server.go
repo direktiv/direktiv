@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const actionIDHeader = "Direktiv-ActionID"

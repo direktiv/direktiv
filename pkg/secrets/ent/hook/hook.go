@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/secrets/ent"
+	"github.com/direktiv/direktiv/pkg/secrets/ent"
 )
 
 // The NamespaceSecretFunc type is an adapter to allow the use of ordinary

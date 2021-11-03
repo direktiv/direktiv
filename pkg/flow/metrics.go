@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/metrics"
 )
 
 type metricsServer struct {

@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/model"
 )
 
 type parallelStateLogic struct {

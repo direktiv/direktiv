@@ -11,12 +11,12 @@ import (
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 
+	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
-	"github.com/vorteil/direktiv/pkg/dlog"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/metrics"
-	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const parcelSize = 0x100000

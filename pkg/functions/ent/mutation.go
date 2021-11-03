@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vorteil/direktiv/pkg/functions/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/functions/ent/services"
 
 	"entgo.io/ent"
 )

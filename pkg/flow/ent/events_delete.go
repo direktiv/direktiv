@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 )
 
 // EventsDelete is the builder for deleting a Events entity.

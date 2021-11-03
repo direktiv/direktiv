@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/model"
 )
 
 type instanceMemory struct {

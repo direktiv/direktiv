@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/ent/namespace"
+	"github.com/direktiv/direktiv/ent/workflow"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/workflow"
 )
 
 // NamespaceCreate is the builder for creating a Namespace entity.

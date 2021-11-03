@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	shellwords "github.com/mattn/go-shellwords"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"

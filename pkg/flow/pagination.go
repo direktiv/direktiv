@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
 type pagination struct {

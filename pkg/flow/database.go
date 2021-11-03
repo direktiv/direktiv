@@ -8,15 +8,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	entref "github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entino "github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	entns "github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	entref "github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
 )
 
 const latest = "latest"

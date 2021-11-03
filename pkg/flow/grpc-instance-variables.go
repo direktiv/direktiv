@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -398,7 +398,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	inc := internal.db.Instance
-
+	mimeType := req.GetMimeType()
 	instance := req.GetInstance()
 	key := req.GetKey()
 
@@ -465,7 +465,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes(), req.GetMimeType())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -513,6 +513,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
 	instance := req.GetInstance()
 	key := req.GetKey()
@@ -580,7 +581,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData(), req.GetMimeType())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData(), mimeType)
 	if err != nil {
 		return err
 	}

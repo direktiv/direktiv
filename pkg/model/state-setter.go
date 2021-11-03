@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 const DefaultVarMimeType = "application/json"

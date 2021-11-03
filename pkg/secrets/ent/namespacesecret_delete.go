@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/namespacesecret"
-	"github.com/vorteil/direktiv/pkg/secrets/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/predicate"
 )
 
 // NamespaceSecretDelete is the builder for deleting a NamespaceSecret entity.

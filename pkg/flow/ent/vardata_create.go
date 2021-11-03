@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
 )
 
 // VarDataCreate is the builder for creating a VarData entity.

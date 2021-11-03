@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/pkg/functions/ent/services"
+	"github.com/direktiv/direktiv/pkg/functions/ent/services"
 )
 
 // Services is the model entity for the Services schema.

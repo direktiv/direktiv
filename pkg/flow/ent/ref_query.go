@@ -12,12 +12,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
 )
 
 // RefQuery is the builder for querying Ref entities.

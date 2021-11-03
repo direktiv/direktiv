@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
 )
 
 // Ref is the model entity for the Ref schema.

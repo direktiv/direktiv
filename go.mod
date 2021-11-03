@@ -1,4 +1,4 @@
-module github.com/vorteil/direktiv
+module github.com/direktiv/direktiv
 
 go 1.15
 

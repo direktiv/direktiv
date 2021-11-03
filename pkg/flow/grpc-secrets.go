@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	secretsgrpc "github.com/vorteil/direktiv/pkg/secrets/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

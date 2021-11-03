@@ -14,13 +14,13 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
+	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gabriel-vasile/mimetype"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
-	"github.com/vorteil/direktiv/pkg/flow"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -3444,6 +3444,8 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	ctype := r.Header.Get("Content-Type")
+
 	var done int64
 
 	for done < total {
@@ -3461,6 +3463,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 			Key:       key,
 			TotalSize: total,
 			Data:      buf.Bytes(),
+			MimeType:  ctype,
 		})
 		if err != nil {
 			respond(w, nil, err)
@@ -3662,6 +3665,8 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	ctype := r.Header.Get("Content-Type")
+
 	var done int64
 
 	for done < total {
@@ -3680,6 +3685,7 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 			Key:       key,
 			TotalSize: total,
 			Data:      buf.Bytes(),
+			MimeType:  ctype,
 		})
 		if err != nil {
 			respond(w, nil, err)
@@ -3883,6 +3889,8 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	ctype := r.Header.Get("Content-Type")
+
 	var done int64
 
 	for done < total {
@@ -3901,6 +3909,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 			Key:       key,
 			TotalSize: total,
 			Data:      buf.Bytes(),
+			MimeType:  ctype,
 		})
 		if err != nil {
 			respond(w, nil, err)

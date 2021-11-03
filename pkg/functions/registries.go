@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	hash "github.com/mitchellh/hashstructure/v2"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

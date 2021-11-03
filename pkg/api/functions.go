@@ -34,12 +34,12 @@ import (
 	"net/http"
 	"strconv"
 
+	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/functions/grpc"
+	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
-	igrpc "github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/functions/grpc"
-	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -1116,12 +1116,12 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 // 	"strings"
 // 	"time"
 //
-// 	"github.com/vorteil/direktiv/pkg/functions"
-// 	"github.com/vorteil/direktiv/pkg/model"
+// 	"github.com/direktiv/direktiv/pkg/functions"
+// 	"github.com/direktiv/direktiv/pkg/model"
 //
 // 	"github.com/gorilla/mux"
-// 	"github.com/vorteil/direktiv/pkg/functions/grpc"
-// 	"github.com/vorteil/direktiv/pkg/ingress"
+// 	"github.com/direktiv/direktiv/pkg/functions/grpc"
+// 	"github.com/direktiv/direktiv/pkg/ingress"
 // )
 //
 // type functionAnnotationsRequest struct {

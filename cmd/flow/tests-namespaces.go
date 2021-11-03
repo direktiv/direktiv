@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -368,7 +368,7 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient, namespace stri
 		return err
 	}
 
-	deadline := time.Now().Add(time.Second*5)
+	deadline := time.Now().Add(time.Second * 5)
 
 	for {
 
@@ -402,7 +402,7 @@ func testServerLogsStream(ctx context.Context, c grpc.FlowClient, namespace stri
 		return err
 	}
 
-	deadline = time.Now().Add(time.Second*5)
+	deadline = time.Now().Add(time.Second * 5)
 
 	for {
 		resp, err := client.Recv()

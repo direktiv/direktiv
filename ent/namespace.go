@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/ent/namespace"
+	"github.com/direktiv/direktiv/ent/namespace"
 )
 
 // Namespace is the model entity for the Namespace schema.

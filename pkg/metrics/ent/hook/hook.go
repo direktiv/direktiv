@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/metrics/ent"
+	"github.com/direktiv/direktiv/pkg/metrics/ent"
 )
 
 // The MetricsFunc type is an adapter to allow the use of ordinary

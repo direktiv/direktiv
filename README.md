@@ -3,14 +3,14 @@
 <br />
 
 <p align="center">
-  <a href="https://github.com/vorteil/direktiv">
+  <a href="https://github.com/direktiv/direktiv">
     <img src="assets/images/direktiv-logo.png" alt="vorteil">
   </a>
     <h5 align="center">event-driven serverless orchestration</h5>
 </p>
 <hr/>
 
-[![Build](https://github.com/vorteil/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/vorteil/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/vorteil/direktiv)](https://goreportcard.com/report/github.com/vorteil/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
+[![Build](https://github.com/direktiv/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/direktiv/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/vorteil/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/direktiv/direktiv)](https://goreportcard.com/report/github.com/direktiv/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
 
 
 # What is direktiv?
@@ -26,8 +26,8 @@ Direktiv is an event-driven container orchestration engine, running on Kubernete
 
 Additional resources to get started:
 
-- Pre-built plugins are available from [https://github.com/vorteil/direktiv-apps](https://github.com/vorteil/direktiv-apps) - we're working hard to add more every day!
-- Examples for integration your own containers [https://github.com/vorteil/direktiv-apps/tree/main/examples](https://github.com/vorteil/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/docs/walkthrough/making-isolates.html).
+- Pre-built plugins are available from [https://github.com/direktiv/direktiv-apps](https://github.com/direktiv/direktiv-apps) - we're working hard to add more every day!
+- Examples for integration your own containers [https://github.com/direktiv/direktiv-apps/tree/main/examples](https://github.com/direktiv/direktiv-apps/tree/main/examples) with an explanation [here](https://docs.direktiv.io/docs/walkthrough/making-isolates.html).
 
 <table>
   <tr>
@@ -188,11 +188,11 @@ The UI displays the log output and state of the workflow from start to completio
 
 # Code of Conduct
 
-We have adopted the [Contributor Covenant](https://github.com/vorteil/.github/blob/master/CODE_OF_CONDUCT.md) code of conduct.
+We have adopted the [Contributor Covenant](https://github.com/direktiv/.github/blob/master/CODE_OF_CONDUCT.md) code of conduct.
 
 # Contributing
 
-Any feedback and contributions are welcome. Read our [contributing guidelines](https://github.com/vorteil/.github/blob/master/CONTRIBUTING.md) for details.
+Any feedback and contributions are welcome. Read our [contributing guidelines](https://github.com/direktiv/.github/blob/master/CONTRIBUTING.md) for details.
 
 # License
 
@@ -203,4 +203,4 @@ Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 * The [direktiv.io](https://direktiv.io/) website.
 * The direktiv [documentation](https://docs.direktiv.io/).
 * The direktiv [blog](https://blog.direktiv.io/).
-* The [Godoc](https://godoc.org/github.com/vorteil/direktiv) library documentation.
+* The [Godoc](https://godoc.org/github.com/direktiv/direktiv) library documentation.
