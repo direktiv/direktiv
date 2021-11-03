@@ -20,3 +20,8 @@ exclude_patterns:
 - "cmd/flow/test-api.go"
 - "**/*.pb.go"
 - "ui/"
+- "cmd/flow/tests-instance-common.go"
+- "cmd/flow/tests-vars.go"
+- "cmd/flow/tests-directories.go"
+- "cmd/flow/tests-instance-retries.go"
+- "pkg/jqer/jqer_test.go"
