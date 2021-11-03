@@ -14,11 +14,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"github.com/direktiv/direktiv/pkg/functions/ent"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/version"
+	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"

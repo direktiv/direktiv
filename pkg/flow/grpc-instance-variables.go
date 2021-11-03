@@ -663,7 +663,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		TotalSize:  int64(d.vdata.Size),
 		Scope:      BroadcastEventScopeInstance,
 	}
-	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeInstance, ctx, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, d.ns())
 	if err != nil {
 		return nil, err
 	}

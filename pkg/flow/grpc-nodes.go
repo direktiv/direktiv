@@ -333,7 +333,7 @@ respond:
 	resp.Node.Path = path
 
 	// Broadcast
-	err = flow.BroadcastDirectory(BroadcastEventTypeCreate, ctx,
+	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
 		broadcastDirectoryInput{
 			Path:   resp.Node.Path,
 			Parent: resp.Node.Parent,
@@ -399,7 +399,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
 
 		// Broadcast Event
-		err = flow.BroadcastWorkflow(BroadcastEventTypeDelete, ctx,
+		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
 			broadcastWorkflowInput{
 				Name:   d.base,
 				Path:   d.path,
@@ -412,7 +412,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		}
 	} else {
 		// Broadcast Event
-		err = flow.BroadcastDirectory(BroadcastEventTypeDelete, ctx,
+		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
 			broadcastDirectoryInput{
 				Path:   d.path,
 				Parent: d.dir,

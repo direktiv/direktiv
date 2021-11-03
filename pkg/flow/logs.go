@@ -8,9 +8,9 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 )
 

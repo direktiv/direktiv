@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/senseyeio/duration"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/senseyeio/duration"
 )
 
 type delayStateLogic struct {

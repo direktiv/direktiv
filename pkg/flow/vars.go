@@ -8,8 +8,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/gorilla/mux"
 )
 
 type vars struct {

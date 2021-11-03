@@ -213,7 +213,7 @@ func kubeLock(key string, blocking bool) (lockgate.LockHandle, error) {
 	}
 
 	if !acquired {
-		return lockgate.LockHandle{}, fmt.Errorf("lock %s not aquired", key)
+		return lockgate.LockHandle{}, fmt.Errorf("lock %s not acquired", key)
 	}
 
 	return lock, nil

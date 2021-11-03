@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
-	"github.com/gorilla/mux"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/gomodule/redigo/redis"
+	"github.com/gorilla/mux"
 )
 
 const (

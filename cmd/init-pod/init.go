@@ -9,8 +9,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/gorilla/mux"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/gorilla/mux"
 )
 
 func runAsInit() {

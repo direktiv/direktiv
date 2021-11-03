@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jinzhu/copier"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
+	"github.com/jinzhu/copier"
 )
 
 type Config struct {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/senseyeio/duration"
 	"github.com/direktiv/direktiv/pkg/model"
 	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
+	"github.com/senseyeio/duration"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

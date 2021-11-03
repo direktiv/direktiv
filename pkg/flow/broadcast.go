@@ -5,13 +5,16 @@ import (
 	"fmt"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/google/uuid"
 )
 
 const (
+	// BroadcastEventTypeCreate...
 	BroadcastEventTypeCreate string = "create"
+	// BroadcastEventTypeUpdate...
 	BroadcastEventTypeUpdate string = "update"
+	// BroadcastEventTypeDelete...
 	BroadcastEventTypeDelete string = "delete"
 
 	BroadcastEventTypeInstanceStarted string = "started"
@@ -20,16 +23,23 @@ const (
 )
 
 const (
-	BroadcastEventScopeWorkflow  string = "workflow"
+	// BroadcastEventScopeWorkflow...
+	BroadcastEventScopeWorkflow string = "workflow"
+	// BroadcastEventScopeNamespace...
 	BroadcastEventScopeNamespace string = "namespace"
-	BroadcastEventScopeInstance  string = "instance"
+	// BroadcastEventScopeInstance...
+	BroadcastEventScopeInstance string = "instance"
 )
 
 const (
-	BroadcastEventPrefixWorkflow  string = "workflow"
+	// BroadcastEventPrefixWorkflow...
+	BroadcastEventPrefixWorkflow string = "workflow"
+	// BroadcastEventPrefixDirectory...
 	BroadcastEventPrefixDirectory string = "directory"
-	BroadcastEventPrefixVariable  string = "variable"
-	BroadcastEventPrefixInstance  string = "instance"
+	// BroadcastEventPrefixVariable...
+	BroadcastEventPrefixVariable string = "variable"
+	// BroadcastEventPrefixInstance...
+	BroadcastEventPrefixInstance string = "instance"
 )
 
 type broadcastWorkflowInput struct {
@@ -39,7 +49,7 @@ type broadcastWorkflowInput struct {
 	Live   bool
 }
 
-func (flow *flow) BroadcastWorkflow(eventType string, ctx context.Context, input broadcastWorkflowInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, ns *ent.Namespace) error {
 	// BROADCAST EVENT
 
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixWorkflow, eventType)
@@ -68,7 +78,7 @@ type broadcastDirectoryInput struct {
 	Parent string
 }
 
-func (flow *flow) BroadcastDirectory(eventType string, ctx context.Context, input broadcastDirectoryInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, ns *ent.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixDirectory, eventType)
 	cfg, err := loadNSConfig([]byte(ns.Config))
@@ -99,7 +109,7 @@ type broadcastVariableInput struct {
 	Scope        string
 }
 
-func (flow *flow) BroadcastVariable(eventType string, eventScope string, ctx context.Context, input broadcastVariableInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, ns *ent.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s.%s", eventScope, BroadcastEventPrefixVariable, eventType)
 	cfg, err := loadNSConfig([]byte(ns.Config))

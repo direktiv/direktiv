@@ -384,7 +384,7 @@ type VariableReference struct {
 	Operation []string `json:"operation"`
 }
 
-// GetVariableReferences - Get all varaible referenced in getters & setters from a workflow
+// GetVariableReferences - Get all variable referenced in getters & setters from a workflow
 func (o *Workflow) GetVariableReferences() []VariableReference {
 	refs := make([]VariableReference, 0)
 	refsMap := make(map[string]VariableReference)

@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/metrics"
 )
 
 type metricsServer struct {
@@ -76,7 +76,7 @@ var (
 			Namespace: "direktiv",
 			Subsystem: "workflows",
 			Name:      "success_total",
-			Help:      "Total number of workflows sucessfully finished.",
+			Help:      "Total number of workflows successfully finished.",
 		},
 		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)

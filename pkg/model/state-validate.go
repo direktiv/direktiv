@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// ValidateState...
 type ValidateState struct {
 	StateCommon `yaml:",inline"`
 	Subject     string      `yaml:"subject,omitempty"`
@@ -13,6 +14,7 @@ type ValidateState struct {
 	Transition  string      `yaml:"transition,omitempty"`
 }
 
+// GetID...
 func (o *ValidateState) GetID() string {
 	return o.ID
 }
@@ -32,6 +34,7 @@ func (o *ValidateState) getTransitions() map[string]string {
 	return transitions
 }
 
+// GetTransitions...
 func (o *ValidateState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
@@ -47,6 +50,7 @@ func (o *ValidateState) GetTransitions() []string {
 	return transitions
 }
 
+// Validate...
 func (o *ValidateState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err
