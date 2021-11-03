@@ -76,7 +76,7 @@ var (
 			Namespace: "direktiv",
 			Subsystem: "workflows",
 			Name:      "success_total",
-			Help:      "Total number of workflows sucessfully finished.",
+			Help:      "Total number of workflows successfully finished.",
 		},
 		[]string{"direktiv_namespace", "direktiv_workflow", "direktiv_tenant"},
 	)

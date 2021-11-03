@@ -731,7 +731,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		TotalSize:    int64(d.vdata.Size),
 		Scope:        BroadcastEventScopeNamespace,
 	}
-	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeNamespace, ctx, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, d.ns())
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/secrets/ent"
 	entc "github.com/direktiv/direktiv/pkg/secrets/ent"
 	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // lib needs to imported for postgres
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

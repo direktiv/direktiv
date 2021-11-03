@@ -440,9 +440,9 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	}
 
 	if newVar {
-		err = flow.BroadcastVariable(BroadcastEventTypeCreate, broadcastInput.Scope, ctx, broadcastInput, ns)
+		err = flow.BroadcastVariable(ctx, BroadcastEventTypeCreate, broadcastInput.Scope, broadcastInput, ns)
 	} else {
-		err = flow.BroadcastVariable(BroadcastEventTypeUpdate, broadcastInput.Scope, ctx, broadcastInput, ns)
+		err = flow.BroadcastVariable(ctx, BroadcastEventTypeUpdate, broadcastInput.Scope, broadcastInput, ns)
 	}
 
 	return vdata, newVar, err
@@ -800,7 +800,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		TotalSize:    int64(d.vdata.Size),
 		Scope:        BroadcastEventScopeWorkflow,
 	}
-	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeNamespace, ctx, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, d.ns())
 	if err != nil {
 		return nil, err
 	}

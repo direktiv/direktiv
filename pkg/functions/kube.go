@@ -2171,7 +2171,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 
 //	reconstructServices : Checks to see if there are any records in the database of
 //	backed up services that are missing. If any missing services are found, they
-//	are recontructed
+//	are reconstructed
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
 
 	cs, err := fetchServiceAPI()
@@ -2247,7 +2247,7 @@ func prepareRevisionForExport(revision *servingv1.Revision) servingv1.Revision {
 	return exportedRevision
 }
 
-//	prepareRevisionForExport : Strips any annotations we no longer need, and switchs
+//	prepareRevisionForExport : Strips any annotations we no longer need, and switches
 //	latest service template with earliest revision to ease the
 //	process of reconstructing all revisions in the correct order.
 func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.Revision) *servingv1.Service {

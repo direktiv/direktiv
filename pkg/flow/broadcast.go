@@ -10,8 +10,11 @@ import (
 )
 
 const (
+	// BroadcastEventTypeCreate is an event type for listening to 'create'
 	BroadcastEventTypeCreate string = "create"
+	// BroadcastEventTypeUpdate is an event type for listening to 'update'
 	BroadcastEventTypeUpdate string = "update"
+	// BroadcastEventTypeDelete is an event type for listenting to 'delete'
 	BroadcastEventTypeDelete string = "delete"
 
 	BroadcastEventTypeInstanceStarted string = "started"
@@ -20,16 +23,23 @@ const (
 )
 
 const (
-	BroadcastEventScopeWorkflow  string = "workflow"
+	// BroadcastEventScopeWorkflow is the scope in which you want to listen for events
+	BroadcastEventScopeWorkflow string = "workflow"
+	// BroadcastEventScopeNamespace is the scope in which you want to listen for events
 	BroadcastEventScopeNamespace string = "namespace"
-	BroadcastEventScopeInstance  string = "instance"
+	// BroadcastEventScopeInstance is the scope in which you want to listen for events
+	BroadcastEventScopeInstance string = "instance"
 )
 
 const (
-	BroadcastEventPrefixWorkflow  string = "workflow"
+	// BroadcastEventPrefixWorkflow is the event prefix that is being broadcasted
+	BroadcastEventPrefixWorkflow string = "workflow"
+	// BroadcastEventPrefixDirectory is the event prefix that is being broadcasted
 	BroadcastEventPrefixDirectory string = "directory"
-	BroadcastEventPrefixVariable  string = "variable"
-	BroadcastEventPrefixInstance  string = "instance"
+	// BroadcastEventPrefixVariable is the event prefix that is being broadcasted
+	BroadcastEventPrefixVariable string = "variable"
+	// BroadcastEventPrefixInstance is the event prefix that is being broadcasted
+	BroadcastEventPrefixInstance string = "instance"
 )
 
 type broadcastWorkflowInput struct {
@@ -39,7 +49,7 @@ type broadcastWorkflowInput struct {
 	Live   bool
 }
 
-func (flow *flow) BroadcastWorkflow(eventType string, ctx context.Context, input broadcastWorkflowInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, ns *ent.Namespace) error {
 	// BROADCAST EVENT
 
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixWorkflow, eventType)
@@ -68,7 +78,7 @@ type broadcastDirectoryInput struct {
 	Parent string
 }
 
-func (flow *flow) BroadcastDirectory(eventType string, ctx context.Context, input broadcastDirectoryInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, ns *ent.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixDirectory, eventType)
 	cfg, err := loadNSConfig([]byte(ns.Config))
@@ -99,7 +109,7 @@ type broadcastVariableInput struct {
 	Scope        string
 }
 
-func (flow *flow) BroadcastVariable(eventType string, eventScope string, ctx context.Context, input broadcastVariableInput, ns *ent.Namespace) error {
+func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, ns *ent.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s.%s", eventScope, BroadcastEventPrefixVariable, eventType)
 	cfg, err := loadNSConfig([]byte(ns.Config))

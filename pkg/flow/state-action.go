@@ -288,17 +288,16 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 				NextState: sl.state.Transition,
 			}
 			return
-		} else {
-			engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns.", subflowID)
-			sd := &actionStateSavedata{
-				Op:       "do",
-				Id:       subflowID,
-				Attempts: attempt,
-			}
-			err = engine.SetMemory(ctx, im, sd)
-			if err != nil {
-				return
-			}
+		}
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns.", subflowID)
+		sd := &actionStateSavedata{
+			Op:       "do",
+			Id:       subflowID,
+			Attempts: attempt,
+		}
+		err = engine.SetMemory(ctx, im, sd)
+		if err != nil {
+			return
 		}
 	case model.NamespacedKnativeFunctionType:
 		fallthrough
@@ -338,12 +337,11 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 				NextState: sl.state.Transition,
 			}
 			return
-		} else {
-			engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns.", fn.GetID())
-			err = engine.doActionRequest(ctx, ar)
-			if err != nil {
-				return
-			}
+		}
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns.", fn.GetID())
+		err = engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
 		}
 
 	case model.IsolatedContainerFunctionType:
@@ -380,12 +378,11 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 				NextState: sl.state.Transition,
 			}
 			return
-		} else {
-			engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns.", fn.GetID())
-			err = engine.doActionRequest(ctx, ar)
-			if err != nil {
-				return
-			}
+		}
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns.", fn.GetID())
+		err = engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
 		}
 	default:
 		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))

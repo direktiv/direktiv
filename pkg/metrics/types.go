@@ -2,24 +2,32 @@ package metrics
 
 import "time"
 
+// NextEnum could be the state ended, transitioned or retried
 type NextEnum int
 
 const (
-	NextEnd        NextEnum = iota // State has ended
-	NextTransition                 // State transitioned
-	NextRetry                      // State retried
+	// NextEnd the state has ended
+	NextEnd NextEnum = iota // State has ended
+	// NextTransition the state has transitioned
+	NextTransition // State transitioned
+	// NextRetry the state has retried
+	NextRetry // State retried
 )
 
+// NextEnums an array of all the NextEnum
 var NextEnums = []NextEnum{
 	NextEnd, NextTransition, NextRetry,
 }
 
+// InvokerEnum the enum for what invoked the workflow
 type InvokerEnum int
 
 const (
+	// InvokerUnknown if the invoker is unknown
 	InvokerUnknown InvokerEnum = iota
 )
 
+// InvokerEnumLabels an array of all the InvokerEnum
 var InvokerEnumLabels = map[InvokerEnum]string{
 	InvokerUnknown: "unknown",
 }
