@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"net"
 	"net/http"
 	"time"
 
@@ -33,6 +34,16 @@ func (srv *NetworkServer) Start() {
 		wait.WithDebug(false),
 	).Do([]string{"127.0.0.1:8080"}) {
 		log.Error("user container is not available at port 8080")
+	}
+
+	// knative does not support startup probes, so we need to wait heer for port 8080
+	for {
+		conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
+		if conn != nil {
+			conn.Close()
+			break
+		}
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	srv.router = mux.NewRouter()
