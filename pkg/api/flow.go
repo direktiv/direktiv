@@ -112,9 +112,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target namespace to update'
 	// - in: body
 	//   name: Config Payload
-	//   description: |
-	//     Payload that contains the config information to set.
-	//     Note: This payload only need to contain the properities you wish to set.
+	//   description: "Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set."
 	//   schema:
 	//     example:
 	//       broadcast:
@@ -193,6 +191,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// parameters:
 	// - in: body
 	//   name: JQ payload
+	//   required: true
 	//   description: Payload that contains both the JSON data to manipulate and jq query.
 	//   schema:
 	//     example:
@@ -500,7 +499,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Set the value sorted in a namespace variable.
 	//   If the target variable does not exists, it will be created.
-	//   Variable data can be anything so long as it can be represented as a string.
+	//   Variable data can be anything.
 	// summary: Set a Namespace Variable
 	// consumes:
 	// - text/plain
@@ -517,6 +516,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target variable'
 	// - in: body
 	//   name: data
+	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
 	//     example:
@@ -600,7 +600,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Set the value sorted in a instance variable.
 	//   If the target variable does not exists, it will be created.
-	//   Variable data can be anything so long as it can be represented as a string.
+	//   Variable data can be anything.
 	// summary: Set a Instance Variable
 	// consumes:
 	// - text/plain
@@ -622,6 +622,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target instance'
 	// - in: body
 	//   name: data
+	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
 	//     example:
@@ -710,7 +711,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Set the value sorted in a workflow variable.
 	//   If the target variable does not exists, it will be created.
-	//   Variable data can be anything so long as it can be represented as a string.
+	//   Variable data can be anything.
 	// summary: Set a Workflow Variable
 	// consumes:
 	// - text/plain
@@ -732,6 +733,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'path to target workflow'
 	// - in: body
 	//   name: data
+	//   required: true
 	//   description: "Payload that contains variable data."
 	//   schema:
 	//     example:
@@ -807,6 +809,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target secret'
 	// - in: body
 	//   name: Secret Payload
+	//   required: true
 	//   description: "Payload that contains secret data."
 	//   schema:
 	//     example: 7F8E7B0124ACB2BD20B383DE0756C7C0
@@ -976,6 +979,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'target namespace'
 	// - in: body
 	//   name: cloudevent
+	//   required: true
 	//   description: Cloud Event request to be sent.
 	//   schema:
 	//     type: object
@@ -1218,6 +1222,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'path to target workflow'
 	// - in: body
 	//   name: Cloud Event Logger
+	//   required: true
 	//   description: Cloud event logger to target
 	//   schema:
 	//     example:
@@ -1253,6 +1258,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'path to target workflow'
 	// - in: body
 	//   name: Workflow Live Status
+	//   required: true
 	//   description: Whether or not the workflow is alive or disabled
 	//   schema:
 	//     example:
@@ -1293,6 +1299,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: 'path to target workflow'
 	// - in: body
 	//   name: Workflow Input
+	//   required: true
 	//   description: The input of this workflow instance
 	//   schema:
 	//     example:
@@ -1352,6 +1359,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   description: "If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string."
 	// - in: body
 	//   name: Workflow Input
+	//   required: true
 	//   description: The input of this workflow instance
 	//   schema:
 	//     example:

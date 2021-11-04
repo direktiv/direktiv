@@ -440,7 +440,7 @@
     },
     "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}": {
       "get": {
-        "description": "Watch a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
+        "description": "Watch a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "produces": [
           "text/event-stream"
         ],
@@ -479,7 +479,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
+        "description": "Delete a namespace scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -517,7 +517,7 @@
     },
     "/api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration}/pods": {
       "get": {
-        "description": "List a revisions pods of a namespace scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\n",
+        "description": "List a revisions pods of a namespace scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.\n",
         "tags": [
           "Namespace Services"
         ],
@@ -600,7 +600,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision": {
       "get": {
-        "description": "Get a workflow scoped knative service revision.\nThis will return details on a single revision.\nThe target revision generation (rev query) is the number suffix on a revision.\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.\n",
+        "description": "Get a workflow scoped knative service revision.\nThis will return details on a single revision.\nThe target revision generation (rev query) is the number suffix on a revision.\nExample: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -690,7 +690,7 @@
     },
     "/api/functions/namespaces/{namespace}/tree/{workflow}?op=pods": {
       "get": {
-        "description": "List a revisions pods of a workflow scoped knative service.\nThe target revision generation (rev query) is the number suffix on a revision.\nExample: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.\n",
+        "description": "List a revisions pods of a workflow scoped knative service.\nThe target revision generation (rev query) is the number suffix on a revision.\nExample: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.\n",
         "tags": [
           "Workflow Services"
         ],
@@ -975,7 +975,7 @@
     },
     "/api/functions/{serviceName}/revisions/{revisionGeneration}": {
       "get": {
-        "description": "Watch a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
+        "description": "Watch a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.\n",
         "produces": [
           "text/event-stream"
         ],
@@ -1007,7 +1007,7 @@
         }
       },
       "delete": {
-        "description": "Delete a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
+        "description": "Delete a global scoped knative service revision.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.\nNote: Revisions with traffic cannot be deleted.\n",
         "tags": [
           "Global Services"
         ],
@@ -1038,7 +1038,7 @@
     },
     "/api/functions/{serviceName}/revisions/{revisionGeneration}/pods": {
       "get": {
-        "description": "List a revisions pods of a global scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .\n",
+        "description": "List a revisions pods of a global scoped knative service.\nThe target revision generation is the number suffix on a revision.\nExample: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .\n",
         "tags": [
           "Global Services"
         ],
@@ -1080,6 +1080,7 @@
             "description": "Payload that contains both the JSON data to manipulate and jq query.",
             "name": "JQ payload",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "required": [
@@ -1239,6 +1240,7 @@
             "description": "Cloud Event request to be sent.",
             "name": "cloudevent",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object"
             }
@@ -1290,7 +1292,7 @@
             "required": true
           },
           {
-            "description": "Payload that contains the config information to set.\nNote: This payload only need to contain the properities you wish to set.\n",
+            "description": "Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set.",
             "name": "Config Payload",
             "in": "body",
             "schema": {
@@ -1598,7 +1600,7 @@
         }
       },
       "put": {
-        "description": "Set the value sorted in a instance variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.\n",
+        "description": "Set the value sorted in a instance variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything.\n",
         "consumes": [
           "text/plain"
         ],
@@ -1633,6 +1635,7 @@
             "description": "Payload that contains variable data.",
             "name": "data",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "string",
               "example": {
@@ -1846,6 +1849,7 @@
             "description": "Payload that contains registry data",
             "name": "Registry Payload",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "required": [
@@ -1934,6 +1938,7 @@
             "description": "Payload that contains secret data.",
             "name": "Secret Payload",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "string",
               "example": "7F8E7B0124ACB2BD20B383DE0756C7C0"
@@ -2263,6 +2268,7 @@
             "description": "The input of this workflow instance",
             "name": "Workflow Input",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "example": {
@@ -2448,7 +2454,7 @@
     },
     "/api/namespaces/{namespace}/tree/{workflow}?op=set-var": {
       "put": {
-        "description": "Set the value sorted in a workflow variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.\n",
+        "description": "Set the value sorted in a workflow variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything.\n",
         "consumes": [
           "text/plain"
         ],
@@ -2483,6 +2489,7 @@
             "description": "Payload that contains variable data.",
             "name": "data",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "string",
               "example": {
@@ -2525,6 +2532,7 @@
             "description": "Cloud event logger to target",
             "name": "Cloud Event Logger",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "required": [
@@ -2576,6 +2584,7 @@
             "description": "Whether or not the workflow is alive or disabled",
             "name": "Workflow Live Status",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "required": [
@@ -2804,6 +2813,7 @@
             "description": "The input of this workflow instance",
             "name": "Workflow Input",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "example": {
@@ -2878,7 +2888,7 @@
         }
       },
       "put": {
-        "description": "Set the value sorted in a namespace variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything so long as it can be represented as a string.\n",
+        "description": "Set the value sorted in a namespace variable.\nIf the target variable does not exists, it will be created.\nVariable data can be anything.\n",
         "consumes": [
           "text/plain"
         ],
@@ -2906,6 +2916,7 @@
             "description": "Payload that contains variable data.",
             "name": "data",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "string",
               "example": {
@@ -2968,7 +2979,7 @@
   },
   "definitions": {
     "CreateGlobalServiceBody": {
-      "description": "CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "description": "CreateGlobalServiceBody CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
       "type": "object",
       "required": [
         "cmd",
@@ -3003,15 +3014,15 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[small medium large]"
+            "[[small medium large]]"
           ],
           "x-go-name": "Size"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "CreateNamespaceServiceBody": {
-      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "description": "CreateNamespaceServiceBody CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
       "type": "object",
       "required": [
         "cmd",
@@ -3046,15 +3057,15 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[small medium large]"
+            "[[small medium large]]"
           ],
           "x-go-name": "Size"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "DeleteRegistryBody": {
-      "description": "DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
       "type": "object",
       "required": [
         "reg"
@@ -3066,27 +3077,24 @@
           "x-go-name": "Reg"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
     },
     "ErrorResponse": {
-      "description": "ErrorResponse ErrorResponse error response",
       "type": "object",
       "properties": {
         "Message": {
-          "description": "error",
           "type": "string",
           "x-go-name": "Error"
         },
         "StatusCode": {
-          "description": "status code",
           "type": "integer",
           "format": "int64"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "JqPlaygroundBody": {
-      "description": "JqPlaygroundBody JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
+      "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
       "type": "object",
       "required": [
         "data",
@@ -3104,10 +3112,10 @@
           "x-go-name": "Query"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
-      "description": "OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
+      "description": "OkBody OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
       "type": "object",
       "additionalProperties": {
         "type": "object"
@@ -3115,7 +3123,7 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "SetNamespaceConfigBody": {
-      "description": "SetNamespaceConfigBody SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
+      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
       "type": "object",
       "properties": {
         "broadcast": {
@@ -3124,7 +3132,7 @@
           "x-go-name": "Broadcast"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
     },
     "SetWorkflowCloudEventLogsBody": {
       "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
@@ -3142,7 +3150,7 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
     },
     "ToggleWorkflowBody": {
-      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
+      "description": "ToggleWorkflowBody ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
       "type": "object",
       "required": [
         "live"
@@ -3154,90 +3162,10 @@
           "x-go-name": "Live"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateGlobalServiceBody": {
-      "description": "UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
-      "type": "object",
-      "required": [
-        "cmd",
-        "image",
-        "minScale",
-        "size",
-        "trafficPercent"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "Target image a service will use",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "Minimum amount of service pods to be live",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MinScale"
-        },
-        "size": {
-          "description": "Size of created service pods",
-          "type": "string",
-          "enum": [
-            "[small medium large]"
-          ],
-          "x-go-name": "Size"
-        },
-        "trafficPercent": {
-          "description": "Traffic percentage new revision will use",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "TrafficPercent"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateGlobalServiceTrafficBody": {
-      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
-      "type": "object",
-      "required": [
-        "values"
-      ],
-      "properties": {
-        "values": {
-          "description": "List of revision traffic targets",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UpdateGlobalServiceTrafficParamsBodyValuesItems0"
-          },
-          "x-go-name": "Values"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
-      "type": "object",
-      "properties": {
-        "percent": {
-          "description": "Target traffice percentage",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Percent"
-        },
-        "revision": {
-          "description": "Target service revision",
-          "type": "string",
-          "x-go-name": "Revision"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateNamespaceServiceBody": {
-      "description": "UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "description": "UpdateGlobalServiceBody UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
       "type": "object",
       "required": [
         "cmd",
@@ -3280,8 +3208,8 @@
       },
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
-    "UpdateNamespaceServiceTrafficBody": {
-      "description": "UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
+    "UpdateGlobalServiceTrafficBody": {
+      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
       "type": "object",
       "required": [
         "values"
@@ -3291,15 +3219,15 @@
           "description": "List of revision traffic targets",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/UpdateNamespaceServiceTrafficParamsBodyValuesItems0"
+            "$ref": "#/definitions/UpdateGlobalServiceTrafficParamsBodyValuesItems0"
           },
           "x-go-name": "Values"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
     },
-    "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",
+    "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
+      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
       "type": "object",
       "properties": {
         "percent": {
@@ -3314,7 +3242,87 @@
           "x-go-name": "Revision"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+    },
+    "UpdateNamespaceServiceBody": {
+      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "type": "object",
+      "required": [
+        "cmd",
+        "image",
+        "minScale",
+        "size",
+        "trafficPercent"
+      ],
+      "properties": {
+        "cmd": {
+          "description": "cmd",
+          "type": "string",
+          "x-go-name": "Cmd"
+        },
+        "image": {
+          "description": "Target image a service will use",
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "minScale": {
+          "description": "Minimum amount of service pods to be live",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "MinScale"
+        },
+        "size": {
+          "description": "Size of created service pods",
+          "type": "string",
+          "enum": [
+            "[small medium large]"
+          ],
+          "x-go-name": "Size"
+        },
+        "trafficPercent": {
+          "description": "Traffic percentage new revision will use",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TrafficPercent"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "UpdateNamespaceServiceTrafficBody": {
+      "description": "UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
+      "type": "object",
+      "required": [
+        "values"
+      ],
+      "properties": {
+        "values": {
+          "description": "List of revision traffic targets",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateNamespaceServiceTrafficParamsBodyValuesItems0"
+          },
+          "x-go-name": "Values"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+    },
+    "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
+      "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",
+      "type": "object",
+      "properties": {
+        "percent": {
+          "description": "Target traffice percentage",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Percent"
+        },
+        "revision": {
+          "description": "Target service revision",
+          "type": "string",
+          "x-go-name": "Revision"
+        }
+      },
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
     },
     "UpdateServiceRequest": {
       "description": "UpdateServiceRequest UpdateServiceRequest update service request",
@@ -3381,7 +3389,7 @@
           "x-go-name": "Image"
         },
         "minScale": {
-          "description": "min scale",
+          "description": "minScale",
           "type": "integer",
           "format": "int32",
           "x-go-name": "MinScale"
@@ -3393,7 +3401,7 @@
           "x-go-name": "Size"
         },
         "trafficPercent": {
-          "description": "traffic percent",
+          "description": "trafficPercent",
           "type": "integer",
           "format": "int64",
           "x-go-name": "TrafficPercent"

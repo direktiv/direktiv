@@ -103,7 +103,7 @@ func (a *Client) CreateGlobalService(params *CreateGlobalServiceParams, authInfo
 
   Delete a global scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 Note: Revisions with traffic cannot be deleted.
 
 */
@@ -274,7 +274,7 @@ func (a *Client) GetGlobalServiceList(params *GetGlobalServiceListParams, authIn
 
   List a revisions pods of a global scoped knative service.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
 
 */
 func (a *Client) ListGlobalServiceRevisionPods(params *ListGlobalServiceRevisionPodsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListGlobalServiceRevisionPodsOK, error) {
@@ -405,7 +405,7 @@ func (a *Client) UpdateGlobalServiceTraffic(params *UpdateGlobalServiceTrafficPa
 
   Watch a global scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 
 */
