@@ -7,6 +7,7 @@ require (
 	entgo.io/ent v0.9.1
 	github.com/99designs/gqlgen v0.13.0
 	github.com/TwinProduction/go-away v1.1.4
+	github.com/antelman107/net-wait-go v0.0.0-20210623112055-cf684aebda7b // indirect
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1 // indirect

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/antelman107/net-wait-go/wait"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 )
@@ -23,6 +24,16 @@ type NetworkServer struct {
 
 // Start starts the network server for the sidecar
 func (srv *NetworkServer) Start() {
+
+	if !wait.New(
+		wait.WithProto("tcp"),
+		wait.WithWait(200*time.Millisecond),
+		wait.WithBreak(50*time.Millisecond),
+		wait.WithDeadline(120*time.Second),
+		wait.WithDebug(false),
+	).Do([]string{"127.0.0.1:8080"}) {
+		log.Error("user container is not available at port 8080")
+	}
 
 	srv.router = mux.NewRouter()
 
