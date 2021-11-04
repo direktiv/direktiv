@@ -22,18 +22,30 @@ type NetworkServer struct {
 	stopper chan *time.Time
 }
 
+func waitForUserContainer() {
+
+	tick := time.Tick(250 * time.Millisecond)
+	timeout := time.After(2 * time.Minute)
+
+	for {
+		select {
+		case <-timeout:
+			panic("user container did not start in time")
+		case <-tick:
+			conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
+			if conn != nil {
+				log.Debug("user container connected")
+				conn.Close()
+				return
+			}
+		}
+	}
+}
+
 // Start starts the network server for the sidecar
 func (srv *NetworkServer) Start() {
 
-	// knative does not support startup probes, so we need to wait heer for port 8080
-	for {
-		conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
-		if conn != nil {
-			conn.Close()
-			break
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
+	waitForUserContainer()
 
 	srv.router = mux.NewRouter()
 
