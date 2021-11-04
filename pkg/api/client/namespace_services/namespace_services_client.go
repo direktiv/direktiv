@@ -103,7 +103,7 @@ func (a *Client) CreateNamespaceService(params *CreateNamespaceServiceParams, au
 
   Delete a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: Revisions with traffic cannot be deleted.
 
 */
@@ -274,7 +274,7 @@ func (a *Client) GetNamespaceServiceList(params *GetNamespaceServiceListParams, 
 
   List a revisions pods of a namespace scoped knative service.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 
 */
 func (a *Client) ListNamespaceServiceRevisionPods(params *ListNamespaceServiceRevisionPodsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListNamespaceServiceRevisionPodsOK, error) {
@@ -407,7 +407,7 @@ func (a *Client) UpdateNamespaceServiceTraffic(params *UpdateNamespaceServiceTra
 
   Watch a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 
 */

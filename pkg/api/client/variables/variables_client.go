@@ -440,7 +440,7 @@ func (a *Client) GetWorkflowVariables(params *GetWorkflowVariablesParams, authIn
 
   Set the value sorted in a instance variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 */
 func (a *Client) SetInstanceVariable(params *SetInstanceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetInstanceVariableOK, error) {
@@ -484,7 +484,7 @@ func (a *Client) SetInstanceVariable(params *SetInstanceVariableParams, authInfo
 
   Set the value sorted in a namespace variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 */
 func (a *Client) SetNamespaceVariable(params *SetNamespaceVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetNamespaceVariableOK, error) {
@@ -528,7 +528,7 @@ func (a *Client) SetNamespaceVariable(params *SetNamespaceVariableParams, authIn
 
   Set the value sorted in a workflow variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 */
 func (a *Client) SetWorkflowVariable(params *SetWorkflowVariableParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SetWorkflowVariableOK, error) {

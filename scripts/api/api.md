@@ -279,7 +279,7 @@ Input query parameters are only read if the request has no body.
 | ctype | `query` | string | `string` |  |  |  | Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way. |
 | field | `query` | string | `string` |  |  |  | If provided, instead of returning the entire output json the response body will contain the single top-level json field |
 | raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
-| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
+| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | The input of this workflow instance |
 
 #### All responses
 
@@ -311,7 +311,7 @@ The body of this request should follow the cloud event core specification define
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| cloudevent | `body` | [interface{}](#interface) | `interface{}` | |  | | Cloud Event request to be sent. |
+| cloudevent | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | Cloud Event request to be sent. |
 
 #### All responses
 
@@ -570,7 +570,7 @@ Create a namespace secret.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | secret | `path` | string | `string` |  | ✓ |  | target secret |
-| Secret Payload | `body` | string | `string` | |  | | Payload that contains secret data. |
+| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data. |
 
 #### All responses
 
@@ -658,7 +658,7 @@ DELETE /api/functions/{serviceName}/revisions/{revisionGeneration}
 
 Delete a global scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 Note: Revisions with traffic cannot be deleted.
 
 
@@ -794,7 +794,7 @@ DELETE /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{r
 
 Delete a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: Revisions with traffic cannot be deleted.
 
 
@@ -939,7 +939,7 @@ Delete a namespace container registry
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| Registry Payload | `body` | [DeleteRegistryBody](#delete-registry-body) | `DeleteRegistryBody` | |  | | Payload that contains registry data |
+| Registry Payload | `body` | [DeleteRegistryBody](#delete-registry-body) | `DeleteRegistryBody` | | ✓ | | Payload that contains registry data |
 
 #### All responses
 
@@ -1063,7 +1063,7 @@ Executes a workflow with optionally some input provided in the request body as j
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 | op | `query` | string | `string` |  | ✓ | `"execute"` | the operation for the api |
-| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
+| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | The input of this workflow instance |
 
 #### All responses
 
@@ -1697,7 +1697,7 @@ GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision
 Get a workflow scoped knative service revision.
 This will return details on a single revision.
 The target revision generation (rev query) is the number suffix on a revision.
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 
 
 #### Parameters
@@ -1873,7 +1873,7 @@ JQ Playground is a sandbox where you can test jq queries with custom data.
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| JQ payload | `body` | [JqPlaygroundBody](#jq-playground-body) | `JqPlaygroundBody` | |  | | Payload that contains both the JSON data to manipulate and jq query. |
+| JQ payload | `body` | [JqPlaygroundBody](#jq-playground-body) | `JqPlaygroundBody` | | ✓ | | Payload that contains both the JSON data to manipulate and jq query. |
 
 #### All responses
 
@@ -1927,7 +1927,7 @@ GET /api/functions/{serviceName}/revisions/{revisionGeneration}/pods
 
 List a revisions pods of a global scoped knative service.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
 
 
 #### Parameters
@@ -1959,7 +1959,7 @@ GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revi
 
 List a revisions pods of a namespace scoped knative service.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 
 
 #### Parameters
@@ -1992,7 +1992,7 @@ GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods
 
 List a revisions pods of a workflow scoped knative service.
 The target revision generation (rev query) is the number suffix on a revision.
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 
 
 #### Parameters
@@ -2238,7 +2238,7 @@ PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable}
 
 Set the value sorted in a instance variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 
 #### Consumes
@@ -2251,7 +2251,7 @@ Variable data can be anything so long as it can be represented as a string.
 | instance | `path` | string | `string` |  | ✓ |  | target instance |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
-| data | `body` | string | `string` | |  | | Payload that contains variable data. |
+| data | `body` | string | `string` | | ✓ | | Payload that contains variable data. |
 
 #### All responses
 
@@ -2281,8 +2281,7 @@ Sets a namespace config.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace to update |
-| Config Payload | `body` | [SetNamespaceConfigBody](#set-namespace-config-body) | `SetNamespaceConfigBody` | |  | | Payload that contains the config information to set.
-Note: This payload only need to contain the properities you wish to set. |
+| Config Payload | `body` | [SetNamespaceConfigBody](#set-namespace-config-body) | `SetNamespaceConfigBody` | |  | | Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set. |
 
 #### All responses
 
@@ -2323,7 +2322,7 @@ PUT /api/namespaces/{namespace}/vars/{variable}
 
 Set the value sorted in a namespace variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 
 #### Consumes
@@ -2335,7 +2334,7 @@ Variable data can be anything so long as it can be represented as a string.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
-| data | `body` | string | `string` | |  | | Payload that contains variable data. |
+| data | `body` | string | `string` | | ✓ | | Payload that contains variable data. |
 
 #### All responses
 
@@ -2370,7 +2369,7 @@ https://docs.direktiv.io/docs/examples/logging.html
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
-| Cloud Event Logger | `body` | [SetWorkflowCloudEventLogsBody](#set-workflow-cloud-event-logs-body) | `SetWorkflowCloudEventLogsBody` | |  | | Cloud event logger to target |
+| Cloud Event Logger | `body` | [SetWorkflowCloudEventLogsBody](#set-workflow-cloud-event-logs-body) | `SetWorkflowCloudEventLogsBody` | | ✓ | | Cloud event logger to target |
 
 #### All responses
 
@@ -2411,7 +2410,7 @@ PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var
 
 Set the value sorted in a workflow variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 
 #### Consumes
@@ -2424,7 +2423,7 @@ Variable data can be anything so long as it can be represented as a string.
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 | var | `query` | string | `string` |  | ✓ |  | target variable |
-| data | `body` | string | `string` | |  | | Payload that contains variable data. |
+| data | `body` | string | `string` | | ✓ | | Payload that contains variable data. |
 
 #### All responses
 
@@ -2456,7 +2455,7 @@ Disabled workflows cannot be invoked. This includes start event and scheduled wo
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
-| Workflow Live Status | `body` | [ToggleWorkflowBody](#toggle-workflow-body) | `ToggleWorkflowBody` | |  | | Whether or not the workflow is alive or disabled |
+| Workflow Live Status | `body` | [ToggleWorkflowBody](#toggle-workflow-body) | `ToggleWorkflowBody` | | ✓ | | Whether or not the workflow is alive or disabled |
 
 #### All responses
 
@@ -2793,7 +2792,7 @@ GET /api/functions/{serviceName}/revisions/{revisionGeneration}
 
 Watch a global scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 
 
@@ -2862,7 +2861,7 @@ GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revi
 
 Watch a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 
 
@@ -3052,8 +3051,12 @@ Status: OK
 ### <span id="create-global-service-body"></span> CreateGlobalServiceBody
 
 
-> CreateGlobalServiceBody create global service body
-Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+> CreateGlobalServiceBody CreateGlobalServiceBody create global service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
   
 
 
@@ -3075,8 +3078,12 @@ Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-re
 ### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
 
 
-> CreateNamespaceServiceBody create namespace service body
-Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+> CreateNamespaceServiceBody CreateNamespaceServiceBody create namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
   
 
 
@@ -3098,8 +3105,12 @@ Example: {"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-re
 ### <span id="delete-registry-body"></span> DeleteRegistryBody
 
 
-> DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
-Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+> DeleteRegistryBody delete registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
   
 
 
@@ -3117,10 +3128,7 @@ Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 ### <span id="error-response"></span> ErrorResponse
 
 
-> ErrorResponse ErrorResponse error response
   
-
-
 
 
 
@@ -3128,16 +3136,20 @@ Example: {"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| Error | string| `string` |  | | error |  |
-| StatusCode | int64 (formatted integer)| `int64` |  | | status code |  |
+| Error | string| `string` |  | |  |  |
+| StatusCode | int64 (formatted integer)| `int64` |  | |  |  |
 
 
 
 ### <span id="jq-playground-body"></span> JqPlaygroundBody
 
 
-> JqPlaygroundBody JqPlaygroundBody jq playground body
-Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
+> JqPlaygroundBody jq playground body
+
+**Example**
+```
+{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
+```
   
 
 
@@ -3156,7 +3168,7 @@ Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(sel
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody OkBody OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
@@ -3166,8 +3178,12 @@ Example: {"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(sel
 ### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
 
 
-> SetNamespaceConfigBody SetNamespaceConfigBody set namespace config body
-Example: {"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
+> SetNamespaceConfigBody set namespace config body
+
+**Example**
+```
+{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
+```
   
 
 
@@ -3186,7 +3202,11 @@ Example: {"broadcast":{"directory.create":false,"directory.delete":false,"instan
 
 
 > SetWorkflowCloudEventLogsBody set workflow cloud event logs body
-Example: {"logger":"mylog"}
+
+**Example**
+```
+{"logger":"mylog"}
+```
   
 
 
@@ -3204,8 +3224,12 @@ Example: {"logger":"mylog"}
 ### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
 
 
-> ToggleWorkflowBody toggle workflow body
-Example: {"live":false}
+> ToggleWorkflowBody ToggleWorkflowBody toggle workflow body
+
+**Example**
+```
+{"live":false}
+```
   
 
 
@@ -3223,8 +3247,12 @@ Example: {"live":false}
 ### <span id="update-global-service-body"></span> UpdateGlobalServiceBody
 
 
-> UpdateGlobalServiceBody update global service body
-Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+> UpdateGlobalServiceBody UpdateGlobalServiceBody update global service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+```
   
 
 
@@ -3247,7 +3275,11 @@ Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small",
 
 
 > UpdateGlobalServiceTrafficBody update global service traffic body
-Example: {"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
+
+**Example**
+```
+{"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
+```
   
 
 
@@ -3284,8 +3316,12 @@ Example: {"values":[{"percent":60,"revision":"global-fast-request-00002"},{"perc
 ### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
 
 
-> UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body
-Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+> UpdateNamespaceServiceBody update namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+```
   
 
 
@@ -3307,8 +3343,12 @@ Example: {"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small",
 ### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
 
 
-> UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
-Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
+> UpdateNamespaceServiceTrafficBody update namespace service traffic body
+
+**Example**
+```
+{"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
+```
   
 
 
@@ -3326,7 +3366,7 @@ Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00
 ### <span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0
 
 
-> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
+> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
   
 
 
@@ -3358,9 +3398,9 @@ Example: {"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00
 |------|------|---------|:--------:| ------- |-------------|---------|
 | Cmd | string| `string` | ✓ | | cmd |  |
 | Image | string| `string` | ✓ | | image |  |
-| MinScale | int32 (formatted integer)| `int32` | ✓ | | min scale |  |
+| MinScale | int32 (formatted integer)| `int32` | ✓ | | minScale |  |
 | Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
-| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | traffic percent |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | trafficPercent |  |
 
 
 

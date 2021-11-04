@@ -92,7 +92,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   List a revisions pods of a global scoped knative service.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .
+	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
 	// summary: Get Global Service Revision Pods List
 	// tags:
 	// - "Global Services"
@@ -159,7 +159,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Watch a global scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 	// summary: Watch Global Service Revision
 	// tags:
@@ -383,7 +383,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Delete a global scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: Revisions with traffic cannot be deleted.
 	// summary: Delete Global Service Revision
 	// tags:
@@ -429,7 +429,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   List a revisions pods of a namespace scoped knative service.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 	// summary: Get Namespace Service Revision Pods List
 	// tags:
 	// - "Namespace Services"
@@ -511,7 +511,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Watch a namespace scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 	// summary: Watch Namespace Service Revision
 	// tags:
@@ -764,7 +764,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Delete a namespace scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: Revisions with traffic cannot be deleted.
 	// summary: Delete Namespace Service Revision
 	// tags:
@@ -820,7 +820,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   List a revisions pods of a workflow scoped knative service.
 	//   The target revision generation (rev query) is the number suffix on a revision.
-	//   Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+	//   Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 	// summary: Get Workflow Service Revision Pods List
 	// tags:
 	// - "Workflow Services"
@@ -923,7 +923,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   Get a workflow scoped knative service revision.
 	//   This will return details on a single revision.
 	//   The target revision generation (rev query) is the number suffix on a revision.
-	//   Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+	//   Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 	// summary: Get Workflow Service Revision
 	// tags:
 	// - "Workflow Services"
@@ -995,6 +995,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   description: 'target namespace'
 	// - in: body
 	//   name: Registry Payload
+	//   required: true
 	//   description: Payload that contains registry data
 	//   schema:
 	//     type: object
@@ -1029,6 +1030,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   description: 'target namespace'
 	// - in: body
 	//   name: Registry Payload
+	//   required: true
 	//   description: Payload that contains registry data
 	//   schema:
 	//     example:

@@ -92,7 +92,7 @@ func (a *Client) GetWorkflowService(params *GetWorkflowServiceParams, authInfo r
   Get a workflow scoped knative service revision.
 This will return details on a single revision.
 The target revision generation (rev query) is the number suffix on a revision.
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 
 */
 func (a *Client) GetWorkflowServiceRevision(params *GetWorkflowServiceRevisionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetWorkflowServiceRevisionOK, error) {
@@ -178,7 +178,7 @@ func (a *Client) GetWorkflowServiceRevisionList(params *GetWorkflowServiceRevisi
 
   List a revisions pods of a workflow scoped knative service.
 The target revision generation (rev query) is the number suffix on a revision.
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 
 */
 func (a *Client) ListWorkflowServiceRevisionPods(params *ListWorkflowServiceRevisionPodsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListWorkflowServiceRevisionPodsOK, error) {
