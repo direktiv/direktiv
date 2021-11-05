@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"net"
 	"net/http"
 	"time"
 
@@ -21,8 +22,30 @@ type NetworkServer struct {
 	stopper chan *time.Time
 }
 
+func waitForUserContainer() {
+
+	tick := time.Tick(250 * time.Millisecond)
+	timeout := time.After(2 * time.Minute)
+
+	for {
+		select {
+		case <-timeout:
+			panic("user container did not start in time")
+		case <-tick:
+			conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
+			if conn != nil {
+				log.Debug("user container connected")
+				conn.Close()
+				return
+			}
+		}
+	}
+}
+
 // Start starts the network server for the sidecar
 func (srv *NetworkServer) Start() {
+
+	waitForUserContainer()
 
 	srv.router = mux.NewRouter()
 
