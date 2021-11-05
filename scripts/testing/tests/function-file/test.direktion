@@ -1,7 +1,7 @@
 workflow test
 
 const ubuntu-shell = reusable(
-    image: "direktiv/ubuntu-shell:v1",
+    image: "direktiv/ubuntu-shell:latest",
     "file": file(key: "myscript", scope: "workflow", type: "plain"),
     )
 
