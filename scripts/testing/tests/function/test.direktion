@@ -5,7 +5,7 @@
 
 workflow test
 
-const request-reusable = reusable(image: "direktiv/request:v6")
+const request-reusable = reusable(image: "direktiv/request:latest")
 const request-isolate = isolate(image: "localhost:5000/isolate-requester:test")
 
 call-function:

@@ -1,19 +1,19 @@
 {
   "revisions": [
     {
-      "image": "direktiv/request:v6",
+      "image": "direktiv/request:v1",
       "minScale": 0,
       "size": 0,
       "cmd": ""
     },
     {
-      "image": "direktiv/request:v7",
+      "image": "direktiv/request:v2",
       "minScale": 0,
       "size": 0,
       "cmd": ""
     },
     {
-      "image": "direktiv/request:v8",
+      "image": "direktiv/request:latest",
       "minScale": 1,
       "size": 0,
       "cmd": ""
