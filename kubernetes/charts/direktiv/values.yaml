@@ -16,7 +16,7 @@ apikey: ""
 
 # used for encrpytion in the following resources: secrets
 # if set to empty, one will be generated on install
-encryptionKey: ""
+encryptionKey: "01234567890123456789012345678912"
 
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
