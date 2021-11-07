@@ -23,6 +23,12 @@ const (
 	annotationNamespace = "direktiv.io/namespace"
 	annotationURL       = "direktiv.io/url"
 	annotationURLHash   = "direktiv.io/urlhash"
+
+	// Registry Types
+	annotationRegistryTypeKey                = "direktiv.io/registry-type"
+	annotationRegistryTypeGlobalValue        = "global"
+	annotationRegistryTypeGlobalPrivateValue = "global-private"
+	annotationRegistryTypeNamespaceValue     = "namespace"
 )
 
 func getClientSet() (*kubernetes.Clientset, error) {
@@ -56,6 +62,46 @@ func kubernetesDeleteRegistry(name, namespace string) error {
 	lo := metav1.ListOptions{LabelSelector: labels.Set(fo).String()}
 	return clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
+
+}
+
+func listRegistriesNames(namespace string, includeGlobal bool) []string {
+
+	logger.With("includeGlobal", includeGlobal).Debugf("getting registries for namespace %s", namespace)
+	var registries []string
+
+	clientset, err := getClientSet()
+	if err != nil {
+		logger.Errorf("can not get clientset: %v", err)
+		return registries
+	}
+
+	annotations := map[string]string{
+		annotationNamespace: namespace,
+	}
+
+	// Add public global registries
+	if includeGlobal {
+		annotations[annotationRegistryTypeKey] = annotationRegistryTypeGlobalValue
+	}
+
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: labels.Set(annotations).String()})
+	if err != nil {
+		logger.Errorf("can not list secrets: %v", err)
+		return registries
+	}
+
+	removeDuplicateRegistries(secrets)
+
+	for _, s := range secrets.Items {
+		registries = append(registries, s.Name)
+	}
+
+	logger.Debugf("registries for namespace: %+v", registries)
+
+	return registries
 
 }
 
@@ -128,35 +174,6 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 
 }
 
-func listRegistriesNames(namespace string) []string {
-
-	logger.Debugf("getting registries for namespace %s", namespace)
-	var registries []string
-
-	clientset, err := getClientSet()
-	if err != nil {
-		logger.Errorf("can not get clientset: %v", err)
-		return registries
-	}
-
-	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
-		List(context.Background(),
-			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
-	if err != nil {
-		logger.Errorf("can not list secrets: %v", err)
-		return registries
-	}
-
-	for _, s := range secrets.Items {
-		registries = append(registries, s.Name)
-	}
-
-	logger.Debugf("registries for namespace: %+v", registries)
-
-	return registries
-
-}
-
 func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
 
 	resp := &igrpc.GetRegistriesResponse{
@@ -168,12 +185,23 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 		return resp, err
 	}
 
+	annotations := map[string]string{
+		annotationNamespace: in.GetNamespace(),
+	}
+
+	// Add public global registries
+	if in.GetIncludeGlobal() {
+		annotations[annotationRegistryTypeKey] = annotationRegistryTypeGlobalValue
+	}
+
 	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		List(context.Background(),
-			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, in.GetNamespace())})
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace)})
 	if err != nil {
 		return resp, err
 	}
+
+	removeDuplicateRegistries(secrets)
 
 	for _, s := range secrets.Items {
 		u := s.Annotations[annotationURL]
@@ -187,3 +215,61 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 	return resp, nil
 
 }
+
+// global
+
+// util
+func removeDuplicateRegistries(secretList *v1.SecretList) {
+
+	secretsMap := make(map[string]v1.Secret, 0)
+
+	for i := range secretList.Items {
+		secretURL := secretList.Items[i].Annotations[annotationURL]
+
+		if s, ok := secretsMap[secretURL]; ok {
+			// Replace Global Public registries as they have lowest priority
+			if s.Annotations[annotationRegistryTypeKey] == annotationRegistryTypeGlobalValue {
+				secretsMap[secretURL] = secretList.Items[i]
+			}
+		} else {
+			// Add secret to map
+			secretsMap[secretURL] = secretList.Items[i]
+		}
+	}
+
+	secretList.Items = make([]v1.Secret, len(secretsMap))
+
+	// Replace secret items
+	for _, secret := range secretsMap {
+		secretList.Items = append(secretList.Items, secret)
+	}
+}
+
+// func listGlobalRegistriesNames() []string {
+
+// 	logger.Debugf("getting global registries")
+// 	var registries []string
+
+// 	clientset, err := getClientSet()
+// 	if err != nil {
+// 		logger.Errorf("can not get clientset: %v", err)
+// 		return registries
+// 	}
+
+// 	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
+// 		List(context.Background(),
+// 			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationScope, "global")})
+// 	if err != nil {
+// 		logger.Errorf("can not list secrets: %v", err)
+// 		return registries
+// 	}
+
+// 	for _, s := range secrets.Items {
+// 		registries = append(registries, s.Name)
+// 	}
+
+// 	logger.Debugf("registries global namespace: %+v", registries)
+
+// 	return registries
+
+// }

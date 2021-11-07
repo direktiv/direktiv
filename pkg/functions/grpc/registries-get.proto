@@ -6,6 +6,7 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 message GetRegistriesRequest {
 	optional string namespace = 1;
+	optional bool includeGlobal = 2;
 }
 
 message GetRegistriesResponse {
