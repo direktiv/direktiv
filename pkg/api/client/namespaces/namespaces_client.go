@@ -88,6 +88,8 @@ func (a *Client) CreateNamespace(params *CreateNamespaceParams, authInfo runtime
   DeleteNamespace deletes a namespace
 
   Delete a namespace.
+A namespace will not delete by default if it has any child resources (workflows, etc...).
+Deleting the namespace with all its children can be done using the `recursive` query parameter.
 
 */
 func (a *Client) DeleteNamespace(params *DeleteNamespaceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteNamespaceOK, error) {

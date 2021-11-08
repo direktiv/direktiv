@@ -94,11 +94,17 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./pkg/secrets/ent
 	go generate ./pkg/functions/ent
 
+# Cleans API client inside of pkg api
+.PHONY: api-clean-client
+api-clean-client: ## Cleans golang client swagger files
+api-clean-client:
+	rm -rf pkg/api/models
+	rm -rf pkg/api/client
 
 # Generate API client inside of pkg api
 .PHONY: api-client
 api-client: ## Generates a golang client to use based off swagger
-api-client: api-docs
+api-client: api-clean-client  api-docs
 	swagger generate client -t pkg/api -f scripts/api/swagger.json --name direktivsdk
 
 # API docs

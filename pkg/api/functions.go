@@ -1,4 +1,4 @@
-// Package classification Direktiv API.
+// Package classification Direktiv API
 //
 // Direktiv Open API Specification
 // Direktiv Documentation can be found at https://docs.direktiv.io/
