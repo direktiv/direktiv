@@ -15,8 +15,6 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	"github.com/direktiv/direktiv/pkg/api/models"
 )
 
 // UpdateNamespaceServiceTrafficReader is a Reader for the UpdateNamespaceServiceTraffic structure.
@@ -67,7 +65,7 @@ type UpdateNamespaceServiceTrafficBody struct {
 
 	// List of revision traffic targets
 	// Required: true
-	Values []*models.UpdateNamespaceServiceTrafficParamsBodyValuesItems0 `json:"values"`
+	Values []*UpdateNamespaceServiceTrafficParamsBodyValuesItems0 `json:"values"`
 }
 
 // Validate validates this update namespace service traffic body

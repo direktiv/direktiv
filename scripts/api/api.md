@@ -751,7 +751,7 @@ DELETE /api/namespaces/{namespace}
 
 Delete a namespace.
 A namespace will not delete by default if it has any child resources (workflows, etc...).
-Deleting the namespace will all its children can be done using the `recursive` query parameter.
+Deleting the namespace with all its children can be done using the `recursive` query parameter.
 
 
 #### Parameters
@@ -2588,7 +2588,7 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*models.UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
 
 
 
@@ -2709,7 +2709,7 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*models.UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
 
 
 
@@ -3051,83 +3051,6 @@ Status: OK
 
 ## Models
 
-### <span id="create-global-service-body"></span> CreateGlobalServiceBody
-
-
-> CreateGlobalServiceBody CreateGlobalServiceBody create global service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` | ✓ | | cmd |  |
-| Image | string| `string` | ✓ | | Target image a service will use |  |
-| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
-| Name | string| `string` | ✓ | | Name of new service |  |
-| Size | string| `string` | ✓ | | Size of created service pods |  |
-
-
-
-### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
-
-
-> CreateNamespaceServiceBody create namespace service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` | ✓ | | cmd |  |
-| Image | string| `string` | ✓ | | Target image a service will use |  |
-| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
-| Name | string| `string` | ✓ | | Name of new service |  |
-| Size | string| `string` | ✓ | | Size of created service pods |  |
-
-
-
-### <span id="delete-registry-body"></span> DeleteRegistryBody
-
-
-> DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
-
-**Example**
-```
-{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Reg | string| `string` | ✓ | | Target registry URL |  |
-
-
-
 ### <span id="error-response"></span> ErrorResponse
 
 
@@ -3144,268 +3067,15 @@ Status: OK
 
 
 
-### <span id="jq-playground-body"></span> JqPlaygroundBody
-
-
-> JqPlaygroundBody jq playground body
-
-**Example**
-```
-{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Data | string| `string` | ✓ | | JSON data encoded in base64 |  |
-| Query | string| `string` | ✓ | | jq query to manipulate JSON data |  |
-
-
-
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody OkBody OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
 
 [OkBody](#ok-body)
-
-### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
-
-
-> SetNamespaceConfigBody set namespace config body
-
-**Example**
-```
-{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Broadcast | [interface{}](#interface)| `interface{}` |  | | Configuration on which direktiv operations will trigger coud events on the namespace |  |
-
-
-
-### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
-
-
-> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
-
-**Example**
-```
-{"logger":"mylog"}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Logger | string| `string` | ✓ | | Target Cloud Event |  |
-
-
-
-### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
-
-
-> ToggleWorkflowBody toggle workflow body
-
-**Example**
-```
-{"live":false}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Live | boolean| `bool` | ✓ | | Workflow live status |  |
-
-
-
-### <span id="update-global-service-body"></span> UpdateGlobalServiceBody
-
-
-> UpdateGlobalServiceBody UpdateGlobalServiceBody update global service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` | ✓ | | cmd |  |
-| Image | string| `string` | ✓ | | Target image a service will use |  |
-| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
-| Size | string| `string` | ✓ | | Size of created service pods |  |
-| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | Traffic percentage new revision will use |  |
-
-
-
-### <span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody
-
-
-> UpdateGlobalServiceTrafficBody update global service traffic body
-
-**Example**
-```
-{"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
-
-
-
-### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
-
-
-> UpdateGlobalServiceTrafficParamsBodyValuesItems0 UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Percent | int64 (formatted integer)| `int64` |  | | Target traffice percentage |  |
-| Revision | string| `string` |  | | Target service revision |  |
-
-
-
-### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
-
-
-> UpdateNamespaceServiceBody UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body
-
-**Example**
-```
-{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` | ✓ | | cmd |  |
-| Image | string| `string` | ✓ | | Target image a service will use |  |
-| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
-| Size | string| `string` | ✓ | | Size of created service pods |  |
-| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | Traffic percentage new revision will use |  |
-
-
-
-### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
-
-
-> UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
-
-**Example**
-```
-{"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
-```
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
-
-
-
-### <span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0
-
-
-> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Percent | int64 (formatted integer)| `int64` |  | | Target traffice percentage |  |
-| Revision | string| `string` |  | | Target service revision |  |
-
-
-
-### <span id="update-service-request"></span> UpdateServiceRequest
-
-
-> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
-  
-
-
-
-
-
-**Properties**
-
-| Name | Type | Go type | Required | Default | Description | Example |
-|------|------|---------|:--------:| ------- |-------------|---------|
-| Cmd | string| `string` | ✓ | | cmd |  |
-| Image | string| `string` | ✓ | | image |  |
-| MinScale | int32 (formatted integer)| `int32` | ✓ | | minScale |  |
-| Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
-| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | trafficPercent |  |
-
-
 
 ### <span id="update-service-request"></span> updateServiceRequest
 
