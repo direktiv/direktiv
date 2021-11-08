@@ -1189,7 +1189,7 @@
         }
       },
       "delete": {
-        "description": "Delete a namespace.\n",
+        "description": "Delete a namespace.\nA namespace will not delete by default if it has any child resources (workflows, etc...).\nDeleting the namespace will all its children can be done using the `recursive` query parameter.\n",
         "tags": [
           "Namespaces"
         ],
@@ -1202,6 +1202,12 @@
             "name": "namespace",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "recursively deletes all child resources",
+            "name": "recursive",
+            "in": "query"
           }
         ],
         "responses": {
@@ -3022,7 +3028,7 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "CreateNamespaceServiceBody": {
-      "description": "CreateNamespaceServiceBody CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
       "type": "object",
       "required": [
         "cmd",
@@ -3057,15 +3063,15 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[[small medium large]]"
+            "[small medium large]"
           ],
           "x-go-name": "Size"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
     },
     "DeleteRegistryBody": {
-      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "description": "DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
       "type": "object",
       "required": [
         "reg"
@@ -3077,7 +3083,7 @@
           "x-go-name": "Reg"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "ErrorResponse": {
       "type": "object",
@@ -3150,7 +3156,7 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
     },
     "ToggleWorkflowBody": {
-      "description": "ToggleWorkflowBody ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
+      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
       "type": "object",
       "required": [
         "live"
@@ -3162,7 +3168,7 @@
           "x-go-name": "Live"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
     },
     "UpdateGlobalServiceBody": {
       "description": "UpdateGlobalServiceBody UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
@@ -3227,7 +3233,7 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
     },
     "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
+      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
       "type": "object",
       "properties": {
         "percent": {
@@ -3242,10 +3248,10 @@
           "x-go-name": "Revision"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateNamespaceServiceBody": {
-      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "description": "UpdateNamespaceServiceBody UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
       "type": "object",
       "required": [
         "cmd",
@@ -3275,7 +3281,7 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[small medium large]"
+            "[[[small medium large]]]"
           ],
           "x-go-name": "Size"
         },
@@ -3286,10 +3292,10 @@
           "x-go-name": "TrafficPercent"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateNamespaceServiceTrafficBody": {
-      "description": "UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
+      "description": "UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
       "type": "object",
       "required": [
         "values"
@@ -3304,7 +3310,7 @@
           "x-go-name": "Values"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
       "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",

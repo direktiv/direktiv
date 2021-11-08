@@ -750,6 +750,8 @@ DELETE /api/namespaces/{namespace}
 ```
 
 Delete a namespace.
+A namespace will not delete by default if it has any child resources (workflows, etc...).
+Deleting the namespace will all its children can be done using the `recursive` query parameter.
 
 
 #### Parameters
@@ -757,6 +759,7 @@ Delete a namespace.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace to delete |
+| recursive | `query` | boolean | `bool` |  |  |  | recursively deletes all child resources |
 
 #### All responses
 
@@ -3078,7 +3081,7 @@ Status: OK
 ### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
 
 
-> CreateNamespaceServiceBody CreateNamespaceServiceBody create namespace service body
+> CreateNamespaceServiceBody create namespace service body
 
 **Example**
 ```
@@ -3105,7 +3108,7 @@ Status: OK
 ### <span id="delete-registry-body"></span> DeleteRegistryBody
 
 
-> DeleteRegistryBody delete registry body
+> DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
 
 **Example**
 ```
@@ -3224,7 +3227,7 @@ Status: OK
 ### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
 
 
-> ToggleWorkflowBody ToggleWorkflowBody toggle workflow body
+> ToggleWorkflowBody toggle workflow body
 
 **Example**
 ```
@@ -3297,7 +3300,7 @@ Status: OK
 ### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
 
 
-> UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
+> UpdateGlobalServiceTrafficParamsBodyValuesItems0 UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
   
 
 
@@ -3316,7 +3319,7 @@ Status: OK
 ### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
 
 
-> UpdateNamespaceServiceBody update namespace service body
+> UpdateNamespaceServiceBody UpdateNamespaceServiceBody UpdateNamespaceServiceBody update namespace service body
 
 **Example**
 ```
@@ -3343,7 +3346,7 @@ Status: OK
 ### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
 
 
-> UpdateNamespaceServiceTrafficBody update namespace service traffic body
+> UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
 
 **Example**
 ```
