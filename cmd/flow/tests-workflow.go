@@ -286,9 +286,10 @@ func testStartTypeCron(ctx context.Context, c grpc.FlowClient, namespace string)
 
 	instances := resp.GetInstances().GetEdges()
 
-	if len(instances) == 3 {
+	if len(instances) == 3 || len(instances) == 4 {
 		return nil
 	}
 
 	return fmt.Errorf("cron job schedule instances created: %v wanted 3", len(instances))
+
 }

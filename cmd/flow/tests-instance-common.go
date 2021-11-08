@@ -810,6 +810,7 @@ states:
 }
 
 func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
 		Name: namespace,
 	})
