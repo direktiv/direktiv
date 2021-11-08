@@ -12,7 +12,7 @@
   "swagger": "2.0",
   "info": {
     "description": "Direktiv Open API Specification\nDirektiv Documentation can be found at https://docs.direktiv.io/",
-    "title": "Direktiv API.",
+    "title": "Direktiv API",
     "contact": {
       "email": "info@direktiv.io"
     },
