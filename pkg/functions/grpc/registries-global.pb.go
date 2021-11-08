@@ -24,8 +24,6 @@ type GetGlobalRegistriesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Namespace *string `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
 }
 
 func (x *GetGlobalRegistriesRequest) Reset() {
@@ -60,73 +58,18 @@ func (*GetGlobalRegistriesRequest) Descriptor() ([]byte, []int) {
 	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetGlobalRegistriesRequest) GetNamespace() string {
-	if x != nil && x.Namespace != nil {
-		return *x.Namespace
-	}
-	return ""
-}
-
-type GetGlobalRegistriesResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Registries []*GetGlobalRegistriesResponse_Registry `protobuf:"bytes,1,rep,name=registries,proto3" json:"registries,omitempty"`
-}
-
-func (x *GetGlobalRegistriesResponse) Reset() {
-	*x = GetGlobalRegistriesResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetGlobalRegistriesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGlobalRegistriesResponse) ProtoMessage() {}
-
-func (x *GetGlobalRegistriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGlobalRegistriesResponse.ProtoReflect.Descriptor instead.
-func (*GetGlobalRegistriesResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *GetGlobalRegistriesResponse) GetRegistries() []*GetGlobalRegistriesResponse_Registry {
-	if x != nil {
-		return x.Registries
-	}
-	return nil
-}
-
 type DeleteGlobalRegistryRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Namespace *string `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
-	Name      *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Name *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
 }
 
 func (x *DeleteGlobalRegistryRequest) Reset() {
 	*x = DeleteGlobalRegistryRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[2]
+		mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -139,7 +82,7 @@ func (x *DeleteGlobalRegistryRequest) String() string {
 func (*DeleteGlobalRegistryRequest) ProtoMessage() {}
 
 func (x *DeleteGlobalRegistryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[2]
+	mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,14 +95,7 @@ func (x *DeleteGlobalRegistryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGlobalRegistryRequest.ProtoReflect.Descriptor instead.
 func (*DeleteGlobalRegistryRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *DeleteGlobalRegistryRequest) GetNamespace() string {
-	if x != nil && x.Namespace != nil {
-		return *x.Namespace
-	}
-	return ""
+	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *DeleteGlobalRegistryRequest) GetName() string {
@@ -174,15 +110,14 @@ type StoreGlobalRegistryRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Namespace *string `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
-	Name      *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Data      []byte  `protobuf:"bytes,3,opt,name=data,proto3,oneof" json:"data,omitempty"`
+	Name *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Data []byte  `protobuf:"bytes,3,opt,name=data,proto3,oneof" json:"data,omitempty"`
 }
 
 func (x *StoreGlobalRegistryRequest) Reset() {
 	*x = StoreGlobalRegistryRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[3]
+		mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -195,7 +130,7 @@ func (x *StoreGlobalRegistryRequest) String() string {
 func (*StoreGlobalRegistryRequest) ProtoMessage() {}
 
 func (x *StoreGlobalRegistryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[3]
+	mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -208,14 +143,7 @@ func (x *StoreGlobalRegistryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreGlobalRegistryRequest.ProtoReflect.Descriptor instead.
 func (*StoreGlobalRegistryRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *StoreGlobalRegistryRequest) GetNamespace() string {
-	if x != nil && x.Namespace != nil {
-		return *x.Namespace
-	}
-	return ""
+	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *StoreGlobalRegistryRequest) GetName() string {
@@ -232,61 +160,6 @@ func (x *StoreGlobalRegistryRequest) GetData() []byte {
 	return nil
 }
 
-type GetGlobalRegistriesResponse_Registry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name *string `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Id   *string `protobuf:"bytes,2,opt,name=id,proto3,oneof" json:"id,omitempty"`
-}
-
-func (x *GetGlobalRegistriesResponse_Registry) Reset() {
-	*x = GetGlobalRegistriesResponse_Registry{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetGlobalRegistriesResponse_Registry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGlobalRegistriesResponse_Registry) ProtoMessage() {}
-
-func (x *GetGlobalRegistriesResponse_Registry) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_functions_grpc_registries_global_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGlobalRegistriesResponse_Registry.ProtoReflect.Descriptor instead.
-func (*GetGlobalRegistriesResponse_Registry) Descriptor() ([]byte, []int) {
-	return file_pkg_functions_grpc_registries_global_proto_rawDescGZIP(), []int{1, 0}
-}
-
-func (x *GetGlobalRegistriesResponse_Registry) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *GetGlobalRegistriesResponse_Registry) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
 var File_pkg_functions_grpc_registries_global_proto protoreflect.FileDescriptor
 
 var file_pkg_functions_grpc_registries_global_proto_rawDesc = []byte{
@@ -294,44 +167,22 @@ var file_pkg_functions_grpc_registries_global_proto_rawDesc = []byte{
 	0x67, 0x72, 0x70, 0x63, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x2d,
 	0x67, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x12, 0x64, 0x69,
 	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x22, 0x4d, 0x0a, 0x1a, 0x47, 0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x21,
-	0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x48, 0x00, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x88, 0x01,
-	0x01, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x22,
-	0xc1, 0x01, 0x0a, 0x1b, 0x47, 0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x58, 0x0a, 0x0a, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x38, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
-	0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x47, 0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62,
-	0x61, 0x6c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x0a, 0x72,
-	0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x1a, 0x48, 0x0a, 0x08, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x72, 0x79, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x12, 0x13,
-	0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x02, 0x69, 0x64,
-	0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x05, 0x0a, 0x03,
-	0x5f, 0x69, 0x64, 0x22, 0x70, 0x0a, 0x1b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x47, 0x6c, 0x6f,
-	0x62, 0x61, 0x6c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x21, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x88, 0x01, 0x01, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x42, 0x0c,
-	0x0a, 0x0a, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x42, 0x07, 0x0a, 0x05,
-	0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x91, 0x01, 0x0a, 0x1a, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x47,
-	0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x21, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x88, 0x01, 0x01, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01,
-	0x12, 0x17, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x02,
-	0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x88, 0x01, 0x01, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65,
-	0x42, 0x07, 0x0a, 0x05, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x42, 0x31, 0x5a, 0x2f, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76,
-	0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x75,
-	0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x1c, 0x0a, 0x1a, 0x47, 0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x3f,
+	0x0a, 0x1b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22,
+	0x60, 0x0a, 0x1a, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x12, 0x17, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0c, 0x48, 0x01, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x88, 0x01, 0x01, 0x42,
+	0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x64, 0x61, 0x74,
+	0x61, 0x42, 0x31, 0x5a, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
+	0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f,
+	0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -346,21 +197,18 @@ func file_pkg_functions_grpc_registries_global_proto_rawDescGZIP() []byte {
 	return file_pkg_functions_grpc_registries_global_proto_rawDescData
 }
 
-var file_pkg_functions_grpc_registries_global_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_pkg_functions_grpc_registries_global_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_pkg_functions_grpc_registries_global_proto_goTypes = []interface{}{
-	(*GetGlobalRegistriesRequest)(nil),           // 0: direktiv_functions.GetGlobalRegistriesRequest
-	(*GetGlobalRegistriesResponse)(nil),          // 1: direktiv_functions.GetGlobalRegistriesResponse
-	(*DeleteGlobalRegistryRequest)(nil),          // 2: direktiv_functions.DeleteGlobalRegistryRequest
-	(*StoreGlobalRegistryRequest)(nil),           // 3: direktiv_functions.StoreGlobalRegistryRequest
-	(*GetGlobalRegistriesResponse_Registry)(nil), // 4: direktiv_functions.GetGlobalRegistriesResponse.Registry
+	(*GetGlobalRegistriesRequest)(nil),  // 0: direktiv_functions.GetGlobalRegistriesRequest
+	(*DeleteGlobalRegistryRequest)(nil), // 1: direktiv_functions.DeleteGlobalRegistryRequest
+	(*StoreGlobalRegistryRequest)(nil),  // 2: direktiv_functions.StoreGlobalRegistryRequest
 }
 var file_pkg_functions_grpc_registries_global_proto_depIdxs = []int32{
-	4, // 0: direktiv_functions.GetGlobalRegistriesResponse.registries:type_name -> direktiv_functions.GetGlobalRegistriesResponse.Registry
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // [0:0] is the sub-list for method output_type
+	0, // [0:0] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_pkg_functions_grpc_registries_global_proto_init() }
@@ -382,18 +230,6 @@ func file_pkg_functions_grpc_registries_global_proto_init() {
 			}
 		}
 		file_pkg_functions_grpc_registries_global_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetGlobalRegistriesResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_functions_grpc_registries_global_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteGlobalRegistryRequest); i {
 			case 0:
 				return &v.state
@@ -405,7 +241,7 @@ func file_pkg_functions_grpc_registries_global_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_functions_grpc_registries_global_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_functions_grpc_registries_global_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*StoreGlobalRegistryRequest); i {
 			case 0:
 				return &v.state
@@ -417,30 +253,16 @@ func file_pkg_functions_grpc_registries_global_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_functions_grpc_registries_global_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetGlobalRegistriesResponse_Registry); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
-	file_pkg_functions_grpc_registries_global_proto_msgTypes[0].OneofWrappers = []interface{}{}
+	file_pkg_functions_grpc_registries_global_proto_msgTypes[1].OneofWrappers = []interface{}{}
 	file_pkg_functions_grpc_registries_global_proto_msgTypes[2].OneofWrappers = []interface{}{}
-	file_pkg_functions_grpc_registries_global_proto_msgTypes[3].OneofWrappers = []interface{}{}
-	file_pkg_functions_grpc_registries_global_proto_msgTypes[4].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_functions_grpc_registries_global_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
