@@ -22,11 +22,11 @@ type FunctionsServiceClient interface {
 	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
 	StoreGlobalRegistry(ctx context.Context, in *StoreGlobalRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetGlobalRegistries(ctx context.Context, in *GetGlobalRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
+	GetGlobalRegistries(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
 	DeleteGlobalRegistry(ctx context.Context, in *DeleteGlobalRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	StoreGlobalPrivateRegistry(ctx context.Context, in *StoreGlobalPrivateRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetGlobalPrivateRegistries(ctx context.Context, in *GetGlobalPrivateRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
-	DeleteGlobalPrivateRegistry(ctx context.Context, in *DeleteGlobalPrivateRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	StoreGlobalPrivateRegistry(ctx context.Context, in *StoreGlobalRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetGlobalPrivateRegistries(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
+	DeleteGlobalPrivateRegistry(ctx context.Context, in *DeleteGlobalRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -82,7 +82,7 @@ func (c *functionsServiceClient) StoreGlobalRegistry(ctx context.Context, in *St
 	return out, nil
 }
 
-func (c *functionsServiceClient) GetGlobalRegistries(ctx context.Context, in *GetGlobalRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
+func (c *functionsServiceClient) GetGlobalRegistries(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
 	out := new(GetRegistriesResponse)
 	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/GetGlobalRegistries", in, out, opts...)
 	if err != nil {
@@ -100,7 +100,7 @@ func (c *functionsServiceClient) DeleteGlobalRegistry(ctx context.Context, in *D
 	return out, nil
 }
 
-func (c *functionsServiceClient) StoreGlobalPrivateRegistry(ctx context.Context, in *StoreGlobalPrivateRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *functionsServiceClient) StoreGlobalPrivateRegistry(ctx context.Context, in *StoreGlobalRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/StoreGlobalPrivateRegistry", in, out, opts...)
 	if err != nil {
@@ -109,7 +109,7 @@ func (c *functionsServiceClient) StoreGlobalPrivateRegistry(ctx context.Context,
 	return out, nil
 }
 
-func (c *functionsServiceClient) GetGlobalPrivateRegistries(ctx context.Context, in *GetGlobalPrivateRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
+func (c *functionsServiceClient) GetGlobalPrivateRegistries(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
 	out := new(GetRegistriesResponse)
 	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/GetGlobalPrivateRegistries", in, out, opts...)
 	if err != nil {
@@ -118,7 +118,7 @@ func (c *functionsServiceClient) GetGlobalPrivateRegistries(ctx context.Context,
 	return out, nil
 }
 
-func (c *functionsServiceClient) DeleteGlobalPrivateRegistry(ctx context.Context, in *DeleteGlobalPrivateRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *functionsServiceClient) DeleteGlobalPrivateRegistry(ctx context.Context, in *DeleteGlobalRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/DeleteGlobalPrivateRegistry", in, out, opts...)
 	if err != nil {
@@ -388,11 +388,11 @@ type FunctionsServiceServer interface {
 	StoreRegistry(context.Context, *StoreRegistryRequest) (*empty.Empty, error)
 	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
 	StoreGlobalRegistry(context.Context, *StoreGlobalRegistryRequest) (*empty.Empty, error)
-	GetGlobalRegistries(context.Context, *GetGlobalRegistriesRequest) (*GetRegistriesResponse, error)
+	GetGlobalRegistries(context.Context, *empty.Empty) (*GetRegistriesResponse, error)
 	DeleteGlobalRegistry(context.Context, *DeleteGlobalRegistryRequest) (*empty.Empty, error)
-	StoreGlobalPrivateRegistry(context.Context, *StoreGlobalPrivateRegistryRequest) (*empty.Empty, error)
-	GetGlobalPrivateRegistries(context.Context, *GetGlobalPrivateRegistriesRequest) (*GetRegistriesResponse, error)
-	DeleteGlobalPrivateRegistry(context.Context, *DeleteGlobalPrivateRegistryRequest) (*empty.Empty, error)
+	StoreGlobalPrivateRegistry(context.Context, *StoreGlobalRegistryRequest) (*empty.Empty, error)
+	GetGlobalPrivateRegistries(context.Context, *empty.Empty) (*GetRegistriesResponse, error)
+	DeleteGlobalPrivateRegistry(context.Context, *DeleteGlobalRegistryRequest) (*empty.Empty, error)
 	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error)
 	ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*empty.Empty, error)
 	UpdateFunction(context.Context, *UpdateFunctionRequest) (*empty.Empty, error)
@@ -427,19 +427,19 @@ func (UnimplementedFunctionsServiceServer) GetRegistries(context.Context, *GetRe
 func (UnimplementedFunctionsServiceServer) StoreGlobalRegistry(context.Context, *StoreGlobalRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreGlobalRegistry not implemented")
 }
-func (UnimplementedFunctionsServiceServer) GetGlobalRegistries(context.Context, *GetGlobalRegistriesRequest) (*GetRegistriesResponse, error) {
+func (UnimplementedFunctionsServiceServer) GetGlobalRegistries(context.Context, *empty.Empty) (*GetRegistriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGlobalRegistries not implemented")
 }
 func (UnimplementedFunctionsServiceServer) DeleteGlobalRegistry(context.Context, *DeleteGlobalRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteGlobalRegistry not implemented")
 }
-func (UnimplementedFunctionsServiceServer) StoreGlobalPrivateRegistry(context.Context, *StoreGlobalPrivateRegistryRequest) (*empty.Empty, error) {
+func (UnimplementedFunctionsServiceServer) StoreGlobalPrivateRegistry(context.Context, *StoreGlobalRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreGlobalPrivateRegistry not implemented")
 }
-func (UnimplementedFunctionsServiceServer) GetGlobalPrivateRegistries(context.Context, *GetGlobalPrivateRegistriesRequest) (*GetRegistriesResponse, error) {
+func (UnimplementedFunctionsServiceServer) GetGlobalPrivateRegistries(context.Context, *empty.Empty) (*GetRegistriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGlobalPrivateRegistries not implemented")
 }
-func (UnimplementedFunctionsServiceServer) DeleteGlobalPrivateRegistry(context.Context, *DeleteGlobalPrivateRegistryRequest) (*empty.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteGlobalPrivateRegistry(context.Context, *DeleteGlobalRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteGlobalPrivateRegistry not implemented")
 }
 func (UnimplementedFunctionsServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*empty.Empty, error) {
@@ -564,7 +564,7 @@ func _FunctionsService_StoreGlobalRegistry_Handler(srv interface{}, ctx context.
 }
 
 func _FunctionsService_GetGlobalRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetGlobalRegistriesRequest)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -576,7 +576,7 @@ func _FunctionsService_GetGlobalRegistries_Handler(srv interface{}, ctx context.
 		FullMethod: "/direktiv_functions.FunctionsService/GetGlobalRegistries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).GetGlobalRegistries(ctx, req.(*GetGlobalRegistriesRequest))
+		return srv.(FunctionsServiceServer).GetGlobalRegistries(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -600,7 +600,7 @@ func _FunctionsService_DeleteGlobalRegistry_Handler(srv interface{}, ctx context
 }
 
 func _FunctionsService_StoreGlobalPrivateRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreGlobalPrivateRegistryRequest)
+	in := new(StoreGlobalRegistryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -612,13 +612,13 @@ func _FunctionsService_StoreGlobalPrivateRegistry_Handler(srv interface{}, ctx c
 		FullMethod: "/direktiv_functions.FunctionsService/StoreGlobalPrivateRegistry",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).StoreGlobalPrivateRegistry(ctx, req.(*StoreGlobalPrivateRegistryRequest))
+		return srv.(FunctionsServiceServer).StoreGlobalPrivateRegistry(ctx, req.(*StoreGlobalRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_GetGlobalPrivateRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetGlobalPrivateRegistriesRequest)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -630,13 +630,13 @@ func _FunctionsService_GetGlobalPrivateRegistries_Handler(srv interface{}, ctx c
 		FullMethod: "/direktiv_functions.FunctionsService/GetGlobalPrivateRegistries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).GetGlobalPrivateRegistries(ctx, req.(*GetGlobalPrivateRegistriesRequest))
+		return srv.(FunctionsServiceServer).GetGlobalPrivateRegistries(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_DeleteGlobalPrivateRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteGlobalPrivateRegistryRequest)
+	in := new(DeleteGlobalRegistryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -648,7 +648,7 @@ func _FunctionsService_DeleteGlobalPrivateRegistry_Handler(srv interface{}, ctx 
 		FullMethod: "/direktiv_functions.FunctionsService/DeleteGlobalPrivateRegistry",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).DeleteGlobalPrivateRegistry(ctx, req.(*DeleteGlobalPrivateRegistryRequest))
+		return srv.(FunctionsServiceServer).DeleteGlobalPrivateRegistry(ctx, req.(*DeleteGlobalRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

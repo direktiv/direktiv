@@ -10,7 +10,6 @@ import "pkg/functions/grpc/registries-get.proto";
 import "pkg/functions/grpc/registry-delete.proto";
 import "pkg/functions/grpc/registry-store.proto";
 
-import "pkg/functions/grpc/registries-global-private.proto";
 import "pkg/functions/grpc/registries-global.proto";
 
 import "pkg/functions/grpc/functions-get.proto";
@@ -37,12 +36,12 @@ service FunctionsService {
   rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
 
   rpc StoreGlobalRegistry (StoreGlobalRegistryRequest) returns (google.protobuf.Empty) {}
-  rpc GetGlobalRegistries (GetGlobalRegistriesRequest) returns (GetRegistriesResponse) {}
+  rpc GetGlobalRegistries (google.protobuf.Empty) returns (GetRegistriesResponse) {}
   rpc DeleteGlobalRegistry (DeleteGlobalRegistryRequest) returns (google.protobuf.Empty) {}
 
-  rpc StoreGlobalPrivateRegistry (StoreGlobalPrivateRegistryRequest) returns (google.protobuf.Empty) {}
-  rpc GetGlobalPrivateRegistries (GetGlobalPrivateRegistriesRequest) returns (GetRegistriesResponse) {}
-  rpc DeleteGlobalPrivateRegistry (DeleteGlobalPrivateRegistryRequest) returns (google.protobuf.Empty) {}
+  rpc StoreGlobalPrivateRegistry (StoreGlobalRegistryRequest) returns (google.protobuf.Empty) {}
+  rpc GetGlobalPrivateRegistries (google.protobuf.Empty) returns (GetRegistriesResponse) {}
+  rpc DeleteGlobalPrivateRegistry (DeleteGlobalRegistryRequest) returns (google.protobuf.Empty) {}
 
   rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
 

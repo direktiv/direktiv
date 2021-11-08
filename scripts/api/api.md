@@ -160,8 +160,12 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| POST | /api/namespaces/{namespace}/registries | [delete registry](#delete-registry) | Delete a Namespace Container Registry |
-| GET | /api/namespaces/{namespace}/registries | [get registries](#get-registries) | Get List of Namespace Registries |
+| POST | /api/registries/private | [delete global private registry](#delete-global-private-registry) | Delete a Global Container Registry |
+| POST | /api/registries | [delete global registry](#delete-global-registry) | Delete a global Container Registry |
+| POST | /api/registries/namespaces/{namespace} | [delete registry](#delete-registry) | Delete a Namespace Container Registry |
+| GET | /api/registries/private | [get global private registries](#get-global-private-registries) | Get List of Global Private Registries |
+| GET | /api/registries | [get global registries](#get-global-registries) | Get List of Global Registries |
+| GET | /api/registries/namespaces/{namespace} | [get registries](#get-registries) | Get List of Namespace Registries |
   
 
 
@@ -650,6 +654,100 @@ an error has occurred
 
 [ErrorResponse](#error-response)
 
+### <span id="delete-global-private-registry"></span> Delete a Global Container Registry (*deleteGlobalPrivateRegistry*)
+
+```
+POST /api/registries/private
+```
+
+Delete a global container registry.
+ Global Private registries are only available to global services.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [DeleteGlobalPrivateRegistryBody](#delete-global-private-registry-body) | `DeleteGlobalPrivateRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-global-private-registry-200) | OK | successfully delete global private registry |  | [schema](#delete-global-private-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-global-private-registry-200"></span> 200 - successfully delete global private registry
+Status: OK
+
+###### <span id="delete-global-private-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="delete-global-private-registry-body"></span> DeleteGlobalPrivateRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="delete-global-registry"></span> Delete a global Container Registry (*deleteGlobalRegistry*)
+
+```
+POST /api/registries
+```
+
+Delete a Global container registry
+Global registries are available to all services.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [DeleteGlobalRegistryBody](#delete-global-registry-body) | `DeleteGlobalRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-global-registry-200) | OK | successfully delete global registry |  | [schema](#delete-global-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-global-registry-200"></span> 200 - successfully delete global registry
+Status: OK
+
+###### <span id="delete-global-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="delete-global-registry-body"></span> DeleteGlobalRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
 ### <span id="delete-global-revision"></span> Delete Global Service Revision (*deleteGlobalRevision*)
 
 ```
@@ -928,7 +1026,7 @@ an error has occurred
 ### <span id="delete-registry"></span> Delete a Namespace Container Registry (*deleteRegistry*)
 
 ```
-POST /api/namespaces/{namespace}/registries
+POST /api/registries/namespaces/{namespace}
 ```
 
 Delete a namespace container registry
@@ -1092,6 +1190,54 @@ an error has occurred
   
 
 [ErrorResponse](#error-response)
+
+### <span id="get-global-private-registries"></span> Get List of Global Private Registries (*getGlobalPrivateRegistries*)
+
+```
+GET /api/registries/private
+```
+
+Gets the list of global private registries.
+ Global Private registries are only available to global services.
+
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-global-private-registries-200) | OK | successfully got global private registries |  | [schema](#get-global-private-registries-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-global-private-registries-200"></span> 200 - successfully got global private registries
+Status: OK
+
+###### <span id="get-global-private-registries-200-schema"></span> Schema
+
+### <span id="get-global-registries"></span> Get List of Global Registries (*getGlobalRegistries*)
+
+```
+GET /api/registries
+```
+
+Gets the list of global registries.
+Global registries are available to all services.
+
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-global-registries-200) | OK | successfully got global registries |  | [schema](#get-global-registries-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-global-registries-200"></span> 200 - successfully got global registries
+Status: OK
+
+###### <span id="get-global-registries-200-schema"></span> Schema
 
 ### <span id="get-global-service"></span> Get Global Service Details (*getGlobalService*)
 
@@ -1556,7 +1702,7 @@ an error has occurred
 ### <span id="get-registries"></span> Get List of Namespace Registries (*getRegistries*)
 
 ```
-GET /api/namespaces/{namespace}/registries
+GET /api/registries/namespaces/{namespace}
 ```
 
 Gets the list of namespace registries.
@@ -3051,7 +3197,7 @@ Status: OK
 ### <span id="create-global-service-body"></span> CreateGlobalServiceBody
 
 
-> CreateGlobalServiceBody CreateGlobalServiceBody create global service body
+> CreateGlobalServiceBody create global service body
 
 **Example**
 ```
@@ -3078,7 +3224,7 @@ Status: OK
 ### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
 
 
-> CreateNamespaceServiceBody CreateNamespaceServiceBody create namespace service body
+> CreateNamespaceServiceBody create namespace service body
 
 **Example**
 ```
@@ -3105,7 +3251,7 @@ Status: OK
 ### <span id="delete-registry-body"></span> DeleteRegistryBody
 
 
-> DeleteRegistryBody delete registry body
+> DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body
 
 **Example**
 ```
@@ -3128,7 +3274,10 @@ Status: OK
 ### <span id="error-response"></span> ErrorResponse
 
 
+> ErrorResponse ErrorResponse ErrorResponse error response
   
+
+
 
 
 
@@ -3136,8 +3285,8 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| Error | string| `string` |  | |  |  |
-| StatusCode | int64 (formatted integer)| `int64` |  | |  |  |
+| Error | string| `string` |  | | error |  |
+| StatusCode | int64 (formatted integer)| `int64` |  | | status code |  |
 
 
 
@@ -3168,7 +3317,7 @@ Status: OK
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody OkBody OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
@@ -3178,7 +3327,7 @@ Status: OK
 ### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
 
 
-> SetNamespaceConfigBody set namespace config body
+> SetNamespaceConfigBody SetNamespaceConfigBody SetNamespaceConfigBody set namespace config body
 
 **Example**
 ```
@@ -3201,7 +3350,7 @@ Status: OK
 ### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
 
 
-> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+> SetWorkflowCloudEventLogsBody SetWorkflowCloudEventLogsBody set workflow cloud event logs body
 
 **Example**
 ```
@@ -3224,7 +3373,7 @@ Status: OK
 ### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
 
 
-> ToggleWorkflowBody ToggleWorkflowBody toggle workflow body
+> ToggleWorkflowBody toggle workflow body
 
 **Example**
 ```
@@ -3247,7 +3396,7 @@ Status: OK
 ### <span id="update-global-service-body"></span> UpdateGlobalServiceBody
 
 
-> UpdateGlobalServiceBody UpdateGlobalServiceBody update global service body
+> UpdateGlobalServiceBody update global service body
 
 **Example**
 ```
@@ -3274,7 +3423,7 @@ Status: OK
 ### <span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody
 
 
-> UpdateGlobalServiceTrafficBody update global service traffic body
+> UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody update global service traffic body
 
 **Example**
 ```
@@ -3297,7 +3446,7 @@ Status: OK
 ### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
 
 
-> UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
+> UpdateGlobalServiceTrafficParamsBodyValuesItems0 UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
   
 
 
@@ -3343,7 +3492,7 @@ Status: OK
 ### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
 
 
-> UpdateNamespaceServiceTrafficBody update namespace service traffic body
+> UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body
 
 **Example**
 ```

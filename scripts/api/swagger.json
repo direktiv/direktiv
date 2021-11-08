@@ -1807,74 +1807,6 @@
         }
       }
     },
-    "/api/namespaces/{namespace}/registries": {
-      "get": {
-        "description": "Gets the list of namespace registries.\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Get List of Namespace Registries",
-        "operationId": "getRegistries",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully got namespace registries"
-          }
-        }
-      },
-      "post": {
-        "description": "Delete a namespace container registry\n",
-        "tags": [
-          "Registries"
-        ],
-        "summary": "Delete a Namespace Container Registry",
-        "operationId": "deleteRegistry",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Payload that contains registry data",
-            "name": "Registry Payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "reg"
-              ],
-              "properties": {
-                "reg": {
-                  "description": "Target registry URL",
-                  "type": "string"
-                }
-              },
-              "example": {
-                "data": "admin:8QwFLg%D$qg*",
-                "reg": "https://prod.customreg.io"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successfully delete namespace registry"
-          }
-        }
-      }
-    },
     "/api/namespaces/{namespace}/secrets": {
       "get": {
         "description": "Gets the list of namespace secrets.\n",
@@ -2961,6 +2893,178 @@
         }
       }
     },
+    "/api/registries": {
+      "get": {
+        "description": "Gets the list of global registries.\nGlobal registries are available to all services.\n",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Get List of Global Registries",
+        "operationId": "getGlobalRegistries",
+        "responses": {
+          "200": {
+            "description": "successfully got global registries"
+          }
+        }
+      },
+      "post": {
+        "description": "Delete a Global container registry\nGlobal registries are available to all services.\n",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Delete a global Container Registry",
+        "operationId": "deleteGlobalRegistry",
+        "parameters": [
+          {
+            "description": "Payload that contains registry data",
+            "name": "Registry Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "reg"
+              ],
+              "properties": {
+                "reg": {
+                  "description": "Target registry URL",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "data": "admin:8QwFLg%D$qg*",
+                "reg": "https://prod.customreg.io"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully delete global registry"
+          }
+        }
+      }
+    },
+    "/api/registries/namespaces/{namespace}": {
+      "get": {
+        "description": "Gets the list of namespace registries.\n",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Get List of Namespace Registries",
+        "operationId": "getRegistries",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got namespace registries"
+          }
+        }
+      },
+      "post": {
+        "description": "Delete a namespace container registry\n",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Delete a Namespace Container Registry",
+        "operationId": "deleteRegistry",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Payload that contains registry data",
+            "name": "Registry Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "reg"
+              ],
+              "properties": {
+                "reg": {
+                  "description": "Target registry URL",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "data": "admin:8QwFLg%D$qg*",
+                "reg": "https://prod.customreg.io"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully delete namespace registry"
+          }
+        }
+      }
+    },
+    "/api/registries/private": {
+      "get": {
+        "description": "Gets the list of global private registries.\n Global Private registries are only available to global services.\n",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Get List of Global Private Registries",
+        "operationId": "getGlobalPrivateRegistries",
+        "responses": {
+          "200": {
+            "description": "successfully got global private registries"
+          }
+        }
+      },
+      "post": {
+        "description": "Delete a global container registry.\n Global Private registries are only available to global services.\n",
+        "tags": [
+          "Registries"
+        ],
+        "summary": "Delete a Global Container Registry",
+        "operationId": "deleteGlobalPrivateRegistry",
+        "parameters": [
+          {
+            "description": "Payload that contains registry data",
+            "name": "Registry Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "reg"
+              ],
+              "properties": {
+                "reg": {
+                  "description": "Target registry URL",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "data": "admin:8QwFLg%D$qg*",
+                "reg": "https://prod.customreg.io"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully delete global private registry"
+          }
+        }
+      }
+    },
     "/api/version": {
       "get": {
         "description": "Returns version information for servers in the cluster.\n",
@@ -2979,7 +3083,7 @@
   },
   "definitions": {
     "CreateGlobalServiceBody": {
-      "description": "CreateGlobalServiceBody CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "description": "CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
       "type": "object",
       "required": [
         "cmd",
@@ -3014,15 +3118,15 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[[small medium large]]"
+            "[small medium large]"
           ],
           "x-go-name": "Size"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
     },
     "CreateNamespaceServiceBody": {
-      "description": "CreateNamespaceServiceBody CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
+      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
       "type": "object",
       "required": [
         "cmd",
@@ -3057,15 +3161,15 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[[small medium large]]"
+            "[small medium large]"
           ],
           "x-go-name": "Size"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
     },
     "DeleteRegistryBody": {
-      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
+      "description": "DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
       "type": "object",
       "required": [
         "reg"
@@ -3077,21 +3181,24 @@
           "x-go-name": "Reg"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "ErrorResponse": {
+      "description": "ErrorResponse ErrorResponse ErrorResponse error response",
       "type": "object",
       "properties": {
         "Message": {
+          "description": "error",
           "type": "string",
           "x-go-name": "Error"
         },
         "StatusCode": {
+          "description": "status code",
           "type": "integer",
           "format": "int64"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "JqPlaygroundBody": {
       "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
@@ -3115,15 +3222,15 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
-      "description": "OkBody OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
+      "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
       "type": "object",
       "additionalProperties": {
         "type": "object"
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "SetNamespaceConfigBody": {
-      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
+      "description": "SetNamespaceConfigBody SetNamespaceConfigBody SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
       "type": "object",
       "properties": {
         "broadcast": {
@@ -3132,10 +3239,10 @@
           "x-go-name": "Broadcast"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "SetWorkflowCloudEventLogsBody": {
-      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
+      "description": "SetWorkflowCloudEventLogsBody SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
       "type": "object",
       "required": [
         "logger"
@@ -3147,10 +3254,10 @@
           "x-go-name": "Logger"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "ToggleWorkflowBody": {
-      "description": "ToggleWorkflowBody ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
+      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
       "type": "object",
       "required": [
         "live"
@@ -3162,10 +3269,10 @@
           "x-go-name": "Live"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
     },
     "UpdateGlobalServiceBody": {
-      "description": "UpdateGlobalServiceBody UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
+      "description": "UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
       "type": "object",
       "required": [
         "cmd",
@@ -3195,7 +3302,7 @@
           "description": "Size of created service pods",
           "type": "string",
           "enum": [
-            "[[small medium large]]"
+            "[small medium large]"
           ],
           "x-go-name": "Size"
         },
@@ -3206,10 +3313,10 @@
           "x-go-name": "TrafficPercent"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
     },
     "UpdateGlobalServiceTrafficBody": {
-      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
+      "description": "UpdateGlobalServiceTrafficBody UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
       "type": "object",
       "required": [
         "values"
@@ -3224,10 +3331,10 @@
           "x-go-name": "Values"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
+      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
       "type": "object",
       "properties": {
         "percent": {
@@ -3242,7 +3349,7 @@
           "x-go-name": "Revision"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateNamespaceServiceBody": {
       "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
@@ -3289,7 +3396,7 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
     },
     "UpdateNamespaceServiceTrafficBody": {
-      "description": "UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
+      "description": "UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
       "type": "object",
       "required": [
         "values"
@@ -3304,7 +3411,7 @@
           "x-go-name": "Values"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
       "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",

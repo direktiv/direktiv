@@ -1694,9 +1694,17 @@ func updateKnativeFunction(svn string, info *igrpc.BaseInfo, percent int64) (*v1
 func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 	var lo []corev1.LocalObjectReference
 
-	secrets := listRegistriesNames(namespace, true)
+	secrets := listRegistriesNames(namespace)
 	for _, s := range secrets {
 		logger.Debugf("adding pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
+	globalSecrets := listGlobalRegistriesNames()
+	for _, s := range globalSecrets {
+		logger.Debugf("adding global pull secret: %v", s)
 		lo = append(lo, corev1.LocalObjectReference{
 			Name: s,
 		})

@@ -11,7 +11,6 @@ message Registry {
 
 message GetRegistriesRequest {
 	optional string namespace = 1;
-	optional bool includeGlobal = 2;
 }
 
 message GetRegistriesResponse {

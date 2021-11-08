@@ -13,7 +13,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -88,9 +87,9 @@ func kubernetesDeleteGlobalRegistry(name, globalAnnotation string) error {
 
 }
 
-func listRegistriesNames(namespace string, includeGlobal bool) []string {
+func listRegistriesNames(namespace string) []string {
 
-	logger.With("includeGlobal", includeGlobal).Debugf("getting registries for namespace %s", namespace)
+	logger.Debugf("getting registries for namespace %s", namespace)
 	var registries []string
 
 	clientset, err := getClientSet()
@@ -99,25 +98,12 @@ func listRegistriesNames(namespace string, includeGlobal bool) []string {
 		return registries
 	}
 
-	annotations := map[string]string{
-		annotationNamespace: namespace,
-	}
-
-	// Add public global registries
-	if includeGlobal {
-		annotations[annotationRegistryTypeKey] = annotationRegistryTypeGlobalValue
-	}
-
 	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		List(context.Background(),
-			metav1.ListOptions{LabelSelector: labels.Set(annotations).String()})
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
 		logger.Errorf("can not list secrets: %v", err)
 		return registries
-	}
-
-	if includeGlobal {
-		removeDuplicateRegistries(secrets)
 	}
 
 	for _, s := range secrets.Items {
@@ -125,6 +111,35 @@ func listRegistriesNames(namespace string, includeGlobal bool) []string {
 	}
 
 	logger.Debugf("registries for namespace: %+v", registries)
+
+	return registries
+
+}
+
+func listGlobalRegistriesNames() []string {
+
+	logger.Debugf("getting public global registries")
+	var registries []string
+
+	clientset, err := getClientSet()
+	if err != nil {
+		logger.Errorf("can not get clientset: %v", err)
+		return registries
+	}
+
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationRegistryTypeKey, annotationRegistryTypeGlobalValue)})
+	if err != nil {
+		logger.Errorf("can not list secrets: %v", err)
+		return registries
+	}
+
+	for _, s := range secrets.Items {
+		registries = append(registries, s.Name)
+	}
+
+	logger.Debugf("public global registries : %+v", registries)
 
 	return registries
 
@@ -197,25 +212,11 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 		return resp, err
 	}
 
-	annotations := map[string]string{
-		annotationNamespace: in.GetNamespace(),
-	}
-
-	// Add public global registries
-	if in.GetIncludeGlobal() {
-		annotations[annotationRegistryTypeKey] = annotationRegistryTypeGlobalValue
-	}
-
 	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		List(context.Background(),
-			metav1.ListOptions{LabelSelector: labels.Set(annotations).String()})
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, in.GetNamespace())})
 	if err != nil {
 		return resp, err
-	}
-
-	// Remove potential duplicates
-	if in.GetIncludeGlobal() {
-		removeDuplicateRegistries(secrets)
 	}
 
 	for _, s := range secrets.Items {
@@ -286,7 +287,7 @@ func (is *functionsServer) StoreGlobalRegistry(ctx context.Context, in *igrpc.St
 
 }
 
-func (is *functionsServer) GetGlobalRegistries(ctx context.Context, in *igrpc.GetGlobalRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
+func (is *functionsServer) GetGlobalRegistries(ctx context.Context, in *emptypb.Empty) (*igrpc.GetRegistriesResponse, error) {
 
 	resp := &igrpc.GetRegistriesResponse{
 		Registries: []*igrpc.Registry{},
@@ -319,12 +320,12 @@ func (is *functionsServer) GetGlobalRegistries(ctx context.Context, in *igrpc.Ge
 
 // global-private
 
-func (is *functionsServer) DeleteGlobalPrivateRegistry(ctx context.Context, in *igrpc.DeleteGlobalPrivateRegistryRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) DeleteGlobalPrivateRegistry(ctx context.Context, in *igrpc.DeleteGlobalRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 	return &resp, kubernetesDeleteGlobalRegistry(in.GetName(), annotationRegistryTypeGlobalPrivateValue)
 }
 
-func (is *functionsServer) StoreGlobalPrivateRegistry(ctx context.Context, in *igrpc.StoreGlobalPrivateRegistryRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) StoreGlobalPrivateRegistry(ctx context.Context, in *igrpc.StoreGlobalRegistryRequest) (*emptypb.Empty, error) {
 
 	// create secret data, needs to be attached to service account
 	userToken := strings.SplitN(string(in.Data), ":", 2)
@@ -373,7 +374,7 @@ func (is *functionsServer) StoreGlobalPrivateRegistry(ctx context.Context, in *i
 
 }
 
-func (is *functionsServer) GetGlobalPrivateRegistries(ctx context.Context, in *igrpc.GetGlobalPrivateRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
+func (is *functionsServer) GetGlobalPrivateRegistries(ctx context.Context, in *emptypb.Empty) (*igrpc.GetRegistriesResponse, error) {
 
 	resp := &igrpc.GetRegistriesResponse{
 		Registries: []*igrpc.Registry{},
@@ -384,27 +385,11 @@ func (is *functionsServer) GetGlobalPrivateRegistries(ctx context.Context, in *i
 		return resp, err
 	}
 
-	annotationsTargets := []string{annotationRegistryTypeGlobalPrivateValue}
-	// Add public global registries
-	if in.GetIncludeGlobal() {
-		annotationsTargets = append(annotationsTargets, annotationRegistryTypeGlobalValue)
-	}
-
-	annotations, err := labels.NewRequirement(ServiceHeaderScope, selection.In, annotationsTargets)
-	if err != nil {
-		logger.Errorf("invalid label: %v", err)
-		return resp, err
-	}
-
 	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
 		List(context.Background(),
-			metav1.ListOptions{LabelSelector: annotations.String()})
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationRegistryTypeKey, annotationRegistryTypeGlobalPrivateValue)})
 	if err != nil {
 		return resp, err
-	}
-
-	if in.GetIncludeGlobal() {
-		removeDuplicateRegistries(secrets)
 	}
 
 	for _, s := range secrets.Items {
@@ -443,6 +428,33 @@ func removeDuplicateRegistries(secretList *v1.SecretList) {
 	// Replace secret items
 	for _, secret := range secretsMap {
 		secretList.Items = append(secretList.Items, secret)
+	}
+}
+
+func mergeSecrets(originalSecrets *v1.SecretList, patchSecrets *v1.SecretList) {
+
+	urlList := make([]string, len(originalSecrets.Items))
+
+	for i := range originalSecrets.Items {
+		urlList[i] = originalSecrets.Items[i].Annotations[annotationURL]
+	}
+
+	for i := range patchSecrets.Items {
+		var urlAlreadyExists bool
+		patchURL := patchSecrets.Items[i].Annotations[annotationURL]
+
+		// Check if secret item already exists in entry
+		for _, url := range urlList {
+			if patchURL == url {
+				urlAlreadyExists = true
+				break
+			}
+		}
+
+		// Add item if secret does not exist
+		if !urlAlreadyExists {
+			originalSecrets.Items = append(originalSecrets.Items, patchSecrets.Items[i])
+		}
 	}
 }
 
