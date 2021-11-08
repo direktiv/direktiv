@@ -164,7 +164,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Delete a namespace.
 	//   A namespace will not delete by default if it has any child resources (workflows, etc...).
-	//   Deleting the namespace will all its children can be done using the `recursive` query parameter.
+	//   Deleting the namespace with all its children can be done using the `recursive` query parameter.
 	// summary: Delete a namespace
 	// parameters:
 	// - in: path
