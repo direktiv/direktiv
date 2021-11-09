@@ -30,11 +30,105 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	DeleteGlobalPrivateRegistry(params *DeleteGlobalPrivateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteGlobalPrivateRegistryOK, error)
+
+	DeleteGlobalRegistry(params *DeleteGlobalRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteGlobalRegistryOK, error)
+
 	DeleteRegistry(params *DeleteRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteRegistryOK, error)
+
+	GetGlobalPrivateRegistries(params *GetGlobalPrivateRegistriesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetGlobalPrivateRegistriesOK, error)
+
+	GetGlobalRegistries(params *GetGlobalRegistriesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetGlobalRegistriesOK, error)
 
 	GetRegistries(params *GetRegistriesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetRegistriesOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  DeleteGlobalPrivateRegistry deletes a global container registry
+
+  Delete a global container registry.
+ Global Private registries are only available to global services.
+
+*/
+func (a *Client) DeleteGlobalPrivateRegistry(params *DeleteGlobalPrivateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteGlobalPrivateRegistryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteGlobalPrivateRegistryParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "deleteGlobalPrivateRegistry",
+		Method:             "POST",
+		PathPattern:        "/api/functions/registries/private",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &DeleteGlobalPrivateRegistryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DeleteGlobalPrivateRegistryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for deleteGlobalPrivateRegistry: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  DeleteGlobalRegistry deletes a global container registry
+
+  Delete a Global container registry
+Global registries are available to all services.
+
+*/
+func (a *Client) DeleteGlobalRegistry(params *DeleteGlobalRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteGlobalRegistryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteGlobalRegistryParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "deleteGlobalRegistry",
+		Method:             "POST",
+		PathPattern:        "/api/functions/registries/global",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &DeleteGlobalRegistryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DeleteGlobalRegistryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for deleteGlobalRegistry: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -51,7 +145,7 @@ func (a *Client) DeleteRegistry(params *DeleteRegistryParams, authInfo runtime.C
 	op := &runtime.ClientOperation{
 		ID:                 "deleteRegistry",
 		Method:             "POST",
-		PathPattern:        "/api/namespaces/{namespace}/registries",
+		PathPattern:        "/api/registries/namespaces/{namespace}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
@@ -80,6 +174,92 @@ func (a *Client) DeleteRegistry(params *DeleteRegistryParams, authInfo runtime.C
 }
 
 /*
+  GetGlobalPrivateRegistries gets list of global private registries
+
+  Gets the list of global private registries.
+ Global Private registries are only available to global services.
+
+*/
+func (a *Client) GetGlobalPrivateRegistries(params *GetGlobalPrivateRegistriesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetGlobalPrivateRegistriesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetGlobalPrivateRegistriesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getGlobalPrivateRegistries",
+		Method:             "GET",
+		PathPattern:        "/api/functions/registries/private",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetGlobalPrivateRegistriesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetGlobalPrivateRegistriesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getGlobalPrivateRegistries: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  GetGlobalRegistries gets list of global registries
+
+  Gets the list of global registries.
+Global registries are available to all services.
+
+*/
+func (a *Client) GetGlobalRegistries(params *GetGlobalRegistriesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetGlobalRegistriesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetGlobalRegistriesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getGlobalRegistries",
+		Method:             "GET",
+		PathPattern:        "/api/functions/registries/global",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetGlobalRegistriesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetGlobalRegistriesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getGlobalRegistries: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
   GetRegistries gets list of namespace registries
 
   Gets the list of namespace registries.
@@ -93,7 +273,7 @@ func (a *Client) GetRegistries(params *GetRegistriesParams, authInfo runtime.Cli
 	op := &runtime.ClientOperation{
 		ID:                 "getRegistries",
 		Method:             "GET",
-		PathPattern:        "/api/namespaces/{namespace}/registries",
+		PathPattern:        "/api/registries/namespaces/{namespace}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},

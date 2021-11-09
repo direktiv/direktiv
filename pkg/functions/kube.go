@@ -1702,6 +1702,36 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 		})
 	}
 
+	globalSecrets := listGlobalRegistriesNames()
+	for _, s := range globalSecrets {
+		logger.Debugf("adding global pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
+	return lo
+}
+
+func createGlobalPrivatePullSecrets() []corev1.LocalObjectReference {
+	var lo []corev1.LocalObjectReference
+
+	globalPrivateSecrets := listGlobalPrivateRegistriesNames()
+	for _, s := range globalPrivateSecrets {
+		logger.Debugf("adding pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
+	globalSecrets := listGlobalRegistriesNames()
+	for _, s := range globalSecrets {
+		logger.Debugf("adding global pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
 	return lo
 }
 
@@ -1760,7 +1790,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 						info.GetName(), scope, int(info.GetSize()), hash),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							ImagePullSecrets:   createPullSecrets(info.GetNamespaceName()),
 							ServiceAccountName: functionsConfig.ServiceAccount,
 							Containers:         containers,
 							Volumes:            createVolumes(),
@@ -1771,6 +1800,13 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 				},
 			},
 		},
+	}
+
+	// Set Registry Secrets
+	if scope == PrefixGlobal {
+		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = createGlobalPrivatePullSecrets()
+	} else {
+		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = createPullSecrets(info.GetNamespaceName())
 	}
 
 	// Set kong override timeout annotation
