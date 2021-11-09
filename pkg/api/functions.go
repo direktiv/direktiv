@@ -1049,7 +1049,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully delete namespace registry"
 	r.HandleFunc("/registries/namespaces/{ns}", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
 
-	// swagger:operation GET /api/registries Registries getGlobalRegistries
+	// swagger:operation GET /api/functions/registries/global Registries getGlobalRegistries
 	// ---
 	// description: |
 	//   Gets the list of global registries.
@@ -1058,9 +1058,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got global registries"
-	r.HandleFunc("/registries", h.getGlobalRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
+	r.HandleFunc("/registries/global", h.getGlobalRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
 
-	// swagger:operation POST /api/registries Registries createGlobalRegistry
+	// swagger:operation POST /api/functions/registries/global Registries createGlobalRegistry
 	// ---
 	// description: |
 	//   Create a global container registry.
@@ -1092,9 +1092,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully created global registry"
-	r.HandleFunc("/registries", h.createGlobalRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
+	r.HandleFunc("/registries/global", h.createGlobalRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
 
-	// swagger:operation POST /api/registries Registries deleteGlobalRegistry
+	// swagger:operation POST /api/functions/registries/global Registries deleteGlobalRegistry
 	// ---
 	// description: |
 	//   Delete a Global container registry
@@ -1119,9 +1119,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully delete global registry"
-	r.HandleFunc("/registries", h.deleteGlobalRegistry).Methods(http.MethodDelete).Name(RN_DeleteGlobalPrivateRegistry)
+	r.HandleFunc("/registries/global", h.deleteGlobalRegistry).Methods(http.MethodDelete).Name(RN_DeleteGlobalPrivateRegistry)
 
-	// swagger:operation GET /api/registries/private Registries getGlobalPrivateRegistries
+	// swagger:operation GET /api/functions/registries/private Registries getGlobalPrivateRegistries
 	// ---
 	// description: |
 	//   Gets the list of global private registries.
@@ -1132,7 +1132,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got global private registries"
 	r.HandleFunc("/registries/private", h.getGlobalPrivateRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
 
-	// swagger:operation POST /api/registries/private Registries createGlobalPrivateRegistry
+	// swagger:operation POST /api/functions/registries/private Registries createGlobalPrivateRegistry
 	// ---
 	// description: |
 	//   Create a global container registry.
@@ -1166,7 +1166,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully created global private registry"
 	r.HandleFunc("/registries/private", h.createGlobalPrivateRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
 
-	// swagger:operation POST /api/registries/private Registries deleteGlobalPrivateRegistry
+	// swagger:operation POST /api/functions/registries/private Registries deleteGlobalPrivateRegistry
 	// ---
 	// description: |
 	//   Delete a global container registry.

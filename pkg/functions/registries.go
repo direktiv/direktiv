@@ -145,6 +145,35 @@ func listGlobalRegistriesNames() []string {
 
 }
 
+func listGlobalPrivateRegistriesNames() []string {
+
+	logger.Debugf("getting private global registries")
+	var registries []string
+
+	clientset, err := getClientSet()
+	if err != nil {
+		logger.Errorf("can not get clientset: %v", err)
+		return registries
+	}
+
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationRegistryTypeKey, annotationRegistryTypeGlobalPrivateValue)})
+	if err != nil {
+		logger.Errorf("can not list secrets: %v", err)
+		return registries
+	}
+
+	for _, s := range secrets.Items {
+		registries = append(registries, s.Name)
+	}
+
+	logger.Debugf("private global registries : %+v", registries)
+
+	return registries
+
+}
+
 // namespace
 func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
@@ -405,58 +434,6 @@ func (is *functionsServer) GetGlobalPrivateRegistries(ctx context.Context, in *e
 }
 
 // util
-func removeDuplicateRegistries(secretList *v1.SecretList) {
-
-	secretsMap := make(map[string]v1.Secret, 0)
-
-	for i := range secretList.Items {
-		secretURL := secretList.Items[i].Annotations[annotationURL]
-
-		if s, ok := secretsMap[secretURL]; ok {
-			// Replace Global Public registries as they have lowest priority
-			if s.Annotations[annotationRegistryTypeKey] == annotationRegistryTypeGlobalValue {
-				secretsMap[secretURL] = secretList.Items[i]
-			}
-		} else {
-			// Add secret to map
-			secretsMap[secretURL] = secretList.Items[i]
-		}
-	}
-
-	secretList.Items = make([]v1.Secret, len(secretsMap))
-
-	// Replace secret items
-	for _, secret := range secretsMap {
-		secretList.Items = append(secretList.Items, secret)
-	}
-}
-
-func mergeSecrets(originalSecrets *v1.SecretList, patchSecrets *v1.SecretList) {
-
-	urlList := make([]string, len(originalSecrets.Items))
-
-	for i := range originalSecrets.Items {
-		urlList[i] = originalSecrets.Items[i].Annotations[annotationURL]
-	}
-
-	for i := range patchSecrets.Items {
-		var urlAlreadyExists bool
-		patchURL := patchSecrets.Items[i].Annotations[annotationURL]
-
-		// Check if secret item already exists in entry
-		for _, url := range urlList {
-			if patchURL == url {
-				urlAlreadyExists = true
-				break
-			}
-		}
-
-		// Add item if secret does not exist
-		if !urlAlreadyExists {
-			originalSecrets.Items = append(originalSecrets.Items, patchSecrets.Items[i])
-		}
-	}
-}
 
 func prepareNewRegistrySecret(name, url, authConfig string) v1.Secret {
 	sa := v1.Secret{
