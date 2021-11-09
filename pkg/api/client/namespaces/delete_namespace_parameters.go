@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewDeleteNamespaceParams creates a new DeleteNamespaceParams object,
@@ -64,6 +65,12 @@ type DeleteNamespaceParams struct {
 	   target namespace to delete
 	*/
 	Namespace string
+
+	/* Recursive.
+
+	   recursively deletes all child resources
+	*/
+	Recursive *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -129,6 +136,17 @@ func (o *DeleteNamespaceParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
+// WithRecursive adds the recursive to the delete namespace params
+func (o *DeleteNamespaceParams) WithRecursive(recursive *bool) *DeleteNamespaceParams {
+	o.SetRecursive(recursive)
+	return o
+}
+
+// SetRecursive adds the recursive to the delete namespace params
+func (o *DeleteNamespaceParams) SetRecursive(recursive *bool) {
+	o.Recursive = recursive
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteNamespaceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -140,6 +158,23 @@ func (o *DeleteNamespaceParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	// path param namespace
 	if err := r.SetPathParam("namespace", o.Namespace); err != nil {
 		return err
+	}
+
+	if o.Recursive != nil {
+
+		// query param recursive
+		var qrRecursive bool
+
+		if o.Recursive != nil {
+			qrRecursive = *o.Recursive
+		}
+		qRecursive := swag.FormatBool(qrRecursive)
+		if qRecursive != "" {
+
+			if err := r.SetQueryParam("recursive", qRecursive); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

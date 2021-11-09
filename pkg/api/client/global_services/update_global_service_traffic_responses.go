@@ -15,8 +15,6 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	"github.com/direktiv/direktiv/pkg/api/models"
 )
 
 // UpdateGlobalServiceTrafficReader is a Reader for the UpdateGlobalServiceTraffic structure.
@@ -67,7 +65,7 @@ type UpdateGlobalServiceTrafficBody struct {
 
 	// List of revision traffic targets
 	// Required: true
-	Values []*models.UpdateGlobalServiceTrafficParamsBodyValuesItems0 `json:"values"`
+	Values []*UpdateGlobalServiceTrafficParamsBodyValuesItems0 `json:"values"`
 }
 
 // Validate validates this update global service traffic body

@@ -61,9 +61,7 @@ type SetNamespaceConfigParams struct {
 
 	/* ConfigPayload.
 
-	     Payload that contains the config information to set.
-	Note: This payload only need to contain the properities you wish to set.
-
+	   Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set.
 	*/
 	ConfigPayload SetNamespaceConfigBody
 

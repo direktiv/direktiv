@@ -243,6 +243,7 @@ resend:
 	if sub == nil {
 		sub = flow.pubsub.SubscribeInstance(d.in)
 		defer flow.cleanup(sub.Close)
+		goto resend
 	}
 
 	resp := new(grpc.InstanceResponse)
