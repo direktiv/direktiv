@@ -555,7 +555,311 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
+func eventListenersOrder(p *pagination) ent.EventsPaginateOption {
+
+	field := ent.EventsOrderFieldUpdatedAt
+	direction := ent.OrderDirectionAsc
+
+	if p.order != nil {
+
+		if x := p.order.Field; x != "" && x == "UPDATED" {
+			field = ent.EventsOrderFieldUpdatedAt
+		}
+
+	}
+
+	return ent.WithEventsOrder(&ent.EventsOrder{
+		Direction: direction,
+		Field:     field,
+	})
+
+}
+
+func eventListenersFilter(p *pagination) ent.EventsPaginateOption {
+
+	if p.filter == nil {
+		return nil
+	}
+
+	filter := p.filter.Val
+
+	return ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+
+		if filter == "" {
+			return query, nil
+		}
+
+		field := p.filter.Field
+		if field == "" {
+			return query, nil
+		}
+
+		// switch field {
+		// case "NAME":
+
+		// 	ftype := p.filter.Type
+		// 	if ftype == "" {
+		// 		return query, nil
+		// 	}
+
+		// 	switch ftype {
+		// 	case "CONTAINS":
+		// 		return query.Where(entns.NameContains(filter)), nil
+		// 	}
+		// }
+
+		return query, nil
+
+	})
+
+}
+
+func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	namespace := req.GetNamespace()
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []ent.EventsPaginateOption{}
+	opts = append(opts, eventListenersOrder(p))
+	filter := eventListenersFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+
+	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	query := ns.QueryNamespacelisteners()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.EventListenersResponse
+
+	err = atob(cx, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Namespace = namespace
+
+	m := make(map[string]string)
+
+	for idx, edge := range cx.Edges {
+
+		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
+
+		in, _ := edge.Node.Instance(ctx)
+		if in != nil {
+			resp.Edges[idx].Node.Instance = in.ID.String()
+		}
+
+		wf, err := edge.Node.Workflow(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		path, exists := m[wf.ID.String()]
+		if !exists {
+			wfd, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			if err != nil {
+				return nil, err
+			}
+			path = wfd.path
+			m[wf.ID.String()] = path
+		}
+
+		resp.Edges[idx].Node.Workflow = path
+
+		resp.Edges[idx].Node.Mode = "or"
+		if edge.Node.Count > 1 {
+			resp.Edges[idx].Node.Mode = "and"
+		}
+
+		edefs := make([]*grpc.EventDef, 0)
+		for _, ev := range edge.Node.Events {
+
+			var et string
+			if v, ok := ev["type"]; ok {
+				et, _ = v.(string)
+			}
+
+			delete(ev, "type")
+
+			filters := make(map[string]string)
+
+			for k, v := range ev {
+				if !strings.HasPrefix(k, "filter-") {
+					continue
+				}
+				k = strings.TrimPrefix(k, "filter-")
+				if s, ok := v.(string); ok {
+					filters[k] = s
+				}
+			}
+
+			edefs = append(edefs, &grpc.EventDef{
+				Type:    et,
+				Filters: filters,
+			})
+
+		}
+
+		resp.Edges[idx].Node.Events = edefs
+
+	}
+
+	return &resp, nil
+
+}
+
+func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc.Flow_EventListenersStreamServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+	phash := ""
+	nhash := ""
+
+	namespace := req.GetNamespace()
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return err
+	}
+
+	opts := []ent.EventsPaginateOption{}
+	opts = append(opts, eventListenersOrder(p))
+	filter := eventListenersFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+
+	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	if err != nil {
+		return err
+	}
+
+	sub := flow.pubsub.SubscribeEventListeners(ns)
+	defer flow.cleanup(sub.Close)
+
+resend:
+
+	query := ns.QueryNamespacelisteners()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return err
+	}
+
+	var resp = &grpc.EventListenersResponse{}
+
+	err = atob(cx, &resp)
+	if err != nil {
+		return err
+	}
+
+	resp.Namespace = namespace
+
+	m := make(map[string]string)
+
+	for idx, edge := range cx.Edges {
+
+		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
+
+		in, _ := edge.Node.Instance(ctx)
+		if in != nil {
+			resp.Edges[idx].Node.Instance = in.ID.String()
+		}
+
+		wf, err := edge.Node.Workflow(ctx)
+		if err != nil {
+			return err
+		}
+
+		path, exists := m[wf.ID.String()]
+		if !exists {
+			wfd, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			if err != nil {
+				return err
+			}
+			path = wfd.path
+			m[wf.ID.String()] = path
+		}
+
+		resp.Edges[idx].Node.Workflow = path
+
+		resp.Edges[idx].Node.Mode = "or"
+		if edge.Node.Count > 1 {
+			resp.Edges[idx].Node.Mode = "and"
+		}
+
+		edefs := make([]*grpc.EventDef, 0)
+		for _, ev := range edge.Node.Events {
+
+			var et string
+			if v, ok := ev["type"]; ok {
+				et, _ = v.(string)
+			}
+
+			delete(ev, "type")
+
+			filters := make(map[string]string)
+
+			for k, v := range ev {
+				if !strings.HasPrefix(k, "filter-") {
+					continue
+				}
+				k = strings.TrimPrefix(k, "filter-")
+				if s, ok := v.(string); ok {
+					filters[k] = s
+				}
+			}
+
+			edefs = append(edefs, &grpc.EventDef{
+				Type:    et,
+				Filters: filters,
+			})
+
+		}
+
+		resp.Edges[idx].Node.Events = edefs
+
+	}
+
+	nhash = checksum(resp)
+	if nhash != phash {
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+	}
+	phash = nhash
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
+
+}
+
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	namespace := in.GetNamespace()
 	rawevent := in.GetCloudevent()

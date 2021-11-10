@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
@@ -169,6 +170,21 @@ func (nc *NamespaceCreate) AddCloudevents(c ...*CloudEvents) *NamespaceCreate {
 		ids[i] = c[i].ID
 	}
 	return nc.AddCloudeventIDs(ids...)
+}
+
+// AddNamespacelistenerIDs adds the "namespacelisteners" edge to the Events entity by IDs.
+func (nc *NamespaceCreate) AddNamespacelistenerIDs(ids ...uuid.UUID) *NamespaceCreate {
+	nc.mutation.AddNamespacelistenerIDs(ids...)
+	return nc
+}
+
+// AddNamespacelisteners adds the "namespacelisteners" edges to the Events entity.
+func (nc *NamespaceCreate) AddNamespacelisteners(e ...*Events) *NamespaceCreate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return nc.AddNamespacelistenerIDs(ids...)
 }
 
 // Mutation returns the NamespaceMutation object of the builder.
@@ -449,6 +465,25 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: cloudevents.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.NamespacelistenersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
 				},
 			},
 		}

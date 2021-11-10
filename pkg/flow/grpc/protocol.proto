@@ -135,7 +135,8 @@ service Flow {
 	// Dependencies // Return dependency graph.
 	// Crons // List of cron schedules on the namespace.
 	// Broadcast // Broadcast Cloudevent.
-	// EventListeners // Get list of event listeners.
+	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
+	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {} 
 	// Linting
 	// LintRevision
 	// LintPayload

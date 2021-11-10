@@ -4,8 +4,43 @@ package direktiv_flow;
 
 option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
+import "google/protobuf/timestamp.proto";
+
+import "pkg/flow/grpc/pagination.proto";
+
 message BroadcastCloudeventRequest {
 	string namespace = 1;
 	bytes cloudevent = 2;
 	int64 timer = 3;
+}
+
+message EventListenersRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+}
+
+message EventDef {
+	string type = 1;
+	map<string, string> filters = 2;
+}
+
+message EventListener {
+	string workflow = 1;
+	string instance = 2;
+	google.protobuf.Timestamp updated_at = 3;
+	string mode = 4;
+	repeated EventDef events = 5;
+	// correlations 
+}
+
+message EventListenersEdge {
+	EventListener node = 1;
+	string cursor = 2;
+}
+
+message EventListenersResponse {
+	string namespace = 1;
+	int32 totalCount = 2;
+	PageInfo pageInfo = 3;
+	repeated EventListenersEdge edges = 4;
 }

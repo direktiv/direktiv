@@ -47,6 +47,16 @@ func init() {
 	cloudevents.DefaultID = cloudeventsDescID.Default.(func() uuid.UUID)
 	eventsFields := schema.Events{}.Fields()
 	_ = eventsFields
+	// eventsDescCreatedAt is the schema descriptor for created_at field.
+	eventsDescCreatedAt := eventsFields[5].Descriptor()
+	// events.DefaultCreatedAt holds the default value on creation for the created_at field.
+	events.DefaultCreatedAt = eventsDescCreatedAt.Default.(func() time.Time)
+	// eventsDescUpdatedAt is the schema descriptor for updated_at field.
+	eventsDescUpdatedAt := eventsFields[6].Descriptor()
+	// events.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	events.DefaultUpdatedAt = eventsDescUpdatedAt.Default.(func() time.Time)
+	// events.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	events.UpdateDefaultUpdatedAt = eventsDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// eventsDescID is the schema descriptor for id field.
 	eventsDescID := eventsFields[0].Descriptor()
 	// events.DefaultID holds the default value on creation for the id field.

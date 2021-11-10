@@ -61,6 +61,8 @@ func main() {
 	rootCmd.AddCommand(workflowLogsCmd)
 	rootCmd.AddCommand(instanceLogsCmd)
 
+	rootCmd.AddCommand(eventListenersCmd)
+
 	rootCmd.AddCommand(namespaceCmd)
 	rootCmd.AddCommand(namespacesCmd)
 	rootCmd.AddCommand(createNamespaceCmd)

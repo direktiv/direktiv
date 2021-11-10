@@ -119,8 +119,8 @@ func (e *Events) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     e.ID,
 		Type:   "Events",
-		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 3),
+		Fields: make([]*Field, 6),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(e.Events); err != nil {
@@ -155,6 +155,22 @@ func (e *Events) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "count",
 		Value: string(buf),
 	}
+	if buf, err = json.Marshal(e.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(e.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
 	node.Edges[0] = &Edge{
 		Type: "Workflow",
 		Name: "workflow",
@@ -182,6 +198,16 @@ func (e *Events) Node(ctx context.Context) (node *Node, err error) {
 	err = e.QueryInstance().
 		Select(instance.FieldID).
 		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Namespace",
+		Name: "namespace",
+	}
+	err = e.QueryNamespace().
+		Select(namespace.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -644,7 +670,7 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		ID:     n.ID,
 		Type:   "Namespace",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 6),
+		Edges:  make([]*Edge, 7),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(n.CreatedAt); err != nil {
@@ -736,6 +762,16 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 	err = n.QueryCloudevents().
 		Select(cloudevents.FieldID).
 		Scan(ctx, &node.Edges[5].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[6] = &Edge{
+		Type: "Events",
+		Name: "namespacelisteners",
+	}
+	err = n.QueryNamespacelisteners().
+		Select(events.FieldID).
+		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}

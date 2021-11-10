@@ -710,6 +710,16 @@ func (e *EventsQuery) Paginate(
 }
 
 var (
+	// EventsOrderFieldUpdatedAt orders Events by updated_at.
+	EventsOrderFieldUpdatedAt = &EventsOrderField{
+		field: events.FieldUpdatedAt,
+		toCursor: func(e *Events) Cursor {
+			return Cursor{
+				ID:    e.ID,
+				Value: e.UpdatedAt,
+			}
+		},
+	}
 	// EventsOrderFieldID orders Events by id.
 	EventsOrderFieldID = &EventsOrderField{
 		field: events.FieldID,
@@ -726,6 +736,8 @@ var (
 func (f EventsOrderField) String() string {
 	var str string
 	switch f.field {
+	case events.FieldUpdatedAt:
+		str = "UPDATED"
 	case events.FieldID:
 		str = "ID"
 	}
@@ -744,6 +756,8 @@ func (f *EventsOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("EventsOrderField %T must be a string", v)
 	}
 	switch str {
+	case "UPDATED":
+		*f = *EventsOrderFieldUpdatedAt
 	case "ID":
 		*f = *EventsOrderFieldID
 	default:
