@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gabriel-vasile/mimetype"
 	empty "github.com/golang/protobuf/ptypes/empty"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
 	"go.uber.org/zap"
@@ -3431,11 +3432,15 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+validate:
 	err = ev.Validate()
 
 	// azure hack for dataschema '#' which is an invalid cloudevent
 	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
 		ev.Context.SetDataSchema("")
+	} else if err != nil && ev.ID() == "" {
+		ev.SetID(uuid.New().String())
+		goto validate
 	} else if err != nil {
 		// all other validation errors
 		respond(w, nil, err)
