@@ -44,7 +44,7 @@ type GetRegistriesOK struct {
 }
 
 func (o *GetRegistriesOK) Error() string {
-	return fmt.Sprintf("[GET /api/registries/namespaces/{namespace}][%d] getRegistriesOK ", 200)
+	return fmt.Sprintf("[GET /api/functions/registries/namespaces/{namespace}][%d] getRegistriesOK ", 200)
 }
 
 func (o *GetRegistriesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
