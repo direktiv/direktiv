@@ -19,25 +19,34 @@ import (
 
 func directoryOrder(p *pagination) ent.InodePaginateOption {
 
-	field := ent.InodeOrderFieldName
-	direction := ent.OrderDirectionAsc
-
-	if p.order != nil {
-
-		if x := p.order.Field; x != "" && x == "NAME" {
-			field = ent.InodeOrderFieldName
-		}
-
-		if x := p.order.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
+	order := ent.InodeOrder{
+		Direction: ent.OrderDirectionAsc,
+		Field:     ent.InodeOrderFieldName,
 	}
 
-	return ent.WithInodeOrder(&ent.InodeOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if p.order != nil {
+		switch p.order.GetField() {
+		case "UPDATED":
+			order.Field = ent.InodeOrderFieldUpdatedAt
+		case "CREATED":
+			order.Field = ent.InodeOrderFieldCreatedAt
+		case "NAME":
+			order.Field = ent.InodeOrderFieldName
+		default:
+			break
+		}
+
+		switch p.order.GetDirection() {
+		case "DESC":
+			order.Direction = ent.OrderDirectionDesc
+		case "ASC":
+			order.Direction = ent.OrderDirectionAsc
+		default:
+			break
+		}
+	}
+
+	return ent.WithInodeOrder(&order)
 
 }
 
