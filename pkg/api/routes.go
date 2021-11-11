@@ -24,6 +24,7 @@ const (
 	RN_Untag                       = "untag"
 	RN_Retag                       = "retag"
 	RN_GetWorkflowRouter           = "getWorkflowRouter"
+	RN_EventListeners              = "eventListeners"
 	RN_EditWorkflowRouter          = "editWorkflowRouter"
 	RN_ValidateRef                 = "validateRef"
 	RN_ValidateRouter              = "validateRouter"

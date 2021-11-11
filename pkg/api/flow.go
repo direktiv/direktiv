@@ -1208,6 +1208,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
 
+	handlerPair(r, RN_EventListeners, "/namespaces/{ns}/events", h.EventListeners, h.EventListenersSSE)
+
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
 	// description: |
@@ -1451,6 +1453,83 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
+}
+
+func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+	namespace := mux.Vars(r)["ns"]
+
+	in := &grpc.EventListenersRequest{
+		Pagination: p,
+		Namespace:  namespace,
+	}
+
+	resp, err := h.client.EventListeners(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+	namespace := mux.Vars(r)["ns"]
+
+	ctx := r.Context()
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.EventListenersRequest{
+		Pagination: p,
+		Namespace:  namespace,
+	}
+
+	resp, err := h.client.EventListenersStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
 }
 
 func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
