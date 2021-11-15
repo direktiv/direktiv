@@ -23,11 +23,11 @@ jobs:
           v="${version:1}"
           echo "packaging helm for $v"
           helm dependency update kubernetes/charts/direktiv/
-          helm package --app-version=$v --version=$v kubernetes/charts/direktiv/
+          helm package --app-version=$version --version=$v kubernetes/charts/direktiv/
           helm dependency update kubernetes/charts/knative
-          helm package --app-version=$v --version=$v kubernetes/charts/knative/
+          helm package --app-version=$version --version=$v kubernetes/charts/knative/
           git clone https://github.com/CrunchyData/postgres-operator-examples.git
-          helm package --app-version=$v --version=$v postgres-operator-examples/helm/install/
+          helm package --app-version=$version --version=$v postgres-operator-examples/helm/install/
           wget https://${{ secrets.GCP_BUCKET }}.storage.googleapis.com/index.yaml
           echo "do helm index thing"
           helm repo index ./ --merge ./index.yaml
