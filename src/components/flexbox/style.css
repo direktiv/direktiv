@@ -18,3 +18,7 @@
 .auto-margin {
     margin: auto;
 }
+
+.flex-box.gap {
+    gap: 8px;
+}

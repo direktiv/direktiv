@@ -13,6 +13,7 @@
   --theme-shadow-box-shadow: 0px 2px 20px rgba(44, 57, 75, 0.1);
   --theme-subtle-border: #E9ECEF;
 
+  --border: solid 1px var(--theme-subtle-border);
   --hover-brightness: 1.1;
   --active-brightness: 0.95;
   --theme-border-radius: 4px;
@@ -21,6 +22,10 @@
 @font-face {
   font-family: 'Poppins';
   src: url(./fonts/Poppins-Regular.ttf);
+}
+
+.opaque {
+  background-color: white;
 }
 
 a, a:hover, a:visited, a:active {
@@ -43,6 +48,8 @@ body {
   line-height: 20px;
   letter-spacing: 0em;
   text-align: left;  
+
+  max-height: 100vh;
 }
 
 .border {
@@ -73,7 +80,7 @@ body {
   line-height: 32px;
   width: fit-content;
 
-  transition: filter 0.3s;
+  transition: filter 0.1s;
 }
 .btn:hover {
   filter: brightness(var(--hover-brightness));

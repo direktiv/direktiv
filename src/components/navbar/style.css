@@ -39,19 +39,8 @@
     color: var(--theme-dark-gray-text);
     padding: 0px;
     width: 100%;
-    /* padding: 10px;
-    padding-bottom: 0px; */
     list-style: none;
 }
-
-/* .nav-items ul li {
-    margin-top: 24px;
-}
-
-.nav-items ul li:last-child {
-    margin-bottom: 12px;
-} */
-
 
 .navbar-userinfo {
     padding: 8px;
@@ -73,9 +62,11 @@
     padding-left: 12px;
     padding-right: 12px;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .nav-item:hover {
+    color: var(--theme-dark-text);
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: var(--theme-border-radius);
 }

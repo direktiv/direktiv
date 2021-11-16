@@ -13,7 +13,7 @@ function NamespaceSelector(props) {
     className += " border"
 
     return (
-        <FlexBox onClick={onClick} style={style} className={className}>
+        <FlexBox onClick={onClick} style={{...style}} className={className}>
             <FlexBox className="namespace-selector">
                 <FlexBox className="namespace-selector-logo">
                     <div className="auto-margin">

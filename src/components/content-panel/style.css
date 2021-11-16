@@ -1,0 +1,21 @@
+.content-panel-parent {
+    border-radius: var(--theme-border-radius);
+    border: var(--border);
+}
+
+.content-panel-title {
+    border-bottom: var(--border);
+    line-height: 42px;
+    padding-left: 16px;
+
+    font-weight: 700;
+    gap: 12px;
+}
+
+.content-panel-title-icon svg {
+    padding-top: 8px;
+}
+
+.content-panel-body {
+    padding: 8px;
+}
