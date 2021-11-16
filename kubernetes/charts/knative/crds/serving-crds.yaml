@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   name: certificates.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -75,7 +75,7 @@ kind: CustomResourceDefinition
 metadata:
   name: configurations.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
@@ -439,11 +439,11 @@ spec:
                                     type: integer
                                     format: int32
                               resources:
-                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                                 properties:
                                   limits:
-                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -452,7 +452,7 @@ spec:
                                         - type: string
                                       x-kubernetes-int-or-string: true
                                   requests:
-                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -777,7 +777,7 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -826,7 +826,7 @@ kind: CustomResourceDefinition
 metadata:
   name: domainmappings.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -1095,7 +1095,7 @@ kind: CustomResourceDefinition
 metadata:
   name: ingresses.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1154,7 +1154,7 @@ kind: CustomResourceDefinition
 metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1276,7 +1276,7 @@ kind: CustomResourceDefinition
 metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1435,7 +1435,7 @@ kind: CustomResourceDefinition
 metadata:
   name: revisions.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -1778,11 +1778,11 @@ spec:
                             type: integer
                             format: int32
                       resources:
-                        description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                         properties:
                           limits:
-                            description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                             additionalProperties:
                               pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -1791,7 +1791,7 @@ spec:
                                 - type: string
                               x-kubernetes-int-or-string: true
                           requests:
-                            description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                             additionalProperties:
                               pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -2104,9 +2104,6 @@ spec:
                   description: DesiredReplicas reflects the desired amount of pods running this revision.
                   type: integer
                   format: int32
-                imageDigest:
-                  description: 'DeprecatedImageDigest holds the resolved digest for the image specified within .Spec.Container.Image. The digest is resolved during the creation of Revision. This field holds the digest value regardless of whether a tag or digest was originally specified in the Container object. It may be empty if the image comes from a registry listed to skip resolution. If multiple containers specified then DeprecatedImageDigest holds the digest for serving container. DEPRECATED: Use ContainerStatuses instead. TODO(savitaashture) Remove deprecatedImageDigest. ref https://kubernetes.io/docs/reference/using-api/deprecation-policy for deprecation.'
-                  type: string
                 logUrl:
                   description: LogURL specifies the generated logging url for this particular revision based on the revision url template specified in the controller's config.
                   type: string
@@ -2114,9 +2111,6 @@ spec:
                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                   type: integer
                   format: int64
-                serviceName:
-                  description: 'ServiceName holds the name of a core Kubernetes Service resource that load balances over the pods backing this Revision. Deprecated: revision service name is effectively equal to the revision name, as per #10540. 0.23 — stop populating 0.25 — remove.'
-                  type: string
 
 ---
 # Copyright 2019 The Knative Authors
@@ -2140,7 +2134,7 @@ kind: CustomResourceDefinition
 metadata:
   name: routes.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2313,7 +2307,7 @@ kind: CustomResourceDefinition
 metadata:
   name: serverlessservices.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2383,7 +2377,7 @@ kind: CustomResourceDefinition
 metadata:
   name: services.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
@@ -2751,11 +2745,11 @@ spec:
                                     type: integer
                                     format: int32
                               resources:
-                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                                 properties:
                                   limits:
-                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -2764,7 +2758,7 @@ spec:
                                         - type: string
                                       x-kubernetes-int-or-string: true
                                   requests:
-                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
