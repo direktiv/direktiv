@@ -10,4 +10,3 @@ proxy:
   connect_timeout: {{ .Values.ingress.timeout }}
   write_timeout: {{ .Values.ingress.timeout }}
   retries: 0
-  tls_verify: false

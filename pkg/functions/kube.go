@@ -1157,20 +1157,26 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		return corev1.ResourceRequirements{}, err
 	}
 
-	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dMi", functionsConfig.Storage))
+	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage))
+	if err != nil {
+		return corev1.ResourceRequirements{}, err
+	}
+
+	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage*2))
 	if err != nil {
 		return corev1.ResourceRequirements{}, err
 	}
 
 	return corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{
-			"cpu":    qcpu,
-			"memory": qmem,
+			"cpu":               qcpu,
+			"memory":            qmem,
+			"ephemeral-storage": ephemeral,
 		},
 		Limits: corev1.ResourceList{
 			"cpu":               qcpuHigh,
 			"memory":            qmemHigh,
-			"ephemeral-storage": ephemeral,
+			"ephemeral-storage": ephemeralHigh,
 		},
 	}, nil
 
