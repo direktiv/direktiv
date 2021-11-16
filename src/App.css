@@ -52,6 +52,13 @@ body {
   max-height: 100vh;
 }
 
+#overlay-helper {
+  height: 0px;
+  max-height: 0px;
+  width: 0px;
+  max-width: 0px;
+}
+
 .border {
   box-sizing: border-box;
   border: solid 1px var(--theme-subtle-border);
@@ -89,6 +96,18 @@ body {
   filter: brightness(var(--active-brightness));
 }
 
+.red {
+  background-color: var(--theme-red);
+}
+
+.red-text {
+  color: var(--theme-red);
+}
+
 .alert {
   color: var(--theme-red);
+}
+
+.clickable {
+  cursor: pointer !important;
 }

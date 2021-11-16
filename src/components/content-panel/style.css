@@ -19,3 +19,42 @@
 .content-panel-body {
     padding: 8px;
 }
+
+.control-panel-header-button {
+    font-size: 12px;
+    flex-direction: row-reverse;
+    margin-right: 8px;
+    float: right;
+    user-select: none;
+}
+
+.control-panel-header-button > div {
+    background-color: white;
+    border: var(--border);
+    border-radius: var(--theme-border-radius);
+    height: 26px;
+    line-height: 26px;
+    margin-top: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    width: fit-content;
+    transition: border-color 0.5s ease 0s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.control-panel-header-button > div:hover {
+    cursor: pointer;
+    border-color: var(--theme-dark-text);
+}
+
+.control-panel-header-button-icon {
+    margin-top: auto;
+    margin-bottom: auto;
+    max-width: 16px;
+}
+
+.control-panel-header-button-icon svg {
+    height: 16px;
+    width: 16px;
+}

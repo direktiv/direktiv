@@ -1,39 +1,28 @@
 import React from 'react';
-import Button from '../../components/button';
-import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon} from '../../components/content-panel';
+import SecretsPanel from './secrets-panel';
+import RegistriesPanel from './registries-panel';
 import FlexBox from '../../components/flexbox';
-import { IoLockClosedOutline } from 'react-icons/io5';
+import BroadcastConfigurationsPanel from './broadcast-panel';
+import VariablesPanel from './variables-panel';
 
 function ExamplePage(props) {
     return(
-        <FlexBox className="row gap" style={{ paddingRight: "8px" }}>
-            <FlexBox className="col">
-                <ContentPanel>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <IoLockClosedOutline />
-                        </ContentPanelTitleIcon>
-                        Hello world!   
-                    </ContentPanelTitle>
-                    <ContentPanelBody >
-                        <FlexBox>
-                            <Button className="auto-margin">Click me!</Button>
-                        </FlexBox>
-                    </ContentPanelBody>
-                </ContentPanel>
+        <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
+            <FlexBox className="gap">
+                <FlexBox className="col gap" style={{ maxWidth: "380px" }}>
+                    <FlexBox style={{ minWidth: "380px", maxWidth: "380px" }}>
+                        <SecretsPanel />
+                    </FlexBox>
+                    <FlexBox style={{ minWidth: "380px", maxWidth: "380px" }}>
+                        <RegistriesPanel />
+                    </FlexBox>
+                </FlexBox>
+                <FlexBox>
+                    <BroadcastConfigurationsPanel />
+                </FlexBox>
             </FlexBox>
-            <FlexBox className="col">
-                <ContentPanel>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <IoLockClosedOutline />
-                        </ContentPanelTitleIcon>
-                        This    
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        Is me
-                    </ContentPanelBody>
-                </ContentPanel>
+            <FlexBox>
+                <VariablesPanel />
             </FlexBox>
         </FlexBox>
     )

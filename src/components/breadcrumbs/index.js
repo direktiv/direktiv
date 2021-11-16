@@ -7,13 +7,13 @@ function Breadcrumbs(props) {
         <FlexBox>
             <ul>
                 <li>
-                    <a href="">
+                    <a href="/#">
                         Direktiv
                     </a>
                 </li>
                 <li>
-                    <a href="">
-                        Example
+                    <a href="/#">
+                        Settings
                     </a>
                 </li>
             </ul>
