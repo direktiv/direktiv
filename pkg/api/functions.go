@@ -1199,18 +1199,25 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	n := mux.Vars(r)["ns"]
+	// Get and Validate namespace exists
+	nsResp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
 
 	d := make(map[string]string)
 
-	err := json.NewDecoder(r.Body).Decode(&d)
+	err = json.NewDecoder(r.Body).Decode(&d)
 	if err != nil {
 		respond(w, nil, err)
 	}
 	reg := d["reg"]
 
 	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
-		Namespace: &n,
+		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 	})
 
@@ -1221,17 +1228,25 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	n := mux.Vars(r)["ns"]
+	// Get and Validate namespace exists
+	nsResp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	d := make(map[string]string)
 
-	err := json.NewDecoder(r.Body).Decode(&d)
+	err = json.NewDecoder(r.Body).Decode(&d)
 	if err != nil {
 		respond(w, nil, err)
 	}
 	reg := d["reg"]
 
 	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
-		Namespace: &n,
+		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 		Data:      []byte(d["data"]),
 	})
@@ -1244,11 +1259,18 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	n := mux.Vars(r)["ns"]
+	// Get and Validate namespace exists
+	nsResp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
 
 	var resp *grpc.GetRegistriesResponse
-	resp, err := h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
-		Namespace: &n,
+	resp, err = h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
+		Namespace: &nsResp.Namespace.Name,
 	})
 
 	respond(w, resp, err)
