@@ -1,0 +1,20 @@
+.flex-box {
+    display: flex;
+    flex: auto;
+}
+
+.flex-box.row {
+    flex-direction: row;
+}
+
+.flex-box.col {
+    flex-direction: column;
+}
+
+.flex-box.tall {
+    height: 100%;
+}
+
+.auto-margin {
+    margin: auto;
+}

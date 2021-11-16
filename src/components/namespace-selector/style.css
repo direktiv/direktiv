@@ -1,0 +1,38 @@
+.namespace-selector {
+    padding: 8px;
+    gap: 8px;
+    cursor: pointer;
+}
+.namespace-selector:hover {
+    filter: brightness(0.85);
+}
+
+.namespace-selector-logo {
+    box-shadow: 1px 2px 9px 0px #0000001C;
+    border-radius: var(--theme-border-radius);
+    
+    width: 45px;
+    max-width: 45px;
+
+    height: 45px;
+    max-height: 45px;
+}
+
+.namespace-selector-label-header {
+    color: var(--theme-dark-gray-text);
+    font-weight: bolder;
+
+    font-size: 10px;
+    line-height: 10px;
+    max-height: 10px;
+}
+
+.namespace-selector-label-value {
+    color: var(--theme-dark-text);
+    font-weight: 700;
+
+    font-size: 12px;
+    line-height: 12px;
+    max-height: 12px;
+    padding-top: 8px;
+}

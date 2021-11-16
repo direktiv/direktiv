@@ -1,0 +1,29 @@
+.breadcrumbs-row ul {
+    list-style-type: none;
+}
+
+.breadcrumbs-row ul li {
+    color: var(--theme-dark-gray-text);
+    display: inline;
+    font-size: 16px;
+    line-height: 42px;
+    font-weight: 600;
+}
+
+.breadcrumbs-row ul li a {
+    text-decoration: none;
+}
+
+.breadcrumbs-row ul li:last-child a {
+    color: var(--theme-dark-text);
+}
+
+.breadcrumbs-row ul li:hover a {
+    text-decoration: underline;
+}
+
+.breadcrumbs-row ul li:not(:last-child):after {
+    content: ">";
+    margin-left: 10px;
+    margin-right: 10px;
+}

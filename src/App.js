@@ -1,9 +1,10 @@
 import './App.css';
+import MainLayout from './layouts/main';
 
 function App() {
   return (
     <div className="App">
-      <div className="btn">Save container</div>
+      <MainLayout/>
     </div>
   );
 }

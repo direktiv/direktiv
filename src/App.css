@@ -11,6 +11,11 @@
   --theme-white: #FFFFFF;
   --theme-shadow-background: #C4C4C4;
   --theme-shadow-box-shadow: 0px 2px 20px rgba(44, 57, 75, 0.1);
+  --theme-subtle-border: #E9ECEF;
+
+  --hover-brightness: 1.1;
+  --active-brightness: 0.95;
+  --theme-border-radius: 4px;
 }
 
 @font-face {
@@ -18,8 +23,18 @@
   src: url(./fonts/Poppins-Regular.ttf);
 }
 
+a, a:hover, a:visited, a:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+.grey-text {
+  color: var(--theme-dark-gray-text);
+}
+
 body {
   color: var(--theme-dark-text);
+  background-color: #F8F8F9;
 
   font-family: Poppins;
   font-size: 15px;
@@ -30,8 +45,10 @@ body {
   text-align: left;  
 }
 
-.App {
-  padding: 10px;
+.border {
+  box-sizing: border-box;
+  border: solid 1px var(--theme-subtle-border);
+  border-radius: var(--theme-border-radius);
 }
 
 .shadow {
@@ -39,12 +56,32 @@ body {
   box-shadow: var(--theme-shadow-box-shadow);
 }
 
+.disabled {
+  pointer-events: none !important;
+  cursor: unset !important;
+  filter: grayscale(100%) !important;
+}
+
 .btn {
+  user-select: none;
   color: var(--theme-white);
-  border-radius: 4px;
+  cursor: pointer;
+  border-radius: var(--theme-border-radius);
   background-color: var(--theme-brand-blue);
   padding: 7px 10px 6px;
   height: 32px;
   line-height: 32px;
   width: fit-content;
+
+  transition: filter 0.3s;
+}
+.btn:hover {
+  filter: brightness(var(--hover-brightness));
+}
+.btn:active {
+  filter: brightness(var(--active-brightness));
+}
+
+.alert {
+  color: var(--theme-red);
 }
