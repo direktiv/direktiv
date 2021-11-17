@@ -50,6 +50,8 @@ body {
   text-align: left;  
 
   max-height: 100vh;
+  min-width: 800px;
+  overflow-x: auto;
 }
 
 #overlay-helper {
@@ -96,18 +98,51 @@ body {
   filter: brightness(var(--active-brightness));
 }
 
+.btn.small {
+  height: 18px;
+  line-height: 18px;
+}
+
 .red {
   background-color: var(--theme-red);
+}
+
+.blue {
+  background-color: var(--theme-brand-blue);
 }
 
 .red-text {
   color: var(--theme-red);
 }
 
-.alert {
-  color: var(--theme-red);
-}
-
 .clickable {
   cursor: pointer !important;
 }
+
+input {
+  /* box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  flex-basis: 100%; */
+
+  min-width: 0px;
+
+  line-height: 42px;
+  border: var(--border);
+  border-radius: var(--theme-border-radius);
+}
+
+.add-secret-btn {
+  
+  min-height: 44px;
+  max-height: 44px;
+  height: 44px;
+  max-width: 44px;
+  min-width: 44px;
+  width: 44px;
+  line-height: 44px;
+  
+  border: solid 1px var(--theme-green);
+  border-radius: var(--theme-border-radius);
+}
+

@@ -13,9 +13,9 @@ function ExamplePage(props) {
                     <FlexBox style={{ minWidth: "380px", maxWidth: "380px" }}>
                         <SecretsPanel />
                     </FlexBox>
-                    <FlexBox style={{ minWidth: "380px", maxWidth: "380px" }}>
+                    <div style={{ minWidth: "380px", maxWidth: "380px" }}>
                         <RegistriesPanel />
-                    </FlexBox>
+                    </div>
                 </FlexBox>
                 <FlexBox>
                     <BroadcastConfigurationsPanel />

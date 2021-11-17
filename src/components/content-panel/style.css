@@ -18,6 +18,7 @@
 
 .content-panel-body {
     padding: 8px;
+    overflow-y: auto;
 }
 
 .control-panel-header-button {

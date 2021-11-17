@@ -1,0 +1,51 @@
+.add-secret-btn > div {
+    cursor: pointer;
+    margin: auto;
+    width: fit-content;
+    padding-top: 5px;
+}
+
+.add-secret-btn > div:hover {
+    filter: brightness(0.8);
+}
+
+
+.add-secret-btn > div > svg {
+    height: 22px;
+    width: 22px;
+    color: var(--theme-green);
+}
+
+.secret-tuple {
+    font-size: 12px;
+}
+
+.secret-tuple > .key {
+    min-width: 50%;
+    max-width: 50%;
+
+    padding-left: 8px;
+}
+
+.secret-tuple > .val > span {
+    margin: auto;
+}
+
+.secrets-panel {
+    overflow-y: auto;
+}
+
+.secrets-delete-btn {
+    cursor: pointer;
+}
+
+.secret-tuple > .actions {
+    display: block;
+    width: 50px;
+    max-width: 50px;
+}
+
+.secret-tuple > .actions svg {
+    height: 18px;
+    width: 18px;
+}

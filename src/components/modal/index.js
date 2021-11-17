@@ -1,14 +1,29 @@
 import React, {useState} from 'react';
 import './style.css';
+import AddValueButton from '../add-button';
 import Button from '../button';
 import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon} from '../../components/content-panel';
 import { IoLockClosedOutline, IoCloseCircleSharp } from 'react-icons/io5';
 import FlexBox from '../flexbox';
 
+
 function Modal(props) {
 
-    let {withCloseButton} = props;
+    let {title, children, button, withCloseButton, activeOverlay, label} = props;
+    let {actionButtonLabel, actionButtonFunc} = props;
     const [visible, setVisible] = useState(false);
+
+    if (!title) {
+        title = "Modal Title"
+    }
+
+    if (!button) {
+        
+    }
+
+    if (!label) {
+        label = "Click me"
+    }
 
     function closeModal() {
         setVisible(false);
@@ -16,29 +31,50 @@ function Modal(props) {
 
     let overlay = (<></>);
     if (visible) {
-        overlay = (<ModalOverlay withCloseButton={withCloseButton} callback={closeModal} />)
+        overlay = (<ModalOverlay 
+                        children={children} 
+                        title={title} 
+                        activeOverlay={activeOverlay} 
+                        withCloseButton={withCloseButton} 
+                        callback={closeModal} 
+                        actionButtonLabel={actionButtonLabel}
+                        actionButtonFunc={actionButtonFunc}
+                    />)
     }
 
-    return(
+    if (!button) {
+        return(
+            <>
+                {overlay}
+                <Button onClick={() => {
+                    setVisible(true)
+                }}>
+                    {label}
+                </Button>
+            </>
+        );
+    }
+
+    return (
         <>
-            {overlay}
-            <Button onClick={() => {
-                setVisible(true)
-            }}>
-                Modal Open
-            </Button>
+        {overlay}
+        <FlexBox onClick={() => {
+            setVisible(true)
+        }}>
+            {button}
+        </FlexBox>
         </>
-    );
+    )
 }
 
 export default Modal;
 
 function ModalOverlay(props) {
 
-    let {callback, withCloseButton} = props;
+    let {title, children, callback, activeOverlay, withCloseButton} = props;
+    let {actionButtonLabel, actionButtonFunc} = props;
 
     let overlayClasses = ""
-
     let closeButton = (<></>);
     if (withCloseButton) {
         closeButton = (
@@ -54,7 +90,9 @@ function ModalOverlay(props) {
                 </div>
             </FlexBox>
         )
-    } else {
+    }
+    
+    if (activeOverlay) {
         overlayClasses += "clickable"
     }
 
@@ -62,7 +100,7 @@ function ModalOverlay(props) {
         <>
             <div className={"modal-overlay " + overlayClasses} />
             <div className={"modal-container " + overlayClasses} onClick={() => {
-                if (!withCloseButton) {
+                if (activeOverlay) {
                     callback()
                 }
             }}>
@@ -78,15 +116,23 @@ function ModalOverlay(props) {
                                     </ContentPanelTitleIcon>
                                 </FlexBox>
                                 <FlexBox>
-                                    Modal Title   
+                                    {title}   
                                 </FlexBox>
                                 <FlexBox>
                                     {closeButton}
                                 </FlexBox>
                             </ContentPanelTitle>
                             <ContentPanelBody >
-                                <FlexBox>
-                                    Contents...
+                                <FlexBox className="col gap">
+                                    {children}
+                                    { actionButtonLabel ? (
+                                        <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
+                                            <Button className="small red" onClick={() => {
+                                                actionButtonFunc()
+                                                callback()
+                                            }}>{actionButtonLabel}</Button>
+                                        </FlexBox>
+                                    ) :<></>}
                                 </FlexBox>
                             </ContentPanelBody>
                         </ContentPanel>

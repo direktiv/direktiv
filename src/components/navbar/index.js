@@ -40,7 +40,7 @@ function NavBar(props) {
                     <FlexBox className="nav-items" style={{ paddingLeft: "10px" }}>
                         <ul style={{ marginTop: "0px" }}>
                             <li>
-                                <NavItem className="alert" label="Log Out">
+                                <NavItem className="red-text" label="Log Out">
                                     <IoLogOutOutline/>
                                 </NavItem>
                             </li>

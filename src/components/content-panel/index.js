@@ -70,10 +70,13 @@ export function ContentPanelBody(props) {
 
 export function ContentPanelHeaderButton(props) {
 
-    let {children, onClick} = props;
+    let {children, onClick, className} = props;
+    if (!className) {
+        className=""
+    }
 
     return(
-        <FlexBox style={{ flexDirection: "row-reverse" }}>
+        <FlexBox className={className} style={{ flexDirection: "row-reverse" }}>
             <div onClick={onClick} className="control-panel-header-button">
                 <FlexBox className="shadow">
                     {children}

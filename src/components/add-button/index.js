@@ -1,6 +1,7 @@
 import React from 'react';
 import {ContentPanelHeaderButton, ContentPanelHeaderButtonIcon} from '../content-panel';
 import {IoAddOutline} from 'react-icons/io5';
+import FlexBox from '../flexbox';
 
 function AddValueButton(props) {
 
@@ -10,12 +11,14 @@ function AddValueButton(props) {
     }
 
     return (
-        <ContentPanelHeaderButton onClick={onClick}>
-            <ContentPanelHeaderButtonIcon>
-                <IoAddOutline/>
-            </ContentPanelHeaderButtonIcon>
-            {label}
-        </ContentPanelHeaderButton>
+        <FlexBox>
+            <ContentPanelHeaderButton className="add-panel-btn" onClick={onClick}>
+                <ContentPanelHeaderButtonIcon>
+                    <IoAddOutline/>
+                </ContentPanelHeaderButtonIcon>
+                {label}
+            </ContentPanelHeaderButton>
+        </FlexBox>
     )
 }
 

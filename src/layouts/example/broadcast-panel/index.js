@@ -1,10 +1,11 @@
 import React from 'react';
+import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { BsSliders } from 'react-icons/bs';
 
 function BroadcastConfigurationsPanel(props){
     return (
-        <ContentPanel style={{width: "100%"}}>
+        <ContentPanel className="broadcast-panel">
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
                     <BsSliders />
