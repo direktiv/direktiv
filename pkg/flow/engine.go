@@ -615,7 +615,9 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		engine.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		if IsNotFound(err) {
+			return "", NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
+		}
 		return "", err
 	}
 
