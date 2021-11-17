@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './style.css';
 import Button from '../button';
 import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon} from '../../components/content-panel';
@@ -9,7 +9,7 @@ import FlexBox from '../flexbox';
 function Modal(props) {
 
     let {title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {style, actionButtons} = props;
+    let {style, actionButtons, escapeToCancel} = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -33,19 +33,20 @@ function Modal(props) {
                         withCloseButton={withCloseButton} 
                         callback={closeModal} 
                         actionButtons={actionButtons}
+                        escapeToCancel={escapeToCancel}
                     />)
     }
 
     if (!button) {
         return(
-            <>
+            <div>
                 {overlay}
                 <Button onClick={() => {
                     setVisible(true)
                 }}>
                     {label}
                 </Button>
-            </>
+            </div>
         );
     }
 
@@ -53,7 +54,7 @@ function Modal(props) {
         <>
         {overlay}
         <FlexBox style={{...style}}>
-            <div onClick={() => {
+            <div style={{width: "100%"}} onClick={() => {
                 setVisible(true)
             }}>
                 {button}
@@ -68,7 +69,23 @@ export default Modal;
 function ModalOverlay(props) {
 
     let {title, children, callback, activeOverlay, withCloseButton} = props;
-    let {actionButtons} = props;
+    let {actionButtons, escapeToCancel} = props;
+
+    
+    useEffect(()=>{
+        function closeModal(e){
+            if (e.keyCode) {
+                callback(false)
+            }
+        }
+        if (escapeToCancel) {
+            window.addEventListener('keydown', closeModal)
+            return () => {
+                window.removeEventListener('keydown', closeModal)
+            }
+        }
+    },[escapeToCancel, callback])
+    
 
     let overlayClasses = ""
     let closeButton = (<></>);
@@ -106,7 +123,7 @@ function ModalOverlay(props) {
                 }
             }}>
                 <FlexBox className="tall">
-                    <div className="modal-body auto-margin" onClick={(e) => {
+                    <div style={{minWidth: "300px"}} className="modal-body auto-margin" onClick={(e) => {
                         e.stopPropagation()
                     }}>
                         <ContentPanel>
@@ -123,7 +140,7 @@ function ModalOverlay(props) {
                                     {closeButton}
                                 </FlexBox>
                             </ContentPanelTitle>
-                            <ContentPanelBody >
+                            <ContentPanelBody style={{padding: "12px"}}>
                                 <FlexBox className="col gap">
                                     {children}
                                     <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>

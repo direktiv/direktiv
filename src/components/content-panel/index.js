@@ -54,7 +54,7 @@ export function ContentPanelTitleIcon(props) {
 
 export function ContentPanelBody(props) {
     
-    let {children, className} = props;
+    let {children, className, style} = props;
     if (!className) {
         className = ""
     }
@@ -62,7 +62,7 @@ export function ContentPanelBody(props) {
     className = "content-panel-body " + className
 
     return(
-        <div className={className}>
+        <div style={{...style}} className={className}>
             {children}
         </div>
     );

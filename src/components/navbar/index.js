@@ -4,6 +4,9 @@ import Logo from '../../assets/nav-logo.png'
 import FlexBox from '../flexbox';
 import NamespaceSelector from '../namespace-selector';
 
+import Modal from '../modal';
+import AddValueButton from '../add-button';
+import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
 import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
 
@@ -67,18 +70,36 @@ export default NavBar;
 function NewNamespaceBtn(props) {
 
     return (
-        <FlexBox className="new-namespace-btn">
-            <div className="auto-margin">
-                <FlexBox className="row" style={{ gap: "8px" }}>
-                    <FlexBox>
-                        +
-                    </FlexBox>
-                    <FlexBox>
-                        New namespace
-                    </FlexBox>
+        <Modal title="New namespace" 
+            activeOverlay
+            escapeToCancel
+            button={(
+                <FlexBox className="new-namespace-btn">
+                    <div className="auto-margin">
+                        <FlexBox className="row" style={{ gap: "8px" }}>
+                            <FlexBox>
+                                +
+                            </FlexBox>
+                            <FlexBox>
+                                New namespace
+                            </FlexBox>
+                        </FlexBox>
+                    </div>
                 </FlexBox>
+            )} 
+            actionButtons={[
+                ButtonDefinition("Cancel", () => {
+                    console.log("close modal");
+                }, "small red", true, false),
+                ButtonDefinition("Add", () => {
+                    console.log("add secret");
+                }, "small blue", true, false)
+            ]}
+        >
+            <div>
+                CREATE NEW NAMESPACE HERE
             </div>
-        </FlexBox>
+        </Modal>
     );
 }
 

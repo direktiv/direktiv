@@ -22,3 +22,7 @@
 .flex-box.gap {
     gap: 8px;
 }
+
+.flex-box.large-gap {
+    gap: 12px;
+}

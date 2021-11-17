@@ -21,15 +21,14 @@ function SecretsPanel(props){
                     <Modal title="New secret" 
                         button={(
                             <AddValueButton label="Add" />
-                        )} 
-                        withCloseButton 
+                        )}  
                         actionButtons={[
+                            ButtonDefinition("Add", () => {
+                                console.log("add namespace");
+                            }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
                                 console.log("close modal");
-                            }, "small red", true, false),
-                            ButtonDefinition("Add", () => {
-                                console.log("add secret");
-                            }, "small blue", true, false)
+                            }, "small light", true, false)
                         ]}
                     >
                         <AddSecretPanel />
@@ -62,11 +61,11 @@ function Secrets(props) {
                     <FlexBox className="val"><span>******</span></FlexBox>
                     <FlexBox className="actions">
                         <Modal 
+                            escapeToCancel
                             style={{
                                 flexDirection: "row-reverse",
                                 marginRight: "8px"
                             }}
-                            withCloseButton 
                             title="Remove secret" 
                             button={(
                                 <SecretsDeleteButton/>
@@ -79,7 +78,7 @@ function Secrets(props) {
                                     }, "small red", true, false),
                                     ButtonDefinition("Cancel", () => {
                                         console.log("DONT DELETE");
-                                    }, "small blue", true, false)
+                                    }, "small light", true, false)
                                 ]
                             }   
                         >
@@ -111,13 +110,11 @@ function AddSecretPanel(props) {
     return (
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
             <FlexBox className="gap">
-                <FlexBox style={{width: "40px"}}>Key:</FlexBox>
                 <FlexBox>
                     <input placeholder="Enter key" />
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox style={{width: "40px"}}>Value:</FlexBox>
                 <FlexBox><input placeholder="Enter value" /></FlexBox>
             </FlexBox>
         </FlexBox>

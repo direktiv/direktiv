@@ -89,7 +89,6 @@ body {
   line-height: 32px;
   width: fit-content;
   font-size: 12px;
-
   transition: filter 0.1s;
 }
 .btn:hover {
@@ -99,9 +98,28 @@ body {
   filter: brightness(var(--active-brightness));
 }
 
+.btn.light {
+  /* box-sizing: border-box; */
+  border: var(--border);
+  background-color: white;
+  color: black;
+}
+
+.btn.light:hover {
+  filter: brightness(90%);
+}
+.btn.light:active {
+  filter: brightness(80%);
+}
+
 .btn.small {
   height: 18px;
   line-height: 18px;
+}
+.btn.light.small {
+  /* offset the border height */
+  height: 16px; 
+  line-height: 16px;
 }
 
 .red {
@@ -127,6 +145,7 @@ input {
   flex-basis: 100%; */
 
   min-width: 0px;
+  width: 100%;
   padding-left: 8px;
 
   line-height: 42px;
