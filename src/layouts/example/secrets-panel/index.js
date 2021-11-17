@@ -6,7 +6,6 @@ import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
 import Modal, {ButtonDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
-import Button from '../../../components/button';
 
 function SecretsPanel(props){
     return (
@@ -40,7 +39,7 @@ function SecretsPanel(props){
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
                     <FlexBox>
-                        <Alert className="info">Once a value if removed, it can never be restored.</Alert>
+                        <Alert className="info">Once a secret is removed, it can never be restored.</Alert>
                     </FlexBox>
                     <FlexBox className="secrets-list">
                         <Secrets />
@@ -63,6 +62,10 @@ function Secrets(props) {
                     <FlexBox className="val"><span>******</span></FlexBox>
                     <FlexBox className="actions">
                         <Modal 
+                            style={{
+                                flexDirection: "row-reverse",
+                                marginRight: "8px"
+                            }}
                             withCloseButton 
                             title="Remove secret" 
                             button={(
@@ -83,6 +86,7 @@ function Secrets(props) {
                             <FlexBox className="col gap">
                                 <FlexBox >
                                     Are you sure you want to delete 'SECRET_NAME_HERE'?
+                                    <br/>
                                     This action cannot be undone.
                                 </FlexBox>
                             </FlexBox>
@@ -94,7 +98,7 @@ function Secrets(props) {
     );
 }
 
-function SecretsDeleteButton(props) {
+export function SecretsDeleteButton(props) {
     return (
         <div className="secrets-delete-btn red-text">
             <IoCloseCircleSharp/>

@@ -9,7 +9,7 @@ import FlexBox from '../flexbox';
 function Modal(props) {
 
     let {title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {actionButtons} = props;
+    let {style, actionButtons} = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -52,7 +52,7 @@ function Modal(props) {
     return (
         <>
         {overlay}
-        <FlexBox>
+        <FlexBox style={{...style}}>
             <div onClick={() => {
                 setVisible(true)
             }}>
