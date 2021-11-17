@@ -68,7 +68,7 @@ $ helm install direktiv direktiv/direktiv
 | functions.netShape | string | `"10M"` | Egress/Ingress network limit for functions if supported by network |
 | functions.no_proxy | string | `""` | no_proxy injected as environment variable in functions |
 | functions.podCleaner | bool | `true` | Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks |
-| functions.replicaCount | int | `1` | number of controller replicas |
+| functions.replicas | int | `1` | number of controller replicas |
 | functions.runtime | string | `"default"` | runtime to use, e.g. gvisor on GCP |
 | functions.sidecar | string | `"direktiv/sidecar"` |  |
 | functions.tag | string | `""` |  |

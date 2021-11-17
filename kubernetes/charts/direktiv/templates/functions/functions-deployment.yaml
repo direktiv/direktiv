@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}-functions
 spec:
-  replicas: {{ .Values.functions.replicaCount }}
+  replicas: {{ .Values.functions.replicas }}
   selector:
     matchLabels:
       {{- include "direktiv.selectorLabelsFunctions" . | nindent 6 }}

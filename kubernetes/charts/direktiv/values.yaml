@@ -292,7 +292,7 @@ functions:
   timeout: 7200000
 
   # -- number of controller replicas
-  replicaCount: 1
+  replicas: 1
 
   # -- Egress/Ingress network limit for functions if supported by network
   netShape: "10M"
