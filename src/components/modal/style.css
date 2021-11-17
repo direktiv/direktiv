@@ -16,7 +16,7 @@
 
 .modal-body {
     cursor: default;
-    min-width: 320px;
+    /* min-width: 320px; */
     max-width: 80vw;
 }
 

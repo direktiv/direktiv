@@ -3,6 +3,7 @@ import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody
 import Modal from '../../../components/modal';
 import { IoLogoDocker } from 'react-icons/io5';
 import AddValueButton from '../../../components/add-button';
+import FlexBox from '../../../components/flexbox';
 
 function RegistriesPanel(props){
     return (
@@ -11,13 +12,17 @@ function RegistriesPanel(props){
                 <ContentPanelTitleIcon>
                     <IoLogoDocker />
                 </ContentPanelTitleIcon>
-                Container Registries  
-                <Modal title="New secret" 
-                    button={(
-                         <AddValueButton label="Add" />
-                    )} 
-                    withCloseButton activeOverlay
-                ></Modal> 
+                <FlexBox>
+                    Container Registries  
+                </FlexBox>
+                <div>
+                    <Modal title="New registry" 
+                        button={(
+                            <AddValueButton label="Add" />
+                        )} 
+                        withCloseButton activeOverlay
+                    ></Modal> 
+                </div>
             </ContentPanelTitle>
             <ContentPanelBody >
                 

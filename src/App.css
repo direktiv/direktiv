@@ -88,6 +88,7 @@ body {
   height: 32px;
   line-height: 32px;
   width: fit-content;
+  font-size: 12px;
 
   transition: filter 0.1s;
 }
@@ -126,10 +127,15 @@ input {
   flex-basis: 100%; */
 
   min-width: 0px;
+  padding-left: 8px;
 
   line-height: 42px;
   border: var(--border);
   border-radius: var(--theme-border-radius);
+}
+
+input:focus-visible {
+  outline: solid 1px var(--theme-brand-blue);
 }
 
 .add-secret-btn {

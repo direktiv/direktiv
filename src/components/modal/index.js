@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import './style.css';
-import AddValueButton from '../add-button';
 import Button from '../button';
 import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon} from '../../components/content-panel';
 import { IoLockClosedOutline, IoCloseCircleSharp } from 'react-icons/io5';
@@ -10,17 +9,13 @@ import FlexBox from '../flexbox';
 function Modal(props) {
 
     let {title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {actionButtonLabel, actionButtonFunc} = props;
+    let {actionButtons} = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
         title = "Modal Title"
     }
-
-    if (!button) {
-        
-    }
-
+    
     if (!label) {
         label = "Click me"
     }
@@ -37,8 +32,7 @@ function Modal(props) {
                         activeOverlay={activeOverlay} 
                         withCloseButton={withCloseButton} 
                         callback={closeModal} 
-                        actionButtonLabel={actionButtonLabel}
-                        actionButtonFunc={actionButtonFunc}
+                        actionButtons={actionButtons}
                     />)
     }
 
@@ -58,10 +52,12 @@ function Modal(props) {
     return (
         <>
         {overlay}
-        <FlexBox onClick={() => {
-            setVisible(true)
-        }}>
-            {button}
+        <FlexBox>
+            <div onClick={() => {
+                setVisible(true)
+            }}>
+                {button}
+            </div>
         </FlexBox>
         </>
     )
@@ -72,7 +68,7 @@ export default Modal;
 function ModalOverlay(props) {
 
     let {title, children, callback, activeOverlay, withCloseButton} = props;
-    let {actionButtonLabel, actionButtonFunc} = props;
+    let {actionButtons} = props;
 
     let overlayClasses = ""
     let closeButton = (<></>);
@@ -96,6 +92,11 @@ function ModalOverlay(props) {
         overlayClasses += "clickable"
     }
 
+    let buttons
+    if (actionButtons){
+       buttons = generateButtons(callback, actionButtons);
+    } 
+
     return(
         <>
             <div className={"modal-overlay " + overlayClasses} />
@@ -108,7 +109,7 @@ function ModalOverlay(props) {
                     <div className="modal-body auto-margin" onClick={(e) => {
                         e.stopPropagation()
                     }}>
-                        <ContentPanel style={{ maxWidth: "250px" }}>
+                        <ContentPanel>
                             <ContentPanelTitle>
                                 <FlexBox style={{ maxWidth: "18px" }}>
                                     <ContentPanelTitleIcon>
@@ -125,14 +126,9 @@ function ModalOverlay(props) {
                             <ContentPanelBody >
                                 <FlexBox className="col gap">
                                     {children}
-                                    { actionButtonLabel ? (
-                                        <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
-                                            <Button className="small red" onClick={() => {
-                                                actionButtonFunc()
-                                                callback()
-                                            }}>{actionButtonLabel}</Button>
-                                        </FlexBox>
-                                    ) :<></>}
+                                    <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
+                                        {buttons}
+                                    </FlexBox>
                                 </FlexBox>
                             </ContentPanelBody>
                         </ContentPanel>
@@ -142,3 +138,38 @@ function ModalOverlay(props) {
         </>
     )
 }
+
+export function ButtonDefinition(label, onClick, classList, closesModal, async) {
+    return {
+        label: label,
+        onClick: onClick,
+        classList: classList,
+        closesModal: closesModal,
+        async: async
+    }
+}
+
+function generateButtons(closeModal, actionButtons) {
+
+    // label, onClick, classList, closesModal, async
+
+    let out = [];
+    for (let i = 0; i < actionButtons.length; i++) {
+
+        let btn = actionButtons[i];
+        let onClick = () => {
+            btn.onClick()
+            if (btn.closesModal) {
+                closeModal()
+            }
+        }
+
+        out.push(
+            <Button key={Array(5).fill().map(()=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(Math.random()*62)).join("")} className={btn.classList} onClick={onClick}>
+                {btn.label}
+            </Button>
+        )
+    }
+
+    return out
+} 

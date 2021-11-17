@@ -3,7 +3,7 @@ import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
-import Modal from '../../../components/modal';
+import Modal, {ButtonDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
 import Button from '../../../components/button';
@@ -15,14 +15,27 @@ function SecretsPanel(props){
                 <ContentPanelTitleIcon>
                     <IoLockClosedOutline />
                 </ContentPanelTitleIcon>
-                Secrets   
-                <Modal title="New secret" 
-                    button={(
-                         <AddValueButton label="Add" />
-                    )} 
-                    withCloseButton activeOverlay
-                >
-                </Modal>
+                <FlexBox>
+                    Secrets   
+                </FlexBox>
+                <div>
+                    <Modal title="New secret" 
+                        button={(
+                            <AddValueButton label="Add" />
+                        )} 
+                        withCloseButton 
+                        actionButtons={[
+                            ButtonDefinition("Cancel", () => {
+                                console.log("close modal");
+                            }, "small red", true, false),
+                            ButtonDefinition("Add", () => {
+                                console.log("add secret");
+                            }, "small blue", true, false)
+                        ]}
+                    >
+                        <AddSecretPanel />
+                    </Modal>
+                </div>
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
@@ -54,12 +67,18 @@ function Secrets(props) {
                             title="Remove secret" 
                             button={(
                                 <SecretsDeleteButton/>
-                            )}    
-                            actionButtonLabel="Delete"
-                            actionButtonFunc={() => {
-                                // do logic here
-                                console.log(":)");
-                            }}
+                            )} 
+                            actionButtons={
+                                [
+                                    // label, onClick, classList, closesModal, async
+                                    ButtonDefinition("Delete", () => {
+                                        console.log("DELETE FUNC");
+                                    }, "small red", true, false),
+                                    ButtonDefinition("Cancel", () => {
+                                        console.log("DONT DELETE");
+                                    }, "small blue", true, false)
+                                ]
+                            }   
                         >
                             <FlexBox className="col gap">
                                 <FlexBox >
@@ -67,48 +86,6 @@ function Secrets(props) {
                                     This action cannot be undone.
                                 </FlexBox>
                             </FlexBox>
-                        </Modal>
-                    </FlexBox>
-                </FlexBox>
-                <FlexBox className="secret-tuple">
-                    <FlexBox className="key">GCP_CREDENTIALS</FlexBox>
-                    <FlexBox className="val"><span>******</span></FlexBox>
-                    <FlexBox className="actions">
-                        <Modal 
-                            withCloseButton 
-                            title="Remove secret" 
-                            button={(
-                                <SecretsDeleteButton/>
-                            )}    
-                        >
-                        </Modal>
-                    </FlexBox>
-                </FlexBox>
-                <FlexBox className="secret-tuple">
-                    <FlexBox className="key">GCP_BUCKET</FlexBox>
-                    <FlexBox className="val"><span>******</span></FlexBox>
-                    <FlexBox className="actions">
-                        <Modal 
-                            withCloseButton 
-                            title="Remove secret" 
-                            button={(
-                                <SecretsDeleteButton/>
-                            )}    
-                        >
-                        </Modal>
-                    </FlexBox>
-                </FlexBox>
-                <FlexBox className="secret-tuple">
-                    <FlexBox className="key">DOCKER_TOKEN</FlexBox>
-                    <FlexBox className="val"><span>******</span></FlexBox>
-                    <FlexBox className="actions">
-                        <Modal 
-                            withCloseButton 
-                            title="Remove secret" 
-                            button={(
-                                <SecretsDeleteButton/>
-                            )}    
-                        >
                         </Modal>
                     </FlexBox>
                 </FlexBox>
@@ -123,4 +100,22 @@ function SecretsDeleteButton(props) {
             <IoCloseCircleSharp/>
         </div>
     )
+}
+
+function AddSecretPanel(props) {
+
+    return (
+        <FlexBox className="col gap" style={{fontSize: "12px"}}>
+            <FlexBox className="gap">
+                <FlexBox style={{width: "40px"}}>Key:</FlexBox>
+                <FlexBox>
+                    <input placeholder="Enter key" />
+                </FlexBox>
+            </FlexBox>
+            <FlexBox className="gap">
+                <FlexBox style={{width: "40px"}}>Value:</FlexBox>
+                <FlexBox><input placeholder="Enter value" /></FlexBox>
+            </FlexBox>
+        </FlexBox>
+    );
 }
