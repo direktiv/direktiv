@@ -31,28 +31,6 @@ func (o *TimeoutDefinition) Validate() error {
 	return nil
 }
 
-type SchemaDefinition struct {
-	ID     string      `yaml:"id"`
-	Schema interface{} `yaml:"schema"`
-}
-
-func (o *SchemaDefinition) Validate() error {
-	if o == nil {
-		return nil
-	}
-
-	if o.ID == "" {
-		return errors.New("id required")
-	}
-
-	if err := isJSONSchema(o.Schema); err != nil {
-		return fmt.Errorf("invalid schema: %w", err)
-	}
-
-	return nil
-
-}
-
 type ActionDefinition struct {
 	Function string           `yaml:"function,omitempty"`
 	Input    interface{}      `yaml:"input,omitempty"`
