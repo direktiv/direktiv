@@ -41,7 +41,7 @@
     border: var(--border);
     border-radius: var(--theme-border-radius);
     transition: border-width 1s ease-in-out 0s;
-    padding: 1px;
+    /* padding: 1px; */
 }
 
 .selector-border.hidden {
@@ -65,18 +65,26 @@
 }
 
 .namespaces-list {
-    padding: 7px;
+    padding: 4px;
 }
 
 .namespace-list-item {
+    border-radius: var(--theme-border-radius);
     min-height: 45px;
     height: 45px;
     max-height: 45px;
 }
 
+.selector-section .namespace-list-item{
+    padding: 4px;
+}
+.selector-section .namespace-list-item:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 .namespaces-list .namespace-list-item:not(:last-of-type) {
-    padding-bottom: 8px;
-    border-bottom: var(--border);
+    /* padding-bottom: 8px; */
+    /* border-bottom: var(--border); */
 }
 
 .namespaces-list .namespace-list-item > div {
@@ -88,23 +96,12 @@
     border-radius: var(--theme-border-radius);
 }
 
-  /* Firefox */
-  * {
-    scrollbar-width: auto;
-    scrollbar-color: #555753 #ffffff;
-  }
+.chevron-icon {
+    transform: rotate(0deg);
+    transition: transform 0.7s ease-in-out 0s;
+}
 
-  /* Chrome, Edge, and Safari */
-  *::-webkit-scrollbar {
-    width: 12px;
-  }
-
-  *::-webkit-scrollbar-track {
-    background: #ffffff;
-  }
-
-  *::-webkit-scrollbar-thumb {
-    background-color: #555753;
-    border-radius: 10px;
-    border: 3px solid #ffffff;
-  }
+.chevron-icon.spin {
+    transform: rotate(180deg);
+    transition: transform 0.7s ease-in-out 0s;
+}

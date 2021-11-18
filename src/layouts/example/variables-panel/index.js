@@ -71,8 +71,12 @@ function Variables(props) {
                         <td>168917 B</td>
                         <td></td>
                     </tr>
-                    <tr>
-                        <td>Var1</td>
+                    <tr>    
+                        <td>
+                            <div className="editor-var-name">
+                                Var1
+                            </div>
+                        </td>
                         <td style={{padding: "8px", paddingLeft: "0px"}}>
                             <FlexBox className="editor-placeholder">
                                 <div style={{marginLeft: "8px"}}>

@@ -14,10 +14,12 @@ function NamespaceSelector(props) {
     const [showSelector, setShowSelector] = useState(false);
     let selectorClass = "selector-section hidden";
     let selectorBorderClass = "selector-border hidden"
+    let chevronClass = "chevron-icon"
 
     if (showSelector) {
         selectorBorderClass = "selector-border"
         selectorClass = "selector-section"
+        chevronClass = "chevron-icon spin"
     }
 
     return (
@@ -30,7 +32,7 @@ function NamespaceSelector(props) {
                         <NamespaceListItem/>
                         <FlexBox className="tall">
                             <div className="auto-margin grey-text">
-                                <IoChevronDown style={{ marginTop: "8px" }} />
+                                <IoChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
                             </div>
                         </FlexBox>
                     </FlexBox>
