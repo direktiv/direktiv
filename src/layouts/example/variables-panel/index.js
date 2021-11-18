@@ -1,4 +1,5 @@
 import React from 'react';
+import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import FlexBox from '../../../components/flexbox';
@@ -25,21 +26,43 @@ function Variables(props) {
 
     return(
         <FlexBox>
-            <table>
-                <tr>
-                    <th>
-                        Name
-                    </th>
-                    <th>
-                        Value
-                    </th>
-                    <th>
-                        Size
-                    </th>
-                    <th>
-                        Action
-                    </th>
-                </tr>
+            <table className="variables-table">
+                <thead>
+                    <tr className="header-row">
+                        <th className="left-align" style={{ width: "180px", maxWidth: "180px" }}>
+                            Name
+                        </th>
+                        <th>
+                            Value
+                        </th>
+                        <th className="left-align" style={{ width: "80px", maxWidth: "80px" }}>
+                            Size
+                        </th>
+                        <th className="center-align" style={{ width: "120px", maxWidth: "120px" }}>
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>IMG_1923.jpeg</td>
+                        <td className="muted-text">Cannot Show Binary Variable</td>
+                        <td>168917 B</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Var1</td>
+                        <td style={{padding: "8px", paddingLeft: "0px"}}>
+                            <FlexBox className="editor-placeholder">
+                                <div style={{marginLeft: "8px"}}>
+                                    placeholder
+                                </div>
+                            </FlexBox>
+                        </td>
+                        <td>168917 B</td>
+                        <td></td>
+                    </tr>
+                </tbody>
             </table>
         </FlexBox>
     );

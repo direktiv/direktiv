@@ -216,10 +216,12 @@ input:checked + .slider:before {
 }
 
 table {
+  border-collapse: collapse;
+  table-layout: fixed;
   width: 100%;
 }
 
-th {
+tr {
   padding-left: 8px;
   padding-right: 8px;
 }
@@ -234,4 +236,8 @@ th {
 
 .center-align {
   text-align: center;  
+}
+
+.muted-text {
+  color: var(--theme-grey-light-blue);
 }

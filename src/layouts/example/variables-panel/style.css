@@ -1,0 +1,19 @@
+.variables-table thead {
+    border-bottom: var(--border);
+}
+
+.variables-table tr {
+    line-height: 32px;
+}
+
+.variables-table tr:not(:last-of-type) {
+    border-bottom: var(--border);
+}
+
+.editor-placeholder {
+    border-radius: var(--theme-border-radius);
+    background-color: var(--theme-dark-gray-text);
+    width: 100%;
+    min-height: 32px;
+    color: white;
+}

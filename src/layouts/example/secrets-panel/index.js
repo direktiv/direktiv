@@ -19,6 +19,7 @@ function SecretsPanel(props){
                 </FlexBox>
                 <div>
                     <Modal title="New secret" 
+                        escapeToCancel
                         button={(
                             <AddValueButton label="Add" />
                         )}  
