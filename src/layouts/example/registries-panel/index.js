@@ -39,7 +39,7 @@ function RegistriesPanel(props){
             <ContentPanelBody>
                 <FlexBox className="gap col">
                     <FlexBox>
-                        <Alert className="info">Once a registry is removed, it can never be restored.</Alert>
+                        <Alert>Once a registry is removed, it can never be restored.</Alert>
                     </FlexBox>
                     <FlexBox>
                         <Registries/>

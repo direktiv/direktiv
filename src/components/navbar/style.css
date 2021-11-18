@@ -1,6 +1,10 @@
 .navbar-logo {
-    padding: 10px;
-    padding-bottom: 0px;
+    margin: auto;
+    padding-top: 12px;
+    margin-left: 8px;
+    /* padding: 10px; */
+    /* padding-bottom: 0px; */
+    max-height: 48px;
 }
 
 .navbar-logo img {

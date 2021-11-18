@@ -8,21 +8,21 @@ import VariablesPanel from './variables-panel';
 function ExamplePage(props) {
     return(
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
-            <FlexBox className="gap">
-                <FlexBox className="col gap" style={{ maxWidth: "380px" }}>
-                    <FlexBox style={{ minWidth: "380px", maxWidth: "380px" }}>
+            <FlexBox className="gap col">
+                <FlexBox className="gap">
+                    <FlexBox style={{ minWidth: "380px" }}>
                         <SecretsPanel />
                     </FlexBox>
-                    <div style={{ minWidth: "380px", maxWidth: "380px" }}>
+                    <FlexBox style={{ minWidth: "380px" }}>
                         <RegistriesPanel />
-                    </div>
-                </FlexBox>
-                <FlexBox>
-                    <BroadcastConfigurationsPanel />
+                    </FlexBox>
                 </FlexBox>
             </FlexBox>
             <FlexBox>
                 <VariablesPanel />
+            </FlexBox>
+            <FlexBox>
+                <BroadcastConfigurationsPanel />
             </FlexBox>
         </FlexBox>
     )

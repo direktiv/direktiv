@@ -20,12 +20,12 @@ function NavBar(props) {
 
     return (
         <FlexBox onClick={onClick} style={{...style}} className={className}>
-            <FlexBox className="col" style={{ gap: "12px" }}>
+            <FlexBox className="col tall" style={{ gap: "12px" }}>
                 <FlexBox className="navbar-logo">
                     <img alt="logo" src={Logo} />
                 </FlexBox>
 
-                <FlexBox className="navbar-panel shadow col">
+                <div className="navbar-panel shadow col">
                     <FlexBox>
                         <NamespaceSelector/>
                     </FlexBox>
@@ -33,11 +33,11 @@ function NavBar(props) {
                         <NewNamespaceBtn />
                     </FlexBox>
                     <NavItems style={{ marginTop: "12px" }} />
-                </FlexBox>
+                </div>
 
-                <FlexBox className="navbar-panel shadow col">
+                <div className="navbar-panel shadow col">
                     <GlobalNavItems />
-                </FlexBox>
+                </div>
 
                 <FlexBox>
                     <FlexBox className="nav-items" style={{ paddingLeft: "10px" }}>

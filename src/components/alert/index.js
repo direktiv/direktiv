@@ -15,7 +15,7 @@ function Alert(props){
     return(
         <FlexBox className={className} style={{...style}}>
             <FlexBox className="alert-opacity">
-                <FlexBox className="alert-icon auto-margin">
+                <FlexBox className="alert-icon auto-margin" style={{maxWidth: "px"}}>
                     <FiAlertTriangle className="auto-margin" />
                 </FlexBox>
                 <FlexBox className="alert-body auto-margin">

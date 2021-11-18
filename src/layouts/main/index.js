@@ -10,7 +10,7 @@ function MainLayout(props) {
     let {onClick, style, className} = props;
     return(
         <div id="main-layout" onClick={onClick} style={style} className={className}>
-            <FlexBox className="row gap">
+            <FlexBox className="row gap tall" style={{minHeight: "100vh"}}>
                 {/* 
                     Left col: navigation
                     Right col: page contents 
@@ -24,7 +24,7 @@ function MainLayout(props) {
                     <FlexBox className="breadcrumbs-row">
                         <Breadcrumbs/>
                     </FlexBox>
-                    <FlexBox className="col">
+                    <FlexBox className="col" style={{paddingBottom: "8px"}}>
                         <ExamplePage />
                     </FlexBox>
                 </FlexBox>

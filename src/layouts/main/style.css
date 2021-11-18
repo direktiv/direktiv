@@ -1,3 +1,7 @@
+#main-layout {
+    min-height: 100vh;
+}
+
 .navigation-col {
     max-width: 240px;
     min-width: 240px;
