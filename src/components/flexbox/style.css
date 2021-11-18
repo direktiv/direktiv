@@ -3,6 +3,10 @@
     flex: auto;
 }
 
+.flex-box.wrap {
+    flex-wrap: wrap;
+}
+
 .flex-box.row {
     flex-direction: row;
 }

@@ -9,7 +9,7 @@ function ExamplePage(props) {
     return(
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
             <FlexBox className="gap col">
-                <FlexBox className="gap">
+                <FlexBox className="gap wrap">
                     <FlexBox style={{ minWidth: "380px" }}>
                         <SecretsPanel />
                     </FlexBox>
