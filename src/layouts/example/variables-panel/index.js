@@ -3,6 +3,8 @@ import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import FlexBox from '../../../components/flexbox';
+import Modal, { ButtonDefinition } from '../../../components/modal';
+import AddValueButton from '../../../components/add-button';
 
 function VariablesPanel(props){
     return (
@@ -11,7 +13,26 @@ function VariablesPanel(props){
                 <ContentPanelTitleIcon>
                     <IoLockClosedOutline />
                 </ContentPanelTitleIcon>
-                Variables   
+                <FlexBox>
+                    Variables   
+                </FlexBox>
+                <div>
+                    <Modal title="New variable" 
+                        escapeToCancel
+                        button={(
+                            <AddValueButton label="Add" />
+                        )}  
+                        actionButtons={[
+                            ButtonDefinition("Add", () => {
+                                console.log("add namespace");
+                            }, "small blue", true, false),
+                            ButtonDefinition("Cancel", () => {
+                                console.log("close modal");
+                            }, "small light", true, false)
+                        ]}
+                    >
+                    </Modal>
+                </div>
             </ContentPanelTitle>
             <ContentPanelBody >
                 <Variables />

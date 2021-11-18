@@ -1,5 +1,6 @@
 #main-layout {
     min-height: 100vh;
+    max-height: 100vh;
 }
 
 .navigation-col {
@@ -13,5 +14,6 @@
 }
 
 .content-col {
+    max-height: 100vh;
     overflow-y: auto;
 }
