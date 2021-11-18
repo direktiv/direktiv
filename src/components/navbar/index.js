@@ -71,7 +71,6 @@ function NewNamespaceBtn(props) {
 
     return (
         <Modal title="New namespace" 
-            activeOverlay
             escapeToCancel
             button={(
                 <FlexBox className="new-namespace-btn">
@@ -88,17 +87,17 @@ function NewNamespaceBtn(props) {
                 </FlexBox>
             )} 
             actionButtons={[
-                ButtonDefinition("Cancel", () => {
-                    console.log("close modal");
-                }, "small red", true, false),
                 ButtonDefinition("Add", () => {
                     console.log("add secret");
-                }, "small blue", true, false)
+                }, "small blue", true, false),
+                ButtonDefinition("Cancel", () => {
+                    console.log("close modal");
+                }, "small light", true, false)
             ]}
         >
-            <div>
-                CREATE NEW NAMESPACE HERE
-            </div>
+            <FlexBox>
+                <input placeholder="Enter namespace name" />
+            </FlexBox>
         </Modal>
     );
 }

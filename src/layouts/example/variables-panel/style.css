@@ -14,6 +14,7 @@
     border-radius: var(--theme-border-radius);
     background-color: var(--theme-dark-gray-text);
     width: 100%;
-    min-height: 32px;
+    min-height: 128px;
+    max-width: 800px;
     color: white;
 }

@@ -21,7 +21,7 @@ function RegistriesPanel(props){
                     <Modal title="New registry"
                         escapeToCancel
                         button={(
-                            <AddValueButton label="Add" />
+                            <AddValueButton label=" " />
                         )} 
                         actionButtons={[
                             ButtonDefinition("Add", () => {

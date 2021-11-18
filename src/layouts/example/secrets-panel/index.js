@@ -21,7 +21,7 @@ function SecretsPanel(props){
                     <Modal title="New secret" 
                         escapeToCancel
                         button={(
-                            <AddValueButton label="Add" />
+                            <AddValueButton label=" " />
                         )}  
                         actionButtons={[
                             ButtonDefinition("Add", () => {

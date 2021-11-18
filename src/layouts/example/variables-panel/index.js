@@ -20,7 +20,7 @@ function VariablesPanel(props){
                     <Modal title="New variable" 
                         escapeToCancel
                         button={(
-                            <AddValueButton label="Add" />
+                            <AddValueButton label=" " />
                         )}  
                         actionButtons={[
                             ButtonDefinition("Add", () => {
