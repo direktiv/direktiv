@@ -36,3 +36,75 @@
     max-height: 12px;
     padding-top: 8px;
 }
+
+.selector-border {
+    border: var(--border);
+    border-radius: var(--theme-border-radius);
+    transition: border-width 1s ease-in-out 0s;
+    padding: 1px;
+}
+
+.selector-border.hidden {
+    border-width: 0px;
+}
+
+.selector-section {
+
+    max-height: 300px;
+    overflow-y: scroll;
+    transition: max-height 1s ease-in-out 0s,
+                border-width 1s ease-in-out 0s;
+}
+
+.selector-section.hidden {
+    border-width: 0px;
+    max-height: 0px;
+    pointer-events: none;
+    transition: max-height 1s ease-in-out 0s,
+                border-width 1s ease-in-out 0s;
+}
+
+.namespaces-list {
+    padding: 7px;
+}
+
+.namespace-list-item {
+    min-height: 45px;
+    height: 45px;
+    max-height: 45px;
+}
+
+.namespaces-list .namespace-list-item:not(:last-of-type) {
+    padding-bottom: 8px;
+    border-bottom: var(--border);
+}
+
+.namespaces-list .namespace-list-item > div {
+    cursor: pointer;
+}
+
+.namespaces-list .namespace-list-item > div:hover {
+    /* background-color: rgba(0, 0, 0, 0.1); */
+    border-radius: var(--theme-border-radius);
+}
+
+  /* Firefox */
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: #555753 #ffffff;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #555753;
+    border-radius: 10px;
+    border: 3px solid #ffffff;
+  }

@@ -5,7 +5,6 @@ import FlexBox from '../flexbox';
 import NamespaceSelector from '../namespace-selector';
 
 import Modal from '../modal';
-import AddValueButton from '../add-button';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
 import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
@@ -24,6 +23,20 @@ function NavBar(props) {
                 <FlexBox className="navbar-logo">
                     <img alt="logo" src={Logo} />
                 </FlexBox>
+
+                {/* <div className="navbar-panel shadow col">
+                    <FlexBox>
+                        <NamespaceSelector/>
+                    </FlexBox>
+                    <FlexBox>
+                        <NewNamespaceBtn />
+                    </FlexBox>
+                </div>
+
+                <div className="navbar-panel shadow col">
+                    <NavItems />
+                </div> */}
+
 
                 <div className="navbar-panel shadow col">
                     <FlexBox>

@@ -6,7 +6,17 @@
 .navigation-col {
     max-width: 240px;
     min-width: 240px;
+
+    max-height: 100vh;
+    overflow-y: hidden;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
+
+.navigation-col::-webkit-scrollbar {
+    display: none;
+}
+
 
 .breadcrumbs-row {
     height: 72px;
