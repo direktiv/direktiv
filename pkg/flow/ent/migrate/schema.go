@@ -358,6 +358,7 @@ var (
 	VarRefsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Nullable: true},
+		{Name: "behaviour", Type: field.TypeString, Nullable: true},
 		{Name: "instance_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "var_data_varrefs", Type: field.TypeUUID, Nullable: true},
@@ -371,25 +372,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "var_refs_instances_vars",
-				Columns:    []*schema.Column{VarRefsColumns[2]},
+				Columns:    []*schema.Column{VarRefsColumns[3]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "var_refs_namespaces_vars",
-				Columns:    []*schema.Column{VarRefsColumns[3]},
+				Columns:    []*schema.Column{VarRefsColumns[4]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "var_refs_var_data_varrefs",
-				Columns:    []*schema.Column{VarRefsColumns[4]},
+				Columns:    []*schema.Column{VarRefsColumns[5]},
 				RefColumns: []*schema.Column{VarDataColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "var_refs_workflows_vars",
-				Columns:    []*schema.Column{VarRefsColumns[5]},
+				Columns:    []*schema.Column{VarRefsColumns[6]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

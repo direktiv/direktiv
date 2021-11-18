@@ -107,6 +107,8 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		var q varQuerier
 
+		var thread bool
+
 		switch v.Scope {
 
 		case "":
@@ -115,6 +117,11 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		case "instance":
 			q = im.in
+
+		case "thread":
+			q = im.in
+			thread = true
+
 		case "workflow":
 			wf, err := engine.InstanceWorkflow(ctx, im)
 			if err != nil {
@@ -143,7 +150,7 @@ func (sl *setterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return nil, NewInternalError(errors.New("invalid scope"))
 		}
 
-		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data, v.MimeType)
+		_, _, err = engine.flow.SetVariable(ctx, vrefc, vdatac, q, v.Key, data, v.MimeType, thread)
 		if err != nil {
 			return nil, err
 		}

@@ -52,6 +52,26 @@ func (vru *VarRefUpdate) ClearName() *VarRefUpdate {
 	return vru
 }
 
+// SetBehaviour sets the "behaviour" field.
+func (vru *VarRefUpdate) SetBehaviour(s string) *VarRefUpdate {
+	vru.mutation.SetBehaviour(s)
+	return vru
+}
+
+// SetNillableBehaviour sets the "behaviour" field if the given value is not nil.
+func (vru *VarRefUpdate) SetNillableBehaviour(s *string) *VarRefUpdate {
+	if s != nil {
+		vru.SetBehaviour(*s)
+	}
+	return vru
+}
+
+// ClearBehaviour clears the value of the "behaviour" field.
+func (vru *VarRefUpdate) ClearBehaviour() *VarRefUpdate {
+	vru.mutation.ClearBehaviour()
+	return vru
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vru *VarRefUpdate) SetVardataID(id uuid.UUID) *VarRefUpdate {
 	vru.mutation.SetVardataID(id)
@@ -253,6 +273,19 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: varref.FieldName,
 		})
 	}
+	if value, ok := vru.mutation.Behaviour(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: varref.FieldBehaviour,
+		})
+	}
+	if vru.mutation.BehaviourCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: varref.FieldBehaviour,
+		})
+	}
 	if vru.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -429,6 +462,26 @@ func (vruo *VarRefUpdateOne) SetNillableName(s *string) *VarRefUpdateOne {
 // ClearName clears the value of the "name" field.
 func (vruo *VarRefUpdateOne) ClearName() *VarRefUpdateOne {
 	vruo.mutation.ClearName()
+	return vruo
+}
+
+// SetBehaviour sets the "behaviour" field.
+func (vruo *VarRefUpdateOne) SetBehaviour(s string) *VarRefUpdateOne {
+	vruo.mutation.SetBehaviour(s)
+	return vruo
+}
+
+// SetNillableBehaviour sets the "behaviour" field if the given value is not nil.
+func (vruo *VarRefUpdateOne) SetNillableBehaviour(s *string) *VarRefUpdateOne {
+	if s != nil {
+		vruo.SetBehaviour(*s)
+	}
+	return vruo
+}
+
+// ClearBehaviour clears the value of the "behaviour" field.
+func (vruo *VarRefUpdateOne) ClearBehaviour() *VarRefUpdateOne {
+	vruo.mutation.ClearBehaviour()
 	return vruo
 }
 
@@ -655,6 +708,19 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: varref.FieldName,
+		})
+	}
+	if value, ok := vruo.mutation.Behaviour(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: varref.FieldBehaviour,
+		})
+	}
+	if vruo.mutation.BehaviourCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: varref.FieldBehaviour,
 		})
 	}
 	if vruo.mutation.VardataCleared() {

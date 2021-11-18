@@ -976,7 +976,7 @@ func (vr *VarRef) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     vr.ID,
 		Type:   "VarRef",
-		Fields: make([]*Field, 1),
+		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
@@ -986,6 +986,14 @@ func (vr *VarRef) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[0] = &Field{
 		Type:  "string",
 		Name:  "name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(vr.Behaviour); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "behaviour",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

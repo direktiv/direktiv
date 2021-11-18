@@ -340,7 +340,7 @@ type varQuerier interface {
 	QueryVars() *ent.VarRefQuery
 }
 
-func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string) (*ent.VarData, bool, error) {
+func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdatac *ent.VarDataClient, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
 
 	hash, err := computeHash(data)
 	if err != nil {
@@ -350,7 +350,14 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 	var vdata *ent.VarData
 	var newVar bool
 
-	vref, err := q.QueryVars().Where(varref.NameEQ(key)).Only(ctx)
+	var vref *ent.VarRef
+
+	if thread {
+		vref, err = q.QueryVars().Where(varref.NameEQ(key), varref.BehaviourContains("thread")).Only(ctx)
+	} else {
+		vref, err = q.QueryVars().Where(varref.NameEQ(key), varref.BehaviourIsNil()).Only(ctx)
+	}
+
 	if err != nil {
 
 		if !IsNotFound(err) {
@@ -381,6 +388,9 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 			query = query.SetWorkflow(q.(*ent.Workflow))
 		case *ent.Instance:
 			query = query.SetInstance(q.(*ent.Instance))
+			if thread {
+				query = query.SetBehaviour("thread")
+			}
 		default:
 			panic(errors.New("bad querier"))
 		}
@@ -431,6 +441,7 @@ func (flow *flow) SetVariable(ctx context.Context, vrefc *ent.VarRefClient, vdat
 		broadcastInput.WorkflowPath = d.path
 		ns = d.ns()
 	case *ent.Instance:
+		// TODO: thread scope broadcast?
 		broadcastInput.Scope = BroadcastEventScopeInstance
 		ns, err = q.(*ent.Instance).Namespace(ctx)
 		if err != nil {
@@ -472,7 +483,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData(), req.GetMimeType())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -596,7 +607,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType)
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -711,7 +722,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType)
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.wf, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}

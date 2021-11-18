@@ -99,6 +99,13 @@ func Name(v string) predicate.VarRef {
 	})
 }
 
+// Behaviour applies equality check predicate on the "behaviour" field. It's identical to BehaviourEQ.
+func Behaviour(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBehaviour), v))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
@@ -221,6 +228,131 @@ func NameEqualFold(v string) predicate.VarRef {
 func NameContainsFold(v string) predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldName), v))
+	})
+}
+
+// BehaviourEQ applies the EQ predicate on the "behaviour" field.
+func BehaviourEQ(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourNEQ applies the NEQ predicate on the "behaviour" field.
+func BehaviourNEQ(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourIn applies the In predicate on the "behaviour" field.
+func BehaviourIn(vs ...string) predicate.VarRef {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.VarRef(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldBehaviour), v...))
+	})
+}
+
+// BehaviourNotIn applies the NotIn predicate on the "behaviour" field.
+func BehaviourNotIn(vs ...string) predicate.VarRef {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.VarRef(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldBehaviour), v...))
+	})
+}
+
+// BehaviourGT applies the GT predicate on the "behaviour" field.
+func BehaviourGT(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourGTE applies the GTE predicate on the "behaviour" field.
+func BehaviourGTE(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourLT applies the LT predicate on the "behaviour" field.
+func BehaviourLT(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourLTE applies the LTE predicate on the "behaviour" field.
+func BehaviourLTE(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourContains applies the Contains predicate on the "behaviour" field.
+func BehaviourContains(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourHasPrefix applies the HasPrefix predicate on the "behaviour" field.
+func BehaviourHasPrefix(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourHasSuffix applies the HasSuffix predicate on the "behaviour" field.
+func BehaviourHasSuffix(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourIsNil applies the IsNil predicate on the "behaviour" field.
+func BehaviourIsNil() predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldBehaviour)))
+	})
+}
+
+// BehaviourNotNil applies the NotNil predicate on the "behaviour" field.
+func BehaviourNotNil() predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldBehaviour)))
+	})
+}
+
+// BehaviourEqualFold applies the EqualFold predicate on the "behaviour" field.
+func BehaviourEqualFold(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldBehaviour), v))
+	})
+}
+
+// BehaviourContainsFold applies the ContainsFold predicate on the "behaviour" field.
+func BehaviourContainsFold(v string) predicate.VarRef {
+	return predicate.VarRef(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldBehaviour), v))
 	})
 }
 

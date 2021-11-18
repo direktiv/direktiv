@@ -27,6 +27,9 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/util"
+
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 )
 
 type engine struct {
@@ -603,6 +606,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	args.Input = input
 	args.Caller = "workflow" // TODO: human readable
 
+	var threadVars []*ent.VarRef
+
 	if caller != nil {
 
 		callerData, err := json.Marshal(caller)
@@ -610,6 +615,16 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 			return "", NewInternalError(err)
 		}
 		args.CallerData = string(callerData)
+
+		parent, err := engine.getInstance(ctx, engine.db.Namespace, ns.Name, caller.InstanceID, false)
+		if err != nil {
+			return "", NewInternalError(err)
+		}
+
+		threadVars, err = parent.in.QueryVars().Where(entvar.BehaviourEQ("thread")).All(ctx)
+		if err != nil {
+			return "", NewInternalError(err)
+		}
 
 	}
 
@@ -619,6 +634,17 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 			return "", NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
 		}
 		return "", err
+	}
+
+	for _, tv := range threadVars {
+		vd, err := tv.QueryVardata().Select(entvardata.FieldID).Only(ctx)
+		if err != nil {
+			return "", NewInternalError(err)
+		}
+		err = engine.db.VarRef.Create().SetBehaviour("thread").SetInstance(im.in).SetName(tv.Name).SetVardataID(vd.ID).Exec(ctx)
+		if err != nil {
+			return "", NewInternalError(err)
+		}
 	}
 
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
