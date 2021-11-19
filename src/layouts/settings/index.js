@@ -4,6 +4,7 @@ import RegistriesPanel from './registries-panel';
 import FlexBox from '../../components/flexbox';
 import BroadcastConfigurationsPanel from './broadcast-panel';
 import VariablesPanel from './variables-panel';
+import ScarySettings from './scary-panel';
 
 function ExamplePage(props) {
     return(
@@ -23,6 +24,9 @@ function ExamplePage(props) {
             </FlexBox>
             <FlexBox>
                 <BroadcastConfigurationsPanel />
+            </FlexBox>
+            <FlexBox>
+                <ScarySettings />
             </FlexBox>
         </FlexBox>
     )

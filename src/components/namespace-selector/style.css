@@ -121,3 +121,17 @@
     50% { background-position: 100% 0%; }
     100% { background-position: 0% 0%; }
 }
+
+.loading {
+    pointer-events: none;
+    user-select: none;
+}
+
+.namespace-selector.loading:hover {
+    filter: none;
+    cursor: unset;
+}
+
+.chevron-icon.hidden {
+    visibility: hidden;
+}

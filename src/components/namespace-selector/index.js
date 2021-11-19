@@ -15,6 +15,7 @@ function NamespaceSelector(props) {
     let selectorClass = "selector-section hidden";
     let selectorBorderClass = "selector-border hidden"
     let chevronClass = "chevron-icon"
+    let namespaceSelectorClass = "namespace-selector"
 
     if (showSelector) {
         selectorBorderClass = "selector-border"
@@ -32,13 +33,18 @@ function NamespaceSelector(props) {
         // In this case, prompt with a 'create namespace' modal.
     }
 
+    if (loading) {
+        namespaceSelectorClass += " loading"
+        chevronClass += " hidden"
+    }
+
     return (
         <>
             <FlexBox className="col gap">
                 <FlexBox onClick={() => {
                     setShowSelector(!showSelector)
                 }} style={{...style, maxHeight: "64px"}} className={className}>
-                    <FlexBox className="namespace-selector">
+                    <FlexBox className={namespaceSelectorClass}>
                         <NamespaceListItem namespace="example" label="ACTIVE NAMESPACE" loading={loading} />
                         <FlexBox className="tall">
                             <div className="auto-margin grey-text">

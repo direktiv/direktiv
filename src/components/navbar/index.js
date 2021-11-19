@@ -11,33 +11,27 @@ import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzz
 
 function NavBar(props) {
 
-    let {onClick, style, className} = props;
-    
+    let {namespace, onClick, style, className} = props;
+
+
     if (!className) {
         className = ""
     }
 
+    className = "navigation-master " + className
+
+    let loading = false;
+    if (!namespace) {
+        loading = true;
+        className += " loading"
+    }
+    
     return (
         <FlexBox onClick={onClick} style={{...style}} className={className}>
             <FlexBox className="col tall" style={{ gap: "12px" }}>
                 <FlexBox className="navbar-logo">
                     <img alt="logo" src={Logo} />
                 </FlexBox>
-
-                {/* <div className="navbar-panel shadow col">
-                    <FlexBox>
-                        <NamespaceSelector/>
-                    </FlexBox>
-                    <FlexBox>
-                        <NewNamespaceBtn />
-                    </FlexBox>
-                </div>
-
-                <div className="navbar-panel shadow col">
-                    <NavItems />
-                </div> */}
-
-
                 <div className="navbar-panel shadow col">
                     <FlexBox>
                         <NamespaceSelector/>
