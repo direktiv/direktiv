@@ -39,6 +39,8 @@ function NamespaceSelector(props) {
         chevronClass += " hidden"
     }
 
+    console.log(namespace, "NAMESPACE IN NAV SELECTOR")
+
     return (
         <>
             <FlexBox className="col gap">

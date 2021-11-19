@@ -112,7 +112,7 @@ function AddSecretPanel(props) {
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
             <FlexBox className="gap">
                 <FlexBox>
-                    <input placeholder="Enter key" />
+                    <input autoFocus placeholder="Enter key" />
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">

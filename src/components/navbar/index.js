@@ -8,7 +8,7 @@ import Modal from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
 import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
@@ -78,6 +78,7 @@ function NewNamespaceBtn(props) {
     const {createNamespace} = props
 
     const [ns, setNs] = useState("")
+    const navigate = useNavigate()
 
     return (
         <Modal title="New namespace" 
@@ -97,8 +98,11 @@ function NewNamespaceBtn(props) {
                 </FlexBox>
             )} 
             actionButtons={[
-                ButtonDefinition("Add", () => {
-                    createNamespace(ns)
+                ButtonDefinition("Add", async () => {
+                    await createNamespace(ns)
+                    setTimeout(()=>{
+                        navigate(`/n/${ns}`)
+                    },200)
                     setNs("")
                 }, "small blue", true, false),
                 ButtonDefinition("Cancel", () => {
@@ -108,7 +112,7 @@ function NewNamespaceBtn(props) {
             ]}
         >
             <FlexBox>
-                <input value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
+                <input autoFocus value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
             </FlexBox>
         </Modal>
     );
@@ -180,14 +184,18 @@ function GlobalNavItems(props) {
         <FlexBox className="nav-items">
             <ul>
                 <li style={{marginTop: "0px"}}>
-                    <NavItem label="jq Playground">
-                        <IoExtensionPuzzleOutline/>
-                    </NavItem>
+                    <Link to={"/jq"}>
+                        <NavItem label="jq Playground">
+                            <IoExtensionPuzzleOutline/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Global Services">
-                        <IoGlobeOutline/>
-                    </NavItem>
+                    <Link to={"/g/services"}>
+                        <NavItem label="Global Services">
+                            <IoGlobeOutline/>
+                        </NavItem>
+                    </Link>
                 </li>
             </ul>
         </FlexBox>

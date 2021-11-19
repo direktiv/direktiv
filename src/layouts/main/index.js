@@ -11,12 +11,13 @@ import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 
 
 function NamespaceNavigation(props){
-    const {namespaces, namespace, setNamespace} = props
+    const {namespaces, namespace, setNamespace, deleteNamespace} = props
 
     const navigate = useNavigate()
 
     // on mount check if namespace is stored in local storage and exists in the response given back
     useEffect(()=>{
+
         // only do this check if its not provided in the params
         if (namespaces !== null && namespaces.length > 0) {
             let urlpath = window.location.pathname.split("/")
@@ -47,10 +48,12 @@ function NamespaceNavigation(props){
             // namespace is good and found go to this one
             localStorage.setItem('namespace', ns)
             setNamespace(ns)
-
             if(window.location.pathname === "/") {
                 navigate(`/n/${ns}`, {replace: true})
             }
+        } else {
+            // no namespaces should we should reset namespace back to ""
+            setNamespace("")
         }
 
         if(namespaces !== null && namespaces.length === 0 && window.location.pathname !== "/") {
@@ -75,7 +78,11 @@ function NamespaceNavigation(props){
                     <Route path="/n/:namespace/instances" element={<div>instances</div>}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<div>services</div>}/>
-                    <Route path="/n/:namespace/settings" element={<Settings/>} />
+                    <Route path="/n/:namespace/settings" element={<Settings namespace={namespace} deleteNamespace={deleteNamespace}/>} />
+
+                    {/* non-namespace routes */}
+                    <Route path="/jq" element={<div>jqplayground</div>} />
+                    <Route path="/g/services" element={<div>g services</div>}/>
                 </Routes>:""}
             </FlexBox>
         </FlexBox>
@@ -89,7 +96,7 @@ function MainLayout(props) {
     const [namespace, setNamespace] = useState(null)
 
 
-    // TODO work out howt o show this
+    // TODO work out how to show this when an error happens that is namespace related
     if(err !== null) {
         // createNamespace, deleteNamespace or listing namespaces has an error
         console.log(err)
@@ -113,7 +120,7 @@ function MainLayout(props) {
                     <FlexBox className="navigation-col">
                         <NavBar setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                     </FlexBox>
-                    <NamespaceNavigation namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
+                    <NamespaceNavigation deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                 </BrowserRouter>
 
             </FlexBox>

@@ -109,7 +109,7 @@
 
 /* Loading - Namespace List Item */
 .namespace-list-item.loading .namespace-selector-logo {
-    content: "";
+    /* content: ""; */
 
     background: linear-gradient(293deg,white,#3e94c5);
     background-size: 300% 300%;
@@ -122,10 +122,10 @@
     100% { background-position: 0% 0%; }
 }
 
-.loading {
+/* .loading {
     pointer-events: none;
     user-select: none;
-}
+} */
 
 .namespace-selector.loading:hover {
     filter: none;

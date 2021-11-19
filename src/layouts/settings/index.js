@@ -7,6 +7,8 @@ import VariablesPanel from './variables-panel';
 import ScarySettings from './scary-panel';
 
 function Settings(props) {
+    const {deleteNamespace, namespace} = props
+
     return(
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
             <FlexBox className="gap col">
@@ -26,7 +28,7 @@ function Settings(props) {
                 <BroadcastConfigurationsPanel />
             </FlexBox>
             <FlexBox>
-                <ScarySettings />
+                <ScarySettings namespace={namespace} deleteNamespace={deleteNamespace} />
             </FlexBox>
         </FlexBox>
     )
