@@ -5,7 +5,7 @@ import Settings from '../settings';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
 
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function MainLayout(props) {
     let {onClick, style, className} = props;

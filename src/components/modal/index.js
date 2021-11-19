@@ -74,7 +74,7 @@ function ModalOverlay(props) {
     
     useEffect(()=>{
         function closeModal(e){
-            if (e.keyCode == 27) {
+            if (e.keyCode === 27) {
                 callback(false)
             }
         }

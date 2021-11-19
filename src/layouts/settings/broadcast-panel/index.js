@@ -3,6 +3,7 @@ import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { BsSliders } from 'react-icons/bs';
 import FlexBox from '../../../components/flexbox';
+import {GenerateRandomKey} from '../../../util';
 
 function BroadcastConfigurationsPanel(props){
     return (
@@ -141,9 +142,11 @@ function BroadcastOptionsRow(props) {
 
     for (let i = 0; i < 3; i++) {
 
+        let key = GenerateRandomKey("bradocast-opt-");
+
         if ((!options) || (i >= options.length)) {
             opts.push(
-                <FlexBox className="col gap">
+                <FlexBox id={key} key={key} className="col gap">
                     <FlexBox></FlexBox>
                     <FlexBox key={"broadcast-opts-"+title+"-"+i}>
                         <label className="switch" style={{visibility: "hidden"}}>
@@ -155,7 +158,7 @@ function BroadcastOptionsRow(props) {
             )
         } else {
             opts.push(
-                <FlexBox className="col gap broadcast-option">
+                <FlexBox id={key} key={key} className="col gap broadcast-option">
                     <FlexBox>{options[i].label}</FlexBox>
                     <FlexBox key={"broadcast-opts-"+title+"-"+i}>
                         <label className="switch">
