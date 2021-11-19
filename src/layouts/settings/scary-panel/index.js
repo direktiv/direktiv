@@ -4,6 +4,8 @@ import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody
 import FlexBox from '../../../components/flexbox';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import Alert from '../../../components/alert';
+import Button from '../../../components/button';
+import Modal, { ButtonDefinition } from '../../../components/modal';
 
 function ScarySettings(props) {
     return (<>
@@ -18,8 +20,8 @@ function ScarySettings(props) {
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
-                    <FlexBox className="secrets-list"> 
-
+                    <FlexBox className="scary-settings"> 
+                        <Scary/>
                     </FlexBox>
                     <FlexBox>
                         <Alert className="critical">The following settings are super dangerous! Use at your own risk!</Alert>
@@ -31,3 +33,47 @@ function ScarySettings(props) {
 }
 
 export default ScarySettings;
+
+function Scary(props) {
+    return(
+        <>
+        <FlexBox>
+            <FlexBox className="auto-margin" style={{fontSize: "12px", maxWidth: "300px"}}>
+                This will permanently delete the current active namespace and all resources associated with it.
+            </FlexBox>
+            <FlexBox>
+                <Modal title="Delete namespace" 
+                        escapeToCancel
+                        button={(
+                            <Button className="auto-margin small red">
+                                Delete Namespace
+                            </Button>
+                        )}  
+                        actionButtons={[
+                            ButtonDefinition("Delete", () => {
+                                console.log("delete namespace");
+                            }, "small red", true, false),
+                            ButtonDefinition("Cancel", () => {
+                                console.log("close modal");
+                            }, "small light", true, false)
+                        ]}
+                    >
+                        <DeleteNamespaceConfirmationPanel />
+                    </Modal>
+            </FlexBox>
+        </FlexBox>
+        </>
+    );
+}
+
+
+function DeleteNamespaceConfirmationPanel(props) {
+
+    return (
+        <FlexBox style={{fontSize: "12px"}}>
+            <p>
+                Are you sure you want to delete this namespace? This action <b>can not be undone!</b>
+            </p>
+        </FlexBox>
+    );
+}
