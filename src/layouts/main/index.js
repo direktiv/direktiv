@@ -1,13 +1,15 @@
 import React from 'react';
 import './style.css';
 import Breadcrumbs from '../../components/breadcrumbs';
-import ExamplePage from '../example';
+import Settings from '../settings';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
 
-function MainLayout(props) {
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 
+function MainLayout(props) {
     let {onClick, style, className} = props;
+
     return(
         <div id="main-layout" onClick={onClick} style={style} className={className}>
             <FlexBox className="row gap tall" style={{minHeight: "100vh"}}>
@@ -20,14 +22,19 @@ function MainLayout(props) {
                     <NavBar />
                 </FlexBox>
 
-                <FlexBox className="content-col col">
-                    <FlexBox className="breadcrumbs-row">
-                        <Breadcrumbs/>
+                <BrowserRouter>
+                    <FlexBox className="content-col col">
+                        <FlexBox className="breadcrumbs-row">
+                            <Breadcrumbs/>
+                        </FlexBox>
+                        <FlexBox className="col" style={{paddingBottom: "8px"}}>
+                            <Routes>
+                                <Route path="/" element={<div>index route:)</div>} />
+                                <Route path="/settings" element={<Settings/>} />
+                            </Routes>
+                        </FlexBox>
                     </FlexBox>
-                    <FlexBox className="col" style={{paddingBottom: "8px"}}>
-                        <ExamplePage />
-                    </FlexBox>
-                </FlexBox>
+                </BrowserRouter>
 
             </FlexBox>
         </div>
