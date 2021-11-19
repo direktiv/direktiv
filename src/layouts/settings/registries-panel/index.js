@@ -58,7 +58,7 @@ function AddRegistryPanel(props) {
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
             <FlexBox className="gap">
                 <FlexBox>
-                    <input placeholder="Enter URL" />
+                    <input autoFocus placeholder="Enter URL" />
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">

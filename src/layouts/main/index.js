@@ -90,6 +90,7 @@ function MainLayout(props) {
 
 
     // TODO work out howt o show this
+    // NOTE: This will occur if namespace list wasn't able to be fetched, or if create/delete namespace returned an error.
     if(err !== null) {
         // createNamespace, deleteNamespace or listing namespaces has an error
         console.log(err)
