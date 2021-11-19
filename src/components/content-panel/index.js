@@ -12,7 +12,7 @@ function ContentPanel(props) {
     className = "content-panel-parent opaque " + className
 
     return(
-        <div style={{...style}} className={className} >
+        <div style={{...style, display: "flex", flexDirection: "column"}} className={className} >
             {children}
         </div>
     );
