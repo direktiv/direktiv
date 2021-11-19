@@ -191,10 +191,14 @@ input:focus-visible {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #EEF4F8;
+  background-color: var(--theme-dark-gray-text);
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 34px;
+}
+
+input:checked + .slider {
+  background-color: var(--theme-brand-blue);
 }
 
 .slider:before {
@@ -204,14 +208,14 @@ input:focus-visible {
   width: 18px;
   left: 2px;
   bottom: 2px;
-  background-color: #B2BCC3;
+  background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 50%;
 }
 
 input:checked + .slider:before {
-  background-color: #66DE93;
+  background-color: white;
   -webkit-transform: translateX(14px);
   -ms-transform: translateX(14px);
   transform: translateX(14px);

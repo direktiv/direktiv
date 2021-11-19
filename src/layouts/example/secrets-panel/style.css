@@ -18,6 +18,7 @@
 
 .secret-tuple {
     font-size: 12px;
+    max-height: 24px;
 }
 
 .secret-tuple > .key {

@@ -38,11 +38,11 @@ function SecretsPanel(props){
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
-                    <FlexBox>
-                        <Alert>Once a secret is removed, it can never be restored.</Alert>
-                    </FlexBox>
-                    <FlexBox className="secrets-list">
+                    <FlexBox className="secrets-list"> 
                         <Secrets />
+                    </FlexBox>
+                    <FlexBox style={{maxHeight: "44px"}}>
+                        <Alert>Once a secret is removed, it can never be restored.</Alert>
                     </FlexBox>
                 </FlexBox>
             </ContentPanelBody>
