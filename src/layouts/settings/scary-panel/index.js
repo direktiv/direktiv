@@ -8,6 +8,7 @@ import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 
 function ScarySettings(props) {
+    const {deleteNamespace, namespace} = props
     return (<>
         <ContentPanel className="scary-panel">
             <ContentPanelTitle>
@@ -21,7 +22,7 @@ function ScarySettings(props) {
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
                     <FlexBox className="scary-settings"> 
-                        <Scary/>
+                        <Scary namespace={namespace} deleteNamespace={deleteNamespace}/>
                     </FlexBox>
                     <FlexBox>
                         <Alert className="critical">These settings are super dangerous! Use at your own risk!</Alert>
@@ -35,6 +36,7 @@ function ScarySettings(props) {
 export default ScarySettings;
 
 function Scary(props) {
+    const {deleteNamespace, namespace} = props
     return(
         <>
         <FlexBox>
@@ -51,7 +53,7 @@ function Scary(props) {
                         )}  
                         actionButtons={[
                             ButtonDefinition("Delete", () => {
-                                console.log("delete namespace");
+                                deleteNamespace(namespace)
                             }, "small red", true, false),
                             ButtonDefinition("Cancel", () => {
                                 console.log("close modal");
@@ -72,7 +74,7 @@ function DeleteNamespaceConfirmationPanel(props) {
     return (
         <FlexBox style={{fontSize: "12px"}}>
             <p>
-                Are you sure you want to delete this namespace? This action <b>can not be undone!</b>
+                Are you sure you want to delete this namespace?<br/> This action <b>can not be undone!</b>
             </p>
         </FlexBox>
     );
