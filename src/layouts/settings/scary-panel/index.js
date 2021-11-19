@@ -24,7 +24,7 @@ function ScarySettings(props) {
                         <Scary/>
                     </FlexBox>
                     <FlexBox>
-                        <Alert className="critical">The following settings are super dangerous! Use at your own risk!</Alert>
+                        <Alert className="critical">These settings are super dangerous! Use at your own risk!</Alert>
                     </FlexBox>
                 </FlexBox>
             </ContentPanelBody>
