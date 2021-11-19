@@ -69,7 +69,7 @@
     font-weight: 600;
 }
 
-.nav-item:hover {
+.nav-item:hover, .nav-item.active {
     color: var(--theme-dark-text);
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: var(--theme-border-radius);

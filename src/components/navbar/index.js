@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './style.css';
 import Logo from '../../assets/nav-logo.png'
 import FlexBox from '../flexbox';
@@ -8,10 +8,11 @@ import Modal from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
 import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
+import { Link } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, className} = props;
+    let {onClick, style, className, createNamespace, namespace, namespaces} = props;
     
     if (!className) {
         className = ""
@@ -40,12 +41,12 @@ function NavBar(props) {
 
                 <div className="navbar-panel shadow col">
                     <FlexBox>
-                        <NamespaceSelector/>
+                        <NamespaceSelector namespace={namespace} namespaces={namespaces}/>
                     </FlexBox>
                     <FlexBox>
-                        <NewNamespaceBtn />
+                        <NewNamespaceBtn createNamespace={createNamespace} />
                     </FlexBox>
-                    <NavItems style={{ marginTop: "12px" }} />
+                    <NavItems namespace={namespace} style={{ marginTop: "12px" }} />
                 </div>
 
                 <div className="navbar-panel shadow col">
@@ -81,6 +82,9 @@ function NavBar(props) {
 export default NavBar;
 
 function NewNamespaceBtn(props) {
+    const {createNamespace} = props
+
+    const [ns, setNs] = useState("")
 
     return (
         <Modal title="New namespace" 
@@ -101,15 +105,17 @@ function NewNamespaceBtn(props) {
             )} 
             actionButtons={[
                 ButtonDefinition("Add", () => {
-                    console.log("add secret");
+                    createNamespace(ns)
+                    setNs("")
                 }, "small blue", true, false),
                 ButtonDefinition("Cancel", () => {
                     console.log("close modal");
+                    setNs("")
                 }, "small light", true, false)
             ]}
         >
             <FlexBox>
-                <input placeholder="Enter namespace name" />
+                <input value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
             </FlexBox>
         </Modal>
     );
@@ -117,45 +123,59 @@ function NewNamespaceBtn(props) {
 
 function NavItems(props) {
 
-    let {style} = props;
+    let {style, namespace} = props;
 
     return (
         <FlexBox style={{...style}} className="nav-items">
             <ul>
                 <li>
-                    <NavItem label="Dashboard">
-                        <BsSpeedometer/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}`}>
+                        <NavItem label="Explorer">
+                            <BsFolder2Open/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Explorer">
-                        <BsFolder2Open/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}/monitoring`}>
+                        <NavItem label="Monitoring">
+                            <BsSpeedometer/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Workflow Builder">
-                        <IoGitNetworkOutline/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}/builder`}>
+                        <NavItem label="Workflow Builder">
+                            <IoGitNetworkOutline/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Instances">
-                        <BsCodeSquare/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}/instances`}>
+                        <NavItem label="Instances">
+                            <BsCodeSquare/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Permissions">
-                        <IoLockClosedOutline/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}/permissions`}>
+                        <NavItem label="Permissions">
+                            <IoLockClosedOutline/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Services">
-                        <IoCubeOutline/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}/services`}>
+                        <NavItem label="Services">
+                            <IoCubeOutline/>
+                        </NavItem>
+                    </Link>
                 </li>
                 <li>
-                    <NavItem label="Settings">
-                        <BsSliders/>
-                    </NavItem>
+                    <Link to={`/n/${namespace}/settings`}>
+                        <NavItem label="Settings">
+                            <BsSliders/>
+                        </NavItem>
+                    </Link>
                 </li>
             </ul>
         </FlexBox>
@@ -189,13 +209,13 @@ function NavItem(props) {
     }
 
     return (
-        <FlexBox className={"nav-item " + className} style={{ gap: "8px" }}>
-            <FlexBox style={{ maxWidth: "30px", width: "30px", margin: "auto" }}>
-                {children}
+            <FlexBox className={"nav-item " + className} style={{ gap: "8px" }}>
+                <FlexBox style={{ maxWidth: "30px", width: "30px", margin: "auto" }}>
+                    {children}
+                </FlexBox>
+                <FlexBox style={{ textAlign: "left" }}>
+                    {label}
+                </FlexBox>
             </FlexBox>
-            <FlexBox style={{ textAlign: "left" }}>
-                {label}
-            </FlexBox>
-        </FlexBox>
     );
 }

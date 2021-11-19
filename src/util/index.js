@@ -1,3 +1,7 @@
+export const Config = {
+    url: process.env.REACT_APP_API
+}
+
 export function GenerateRandomKey(prefix) {
     if (!prefix) {
         prefix = "";
