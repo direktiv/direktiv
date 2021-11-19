@@ -105,3 +105,19 @@
     transform: rotate(180deg);
     transition: transform 0.7s ease-in-out 0s;
 }
+
+
+/* Loading - Namespace List Item */
+.namespace-list-item.loading .namespace-selector-logo {
+    content: "";
+
+    background: linear-gradient(293deg,white,#3e94c5);
+    background-size: 300% 300%;
+    animation: gradient-animation 2s ease infinite;
+}
+
+@keyframes gradient-animation {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
+}

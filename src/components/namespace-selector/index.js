@@ -5,7 +5,7 @@ import {IoChevronDown} from 'react-icons/io5';
 
 function NamespaceSelector(props) {
 
-    let {style, className} = props;
+    let {data, style, className} = props;
     if (!className) {
         className = ""
     }
@@ -22,6 +22,16 @@ function NamespaceSelector(props) {
         chevronClass = "chevron-icon spin"
     }
 
+    let loading = false;
+    if (!data) {
+        // If data is null/undefined, the request to get namespaces has not yet succeeded.
+        // Show a loader.
+        loading = true;
+    } else if (data === []) {
+        // Else if data is an empty array, the request succeeded but no namespaces are listed.
+        // In this case, prompt with a 'create namespace' modal.
+    }
+
     return (
         <>
             <FlexBox className="col gap">
@@ -29,7 +39,7 @@ function NamespaceSelector(props) {
                     setShowSelector(!showSelector)
                 }} style={{...style, maxHeight: "64px"}} className={className}>
                     <FlexBox className="namespace-selector">
-                        <NamespaceListItem/>
+                        <NamespaceListItem namespace="example" label="ACTIVE NAMESPACE" loading={loading} />
                         <FlexBox className="tall">
                             <div className="auto-margin grey-text">
                                 <IoChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
@@ -50,21 +60,40 @@ function NamespaceSelector(props) {
 export default NamespaceSelector;
 
 function NamespaceListItem(props) {
+
+    let {namespace, loading, label} = props;
+    let className = "namespace-list-item";
+
+    if (!namespace) {
+        namespace = "Undefined"
+    }
+
+    if (!label) {
+        label = "Namespace"
+    }
+
+    if (loading === true) {
+        className += " loading"
+        label = "Loading..."
+        namespace = "..."
+    }
+
+
     return (
-        <FlexBox className="namespace-list-item" style={{height: "45px", minHeight: "45px", maxHeight: "45px"}}>
+        <FlexBox className={className} style={{height: "45px", minHeight: "45px", maxHeight: "45px"}}>
             <FlexBox className="">
                 <FlexBox className="namespace-selector-logo">
                     <div className="auto-margin">
-                        IMG
+                        
                     </div>
                 </FlexBox>
                 <FlexBox className="col">
                     <div className="auto-margin" style={{marginLeft: "8px"}}>
                         <FlexBox className="namespace-selector-label-header">
-                            LOGGED IN
+                            {label}
                         </FlexBox>
                         <FlexBox className="namespace-selector-label-value">
-                            Namespace Inc.
+                            {namespace}
                         </FlexBox>
                     </div>
                 </FlexBox>
