@@ -6,7 +6,7 @@ import BroadcastConfigurationsPanel from './broadcast-panel';
 import VariablesPanel from './variables-panel';
 import ScarySettings from './scary-panel';
 
-function ExamplePage(props) {
+function Settings(props) {
     return(
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
             <FlexBox className="gap col">
@@ -32,4 +32,4 @@ function ExamplePage(props) {
     )
 }
 
-export default ExamplePage;
+export default Settings;

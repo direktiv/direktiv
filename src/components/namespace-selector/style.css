@@ -52,16 +52,16 @@
 
     max-height: 300px;
     overflow-y: scroll;
-    transition: max-height 1s ease-in-out 0s,
-                border-width 1s ease-in-out 0s;
+    transition: max-height 0.4s ease-out 0s,
+                border-width 0.4s linear 0s;
 }
 
 .selector-section.hidden {
     border-width: 0px;
     max-height: 0px;
     pointer-events: none;
-    transition: max-height 1s ease-in-out 0s,
-                border-width 1s ease-in-out 0s;
+    transition: max-height 0.4s ease-out 0s,
+                border-width 0.4s linear 0s;
 }
 
 .namespaces-list {

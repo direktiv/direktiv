@@ -1,14 +1,105 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.css';
 import Breadcrumbs from '../../components/breadcrumbs';
 import Settings from '../settings';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useNamespaces } from 'direktiv-react-hooks' 
+import { Config } from '../../util'
+import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
+
+
+function NamespaceNavigation(props){
+    const {namespaces, namespace, setNamespace} = props
+
+    const navigate = useNavigate()
+
+    // on mount check if namespace is stored in local storage and exists in the response given back
+    useEffect(()=>{
+        // only do this check if its not provided in the params
+        if (namespaces !== null && namespaces.length > 0) {
+            let urlpath = window.location.pathname.split("/")
+            let ns = localStorage.getItem('namespace')
+            if(urlpath[1] && urlpath[1] === "n"){
+                // urlpath[2] would be the namespace 
+                ns = urlpath[2]
+            } 
+            if (ns) {
+                let found = false
+                for(let i=0; i < namespaces.length; i++) {
+                    if(namespaces[i].node.name === ns){
+                        found = true
+                        break
+                    }
+                }
+                if (!found) {
+                    // not found set it to the index page
+                    setNamespace("")
+                    localStorage.setItem('namespace', "")
+                    navigate("/", {replace: true})
+                    return
+                } 
+            } else {
+                // locally stored namespace didn't exist in array so choose the 1st element
+                ns = namespaces[0].node.name   
+            }
+            // namespace is good and found go to this one
+            localStorage.setItem('namespace', ns)
+            setNamespace(ns)
+
+            if(window.location.pathname === "/") {
+                navigate(`/n/${ns}`, {replace: true})
+            }
+        }
+
+        if(namespaces !== null && namespaces.length === 0 && window.location.pathname !== "/") {
+            navigate("/", {replace: true})
+        }
+    },[namespaces, navigate, setNamespace, namespace])
+
+    console.log(namespaces)
+
+    return(
+        <FlexBox className="content-col col">
+            <FlexBox className="breadcrumbs-row">
+                <Breadcrumbs/>
+            </FlexBox>
+            <FlexBox className="col" style={{paddingBottom: "8px"}}>
+                {namespaces !== null ? 
+                <Routes>
+                    <Route path="/" element={<div>index route:)</div>} />
+                    <Route exact path="/n/:namespace" element={<div>explorer</div>} />
+                    <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
+                    <Route path="/n/:namespace/builder" element={<div>builder</div>}/>
+                    <Route path="/n/:namespace/instances" element={<div>instances</div>}/>
+                    <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
+                    <Route path="/n/:namespace/services" element={<div>services</div>}/>
+                    <Route path="/n/:namespace/settings" element={<Settings/>} />
+                </Routes>:""}
+            </FlexBox>
+        </FlexBox>
+    )
+}
 
 function MainLayout(props) {
     let {onClick, style, className} = props;
+
+    const { data, err, createNamespace, deleteNamespace } = useNamespaces(Config.url, true)
+    const [namespace, setNamespace] = useState(null)
+
+
+    // TODO work out howt o show this
+    if(err !== null) {
+        // createNamespace, deleteNamespace or listing namespaces has an error
+        console.log(err)
+    }
+    // if (data === null) {
+    //     // still loading :)
+    //     return(
+    //         <div>we loading</div>
+    //     )
+    // }
 
     return(
         <div id="main-layout" onClick={onClick} style={style} className={className}>
@@ -18,22 +109,11 @@ function MainLayout(props) {
                     Right col: page contents 
                 */}
 
-                <FlexBox className="navigation-col">
-                    <NavBar />
-                </FlexBox>
-
                 <BrowserRouter>
-                    <FlexBox className="content-col col">
-                        <FlexBox className="breadcrumbs-row">
-                            <Breadcrumbs/>
-                        </FlexBox>
-                        <FlexBox className="col" style={{paddingBottom: "8px"}}>
-                            <Routes>
-                                <Route path="/" element={<div>index route:)</div>} />
-                                <Route path="/settings" element={<Settings/>} />
-                            </Routes>
-                        </FlexBox>
+                    <FlexBox className="navigation-col">
+                        <NavBar setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                     </FlexBox>
+                    <NamespaceNavigation namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                 </BrowserRouter>
 
             </FlexBox>
