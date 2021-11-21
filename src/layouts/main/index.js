@@ -113,7 +113,7 @@ function MainLayout(props) {
             <FlexBox className="row gap tall" style={{minHeight: "100vh"}}>
                 {/* 
                     Left col: navigation
-                    Right col: page contents 
+                    Right : page contents 
                 */}
 
                 <BrowserRouter>
