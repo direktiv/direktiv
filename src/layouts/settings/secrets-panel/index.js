@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
@@ -6,8 +6,20 @@ import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
 import Modal, {ButtonDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
+import {useSecrets} from 'direktiv-react-hooks'
+import {Config} from '../../../util'
 
 function SecretsPanel(props){
+    const {namespace} = props
+
+
+    const [keyValue, setKeyValue] = useState("")
+    const [vValue, setVValue] = useState("")
+    const {data, err, createErr, deleteErr, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace)
+   
+    console.log(err, data, createErr, deleteErr)
+    // createErr is the error when creating a secret
+
     return (
         <ContentPanel style={{width: "100%"}}>
             <ContentPanelTitle>
@@ -24,22 +36,23 @@ function SecretsPanel(props){
                             <AddValueButton label=" " />
                         )}  
                         actionButtons={[
-                            ButtonDefinition("Add", () => {
-                                console.log("add namespace");
+                            ButtonDefinition("Add", async () => {
+                                await createSecret(keyValue, vValue)
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
-                                console.log("close modal");
+                                setKeyValue("")
+                                setVValue("")
                             }, "small light", true, false)
                         ]}
                     >
-                        <AddSecretPanel />
+                        <AddSecretPanel keyValue={keyValue} vValue={vValue} setKeyValue={setKeyValue} setVValue={setVValue} />
                     </Modal>
                 </div>
             </ContentPanelTitle>
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
                     <FlexBox className="secrets-list"> 
-                        <Secrets />
+                        <Secrets  />
                     </FlexBox>
                     <FlexBox style={{maxHeight: "44px"}}>
                         <Alert>Once a secret is removed, it can never be restored.</Alert>
@@ -107,16 +120,18 @@ export function SecretsDeleteButton(props) {
 }
 
 function AddSecretPanel(props) {
+    const {keyValue, vValue, setKeyValue, setVValue} = props
+
 
     return (
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
             <FlexBox className="gap">
                 <FlexBox>
-                    <input autoFocus placeholder="Enter key" />
+                    <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter key" />
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox><input placeholder="Enter value" /></FlexBox>
+                <FlexBox><input value={vValue} onChange={(e)=>setVValue(e.target.value)} placeholder="Enter value" /></FlexBox>
             </FlexBox>
         </FlexBox>
     );

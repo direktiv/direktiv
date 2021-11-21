@@ -13,6 +13,7 @@ import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 function NamespaceNavigation(props){
     const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
 
+    const [load, setLoad] = useState(true)
     const navigate = useNavigate()
 
     // on mount check if namespace is stored in local storage and exists in the response given back
@@ -37,6 +38,7 @@ function NamespaceNavigation(props){
                 if (!found) {
                     // not found set it to the index page
                     setNamespace("")
+                    setLoad(false)
                     localStorage.setItem('namespace', "")
                     navigate("/", {replace: true})
                     return
@@ -48,12 +50,17 @@ function NamespaceNavigation(props){
             // namespace is good and found go to this one
             localStorage.setItem('namespace', ns)
             setNamespace(ns)
+            setLoad(false)
             if(window.location.pathname === "/") {
                 navigate(`/n/${ns}`, {replace: true})
             }
-        } else {
+        } else  {
             // no namespaces should we should reset namespace back to ""
-            setNamespace("")
+            console.log("resetting namespace")
+            if(!load) {
+                setNamespace("")
+            }
+            setLoad(false)
         }
 
         if(namespaces !== null && namespaces.length === 0 && window.location.pathname !== "/") {
@@ -62,6 +69,11 @@ function NamespaceNavigation(props){
     },[namespaces, navigate, setNamespace, namespace])
 
     console.log(namespaces)
+
+    // 
+    if(load) {
+        return ""
+    }
 
     return(
         <FlexBox className="content-col col">
@@ -72,17 +84,19 @@ function NamespaceNavigation(props){
                 {namespaces !== null ? 
                 <Routes>
                     <Route path="/" element={<div>index route:)</div>} />
-                    <Route exact path="/n/:namespace" element={<div>explorer</div>} />
+                    <Route path="/n/:namespace" element={<div>explorer</div>} />
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     <Route path="/n/:namespace/builder" element={<div>builder</div>}/>
                     <Route path="/n/:namespace/instances" element={<div>instances</div>}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<div>services</div>}/>
                     <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
+                    <Route path="/n/:namespace/events" element={<div>events</div>}/>
 
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<div>jqplayground</div>} />
                     <Route path="/g/services" element={<div>g services</div>}/>
+                    <Route path="/g/registries" element={<div>g registries</div>} />
                 </Routes>:""}
             </FlexBox>
         </FlexBox>

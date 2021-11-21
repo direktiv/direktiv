@@ -9,15 +9,20 @@ import ScarySettings from './scary-panel';
 function Settings(props) {
     const {deleteNamespace, namespace, deleteErr} = props
 
+    // if namespace is null top level wait till we have a namespace
+    if(namespace === null) {
+        return ""
+    }
+
     return(
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
             <FlexBox className="gap col">
                 <FlexBox className="gap wrap">
                     <FlexBox style={{ minWidth: "380px" }}>
-                        <SecretsPanel />
+                        <SecretsPanel namespace={namespace} />
                     </FlexBox>
                     <FlexBox style={{ minWidth: "380px" }}>
-                        <RegistriesPanel />
+                        <RegistriesPanel namespace={namespace} />
                     </FlexBox>
                 </FlexBox>
             </FlexBox>

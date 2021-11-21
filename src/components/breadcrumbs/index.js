@@ -13,9 +13,11 @@ function Breadcrumbs(props) {
         <FlexBox>
             <ul>
                 {breadcrumbs.map((obj)=>{
-
+                    // ignore breadcrumbs for dividers
+                    if(obj.key === "/g" || obj.key === "/n") {
+                        return
+                    }
                     let key = GenerateRandomKey("crumb-");
-
                     return(
                         <li id={key} key={key}>
                             <Link to={obj.key}>

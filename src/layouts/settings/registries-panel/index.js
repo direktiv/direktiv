@@ -6,8 +6,13 @@ import AddValueButton from '../../../components/add-button';
 import FlexBox from '../../../components/flexbox';
 import {SecretsDeleteButton} from '../secrets-panel';
 import Alert from '../../../components/alert';
+import { useRegistries } from 'direktiv-react-hooks';
+import { Config } from '../../../util';
 
 function RegistriesPanel(props){
+    const {namespace} = props
+    const {data, err, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace)
+    console.log(data, err, "registries")
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>
