@@ -1,0 +1,39 @@
+.instances-table tr {
+    line-height: 42px;
+    height: 48px;
+    padding-top: 8px;
+}
+
+.instance-row {
+    border-top: solid 1px var(--theme-dark-gray-faded);
+    line-height: 42px;
+    height: 42px;
+}
+
+.success-label {
+    color: var(--theme-green);
+    background-color: var(--theme-green-faded);
+}
+
+.fail-label {
+    color: var(--theme-red);
+    background-color: var(--theme-red-faded);
+}
+
+.cancel-label {
+    color: var(--theme-dark-gray-text);
+    background-color: var(--theme-dark-gray-faded);
+}
+
+.running-label {
+    color: var(--theme-brand-blue);
+    background-color: var(--theme-brand-blue-faded);
+}
+
+.success-label, .fail-label, .cancel-label, .running-label {
+    font-weight: 700;
+    width: fit-content;
+    line-height: 3px;
+    padding-right: 16px;
+    border-radius: 30px;
+}

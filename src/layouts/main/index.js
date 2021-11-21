@@ -8,6 +8,7 @@ import NavBar from '../../components/navbar';
 import { useNamespaces } from 'direktiv-react-hooks' 
 import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
+import InstancesPage from '../instances';
 
 
 function NamespaceNavigation(props){
@@ -87,7 +88,7 @@ function NamespaceNavigation(props){
                     <Route path="/n/:namespace" element={<div>explorer</div>} />
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     <Route path="/n/:namespace/builder" element={<div>builder</div>}/>
-                    <Route path="/n/:namespace/instances" element={<div>instances</div>}/>
+                    <Route path="/n/:namespace/instances" element={<InstancesPage />}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<div>services</div>}/>
                     <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
