@@ -11,7 +11,7 @@ import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 
 
 function NamespaceNavigation(props){
-    const {namespaces, namespace, setNamespace, deleteNamespace} = props
+    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
 
     const navigate = useNavigate()
 
