@@ -5,9 +5,15 @@
   --theme-grey-light-blue: #8797AD;
   --theme-dark-text: #082032;
   --theme-dark-gray-text: #566875;
+  --theme-dark-gray-faded: rgba(86, 104, 117, 0.1);
   --theme-red: #FF616D;
+  --theme-red-faded: rgba(255, 97, 109, 0.1);
   --theme-green: #66DE93;
+  --theme-green-faded: rgba(102, 222, 147, 0.13);
   --theme-brand-blue: #3E94C5;
+  --theme-brand-blue-faded: rgba(62, 148, 195, 0.13);
+  --theme-yellow: rgba(237, 168, 100);
+  --theme-yellow-faded: rgba(237, 168, 100, 0.13);
   --theme-white: #FFFFFF;
   --theme-shadow-background: #C4C4C4;
   --theme-shadow-box-shadow: 0px 2px 20px rgba(44, 57, 75, 0.1);
