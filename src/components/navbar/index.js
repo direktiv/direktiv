@@ -12,7 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, className, createNamespace, namespace, namespaces} = props;
+    let {onClick, style, className, createNamespace, namespace, namespaces, createErr} = props;
     
     if (!className) {
         className = ""
@@ -37,7 +37,7 @@ function NavBar(props) {
                         <NamespaceSelector namespace={namespace} namespaces={namespaces}/>
                     </FlexBox>
                     <FlexBox>
-                        <NewNamespaceBtn createNamespace={createNamespace} />
+                        <NewNamespaceBtn createErr={createErr} createNamespace={createNamespace} />
                     </FlexBox>
                     <NavItems namespace={namespace} style={{ marginTop: "12px" }} />
                 </div>
@@ -75,7 +75,10 @@ function NavBar(props) {
 export default NavBar;
 
 function NewNamespaceBtn(props) {
-    const {createNamespace} = props
+    const {createNamespace, createErr} = props
+
+    // createErr is filled when someone tries to create namespace but proceeded to error out
+
 
     const [ns, setNs] = useState("")
     const navigate = useNavigate()

@@ -78,7 +78,7 @@ function NamespaceNavigation(props){
                     <Route path="/n/:namespace/instances" element={<div>instances</div>}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<div>services</div>}/>
-                    <Route path="/n/:namespace/settings" element={<Settings namespace={namespace} deleteNamespace={deleteNamespace}/>} />
+                    <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
 
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<div>jqplayground</div>} />
@@ -92,11 +92,11 @@ function NamespaceNavigation(props){
 function MainLayout(props) {
     let {onClick, style, className} = props;
 
-    const { data, err, createNamespace, deleteNamespace } = useNamespaces(Config.url, true)
+    const { data, err, createErr, deleteErr, createNamespace, deleteNamespace } = useNamespaces(Config.url, true)
     const [namespace, setNamespace] = useState(null)
 
 
-    // TODO work out how to show this when an error happens that is namespace related
+    // TODO work out how to handle this error when listing namespaces
     if(err !== null) {
         // createNamespace, deleteNamespace or listing namespaces has an error
         console.log(err)
@@ -118,9 +118,9 @@ function MainLayout(props) {
 
                 <BrowserRouter>
                     <FlexBox className="navigation-col">
-                        <NavBar setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                        <NavBar setNamespace={setNamespace} namespace={namespace} createErr={createErr} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                     </FlexBox>
-                    <NamespaceNavigation deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
+                    <NamespaceNavigation deleteErr={deleteErr} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                 </BrowserRouter>
 
             </FlexBox>

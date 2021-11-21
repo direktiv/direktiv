@@ -8,7 +8,7 @@ import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 
 function ScarySettings(props) {
-    const {deleteNamespace, namespace} = props
+    const {deleteNamespace, namespace, deleteErr} = props
     return (<>
         <ContentPanel className="scary-panel">
             <ContentPanelTitle>
@@ -22,7 +22,7 @@ function ScarySettings(props) {
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
                     <FlexBox className="scary-settings"> 
-                        <Scary namespace={namespace} deleteNamespace={deleteNamespace}/>
+                        <Scary namespace={namespace} deleteErr={deleteErr} deleteNamespace={deleteNamespace}/>
                     </FlexBox>
                     <FlexBox>
                         <Alert className="critical">These settings are super dangerous! Use at your own risk!</Alert>
@@ -36,7 +36,9 @@ function ScarySettings(props) {
 export default ScarySettings;
 
 function Scary(props) {
-    const {deleteNamespace, namespace} = props
+    const {deleteNamespace, namespace, deleteErr} = props
+    // deleteErr gets filled in when someone attempts to delete a namespace and an error happens
+
     return(
         <>
         <FlexBox>
