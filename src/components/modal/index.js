@@ -4,12 +4,13 @@ import Button from '../button';
 import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon} from '../../components/content-panel';
 import { IoLockClosedOutline, IoCloseCircleSharp } from 'react-icons/io5';
 import FlexBox from '../flexbox';
+import Alert from '../alert';
 
 
 function Modal(props) {
 
     let {title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {style, actionButtons, escapeToCancel} = props;
+    let {style, actionButtons, keyDownActions, escapeToCancel, onClose } = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -24,6 +25,13 @@ function Modal(props) {
         setVisible(false);
     }
 
+    let callback = function() {
+        if (onClose) {
+            onClose()
+        }
+        closeModal()
+    }
+
     let overlay = (<></>);
     if (visible) {
         overlay = (<ModalOverlay 
@@ -31,9 +39,10 @@ function Modal(props) {
                         title={title} 
                         activeOverlay={activeOverlay} 
                         withCloseButton={withCloseButton} 
-                        callback={closeModal} 
+                        callback={callback} 
                         actionButtons={actionButtons}
                         escapeToCancel={escapeToCancel}
+                        keyDownActions={keyDownActions}
                     />)
     }
 
@@ -69,7 +78,9 @@ export default Modal;
 function ModalOverlay(props) {
 
     let {title, children, callback, activeOverlay, withCloseButton} = props;
-    let {actionButtons, escapeToCancel} = props;
+    let {actionButtons, escapeToCancel, keyDownActions} = props;
+    const [displayAlert, setDisplayAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     
     useEffect(()=>{
@@ -78,12 +89,41 @@ function ModalOverlay(props) {
                 callback(false)
             }
         }
+
+        let removeListeners = [];
+
         if (escapeToCancel) {
             window.addEventListener('keydown', closeModal)
-            return () => {
-                window.removeEventListener('keydown', closeModal)
+            removeListeners.push({label: 'keydown', fn: closeModal})
+        }
+
+        if (keyDownActions) {
+            for (let i = 0; i < keyDownActions.length; i++) {
+                const action = keyDownActions[i];
+
+                let fn = async (e) => {
+                    if (e.code === action.code) {
+                        let err = await action.fn()
+                        if (err) {
+                            setAlertMessage(err)
+                            setDisplayAlert(true)
+                        } else if (action.closeModal) {
+                            callback(false)
+                        }
+                    }
+                }
+
+                window.addEventListener('keydown', fn)
+                removeListeners.push({label: 'keydown', fn: fn})
             }
         }
+
+        return () => {
+            for (let i = 0; i < removeListeners.length; i++) {
+                window.removeEventListener(removeListeners[i].label, removeListeners[i].fn)
+            }
+        }
+
     },[escapeToCancel, callback])
     
 
@@ -111,7 +151,7 @@ function ModalOverlay(props) {
 
     let buttons
     if (actionButtons){
-       buttons = generateButtons(callback, actionButtons);
+       buttons = generateButtons(callback, setDisplayAlert, setAlertMessage, actionButtons);
     } 
 
     return(
@@ -142,6 +182,9 @@ function ModalOverlay(props) {
                             </ContentPanelTitle>
                             <ContentPanelBody style={{padding: "12px"}}>
                                 <FlexBox className="col gap">
+                                    { displayAlert ?
+                                    <Alert className="critical">{alertMessage}</Alert>
+                                    : <></> }
                                     {children}
                                     <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
                                         {buttons}
@@ -166,7 +209,15 @@ export function ButtonDefinition(label, onClick, classList, closesModal, async) 
     }
 }
 
-function generateButtons(closeModal, actionButtons) {
+export function KeyDownDefinition(code, fn, closeModal) {
+    return {
+        code: code,
+        fn: fn,
+        closeModal: closeModal
+    }
+}
+
+function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionButtons) {
 
     // label, onClick, classList, closesModal, async
 
@@ -174,9 +225,14 @@ function generateButtons(closeModal, actionButtons) {
     for (let i = 0; i < actionButtons.length; i++) {
 
         let btn = actionButtons[i];
-        let onClick = () => {
-            btn.onClick()
-            if (btn.closesModal) {
+        let onClick =  async () => {
+            
+            let e = await btn.onClick()
+            if (e) {
+                // handle error
+                setAlertMessage(e)
+                setDisplayAlert(true)
+            } else if (btn.closesModal) {
                 closeModal()
             }
         }
