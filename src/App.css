@@ -21,7 +21,7 @@
 
   --theme-bold-font-weight: 700; 
 
-  --font-family: Poppins;
+  --font-family: Inter;
   --border: solid 1px var(--theme-subtle-border);
   --hover-brightness: 1.1;
   --active-brightness: 0.95;
@@ -29,8 +29,8 @@
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url(./fonts/Poppins-Regular.ttf);
+  font-family: 'Inter';
+  src: url(./fonts/Inter-Regular.ttf);
 }
 
 .opaque {

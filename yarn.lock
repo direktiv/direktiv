@@ -3907,6 +3907,11 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
+dayjs@^1.10.7:
+  version "1.10.7"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.10.7.tgz#2cf5f91add28116748440866a0a1d26f3a6ce468"
+  integrity sha512-P6twpd70BcPK34K26uJ1KT3wlhpuOAPoMwJzpsIWUxHZ7wpmbdZL/hQqBDfz7hGurYSa5PhzdhDHtt319hL3ig==
+
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.0, debug@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -4087,10 +4092,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-direktiv-react-hooks@^0.0.10:
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.10.tgz#dc16962e9fd8195507e6f5ca0ef82a0232b03b32"
-  integrity sha512-qFhkXnEBE9IQgNJzvVL+If8dubGnvA3uQDUJMggYVKrEOtH+1e2RHw0fFXl4N0XSy8JKeic5s1cy6+9EZLowew==
+direktiv-react-hooks@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.12.tgz#dcad8fea666ae73d530e1c947bebbecd9bde39c1"
+  integrity sha512-q69KXE94fQhMjlFr81G78MYiNF3/g9sSEfcrVTBOUHXPh5nMtnOK7x1l/OfU2S4aCBlJLOfzvlC1AL7ejonAHQ==
   dependencies:
     "@types/event-source-polyfill" "^1.0.0"
     event-source-polyfill "^1.0.25"

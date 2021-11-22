@@ -5,8 +5,24 @@ import FlexBox from '../../components/flexbox';
 import {VscFileCode} from 'react-icons/vsc';
 import { BsDot } from 'react-icons/bs';
 import HelpIcon from '../../components/help';
+import { useInstances } from 'direktiv-react-hooks';
+import { Config } from '../../util';
+
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc"
+import { Link } from 'react-router-dom';
+
+dayjs.extend(utc)
+dayjs.extend(relativeTime);
 
 function InstancesPage(props) {
+    const {namespace} = props
+
+    if(namespace === null) {
+        return ""
+    }
+
     return(
         <div style={{ paddingRight: "8px" }}>
             <ContentPanel>
@@ -22,7 +38,7 @@ function InstancesPage(props) {
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody>
-                    <InstancesTable />
+                    <InstancesTable namespace={namespace} /> 
                 </ContentPanelBody>
             </ContentPanel>
         </div>
@@ -32,10 +48,19 @@ function InstancesPage(props) {
 export default InstancesPage;
 
 function InstancesTable(props) {
+    const {namespace} = props
+    const {data, err} = useInstances(Config.url, true, namespace)
+    console.log('current data', data, err)
+    if(data === null) {
+        return ""
+    }
 
     return(
-        <table className="instances-table">
-            <thead>
+
+    <table className="instances-table">
+     {
+         data.length === 0 ? "":
+     <>       <thead>
                 <tr>
                     <th>
                         State
@@ -47,37 +72,51 @@ function InstancesTable(props) {
                         Started at
                     </th>
                     <th>
-                        Finished at
+                        Last Updated
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <InstanceRow state={success} name={"test-01"} started={""} finished={""}  />
-                <InstanceRow state={fail} name={"test-02"} started={""} finished={""} />
-                <InstanceRow state={cancelled} name={"test-03"} started={""} finished={""} />
-                <InstanceRow state={running} name={"test-04"} started={""} finished={""} />
-            </tbody>
+                {data !== null ? 
+                <>
+                    {data.map((obj)=>{
+                    return(
+                        <InstanceRow 
+                            namespace={namespace}
+                            state={obj.node.status} 
+                            name={obj.node.as} 
+                            id={obj.node.id}
+                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm")} 
+                            startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
+                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm")}
+                            finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
+                        />
+                    )
+                    })}
+                </>
+                :
+                ""
+                }
+            </tbody></>}
         </table>
     );
 }
 
-const success = "success";
-const fail = "fail";
-const cancelled = "cancelled";
-const running = "running";
+const success = "complete";
+const fail = "failed";
+// there is no cancelled state
+// const cancelled = "cancelled";
+const running = "pending";
 
 function InstanceRow(props) {
-
-    let {state, name, started, finished} = props;
-
+    let {state, name, started, startedFrom, finished, finishedFrom, id, namespace} = props;
+    console.log(state)
     let label;
     if (state === success) {
         label = <SuccessState />
     } else if (state === fail) {
         label = <FailState />
-    } else if (state === cancelled) {
-        label = <CancelledState />
-    } else  if (state === running) {
+    }  else  if (state === running) {
         label = <RunningState />
     }
 
@@ -86,13 +125,15 @@ function InstanceRow(props) {
             {label}
         </td>
         <td>
-            {name}
+            <Link to={`/n/${namespace}/instances/${id}`}>
+                {name}
+            </Link>
         </td>
         <td>
-            {started}
+            {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text">({startedFrom})</span>
         </td>
         <td>
-            {finished}
+            {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text">({finishedFrom})</span>
         </td>
     </tr>)
 }
