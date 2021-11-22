@@ -43,16 +43,16 @@ function SecretsPanel(props){
                             KeyDownDefinition("Enter", async () => {
                                 let err = await createSecret(keyValue, vValue)
                                 if(err) return err
+                                await getSecrets()
                             }, true)
                         ]}
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
                                 let err = await createSecret(keyValue, vValue)
                                 if(err) return err
+                                await  getSecrets()
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
-                                setKeyValue("")
-                                setVValue("")
                             }, "small light", true, false)
                         ]}
                     >
@@ -63,7 +63,8 @@ function SecretsPanel(props){
             <ContentPanelBody className="secrets-panel">
                 <FlexBox className="gap col">
                     <FlexBox className="secrets-list"> 
-                        <Secrets  />
+                    {data !== null ? 
+                        <Secrets deleteSecret={deleteSecret} getSecrets={getSecrets} secrets={data}  />: ""}
                     </FlexBox>
                     <FlexBox style={{maxHeight: "44px"}}>
                         <Alert>Once a secret is removed, it can never be restored.</Alert>
@@ -77,46 +78,53 @@ function SecretsPanel(props){
 export default SecretsPanel;
 
 function Secrets(props) {
+    const {secrets, deleteSecret, getSecrets} = props
 
     return(
         <>
             <FlexBox className="col gap">
-                <FlexBox className="secret-tuple">
-                    <FlexBox className="key">randomKey</FlexBox>
-                    <FlexBox className="val"><span>******</span></FlexBox>
-                    <FlexBox className="actions">
-                        <Modal 
-                            escapeToCancel
-                            style={{
-                                flexDirection: "row-reverse",
-                                marginRight: "8px"
-                            }}
-                            title="Remove secret" 
-                            button={(
-                                <SecretsDeleteButton/>
-                            )} 
-                            actionButtons={
-                                [
-                                    // label, onClick, classList, closesModal, async
-                                    ButtonDefinition("Delete", () => {
-                                        console.log("DELETE FUNC");
-                                    }, "small red", true, false),
-                                    ButtonDefinition("Cancel", () => {
-                                        console.log("DONT DELETE");
-                                    }, "small light", true, false)
-                                ]
-                            }   
-                        >
-                            <FlexBox className="col gap">
-                                <FlexBox >
-                                    Are you sure you want to delete 'SECRET_NAME_HERE'?
-                                    <br/>
-                                    This action cannot be undone.
+                    {secrets.map((obj)=>{
+                        return (
+                            <FlexBox className="secret-tuple">
+                                <FlexBox className="key">{obj.node.name}</FlexBox>
+                                <FlexBox className="val"><span>******</span></FlexBox>
+                                <FlexBox className="actions">
+                                    <Modal 
+                                        escapeToCancel
+                                        style={{
+                                            flexDirection: "row-reverse",
+                                            marginRight: "8px"
+                                        }}
+                                        title="Remove secret" 
+                                        button={(
+                                            <SecretsDeleteButton/>
+                                        )} 
+                                        actionButtons={
+                                            [
+                                                // label, onClick, classList, closesModal, async
+                                                ButtonDefinition("Delete", async () => {
+                                                    console.log("DELETE FUNC");
+                                                    let err = await deleteSecret(obj.node.name)
+                                                    if (err) return err
+                                                    await getSecrets()
+                                                }, "small red", true, false),
+                                                ButtonDefinition("Cancel", () => {
+                                                }, "small light", true, false)
+                                            ]
+                                        }   
+                                    >
+                                        <FlexBox className="col gap">
+                                            <FlexBox >
+                                                Are you sure you want to delete '{obj.node.name}'?
+                                                <br/>
+                                                This action cannot be undone.
+                                            </FlexBox>
+                                        </FlexBox>
+                                    </Modal>
                                 </FlexBox>
                             </FlexBox>
-                        </Modal>
-                    </FlexBox>
-                </FlexBox>
+                        )
+                    })}
             </FlexBox>
         </>
     );
