@@ -7,7 +7,7 @@ import VariablesPanel from './variables-panel';
 import ScarySettings from './scary-panel';
 
 function Settings(props) {
-    const {deleteNamespace, namespace, deleteErr} = props
+    const {deleteNamespace, namespace} = props
 
     // if namespace is null top level wait till we have a namespace
     if(namespace === null) {
@@ -30,10 +30,10 @@ function Settings(props) {
                 <VariablesPanel />
             </FlexBox>
             <FlexBox>
-                <BroadcastConfigurationsPanel />
+                <BroadcastConfigurationsPanel namespace={namespace} />
             </FlexBox>
             <FlexBox>
-                <ScarySettings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace} />
+                <ScarySettings namespace={namespace} deleteNamespace={deleteNamespace} />
             </FlexBox>
         </FlexBox>
     )
