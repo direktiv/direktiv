@@ -69,7 +69,9 @@ function Modal(props) {
         {overlay}
         <FlexBox style={{...style}}>
             <div style={{width: "100%"}} onClick={async() => {
-                await onOpen()
+                if(onOpen){
+                    await onOpen()
+                }
                 setVisible(true)
             }}>
                 {button}
