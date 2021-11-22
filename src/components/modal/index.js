@@ -10,7 +10,7 @@ import Alert from '../alert';
 function Modal(props) {
 
     let {titleIcon, title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose } = props;
+    let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen } = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -24,6 +24,8 @@ function Modal(props) {
     function closeModal() {
         setVisible(false);
     }
+
+    
 
     let callback = function() {
         if (onClose) {
@@ -41,6 +43,7 @@ function Modal(props) {
                         activeOverlay={activeOverlay} 
                         withCloseButton={withCloseButton} 
                         callback={callback} 
+                        onOpen={onOpen}
                         actionButtons={actionButtons}
                         escapeToCancel={escapeToCancel}
                         keyDownActions={keyDownActions}
@@ -65,7 +68,8 @@ function Modal(props) {
         <>
         {overlay}
         <FlexBox style={{...style}}>
-            <div style={{width: "100%"}} onClick={() => {
+            <div style={{width: "100%"}} onClick={async() => {
+                await onOpen()
                 setVisible(true)
             }}>
                 {button}

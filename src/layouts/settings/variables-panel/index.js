@@ -53,7 +53,7 @@ function VariablesPanel(props){
             </ContentPanelTitle>
             <ContentPanelBody >
                 {data !== null ?
-                <Variables variables={data}/>:""}
+                <Variables setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data}/>:""}
             </ContentPanelBody>
         </ContentPanel>
     )
@@ -80,7 +80,11 @@ function AddVariablePanel(props) {
 }
 
 function Variables(props) {
-    const {variables} = props
+    const {variables, getNamespaceVariable, setNamespaceVariable} = props
+
+    const [val, setValue] = useState("")
+    const [mimeType, setType] = useState("")
+
     return(
         <FlexBox>
             <table className="variables-table">
@@ -103,7 +107,7 @@ function Variables(props) {
                 <tbody>
                     {variables.map((obj)=>{
                         return(
-                            <tr>
+                            <tr key={`${obj.node.name}${obj.node.size}`}>
                                 <td>{obj.node.name}</td>
                                 <td className="muted-text">
                                     <Modal
@@ -113,11 +117,41 @@ function Variables(props) {
                                             marginRight: "8px"
                                         }}
                                         title="View Variable" 
+                                        onClose={()=>{
+                                            setType("")
+                                            setValue("")
+                                        }}
+                                        onOpen={async ()=>{
+                                            let data = await getNamespaceVariable(obj.node.name)
+                                            setType(data.contentType)
+                                            setValue(data.data)
+                                        }}
                                         button={(
                                             <Button className="small">Show value</Button>
-                                            )}
+                                        )}
+                                        actionButtons={
+                                            [
+                                                ButtonDefinition("Edit", async () => {
+                                                    let err = await setNamespaceVariable(obj.node.name, val , mimeType)
+                                                    if (err) return err
+                                                }, "small blue", true, false),
+                                                ButtonDefinition("Cancel", () => {
+                                                }, "small light", true, false)
+                                            ]
+                                        } 
                                     >
-                                        
+                                        <FlexBox className="col gap" style={{fontSize: "12px"}}>
+                                            <FlexBox className="gap">
+                                                <FlexBox style={{overflow:"hidden"}}>
+                                                    <DirektivEditor dlang={"shell"} width={"450px"} dvalue={val} setDValue={setValue} height={"300px"}/>
+                                                </FlexBox>
+                                            </FlexBox>
+                                            <FlexBox className="gap">
+                                                <FlexBox>
+                                                    <input value={mimeType} onChange={(e)=>setType(e.target.value)} placeholder="Enter mimetype for variable" />
+                                                </FlexBox>
+                                            </FlexBox>
+                                        </FlexBox>
                                     </Modal>
                                 </td>
                                 <td>{fileSize(obj.node.size)}</td>
@@ -130,6 +164,7 @@ function Variables(props) {
         </FlexBox>
     );
 }
+
 
 function fileSize(size) {
     var i = Math.floor(Math.log(size) / Math.log(1024));
