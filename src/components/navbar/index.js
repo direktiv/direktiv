@@ -100,6 +100,9 @@ function NewNamespaceBtn(props) {
                     </div>
                 </FlexBox>
             )} 
+
+            onClose={ () => {setNs("")}}
+
             keyDownActions={[
                 KeyDownDefinition("Enter", async () => {
                     let err = await createNamespace(ns)
@@ -110,6 +113,7 @@ function NewNamespaceBtn(props) {
                     setNs("")
                 }, true)
             ]}
+
             actionButtons={[
                 ButtonDefinition("Add", async () => {
                     let err = await createNamespace(ns)

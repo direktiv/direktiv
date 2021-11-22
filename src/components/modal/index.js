@@ -10,7 +10,7 @@ import Alert from '../alert';
 function Modal(props) {
 
     let {title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {style, actionButtons, keyDownActions, escapeToCancel} = props;
+    let {style, actionButtons, keyDownActions, escapeToCancel, onClose } = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -25,6 +25,13 @@ function Modal(props) {
         setVisible(false);
     }
 
+    let callback = function() {
+        if (onClose) {
+            onClose()
+        }
+        closeModal()
+    }
+
     let overlay = (<></>);
     if (visible) {
         overlay = (<ModalOverlay 
@@ -32,7 +39,7 @@ function Modal(props) {
                         title={title} 
                         activeOverlay={activeOverlay} 
                         withCloseButton={withCloseButton} 
-                        callback={closeModal} 
+                        callback={callback} 
                         actionButtons={actionButtons}
                         escapeToCancel={escapeToCancel}
                         keyDownActions={keyDownActions}
