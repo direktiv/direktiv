@@ -4,7 +4,7 @@ import Logo from '../../assets/nav-logo.png'
 import FlexBox from '../flexbox';
 import NamespaceSelector from '../namespace-selector';
 
-import Modal from '../modal';
+import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
 import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
@@ -100,9 +100,20 @@ function NewNamespaceBtn(props) {
                     </div>
                 </FlexBox>
             )} 
+            keyDownActions={[
+                KeyDownDefinition("Enter", async () => {
+                    let err = await createNamespace(ns)
+                    if(err) return err
+                    setTimeout(()=>{
+                        navigate(`/n/${ns}`)
+                    },200)
+                    setNs("")
+                }, true)
+            ]}
             actionButtons={[
                 ButtonDefinition("Add", async () => {
-                    await createNamespace(ns)
+                    let err = await createNamespace(ns)
+                    if(err) return err
                     setTimeout(()=>{
                         navigate(`/n/${ns}`)
                     },200)
