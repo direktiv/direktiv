@@ -15,9 +15,9 @@ function SecretsPanel(props){
 
     const [keyValue, setKeyValue] = useState("")
     const [vValue, setVValue] = useState("")
-    const {data, err, createErr, deleteErr, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace)
+    const {data, err, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace)
    
-    console.log(err, data, createErr, deleteErr)
+    console.log("Secrets", err, data)
     // createErr is the error when creating a secret
 
     return (

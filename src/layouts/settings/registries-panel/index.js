@@ -12,7 +12,8 @@ import { Config } from '../../../util';
 function RegistriesPanel(props){
     const {namespace} = props
     const {data, err, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace)
-    console.log(data, err, "registries")
+    
+    console.log("Registries", err)
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>
