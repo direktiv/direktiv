@@ -3,7 +3,7 @@ import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
-import Modal, {ButtonDefinition} from '../../../components/modal';
+import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
 import {useSecrets} from 'direktiv-react-hooks'
@@ -32,12 +32,23 @@ function SecretsPanel(props){
                 <div>
                     <Modal title="New secret" 
                         escapeToCancel
+                        onClose={()=>{
+                            setKeyValue("")
+                            setVValue("")
+                        }}
                         button={(
                             <AddValueButton label=" " />
                         )}  
+                        keyDownActions={[
+                            KeyDownDefinition("Enter", async () => {
+                                let err = await createSecret(keyValue, vValue)
+                                if(err) return err
+                            }, true)
+                        ]}
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
-                                await createSecret(keyValue, vValue)
+                                let err = await createSecret(keyValue, vValue)
+                                if(err) return err
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
                                 setKeyValue("")
@@ -131,7 +142,7 @@ function AddSecretPanel(props) {
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox><input value={vValue} onChange={(e)=>setVValue(e.target.value)} placeholder="Enter value" /></FlexBox>
+                <FlexBox><input type="password"  value={vValue} onChange={(e)=>setVValue(e.target.value)} placeholder="Enter value" /></FlexBox>
             </FlexBox>
         </FlexBox>
     );
