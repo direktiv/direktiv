@@ -8,6 +8,7 @@ import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
 import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
+import {GrFormAdd} from 'react-icons/gr'
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
@@ -100,6 +101,8 @@ function NewNamespaceBtn(props) {
                     </div>
                 </FlexBox>
             )} 
+
+            titleIcon={<GrFormAdd />}
 
             onClose={ () => {setNs("")}}
 

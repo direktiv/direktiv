@@ -9,8 +9,8 @@ import Alert from '../alert';
 
 function Modal(props) {
 
-    let {title, children, button, withCloseButton, activeOverlay, label} = props;
-    let {style, actionButtons, keyDownActions, escapeToCancel, onClose } = props;
+    let {titleIcon, title, children, button, withCloseButton, activeOverlay, label} = props;
+    let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose } = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -35,6 +35,7 @@ function Modal(props) {
     let overlay = (<></>);
     if (visible) {
         overlay = (<ModalOverlay 
+                        modalStyle={modalStyle}
                         children={children} 
                         title={title} 
                         activeOverlay={activeOverlay} 
@@ -43,6 +44,7 @@ function Modal(props) {
                         actionButtons={actionButtons}
                         escapeToCancel={escapeToCancel}
                         keyDownActions={keyDownActions}
+                        titleIcon={titleIcon}
                     />)
     }
 
@@ -77,7 +79,7 @@ export default Modal;
 
 function ModalOverlay(props) {
 
-    let {title, children, callback, activeOverlay, withCloseButton} = props;
+    let {titleIcon, modalStyle, title, children, callback, activeOverlay, withCloseButton} = props;
     let {actionButtons, escapeToCancel, keyDownActions} = props;
     const [displayAlert, setDisplayAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
@@ -163,14 +165,20 @@ function ModalOverlay(props) {
                 }
             }}>
                 <FlexBox className="tall">
-                    <div style={{minWidth: "300px"}} className="modal-body auto-margin" onClick={(e) => {
+                    <div style={{ ...modalStyle }} className="modal-body auto-margin" onClick={(e) => {
                         e.stopPropagation()
                     }}>
                         <ContentPanel>
                             <ContentPanelTitle>
                                 <FlexBox style={{ maxWidth: "18px" }}>
                                     <ContentPanelTitleIcon>
-                                        <IoLockClosedOutline />
+                                        {
+                                            titleIcon 
+                                            ? 
+                                            [titleIcon]
+                                            :
+                                            <IoLockClosedOutline />
+                                        }
                                     </ContentPanelTitleIcon>
                                 </FlexBox>
                                 <FlexBox>

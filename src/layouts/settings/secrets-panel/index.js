@@ -32,13 +32,24 @@ function SecretsPanel(props){
                 <div>
                     <Modal title="New secret" 
                         escapeToCancel
+
+                        modalStyle={{
+                            maxWidth: "300px"
+                        }}
+
+                        onOpen={() => {
+                            console.log("ON OPEN");
+                        }}
+
                         onClose={()=>{
                             setKeyValue("")
                             setVValue("")
                         }}
+                        
                         button={(
                             <AddValueButton label=" " />
                         )}  
+                        
                         keyDownActions={[
                             KeyDownDefinition("Enter", async () => {
                                 let err = await createSecret(keyValue, vValue)
@@ -46,6 +57,7 @@ function SecretsPanel(props){
                                 await getSecrets()
                             }, true)
                         ]}
+                        
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
                                 let err = await createSecret(keyValue, vValue)

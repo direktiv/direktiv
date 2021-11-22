@@ -30,6 +30,10 @@ function RegistriesPanel(props){
                 <div>
                     <Modal title="New registry"
                         escapeToCancel
+                        modalStyle={{
+                            maxWidth: "450px",
+                            minWidth: "450px"
+                        }}
                         button={(
                             <AddValueButton label=" " />
                         )} 

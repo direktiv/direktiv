@@ -4,6 +4,7 @@
     color: var(--theme-dark-gray-text);
     min-height: 42px;
     font-size: 12px;
+    line-height: 18px;
 }
 
 .alert.critical {
@@ -41,4 +42,5 @@
     flex: 5;
     margin-top: 8px;
     margin-bottom: 8px;;
+    padding-right: 8px;
 }
