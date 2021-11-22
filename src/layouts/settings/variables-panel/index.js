@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';
+import { useNamespaceVariables } from 'direktiv-react-hooks';
+import { Config } from '../../../util';
+import DirektivEditor from '../../../components/editor';
+import Button from '../../../components/button';
 
 function VariablesPanel(props){
+
+    const {namespace} = props
+    const [keyValue, setKeyValue] = useState("")
+    const [dValue, setDValue] = useState("")
+
+    const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace)
+    console.log(data, err, "VARIABLES NAMESPACE")
+
     return (
         <ContentPanel style={{width: "100%"}}>
             <ContentPanelTitle>
@@ -22,20 +34,26 @@ function VariablesPanel(props){
                         button={(
                             <AddValueButton label=" " />
                         )}  
+                        onClose={()=>{
+                            setKeyValue("")
+                            setDValue("")
+                        }}
                         actionButtons={[
-                            ButtonDefinition("Add", () => {
-                                console.log("add namespace");
+                            ButtonDefinition("Add", async () => {
+                                let err = await setNamespaceVariable(keyValue, dValue)
+                                if (err) return err
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
-                                console.log("close modal");
                             }, "small light", true, false)
                         ]}
                     >
+                        <AddVariablePanel setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
                     </Modal>
                 </div>
             </ContentPanelTitle>
             <ContentPanelBody >
-                <Variables />
+                {data !== null ?
+                <Variables variables={data}/>:""}
             </ContentPanelBody>
         </ContentPanel>
     )
@@ -43,8 +61,26 @@ function VariablesPanel(props){
 
 export default VariablesPanel;
 
-function Variables(props) {
+function AddVariablePanel(props) {
+    const {keyValue, setKeyValue, dValue, setDValue} = props
+    return(
+        <FlexBox className="col gap" style={{fontSize: "12px"}}>
+            <FlexBox className="gap">
+                <FlexBox>
+                    <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+                </FlexBox>
+            </FlexBox>
+            <FlexBox className="gap">
+                <FlexBox style={{overflow:"hidden"}}>
+                    <DirektivEditor dlang={"shell"} width={"450px"} dvalue={dValue} setDValue={setDValue} height={"300px"}/>
+                </FlexBox>
+            </FlexBox>
+        </FlexBox>
+    )
+}
 
+function Variables(props) {
+    const {variables} = props
     return(
         <FlexBox>
             <table className="variables-table">
@@ -65,30 +101,37 @@ function Variables(props) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>IMG_1923.jpeg</td>
-                        <td className="muted-text">Cannot Show Binary Variable</td>
-                        <td>168917 B</td>
-                        <td></td>
-                    </tr>
-                    <tr>    
-                        <td>
-                            <div className="editor-var-name">
-                                Var1
-                            </div>
-                        </td>
-                        <td style={{padding: "8px", paddingLeft: "0px"}}>
-                            <FlexBox className="editor-placeholder">
-                                <div style={{marginLeft: "8px"}}>
-                                    placeholder
-                                </div>
-                            </FlexBox>
-                        </td>
-                        <td>168917 B</td>
-                        <td></td>
-                    </tr>
+                    {variables.map((obj)=>{
+                        return(
+                            <tr>
+                                <td>{obj.node.name}</td>
+                                <td className="muted-text">
+                                    <Modal
+                                        escapeToCancel
+                                        style={{
+                                            flexDirection: "row-reverse",
+                                            marginRight: "8px"
+                                        }}
+                                        title="View Variable" 
+                                        button={(
+                                            <Button className="small">Show value</Button>
+                                            )}
+                                    >
+                                        
+                                    </Modal>
+                                </td>
+                                <td>{fileSize(obj.node.size)}</td>
+                                <td></td>
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
         </FlexBox>
     );
+}
+
+function fileSize(size) {
+    var i = Math.floor(Math.log(size) / Math.log(1024));
+    return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 }

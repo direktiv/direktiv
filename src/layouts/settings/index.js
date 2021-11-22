@@ -27,7 +27,7 @@ function Settings(props) {
                 </FlexBox>
             </FlexBox>
             <FlexBox>
-                <VariablesPanel />
+                <VariablesPanel namespace={namespace} />
             </FlexBox>
             <FlexBox>
                 <BroadcastConfigurationsPanel namespace={namespace} />
