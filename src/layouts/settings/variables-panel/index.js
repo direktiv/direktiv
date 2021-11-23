@@ -12,6 +12,7 @@ import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
 
 import { SecretsDeleteButton } from '../secrets-panel';
+import Tabs from '../../../components/tabs';
 
 function VariablesPanel(props){
 
@@ -67,19 +68,52 @@ export default VariablesPanel;
 function AddVariablePanel(props) {
     const {keyValue, setKeyValue, dValue, setDValue} = props
     return(
-        <FlexBox className="col gap" style={{fontSize: "12px"}}>
-            <FlexBox className="gap">
-                <FlexBox>
-                    <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+        <Tabs 
+            style={{minHeight: "400px", minWidth: "450px"}}
+            headers={["Manual", "Upload"]}
+            tabs={[(
+                <FlexBox className="col gap" style={{fontSize: "12px"}}>
+                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                        <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+                    </div>
+                    <FlexBox className="gap" style={{maxHeight: "300px"}}>
+                        <FlexBox style={{overflow:"hidden"}}>
+                            <DirektivEditor dlang={"shell"} width={"450px"} dvalue={dValue} setDValue={setDValue} height={"300px"}/>
+                        </FlexBox>
+                    </FlexBox>
                 </FlexBox>
-            </FlexBox>
-            <FlexBox className="gap">
-                <FlexBox style={{overflow:"hidden"}}>
-                    <DirektivEditor dlang={"shell"} width={"450px"} dvalue={dValue} setDValue={setDValue} height={"300px"}/>
+            ),(
+                <FlexBox className="col gap" style={{fontSize: "12px"}}>
+                    <FlexBox className="gap">
+                        <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
+                            <input {...getInputProps()} />
+                            <p>Drag 'n' drop the file here, or click to select file</p>
+                            {
+                                file !== null ?
+                                <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
+                                :
+                                ""
+                            }
+                        </FlexBox>
+                    </FlexBox>
                 </FlexBox>
-            </FlexBox>
-        </FlexBox>
+            )]}
+        />
     )
+    // return(
+    // <FlexBox className="col gap" style={{fontSize: "12px"}}>
+    //     <FlexBox className="gap">
+    //         <FlexBox>
+    //             <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+    //         </FlexBox>
+    //     </FlexBox>
+    //     <FlexBox className="gap">
+    //         <FlexBox style={{overflow:"hidden"}}>
+    //             <DirektivEditor dlang={"shell"} width={"450px"} dvalue={dValue} setDValue={setDValue} height={"300px"}/>
+    //         </FlexBox>
+    //     </FlexBox>
+    //     </FlexBox>
+    // )
 }
 
 function Variables(props) {
