@@ -17,7 +17,7 @@ function Settings(props) {
     return(
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
             <FlexBox className="gap col">
-                <FlexBox className="gap wrap">
+                <FlexBox className="gap wrap" style={{ minHeight: "350px" }}>
                     <FlexBox style={{ minWidth: "380px" }}>
                         <SecretsPanel namespace={namespace} />
                     </FlexBox>

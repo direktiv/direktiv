@@ -1,0 +1,26 @@
+.tabs-row {
+    display: flex;
+    align-items: center;
+
+    border-bottom: var(--theme-subtle-border);
+    height: 32px;
+    margin-bottom: 6px;
+}
+
+.tab-header {
+    cursor: pointer;
+    border-radius: var(--theme-border-radius);
+    color: var(--theme-dark-gray-text);
+}
+
+.tab-header:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tab-header.active-tab {
+    color: var(--theme-brand-blue)
+}
+
+.tab-header span {
+    margin: auto;
+}
