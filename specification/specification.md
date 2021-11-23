@@ -8,7 +8,6 @@
 | name        | Workflow name (metadata).        | string                                      | no       |
 | description | Workflow description (metadata). | string                                      | no       |
 | functions   | Workflow function definitions.   | [[]FunctionDefinition](#FunctionDefinition) | no       |
-| schemas     | Workflow schema definitions.     | [[]SchemaDefinition](#SchemaDefinition)     | no       |
 | states      | Workflow states.                 | [[]StateDefinition](#States)                | no       |
 | timeouts    | Workflow global timeouts.        | [TimeoutDefinition](#TimeoutDefinition)     | no       |
 | start       | Workflow start configuration.    | [Start](#Start)                             | no       |
@@ -73,13 +72,6 @@
 | size      | Size of virtual machine                | enum   | no       |
 
 A function can be defined in three different sizes: "**small**"(default), "**medium**", and "**large**". These sizes control how much storage a virtual machine is given for a function when their virtual machine is created.
-
-### SchemaDefinition
-
-| Parameter | Description                          | Type   | Required |
-| --------- | ------------------------------------ | ------ | -------- |
-| id        | Schema definition unique identifier. | string | yes      |
-| schema    | Schema (based on JSON Schema).       | object | yes      |
 
 ## States
 
