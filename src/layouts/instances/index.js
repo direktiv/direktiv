@@ -86,9 +86,9 @@ function InstancesTable(props) {
                             state={obj.node.status} 
                             name={obj.node.as} 
                             id={obj.node.id}
-                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm")} 
+                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
                             startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm")}
+                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
                             finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
                         />
                     )

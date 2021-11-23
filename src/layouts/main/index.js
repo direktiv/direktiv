@@ -9,6 +9,7 @@ import { useNamespaces } from 'direktiv-react-hooks'
 import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 import InstancesPage from '../instances';
+import JQPlayground from '../jqplayground';
 
 
 function NamespaceNavigation(props){
@@ -95,7 +96,7 @@ function NamespaceNavigation(props){
                     <Route path="/n/:namespace/events" element={<div>events</div>}/>
 
                     {/* non-namespace routes */}
-                    <Route path="/jq" element={<div>jqplayground</div>} />
+                    <Route path="/jq" element={<JQPlayground />} />
                     <Route path="/g/services" element={<div>g services</div>}/>
                     <Route path="/g/registries" element={<div>g registries</div>} />
                 </Routes>:""}
