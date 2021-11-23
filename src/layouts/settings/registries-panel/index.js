@@ -81,7 +81,9 @@ function RegistriesPanel(props){
 
 export default RegistriesPanel;
 
-function AddRegistryPanel(props) {
+// const registries = ["https://docker.io", "https://gcr.io", "https://us.gcr.io"]
+
+export function AddRegistryPanel(props) {
     const {url, setURL, token, setToken, username, setUsername} = props
 
     return (
@@ -101,7 +103,7 @@ function AddRegistryPanel(props) {
     );
 }
 
-function Registries(props) {
+export function Registries(props) {
     const {registries, deleteRegistry, getRegistries} = props
 
     return(

@@ -10,6 +10,8 @@ import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 import InstancesPage from '../instances';
 import JQPlayground from '../jqplayground';
+import GlobalRegistriesPanel from '../global-registries';
+import WorkflowBuilder from '../workflow-builder';
 
 
 function NamespaceNavigation(props){
@@ -88,7 +90,7 @@ function NamespaceNavigation(props){
                     <Route path="/" element={<div>index route:)</div>} />
                     <Route path="/n/:namespace" element={<div>explorer</div>} />
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
-                    <Route path="/n/:namespace/builder" element={<div>builder</div>}/>
+                    <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/>
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<div>services</div>}/>
@@ -98,7 +100,7 @@ function NamespaceNavigation(props){
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<JQPlayground />} />
                     <Route path="/g/services" element={<div>g services</div>}/>
-                    <Route path="/g/registries" element={<div>g registries</div>} />
+                    <Route path="/g/registries" element={<GlobalRegistriesPanel />} />
                 </Routes>:""}
             </FlexBox>
         </FlexBox>
