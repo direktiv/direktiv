@@ -42,6 +42,9 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	im.in = in
 
 	engine.pubsub.NotifyInstance(im.in)
+	if ns, err := im.in.Namespace(ctx); err == nil {
+		engine.pubsub.NotifyInstances(ns)
+	}
 
 	return nil
 
