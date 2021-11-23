@@ -13,8 +13,9 @@
     gap: 12px;
 }
 
-.content-panel-title-icon svg {
-    padding-top: 8px;
+.content-panel-title-icon {
+    display: flex;
+    align-items: center;
 }
 
 .content-panel-body {
