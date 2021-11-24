@@ -142,3 +142,11 @@
 .chevron-icon.hidden {
     visibility: hidden;
 }
+
+.ns-hover {
+    background-color: white;
+}
+
+.ns-hover:hover {
+    filter: brightness(0.95);
+}

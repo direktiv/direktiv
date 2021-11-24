@@ -150,27 +150,11 @@ function Variables(props) {
         <FlexBox>
             {variables.length === 0  ? "":
             <table className="variables-table">
-                <thead>
-                    <tr className="header-row">
-                        <th className="left-align" style={{ width: "180px", maxWidth: "180px" }}>
-                            Name
-                        </th>
-                        <th>
-                            Value
-                        </th>
-                        <th className="left-align" style={{ width: "80px", maxWidth: "80px" }}>
-                            Size
-                        </th>
-                        <th className="left-align" style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}>
-                            Action
-                        </th>
-                    </tr>
-                </thead>
                 <tbody>
                     {variables.map((obj)=>{
                         return(
                             <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
-                                <td>{obj.node.name}</td>
+                                <td style={{ width: "180px", maxWidth: "180px" }}>{obj.node.name}</td>
                                 <td className="muted-text">
                                     {obj.node.size <= 2500000 ? 
                                         <Modal
@@ -226,8 +210,8 @@ function Variables(props) {
                                         "Cannot show filesize greater than 2.5MiB"
                                         }
                                 </td>
-                                <td>{fileSize(obj.node.size)}</td>
-                                <td>
+                                <td style={{ width: "80px", maxWidth: "80px" }}>{fileSize(obj.node.size)}</td>
+                                <td style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}> 
                                     <FlexBox style={{gap: "2px"}}>
                                         <FlexBox>
                                             <VariablesDownloadButton/> 

@@ -45,7 +45,7 @@ function NamespaceSelector(props) {
             <FlexBox className="col gap">
                 <FlexBox onClick={() => {
                     setShowSelector(!showSelector)
-                }} style={{...style, maxHeight: "64px"}} className={className}>
+                }} style={{...style, maxHeight: "64px"}} className={className + " ns-hover"}>
 
                     <FlexBox className={namespaceSelectorClass}>
                         <NamespaceListItem disabled namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />

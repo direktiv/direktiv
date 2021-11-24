@@ -8,7 +8,7 @@ import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/mo
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
 import {useSecrets} from 'direktiv-react-hooks'
-import {Config} from '../../../util'
+import {Config, GenerateRandomKey} from '../../../util'
 
 function SecretsPanel(props){
     const {namespace} = props
@@ -97,8 +97,11 @@ function Secrets(props) {
         <>
             <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
                     {secrets.map((obj)=>{
+
+                        let key = GenerateRandomKey("secret-")
+
                         return (
-                            <FlexBox className="secret-tuple">
+                            <FlexBox className="secret-tuple" key={key} id={key}>
                                 <FlexBox className="key">{obj.node.name}</FlexBox>
                                 <FlexBox className="val"><span>******</span></FlexBox>
                                 <FlexBox className="actions">
