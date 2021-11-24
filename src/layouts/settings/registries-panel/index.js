@@ -108,7 +108,7 @@ export function Registries(props) {
 
     return(
         <>
-            <FlexBox className="col gap">
+            <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
             {registries.map((obj)=>{
                     return (
                         <FlexBox key={obj.name} className="secret-tuple">

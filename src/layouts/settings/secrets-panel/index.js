@@ -95,7 +95,7 @@ function Secrets(props) {
 
     return(
         <>
-            <FlexBox className="col gap">
+            <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
                     {secrets.map((obj)=>{
                         return (
                             <FlexBox className="secret-tuple">

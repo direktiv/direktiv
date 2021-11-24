@@ -37,6 +37,13 @@
     padding-top: 8px;
 }
 
+.namespace-selector-label-value > span {
+    max-width: 119px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .selector-border {
     border: var(--border);
     border-radius: var(--theme-border-radius);

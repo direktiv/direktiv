@@ -110,7 +110,7 @@ function NamespaceListItem(props) {
                                 {label}
                             </FlexBox>
                             <FlexBox className="namespace-selector-label-value">
-                                {namespace}
+                            <span>{namespace}</span>
                             </FlexBox>
                         </div>
                     </FlexBox>
