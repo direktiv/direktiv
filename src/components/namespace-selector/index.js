@@ -50,7 +50,7 @@ function NamespaceSelector(props) {
                 }} style={{...style, maxHeight: "64px"}} className={className}>
 
                     <FlexBox className={namespaceSelectorClass}>
-                        <NamespaceListItem  namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />
+                        <NamespaceListItem disabled namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />
                         <FlexBox className="tall">
                             <div className="auto-margin grey-text">
                                 <IoChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
@@ -73,7 +73,7 @@ export default NamespaceSelector;
 
 function NamespaceListItem(props) {
 
-    let {namespace, loading, label, setShowSelector} = props;
+    let {disabled, namespace, loading, label, setShowSelector} = props;
     let className = "namespace-list-item";
 
     if (!namespace) {
@@ -91,12 +91,9 @@ function NamespaceListItem(props) {
     }
 
 
+
     return (
-        <Link to={`/n/${namespace}`} onClick={()=>{
-            if(setShowSelector){
-                setShowSelector(false)
-            }
-        }}>
+        <NamespaceListItemLink disabled={disabled} namespace={namespace} setShowSelector={setShowSelector}>
             <FlexBox className={className} style={{height: "45px", minHeight: "44px", maxHeight: "45px"}}>
                 <FlexBox className="">
                     <FlexBox className="namespace-selector-logo">
@@ -116,8 +113,27 @@ function NamespaceListItem(props) {
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
-        </Link>
+        </NamespaceListItemLink>
     );
+}
+
+function NamespaceListItemLink(props) {
+    let {disabled, children, namespace, setShowSelector} = props;
+    if (disabled) {
+        console.log("111111");
+        return <>{children}</>
+    }
+
+    console.log("222222");
+    return (
+        <Link to={`/n/${namespace}`} onClick={()=>{
+            if (setShowSelector) {
+                setShowSelector(false)
+            }
+        }}>
+            {children}
+        </Link>
+    )
 }
 
 function NamespaceList(props){
