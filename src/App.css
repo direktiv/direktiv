@@ -131,6 +131,17 @@ body {
   line-height: 16px;
 }
 
+.reveal-btn {
+  background: white;
+  color: var(--theme-dark-gray-text);
+  font-weight: 700;
+  border: solid 1px var(--theme-subtle-border);
+}
+
+.reveal-btn:hover {
+  filter: brightness(0.9);
+}
+
 .red {
   background-color: var(--theme-red);
 }

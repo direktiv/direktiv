@@ -6,6 +6,18 @@
     line-height: 32px;
 }
 
+.variables-table .header-row {
+    max-height: 32px;
+    height: 32px;
+    min-height: 0px;
+}
+
+.variables-table .body-row {
+    max-height: 48px;
+    height: 48px;
+    min-height: 0px;
+}
+
 .variables-table tr:not(:last-of-type) {
     border-bottom: var(--border);
 }
@@ -20,4 +32,19 @@
 
 .editor-var-name, .editor-placeholder {
     min-height: 128px;
+}
+
+.file-input {
+    padding: 16px;
+    border: dashed 3px var(--theme-grey-light-blue);
+    cursor: pointer;
+    background-color: var(--theme-brand-blue-faded);
+}
+
+.file-input:hover {
+    filter: brightness(0.7);
+}
+
+.file-input > div {
+    margin: auto;
 }

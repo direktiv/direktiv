@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { IoCloudDownloadSharp, IoCloudUpload, IoCloudUploadSharp, IoLockClosedOutline } from 'react-icons/io5';
+import { IoCloudDownloadOutline, IoCloudDownloadSharp, IoCloudUpload, IoCloudUploadSharp, IoEye, IoEyeOutline, IoLockClosedOutline } from 'react-icons/io5';
 import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';
@@ -10,8 +10,10 @@ import { Config } from '../../../util';
 import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
+import {BsUpload} from 'react-icons/bs';
 import { SecretsDeleteButton } from '../secrets-panel';
 import Tabs from '../../../components/tabs';
+import { RiDeleteBin2Line } from 'react-icons/ri';
 
 function VariablesPanel(props){
 
@@ -67,7 +69,9 @@ function VariablesPanel(props){
             </ContentPanelTitle>
             <ContentPanelBody style={{minHeight:"180px"}}>
                 {data !== null ?
-                <Variables deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data}/>:""}
+                <div>
+                    <Variables deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data}/>
+                </div>:""}
             </ContentPanelBody>
         </ContentPanel>
     )
@@ -86,15 +90,17 @@ function VariableFilePicker(props) {
     const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 
     return (
-        <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
-            <input {...getInputProps()} />
-            <p>Drag 'n' drop the file here, or click to select file</p>
-            {
-                file !== null ?
-                <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
-                :
-                ""
-            }
+        <FlexBox className="file-input" style={{flexDirection:"column"}} {...getRootProps()}>
+            <div>
+                <input {...getInputProps()} />
+                <p>Drag 'n' drop the file here, or click to select file</p>
+                {
+                    file !== null ?
+                    <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
+                    :
+                    ""
+                }
+            </div>
         </FlexBox>
     )
 }
@@ -156,7 +162,7 @@ function Variables(props) {
                         <th className="left-align" style={{ width: "80px", maxWidth: "80px" }}>
                             Size
                         </th>
-                        <th className="center-align" style={{ width: "120px", maxWidth: "120px" }}>
+                        <th className="left-align" style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}>
                             Action
                         </th>
                     </tr>
@@ -164,7 +170,7 @@ function Variables(props) {
                 <tbody>
                     {variables.map((obj)=>{
                         return(
-                            <tr key={`${obj.node.name}${obj.node.size}`}>
+                            <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
                                 <td>{obj.node.name}</td>
                                 <td className="muted-text">
                                     {obj.node.size <= 2500000 ? 
@@ -185,7 +191,14 @@ function Variables(props) {
                                                 setValue(data.data)
                                             }}
                                             button={(
-                                                <Button className="small">Show value</Button>
+                                                <Button className="reveal-btn small shadow">
+                                                    <FlexBox className="gap">
+                                                        <IoEyeOutline className="auto-margin" />
+                                                        <div>
+                                                            Show value
+                                                        </div>
+                                                    </FlexBox>
+                                                </Button>
                                             )}
                                             actionButtons={
                                                 [
@@ -216,9 +229,69 @@ function Variables(props) {
                                 </td>
                                 <td>{fileSize(obj.node.size)}</td>
                                 <td>
-                                    <FlexBox style={{justifyContent:"center"}} >
+                                    <FlexBox style={{gap: "2px"}}>
                                         <FlexBox>
-                                            <VariablesDownloadButton />
+                                            <VariablesDownloadButton/> 
+                                        </FlexBox>
+                                        <Modal
+                                            escapeToCancel
+                                            style={{
+                                                flexDirection: "row-reverse",
+                                            }}
+                                            onClose={()=>{
+                                                setFile(null)
+                                            }}
+                                            title="Replace variable" 
+                                            button={(
+                                                <VariablesUploadButton />
+                                            )}
+                                            actionButtons={
+                                                [
+                                                    ButtonDefinition("Upload", async () => {
+                                                        let err = await setNamespaceVariable(obj.node.name, file, mimeType)
+                                                        if (err) return err
+                                                    }, "small blue", true, false),
+                                                    ButtonDefinition("Cancel", () => {
+                                                    }, "small light", true, false)
+                                                ]
+                                            } 
+                                        >
+                                            <FlexBox className="col gap">
+                                                <VariableFilePicker file={file} setFile={setFile} />
+                                            </FlexBox>
+                                        </Modal>
+                                        <Modal
+                                            escapeToCancel
+                                            style={{
+                                                flexDirection: "row-reverse",
+                                            }}
+                                            title="Delete a variable" 
+                                            button={(
+                                                <VariablesDeleteButton/>
+                                            )}
+                                            actionButtons={
+                                                [
+                                                    ButtonDefinition("Delete", async () => {
+                                                        let err = await deleteNamespaceVariable(obj.node.name)
+                                                        if (err) return err
+                                                    }, "small red", true, false),
+                                                    ButtonDefinition("Cancel", () => {
+                                                    }, "small light", true, false)
+                                                ]
+                                            } 
+                                        >
+                                                <FlexBox className="col gap">
+                                            <FlexBox >
+                                                Are you sure you want to delete '{obj.node.name}'?
+                                                <br/>
+                                                This action cannot be undone.
+                                            </FlexBox>
+                                        </FlexBox>
+                                        </Modal>
+                                    </FlexBox>
+                                    {/* <FlexBox style={{justifyContent:"center"}} >
+                                        <FlexBox>
+                                            <VariablesDownloadButton /> 
                                         </FlexBox>
                                         <Modal
                                             escapeToCancel
@@ -275,7 +348,7 @@ function Variables(props) {
                                             </FlexBox>
                                         </FlexBox>
                                         </Modal>
-                                    </FlexBox>
+                                    </FlexBox> */}
                                 </td>
                             </tr>
                         )
@@ -288,15 +361,24 @@ function Variables(props) {
 
 function VariablesUploadButton() {
     return (
-        <div className="secrets-delete-btn grey-text">
-            <IoCloudUploadSharp/>
+        <div className="secrets-delete-btn grey-text auto-margin" style={{display: "flex", alignItems: "center", height: "100%"}}>
+            <BsUpload className="auto-margin"/>
         </div>
     )
 }
+
 function VariablesDownloadButton() {
     return (
-        <div className="secrets-delete-btn grey-text">
-            <IoCloudDownloadSharp/>
+        <div className="secrets-delete-btn grey-text auto-margin" style={{display: "flex", alignItems: "center", height: "100%"}}>
+            <IoCloudDownloadOutline/>
+        </div>
+    )
+}
+
+function VariablesDeleteButton() {
+    return (
+        <div className="secrets-delete-btn grey-text auto-margin red-text" style={{display: "flex", alignItems: "center", height: "100%"}}>
+            <RiDeleteBin2Line className="auto-margin"/>
         </div>
     )
 }

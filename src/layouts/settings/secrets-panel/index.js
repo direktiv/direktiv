@@ -3,6 +3,7 @@ import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
+import {RiDeleteBin2Line} from 'react-icons/ri';
 import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
@@ -145,7 +146,7 @@ function Secrets(props) {
 export function SecretsDeleteButton(props) {
     return (
         <div className="secrets-delete-btn red-text">
-            <IoCloseCircleSharp/>
+            <RiDeleteBin2Line/>
         </div>
     )
 }

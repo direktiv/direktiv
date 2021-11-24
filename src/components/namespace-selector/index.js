@@ -100,7 +100,7 @@ function NamespaceListItem(props) {
             <FlexBox className={className} style={{height: "45px", minHeight: "44px", maxHeight: "45px"}}>
                 <FlexBox className="">
                     <FlexBox className="namespace-selector-logo">
-                        <div className="auto-margin" style={{paddingTop: "3px", marginLeft: "3px", filter: "opacity(50%)"}}>
+                        <div className="auto-margin" style={{paddingTop: "3px", marginLeft: "3px", filter: "opacity(60%)"}}>
                             <Identicon string={namespace} size={39} />
                         </div>
                     </FlexBox>
