@@ -18,9 +18,9 @@ function VariablesPanel(props){
     const {namespace} = props
     const [keyValue, setKeyValue] = useState("")
     const [dValue, setDValue] = useState("")
+    const [file, setFile] = useState(null)
 
     const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace)
-    console.log(data, err, "VARIABLES NAMESPACE")
 
     return (
         <ContentPanel style={{width: "100%"}}>
@@ -40,17 +40,23 @@ function VariablesPanel(props){
                         onClose={()=>{
                             setKeyValue("")
                             setDValue("")
+                            setFile(null)
                         }}
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
-                                let err = await setNamespaceVariable(keyValue, dValue)
-                                if (err) return err
+                                if(document.getElementById("file-picker")){
+                                    let err = await setNamespaceVariable(keyValue, file)
+                                    if (err) return err
+                                } else {
+                                    let err = await setNamespaceVariable(keyValue, dValue)
+                                    if (err) return err
+                                }
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
                         ]}
                     >
-                        <AddVariablePanel setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
+                        <AddVariablePanel file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
                     </Modal>
                 </div>
             </ContentPanelTitle>
@@ -64,22 +70,39 @@ function VariablesPanel(props){
 
 export default VariablesPanel;
 
-function AddVariablePanel(props) {
-    const {keyValue, setKeyValue, dValue, setDValue} = props
-    
-    const [file, setFile] = useState(null)
+
+function VariableFilePicker(props) {
+    const {file, setFile} = props
+
     const onDrop = useCallback(acceptedFiles => {
         setFile(acceptedFiles[0])
     },[])
     
     const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 
+    return (
+        <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
+            <input {...getInputProps()} />
+            <p>Drag 'n' drop the file here, or click to select file</p>
+            {
+                file !== null ?
+                <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
+                :
+                ""
+            }
+        </FlexBox>
+    )
+}
+
+function AddVariablePanel(props) {
+    const {keyValue, setKeyValue, dValue, setDValue, file, setFile} = props
+
     return(
         <Tabs 
             style={{minHeight: "400px", minWidth: "450px"}}
             headers={["Manual", "Upload"]}
             tabs={[(
-                <FlexBox className="col gap" style={{fontSize: "12px"}}>
+                <FlexBox id="written" className="col gap" style={{fontSize: "12px"}}>
                     <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
@@ -90,37 +113,17 @@ function AddVariablePanel(props) {
                     </FlexBox>
                 </FlexBox>
             ),(
-                <FlexBox className="col gap" style={{fontSize: "12px"}}>
+                <FlexBox id="file-picker" className="col gap" style={{fontSize: "12px"}}>
+                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                        <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+                    </div>
                     <FlexBox className="gap">
-                        {/* <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
-                            <input {...getInputProps()} />
-                            <p>Drag 'n' drop the file here, or click to select file</p>
-                            {
-                                file !== null ?
-                                <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
-                                :
-                                ""
-                            }
-                        </FlexBox> */}
+                        <VariableFilePicker file={file} setFile={setFile} />
                     </FlexBox>
                 </FlexBox>
             )]}
         />
     )
-    // return(
-    // <FlexBox className="col gap" style={{fontSize: "12px"}}>
-    //     <FlexBox className="gap">
-    //         <FlexBox>
-    //             <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
-    //         </FlexBox>
-    //     </FlexBox>
-    //     <FlexBox className="gap">
-    //         <FlexBox style={{overflow:"hidden"}}>
-    //             <DirektivEditor dlang={"shell"} width={"450px"} dvalue={dValue} setDValue={setDValue} height={"300px"}/>
-    //         </FlexBox>
-    //     </FlexBox>
-    //     </FlexBox>
-    // )
 }
 
 function Variables(props) {
@@ -240,16 +243,7 @@ function Variables(props) {
                                             } 
                                         >
                                             <FlexBox className="col gap">
-                                                 <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
-                                                    <input {...getInputProps()} />
-                                                    <p>Drag 'n' drop the file here, or click to select file</p>
-                                                    {
-                                                        file !== null ?
-                                                        <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
-                                                        :
-                                                        ""
-                                                    }
-                                                </FlexBox>
+                                                <VariableFilePicker file={file} setFile={setFile} />
                                             </FlexBox>
                                         </Modal>
                                         <Modal
