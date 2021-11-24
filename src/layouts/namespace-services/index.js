@@ -1,5 +1,6 @@
 import { useNamespaceServices } from "direktiv-react-hooks";
 import { IoPlay } from "react-icons/io5";
+import { RiDeleteBin2Line } from "react-icons/ri";
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel";
 import FlexBox from "../../components/flexbox";
 import { Config } from "../../util";
@@ -41,7 +42,23 @@ function NamespaceServices(props) {
         <FlexBox>
             <FlexBox className="col">
                 <FlexBox style={{maxHeight:"40px", border:"1px solid #f4f4f4"}}>
-                    header
+                    <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                        <div>
+                            s
+                        </div>
+                        <div>
+                            name
+                        </div>
+                        <div>
+                            direktiv
+                        </div>
+                        <div>
+                            x
+                        </div>
+                    </FlexBox>
+                    <FlexBox>
+                        <ServicesDeleteButton/>
+                    </FlexBox>
                 </FlexBox>
                 <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                     details
@@ -50,4 +67,14 @@ function NamespaceServices(props) {
         </FlexBox>
     )
 
+}
+
+function ServicesDeleteButton() {
+    return (
+        <FlexBox className="col  auto-margin red-text" style={{display: "flex", alignItems:"flex-end", width:"100%", height: "100%"}}>
+            <div className="secrets-delete-btn" style={{height: "100%", display: "flex", alignItems: "center", paddingRight: "8px" }}>
+                <RiDeleteBin2Line className="auto-margin" />
+            </div>
+        </FlexBox>
+    )
 }
