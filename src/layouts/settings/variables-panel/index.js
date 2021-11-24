@@ -201,7 +201,7 @@ function Variables(props) {
                                             )}
                                             actionButtons={
                                                 [
-                                                    ButtonDefinition("Edit", async () => {
+                                                    ButtonDefinition("Save", async () => {
                                                         let err = await setNamespaceVariable(obj.node.name, val , mimeType)
                                                         if (err) return err
                                                     }, "small blue", true, false),
