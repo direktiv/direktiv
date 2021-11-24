@@ -22,6 +22,11 @@ function VariablesPanel(props){
 
     const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace)
 
+    // something went wrong with error listing for variables
+    if(err !== null){
+        console.log(err, 'handle variable list error')
+    }
+
     return (
         <ContentPanel style={{width: "100%"}}>
             <ContentPanelTitle>
@@ -133,11 +138,7 @@ function Variables(props) {
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)
 
-    const onDrop = useCallback(acceptedFiles => {
-        setFile(acceptedFiles[0])
-    },[])
     
-    const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 
 
     return(

@@ -12,6 +12,7 @@ import InstancesPage from '../instances';
 import JQPlayground from '../jqplayground';
 import GlobalRegistriesPanel from '../global-registries';
 import WorkflowBuilder from '../workflow-builder';
+import NamespaceServices from '../namespace-services';
 
 
 function NamespaceNavigation(props){
@@ -90,7 +91,7 @@ function NamespaceNavigation(props){
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
-                    <Route path="/n/:namespace/services" element={<div>services</div>}/>
+                    <Route path="/n/:namespace/services" element={<NamespaceServices namespace={namespace}/>}/>
                     <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
                     <Route path="/n/:namespace/events" element={<div>events</div>}/>
 
