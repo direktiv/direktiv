@@ -4,6 +4,7 @@ import FlexBox from '../flexbox';
 import {IoChevronDown} from 'react-icons/io5';
 import { GenerateRandomKey } from '../../util';
 import { Link } from 'react-router-dom';
+import Identicon from 'react-identicons';
 
 function NamespaceSelector(props) {
     let {style, className, namespaces, namespace} = props;
@@ -96,11 +97,11 @@ function NamespaceListItem(props) {
                 setShowSelector(false)
             }
         }}>
-            <FlexBox className={className} style={{height: "45px", minHeight: "45px", maxHeight: "45px"}}>
+            <FlexBox className={className} style={{height: "45px", minHeight: "44px", maxHeight: "45px"}}>
                 <FlexBox className="">
                     <FlexBox className="namespace-selector-logo">
-                        <div className="auto-margin">
-                            
+                        <div className="auto-margin" style={{paddingTop: "3px", marginLeft: "3px", filter: "opacity(50%)"}}>
+                            <Identicon string={namespace} size={39} />
                         </div>
                     </FlexBox>
                     <FlexBox className="col">
