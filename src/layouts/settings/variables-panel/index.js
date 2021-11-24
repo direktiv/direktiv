@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { IoCloudDownloadOutline, IoCloudDownloadSharp, IoCloudUpload, IoCloudUploadSharp, IoEye, IoEyeOutline, IoLockClosedOutline } from 'react-icons/io5';
+import { IoCloudDownloadOutline, IoEyeOutline, IoLockClosedOutline } from 'react-icons/io5';
 import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';
@@ -11,7 +11,6 @@ import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
 import {BsUpload} from 'react-icons/bs';
-import { SecretsDeleteButton } from '../secrets-panel';
 import Tabs from '../../../components/tabs';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 
@@ -85,7 +84,7 @@ function VariableFilePicker(props) {
 
     const onDrop = useCallback(acceptedFiles => {
         setFile(acceptedFiles[0])
-    },[])
+    },[setFile])
     
     const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 

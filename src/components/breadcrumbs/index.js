@@ -15,7 +15,7 @@ function Breadcrumbs(props) {
                 {breadcrumbs.map((obj)=>{
                     // ignore breadcrumbs for dividers
                     if(obj.key === "/g" || obj.key === "/n") {
-                        return
+                        return ""
                     }
                     let key = GenerateRandomKey("crumb-");
                     return(

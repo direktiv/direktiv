@@ -40,8 +40,6 @@ function NamespaceSelector(props) {
         chevronClass += " hidden"
     }
 
-    console.log(namespace, "NAMESPACE IN NAV SELECTOR")
-
     return (
         <>
             <FlexBox className="col gap">
@@ -120,11 +118,9 @@ function NamespaceListItem(props) {
 function NamespaceListItemLink(props) {
     let {disabled, children, namespace, setShowSelector} = props;
     if (disabled) {
-        console.log("111111");
         return <>{children}</>
     }
 
-    console.log("222222");
     return (
         <Link to={`/n/${namespace}`} onClick={()=>{
             if (setShowSelector) {

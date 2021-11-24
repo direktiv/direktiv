@@ -7,7 +7,7 @@ import NamespaceSelector from '../namespace-selector';
 import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
-import {IoGitNetworkOutline, IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
+import {IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
 import {GrFormAdd} from 'react-icons/gr'
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
@@ -21,9 +21,7 @@ function NavBar(props) {
 
     className = "navigation-master " + className
 
-    let loading = false;
     if (!namespace) {
-        loading = true;
         className += " loading"
     }
     
@@ -76,7 +74,7 @@ function NavBar(props) {
 export default NavBar;
 
 function NewNamespaceBtn(props) {
-    const {createNamespace, createErr} = props
+    const {createNamespace} = props
 
     // createErr is filled when someone tries to create namespace but proceeded to error out
 
@@ -127,7 +125,6 @@ function NewNamespaceBtn(props) {
                     setNs("")
                 }, "small blue", true, false),
                 ButtonDefinition("Cancel", () => {
-                    console.log("close modal");
                     setNs("")
                 }, "small light", true, false)
             ]}
@@ -147,7 +144,7 @@ function NavItems(props) {
 
     let explorer = matchPath("/n/:namespace", pathname)
     let monitoring = matchPath("/n/:namespace/monitoring", pathname)
-    let builder = matchPath("/n/:namespace/builder", pathname)
+    // let builder = matchPath("/n/:namespace/builder", pathname)
     let events = matchPath("/n/:namespace/events", pathname)
     let instances = matchPath("/n/:namespace/instances", pathname)
     let permissions = matchPath("/n/:namespaces/permissions", pathname)
@@ -258,7 +255,7 @@ function GlobalNavItems(props) {
 
 function NavItem(props) {
 
-    let {children, label, className, active} = props;
+    let {children, label, className} = props;
     if (!className) {
         className = ""
     }

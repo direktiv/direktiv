@@ -36,7 +36,7 @@ function ScarySettings(props) {
 export default ScarySettings;
 
 function Scary(props) {
-    const {deleteNamespace, namespace, deleteErr} = props
+    const {deleteNamespace, namespace} = props
     // deleteErr gets filled in when someone attempts to delete a namespace and an error happens
 
     return(

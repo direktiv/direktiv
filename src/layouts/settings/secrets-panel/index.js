@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
+import { IoLockClosedOutline } from 'react-icons/io5';
 import {RiDeleteBin2Line} from 'react-icons/ri';
 import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';

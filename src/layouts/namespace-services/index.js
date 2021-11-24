@@ -1,9 +1,7 @@
-import { useNamespaceServices } from "direktiv-react-hooks";
 import { IoPlay } from "react-icons/io5";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel";
 import FlexBox from "../../components/flexbox";
-import { Config } from "../../util";
 
 
 export default function ServicesPanel(props) {
@@ -35,8 +33,8 @@ export default function ServicesPanel(props) {
 }
 
 function NamespaceServices(props) {
-    const {namespace} = props
-    const {data, err} = useNamespaceServices(Config.url, true, namespace)
+    // const {namespace} = props
+    // const {data, err} = useNamespaceServices(Config.url, true, namespace)
 
     return(
         <FlexBox>

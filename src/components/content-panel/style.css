@@ -8,7 +8,7 @@
     line-height: 42px;
     max-height: 42px;
     padding-left: 16px;
-    padding-right: 16px;
+    /* padding-right: 16px; */
     font-weight: 700;
     gap: 12px;
 }

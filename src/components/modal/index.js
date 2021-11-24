@@ -132,7 +132,7 @@ function ModalOverlay(props) {
             }
         }
 
-    },[escapeToCancel, callback])
+    },[escapeToCancel, callback, keyDownActions])
     
 
     let overlayClasses = ""
