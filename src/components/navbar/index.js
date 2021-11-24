@@ -172,13 +172,13 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li>
-                <li>
+                {/* <li>
                     <Link to={`/n/${namespace}/builder`}>
                         <NavItem className={builder ? "active":""} label="Workflow Builder">
                             <IoGitNetworkOutline/>
                         </NavItem>
                     </Link>
-                </li>
+                </li> */}
                 <li>
                     <Link to={`/n/${namespace}/instances`}>
                         <NavItem className={instances ? "active":""} label="Instances">

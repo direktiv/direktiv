@@ -10,7 +10,6 @@ import { Config } from '../../../util';
 import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
-
 import { SecretsDeleteButton } from '../secrets-panel';
 import Tabs from '../../../components/tabs';
 
@@ -67,6 +66,14 @@ export default VariablesPanel;
 
 function AddVariablePanel(props) {
     const {keyValue, setKeyValue, dValue, setDValue} = props
+    
+    const [file, setFile] = useState(null)
+    const onDrop = useCallback(acceptedFiles => {
+        setFile(acceptedFiles[0])
+    },[])
+    
+    const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
+
     return(
         <Tabs 
             style={{minHeight: "400px", minWidth: "450px"}}

@@ -72,9 +72,6 @@ function NamespaceNavigation(props){
         }
     },[namespaces, navigate, setNamespace, namespace])
 
-    console.log(namespaces)
-
-    // 
     if(load) {
         return ""
     }
@@ -90,7 +87,7 @@ function NamespaceNavigation(props){
                     <Route path="/" element={<div>index route:)</div>} />
                     <Route path="/n/:namespace" element={<div>explorer</div>} />
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
-                    <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/>
+                    {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<div>services</div>}/>
