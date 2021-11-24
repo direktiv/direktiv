@@ -1,0 +1,12 @@
+.fail-message {
+    color: var(--theme-red);
+    background-color: var(--theme-red-faded);
+    padding: 10px
+}
+
+.wait-message {
+    color: var(--theme-dark-gray-text);
+    background-color: #fcfdfe;
+    padding:10px;
+    border: 1px solid #f4f4f4
+}
