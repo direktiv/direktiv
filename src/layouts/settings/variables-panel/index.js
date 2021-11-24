@@ -85,7 +85,7 @@ function AddVariablePanel(props) {
             ),(
                 <FlexBox className="col gap" style={{fontSize: "12px"}}>
                     <FlexBox className="gap">
-                        <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
+                        {/* <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
                             <input {...getInputProps()} />
                             <p>Drag 'n' drop the file here, or click to select file</p>
                             {
@@ -94,7 +94,7 @@ function AddVariablePanel(props) {
                                 :
                                 ""
                             }
-                        </FlexBox>
+                        </FlexBox> */}
                     </FlexBox>
                 </FlexBox>
             )]}
