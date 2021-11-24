@@ -18,7 +18,9 @@
 }
 
 .tab-header.active-tab {
-    color: var(--theme-brand-blue)
+    color: var(--theme-brand-blue);
+    border-radius: var(--theme-border-radius);
+    border: solid 1px var(--theme-subtle-border);
 }
 
 .tab-header span {
