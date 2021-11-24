@@ -81,15 +81,17 @@ function VariableFilePicker(props) {
     const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 
     return (
-        <FlexBox style={{flexDirection:"column"}} {...getRootProps()}>
-            <input {...getInputProps()} />
-            <p>Drag 'n' drop the file here, or click to select file</p>
-            {
-                file !== null ?
-                <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
-                :
-                ""
-            }
+        <FlexBox className="file-input" style={{flexDirection:"column"}} {...getRootProps()}>
+            <div>
+                <input {...getInputProps()} />
+                <p>Drag 'n' drop the file here, or click to select file</p>
+                {
+                    file !== null ?
+                    <p style={{margin:"0px"}}>Selected file: '{file.path}'</p>
+                    :
+                    ""
+                }
+            </div>
         </FlexBox>
     )
 }
