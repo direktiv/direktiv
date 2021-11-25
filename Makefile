@@ -94,19 +94,34 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./pkg/secrets/ent
 	go generate ./pkg/functions/ent
 
+# Cleans API client inside of pkg api
+.PHONY: api-clean-client
+api-clean-client: ## Cleans golang client swagger files
+api-clean-client:
+	rm -rf pkg/api/models
+	rm -rf pkg/api/client
+
+# Generate API client inside of pkg api
+.PHONY: api-client
+api-client: ## Generates a golang client to use based off swagger
+api-client: api-clean-client  api-docs
+	swagger generate client -t pkg/api -f scripts/api/swagger.json --name direktivsdk
 
 # API docs
 
 .PHONY: api-docs
-api-docs: ## Generates API documentation, (Also fixes markdown tables & description)
-api-docs:
+api-docs: ## Generates API documentation, (Also fixes markdown tables, examples & description)
+api-docs: 
 	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
 	cd pkg/api
-	swagger generate spec -o scripts/api/swagger.json
+	swagger generate spec -o scripts/api/swagger.json -m
 	swagger generate markdown --output scripts/api/api.md -f scripts/api/swagger.json
 	echo "Cleanup markdown tables and descriptions"
 	sed -i -z 's/#### All responses\n|/#### All responses\n\n|/g' scripts/api/api.md
 	sed -i -z 's/description: |//g' scripts/api/api.md
+	sed -i -z 's/Example: {/\n**Example**\n!!!!{/g' scripts/api/api.md
+	sed -i '/^!!!!{/ s/$$/\n```/' scripts/api/api.md
+	sed -i -z 's/!!!!{/```\n{/g' scripts/api/api.md
 
 .PHONY: api-swagger
 api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to change host for API.
@@ -137,7 +152,7 @@ protoc:
 build/%-binary: Makefile ${GO_SOURCE_FILES}
 	@set -e ; if [ -d "cmd/$*" ]; then \
 		echo "Building $* binary..."; \
-		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/vorteil/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
+		export ${CGO_LDFLAGS} && go build -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=${FULL_VERSION}" -tags ${GO_BUILD_TAGS} -o $@ cmd/$*/*.go; \
 		cp build/$*-binary build/$*; \
 	else \
    	touch $@; \
@@ -159,7 +174,7 @@ push-%: image-%
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone https://github.com/vorteil/direktiv-ui.git; \
+		git clone https://github.com/direktiv/direktiv-ui.git; \
 	fi
 	if [ -z "${RELEASE}" ]; then \
 		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \
@@ -228,3 +243,40 @@ tail-functions: ## Tail logs for currently active 'functions' container.
 	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
 	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
 	kubectl logs -f ${FUNCTIONS_POD} functions-controller
+
+.PHONY: reboot-api
+reboot-api: ## delete currently active api pod
+	kubectl delete pod -l app.kubernetes.io/instance=direktiv-api
+
+.PHONY: reboot-flow
+reboot-flow: ## delete currently active flow pod
+	kubectl delete pod -l app.kubernetes.io/instance=direktiv
+
+.PHONY: reboot-functions
+reboot-functions: ## delete currently active functions pod
+	kubectl delete pod -l app.kubernetes.io/instance=direktiv-functions
+
+.PHONY: wait-functions
+wait-functions: ## Wait for 'functions' pod to be ready.
+	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
+	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
+	kubectl wait --for=condition=ready pod ${FUNCTIONS_POD}
+
+.PHONY: wait-flow
+wait-flow: ## Wait for 'flow' pod to be ready.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl wait --for=condition=ready pod ${FLOW_POD}
+
+.PHONY: wait-api
+wait-api: ## Wait for 'api' pod to be ready.
+	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl wait --for=condition=ready pod ${FLOW_POD}
+
+.PHONY: upgrade-%
+upgrade-%: push-% # Pushes new image deletes, reboots and tail new pod
+	@echo "Upgrading $* pod"
+	@$(MAKE) reboot-$*
+	@$(MAKE) wait-$*
+	@$(MAKE) tail-$*

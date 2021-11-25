@@ -14,13 +14,17 @@ import (
 	"time"
 
 	"github.com/bradfitz/slice"
+	"github.com/direktiv/direktiv/pkg/functions/ent"
+	"github.com/direktiv/direktiv/pkg/functions/ent/predicate"
+	entservices "github.com/direktiv/direktiv/pkg/functions/ent/services"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 	shellwords "github.com/mattn/go-shellwords"
 	hash "github.com/mitchellh/hashstructure/v2"
-	"github.com/vorteil/direktiv/pkg/functions/ent/predicate"
-	entservices "github.com/vorteil/direktiv/pkg/functions/ent/services"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/model"
-	"github.com/vorteil/direktiv/pkg/util"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -337,7 +341,13 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 
 	err := is.reconstructService(name, ctx)
 	if err != nil {
-		logger.Errorf("could not recreate service: %w", err)
+		logger.Errorf("could not recreate service: %v", err)
+
+		// Service backup record not found in database
+		if ent.IsNotFound(err) {
+			return &empty, status.Error(codes.NotFound, "could not recreate service")
+		}
+
 		return &empty, fmt.Errorf("could not recreate service")
 	}
 
@@ -1103,11 +1113,6 @@ func proxyEnvs(withGrpc bool) []corev1.EnvVar {
 			Value: functionsConfig.FlowService,
 		})
 
-		// proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		// 	Name:  util.DirektivRedisEndpoint,
-		// 	Value: functionsConfig.RedisBackend,
-		// })
-
 	}
 
 	return proxyEnvs
@@ -1152,20 +1157,26 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		return corev1.ResourceRequirements{}, err
 	}
 
-	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dMi", functionsConfig.Storage))
+	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage))
+	if err != nil {
+		return corev1.ResourceRequirements{}, err
+	}
+
+	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage*2))
 	if err != nil {
 		return corev1.ResourceRequirements{}, err
 	}
 
 	return corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{
-			"cpu":    qcpu,
-			"memory": qmem,
+			"cpu":               qcpu,
+			"memory":            qmem,
+			"ephemeral-storage": ephemeral,
 		},
 		Limits: corev1.ResourceList{
 			"cpu":               qcpuHigh,
 			"memory":            qmemHigh,
-			"ephemeral-storage": ephemeral,
+			"ephemeral-storage": ephemeralHigh,
 		},
 	}, nil
 
@@ -1697,6 +1708,36 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 		})
 	}
 
+	globalSecrets := listGlobalRegistriesNames()
+	for _, s := range globalSecrets {
+		logger.Debugf("adding global pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
+	return lo
+}
+
+func createGlobalPrivatePullSecrets() []corev1.LocalObjectReference {
+	var lo []corev1.LocalObjectReference
+
+	globalPrivateSecrets := listGlobalPrivateRegistriesNames()
+	for _, s := range globalPrivateSecrets {
+		logger.Debugf("adding pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
+	globalSecrets := listGlobalRegistriesNames()
+	for _, s := range globalSecrets {
+		logger.Debugf("adding global pull secret: %v", s)
+		lo = append(lo, corev1.LocalObjectReference{
+			Name: s,
+		})
+	}
+
 	return lo
 }
 
@@ -1755,7 +1796,6 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 						info.GetName(), scope, int(info.GetSize()), hash),
 					Spec: v1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							ImagePullSecrets:   createPullSecrets(info.GetNamespaceName()),
 							ServiceAccountName: functionsConfig.ServiceAccount,
 							Containers:         containers,
 							Volumes:            createVolumes(),
@@ -1766,6 +1806,13 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 				},
 			},
 		},
+	}
+
+	// Set Registry Secrets
+	if scope == PrefixGlobal {
+		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = createGlobalPrivatePullSecrets()
+	} else {
+		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = createPullSecrets(info.GetNamespaceName())
 	}
 
 	// Set kong override timeout annotation
@@ -2166,7 +2213,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 
 //	reconstructServices : Checks to see if there are any records in the database of
 //	backed up services that are missing. If any missing services are found, they
-//	are recontructed
+//	are reconstructed
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
 
 	cs, err := fetchServiceAPI()
@@ -2242,7 +2289,7 @@ func prepareRevisionForExport(revision *servingv1.Revision) servingv1.Revision {
 	return exportedRevision
 }
 
-//	prepareRevisionForExport : Strips any annotations we no longer need, and switchs
+//	prepareRevisionForExport : Strips any annotations we no longer need, and switches
 //	latest service template with earliest revision to ease the
 //	process of reconstructing all revisions in the correct order.
 func prepareServiceForExport(latestSvc *servingv1.Service, earliestRevision *v1.Revision) *servingv1.Service {

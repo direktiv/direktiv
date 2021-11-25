@@ -11,11 +11,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/spf13/cobra"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
 var skipLongTests bool
+var persistTest bool
 var parallelTests int
 var instanceTimeout time.Duration
 var testTimeout time.Duration
@@ -24,6 +25,7 @@ var testsCmd = &cobra.Command{
 	Use: "tests",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		registerTest("CreateNamespace", []string{"namespaces"}, testCreateNamespace)
+
 		registerTest("CreateNamespaceDuplicate", []string{"namespaces", "uniqueness"}, testCreateNamespaceDuplicate)
 		registerTest("CreateNamespaceRegex", []string{"namespaces", "regex"}, testCreateNamespaceRegex)
 		// TODO: rename namespace
@@ -60,6 +62,25 @@ var testsCmd = &cobra.Command{
 		registerTest("StateLogJQObject", []string{"instances", "jq"}, testStateLogJQObject)
 		registerTest("InstanceSimpleChain", []string{"instances"}, testInstanceSimpleChain)
 		registerTest("InstanceSwitchLoop", []string{"instances", "jq"}, testInstanceSwitchLoop)
+		registerTest("InstanceEventAnd", []string{"instances", "events"}, testInstanceEventAnd)
+		registerTest("InstanceEventXor", []string{"instances", "events"}, testInstanceEventXor)
+		registerTest("InstanceValidate", []string{"instances"}, testInstanceValidate)
+		registerTest("InstanceDelayLoop", []string{"instances", "long"}, testInstanceDelayLoop)
+		registerTest("InstanceForeach", []string{"instances", "long"}, testInstanceForeach)
+		registerTest("InstanceParallel", []string{"instances", "long"}, testInstanceParallel)
+		registerTest("InstanceError", []string{"instances"}, testInstanceError)
+		registerTest("InstanceGenerateConsumeEvent", []string{"instances", "event"}, testInstanceGenerateConsumeEvent)
+		registerTest("InstanceTimeoutKill", []string{"instances", "timeout"}, testInstanceTimeoutKill)
+		registerTest("InstanceTimeoutKillLong", []string{"instances", "timeout", "long"}, testInstanceTimeoutKillLong)
+		registerTest("InstanceTimeoutInterrupt", []string{"instances", "timeout"}, testInstanceTimeoutInterrupt)
+		registerTest("InstanceTimeoutInterruptLong", []string{"instances", "timeout", "long"}, testInstanceTimeoutInterruptLong)
+
+		registerTest("InstanceSubflowRetry", []string{"instances", "retry", "long"}, testInstanceSubflowRetry)
+		registerTest("InstanceLongRetry", []string{"instances", "retry", "long"}, testInstanceLongRetry)
+		registerTest("InstanceActionRetry", []string{"instances", "retry", "long"}, testInstanceActionRetry)
+		registerTest("InstanceNestedRetry", []string{"instances", "retry", "long"}, testInstanceNestedRetry)
+		registerTest("InstanceParallelRetry", []string{"instances", "retry", "long"}, testInstanceParallelRetry)
+
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
 		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
@@ -69,16 +90,21 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceWorkflowVariables", []string{"instances", "jq", "variables"}, testInstanceWorkflowVariables)
 		registerTest("InstanceInstanceVariables", []string{"instances", "jq", "variables"}, testInstanceInstanceVariables)
 
+		// start types
+		registerTest("StartTypeEvent", []string{"events", "start"}, testStartTypeEvent)
+		registerTest("StartTypeEventAnd", []string{"events", "start"}, testStartTypeEventAnd)
+		registerTest("StartTypeEventXor", []string{"events", "start"}, testStartTypeEventXor)
+		registerTest("StartTypeCron", []string{"cron", "start", "long"}, testStartTypeCron)
+
 		// TODO:
 		/*
-			Error State
-			ValidateState
-			Foreach State
-			Parallel State
-			CloudEvents
+			Error State (uses a validate state to check email and then gets caught by a catch to the error state)
+			ValidateState (done checks if valid or invalid in two different workflows)
+			Foreach State (done runs a foreach for 3 objects)
+			Parallel State (done runs 3 separate workflows 1 mode or with a failing action, 1 mode and with a failing action, 1 mode and with completed actions)
+			CloudEvents (done eventAnd, evenXor and start type events)
 
-			Delay State
-			Crons
+			Crons (runs for 3 minutes checks how many instances it created to see if it matched)
 
 			Action Types
 				Global
@@ -141,7 +167,9 @@ func getTests(labels ...string) []test {
 func runTestsParallel(tests []test, c int) {
 
 	testsFullReset()
-	defer testsFullReset()
+	if !persistTest || c != 1 {
+		defer testsFullReset()
+	}
 
 	if c == 1 {
 		err := runTests(tests, true, 0)
@@ -206,7 +234,7 @@ func runTests(tests []test, solo bool, idx int) error {
 		return err
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 
 		if !solo {
 			lbls := test.Labels()
@@ -236,13 +264,26 @@ func runTests(tests []test, solo bool, idx int) error {
 		}
 		fmt.Fprint(out, msg)
 
-		tctx, cancel := context.WithTimeout(ctx, testTimeout)
+		var tctx context.Context
+		var cancel context.CancelFunc
+
+		if test.IsLong() {
+			tctx, cancel = context.WithCancel(ctx)
+		} else {
+			tctx, cancel = context.WithTimeout(ctx, testTimeout)
+		}
+
 		err := test.Run(tctx, c, namespace)
 		cancel()
 		if err != nil {
 			fail++
 			fmt.Fprint(out, "FAIL\n")
 			fmt.Fprintf(out, "\tError: %v\n", err)
+			if persistTest && solo {
+				// Exit on first failed
+				fmt.Fprint(out, "Skipping cleanup and aborting tests...\n")
+				break
+			}
 		} else {
 			success++
 			fmt.Fprint(out, "SUCCESS\n")
@@ -250,6 +291,12 @@ func runTests(tests []test, solo bool, idx int) error {
 
 		if buf != nil {
 			_, _ = io.Copy(os.Stderr, bytes.NewReader(buf.Bytes()))
+		}
+
+		if (i == len(tests)-1) && persistTest && solo {
+			// Exit on last success
+			fmt.Fprint(out, "Skipping cleanup...\n")
+			break
 		}
 
 		err = testReset(ctx, c, namespace)
@@ -333,6 +380,7 @@ var tests []test
 type test interface {
 	Name() string
 	Labels() []string
+	IsLong() bool
 	Run(context.Context, grpc.FlowClient, string) error
 }
 
@@ -344,6 +392,17 @@ type testImpl struct {
 
 func (t *testImpl) Name() string {
 	return t.name
+}
+
+func (t *testImpl) IsLong() bool {
+	lbl := t.Labels()
+	for i := 0; i < len(lbl); i++ {
+		if lbl[i] == "long" {
+			//
+			return true
+		}
+	}
+	return false
 }
 
 func (t *testImpl) Labels() []string {

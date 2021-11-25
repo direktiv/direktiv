@@ -9,22 +9,22 @@ import (
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
 
 	"entgo.io/ent"
 )
@@ -8253,6 +8253,7 @@ type VarDataMutation struct {
 	addsize        *int
 	hash           *string
 	data           *[]byte
+	mime_type      *string
 	clearedFields  map[string]struct{}
 	varrefs        map[uuid.UUID]struct{}
 	removedvarrefs map[uuid.UUID]struct{}
@@ -8547,6 +8548,42 @@ func (m *VarDataMutation) ResetData() {
 	m.data = nil
 }
 
+// SetMimeType sets the "mime_type" field.
+func (m *VarDataMutation) SetMimeType(s string) {
+	m.mime_type = &s
+}
+
+// MimeType returns the value of the "mime_type" field in the mutation.
+func (m *VarDataMutation) MimeType() (r string, exists bool) {
+	v := m.mime_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMimeType returns the old "mime_type" field's value of the VarData entity.
+// If the VarData object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VarDataMutation) OldMimeType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMimeType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMimeType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMimeType: %w", err)
+	}
+	return oldValue.MimeType, nil
+}
+
+// ResetMimeType resets all changes to the "mime_type" field.
+func (m *VarDataMutation) ResetMimeType() {
+	m.mime_type = nil
+}
+
 // AddVarrefIDs adds the "varrefs" edge to the VarRef entity by ids.
 func (m *VarDataMutation) AddVarrefIDs(ids ...uuid.UUID) {
 	if m.varrefs == nil {
@@ -8620,7 +8657,7 @@ func (m *VarDataMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VarDataMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.created_at != nil {
 		fields = append(fields, vardata.FieldCreatedAt)
 	}
@@ -8635,6 +8672,9 @@ func (m *VarDataMutation) Fields() []string {
 	}
 	if m.data != nil {
 		fields = append(fields, vardata.FieldData)
+	}
+	if m.mime_type != nil {
+		fields = append(fields, vardata.FieldMimeType)
 	}
 	return fields
 }
@@ -8654,6 +8694,8 @@ func (m *VarDataMutation) Field(name string) (ent.Value, bool) {
 		return m.Hash()
 	case vardata.FieldData:
 		return m.Data()
+	case vardata.FieldMimeType:
+		return m.MimeType()
 	}
 	return nil, false
 }
@@ -8673,6 +8715,8 @@ func (m *VarDataMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldHash(ctx)
 	case vardata.FieldData:
 		return m.OldData(ctx)
+	case vardata.FieldMimeType:
+		return m.OldMimeType(ctx)
 	}
 	return nil, fmt.Errorf("unknown VarData field %s", name)
 }
@@ -8716,6 +8760,13 @@ func (m *VarDataMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetData(v)
+		return nil
+	case vardata.FieldMimeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMimeType(v)
 		return nil
 	}
 	return fmt.Errorf("unknown VarData field %s", name)
@@ -8795,6 +8846,9 @@ func (m *VarDataMutation) ResetField(name string) error {
 		return nil
 	case vardata.FieldData:
 		m.ResetData()
+		return nil
+	case vardata.FieldMimeType:
+		m.ResetMimeType()
 		return nil
 	}
 	return fmt.Errorf("unknown VarData field %s", name)

@@ -7,8 +7,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/direktiv/direktiv/ent/predicate"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

@@ -8,34 +8,34 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: oprypin/find-latest-tag@v1
-      with:
-        repository: vorteil/direktiv  # The repository to scan.
-        releases-only: false  # We know that all relevant tags have a GitHub release for them.
-      id: ptag  # The step ID to refer to later.
-    - name: build helm chart direktiv
-      run: |
-        wget https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.11.0_linux_amd64
-        chmod 755 kube-score_1.11.0_linux_amd64
-        helm template -f kubernetes/charts/direktiv/kubescore.yaml kubernetes/charts/direktiv/ | ./kube-score_1.11.0_linux_amd64 score --ignore-test=--ignore-test=networkpolicy-targets-pod,pod-networkpolicy,pod-probes -
-        export version=${{ steps.ptag.outputs.tag }}
-        v="${version:1}"
-        echo "packaging helm for $v"
-        helm dependency update kubernetes/charts/direktiv/
-        helm package --app-version=$v --version=$v kubernetes/charts/direktiv/
-        helm dependency update kubernetes/charts/knative
-        helm package --app-version=$v --version=$v kubernetes/charts/knative/
-        git clone https://github.com/CrunchyData/postgres-operator-examples.git
-        helm package --app-version=$v --version=$v postgres-operator-examples/helm/install/
-        wget https://${{ secrets.GCP_BUCKET }}.storage.googleapis.com/index.yaml
-        echo "do helm index thing"
-        helm repo index ./ --merge ./index.yaml
-        ls -la
-        echo ${{ secrets.GCP_CREDENTIALS }} >> ./gcp.raw
-        base64 --decode ./gcp.raw >> ./gcp.key 
-        gcloud auth activate-service-account --key-file=./gcp.key > /dev/null 2>&1
-        gsutil cp ./direktiv-$v.tgz gs://${{ secrets.GCP_BUCKET }}/direktiv-$v.tgz > /dev/null 2>&1
-        gsutil cp ./knative-$v.tgz gs://${{ secrets.GCP_BUCKET }}/knative-$v.tgz > /dev/null 2>&1
-        gsutil cp ./pgo-$v.tgz gs://${{ secrets.GCP_BUCKET }}/pgo-$v.tgz > /dev/null 2>&1
-        gsutil cp ./index.yaml gs://${{ secrets.GCP_BUCKET }}/index.yaml > /dev/null 2>&1
+      - uses: actions/checkout@v2
+      - uses: oprypin/find-latest-tag@v1
+        with:
+          repository: direktiv/direktiv # The repository to scan.
+          releases-only: false # We know that all relevant tags have a GitHub release for them.
+        id: ptag # The step ID to refer to later.
+      - name: build helm chart direktiv
+        run: |
+          wget https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.11.0_linux_amd64
+          chmod 755 kube-score_1.11.0_linux_amd64
+          helm template -f kubernetes/charts/direktiv/kubescore.yaml kubernetes/charts/direktiv/ | ./kube-score_1.11.0_linux_amd64 score --ignore-test=--ignore-test=networkpolicy-targets-pod,pod-networkpolicy,pod-probes -
+          export version=${{ steps.ptag.outputs.tag }}
+          v="${version:1}"
+          echo "packaging helm for $v"
+          helm dependency update kubernetes/charts/direktiv/
+          helm package --app-version=$version --version=$v kubernetes/charts/direktiv/
+          helm dependency update kubernetes/charts/knative
+          helm package --app-version=$version --version=$v kubernetes/charts/knative/
+          git clone https://github.com/CrunchyData/postgres-operator-examples.git
+          helm package --app-version=$version --version=$v postgres-operator-examples/helm/install/
+          wget https://${{ secrets.GCP_BUCKET }}.storage.googleapis.com/index.yaml
+          echo "do helm index thing"
+          helm repo index ./ --merge ./index.yaml
+          ls -la
+          echo ${{ secrets.GCP_CREDENTIALS }} >> ./gcp.raw
+          base64 --decode ./gcp.raw >> ./gcp.key 
+          gcloud auth activate-service-account --key-file=./gcp.key > /dev/null 2>&1
+          gsutil cp ./direktiv-$v.tgz gs://${{ secrets.GCP_BUCKET }}/direktiv-$v.tgz > /dev/null 2>&1
+          gsutil cp ./knative-$v.tgz gs://${{ secrets.GCP_BUCKET }}/knative-$v.tgz > /dev/null 2>&1
+          gsutil cp ./pgo-$v.tgz gs://${{ secrets.GCP_BUCKET }}/pgo-$v.tgz > /dev/null 2>&1
+          gsutil cp ./index.yaml gs://${{ secrets.GCP_BUCKET }}/index.yaml > /dev/null 2>&1

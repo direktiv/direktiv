@@ -7,8 +7,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -126,6 +126,13 @@ func Hash(v string) predicate.VarData {
 func Data(v []byte) predicate.VarData {
 	return predicate.VarData(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldData), v))
+	})
+}
+
+// MimeType applies equality check predicate on the "mime_type" field. It's identical to MimeTypeEQ.
+func MimeType(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMimeType), v))
 	})
 }
 
@@ -541,6 +548,117 @@ func DataLT(v []byte) predicate.VarData {
 func DataLTE(v []byte) predicate.VarData {
 	return predicate.VarData(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldData), v))
+	})
+}
+
+// MimeTypeEQ applies the EQ predicate on the "mime_type" field.
+func MimeTypeEQ(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeNEQ applies the NEQ predicate on the "mime_type" field.
+func MimeTypeNEQ(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeIn applies the In predicate on the "mime_type" field.
+func MimeTypeIn(vs ...string) predicate.VarData {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.VarData(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldMimeType), v...))
+	})
+}
+
+// MimeTypeNotIn applies the NotIn predicate on the "mime_type" field.
+func MimeTypeNotIn(vs ...string) predicate.VarData {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.VarData(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldMimeType), v...))
+	})
+}
+
+// MimeTypeGT applies the GT predicate on the "mime_type" field.
+func MimeTypeGT(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeGTE applies the GTE predicate on the "mime_type" field.
+func MimeTypeGTE(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeLT applies the LT predicate on the "mime_type" field.
+func MimeTypeLT(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeLTE applies the LTE predicate on the "mime_type" field.
+func MimeTypeLTE(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeContains applies the Contains predicate on the "mime_type" field.
+func MimeTypeContains(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeHasPrefix applies the HasPrefix predicate on the "mime_type" field.
+func MimeTypeHasPrefix(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeHasSuffix applies the HasSuffix predicate on the "mime_type" field.
+func MimeTypeHasSuffix(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeEqualFold applies the EqualFold predicate on the "mime_type" field.
+func MimeTypeEqualFold(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldMimeType), v))
+	})
+}
+
+// MimeTypeContainsFold applies the ContainsFold predicate on the "mime_type" field.
+func MimeTypeContainsFold(v string) predicate.VarData {
+	return predicate.VarData(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldMimeType), v))
 	})
 }
 

@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/util"
 	"gopkg.in/yaml.v3"
 )
 
 // WorkflowIDRegex - Regex used to validate ID
 const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
+// Workflow global object defining the fields for a workflow
 type Workflow struct {
 	ID          string               `yaml:"id" json:"id"`
 	Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
@@ -18,7 +19,6 @@ type Workflow struct {
 	Version     string               `yaml:"version,omitempty" json:"version,omitempty"`
 	Exclusive   bool                 `yaml:"singular,omitempty" json:"singular,omitempty"`
 	Functions   []FunctionDefinition `yaml:"functions,omitempty" json:"functions,omitempty"`
-	Schemas     []SchemaDefinition   `yaml:"schemas,omitempty" json:"schemas,omitempty"`
 	States      []State              `yaml:"states,omitempty" json:"states,omitempty"`
 	Timeouts    *TimeoutDefinition   `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
 	Start       StartDefinition      `yaml:"start,omitempty" json:"start,omitempty"`
@@ -198,13 +198,6 @@ func (o *Workflow) validate() error {
 		}
 	}
 
-	// schemas
-	for i, schema := range o.GetSchemas() {
-		if sErr := schema.Validate(); sErr != nil {
-			return fmt.Errorf("workflow schema[%v] is invalid: %v", i, sErr)
-		}
-	}
-
 	// states
 	for i, state := range o.GetStates() {
 		// Validate All State Transitions reference a exisiting state
@@ -252,6 +245,7 @@ func (o *Workflow) regexValidateID() error {
 	return nil
 }
 
+// GetStates returns all the states of a workflow
 func (o *Workflow) GetStates() []State {
 	if o.States == nil {
 		return make([]State, 0)
@@ -300,14 +294,7 @@ func (o *Workflow) getFunctionMap() (map[string]FunctionDefinition, error) {
 	return funcMap, nil
 }
 
-func (o *Workflow) GetSchemas() []SchemaDefinition {
-	if o.Schemas == nil {
-		return make([]SchemaDefinition, 0)
-	}
-
-	return o.Schemas
-}
-
+// GetFunctions: Get all function definitions
 func (o *Workflow) GetFunctions() []FunctionDefinition {
 	if o.Functions == nil {
 		return make([]FunctionDefinition, 0)
@@ -316,6 +303,7 @@ func (o *Workflow) GetFunctions() []FunctionDefinition {
 	return o.Functions
 }
 
+// GetFunction: Returns the function definition
 func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
 
 	for i, fn := range o.Functions {
@@ -328,6 +316,7 @@ func (o *Workflow) GetFunction(id string) (FunctionDefinition, error) {
 
 }
 
+// UnmarshalYAML unmarshals the workflow YAMl
 func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	m := make(map[string]interface{})
@@ -345,6 +334,7 @@ func (o *Workflow) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 }
 
+// Load unmarshals the data and validates it
 func (o *Workflow) Load(data []byte) error {
 
 	err := yaml.Unmarshal(data, o)
@@ -361,6 +351,7 @@ func (o *Workflow) Load(data []byte) error {
 
 }
 
+// GetStartState returns the start state of a workflow
 func (o *Workflow) GetStartState() State {
 
 	if o.Start == nil || o.Start.GetState() == "" {
@@ -384,7 +375,7 @@ type VariableReference struct {
 	Operation []string `json:"operation"`
 }
 
-// GetVariableReferences - Get all varaible referenced in getters & setters from a workflow
+// GetVariableReferences - Get all variable referenced in getters & setters from a workflow
 func (o *Workflow) GetVariableReferences() []VariableReference {
 	refs := make([]VariableReference, 0)
 	refsMap := make(map[string]VariableReference)

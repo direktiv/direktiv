@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -37,6 +37,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 	resp.Checksum = d.vdata.Hash
 	resp.TotalSize = int64(d.vdata.Size)
+	resp.MimeType = d.vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
@@ -95,6 +96,7 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -151,6 +153,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -235,6 +238,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 
@@ -349,7 +353,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData(), req.GetMimeType())
 	if err != nil {
 		return nil, err
 	}
@@ -376,6 +380,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 
@@ -393,7 +398,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	inc := internal.db.Instance
-
+	mimeType := req.GetMimeType()
 	instance := req.GetInstance()
 	key := req.GetKey()
 
@@ -460,7 +465,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, d.in, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -486,6 +491,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -507,6 +513,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
 	instance := req.GetInstance()
 	key := req.GetKey()
@@ -574,7 +581,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, d.in, key, req.GetData(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -601,6 +608,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -663,7 +671,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		TotalSize:  int64(d.vdata.Size),
 		Scope:      BroadcastEventScopeInstance,
 	}
-	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeInstance, ctx, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeInstance, broadcastInput, d.ns())
 	if err != nil {
 		return nil, err
 	}
@@ -711,6 +719,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 	resp.Namespace = d.ns().Name
 	resp.TotalSize = int64(d.vdata.Size)
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+	resp.MimeType = d.vdata.MimeType
 
 	return &resp, nil
 

@@ -14,23 +14,23 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
+	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/ent/route"
+	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/vorteil/direktiv/pkg/flow/ent/events"
-	"github.com/vorteil/direktiv/pkg/flow/ent/eventswait"
-	"github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/ent/namespace"
-	"github.com/vorteil/direktiv/pkg/flow/ent/ref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/ent/route"
-	"github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	"github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
 )
 
 // OrderDirection defines the directions in which to order a list of items.
@@ -1250,6 +1250,26 @@ func (i *InodeQuery) Paginate(
 }
 
 var (
+	// InodeOrderFieldCreatedAt orders Inode by created_at.
+	InodeOrderFieldCreatedAt = &InodeOrderField{
+		field: inode.FieldCreatedAt,
+		toCursor: func(i *Inode) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.CreatedAt,
+			}
+		},
+	}
+	// InodeOrderFieldUpdatedAt orders Inode by updated_at.
+	InodeOrderFieldUpdatedAt = &InodeOrderField{
+		field: inode.FieldUpdatedAt,
+		toCursor: func(i *Inode) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.UpdatedAt,
+			}
+		},
+	}
 	// InodeOrderFieldName orders Inode by name.
 	InodeOrderFieldName = &InodeOrderField{
 		field: inode.FieldName,
@@ -1266,6 +1286,10 @@ var (
 func (f InodeOrderField) String() string {
 	var str string
 	switch f.field {
+	case inode.FieldCreatedAt:
+		str = "CREATED"
+	case inode.FieldUpdatedAt:
+		str = "UPDATED"
 	case inode.FieldName:
 		str = "NAME"
 	}
@@ -1284,6 +1308,10 @@ func (f *InodeOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("InodeOrderField %T must be a string", v)
 	}
 	switch str {
+	case "CREATED":
+		*f = *InodeOrderFieldCreatedAt
+	case "UPDATED":
+		*f = *InodeOrderFieldUpdatedAt
 	case "NAME":
 		*f = *InodeOrderFieldName
 	default:

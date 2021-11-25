@@ -8,13 +8,13 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/ent/cloudevents"
-	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/services"
-	"github.com/vorteil/direktiv/ent/workflow"
-	"github.com/vorteil/direktiv/ent/workflowevents"
-	"github.com/vorteil/direktiv/ent/workfloweventswait"
-	"github.com/vorteil/direktiv/ent/workflowinstance"
+	"github.com/direktiv/direktiv/ent/cloudevents"
+	"github.com/direktiv/direktiv/ent/namespace"
+	"github.com/direktiv/direktiv/ent/services"
+	"github.com/direktiv/direktiv/ent/workflow"
+	"github.com/direktiv/direktiv/ent/workflowevents"
+	"github.com/direktiv/direktiv/ent/workfloweventswait"
+	"github.com/direktiv/direktiv/ent/workflowinstance"
 )
 
 // ent aliases to avoid import conflicts in user's code.

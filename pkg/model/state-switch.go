@@ -5,12 +5,14 @@ import (
 	"fmt"
 )
 
+// SwitchConditionDefinition defines the conditions of a switch
 type SwitchConditionDefinition struct {
 	Condition  interface{} `yaml:"condition"`
 	Transform  interface{} `yaml:"transform,omitempty"`
 	Transition string      `yaml:"transition,omitempty"`
 }
 
+// Validate validates the arguments for the switch condition
 func (o *SwitchConditionDefinition) Validate() error {
 	if o.Condition == "" {
 		return errors.New("condition required")
@@ -25,6 +27,7 @@ func (o *SwitchConditionDefinition) Validate() error {
 	return nil
 }
 
+// SwitchState defines what is needed for a switch state
 type SwitchState struct {
 	StateCommon       `yaml:",inline"`
 	Conditions        []SwitchConditionDefinition `yaml:"conditions"`
@@ -32,6 +35,7 @@ type SwitchState struct {
 	DefaultTransition string                      `yaml:"defaultTransition,omitempty"`
 }
 
+// GetID returns the id of a the switch state
 func (o *SwitchState) GetID() string {
 	return o.ID
 }
@@ -56,6 +60,7 @@ func (o *SwitchState) getTransitions() map[string]string {
 	return transitions
 }
 
+// GetTransitions returns the transitions of a switch state
 func (o *SwitchState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.DefaultTransition != "" {
@@ -76,6 +81,7 @@ func (o *SwitchState) GetTransitions() []string {
 	return transitions
 }
 
+// GetConditions returns the conditions of a switch state
 func (o *SwitchState) GetConditions() []SwitchConditionDefinition {
 	if o.Conditions == nil {
 		return make([]SwitchConditionDefinition, 0)
@@ -84,6 +90,7 @@ func (o *SwitchState) GetConditions() []SwitchConditionDefinition {
 	return o.Conditions
 }
 
+// Validate validates the arguments provided for the switch state
 func (o *SwitchState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err

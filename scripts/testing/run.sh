@@ -7,8 +7,8 @@ GREY='\033[0;37m'
 NC='\033[0m' # No Color
 NL=$'\n'
 
-DIREKTION=$HOME/go/src/github.com/vorteil/direktion/build/direktion
-DIREKTIV_API="http://localhost:80"
+DIREKTION=$HOME/go/src/github.com/direktiv/direktion/build/direktion
+DIREKTIV_API=${DIREKTIV_API:-"http://localhost:80"}
 NAMESPACE=test
 
 suite_dir=${1%/}
@@ -381,6 +381,9 @@ perform_individual_tests () {
 }
 
 init_namespace () {
+
+	# Delete old namespace
+	resp=`curl -s -S -X DELETE $DIREKTIV_API/api/namespaces/$NAMESPACE?recursive=true`
 
 	resp=`curl -I -s -S -X PUT $DIREKTIV_API/api/namespaces/$NAMESPACE`
 	code=`echo "$resp" | head -1 | cut -f2 -d" "`

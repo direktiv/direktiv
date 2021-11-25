@@ -22,8 +22,8 @@ type Inode struct {
 func (Inode) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
-		field.Time("created_at").Default(time.Now).Immutable(),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED")),
 		field.String("name").Match(NameRegex).Optional().Annotations(entgql.OrderField("NAME")),
 		field.String("type").Immutable(),
 		field.Strings("attributes").Optional(),

@@ -23,6 +23,7 @@ func (VarData) Fields() []ent.Field {
 		field.Int("size"),
 		field.String("hash"),
 		field.Bytes("data"),
+		field.String("mime_type").Default("application/json"),
 	}
 }
 

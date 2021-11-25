@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/ent/services"
+	"github.com/direktiv/direktiv/ent/services"
 )
 
 // ServicesCreate is the builder for creating a Services entity.

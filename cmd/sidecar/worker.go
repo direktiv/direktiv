@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type inboundWorker struct {
@@ -491,7 +491,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 					return err
 				}
 
-				err = worker.srv.setVar(ctx, ir, end, tf, d, f.Name())
+				err = worker.srv.setVar(ctx, ir, end, tf, d, f.Name(), "")
 				if err != nil {
 					return err
 				}
@@ -503,7 +503,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 					return err
 				}
 
-				err = worker.srv.setVar(ctx, ir, f.Size(), v, d, f.Name())
+				err = worker.srv.setVar(ctx, ir, f.Size(), v, d, f.Name(), "")
 				if err != nil {
 					_ = v.Close()
 					return err

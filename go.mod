@@ -1,4 +1,4 @@
-module github.com/vorteil/direktiv
+module github.com/direktiv/direktiv
 
 go 1.15
 
@@ -19,6 +19,8 @@ require (
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/runtime v0.19.31 // indirect
 	github.com/go-openapi/strfmt v0.20.2 // indirect
+	github.com/go-openapi/swag v0.19.15 // indirect
+	github.com/go-openapi/validate v0.20.2 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/go-swagger/go-swagger v0.27.0 // indirect
 	github.com/gogo/protobuf v1.3.2
@@ -64,6 +66,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20210924151903-3ad01bbaa167 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210925032602-92d5a993a665
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.6 // indirect

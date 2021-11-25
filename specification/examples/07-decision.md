@@ -7,7 +7,7 @@ id: decision
 functions:
 - id: sendRejectionEmail
   type: reusable
-  image: apps.vorteil.io/direktive-demos/reject-email
+  image: apps.direktiv.io/direktive-demos/reject-email
 states:
 - id: CheckApplication
   type: switch
@@ -35,7 +35,7 @@ states:
 		"fname": "Trent",
 		"lname": "Hilliam",
 		"age": 27,
-		"email": "trent.hilliam@vorteil.io"
+		"email": "trent.hilliam@direktiv.io"
 	}
 }
 ```

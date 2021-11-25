@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
+// NamespacedFunctionDefinition defines a namespace service in the workflow
 type NamespacedFunctionDefinition struct {
 	Type           FunctionType             `yaml:"type" json:"type"`
 	ID             string                   `yaml:"id" json:"id"`
@@ -14,14 +15,17 @@ type NamespacedFunctionDefinition struct {
 	Files          []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
+// GetID returns the id of a namespace function
 func (o *NamespacedFunctionDefinition) GetID() string {
 	return o.ID
 }
 
+// GetType returns the type of the function
 func (o *NamespacedFunctionDefinition) GetType() FunctionType {
 	return NamespacedKnativeFunctionType
 }
 
+// Validate validates the namespace function definition's arguments
 func (o *NamespacedFunctionDefinition) Validate() error {
 	if o == nil {
 		return nil

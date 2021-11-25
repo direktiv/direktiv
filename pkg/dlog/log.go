@@ -3,8 +3,8 @@ package dlog
 import (
 	"os"
 
-	"github.com/vorteil/direktiv/pkg/util"
-	"github.com/vorteil/direktiv/pkg/version"
+	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/version"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

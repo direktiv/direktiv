@@ -3,9 +3,9 @@ package flow
 import (
 	"context"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -246,6 +246,7 @@ resend:
 	if sub == nil {
 		sub = flow.pubsub.SubscribeInstance(d.in)
 		defer flow.cleanup(sub.Close)
+		goto resend
 	}
 
 	resp := new(grpc.InstanceResponse)

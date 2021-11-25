@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package direktiv_flow;
 
-option go_package = "github.com/vorteil/direktiv/pkg/flow/grpc";
+option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/timestamp.proto";
 
@@ -52,6 +52,7 @@ message VariableInternalResponse {
 	string checksum = 5;
 	int64 totalSize = 6;
 	bytes data = 7;
+	string mimeType = 8;
 }
 
 message SetVariableInternalRequest {
@@ -59,6 +60,7 @@ message SetVariableInternalRequest {
 	string key = 2;
 	int64 totalSize = 3;
 	bytes data = 4;
+	string mimeType = 5;
 }
 
 message SetVariableInternalResponse {
@@ -68,4 +70,5 @@ message SetVariableInternalResponse {
 	google.protobuf.Timestamp updated_at = 4;
 	string checksum = 5;
 	int64 totalSize = 6;
+	string mimeType = 7;
 }

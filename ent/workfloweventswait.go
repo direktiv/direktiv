@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/vorteil/direktiv/ent/workflowevents"
-	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/direktiv/direktiv/ent/workflowevents"
+	"github.com/direktiv/direktiv/ent/workfloweventswait"
 )
 
 // WorkflowEventsWait is the model entity for the WorkflowEventsWait schema.

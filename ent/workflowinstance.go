@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/direktiv/direktiv/ent/workflow"
+	"github.com/direktiv/direktiv/ent/workflowinstance"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/ent/workflow"
-	"github.com/vorteil/direktiv/ent/workflowinstance"
 )
 
 // WorkflowInstance is the model entity for the WorkflowInstance schema.

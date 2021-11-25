@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -108,7 +108,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	}
 
 	for _, msg := range req.GetMsg() {
-		internal.logToInstance(ctx, t, d.in, msg)
+		internal.logToInstanceRaw(ctx, t, d.in, msg)
 	}
 
 	var resp emptypb.Empty

@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/predicate"
-	"github.com/vorteil/direktiv/ent/workflow"
+	"github.com/direktiv/direktiv/ent/namespace"
+	"github.com/direktiv/direktiv/ent/predicate"
+	"github.com/direktiv/direktiv/ent/workflow"
 )
 
 // NamespaceQuery is the builder for querying Namespace entities.

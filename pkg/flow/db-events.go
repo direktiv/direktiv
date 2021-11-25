@@ -8,14 +8,14 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	entwf "github.com/direktiv/direktiv/pkg/flow/ent/workflow"
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entcev "github.com/vorteil/direktiv/pkg/flow/ent/cloudevents"
-	entev "github.com/vorteil/direktiv/pkg/flow/ent/events"
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/workflow"
-	entwf "github.com/vorteil/direktiv/pkg/flow/ent/workflow"
-	"github.com/vorteil/direktiv/pkg/model"
 )
 
 func (events *events) markEventAsProcessed(ctx context.Context, cevc *ent.CloudEventsClient, eventID string) (*cloudevents.Event, error) {

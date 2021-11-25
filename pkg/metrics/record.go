@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/vorteil/direktiv/pkg/metrics/ent"
+	"github.com/direktiv/direktiv/pkg/metrics/ent"
 )
 
 type record struct {

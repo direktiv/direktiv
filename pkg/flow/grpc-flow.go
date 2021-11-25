@@ -7,11 +7,11 @@ import (
 	"net"
 	"time"
 
-	entinst "github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
-	entlog "github.com/vorteil/direktiv/pkg/flow/ent/logmsg"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
+	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -125,11 +125,7 @@ func (flow *flow) kickExpiredInstances() {
 			panic(err)
 		}
 
-		err = flow.engine.retryWakeup(data)
-		if err != nil {
-			flow.sugar.Error(err)
-			continue
-		}
+		flow.engine.retryWakeup(data)
 
 	}
 

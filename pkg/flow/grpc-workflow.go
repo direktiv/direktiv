@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entrev "github.com/vorteil/direktiv/pkg/flow/ent/revision"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entrev "github.com/direktiv/direktiv/pkg/flow/ent/revision"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -229,7 +229,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.BroadcastWorkflow(BroadcastEventTypeCreate, ctx,
+	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{
 			Name:   resp.Node.Name,
 			Path:   resp.Node.Path,
@@ -342,7 +342,7 @@ respond:
 		return nil, err
 	}
 
-	err = flow.BroadcastWorkflow(BroadcastEventTypeUpdate, ctx,
+	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
 		broadcastWorkflowInput{
 			Name:   resp.Node.Name,
 			Path:   resp.Node.Path,
@@ -568,7 +568,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		live = "enabled"
 	}
 
-	err = flow.BroadcastWorkflow(BroadcastEventTypeUpdate, ctx,
+	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
 		broadcastWorkflowInput{
 			Name:   d.base,
 			Path:   d.path,

@@ -11,33 +11,42 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entino "github.com/vorteil/direktiv/pkg/flow/ent/inode"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func directoryOrder(p *pagination) ent.InodePaginateOption {
 
-	field := ent.InodeOrderFieldName
-	direction := ent.OrderDirectionAsc
-
-	if p.order != nil {
-
-		if x := p.order.Field; x != "" && x == "NAME" {
-			field = ent.InodeOrderFieldName
-		}
-
-		if x := p.order.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
-		}
-
+	order := ent.InodeOrder{
+		Direction: ent.OrderDirectionAsc,
+		Field:     ent.InodeOrderFieldName,
 	}
 
-	return ent.WithInodeOrder(&ent.InodeOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if p.order != nil {
+		switch p.order.GetField() {
+		case "UPDATED":
+			order.Field = ent.InodeOrderFieldUpdatedAt
+		case "CREATED":
+			order.Field = ent.InodeOrderFieldCreatedAt
+		case "NAME":
+			order.Field = ent.InodeOrderFieldName
+		default:
+			break
+		}
+
+		switch p.order.GetDirection() {
+		case "DESC":
+			order.Direction = ent.OrderDirectionDesc
+		case "ASC":
+			order.Direction = ent.OrderDirectionAsc
+		default:
+			break
+		}
+	}
+
+	return ent.WithInodeOrder(&order)
 
 }
 
@@ -333,7 +342,7 @@ respond:
 	resp.Node.Path = path
 
 	// Broadcast
-	err = flow.BroadcastDirectory(BroadcastEventTypeCreate, ctx,
+	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
 		broadcastDirectoryInput{
 			Path:   resp.Node.Path,
 			Parent: resp.Node.Parent,
@@ -399,7 +408,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		metricsWfUpdated.WithLabelValues(d.ns().Name, d.path, d.ns().Name).Inc()
 
 		// Broadcast Event
-		err = flow.BroadcastWorkflow(BroadcastEventTypeDelete, ctx,
+		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
 			broadcastWorkflowInput{
 				Name:   d.base,
 				Path:   d.path,
@@ -412,7 +421,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		}
 	} else {
 		// Broadcast Event
-		err = flow.BroadcastDirectory(BroadcastEventTypeDelete, ctx,
+		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
 			broadcastDirectoryInput{
 				Path:   d.path,
 				Parent: d.dir,

@@ -18,13 +18,15 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/senseyeio/duration"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/functions"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/model"
-	"github.com/vorteil/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 type engine struct {
@@ -568,6 +570,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	engine.logToInstance(ctx, time.Now(), im.in, "Workflow completed.")
 
 	if ns, err := im.in.Namespace(ctx); err == nil {
+		engine.pubsub.NotifyInstances(ns)
 		broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
 			WorkflowPath: GetInodePath(im.in.As),
 			InstanceID:   im.in.ID.String(),
@@ -613,7 +616,9 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		engine.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		if IsNotFound(err) {
+			return "", NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
+		}
 		return "", err
 	}
 
@@ -647,7 +652,7 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 		go func() {
 			time.Sleep(d)
 			/* #nosec */
-			_ = engine.retryWakeup(data)
+			engine.retryWakeup(data)
 		}()
 		return nil
 	}
@@ -661,20 +666,20 @@ func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, dat
 
 }
 
-func (engine *engine) retryWakeup(data []byte) error {
+func (engine *engine) retryWakeup(data []byte) {
 
 	msg := new(retryMessage)
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
 		engine.sugar.Error(err)
-		return nil
+		return
 	}
 
 	ctx, im, err := engine.loadInstanceMemory(msg.InstanceID, msg.Step)
 	if err != nil {
 		engine.sugar.Error(err)
-		return nil
+		return
 	}
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Waking up to retry.")
@@ -682,8 +687,6 @@ func (engine *engine) retryWakeup(data []byte) error {
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, []byte(msg.Data), nil)
-
-	return nil
 
 }
 
@@ -917,6 +920,12 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 							!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
 							err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
 							if err != nil {
+								if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
+									engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)
+									engine.reportError(ar, fmt.Errorf("knative function: '%s' does not exist", ar.Container.Service))
+									return
+								}
+
 								engine.sugar.Errorf("can not create scoped knative function: %v", err)
 								engine.reportError(ar, err)
 								return

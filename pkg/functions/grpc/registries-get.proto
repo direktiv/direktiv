@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package direktiv_functions;
 
-option go_package = "github.com/vorteil/direktiv/pkg/functions/grpc";
+option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
+
+message Registry {
+	optional string name = 1;
+	optional string id = 2;
+}
 
 message GetRegistriesRequest {
 	optional string namespace = 1;
 }
 
 message GetRegistriesResponse {
-	message Registry {
-		optional string name = 1;
-		optional string id = 2;
-	}
 	repeated Registry registries = 1;
 }

@@ -8,8 +8,8 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
 )
 
 type vars struct {
@@ -102,6 +102,7 @@ func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
 
 	namespace := mux.Vars(r)["namespace"]
 	key := mux.Vars(r)["var"]
+	mimeType := r.Header.Get("Content-Type")
 
 	switch r.Method {
 	case http.MethodGet:
@@ -138,6 +139,7 @@ func (vars *vars) nsHandler(w http.ResponseWriter, r *http.Request) {
 		req.Key = key
 		req.Namespace = namespace
 		req.TotalSize = int64(len(data))
+		req.MimeType = mimeType
 
 		_, err = vars.flow.SetNamespaceVariable(ctx, req)
 		if err != nil {
@@ -162,6 +164,7 @@ func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["namespace"]
 	path := mux.Vars(r)["path"]
 	key := mux.Vars(r)["var"]
+	mimeType := r.Header.Get("Content-Type")
 
 	switch r.Method {
 	case http.MethodGet:
@@ -200,6 +203,7 @@ func (vars *vars) wfHandler(w http.ResponseWriter, r *http.Request) {
 		req.Namespace = namespace
 		req.Path = path
 		req.TotalSize = int64(len(data))
+		req.MimeType = mimeType
 
 		_, err = vars.flow.SetWorkflowVariable(ctx, req)
 		if err != nil {
@@ -224,6 +228,7 @@ func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
 	namespace := mux.Vars(r)["namespace"]
 	instance := mux.Vars(r)["instance"]
 	key := mux.Vars(r)["var"]
+	mimeType := r.Header.Get("Content-Type")
 
 	switch r.Method {
 	case http.MethodGet:
@@ -262,6 +267,7 @@ func (vars *vars) inHandler(w http.ResponseWriter, r *http.Request) {
 		req.Namespace = namespace
 		req.Instance = instance
 		req.TotalSize = int64(len(data))
+		req.MimeType = mimeType
 
 		_, err = vars.flow.SetInstanceVariable(ctx, req)
 		if err != nil {

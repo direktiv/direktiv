@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/vorteil/direktiv/ent/predicate"
-	"github.com/vorteil/direktiv/ent/workflowevents"
-	"github.com/vorteil/direktiv/ent/workfloweventswait"
+	"github.com/direktiv/direktiv/ent/predicate"
+	"github.com/direktiv/direktiv/ent/workflowevents"
+	"github.com/direktiv/direktiv/ent/workfloweventswait"
 )
 
 // WorkflowEventsWaitUpdate is the builder for updating WorkflowEventsWait entities.

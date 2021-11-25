@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	shellwords "github.com/mattn/go-shellwords"
-	igrpc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -129,7 +129,7 @@ func runRequestLimiterLoop() error {
 				for i := range l.Items {
 					j := l.Items[i]
 
-					// if nothing is runing and at least one succeeded or failed
+					// if nothing is running and at least one succeeded or failed
 					if j.Status.Active == 0 && (j.Status.Succeeded > 0 || j.Status.Failed > 0) {
 						logger.Debugf("deleting job %v", j.ObjectMeta.Name)
 						err = jobs.Delete(context.Background(), j.ObjectMeta.Name, opts)
@@ -392,7 +392,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 	)
 	if err != nil {
 		logger.Errorf("can not watch job pod: %v", err)
-		// whatever happend, we try to delet the pod
+		// whatever happened, we try to delete the pod
 		jobs.Delete(context.TODO(), j.ObjectMeta.Name, metav1.DeleteOptions{})
 		return &resp, err
 	}

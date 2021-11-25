@@ -1,2 +1,5 @@
 alias kc="kubectl"
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+source <(kubectl completion bash)
+complete -F __start_kubectl kc
+
+source /etc/bash_completion

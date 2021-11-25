@@ -9,14 +9,14 @@ eventing:
 logging: json
 
 # -- api timeouts
-timeout: 900000
+timeout: 7200000
 
 # -- api key, value 'apikey' required in header
 apikey: ""
 
 # used for encrpytion in the following resources: secrets
 # if set to empty, one will be generated on install
-encryptionKey: ""
+encryptionKey: "01234567890123456789012345678912"
 
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
@@ -67,7 +67,7 @@ api:
   kongPlugins: "none"
   extraContainers: []
   # -- image for api pod
-  image: "vorteil/api"
+  image: "direktiv/api"
   # -- image tag for api pod
   tag: ""
   # -- extra container in api pod
@@ -100,7 +100,7 @@ ingress:
   # -- ingress class
   class: "kong"
   # -- timeout for /api route
-  timeout: 900000
+  timeout: 7200000
 
 database:
   # -- database host
@@ -142,7 +142,7 @@ flow:
   # -- number of flow replicas
   replicas: 1
   # -- image for flow pod
-  image: "vorteil/flow"
+  image: "direktiv/flow"
   # -- image tag for flow pod
   tag: ""
   # -- extra container in flow pod
@@ -178,7 +178,7 @@ no_proxy: ""
 
 # -- secrets sidecar in flow pod
 secrets:
-  image: "vorteil/secrets"
+  image: "direktiv/secrets"
   tag: ""
   db: ""
   extraVolumeMounts: []
@@ -186,7 +186,7 @@ secrets:
 # -- UI configuration
 ui:
   kongPlugins: "none"
-  image: "vorteil/ui"
+  image: "direktiv/ui"
   tag: ""
   certificate: none
   extraContainers: []
@@ -266,23 +266,33 @@ thanos:
 
 
 functions:
+
+  # -- http_proxy injected as environment variable in functions
+  http_proxy: ""
+
+  # -- https_proxy injected as environment variable in functions
+  https_proxy: ""
+
+  # -- no_proxy injected as environment variable in functions
+  no_proxy: ""
+
   # namespace to run functions in
   namespace: direktiv-services-direktiv
   ingressClass: kong-internal
 
   # images for functions controller, knative sidecar and init-pod
-  image: "vorteil/functions"
+  image: "direktiv/functions"
   tag: ""
 
-  sidecar: "vorteil/sidecar"
+  sidecar: "direktiv/sidecar"
 
-  initPodImage:  "vorteil/direktiv-init-pod"
+  initPodImage:  "direktiv/direktiv-init-pod"
 
   # kong ingress knative timeout on services
-  timeout: 900000
+  timeout: 7200000
 
   # -- number of controller replicas
-  replicaCount: 1
+  replicas: 1
 
   # -- Egress/Ingress network limit for functions if supported by network
   netShape: "10M"

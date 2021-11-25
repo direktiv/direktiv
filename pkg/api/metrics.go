@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// GetInodePath returns the path without the first slash
 func GetInodePath(path string) string {
 	if strings.HasSuffix(path, "/") {
 		path = strings.TrimSuffix(path, "/")

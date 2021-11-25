@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/vorteil/direktiv/ent/cloudevents"
+	"github.com/direktiv/direktiv/ent/cloudevents"
 )
 
 // CloudEvents is the model entity for the CloudEvents schema.

@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instance"
-	"github.com/vorteil/direktiv/pkg/flow/ent/instanceruntime"
 )
 
 // InstanceRuntime is the model entity for the InstanceRuntime schema.

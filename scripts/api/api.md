@@ -1,7 +1,7 @@
 
 
 
-# Direktiv API.
+# Direktiv API
 Direktiv Open API Specification
 Direktiv Documentation can be found at https://docs.direktiv.io/
   
@@ -50,7 +50,6 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | PUT | /api/namespaces/{namespace}/tree/{directory}?op=create-directory | [create directory](#create-directory) | Create a Directory |
-| GET | /api/namespaces/{namespace}/tree/{nodePath} | [get nodes](#get-nodes) | Get List of Namespace Nodes |
   
 
 
@@ -138,12 +137,22 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
   
 
 
+###  node
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| DELETE | /api/namespaces/{namespace}/tree/{node}?op=delete-node | [delete node](#delete-node) | Delete a node |
+| GET | /api/namespaces/{namespace}/tree/{nodePath} | [get nodes](#get-nodes) | Get List of Namespace Nodes |
+  
+
+
 ###  other
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
+| GET | /api/version | [version](#version) | Returns version information for servers in the cluster. |
   
 
 
@@ -151,8 +160,15 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
-| POST | /api/namespaces/{namespace}/registries | [delete registry](#delete-registry) | Delete a Namespace Container Registry |
-| GET | /api/namespaces/{namespace}/registries | [get registries](#get-registries) | Get List of Namespace Registries |
+| POST | /api/functions/registries/private | [create global private registry](#create-global-private-registry) | Create a Global Container Registry |
+| POST | /api/functions/registries/global | [create global registry](#create-global-registry) | Create a Global Container Registry |
+| POST | /api/functions/registries/namespaces/{namespace} | [create registry](#create-registry) | Create a Namespace Container Registry |
+| DELETE | /api/functions/registries/private | [delete global private registry](#delete-global-private-registry) | Delete a Global Container Registry |
+| DELETE | /api/functions/registries/global | [delete global registry](#delete-global-registry) | Delete a global Container Registry |
+| DELETE | /api/functions/registries/namespaces/{namespace} | [delete registry](#delete-registry) | Delete a Namespace Container Registry |
+| GET | /api/functions/registries/private | [get global private registries](#get-global-private-registries) | Get List of Global Private Registries |
+| GET | /api/functions/registries/global | [get global registries](#get-global-registries) | Get List of Global Registries |
+| GET | /api/functions/registries/namespaces/{namespace} | [get registries](#get-registries) | Get List of Namespace Registries |
   
 
 
@@ -270,7 +286,7 @@ Input query parameters are only read if the request has no body.
 | ctype | `query` | string | `string` |  |  |  | Manually set the Content-Type response header instead of auto-detected. This doesn't change the body of the response in any way. |
 | field | `query` | string | `string` |  |  |  | If provided, instead of returning the entire output json the response body will contain the single top-level json field |
 | raw-output | `query` | boolean | `bool` |  |  |  | If set to true, will return an empty output as null, encoded base64 data as decoded binary data, and quoted json strings as a escaped string. |
-| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
+| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | The input of this workflow instance |
 
 #### All responses
 
@@ -302,7 +318,7 @@ The body of this request should follow the cloud event core specification define
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| cloudevent | `body` | [interface{}](#interface) | `interface{}` | |  | | Cloud Event request to be sent. |
+| cloudevent | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | Cloud Event request to be sent. |
 
 #### All responses
 
@@ -363,20 +379,137 @@ Creates a directory at the target path.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | directory | `path` | string | `string` |  | ✓ |  | path to target directory |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| op | `query` | string | `string` |  | ✓ | `"create-directory"` | the operation for the api |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#create-directory-200) | OK | successfully created directory |  | [schema](#create-directory-200-schema) |
+| [200](#create-directory-200) | OK | directory has been created |  | [schema](#create-directory-200-schema) |
+| [default](#create-directory-default) | | an error has occurred |  | [schema](#create-directory-default-schema) |
 
 #### Responses
 
 
-##### <span id="create-directory-200"></span> 200 - successfully created directory
+##### <span id="create-directory-200"></span> 200 - directory has been created
 Status: OK
 
 ###### <span id="create-directory-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="create-directory-default"></span> Default Response
+an error has occurred
+
+###### <span id="create-directory-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
+### <span id="create-global-private-registry"></span> Create a Global Container Registry (*createGlobalPrivateRegistry*)
+
+```
+POST /api/functions/registries/private
+```
+
+Create a global container registry.
+ Global Private registries are only available to global services.
+This can be used to connect your workflows to private container registries that require tokens.
+The data property in the body is made up from the registry user and token. It follows the pattern :
+data=USER:TOKEN
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [CreateGlobalPrivateRegistryBody](#create-global-private-registry-body) | `CreateGlobalPrivateRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#create-global-private-registry-200) | OK | successfully created global private registry |  | [schema](#create-global-private-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="create-global-private-registry-200"></span> 200 - successfully created global private registry
+Status: OK
+
+###### <span id="create-global-private-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="create-global-private-registry-body"></span> CreateGlobalPrivateRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="create-global-registry"></span> Create a Global Container Registry (*createGlobalRegistry*)
+
+```
+POST /api/functions/registries/global
+```
+
+Create a global container registry.
+Global registries are available to all services.
+This can be used to connect your workflows to private container registries that require tokens.
+The data property in the body is made up from the registry user and token. It follows the pattern :
+data=USER:TOKEN
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [CreateGlobalRegistryBody](#create-global-registry-body) | `CreateGlobalRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#create-global-registry-200) | OK | successfully created global registry |  | [schema](#create-global-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="create-global-registry-200"></span> 200 - successfully created global registry
+Status: OK
+
+###### <span id="create-global-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="create-global-registry-body"></span> CreateGlobalRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
 
 ### <span id="create-global-service"></span> Create Global Service (*createGlobalService*)
 
@@ -451,6 +584,7 @@ Creates a new namespace.
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-namespace-200) | OK | namespace has been successfully created |  | [schema](#create-namespace-200-schema) |
+| [default](#create-namespace-default) | | an error has occurred |  | [schema](#create-namespace-default-schema) |
 
 #### Responses
 
@@ -459,6 +593,19 @@ Creates a new namespace.
 Status: OK
 
 ###### <span id="create-namespace-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="create-namespace-default"></span> Default Response
+an error has occurred
+
+###### <span id="create-namespace-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="create-namespace-service"></span> Create Namespace Service (*createNamespaceService*)
 
@@ -514,6 +661,57 @@ Status: OK
 
 
 
+### <span id="create-registry"></span> Create a Namespace Container Registry (*createRegistry*)
+
+```
+POST /api/functions/registries/namespaces/{namespace}
+```
+
+Create a namespace container registry.
+This can be used to connect your workflows to private container registries that require tokens.
+The data property in the body is made up from the registry user and token. It follows the pattern :
+data=USER:TOKEN
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| Registry Payload | `body` | [CreateRegistryBody](#create-registry-body) | `CreateRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#create-registry-200) | OK | successfully created namespace registry |  | [schema](#create-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="create-registry-200"></span> 200 - successfully created namespace registry
+Status: OK
+
+###### <span id="create-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="create-registry-body"></span> CreateRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
 ### <span id="create-secret"></span> Create a Namespace Secret (*createSecret*)
 
 ```
@@ -532,21 +730,35 @@ Create a namespace secret.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | secret | `path` | string | `string` |  | ✓ |  | target secret |
-| Secret Payload | `body` | string | `string` | |  | | Payload that contains secret data. |
+| Secret Payload | `body` | string | `string` | | ✓ | | Payload that contains secret data. |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#create-secret-200) | OK | successfully created namespace secret |  | [schema](#create-secret-200-schema) |
+| [200](#create-secret-200) | OK | namespace has been successfully created |  | [schema](#create-secret-200-schema) |
+| [default](#create-secret-default) | | an error has occurred |  | [schema](#create-secret-default-schema) |
 
 #### Responses
 
 
-##### <span id="create-secret-200"></span> 200 - successfully created namespace secret
+##### <span id="create-secret-200"></span> 200 - namespace has been successfully created
 Status: OK
 
 ###### <span id="create-secret-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="create-secret-default"></span> Default Response
+an error has occurred
+
+###### <span id="create-secret-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="create-workflow"></span> Create a Workflow (*createWorkflow*)
 
@@ -567,6 +779,7 @@ The body of this request should contain the workflow yaml.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
+| op | `query` | string | `string` |  | ✓ | `"create-workflow"` | the operation for the api |
 | workflow data | `body` | string | `string` | |  | | Payload that contains the direktiv workflow yaml to create. |
 
 #### All responses
@@ -574,6 +787,7 @@ The body of this request should contain the workflow yaml.
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#create-workflow-200) | OK | successfully created workflow |  | [schema](#create-workflow-200-schema) |
+| [default](#create-workflow-default) | | an error has occurred |  | [schema](#create-workflow-default-schema) |
 
 #### Responses
 
@@ -582,6 +796,113 @@ The body of this request should contain the workflow yaml.
 Status: OK
 
 ###### <span id="create-workflow-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="create-workflow-default"></span> Default Response
+an error has occurred
+
+###### <span id="create-workflow-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
+### <span id="delete-global-private-registry"></span> Delete a Global Container Registry (*deleteGlobalPrivateRegistry*)
+
+```
+DELETE /api/functions/registries/private
+```
+
+Delete a global container registry.
+ Global Private registries are only available to global services.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [DeleteGlobalPrivateRegistryBody](#delete-global-private-registry-body) | `DeleteGlobalPrivateRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-global-private-registry-200) | OK | successfully delete global private registry |  | [schema](#delete-global-private-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-global-private-registry-200"></span> 200 - successfully delete global private registry
+Status: OK
+
+###### <span id="delete-global-private-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="delete-global-private-registry-body"></span> DeleteGlobalPrivateRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="delete-global-registry"></span> Delete a global Container Registry (*deleteGlobalRegistry*)
+
+```
+DELETE /api/functions/registries/global
+```
+
+Delete a Global container registry
+Global registries are available to all services.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [DeleteGlobalRegistryBody](#delete-global-registry-body) | `DeleteGlobalRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-global-registry-200) | OK | successfully delete global registry |  | [schema](#delete-global-registry-200-schema) |
+
+#### Responses
+
+
+##### <span id="delete-global-registry-200"></span> 200 - successfully delete global registry
+Status: OK
+
+###### <span id="delete-global-registry-200-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="delete-global-registry-body"></span> DeleteGlobalRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| reg | string| `string` | ✓ | | Target registry URL |  |
+
+
 
 ### <span id="delete-global-revision"></span> Delete Global Service Revision (*deleteGlobalRevision*)
 
@@ -591,7 +912,7 @@ DELETE /api/functions/{serviceName}/revisions/{revisionGeneration}
 
 Delete a global scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 Note: Revisions with traffic cannot be deleted.
 
 
@@ -683,6 +1004,8 @@ DELETE /api/namespaces/{namespace}
 ```
 
 Delete a namespace.
+A namespace will not delete by default if it has any child resources (workflows, etc...).
+Deleting the namespace with all its children can be done using the `recursive` query parameter.
 
 
 #### Parameters
@@ -690,12 +1013,14 @@ Delete a namespace.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace to delete |
+| recursive | `query` | boolean | `bool` |  |  |  | recursively deletes all child resources |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#delete-namespace-200) | OK | namespace has been successfully deleted |  | [schema](#delete-namespace-200-schema) |
+| [default](#delete-namespace-default) | | an error has occurred |  | [schema](#delete-namespace-default-schema) |
 
 #### Responses
 
@@ -704,6 +1029,19 @@ Delete a namespace.
 Status: OK
 
 ###### <span id="delete-namespace-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="delete-namespace-default"></span> Default Response
+an error has occurred
+
+###### <span id="delete-namespace-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="delete-namespace-revision"></span> Delete Namespace Service Revision (*deleteNamespaceRevision*)
 
@@ -713,7 +1051,7 @@ DELETE /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{r
 
 Delete a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: Revisions with traffic cannot be deleted.
 
 
@@ -799,10 +1137,55 @@ Status: OK
 
 ###### <span id="delete-namespace-variable-200-schema"></span> Schema
 
+### <span id="delete-node"></span> Delete a node (*deleteNode*)
+
+```
+DELETE /api/namespaces/{namespace}/tree/{node}?op=delete-node
+```
+
+Creates a directory at the target path.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| node | `path` | string | `string` |  | ✓ |  | path to target node |
+| op | `query` | string | `string` |  | ✓ | `"delete-node"` | the operation for the api |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#delete-node-200) | OK | node has been deleted |  | [schema](#delete-node-200-schema) |
+| [default](#delete-node-default) | | an error has occurred |  | [schema](#delete-node-default-schema) |
+
+#### Responses
+
+
+##### <span id="delete-node-200"></span> 200 - node has been deleted
+Status: OK
+
+###### <span id="delete-node-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="delete-node-default"></span> Default Response
+an error has occurred
+
+###### <span id="delete-node-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
 ### <span id="delete-registry"></span> Delete a Namespace Container Registry (*deleteRegistry*)
 
 ```
-POST /api/namespaces/{namespace}/registries
+DELETE /api/functions/registries/namespaces/{namespace}
 ```
 
 Delete a namespace container registry
@@ -813,7 +1196,7 @@ Delete a namespace container registry
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| Registry Payload | `body` | [DeleteRegistryBody](#delete-registry-body) | `DeleteRegistryBody` | |  | | Payload that contains registry data |
+| Registry Payload | `body` | [DeleteRegistryBody](#delete-registry-body) | `DeleteRegistryBody` | | ✓ | | Payload that contains registry data |
 
 #### All responses
 
@@ -866,15 +1249,29 @@ Delete a namespace secret.
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#delete-secret-200) | OK | successfully deleted namespace secret |  | [schema](#delete-secret-200-schema) |
+| [200](#delete-secret-200) | OK | namespace has been successfully created |  | [schema](#delete-secret-200-schema) |
+| [default](#delete-secret-default) | | an error has occurred |  | [schema](#delete-secret-default-schema) |
 
 #### Responses
 
 
-##### <span id="delete-secret-200"></span> 200 - successfully deleted namespace secret
+##### <span id="delete-secret-200"></span> 200 - namespace has been successfully created
 Status: OK
 
 ###### <span id="delete-secret-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="delete-secret-default"></span> Default Response
+an error has occurred
+
+###### <span id="delete-secret-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="delete-workflow-variable"></span> Delete a Workflow Variable (*deleteWorkflowVariable*)
 
@@ -922,21 +1319,84 @@ Executes a workflow with optionally some input provided in the request body as j
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
-| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | |  | | The input of this workflow instance |
+| op | `query` | string | `string` |  | ✓ | `"execute"` | the operation for the api |
+| Workflow Input | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | The input of this workflow instance |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#execute-workflow-200) | OK | successfully executed workflow |  | [schema](#execute-workflow-200-schema) |
+| [200](#execute-workflow-200) | OK | node has been deleted |  | [schema](#execute-workflow-200-schema) |
+| [default](#execute-workflow-default) | | an error has occurred |  | [schema](#execute-workflow-default-schema) |
 
 #### Responses
 
 
-##### <span id="execute-workflow-200"></span> 200 - successfully executed workflow
+##### <span id="execute-workflow-200"></span> 200 - node has been deleted
 Status: OK
 
 ###### <span id="execute-workflow-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="execute-workflow-default"></span> Default Response
+an error has occurred
+
+###### <span id="execute-workflow-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
+
+### <span id="get-global-private-registries"></span> Get List of Global Private Registries (*getGlobalPrivateRegistries*)
+
+```
+GET /api/functions/registries/private
+```
+
+Gets the list of global private registries.
+ Global Private registries are only available to global services.
+
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-global-private-registries-200) | OK | successfully got global private registries |  | [schema](#get-global-private-registries-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-global-private-registries-200"></span> 200 - successfully got global private registries
+Status: OK
+
+###### <span id="get-global-private-registries-200-schema"></span> Schema
+
+### <span id="get-global-registries"></span> Get List of Global Registries (*getGlobalRegistries*)
+
+```
+GET /api/functions/registries/global
+```
+
+Gets the list of global registries.
+Global registries are available to all services.
+
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-global-registries-200) | OK | successfully got global registries |  | [schema](#get-global-registries-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-global-registries-200"></span> 200 - successfully got global registries
+Status: OK
+
+###### <span id="get-global-registries-200-schema"></span> Schema
 
 ### <span id="get-global-service"></span> Get Global Service Details (*getGlobalService*)
 
@@ -1011,6 +1471,7 @@ Gets the details of a executed workflow instance in this namespace.
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-instance-200) | OK | successfully got instance |  | [schema](#get-instance-200-schema) |
+| [default](#get-instance-default) | | an error has occurred |  | [schema](#get-instance-default-schema) |
 
 #### Responses
 
@@ -1019,6 +1480,19 @@ Gets the details of a executed workflow instance in this namespace.
 Status: OK
 
 ###### <span id="get-instance-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="get-instance-default"></span> Default Response
+an error has occurred
+
+###### <span id="get-instance-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="get-instance-input"></span> Get a Instance Input (*getInstanceInput*)
 
@@ -1153,7 +1627,7 @@ Gets a list of variables in a instance.
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| instance | `path` | int32 (formatted string) | `string` |  | ✓ |  | target instance |
+| instance | `path` | string | `string` |  | ✓ |  | target instance |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
@@ -1326,20 +1800,6 @@ GET /api/namespaces
 Gets the list of namespaces.
 
 
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| after | `query` | string | `string` |  |  |  |  |
-| before | `query` | string | `string` |  |  |  |  |
-| filter.field | `query` | string | `string` |  |  |  |  |
-| filter.type | `query` | string | `string` |  |  |  |  |
-| filter.val | `query` | string | `string` |  |  |  |  |
-| first | `query` | int32 (formatted integer) | `int32` |  |  |  |  |
-| last | `query` | int32 (formatted integer) | `int32` |  |  |  |  |
-| order.direction | `query` | string | `string` |  |  |  |  |
-| order.field | `query` | string | `string` |  |  |  |  |
-
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
@@ -1368,13 +1828,14 @@ Gets Workflow and Directory Nodes at nodePath.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| nodePath | `path` | int32 (formatted string) | `string` |  | ✓ |  | target path in tree |
+| nodePath | `path` | string | `string` |  | ✓ |  | target path in tree |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#get-nodes-200) | OK | successfully got namespace nodes |  | [schema](#get-nodes-200-schema) |
+| [default](#get-nodes-default) | | an error has occurred |  | [schema](#get-nodes-default-schema) |
 
 #### Responses
 
@@ -1383,11 +1844,24 @@ Gets Workflow and Directory Nodes at nodePath.
 Status: OK
 
 ###### <span id="get-nodes-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="get-nodes-default"></span> Default Response
+an error has occurred
+
+###### <span id="get-nodes-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="get-registries"></span> Get List of Namespace Registries (*getRegistries*)
 
 ```
-GET /api/namespaces/{namespace}/registries
+GET /api/functions/registries/namespaces/{namespace}
 ```
 
 Gets the list of namespace registries.
@@ -1432,15 +1906,29 @@ Gets the list of namespace secrets.
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
-| [200](#get-secrets-200) | OK | successfully got namespace secrets |  | [schema](#get-secrets-200-schema) |
+| [200](#get-secrets-200) | OK | successfully got namespace nodes |  | [schema](#get-secrets-200-schema) |
+| [default](#get-secrets-default) | | an error has occurred |  | [schema](#get-secrets-default-schema) |
 
 #### Responses
 
 
-##### <span id="get-secrets-200"></span> 200 - successfully got namespace secrets
+##### <span id="get-secrets-200"></span> 200 - successfully got namespace nodes
 Status: OK
 
 ###### <span id="get-secrets-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="get-secrets-default"></span> Default Response
+an error has occurred
+
+###### <span id="get-secrets-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="get-workflow-logs"></span> Get Workflow Level Logs (*getWorkflowLogs*)
 
@@ -1514,7 +2002,7 @@ GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=function-revision
 Get a workflow scoped knative service revision.
 This will return details on a single revision.
 The target revision generation (rev query) is the number suffix on a revision.
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 
 
 #### Parameters
@@ -1617,7 +2105,7 @@ Gets a list of variables in a workflow.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| workflow | `path` | int32 (formatted string) | `string` |  | ✓ |  | path to target workflow |
+| workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 
 #### All responses
 
@@ -1646,7 +2134,7 @@ Gets the logs of an executed instance.
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| instance | `path` | int32 (formatted string) | `string` |  | ✓ |  | target instance id |
+| instance | `path` | string | `string` |  | ✓ |  | target instance id |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 
 #### All responses
@@ -1654,6 +2142,7 @@ Gets the logs of an executed instance.
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#instance-logs-200) | OK | successfully got instance logs |  | [schema](#instance-logs-200-schema) |
+| [default](#instance-logs-default) | | an error has occurred |  | [schema](#instance-logs-default-schema) |
 
 #### Responses
 
@@ -1662,6 +2151,19 @@ Gets the logs of an executed instance.
 Status: OK
 
 ###### <span id="instance-logs-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="instance-logs-default"></span> Default Response
+an error has occurred
+
+###### <span id="instance-logs-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="jq-playground"></span> JQ Playground api to test jq queries (*jqPlayground*)
 
@@ -1676,13 +2178,15 @@ JQ Playground is a sandbox where you can test jq queries with custom data.
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| JQ payload | `body` | [JqPlaygroundBody](#jq-playground-body) | `JqPlaygroundBody` | |  | | Payload that contains both the JSON data to manipulate and jq query. |
+| JQ payload | `body` | [JqPlaygroundBody](#jq-playground-body) | `JqPlaygroundBody` | | ✓ | | Payload that contains both the JSON data to manipulate and jq query. |
 
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#jq-playground-200) | OK | jq query was successful |  | [schema](#jq-playground-200-schema) |
+| [400](#jq-playground-400) | Bad Request | the request was invalid |  | [schema](#jq-playground-400-schema) |
+| [500](#jq-playground-500) | Internal Server Error | an unexpected internal error occurred |  | [schema](#jq-playground-500-schema) |
 
 #### Responses
 
@@ -1691,6 +2195,16 @@ JQ Playground is a sandbox where you can test jq queries with custom data.
 Status: OK
 
 ###### <span id="jq-playground-200-schema"></span> Schema
+
+##### <span id="jq-playground-400"></span> 400 - the request was invalid
+Status: Bad Request
+
+###### <span id="jq-playground-400-schema"></span> Schema
+
+##### <span id="jq-playground-500"></span> 500 - an unexpected internal error occurred
+Status: Internal Server Error
+
+###### <span id="jq-playground-500-schema"></span> Schema
 
 ###### Inlined models
 
@@ -1718,7 +2232,7 @@ GET /api/functions/{serviceName}/revisions/{revisionGeneration}/pods
 
 List a revisions pods of a global scoped knative service.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
 
 
 #### Parameters
@@ -1750,7 +2264,7 @@ GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revi
 
 List a revisions pods of a namespace scoped knative service.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 
 
 #### Parameters
@@ -1783,7 +2297,7 @@ GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods
 
 List a revisions pods of a workflow scoped knative service.
 The target revision generation (rev query) is the number suffix on a revision.
-Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 
 
 #### Parameters
@@ -1993,25 +2507,12 @@ GET /api/logs
 Gets Direktiv Server Logs.
 
 
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| after | `query` | string | `string` |  |  |  |  |
-| before | `query` | string | `string` |  |  |  |  |
-| filter.field | `query` | string | `string` |  |  |  |  |
-| filter.type | `query` | string | `string` |  |  |  |  |
-| filter.val | `query` | string | `string` |  |  |  |  |
-| first | `query` | int32 (formatted integer) | `int32` |  |  |  |  |
-| last | `query` | int32 (formatted integer) | `int32` |  |  |  |  |
-| order.direction | `query` | string | `string` |  |  |  |  |
-| order.field | `query` | string | `string` |  |  |  |  |
-
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
 |------|--------|-------------|:-----------:|--------|
 | [200](#server-logs-200) | OK | successfully got server logs |  | [schema](#server-logs-200-schema) |
+| [default](#server-logs-default) | | an error has occurred |  | [schema](#server-logs-default-schema) |
 
 #### Responses
 
@@ -2020,6 +2521,19 @@ Gets Direktiv Server Logs.
 Status: OK
 
 ###### <span id="server-logs-200-schema"></span> Schema
+   
+  
+
+[OkBody](#ok-body)
+
+##### <span id="server-logs-default"></span> Default Response
+an error has occurred
+
+###### <span id="server-logs-default-schema"></span> Schema
+
+  
+
+[ErrorResponse](#error-response)
 
 ### <span id="set-instance-variable"></span> Set a Instance Variable (*setInstanceVariable*)
 
@@ -2029,7 +2543,7 @@ PUT /api/namespaces/{namespace}/instances/{instance}/vars/{variable}
 
 Set the value sorted in a instance variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 
 #### Consumes
@@ -2042,7 +2556,7 @@ Variable data can be anything so long as it can be represented as a string.
 | instance | `path` | string | `string` |  | ✓ |  | target instance |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
-| data | `body` | string | `string` | |  | | Payload that contains variable data. |
+| data | `body` | string | `string` | | ✓ | | Payload that contains variable data. |
 
 #### All responses
 
@@ -2072,8 +2586,7 @@ Sets a namespace config.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace to update |
-| Config Payload | `body` | [SetNamespaceConfigBody](#set-namespace-config-body) | `SetNamespaceConfigBody` | |  | | Payload that contains the config information to set.
-Note: This payload only need to contain the properities you wish to set. |
+| Config Payload | `body` | [SetNamespaceConfigBody](#set-namespace-config-body) | `SetNamespaceConfigBody` | |  | | Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set. |
 
 #### All responses
 
@@ -2114,7 +2627,7 @@ PUT /api/namespaces/{namespace}/vars/{variable}
 
 Set the value sorted in a namespace variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 
 #### Consumes
@@ -2126,7 +2639,7 @@ Variable data can be anything so long as it can be represented as a string.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | variable | `path` | string | `string` |  | ✓ |  | target variable |
-| data | `body` | string | `string` | |  | | Payload that contains variable data. |
+| data | `body` | string | `string` | | ✓ | | Payload that contains variable data. |
 
 #### All responses
 
@@ -2161,7 +2674,7 @@ https://docs.direktiv.io/docs/examples/logging.html
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
-| Cloud Event Logger | `body` | [SetWorkflowCloudEventLogsBody](#set-workflow-cloud-event-logs-body) | `SetWorkflowCloudEventLogsBody` | |  | | Cloud event logger to target |
+| Cloud Event Logger | `body` | [SetWorkflowCloudEventLogsBody](#set-workflow-cloud-event-logs-body) | `SetWorkflowCloudEventLogsBody` | | ✓ | | Cloud event logger to target |
 
 #### All responses
 
@@ -2202,7 +2715,7 @@ PUT /api/namespaces/{namespace}/tree/{workflow}?op=set-var
 
 Set the value sorted in a workflow variable.
 If the target variable does not exists, it will be created.
-Variable data can be anything so long as it can be represented as a string.
+Variable data can be anything.
 
 
 #### Consumes
@@ -2215,7 +2728,7 @@ Variable data can be anything so long as it can be represented as a string.
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
 | var | `query` | string | `string` |  | ✓ |  | target variable |
-| data | `body` | string | `string` | |  | | Payload that contains variable data. |
+| data | `body` | string | `string` | | ✓ | | Payload that contains variable data. |
 
 #### All responses
 
@@ -2247,7 +2760,7 @@ Disabled workflows cannot be invoked. This includes start event and scheduled wo
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
-| Workflow Live Status | `body` | [ToggleWorkflowBody](#toggle-workflow-body) | `ToggleWorkflowBody` | |  | | Whether or not the workflow is alive or disabled |
+| Workflow Live Status | `body` | [ToggleWorkflowBody](#toggle-workflow-body) | `ToggleWorkflowBody` | | ✓ | | Whether or not the workflow is alive or disabled |
 
 #### All responses
 
@@ -2377,7 +2890,7 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+| values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*models.UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
 
 
 
@@ -2498,7 +3011,7 @@ Status: OK
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+| values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*models.UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
 
 
 
@@ -2553,6 +3066,29 @@ Status: OK
 
 ###### <span id="update-workflow-200-schema"></span> Schema
 
+### <span id="version"></span> Returns version information for servers in the cluster. (*version*)
+
+```
+GET /api/version
+```
+
+Returns version information for servers in the cluster.
+
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#version-200) | OK | version query was successful |  | [schema](#version-200-schema) |
+
+#### Responses
+
+
+##### <span id="version-200"></span> 200 - version query was successful
+Status: OK
+
+###### <span id="version-200-schema"></span> Schema
+
 ### <span id="watch-global-service-revision"></span> Watch Global Service Revision (*watchGlobalServiceRevision*)
 
 ```
@@ -2561,7 +3097,7 @@ GET /api/functions/{serviceName}/revisions/{revisionGeneration}
 
 Watch a global scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 
 
@@ -2630,7 +3166,7 @@ GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revi
 
 Watch a namespace scoped knative service revision.
 The target revision generation is the number suffix on a revision.
-Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 
 
@@ -2816,3 +3352,502 @@ Status: OK
 ###### <span id="workflow-metrics-successful-200-schema"></span> Schema
 
 ## Models
+
+### <span id="create-global-private-registry-body"></span> CreateGlobalPrivateRegistryBody
+
+
+> CreateGlobalPrivateRegistryBody create global private registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
+| Reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="create-global-registry-body"></span> CreateGlobalRegistryBody
+
+
+> CreateGlobalRegistryBody create global registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
+| Reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="create-global-service-body"></span> CreateGlobalServiceBody
+
+
+> CreateGlobalServiceBody create global service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | Target image a service will use |  |
+| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
+| Name | string| `string` | ✓ | | Name of new service |  |
+| Size | string| `string` | ✓ | | Size of created service pods |  |
+
+
+
+### <span id="create-namespace-service-body"></span> CreateNamespaceServiceBody
+
+
+> CreateNamespaceServiceBody create namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v12","minScale":"1","name":"fast-request","size":"small"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | Target image a service will use |  |
+| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
+| Name | string| `string` | ✓ | | Name of new service |  |
+| Size | string| `string` | ✓ | | Size of created service pods |  |
+
+
+
+### <span id="create-registry-body"></span> CreateRegistryBody
+
+
+> CreateRegistryBody create registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Data | string| `string` | ✓ | | Target registry connection data containing the user and token. |  |
+| Reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="delete-global-private-registry-body"></span> DeleteGlobalPrivateRegistryBody
+
+
+> DeleteGlobalPrivateRegistryBody delete global private registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="delete-global-registry-body"></span> DeleteGlobalRegistryBody
+
+
+> DeleteGlobalRegistryBody delete global registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="delete-registry-body"></span> DeleteRegistryBody
+
+
+> DeleteRegistryBody delete registry body
+
+**Example**
+```
+{"data":"admin:8QwFLg%D$qg*","reg":"https://prod.customreg.io"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Reg | string| `string` | ✓ | | Target registry URL |  |
+
+
+
+### <span id="error-response"></span> ErrorResponse
+
+
+> ErrorResponse error response
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Error | string| `string` |  | | error |  |
+| StatusCode | int64 (formatted integer)| `int64` |  | | status code |  |
+
+
+
+### <span id="jq-playground-body"></span> JqPlaygroundBody
+
+
+> JqPlaygroundBody jq playground body
+
+**Example**
+```
+{"data":"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=","query":"map(select(. \u003e= 2))"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Data | string| `string` | ✓ | | JSON data encoded in base64 |  |
+| Query | string| `string` | ✓ | | jq query to manipulate JSON data |  |
+
+
+
+### <span id="ok-body"></span> OkBody
+
+
+> OkBody is an arbitrary placeholder response that represents an ok response body
+  
+
+
+
+[OkBody](#ok-body)
+
+### <span id="set-namespace-config-body"></span> SetNamespaceConfigBody
+
+
+> SetNamespaceConfigBody set namespace config body
+
+**Example**
+```
+{"broadcast":{"directory.create":false,"directory.delete":false,"instance.failed":false,"instance.started":false,"instance.success":false,"instance.variable.create":false,"instance.variable.delete":false,"instance.variable.update":false,"namespace.variable.create":false,"namespace.variable.delete":false,"namespace.variable.update":false,"workflow.create":false,"workflow.delete":false,"workflow.update":false,"workflow.variable.create":false,"workflow.variable.delete":false,"workflow.variable.update":false}}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Broadcast | [interface{}](#interface)| `interface{}` |  | | Configuration on which direktiv operations will trigger coud events on the namespace |  |
+
+
+
+### <span id="set-workflow-cloud-event-logs-body"></span> SetWorkflowCloudEventLogsBody
+
+
+> SetWorkflowCloudEventLogsBody set workflow cloud event logs body
+
+**Example**
+```
+{"logger":"mylog"}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Logger | string| `string` | ✓ | | Target Cloud Event |  |
+
+
+
+### <span id="toggle-workflow-body"></span> ToggleWorkflowBody
+
+
+> ToggleWorkflowBody toggle workflow body
+
+**Example**
+```
+{"live":false}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Live | boolean| `bool` | ✓ | | Workflow live status |  |
+
+
+
+### <span id="update-global-service-body"></span> UpdateGlobalServiceBody
+
+
+> UpdateGlobalServiceBody update global service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | Target image a service will use |  |
+| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
+| Size | string| `string` | ✓ | | Size of created service pods |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | Traffic percentage new revision will use |  |
+
+
+
+### <span id="update-global-service-traffic-body"></span> UpdateGlobalServiceTrafficBody
+
+
+> UpdateGlobalServiceTrafficBody update global service traffic body
+
+**Example**
+```
+{"values":[{"percent":60,"revision":"global-fast-request-00002"},{"percent":40,"revision":"global-fast-request-00001"}]}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Values | [][UpdateGlobalServiceTrafficParamsBodyValuesItems0](#update-global-service-traffic-params-body-values-items0)| `[]*UpdateGlobalServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+
+
+
+### <span id="update-global-service-traffic-params-body-values-items0"></span> UpdateGlobalServiceTrafficParamsBodyValuesItems0
+
+
+> UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Percent | int64 (formatted integer)| `int64` |  | | Target traffice percentage |  |
+| Revision | string| `string` |  | | Target service revision |  |
+
+
+
+### <span id="update-namespace-service-body"></span> UpdateNamespaceServiceBody
+
+
+> UpdateNamespaceServiceBody update namespace service body
+
+**Example**
+```
+{"cmd":"","image":"direktiv/request:v10","minScale":"1","size":"small","trafficPercent":50}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | Target image a service will use |  |
+| MinScale | int64 (formatted integer)| `int64` | ✓ | | Minimum amount of service pods to be live |  |
+| Size | string| `string` | ✓ | | Size of created service pods |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | Traffic percentage new revision will use |  |
+
+
+
+### <span id="update-namespace-service-traffic-body"></span> UpdateNamespaceServiceTrafficBody
+
+
+> UpdateNamespaceServiceTrafficBody update namespace service traffic body
+
+**Example**
+```
+{"values":[{"percent":60,"revision":"namespace-direktiv-fast-request-00002"},{"percent":40,"revision":"namespace-direktiv-fast-request-00001"}]}
+```
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Values | [][UpdateNamespaceServiceTrafficParamsBodyValuesItems0](#update-namespace-service-traffic-params-body-values-items0)| `[]*UpdateNamespaceServiceTrafficParamsBodyValuesItems0` | ✓ | | List of revision traffic targets |  |
+
+
+
+### <span id="update-namespace-service-traffic-params-body-values-items0"></span> UpdateNamespaceServiceTrafficParamsBodyValuesItems0
+
+
+> UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Percent | int64 (formatted integer)| `int64` |  | | Target traffice percentage |  |
+| Revision | string| `string` |  | | Target service revision |  |
+
+
+
+### <span id="update-service-request"></span> UpdateServiceRequest
+
+
+> UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | image |  |
+| MinScale | int32 (formatted integer)| `int32` | ✓ | | minScale |  |
+| Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | trafficPercent |  |
+
+
+
+### <span id="update-service-request"></span> updateServiceRequest
+
+
+> UpdateServiceRequest UpdateServiceRequest update service request
+  
+
+
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| Cmd | string| `string` | ✓ | | cmd |  |
+| Image | string| `string` | ✓ | | image |  |
+| MinScale | int32 (formatted integer)| `int32` | ✓ | | minScale |  |
+| Size | int32 (formatted integer)| `int32` | ✓ | | size |  |
+| TrafficPercent | int64 (formatted integer)| `int64` | ✓ | | trafficPercent |  |
+
+

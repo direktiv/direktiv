@@ -7,10 +7,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	entvardata "github.com/vorteil/direktiv/pkg/flow/ent/vardata"
-	entvar "github.com/vorteil/direktiv/pkg/flow/ent/varref"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
+	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -36,6 +36,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 	resp.Checksum = d.vdata.Hash
 	resp.TotalSize = int64(d.vdata.Size)
+	resp.MimeType = d.vdata.MimeType
 
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
@@ -94,6 +95,7 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -149,6 +151,7 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 		resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
 		resp.Checksum = d.vdata.Hash
 		resp.TotalSize = int64(d.vdata.Size)
+		resp.MimeType = d.vdata.MimeType
 
 		buf := new(bytes.Buffer)
 		k, err := io.CopyN(buf, rdr, parcelSize)
@@ -294,6 +297,7 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 		v.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		v.Size = int64(vdata.Size)
 		v.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
+		v.MimeType = vdata.MimeType
 
 	}
 
@@ -407,7 +411,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, req.GetData(), req.GetMimeType())
 	if err != nil {
 		return nil, err
 	}
@@ -433,6 +437,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	return &resp, nil
 
@@ -456,6 +461,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := id.namespace()
 	key := req.GetKey()
 
@@ -522,7 +528,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
+	vdata, newVar, err = internal.flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -547,6 +553,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -568,6 +575,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		return err
 	}
 
+	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
 	key := req.GetKey()
 
@@ -634,7 +642,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes())
+	vdata, newVar, err = flow.SetVariable(ctx, vrefc, vdatac, ns, key, buf.Bytes(), mimeType)
 	if err != nil {
 		return err
 	}
@@ -660,6 +668,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
 	resp.Checksum = vdata.Hash
 	resp.TotalSize = int64(vdata.Size)
+	resp.MimeType = vdata.MimeType
 
 	err = srv.SendAndClose(&resp)
 	if err != nil {
@@ -722,7 +731,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		TotalSize:    int64(d.vdata.Size),
 		Scope:        BroadcastEventScopeNamespace,
 	}
-	err = flow.BroadcastVariable(BroadcastEventTypeDelete, BroadcastEventScopeNamespace, ctx, broadcastInput, d.ns())
+	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, d.ns())
 	if err != nil {
 		return nil, err
 	}
@@ -770,6 +779,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	resp.Namespace = d.ns().Name
 	resp.TotalSize = int64(d.vdata.Size)
 	resp.UpdatedAt = timestamppb.New(d.vdata.UpdatedAt)
+	resp.MimeType = d.vdata.MimeType
 
 	return &resp, nil
 

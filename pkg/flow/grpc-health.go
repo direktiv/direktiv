@@ -3,7 +3,7 @@ package flow
 import (
 	"context"
 
-	"github.com/vorteil/direktiv/pkg/health"
+	"github.com/direktiv/direktiv/pkg/health"
 	"google.golang.org/grpc"
 )
 

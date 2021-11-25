@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/vorteil/direktiv/ent/cloudevents"
-	"github.com/vorteil/direktiv/ent/predicate"
+	"github.com/direktiv/direktiv/ent/cloudevents"
+	"github.com/direktiv/direktiv/ent/predicate"
 )
 
 // CloudEventsUpdate is the builder for updating CloudEvents entities.

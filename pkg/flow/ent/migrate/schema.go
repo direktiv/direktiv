@@ -346,6 +346,7 @@ var (
 		{Name: "size", Type: field.TypeInt},
 		{Name: "hash", Type: field.TypeString},
 		{Name: "data", Type: field.TypeBytes},
+		{Name: "mime_type", Type: field.TypeString, Default: "application/json"},
 	}
 	// VarDataTable holds the schema information for the "var_data" table.
 	VarDataTable = &schema.Table{

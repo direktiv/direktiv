@@ -1,4 +1,3 @@
-# Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,28 +17,27 @@ kind: ClusterRole
 metadata:
   # Named like this to avoid clashing with eventing's existing `addressable-resolver` role
   # (which should be identical, but isn't guaranteed to be installed alongside serving).
-  name: knative-serving-aggregated-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-aggregated-addressable-resolver
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
         duck.knative.dev/addressable: "true"
-rules: [] # Rules are automatically filled in by the controller manager.
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-addressable-resolver
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     # Labeled to facilitate aggregated cluster roles that act on Addressables.
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -73,12 +71,12 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-namespaced-admin
+  name: knative-serving-{{ .Release.Name }}-namespaced-admin
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
@@ -91,12 +89,12 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-namespaced-edit
+  name: knative-serving-{{ .Release.Name }}-namespaced-edit
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
@@ -109,12 +107,12 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-namespaced-view
+  name: knative-serving-{{ .Release.Name }}-namespaced-view
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev", "networking.internal.knative.dev", "autoscaling.internal.knative.dev", "caching.internal.knative.dev"]
@@ -139,12 +137,12 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-core
+  name: knative-serving-{{ .Release.Name }}-core
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     serving.knative.dev/controller: "true"
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: [""]
@@ -196,13 +194,13 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-podspecable-binding
+  name: knative-serving-{{ .Release.Name }}-podspecable-binding
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     # Labeled to facilitate aggregated cluster roles that act on PodSpecables.
     duck.knative.dev/podspecable: "true"
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 # Do not use this role directly. These rules will be added to the "podspecable-binder" role.
 rules:
@@ -238,35 +236,34 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: controller
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-admin
+  name: knative-serving-{{ .Release.Name }}-admin
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
         serving.knative.dev/controller: "true"
-rules: [] # Rules are automatically filled in by the controller manager.
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-serving-controller-admin
+  name: knative-serving-{{ .Release.Name }}-controller-admin
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: controller
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 subjects:
   - kind: ServiceAccount
@@ -274,18 +271,18 @@ subjects:
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: knative-serving-admin
+  name: knative-serving-{{ .Release.Name }}-admin
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-serving-controller-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-controller-addressable-resolver
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: controller
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 subjects:
   - kind: ServiceAccount
@@ -293,7 +290,7 @@ subjects:
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: knative-serving-aggregated-addressable-resolver
+  name: knative-serving-{{ .Release.Name }}-aggregated-addressable-resolver
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -374,7 +371,7 @@ metadata:
   name: certificates.networking.internal.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -435,7 +432,7 @@ metadata:
   name: configurations.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
@@ -799,11 +796,11 @@ spec:
                                     type: integer
                                     format: int32
                               resources:
-                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                                 properties:
                                   limits:
-                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -812,7 +809,7 @@ spec:
                                         - type: string
                                       x-kubernetes-int-or-string: true
                                   requests:
-                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -1140,7 +1137,7 @@ metadata:
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1192,7 +1189,7 @@ metadata:
   name: domainmappings.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -1464,7 +1461,7 @@ metadata:
   name: ingresses.networking.internal.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1526,7 +1523,7 @@ metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1651,7 +1648,7 @@ metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1813,7 +1810,7 @@ metadata:
   name: revisions.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -2156,11 +2153,11 @@ spec:
                             type: integer
                             format: int32
                       resources:
-                        description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                         properties:
                           limits:
-                            description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                             additionalProperties:
                               pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -2169,7 +2166,7 @@ spec:
                                 - type: string
                               x-kubernetes-int-or-string: true
                           requests:
-                            description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                             additionalProperties:
                               pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -2482,9 +2479,6 @@ spec:
                   description: DesiredReplicas reflects the desired amount of pods running this revision.
                   type: integer
                   format: int32
-                imageDigest:
-                  description: 'DeprecatedImageDigest holds the resolved digest for the image specified within .Spec.Container.Image. The digest is resolved during the creation of Revision. This field holds the digest value regardless of whether a tag or digest was originally specified in the Container object. It may be empty if the image comes from a registry listed to skip resolution. If multiple containers specified then DeprecatedImageDigest holds the digest for serving container. DEPRECATED: Use ContainerStatuses instead. TODO(savitaashture) Remove deprecatedImageDigest. ref https://kubernetes.io/docs/reference/using-api/deprecation-policy for deprecation.'
-                  type: string
                 logUrl:
                   description: LogURL specifies the generated logging url for this particular revision based on the revision url template specified in the controller's config.
                   type: string
@@ -2492,9 +2486,6 @@ spec:
                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                   type: integer
                   format: int64
-                serviceName:
-                  description: 'ServiceName holds the name of a core Kubernetes Service resource that load balances over the pods backing this Revision. Deprecated: revision service name is effectively equal to the revision name, as per #10540. 0.23 — stop populating 0.25 — remove.'
-                  type: string
 
 ---
 # Copyright 2019 The Knative Authors
@@ -2521,7 +2512,7 @@ metadata:
   name: routes.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2697,7 +2688,7 @@ metadata:
   name: serverlessservices.networking.internal.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2770,7 +2761,7 @@ metadata:
   name: services.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
@@ -3138,11 +3129,11 @@ spec:
                                     type: integer
                                     format: int32
                               resources:
-                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                description: 'Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                                 properties:
                                   limits:
-                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -3151,7 +3142,7 @@ spec:
                                         - type: string
                                       x-kubernetes-int-or-string: true
                                   requests:
-                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                     type: object
                                     additionalProperties:
                                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -3539,151 +3530,14 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: queue-proxy
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:5af97fa5e19c6fd1e04642e7cf6eb01e6982b4cfee19d8fd16649423277c2eb9
-
----
-# Copyright 2019 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-defaults
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
-    app.kubernetes.io/part-of: knative-serving
-  annotations:
-    knative.dev/example-checksum: "cdabec96"
-data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-
-    # revision-timeout-seconds contains the default number of
-    # seconds to use for the revision's per-request timeout, if
-    # none is specified.
-    revision-timeout-seconds: "300"  # 5 minutes
-
-    # max-revision-timeout-seconds contains the maximum number of
-    # seconds that can be used for revision-timeout-seconds.
-    # This value must be greater than or equal to revision-timeout-seconds.
-    # If omitted, the system default is used (600 seconds).
-    #
-    # If this value is increased, the activator's terminationGraceTimeSeconds
-    # should also be increased to prevent in-flight requests being disrupted.
-    max-revision-timeout-seconds: "600"  # 10 minutes
-
-    # revision-cpu-request contains the cpu allocation to assign
-    # to revisions by default.  If omitted, no value is specified
-    # and the system default is used.
-    # Below is an example of setting revision-cpu-request.
-    # By default, it is not set by Knative.
-    revision-cpu-request: "400m"  # 0.4 of a CPU (aka 400 milli-CPU)
-
-    # revision-memory-request contains the memory allocation to assign
-    # to revisions by default.  If omitted, no value is specified
-    # and the system default is used.
-    # Below is an example of setting revision-memory-request.
-    # By default, it is not set by Knative.
-    revision-memory-request: "100M"  # 100 megabytes of memory
-
-    # revision-ephemeral-storage-request contains the ephemeral storage
-    # allocation to assign to revisions by default.  If omitted, no value is
-    # specified and the system default is used.
-    revision-ephemeral-storage-request: "500M"  # 500 megabytes of storage
-
-    # revision-cpu-limit contains the cpu allocation to limit
-    # revisions to by default.  If omitted, no value is specified
-    # and the system default is used.
-    # Below is an example of setting revision-cpu-limit.
-    # By default, it is not set by Knative.
-    revision-cpu-limit: "1000m"  # 1 CPU (aka 1000 milli-CPU)
-
-    # revision-memory-limit contains the memory allocation to limit
-    # revisions to by default.  If omitted, no value is specified
-    # and the system default is used.
-    # Below is an example of setting revision-memory-limit.
-    # By default, it is not set by Knative.
-    revision-memory-limit: "200M"  # 200 megabytes of memory
-
-    # revision-ephemeral-storage-limit contains the ephemeral storage
-    # allocation to limit revisions to by default.  If omitted, no value is
-    # specified and the system default is used.
-    revision-ephemeral-storage-limit: "750M"  # 750 megabytes of storage
-
-    # container-name-template contains a template for the default
-    # container name, if none is specified.  This field supports
-    # Go templating and is supplied with the ObjectMeta of the
-    # enclosing Service or Configuration, so values such as
-    # {{ "{{" }} "{{ "{{" }}" }}.Name}} are also valid.
-    container-name-template: "user-container"
-
-    # container-concurrency specifies the maximum number
-    # of requests the Container can handle at once, and requests
-    # above this threshold are queued.  Setting a value of zero
-    # disables this throttling and lets through as many requests as
-    # the pod receives.
-    container-concurrency: "0"
-
-    # The container concurrency max limit is an operator setting ensuring that
-    # the individual revisions cannot have arbitrary large concurrency
-    # values, or autoscaling targets. `container-concurrency` default setting
-    # must be at or below this value.
-    #
-    # Must be greater than 1.
-    #
-    # Note: even with this set, a user can choose a containerConcurrency
-    # of 0 (i.e. unbounded) unless allow-container-concurrency-zero is
-    # set to "false".
-    container-concurrency-max-limit: "1000"
-
-    # allow-container-concurrency-zero controls whether users can
-    # specify 0 (i.e. unbounded) for containerConcurrency.
-    allow-container-concurrency-zero: "true"
-
-    # enable-service-links specifies the default value used for the
-    # enableServiceLinks field of the PodSpec, when it is omitted by the user.
-    # See: https://kubernetes.io/docs/concepts/services-networking/connect-applications-service/#accessing-the-service
-    #
-    # This is a tri-state flag with possible values of (true|false|default).
-    #
-    # In environments with large number of services it is suggested
-    # to set this value to `false`.
-    # See https://github.com/knative/serving/issues/8498.
-    enable-service-links: "false"
+  image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:6b642967b884ae8971c6fa1f0d3a436c06ccf90ec03da81f85e74768773eb290
 
 ---
 # Copyright 2018 The Knative Authors
@@ -3707,8 +3561,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "81552d0b"
@@ -3773,11 +3627,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "e6149382"
+    knative.dev/example-checksum: "51b4d68a"
 data:
   _example: |
     ################################
@@ -3803,7 +3657,7 @@ data:
     # Active
     #   * Revisions which are referenced by a Route are considered active.
     #   * Individual revisions may be marked with the annotation
-    #      "knative.dev/no-gc":"true" to be permanently considered active.
+    #      "serving.knative.dev/no-gc":"true" to be permanently considered active.
     #   * Active revisions are not considered for GC.
     # Retention
     #   * Revisions are retained if they are any of the following:
@@ -3874,11 +3728,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "96896b00"
+    knative.dev/example-checksum: "f7948630"
 data:
   _example: |
     ################################
@@ -3896,17 +3750,17 @@ data:
     # this example block and unindented to be in the data block
     # to actually change the configuration.
 
-    # leaseDuration is how long non-leaders will wait to try to acquire the
+    # lease-duration is how long non-leaders will wait to try to acquire the
     # lock; 15 seconds is the value used by core kubernetes controllers.
-    leaseDuration: "15s"
+    lease-duration: "15s"
 
-    # renewDeadline is how long a leader will try to renew the lease before
+    # renew-deadline is how long a leader will try to renew the lease before
     # giving up; 10 seconds is the value used by core kubernetes controllers.
-    renewDeadline: "10s"
+    renew-deadline: "10s"
 
-    # retryPeriod is how long the leader election client waits between tries of
+    # retry-period is how long the leader election client waits between tries of
     # actions; 2 seconds is the value used by core kubernetes controllers.
-    retryPeriod: "2s"
+    retry-period: "2s"
 
     # buckets is the number of buckets used to partition key space of each
     # Reconciler. If this number is M and the replica number of the controller
@@ -3937,11 +3791,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "c68feb1b"
+    knative.dev/example-checksum: "be93ff10"
 data:
   _example: |
     ################################
@@ -3994,7 +3848,6 @@ data:
     loglevel.hpaautoscaler: "info"
     loglevel.net-certmanager-controller: "info"
     loglevel.net-istio-controller: "info"
-    loglevel.net-nscert-controller: "info"
 
 ---
 # Copyright 2018 The Knative Authors
@@ -4018,8 +3871,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "fed4756e"
@@ -4080,7 +3933,7 @@ data:
     #   PodIP         string  // IP of the pod hosting the revision
     # }
     #
-    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{ "{{" }} "{{ "{{" }}" }}.Request.Method}}", "requestUrl": "{{ "{{" }} "{{ "{{" }}" }}js .Request.RequestURI}}", "requestSize": "{{ "{{" }} "{{ "{{" }}" }}.Request.ContentLength}}", "status": {{ "{{" }} "{{ "{{" }}" }}.Response.Code}}, "responseSize": "{{ "{{" }} "{{ "{{" }}" }}.Response.Size}}", "userAgent": "{{ "{{" }} "{{ "{{" }}" }}js .Request.UserAgent}}", "remoteIp": "{{ "{{" }} "{{ "{{" }}" }}js .Request.RemoteAddr}}", "serverIp": "{{ "{{" }} "{{ "{{" }}" }}.Revision.PodIP}}", "referer": "{{ "{{" }} "{{ "{{" }}" }}js .Request.Referer}}", "latency": "{{ "{{" }} "{{ "{{" }}" }}.Response.Latency}}s", "protocol": "{{ "{{" }} "{{ "{{" }}" }}.Request.Proto}}"}, "traceId": "{{ "{{" }} "{{ "{{" }}" }}index .Request.Header "X-B3-Traceid"}}"}'
+    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{ "{{" }}.Request.Method}}", "requestUrl": "{{ "{{" }}js .Request.RequestURI}}", "requestSize": "{{ "{{" }}.Request.ContentLength}}", "status": {{ "{{" }}.Response.Code}}, "responseSize": "{{ "{{" }}.Response.Size}}", "userAgent": "{{ "{{" }}js .Request.UserAgent}}", "remoteIp": "{{ "{{" }}js .Request.RemoteAddr}}", "serverIp": "{{ "{{" }}.Revision.PodIP}}", "referer": "{{ "{{" }}js .Request.Referer}}", "latency": "{{ "{{" }}.Response.Latency}}s", "protocol": "{{ "{{" }}.Request.Proto}}"}, "traceId": "{{ "{{" }}index .Request.Header "X-B3-Traceid"}}"}'
 
     # If true, the request logging will be enabled.
     # NB: up to and including Knative version 0.18 if logging.request-log-template is non-empty, this value
@@ -4128,8 +3981,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
-    app.kubernetes.io/version: "0.25.0"
+    serving.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "26614636"
@@ -4186,9 +4039,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: activator
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   minReplicas: 1
@@ -4216,9 +4069,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: activator
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   minAvailable: 80%
@@ -4248,9 +4101,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: activator
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
@@ -4264,17 +4117,17 @@ spec:
       labels:
         app: activator
         role: activator
-        serving.knative.dev/release: "v0.25.0"
+        serving.knative.dev/release: "v1.0.0"
         app.kubernetes.io/name: activator
         app.kubernetes.io/part-of: knative-serving
-        app.kubernetes.io/version: "0.25.0"
+        app.kubernetes.io/version: "1.0.0"
     spec:
       serviceAccountName: controller
       containers:
         - name: activator
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:00aeb9267dc6445bbb11cb90636e9cde44404c6303d55b81aa074381b4989eef
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:c54682f20c4758aabd9e9a45805ae382ef9de8a953026a308273fb94b71719d5
           # The numbers are based on performance test results from
           # https://github.com/knative/serving/issues/1625#issuecomment-511930023
           resources:
@@ -4285,14 +4138,6 @@ spec:
               cpu: 1000m
               memory: 600Mi
           env:
-{{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
-            - name: HTTPS_PROXY
-              value: "{{ .Values.https_proxy }}"
-            - name: HTTP_PROXY
-              value: "{{ .Values.http_proxy }}"
-            - name: NO_PROXY
-              value: "{{ .Values.no_proxy }}"
-{{- end }}
             # Run Activator with GC collection when newly generated memory is 500%.
             - name: GOGC
               value: "500"
@@ -4363,9 +4208,9 @@ metadata:
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     app: activator
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: activator
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
@@ -4408,10 +4253,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: autoscaler
     app.kubernetes.io/part-of: knative-serving
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
 spec:
   replicas: 1
   selector:
@@ -4423,10 +4268,10 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
       labels:
         app: autoscaler
-        serving.knative.dev/release: "v0.25.0"
+        serving.knative.dev/release: "v1.0.0"
         app.kubernetes.io/name: autoscaler
         app.kubernetes.io/part-of: knative-serving
-        app.kubernetes.io/version: "0.25.0"
+        app.kubernetes.io/version: "1.0.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -4443,7 +4288,7 @@ spec:
         - name: autoscaler
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:ca3bad368a2ac40f33ad9e47c1075cc2b833301b4bc772fb84c51f52cc1c0a35
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:a2938d3c0e913b74b96f69845cdc09d4674a465a0895f71db9afe76d805db853
           resources:
             requests:
               cpu: 100m
@@ -4505,10 +4350,10 @@ metadata:
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     app: autoscaler
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: autoscaler
     app.kubernetes.io/part-of: knative-serving
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
   name: autoscaler
   namespace: {{ .Release.Namespace }}
 spec:
@@ -4548,9 +4393,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: controller
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
@@ -4562,9 +4407,9 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: controller
-        serving.knative.dev/release: "v0.25.0"
+        serving.knative.dev/release: "v1.0.0"
         app.kubernetes.io/name: controller
-        app.kubernetes.io/version: "0.25.0"
+        app.kubernetes.io/version: "1.0.0"
         app.kubernetes.io/part-of: knative-serving
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -4582,7 +4427,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:50fcbbc79b1078991280bf423e590c8904882dc8750c7f7d61bc06d944a052f2
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:d903707ec8c20f7a0a36852a0cf70062fbd23015d820f4ef085855de02e293ec
           resources:
             requests:
               cpu: 100m
@@ -4591,6 +4436,14 @@ spec:
               cpu: 1000m
               memory: 1000Mi
           env:
+{{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+            - name: HTTPS_PROXY
+              value: "{{ .Values.https_proxy }}"
+            - name: HTTP_PROXY
+              value: "{{ .Values.http_proxy }}"
+            - name: NO_PROXY
+              value: "{{ .Values.no_proxy }}"
+{{- end }}
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -4625,9 +4478,9 @@ metadata:
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     app: controller
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: controller
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   name: controller
   namespace: {{ .Release.Namespace }}
@@ -4665,9 +4518,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: domain-mapping
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
@@ -4679,10 +4532,10 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: domain-mapping
-        serving.knative.dev/release: "v0.25.0"
+        serving.knative.dev/release: "v1.0.0"
         app.kubernetes.io/name: domain-mapping
         app.kubernetes.io/part-of: knative-serving
-        app.kubernetes.io/version: "0.25.0"
+        app.kubernetes.io/version: "1.0.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -4699,7 +4552,7 @@ spec:
         - name: domain-mapping
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:3b7da888fafca8cc5ba5e2aa62d6f97751d50890ed9d0b01aabce66a7d26351e
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:d8754f853daefe201785ee4e3f71626bd5c010456259debe520ea0da78f04673
           resources:
             requests:
               cpu: 30m
@@ -4754,9 +4607,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: domainmapping-webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
@@ -4771,9 +4624,9 @@ spec:
         app: domainmapping-webhook
         app.kubernetes.io/name: domainmapping-webhook
         app.kubernetes.io/part-of: knative-serving
-        app.kubernetes.io/version: "0.25.0"
+        app.kubernetes.io/version: "1.0.0"
         role: domainmapping-webhook
-        serving.knative.dev/release: "v0.25.0"
+        serving.knative.dev/release: "v1.0.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -4790,7 +4643,7 @@ spec:
         - name: domainmapping-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:a6529f0625483c81741c92895e4d54be8a103ecc5801e7c3aa049d3b3ea7cc90
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:0b8fe2e03c4ce979d9f98df542ce48884b46cda098006fafa7db45b7f90ccfdb
           resources:
             requests:
               cpu: 100m
@@ -4858,9 +4711,9 @@ metadata:
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     role: domainmapping-webhook
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: domainmapping-webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   name: domainmapping-webhook
   namespace: {{ .Release.Namespace }}
@@ -4901,9 +4754,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   minReplicas: 1
@@ -4929,9 +4782,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   minAvailable: 80%
@@ -4961,9 +4814,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
@@ -4977,9 +4830,9 @@ spec:
       labels:
         app: webhook
         role: webhook
-        serving.knative.dev/release: "v0.25.0"
+        serving.knative.dev/release: "v1.0.0"
         app.kubernetes.io/name: webhook
-        app.kubernetes.io/version: "0.25.0"
+        app.kubernetes.io/version: "1.0.0"
         app.kubernetes.io/part-of: knative-serving
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -4997,7 +4850,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:382a1d64ea0686da2b973c95be96fcae29ac25b256b90f5735b1479a93d19c7a
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:86a5b8bb6cc0bd8cc9f02bf7035cff840c3543055578286013d59e8b4c313308
           resources:
             requests:
               cpu: 100m
@@ -5067,9 +4920,9 @@ metadata:
   labels:
     {{- include "knative.labels" . | nindent 4 }}
     role: webhook
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
   name: webhook
   namespace: {{ .Release.Namespace }}
@@ -5109,9 +4962,9 @@ metadata:
   name: config.webhook.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: configmap-validation-webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
@@ -5149,9 +5002,9 @@ metadata:
   name: webhook.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: defaulting-webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
@@ -5206,7 +5059,7 @@ metadata:
   name: webhook.domainmapping.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5252,7 +5105,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
 # The data is populated at install time.
 
 ---
@@ -5276,9 +5129,9 @@ metadata:
   name: validation.webhook.domainmapping.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: domainmapping-webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
@@ -5325,9 +5178,9 @@ metadata:
   name: validation.webhook.serving.knative.dev
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: validating-webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
@@ -5384,9 +5237,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "knative.labels" . | nindent 4 }}
-    serving.knative.dev/release: "v0.25.0"
+    serving.knative.dev/release: "v1.0.0"
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: "0.25.0"
+    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/part-of: knative-serving
 # The data is populated at install time.
 

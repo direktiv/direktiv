@@ -8,9 +8,9 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/pkg/flow/ent"
-	"github.com/vorteil/direktiv/pkg/util"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -124,11 +124,17 @@ func (srv *server) logToWorkflow(ctx context.Context, t time.Time, d *wfData, ms
 
 }
 
+// log To instance with string interpolation
 func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Instance, msg string, a ...interface{}) {
 
-	logc := srv.db.LogMsg
-
 	msg = fmt.Sprintf(msg, a...)
+
+	srv.logToInstanceRaw(ctx, t, in, msg)
+}
+
+// log To instance with raw string
+func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.Instance, msg string) {
+	logc := srv.db.LogMsg
 
 	util.Trace(ctx, msg)
 
@@ -146,7 +152,6 @@ func (srv *server) logToInstance(ctx context.Context, t time.Time, in *ent.Insta
 	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", GetInodePath(in.As), "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
-
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {

@@ -1,4 +1,4 @@
-// Package classification Direktiv API.
+// Package classification Direktiv API
 //
 // Direktiv Open API Specification
 // Direktiv Documentation can be found at https://docs.direktiv.io/
@@ -34,13 +34,14 @@ import (
 	"net/http"
 	"strconv"
 
+	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/functions/grpc"
+	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
-	igrpc "github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/functions"
-	"github.com/vorteil/direktiv/pkg/functions/grpc"
-	grpcfunc "github.com/vorteil/direktiv/pkg/functions/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type functionHandler struct {
@@ -92,7 +93,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   List a revisions pods of a global scoped knative service.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003' .
+	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003' .
 	// summary: Get Global Service Revision Pods List
 	// tags:
 	// - "Global Services"
@@ -159,7 +160,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Watch a global scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 	// summary: Watch Global Service Revision
 	// tags:
@@ -204,7 +205,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -297,7 +298,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -383,7 +384,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Delete a global scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'global-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'global-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: Revisions with traffic cannot be deleted.
 	// summary: Delete Global Service Revision
 	// tags:
@@ -429,7 +430,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   List a revisions pods of a namespace scoped knative service.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 	// summary: Get Namespace Service Revision Pods List
 	// tags:
 	// - "Namespace Services"
@@ -511,7 +512,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Watch a namespace scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: This is a Server-Sent-Event endpoint, and will not work with the default swagger client.
 	// summary: Watch Namespace Service Revision
 	// tags:
@@ -563,7 +564,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       name: "fast-request"
-	//       image: "vorteil/request:v12"
+	//       image: "direktiv/request:v12"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -672,7 +673,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     type: object
 	//     example:
 	//       trafficPercent: 50
-	//       image: "vorteil/request:v10"
+	//       image: "direktiv/request:v10"
 	//       cmd: ""
 	//       minScale: "1"
 	//       size: "small"
@@ -764,7 +765,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Delete a namespace scoped knative service revision.
 	//   The target revision generation is the number suffix on a revision.
-	//   Example: A revisions named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
+	//   Example: A revision named 'namespace-direktiv-fast-request-00003' would have the revisionGeneration '00003'.
 	//   Note: Revisions with traffic cannot be deleted.
 	// summary: Delete Namespace Service Revision
 	// tags:
@@ -820,7 +821,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   List a revisions pods of a workflow scoped knative service.
 	//   The target revision generation (rev query) is the number suffix on a revision.
-	//   Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+	//   Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 	// summary: Get Workflow Service Revision Pods List
 	// tags:
 	// - "Workflow Services"
@@ -923,7 +924,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   Get a workflow scoped knative service revision.
 	//   This will return details on a single revision.
 	//   The target revision generation (rev query) is the number suffix on a revision.
-	//   Example: A revisions named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
+	//   Example: A revision named 'workflow-10640097968065193909-get-00001' would have the revisionGeneration '00001'.
 	// summary: Get Workflow Service Revision
 	// tags:
 	// - "Workflow Services"
@@ -963,7 +964,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	// Registry ..
 
-	// swagger:operation GET /api/namespaces/{namespace}/registries Registries getRegistries
+	// swagger:operation GET /api/functions/registries/namespaces/{namespace} Registries getRegistries
 	// ---
 	// description: |
 	//   Gets the list of namespace registries.
@@ -977,9 +978,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully got namespace registries"
-	r.HandleFunc("/namespaces/{ns}/registries", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
+	r.HandleFunc("/registries/namespaces/{ns}", h.getRegistries).Methods(http.MethodGet).Name(RN_ListRegistries)
 
-	// swagger:operation POST /api/namespaces/{namespace}/registries Registries createRegistry
+	// swagger:operation POST /api/functions/registries/namespaces/{namespace} Registries createRegistry
 	// ---
 	// description: |
 	//   Create a namespace container registry.
@@ -995,6 +996,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   description: 'target namespace'
 	// - in: body
 	//   name: Registry Payload
+	//   required: true
 	//   description: Payload that contains registry data
 	//   schema:
 	//     type: object
@@ -1014,9 +1016,9 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully created namespace registry"
-	r.HandleFunc("/namespaces/{ns}/registries", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
+	r.HandleFunc("/registries/namespaces/{ns}", h.createRegistry).Methods(http.MethodPost).Name(RN_CreateRegistry)
 
-	// swagger:operation POST /api/namespaces/{namespace}/registries Registries deleteRegistry
+	// swagger:operation DELETE /api/functions/registries/namespaces/{namespace} Registries deleteRegistry
 	// ---
 	// description: |
 	//   Delete a namespace container registry
@@ -1029,6 +1031,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   description: 'target namespace'
 	// - in: body
 	//   name: Registry Payload
+	//   required: true
 	//   description: Payload that contains registry data
 	//   schema:
 	//     example:
@@ -1044,7 +1047,151 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully delete namespace registry"
-	r.HandleFunc("/namespaces/{ns}/registries", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+	r.HandleFunc("/registries/namespaces/{ns}", h.deleteRegistry).Methods(http.MethodDelete).Name(RN_DeleteRegistry)
+
+	// swagger:operation GET /api/functions/registries/global Registries getGlobalRegistries
+	// ---
+	// description: |
+	//   Gets the list of global registries.
+	//   Global registries are available to all services.
+	// summary: Get List of Global Registries
+	// responses:
+	//   '200':
+	//     "description": "successfully got global registries"
+	r.HandleFunc("/registries/global", h.getGlobalRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
+
+	// swagger:operation POST /api/functions/registries/global Registries createGlobalRegistry
+	// ---
+	// description: |
+	//   Create a global container registry.
+	//   Global registries are available to all services.
+	//   This can be used to connect your workflows to private container registries that require tokens.
+	//   The data property in the body is made up from the registry user and token. It follows the pattern :
+	//   data=USER:TOKEN
+	// summary: Create a Global Container Registry
+	// parameters:
+	// - in: body
+	//   name: Registry Payload
+	//   required: true
+	//   description: Payload that contains registry data
+	//   schema:
+	//     type: object
+	//     example:
+	//       data: "admin:8QwFLg%D$qg*"
+	//       reg: "https://prod.customreg.io"
+	//     required:
+	//       - data
+	//       - reg
+	//     properties:
+	//       data:
+	//         type: string
+	//         description: "Target registry connection data containing the user and token."
+	//       reg:
+	//         type: string
+	//         description: Target registry URL
+	// responses:
+	//   '200':
+	//     "description": "successfully created global registry"
+	r.HandleFunc("/registries/global", h.createGlobalRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
+
+	// swagger:operation DELETE /api/functions/registries/global Registries deleteGlobalRegistry
+	// ---
+	// description: |
+	//   Delete a Global container registry
+	//   Global registries are available to all services.
+	// summary: Delete a global Container Registry
+	// parameters:
+	// - in: body
+	//   name: Registry Payload
+	//   required: true
+	//   description: Payload that contains registry data
+	//   schema:
+	//     example:
+	//       data: "admin:8QwFLg%D$qg*"
+	//       reg: "https://prod.customreg.io"
+	//     type: object
+	//     required:
+	//       - reg
+	//     properties:
+	//       reg:
+	//         type: string
+	//         description: Target registry URL
+	// responses:
+	//   '200':
+	//     "description": "successfully delete global registry"
+	r.HandleFunc("/registries/global", h.deleteGlobalRegistry).Methods(http.MethodDelete).Name(RN_DeleteGlobalPrivateRegistry)
+
+	// swagger:operation GET /api/functions/registries/private Registries getGlobalPrivateRegistries
+	// ---
+	// description: |
+	//   Gets the list of global private registries.
+	//    Global Private registries are only available to global services.
+	// summary: Get List of Global Private Registries
+	// responses:
+	//   '200':
+	//     "description": "successfully got global private registries"
+	r.HandleFunc("/registries/private", h.getGlobalPrivateRegistries).Methods(http.MethodGet).Name(RN_ListGlobalPrivateRegistries)
+
+	// swagger:operation POST /api/functions/registries/private Registries createGlobalPrivateRegistry
+	// ---
+	// description: |
+	//   Create a global container registry.
+	//    Global Private registries are only available to global services.
+	//   This can be used to connect your workflows to private container registries that require tokens.
+	//   The data property in the body is made up from the registry user and token. It follows the pattern :
+	//   data=USER:TOKEN
+	// summary: Create a Global Container Registry
+	// parameters:
+	// - in: body
+	//   name: Registry Payload
+	//   required: true
+	//   description: Payload that contains registry data
+	//   schema:
+	//     type: object
+	//     example:
+	//       data: "admin:8QwFLg%D$qg*"
+	//       reg: "https://prod.customreg.io"
+	//     required:
+	//       - data
+	//       - reg
+	//     properties:
+	//       data:
+	//         type: string
+	//         description: "Target registry connection data containing the user and token."
+	//       reg:
+	//         type: string
+	//         description: Target registry URL
+	// responses:
+	//   '200':
+	//     "description": "successfully created global private registry"
+	r.HandleFunc("/registries/private", h.createGlobalPrivateRegistry).Methods(http.MethodPost).Name(RN_CreateGlobalPrivateRegistry)
+
+	// swagger:operation DELETE /api/functions/registries/private Registries deleteGlobalPrivateRegistry
+	// ---
+	// description: |
+	//   Delete a global container registry.
+	//    Global Private registries are only available to global services.
+	// summary: Delete a Global Container Registry
+	// parameters:
+	// - in: body
+	//   name: Registry Payload
+	//   required: true
+	//   description: Payload that contains registry data
+	//   schema:
+	//     example:
+	//       data: "admin:8QwFLg%D$qg*"
+	//       reg: "https://prod.customreg.io"
+	//     type: object
+	//     required:
+	//       - reg
+	//     properties:
+	//       reg:
+	//         type: string
+	//         description: Target registry URL
+	// responses:
+	//   '200':
+	//     "description": "successfully delete global private registry"
+	r.HandleFunc("/registries/private", h.deleteGlobalPrivateRegistry).Methods(http.MethodDelete).Name(RN_DeleteGlobalPrivateRegistry)
 
 }
 
@@ -1052,18 +1199,25 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	n := mux.Vars(r)["ns"]
+	// Get and Validate namespace exists
+	nsResp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
 
 	d := make(map[string]string)
 
-	err := json.NewDecoder(r.Body).Decode(&d)
+	err = json.NewDecoder(r.Body).Decode(&d)
 	if err != nil {
 		respond(w, nil, err)
 	}
 	reg := d["reg"]
 
 	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
-		Namespace: &n,
+		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 	})
 
@@ -1074,17 +1228,25 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	n := mux.Vars(r)["ns"]
+	// Get and Validate namespace exists
+	nsResp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
 	d := make(map[string]string)
 
-	err := json.NewDecoder(r.Body).Decode(&d)
+	err = json.NewDecoder(r.Body).Decode(&d)
 	if err != nil {
 		respond(w, nil, err)
 	}
 	reg := d["reg"]
 
 	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
-		Namespace: &n,
+		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 		Data:      []byte(d["data"]),
 	})
@@ -1097,12 +1259,122 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 
 	h.logger.Debugf("Handling request: %s", this())
 
-	n := mux.Vars(r)["ns"]
+	// Get and Validate namespace exists
+	nsResp, err := h.srv.flowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+		Name: mux.Vars(r)["ns"],
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
 
 	var resp *grpc.GetRegistriesResponse
-	resp, err := h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
-		Namespace: &n,
+	resp, err = h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
+		Namespace: &nsResp.Namespace.Name,
 	})
+
+	respond(w, resp, err)
+}
+
+// global
+func (h *functionHandler) deleteGlobalRegistry(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	resp, err := h.client.DeleteGlobalRegistry(r.Context(), &grpc.DeleteGlobalRegistryRequest{
+		Name: &reg,
+	})
+
+	respond(w, resp, err)
+}
+
+func (h *functionHandler) createGlobalRegistry(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	resp, err := h.client.StoreGlobalRegistry(r.Context(), &grpc.StoreGlobalRegistryRequest{
+		Name: &reg,
+		Data: []byte(d["data"]),
+	})
+
+	respond(w, resp, err)
+
+}
+
+func (h *functionHandler) getGlobalRegistries(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	var resp *grpc.GetRegistriesResponse
+	resp, err := h.client.GetGlobalRegistries(r.Context(), &emptypb.Empty{})
+
+	respond(w, resp, err)
+}
+
+// global private
+
+func (h *functionHandler) deleteGlobalPrivateRegistry(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	resp, err := h.client.DeleteGlobalPrivateRegistry(r.Context(), &grpc.DeleteGlobalRegistryRequest{
+		Name: &reg,
+	})
+
+	respond(w, resp, err)
+}
+
+func (h *functionHandler) createGlobalPrivateRegistry(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+	}
+	reg := d["reg"]
+
+	resp, err := h.client.StoreGlobalPrivateRegistry(r.Context(), &grpc.StoreGlobalRegistryRequest{
+		Name: &reg,
+		Data: []byte(d["data"]),
+	})
+
+	respond(w, resp, err)
+
+}
+
+func (h *functionHandler) getGlobalPrivateRegistries(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	var resp *grpc.GetRegistriesResponse
+	resp, err := h.client.GetGlobalPrivateRegistries(r.Context(), &emptypb.Empty{})
 
 	respond(w, resp, err)
 }
@@ -1116,12 +1388,12 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 // 	"strings"
 // 	"time"
 //
-// 	"github.com/vorteil/direktiv/pkg/functions"
-// 	"github.com/vorteil/direktiv/pkg/model"
+// 	"github.com/direktiv/direktiv/pkg/functions"
+// 	"github.com/direktiv/direktiv/pkg/model"
 //
 // 	"github.com/gorilla/mux"
-// 	"github.com/vorteil/direktiv/pkg/functions/grpc"
-// 	"github.com/vorteil/direktiv/pkg/ingress"
+// 	"github.com/direktiv/direktiv/pkg/functions/grpc"
+// 	"github.com/direktiv/direktiv/pkg/ingress"
 // )
 //
 // type functionAnnotationsRequest struct {
@@ -1772,15 +2044,25 @@ func (h *functionHandler) createService(ns, nsName, wf, path, rev string,
 
 }
 
-// jens
-
+// UpdateServiceRequest UpdateServiceRequest update service request
+//
 // swagger:model UpdateServiceRequest
 type updateServiceRequest struct {
-	Image          *string `json:"image,omitempty"`
-	Cmd            *string `json:"cmd,omitempty"`
-	Size           *int32  `json:"size,omitempty"`
-	MinScale       *int32  `json:"minScale,omitempty"`
-	TrafficPercent int64   `json:"trafficPercent"`
+	// image
+	// Required: true
+	Image *string `json:"image,omitempty"`
+	// cmd
+	// Required: true
+	Cmd *string `json:"cmd,omitempty"`
+	// size
+	// Required: true
+	Size *int32 `json:"size,omitempty"`
+	// minScale
+	// Required: true
+	MinScale *int32 `json:"minScale,omitempty"`
+	// trafficPercent
+	// Required: true
+	TrafficPercent int64 `json:"trafficPercent"`
 }
 
 func (h *functionHandler) updateGlobalService(w http.ResponseWriter, r *http.Request) {

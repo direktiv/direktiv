@@ -9,10 +9,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/ent/namespace"
+	"github.com/direktiv/direktiv/ent/predicate"
+	"github.com/direktiv/direktiv/ent/workflow"
 	"github.com/google/uuid"
-	"github.com/vorteil/direktiv/ent/namespace"
-	"github.com/vorteil/direktiv/ent/predicate"
-	"github.com/vorteil/direktiv/ent/workflow"
 )
 
 // NamespaceUpdate is the builder for updating Namespace entities.

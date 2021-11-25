@@ -1,33 +1,32 @@
 {
-    "revisions": [
-      {
-        "image": "vorteil/request:v6",
-        "minScale": 0,
-        "size": 0,
-        "cmd": ""
-      },
-      {
-        "image": "vorteil/request:v7",
-        "minScale": 0,
-        "size": 0,
-        "cmd": ""
-      },
-      {
-        "image": "vorteil/request:v8",
-        "minScale": 1,
-        "size": 0,
-        "cmd": ""
-      }
-    ],
-    "traffic": [
-        {
-            "genSuffix": "00003",
-            "percent": 67
-        },
-        {
-          "genSuffix": "00002",
-          "percent": 33
-      }
-    ]
-  }
-  
+  "revisions": [
+    {
+      "image": "direktiv/request:v1",
+      "minScale": 0,
+      "size": 0,
+      "cmd": ""
+    },
+    {
+      "image": "direktiv/request:v2",
+      "minScale": 0,
+      "size": 0,
+      "cmd": ""
+    },
+    {
+      "image": "direktiv/request:latest",
+      "minScale": 1,
+      "size": 0,
+      "cmd": ""
+    }
+  ],
+  "traffic": [
+    {
+      "genSuffix": "00003",
+      "percent": 67
+    },
+    {
+      "genSuffix": "00002",
+      "percent": 33
+    }
+  ]
+}

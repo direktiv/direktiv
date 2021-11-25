@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
-	"github.com/vorteil/direktiv/pkg/flow/grpc"
-	"github.com/vorteil/direktiv/pkg/util"
 )
 
 const (
@@ -285,6 +285,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 	scope := r.URL.Query().Get("scope")
 	key := r.URL.Query().Get("key")
+	vMimeType := r.Header.Get("content-type")
 
 	switch r.Method {
 	case http.MethodGet:
@@ -304,7 +305,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPost:
 
-		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key)
+		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key, vMimeType)
 		if err != nil {
 			// TODO: more specific errors
 			reportError(http.StatusInternalServerError, err)
@@ -536,7 +537,7 @@ type varSetClientMsg struct {
 	TotalSize int64
 }
 
-func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key string) error {
+func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key, vMimeType string) error {
 
 	// TODO: const the scopes
 	// TODO: validate scope earlier so that the switch cannot get unexpected data here
@@ -558,6 +559,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
 			req.Data = x.Value
+			req.MimeType = vMimeType
 			return nvClient.Send(req)
 		}
 
@@ -571,6 +573,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
 			req.Data = x.Value
+			req.MimeType = vMimeType
 			return wvClient.Send(req)
 		}
 
@@ -587,6 +590,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			req.Instance = x.Instance
 			req.TotalSize = x.TotalSize
 			req.Data = x.Value
+			req.MimeType = vMimeType
 			return ivClient.Send(req)
 		}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// CallbackState defines what is required for a callback state in the workflow
 type CallbackState struct {
 	StateCommon `yaml:",inline"`
 	Action      *ActionDefinition       `yaml:"action"`
@@ -14,6 +15,7 @@ type CallbackState struct {
 	Transition  string                  `yaml:"transition,omitempty"`
 }
 
+// GetID returns the id of the callback state
 func (o *CallbackState) GetID() string {
 	return o.ID
 }
@@ -33,6 +35,7 @@ func (o *CallbackState) getTransitions() map[string]string {
 	return transitions
 }
 
+// GetTransitions returns all the transitions for a callback state
 func (o *CallbackState) GetTransitions() []string {
 	transitions := make([]string, 0)
 	if o.Transition != "" {
@@ -48,6 +51,7 @@ func (o *CallbackState) GetTransitions() []string {
 	return transitions
 }
 
+// Validate validates all the arguments for a callback state
 func (o *CallbackState) Validate() error {
 	if err := o.commonValidate(); err != nil {
 		return err

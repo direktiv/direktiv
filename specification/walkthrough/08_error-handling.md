@@ -14,19 +14,19 @@ start:
 functions:
 - id: select
   type: reusable
-  image: vorteil/select
+  image: direktiv/select
 - id: insert
   type: reusable
-  image: vorteil/insert
+  image: direktiv/insert
 - id: delete
   type: reusable
-  image: vorteil/delete
+  image: direktiv/delete
 - id: cruncher
   type: reusable
-  image: vorteil/cruncher
+  image: direktiv/cruncher
 - id: notify
   type: reusable
-  image: vorteil/notifier
+  image: direktiv/notifier
 states:
 - id: selectRows
   type: action
