@@ -7,7 +7,6 @@ export default function DirektivEditor(props) {
     const monaco = useMonaco()
 
     useEffect(()=>{
-        console.log(monaco)
         // monaco.editor.layout()
     },[monaco])
 

@@ -3,7 +3,6 @@ import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIco
 import FlexBox from "../../components/flexbox";
 
 export default function WorkflowBuilder(props) {
-    const {namespace} = props
 
     return(
         <FlexBox className="gap wrap" style={{paddingRight:"8px"}}>

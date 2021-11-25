@@ -11,7 +11,6 @@ import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
 import InstancesPage from '../instances';
 import JQPlayground from '../jqplayground';
 import GlobalRegistriesPanel from '../global-registries';
-import WorkflowBuilder from '../workflow-builder';
 import NamespaceServices from '../namespace-services';
 
 
@@ -61,7 +60,6 @@ function NamespaceNavigation(props){
             }
         } else  {
             // no namespaces should we should reset namespace back to ""
-            console.log("resetting namespace")
             if(!load) {
                 setNamespace("")
             }
@@ -71,7 +69,7 @@ function NamespaceNavigation(props){
         if(namespaces !== null && namespaces.length === 0 && window.location.pathname !== "/") {
             navigate("/", {replace: true})
         }
-    },[namespaces, navigate, setNamespace, namespace])
+    },[namespaces, navigate, setNamespace, namespace, load])
 
     if(load) {
         return ""

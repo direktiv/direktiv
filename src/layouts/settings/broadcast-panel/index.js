@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import { BsSliders } from 'react-icons/bs';
@@ -8,7 +8,7 @@ import { useBroadcastConfiguration } from 'direktiv-react-hooks';
 
 function BroadcastConfigurationsPanel(props){
     const {namespace} = props
-    const {data, err, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace)
+    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace)
 
     return (
         <ContentPanel className="broadcast-panel">

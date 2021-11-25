@@ -10,7 +10,7 @@ function Settings(props) {
     const {deleteNamespace, namespace} = props
 
     // if namespace is null top level wait till we have a namespace
-    if(namespace === null) {
+    if(!namespace) {
         return ""
     }
 

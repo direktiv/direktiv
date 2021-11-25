@@ -6,7 +6,6 @@ import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIco
 import DirektivEditor from '../../components/editor';
 import FlexBox from '../../components/flexbox';
 import HelpIcon from '../../components/help';
-import {useMonaco} from '@monaco-editor/react'
 import { Config } from '../../util';
 import './style.css';
 
@@ -130,7 +129,7 @@ function JQOutput(props) {
                 setOutput(data.toString())
             }
         }
-    },[data])
+    }, [data, output])
 
     return(
         <ContentPanel style={{width:"100%"}}>

@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { IoCloseCircleSharp, IoLockClosedOutline } from 'react-icons/io5';
+import { IoLockClosedOutline } from 'react-icons/io5';
 import {RiDeleteBin2Line} from 'react-icons/ri';
 import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
 import {useSecrets} from 'direktiv-react-hooks'
-import {Config} from '../../../util'
+import {Config, GenerateRandomKey} from '../../../util'
 
 function SecretsPanel(props){
     const {namespace} = props
@@ -97,8 +97,11 @@ function Secrets(props) {
         <>
             <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
                     {secrets.map((obj)=>{
+
+                        let key = GenerateRandomKey("secret-")
+
                         return (
-                            <FlexBox className="secret-tuple">
+                            <FlexBox className="secret-tuple" key={key} id={key}>
                                 <FlexBox className="key">{obj.node.name}</FlexBox>
                                 <FlexBox className="val"><span>******</span></FlexBox>
                                 <FlexBox className="actions">

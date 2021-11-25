@@ -1,3 +1,7 @@
+.variables-table {
+    font-size: 12px;
+}
+
 .variables-table thead {
     border-bottom: var(--border);
 }

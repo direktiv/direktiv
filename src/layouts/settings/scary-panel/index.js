@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody} from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
@@ -36,8 +36,14 @@ function ScarySettings(props) {
 export default ScarySettings;
 
 function Scary(props) {
-    const {deleteNamespace, namespace, deleteErr} = props
+    const {deleteNamespace, namespace} = props
+    const [delButtonEnabled, setDelButtonEnabled] = useState(false)
     // deleteErr gets filled in when someone attempts to delete a namespace and an error happens
+
+    let delBtnClasses = "small red";
+    if (!delButtonEnabled) {
+        delBtnClasses += " disabled"
+    }
 
     return(
         <>
@@ -56,13 +62,13 @@ function Scary(props) {
                         actionButtons={[
                             ButtonDefinition("Delete", () => {
                                 deleteNamespace(namespace)
-                            }, "small red", true, false),
+                            }, delBtnClasses, true, false),
                             ButtonDefinition("Cancel", () => {
                                 console.log("close modal");
                             }, "small light", true, false)
                         ]}
                     >
-                        <DeleteNamespaceConfirmationPanel />
+                        <DeleteNamespaceConfirmationPanel namespace={namespace} setDelButtonEnabled={setDelButtonEnabled} />
                     </Modal>
             </FlexBox>
         </FlexBox>
@@ -73,11 +79,31 @@ function Scary(props) {
 
 function DeleteNamespaceConfirmationPanel(props) {
 
+    let {namespace, setDelButtonEnabled} = props;
+
+    const [inputValue, setInputValue] = useState("")
+
     return (
-        <FlexBox style={{fontSize: "12px"}}>
-            <p>
-                Are you sure you want to delete this namespace?<br/> This action <b>can not be undone!</b>
-            </p>
+        <FlexBox className="col" style={{fontSize: "12px"}}>
+            <FlexBox className="col">
+                <p>
+                    Are you sure you want to delete this namespace?<br/> This action <b>can not be undone!</b>
+                </p>
+                <br/>
+                <p>
+                    Please type <b>{namespace}</b> to confirm.
+                </p>
+            </FlexBox>
+            <FlexBox>
+                <input ovalue={inputValue} onChange={(e)=> {
+                    setInputValue(e.target.value)
+                    if (e.target.value === namespace) {
+                        setDelButtonEnabled(true)
+                    } else {
+                        setDelButtonEnabled(false)
+                    }
+                }} type="text"></input>
+            </FlexBox>
         </FlexBox>
     );
 }
