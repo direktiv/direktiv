@@ -55,8 +55,9 @@ function Modal(props) {
         return(
             <div>
                 {overlay}
-                <Button onClick={() => {
+                <Button onClick={(ev) => {
                     setVisible(true)
+                    ev.stopPropagation()
                 }}>
                     {label}
                 </Button>
@@ -68,11 +69,12 @@ function Modal(props) {
         <>
         {overlay}
         <FlexBox style={{...style}}>
-            <div style={{width: "100%"}} onClick={async() => {
+            <div style={{width: "100%"}} onClick={async(ev) => {
                 if(onOpen){
                     await onOpen()
                 }
                 setVisible(true)
+                ev.stopPropagation()
             }}>
                 {button}
             </div>
