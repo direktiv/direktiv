@@ -202,11 +202,13 @@ function ModalOverlay(props) {
                                     {children}
                                 </FlexBox>
                             </ContentPanelBody>
+                            { buttons ? 
                             <ContentPanelFooter>
                                 <FlexBox className="gap modal-buttons-container" style={{flexDirection: "row-reverse"}}>
                                     {buttons}
                                 </FlexBox>
                             </ContentPanelFooter>
+                            :<></>}
                         </ContentPanel>
                     </div>
                 </FlexBox>
