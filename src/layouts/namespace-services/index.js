@@ -16,7 +16,7 @@ import {Link} from 'react-router-dom'
 export default function ServicesPanel(props) {
     const {namespace} = props
 
-    if(namespace === null) {
+    if(!namespace) {
         return ""
     }
     return(
@@ -65,6 +65,7 @@ function ServiceCreatePanel(props) {
 function NamespaceServices(props) {
     const {namespace} = props
 
+    const [load, setLoad] = useState(true)
     const [serviceName, setServiceName] = useState("")
     const [image, setImage] = useState("")
     const [scale, setScale] = useState(0)
@@ -74,8 +75,13 @@ function NamespaceServices(props) {
     const {data, err, config, getNamespaceConfig, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace)
 
     useEffect(()=>{
-        if(config === null) {
-            getNamespaceConfig()
+        async function getcfg() {
+            await getNamespaceConfig()
+            
+        }
+        if(load && config === null) {
+            getcfg()
+            setLoad(false)
         }
     },[config, getNamespaceConfig])
 
@@ -145,7 +151,14 @@ function NamespaceServices(props) {
                     {
                         data.map((obj)=>{
                             return(
-                                <Service url={`/n/${namespace}/services/${obj.info.name}`} deleteService={deleteNamespaceService} conditions={obj.conditions} name={obj.info.name} status={obj.status} image={obj.info.image} />
+                                <Service 
+                                    url={`/n/${namespace}/services/${obj.info.name}`} 
+                                    deleteService={deleteNamespaceService} 
+                                    conditions={obj.conditions} 
+                                    name={obj.info.name} 
+                                    status={obj.status} 
+                                    image={obj.info.image} 
+                                />
                             )
                         })
                     }
@@ -157,10 +170,9 @@ function NamespaceServices(props) {
     )
 }
 
-
 export function Service(props) {
-    const {name, image, status, conditions, deleteService, url} = props
-    
+    const {name, image, status, conditions, deleteService, url, revision, dontDelete} = props
+
     return(
         <div className="col">
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>
@@ -180,6 +192,7 @@ export function Service(props) {
                         </div> */}
                     </FlexBox>
                 </Link>
+                {!dontDelete ? 
                 <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto"}}>
                     <Modal  title="Delete namespace service" 
                         escapeToCancel
@@ -196,8 +209,14 @@ export function Service(props) {
                         )}  
                         actionButtons={[
                             ButtonDefinition("Delete", async () => {
-                                let err = await deleteService(name)
-                                if (err) return err
+                                if(revision !== undefined) {
+                                    let err = await deleteService(revision)
+                                    if (err) return err
+                                }else {
+                                    let err = await deleteService(name)
+                                    if (err) return err
+                                }
+                             
                             }, "small red", true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
@@ -211,7 +230,7 @@ export function Service(props) {
                             </FlexBox>
                         </FlexBox>
                     </Modal>
-                </div>
+                </div>:""}
             </FlexBox>
             <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                 <ServiceDetails conditions={conditions} />
