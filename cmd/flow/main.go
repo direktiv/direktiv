@@ -62,6 +62,7 @@ func main() {
 	rootCmd.AddCommand(instanceLogsCmd)
 
 	rootCmd.AddCommand(eventListenersCmd)
+	rootCmd.AddCommand(eventHistoryCmd)
 
 	rootCmd.AddCommand(namespaceCmd)
 	rootCmd.AddCommand(namespacesCmd)

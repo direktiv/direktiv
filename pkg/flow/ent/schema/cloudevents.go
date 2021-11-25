@@ -24,7 +24,7 @@ func (CloudEvents) Fields() []ent.Field {
 		field.String("eventId").Immutable().NotEmpty(),
 		field.JSON("event", cloudevents.Event{}),
 		field.Time("fire").Immutable().Default(time.Now),
-		field.Time("created").Immutable().Default(time.Now),
+		field.Time("created").Immutable().Default(time.Now).Annotations(entgql.OrderField("RECEIVED")),
 		field.Bool("processed"),
 	}
 }

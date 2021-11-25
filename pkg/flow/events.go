@@ -16,6 +16,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -25,6 +26,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -909,6 +911,258 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 
 }
 
+func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventRequest) (*grpc.HistoricalEventResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	namespace := in.GetNamespace()
+	eid := in.GetId()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	cevent, err := ns.QueryCloudevents().Where(cevents.EventIdEQ(eid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.HistoricalEventResponse
+
+	resp.Id = eid
+	resp.Namespace = namespace
+	resp.ReceivedAt = timestamppb.New(cevent.Created)
+
+	resp.Source = cevent.Event.Source()
+	resp.Type = cevent.Event.Type()
+
+	resp.Cloudevent = []byte(cevent.Event.String())
+
+	return &resp, nil
+
+}
+
+func cloudeventsOrder(p *pagination) ent.CloudEventsPaginateOption {
+
+	field := ent.CloudEventsOrderFieldCreated
+	direction := ent.OrderDirectionDesc
+
+	if p.order != nil {
+
+		if x := p.order.Field; x != "" && x == "ID" {
+			field = ent.CloudEventsOrderFieldID
+		}
+
+		if x := p.order.Field; x != "" && x == "RECEIVED" {
+			field = ent.CloudEventsOrderFieldCreated
+		}
+
+		if x := p.order.Direction; x != "" && x == "DESC" {
+			direction = ent.OrderDirectionDesc
+		}
+
+		if x := p.order.Direction; x != "" && x == "ASC" {
+			direction = ent.OrderDirectionAsc
+		}
+
+	}
+
+	return ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
+		Direction: direction,
+		Field:     field,
+	})
+
+}
+
+func cloudeventsFilter(p *pagination) ent.CloudEventsPaginateOption {
+
+	if p.filter == nil {
+		return nil
+	}
+
+	filter := p.filter.Val
+
+	return ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+
+		if filter == "" {
+			return query, nil
+		}
+
+		field := p.filter.Field
+		if field == "" {
+			return query, nil
+		}
+
+		// switch field {
+		// case "AS":
+
+		// 	ftype := p.filter.Type
+		// 	if ftype == "" {
+		// 		return query, nil
+		// 	}
+
+		// 	switch ftype {
+		// 	case "CONTAINS":
+		// 		return query.Where(entcevents.AsContains(filter)), nil
+		// 	}
+		// }
+
+		return query, nil
+
+	})
+
+}
+
+func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []ent.CloudEventsPaginateOption{}
+	opts = append(opts, cloudeventsOrder(p))
+	filter := cloudeventsFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	query := ns.QueryCloudevents()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.EventHistoryResponse
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = new(grpc.PageInfo)
+	resp.Namespace = ns.Name
+
+	err = atob(cx.PageInfo, resp.Events.PageInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Events.TotalCount = int32(cx.TotalCount)
+
+	for _, x := range cx.Edges {
+
+		edge := new(grpc.EventsEdge)
+		resp.Events.Edges = append(resp.Events.Edges, edge)
+
+		err = atob(x.Cursor, &edge.Cursor)
+		if err != nil {
+			return nil, err
+		}
+
+		edge.Node = new(grpc.Event)
+		edge.Node.Id = x.Node.EventId
+		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
+		edge.Node.Source = x.Node.Event.Source()
+		edge.Node.Type = x.Node.Event.Type()
+		edge.Node.Cloudevent = []byte(x.Node.Event.String())
+
+	}
+
+	return &resp, nil
+
+}
+
+func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flow_EventHistoryStreamServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+	phash := ""
+	nhash := ""
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return err
+	}
+
+	opts := []ent.CloudEventsPaginateOption{}
+	opts = append(opts, cloudeventsOrder(p))
+	filter := cloudeventsFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	if err != nil {
+		return err
+	}
+
+	sub := flow.pubsub.SubscribeEvents(ns)
+	defer flow.cleanup(sub.Close)
+
+resend:
+
+	query := ns.QueryCloudevents()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return err
+	}
+
+	resp := new(grpc.EventHistoryResponse)
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = new(grpc.PageInfo)
+	resp.Namespace = ns.Name
+
+	err = atob(cx.PageInfo, resp.Events.PageInfo)
+	if err != nil {
+		return err
+	}
+
+	resp.Events.TotalCount = int32(cx.TotalCount)
+
+	for _, x := range cx.Edges {
+
+		edge := new(grpc.EventsEdge)
+		resp.Events.Edges = append(resp.Events.Edges, edge)
+
+		err = atob(x.Cursor, &edge.Cursor)
+		if err != nil {
+			return err
+		}
+
+		edge.Node = new(grpc.Event)
+		edge.Node.Id = x.Node.EventId
+		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
+		edge.Node.Source = x.Node.Event.Source()
+		edge.Node.Type = x.Node.Event.Type()
+		edge.Node.Cloudevent = []byte(x.Node.Event.String())
+
+	}
+
+	nhash = checksum(resp)
+	if nhash != phash {
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+	}
+	phash = nhash
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
+
+}
+
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace, event *cloudevents.Event, timer int64) error {
 
 	events.logToNamespace(ctx, time.Now(), ns, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
@@ -920,6 +1174,8 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 	if err != nil {
 		return err
 	}
+
+	events.pubsub.NotifyEvents(ns)
 
 	// handle event
 	if timer == 0 {

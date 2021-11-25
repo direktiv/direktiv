@@ -137,6 +137,12 @@ service Flow {
 	// Broadcast // Broadcast Cloudevent.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
 	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {} 
+
+	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
+	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
+
+	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
+
 	// Linting
 	// LintRevision
 	// LintPayload

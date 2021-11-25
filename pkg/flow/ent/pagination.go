@@ -440,6 +440,16 @@ func (ce *CloudEventsQuery) Paginate(
 }
 
 var (
+	// CloudEventsOrderFieldCreated orders CloudEvents by created.
+	CloudEventsOrderFieldCreated = &CloudEventsOrderField{
+		field: cloudevents.FieldCreated,
+		toCursor: func(ce *CloudEvents) Cursor {
+			return Cursor{
+				ID:    ce.ID,
+				Value: ce.Created,
+			}
+		},
+	}
 	// CloudEventsOrderFieldID orders CloudEvents by id.
 	CloudEventsOrderFieldID = &CloudEventsOrderField{
 		field: cloudevents.FieldID,
@@ -456,6 +466,8 @@ var (
 func (f CloudEventsOrderField) String() string {
 	var str string
 	switch f.field {
+	case cloudevents.FieldCreated:
+		str = "RECEIVED"
 	case cloudevents.FieldID:
 		str = "ID"
 	}
@@ -474,6 +486,8 @@ func (f *CloudEventsOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("CloudEventsOrderField %T must be a string", v)
 	}
 	switch str {
+	case "RECEIVED":
+		*f = *CloudEventsOrderFieldCreated
 	case "ID":
 		*f = *CloudEventsOrderFieldID
 	default:
