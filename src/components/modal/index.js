@@ -259,7 +259,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
 
         out.push(
             <Button key={Array(5).fill().map(()=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(Math.random()*62)).join("")} className={btn.classList} onClick={onClick}>
-                {btn.label}
+                <div>{btn.label}</div>
             </Button>
         )
     }
