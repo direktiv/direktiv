@@ -269,6 +269,7 @@ function UpdateTraffic(props){
                             <Button className="small" onClick={async ()=>{
                                 let err = await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
                                 console.log(err, "not to sure how to display this err yet")
+
                             }}>
                                 Save
                             </Button>
