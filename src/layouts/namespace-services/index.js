@@ -77,7 +77,7 @@ function NamespaceServices(props) {
         if(config === null) {
             getNamespaceConfig()
         }
-    },[config])
+    },[config, getNamespaceConfig])
 
 
 
