@@ -13,4 +13,3 @@ proxy:
   connect_timeout: {{ .Values.functions.timeout }}
   write_timeout: {{ .Values.functions.timeout }}
   retries: 0
-  tls_verify: false

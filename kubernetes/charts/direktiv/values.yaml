@@ -9,7 +9,7 @@ eventing:
 logging: json
 
 # -- api timeouts
-timeout: 900000
+timeout: 7200000
 
 # -- api key, value 'apikey' required in header
 apikey: ""
@@ -100,7 +100,7 @@ ingress:
   # -- ingress class
   class: "kong"
   # -- timeout for /api route
-  timeout: 900000
+  timeout: 7200000
 
 database:
   # -- database host
@@ -289,10 +289,10 @@ functions:
   initPodImage:  "direktiv/direktiv-init-pod"
 
   # kong ingress knative timeout on services
-  timeout: 900000
+  timeout: 7200000
 
   # -- number of controller replicas
-  replicaCount: 1
+  replicas: 1
 
   # -- Egress/Ingress network limit for functions if supported by network
   netShape: "10M"

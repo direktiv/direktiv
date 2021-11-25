@@ -19,7 +19,6 @@ type Workflow struct {
 	Version     string               `yaml:"version,omitempty" json:"version,omitempty"`
 	Exclusive   bool                 `yaml:"singular,omitempty" json:"singular,omitempty"`
 	Functions   []FunctionDefinition `yaml:"functions,omitempty" json:"functions,omitempty"`
-	Schemas     []SchemaDefinition   `yaml:"schemas,omitempty" json:"schemas,omitempty"`
 	States      []State              `yaml:"states,omitempty" json:"states,omitempty"`
 	Timeouts    *TimeoutDefinition   `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
 	Start       StartDefinition      `yaml:"start,omitempty" json:"start,omitempty"`
@@ -199,13 +198,6 @@ func (o *Workflow) validate() error {
 		}
 	}
 
-	// schemas
-	for i, schema := range o.GetSchemas() {
-		if sErr := schema.Validate(); sErr != nil {
-			return fmt.Errorf("workflow schema[%v] is invalid: %v", i, sErr)
-		}
-	}
-
 	// states
 	for i, state := range o.GetStates() {
 		// Validate All State Transitions reference a exisiting state
@@ -300,15 +292,6 @@ func (o *Workflow) getFunctionMap() (map[string]FunctionDefinition, error) {
 	}
 
 	return funcMap, nil
-}
-
-// GetSchemas: Get all schemas of a workflow and return
-func (o *Workflow) GetSchemas() []SchemaDefinition {
-	if o.Schemas == nil {
-		return make([]SchemaDefinition, 0)
-	}
-
-	return o.Schemas
 }
 
 // GetFunctions: Get all function definitions

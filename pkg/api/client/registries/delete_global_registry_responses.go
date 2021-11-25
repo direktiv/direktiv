@@ -48,7 +48,7 @@ type DeleteGlobalRegistryOK struct {
 }
 
 func (o *DeleteGlobalRegistryOK) Error() string {
-	return fmt.Sprintf("[POST /api/functions/registries/global][%d] deleteGlobalRegistryOK ", 200)
+	return fmt.Sprintf("[DELETE /api/functions/registries/global][%d] deleteGlobalRegistryOK ", 200)
 }
 
 func (o *DeleteGlobalRegistryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

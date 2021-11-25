@@ -6,6 +6,7 @@ metadata:
     {{- include "direktiv.labelsUI" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+    konghq.com/override: {{ include "direktiv.fullname" . }}-ingress-timeout
 spec:
   ports:
     - port: 8080

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 )
 
 // -------- Function Types -----------
@@ -109,6 +111,10 @@ func (o FunctionFileDefinition) Validate() error {
 
 	if o.Key == "" {
 		return errors.New("key required")
+	}
+
+	if !schema.VarNameRegex.MatchString(o.Key) {
+		return fmt.Errorf("key is invalid: must start with a letter and only contain letters, numbers and '_'")
 	}
 
 	switch o.Scope {

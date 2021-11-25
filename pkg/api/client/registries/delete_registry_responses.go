@@ -48,7 +48,7 @@ type DeleteRegistryOK struct {
 }
 
 func (o *DeleteRegistryOK) Error() string {
-	return fmt.Sprintf("[POST /api/registries/namespaces/{namespace}][%d] deleteRegistryOK ", 200)
+	return fmt.Sprintf("[DELETE /api/functions/registries/namespaces/{namespace}][%d] deleteRegistryOK ", 200)
 }
 
 func (o *DeleteRegistryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

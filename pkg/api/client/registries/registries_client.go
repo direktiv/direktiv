@@ -30,6 +30,12 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	CreateGlobalPrivateRegistry(params *CreateGlobalPrivateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateGlobalPrivateRegistryOK, error)
+
+	CreateGlobalRegistry(params *CreateGlobalRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateGlobalRegistryOK, error)
+
+	CreateRegistry(params *CreateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateRegistryOK, error)
+
 	DeleteGlobalPrivateRegistry(params *DeleteGlobalPrivateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteGlobalPrivateRegistryOK, error)
 
 	DeleteGlobalRegistry(params *DeleteGlobalRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteGlobalRegistryOK, error)
@@ -46,6 +52,143 @@ type ClientService interface {
 }
 
 /*
+  CreateGlobalPrivateRegistry creates a global container registry
+
+  Create a global container registry.
+ Global Private registries are only available to global services.
+This can be used to connect your workflows to private container registries that require tokens.
+The data property in the body is made up from the registry user and token. It follows the pattern :
+data=USER:TOKEN
+
+*/
+func (a *Client) CreateGlobalPrivateRegistry(params *CreateGlobalPrivateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateGlobalPrivateRegistryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateGlobalPrivateRegistryParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "createGlobalPrivateRegistry",
+		Method:             "POST",
+		PathPattern:        "/api/functions/registries/private",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &CreateGlobalPrivateRegistryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateGlobalPrivateRegistryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for createGlobalPrivateRegistry: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  CreateGlobalRegistry creates a global container registry
+
+  Create a global container registry.
+Global registries are available to all services.
+This can be used to connect your workflows to private container registries that require tokens.
+The data property in the body is made up from the registry user and token. It follows the pattern :
+data=USER:TOKEN
+
+*/
+func (a *Client) CreateGlobalRegistry(params *CreateGlobalRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateGlobalRegistryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateGlobalRegistryParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "createGlobalRegistry",
+		Method:             "POST",
+		PathPattern:        "/api/functions/registries/global",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &CreateGlobalRegistryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateGlobalRegistryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for createGlobalRegistry: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  CreateRegistry creates a namespace container registry
+
+  Create a namespace container registry.
+This can be used to connect your workflows to private container registries that require tokens.
+The data property in the body is made up from the registry user and token. It follows the pattern :
+data=USER:TOKEN
+
+*/
+func (a *Client) CreateRegistry(params *CreateRegistryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateRegistryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateRegistryParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "createRegistry",
+		Method:             "POST",
+		PathPattern:        "/api/functions/registries/namespaces/{namespace}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &CreateRegistryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateRegistryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for createRegistry: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
   DeleteGlobalPrivateRegistry deletes a global container registry
 
   Delete a global container registry.
@@ -59,7 +202,7 @@ func (a *Client) DeleteGlobalPrivateRegistry(params *DeleteGlobalPrivateRegistry
 	}
 	op := &runtime.ClientOperation{
 		ID:                 "deleteGlobalPrivateRegistry",
-		Method:             "POST",
+		Method:             "DELETE",
 		PathPattern:        "/api/functions/registries/private",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
@@ -102,7 +245,7 @@ func (a *Client) DeleteGlobalRegistry(params *DeleteGlobalRegistryParams, authIn
 	}
 	op := &runtime.ClientOperation{
 		ID:                 "deleteGlobalRegistry",
-		Method:             "POST",
+		Method:             "DELETE",
 		PathPattern:        "/api/functions/registries/global",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
@@ -144,8 +287,8 @@ func (a *Client) DeleteRegistry(params *DeleteRegistryParams, authInfo runtime.C
 	}
 	op := &runtime.ClientOperation{
 		ID:                 "deleteRegistry",
-		Method:             "POST",
-		PathPattern:        "/api/registries/namespaces/{namespace}",
+		Method:             "DELETE",
+		PathPattern:        "/api/functions/registries/namespaces/{namespace}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
@@ -273,7 +416,7 @@ func (a *Client) GetRegistries(params *GetRegistriesParams, authInfo runtime.Cli
 	op := &runtime.ClientOperation{
 		ID:                 "getRegistries",
 		Method:             "GET",
-		PathPattern:        "/api/registries/namespaces/{namespace}",
+		PathPattern:        "/api/functions/registries/namespaces/{namespace}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},

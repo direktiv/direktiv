@@ -9,6 +9,8 @@ import (
 
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	hash "github.com/mitchellh/hashstructure/v2"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,7 +49,7 @@ func getClientSet() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func kubernetesDeleteRegistry(name, namespace string) error {
+func kubernetesDeleteRegistry(ctx context.Context, name, namespace string) error {
 
 	logger.Debugf("deleting registry %s (%s)", name, namespace)
 
@@ -58,16 +60,23 @@ func kubernetesDeleteRegistry(name, namespace string) error {
 
 	fo := make(map[string]string)
 	fo[annotationNamespace] = namespace
-	h, _ := hash.Hash(fmt.Sprintf("%s", name), hash.FormatV2, nil)
+	h, _ := hash.Hash(name, hash.FormatV2, nil)
 	fo[annotationURLHash] = fmt.Sprintf("%d", h)
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(fo).String()}
-	return clientset.CoreV1().Secrets(functionsConfig.Namespace).
-		DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).List(ctx, lo)
+	if err != nil {
+		return status.Error(codes.Internal, fmt.Sprintf("could not retrieve registry: %s", err))
+	}
 
+	if len(secrets.Items) == 0 {
+		return status.Error(codes.NotFound, fmt.Sprintf("registry '%s' does not exist", name))
+	}
+
+	return clientset.CoreV1().Secrets(functionsConfig.Namespace).Delete(ctx, secrets.Items[0].Name, metav1.DeleteOptions{})
 }
 
-func kubernetesDeleteGlobalRegistry(name, globalAnnotation string) error {
+func kubernetesDeleteGlobalRegistry(ctx context.Context, name, globalAnnotation string) error {
 
 	logger.Debugf("deleting global registry %s (%s)", name, globalAnnotation)
 
@@ -78,13 +87,21 @@ func kubernetesDeleteGlobalRegistry(name, globalAnnotation string) error {
 
 	fo := make(map[string]string)
 	fo[annotationRegistryTypeKey] = globalAnnotation
-	h, _ := hash.Hash(fmt.Sprintf("%s", name), hash.FormatV2, nil)
+	h, _ := hash.Hash(name, hash.FormatV2, nil)
 	fo[annotationURLHash] = fmt.Sprintf("%d", h)
 
 	lo := metav1.ListOptions{LabelSelector: labels.Set(fo).String()}
-	return clientset.CoreV1().Secrets(functionsConfig.Namespace).
-		DeleteCollection(context.Background(), metav1.DeleteOptions{}, lo)
 
+	secrets, err := clientset.CoreV1().Secrets(functionsConfig.Namespace).List(ctx, lo)
+	if err != nil {
+		return status.Error(codes.Internal, fmt.Sprintf("could not retrieve registry: %s", err))
+	}
+
+	if len(secrets.Items) == 0 {
+		return status.Error(codes.NotFound, fmt.Sprintf("registry '%s' does not exist", name))
+	}
+
+	return clientset.CoreV1().Secrets(functionsConfig.Namespace).Delete(ctx, secrets.Items[0].Name, metav1.DeleteOptions{})
 }
 
 func listRegistriesNames(namespace string) []string {
@@ -177,7 +194,7 @@ func listGlobalPrivateRegistriesNames() []string {
 // namespace
 func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
-	return &resp, kubernetesDeleteRegistry(in.GetName(), in.GetNamespace())
+	return &resp, kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
 }
 
 func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegistryRequest) (*emptypb.Empty, error) {
@@ -217,7 +234,7 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 
 	secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, in.GetNamespace(), u.Hostname())
 
-	kubernetesDeleteRegistry(in.GetName(), in.GetNamespace())
+	kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
 
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationNamespace] = in.GetNamespace()
@@ -264,7 +281,7 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 // global
 func (is *functionsServer) DeleteGlobalRegistry(ctx context.Context, in *igrpc.DeleteGlobalRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
-	return &resp, kubernetesDeleteGlobalRegistry(in.GetName(), annotationRegistryTypeGlobalValue)
+	return &resp, kubernetesDeleteGlobalRegistry(ctx, in.GetName(), annotationRegistryTypeGlobalValue)
 }
 
 func (is *functionsServer) StoreGlobalRegistry(ctx context.Context, in *igrpc.StoreGlobalRegistryRequest) (*emptypb.Empty, error) {
@@ -304,7 +321,7 @@ func (is *functionsServer) StoreGlobalRegistry(ctx context.Context, in *igrpc.St
 
 	secretName := fmt.Sprintf("%s-%s", secretsGlobalPrefix, u.Hostname())
 
-	kubernetesDeleteGlobalRegistry(in.GetName(), annotationRegistryTypeGlobalValue)
+	kubernetesDeleteGlobalRegistry(ctx, in.GetName(), annotationRegistryTypeGlobalValue)
 
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeGlobalValue
@@ -351,7 +368,7 @@ func (is *functionsServer) GetGlobalRegistries(ctx context.Context, in *emptypb.
 
 func (is *functionsServer) DeleteGlobalPrivateRegistry(ctx context.Context, in *igrpc.DeleteGlobalRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
-	return &resp, kubernetesDeleteGlobalRegistry(in.GetName(), annotationRegistryTypeGlobalPrivateValue)
+	return &resp, kubernetesDeleteGlobalRegistry(ctx, in.GetName(), annotationRegistryTypeGlobalPrivateValue)
 }
 
 func (is *functionsServer) StoreGlobalPrivateRegistry(ctx context.Context, in *igrpc.StoreGlobalRegistryRequest) (*emptypb.Empty, error) {
@@ -391,7 +408,7 @@ func (is *functionsServer) StoreGlobalPrivateRegistry(ctx context.Context, in *i
 
 	secretName := fmt.Sprintf("%s-%s", secretsGlobalPrivatePrefix, u.Hostname())
 
-	kubernetesDeleteGlobalRegistry(in.GetName(), annotationRegistryTypeGlobalPrivateValue)
+	kubernetesDeleteGlobalRegistry(ctx, in.GetName(), annotationRegistryTypeGlobalPrivateValue)
 
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeGlobalPrivateValue

@@ -570,6 +570,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	engine.logToInstance(ctx, time.Now(), im.in, "Workflow completed.")
 
 	if ns, err := im.in.Namespace(ctx); err == nil {
+		engine.pubsub.NotifyInstances(ns)
 		broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
 			WorkflowPath: GetInodePath(im.in.As),
 			InstanceID:   im.in.ID.String(),
@@ -615,7 +616,9 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		engine.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		if IsNotFound(err) {
+			return "", NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
+		}
 		return "", err
 	}
 

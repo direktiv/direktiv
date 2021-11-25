@@ -1264,6 +1264,26 @@ func (i *InodeQuery) Paginate(
 }
 
 var (
+	// InodeOrderFieldCreatedAt orders Inode by created_at.
+	InodeOrderFieldCreatedAt = &InodeOrderField{
+		field: inode.FieldCreatedAt,
+		toCursor: func(i *Inode) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.CreatedAt,
+			}
+		},
+	}
+	// InodeOrderFieldUpdatedAt orders Inode by updated_at.
+	InodeOrderFieldUpdatedAt = &InodeOrderField{
+		field: inode.FieldUpdatedAt,
+		toCursor: func(i *Inode) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.UpdatedAt,
+			}
+		},
+	}
 	// InodeOrderFieldName orders Inode by name.
 	InodeOrderFieldName = &InodeOrderField{
 		field: inode.FieldName,
@@ -1280,6 +1300,10 @@ var (
 func (f InodeOrderField) String() string {
 	var str string
 	switch f.field {
+	case inode.FieldCreatedAt:
+		str = "CREATED"
+	case inode.FieldUpdatedAt:
+		str = "UPDATED"
 	case inode.FieldName:
 		str = "NAME"
 	}
@@ -1298,6 +1322,10 @@ func (f *InodeOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("InodeOrderField %T must be a string", v)
 	}
 	switch str {
+	case "CREATED":
+		*f = *InodeOrderFieldCreatedAt
+	case "UPDATED":
+		*f = *InodeOrderFieldUpdatedAt
 	case "NAME":
 		*f = *InodeOrderFieldName
 	default:
