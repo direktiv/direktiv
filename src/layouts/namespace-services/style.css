@@ -1,12 +1,37 @@
-.fail-message {
+.fail-message .msg-box {
     color: var(--theme-red);
     background-color: var(--theme-red-faded);
-    padding: 10px
+    /* padding: 10px */
 }
 
-.wait-message {
+.wait-message .msg-box {
     color: var(--theme-dark-gray-text);
     background-color: #fcfdfe;
-    padding:10px;
+    /* padding:10px; */
     border: 1px solid #f4f4f4
+}
+
+.fail-message, .wait-message {
+    max-height: 0px;
+    padding: 0px;
+    transition: max-height 1s ease-in-out 0s;
+    overflow: hidden;
+}
+
+.fail-message.visible, .wait-message.visible {
+    max-height: 300px;
+    transition: max-height 1s ease-in-out 0s;
+}
+
+.fail-message .msg-box, .wait-message .msg-box {
+    padding: 10px;
+}
+
+.toggle-details {
+    display: flex;
+    width: 95px;
+}
+
+.toggle-details > div {
+    flex: auto;
 }

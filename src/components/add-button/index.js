@@ -6,6 +6,7 @@ import FlexBox from '../flexbox';
 function AddValueButton(props) {
 
     let {onClick, label} = props;
+    
     if (!label) {
         label = "Add value"
     }
