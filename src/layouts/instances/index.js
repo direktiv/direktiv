@@ -55,6 +55,32 @@ function InstancesTable(props) {
         return ""
     }
 
+    let pageData = (
+        <p>
+            Recently run instances will be displayed here.
+        </p>
+    )
+
+    if (data !== null) {
+        if (data.length > 0) {
+            pageData = [];
+            data.map((obj)=>{
+                return(
+                    <InstanceRow 
+                        namespace={namespace}
+                        state={obj.node.status} 
+                        name={obj.node.as} 
+                        id={obj.node.id}
+                        started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                        startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
+                        finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                        finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
+                    />
+                )
+                })
+        }
+    }
+
     return(
 
     <table className="instances-table">
@@ -79,7 +105,8 @@ function InstancesTable(props) {
             <tbody>
                 {data !== null ? 
                 <>
-                    {data.map((obj)=>{
+                    {
+                    data.map((obj)=>{
                     return(
                         <InstanceRow 
                             namespace={namespace}
@@ -94,9 +121,7 @@ function InstancesTable(props) {
                     )
                     })}
                 </>
-                :
-                ""
-                }
+                :<></>}
             </tbody></>}
         </table>
     );

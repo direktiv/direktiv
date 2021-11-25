@@ -63,3 +63,10 @@
     height: 16px;
     width: 16px;
 }
+
+.content-panel-footer {
+    border-top: var(--border);
+    padding: 12px;
+    /* padding-right: 12px; */
+    /* padding-left: 12px; */
+}

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
 import Button from '../button';
-import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon} from '../../components/content-panel';
+import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon, ContentPanelFooter} from '../../components/content-panel';
 import { IoLockClosedOutline, IoCloseCircleSharp } from 'react-icons/io5';
 import FlexBox from '../flexbox';
 import Alert from '../alert';
@@ -200,11 +200,13 @@ function ModalOverlay(props) {
                                     <Alert className="critical">{alertMessage}</Alert>
                                     : <></> }
                                     {children}
-                                    <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
-                                        {buttons}
-                                    </FlexBox>
                                 </FlexBox>
                             </ContentPanelBody>
+                            <ContentPanelFooter>
+                                <FlexBox className="gap modal-buttons-container" style={{flexDirection: "row-reverse"}}>
+                                    {buttons}
+                                </FlexBox>
+                            </ContentPanelFooter>
                         </ContentPanel>
                     </div>
                 </FlexBox>
