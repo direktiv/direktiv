@@ -10,12 +10,21 @@ import { useRegistries } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 
 function RegistriesPanel(props){
+
     const {namespace} = props
     const {data, err, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace)
+
+    const [testConnLoading, setTestConnLoading] = useState(false)
+    const [successFeedback, setSuccessFeedback] = useState("")
 
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")
     const [token, setToken] = useState("")
+
+    let testConnBtnClasses = "small green"
+    if (testConnLoading) {
+        testConnBtnClasses += " btn-loading"
+    }
 
     console.log("Registries", err)
     return (
@@ -41,6 +50,8 @@ function RegistriesPanel(props){
                             setURL("")
                             setToken("")
                             setUsername("")
+                            setSuccessFeedback(false)
+                            setTestConnLoading(false)
                         }}
                         keyDownActions={[
                             KeyDownDefinition("Enter", async () => {
@@ -55,11 +66,18 @@ function RegistriesPanel(props){
                                 if(err) return err
                                 await  getRegistries()
                             }, "small blue", true, false),
+                            ButtonDefinition("Test Connection", () => {
+                                setTestConnLoading(true)
+                                setTimeout(()=>{
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(true)
+                                },2000)
+                            }, testConnBtnClasses, false, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
                         ]}
                     >
-                        <AddRegistryPanel token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
+                        <AddRegistryPanel successMsg={successFeedback} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
                     </Modal> 
                 </div>
             </ContentPanelTitle>
@@ -84,10 +102,15 @@ export default RegistriesPanel;
 // const registries = ["https://docker.io", "https://gcr.io", "https://us.gcr.io"]
 
 export function AddRegistryPanel(props) {
-    const {url, setURL, token, setToken, username, setUsername} = props
+    const {successMsg, url, setURL, token, setToken, username, setUsername} = props
 
     return (
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
+            { successMsg ? 
+            <FlexBox>
+                <Alert className="success">Connection seems good!</Alert>
+            </FlexBox>
+            :<></>}
             <FlexBox className="gap">
                 <FlexBox>
                     <input value={url} onChange={(e)=>setURL(e.target.value)} autoFocus placeholder="Enter URL" />

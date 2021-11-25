@@ -68,6 +68,22 @@ export function ContentPanelBody(props) {
     );
 }
 
+export function ContentPanelFooter(props) {
+
+    let {children, className, style} = props;
+    if (!className) {
+        className = ""
+    }
+
+    className = "content-panel-footer " + className
+
+    return (
+        <div style={{...style}} className={className}>
+            {children}
+        </div>
+    )
+}
+
 export function ContentPanelHeaderButton(props) {
 
     let {children, onClick, className} = props;

@@ -1,0 +1,32 @@
+.btn-loading :last-child {
+    color: red;
+}
+
+.btn-loading :not(:last-child) {
+    visibility: hidden;
+}
+
+.btn-loading {
+    pointer-events: none !important;
+    cursor: unset !important;
+    /* filter: grayscale(100%) !important; */
+    background-color: var(--theme-grey-light-blue);
+}
+
+.btn-loading :last-child {
+    margin: auto;
+    position: relative;
+    bottom: 16px;
+
+    border: 3px solid #f3f3f3; /* Light grey */
+    border-top: 3px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
