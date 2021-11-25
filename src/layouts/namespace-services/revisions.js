@@ -5,7 +5,7 @@ import { useParams } from "react-router"
 import { Service } from "."
 import AddValueButton from "../../components/add-button"
 import Button from "../../components/button"
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon, ContentPanelFooter } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal"
 import { Config } from "../../util"
@@ -65,7 +65,7 @@ function RevisionCreatePanel(props){
 function NamespaceRevisions(props) {
     const {namespace, service} = props
 
-    const {revisions, fn, config, traffic, err, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service)
+    const {revisions, fn, config, traffic, err, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service)
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
@@ -94,7 +94,7 @@ function NamespaceRevisions(props) {
         }
     },[config, getNamespaceServiceConfig, load])
 
-    if(revisions === null) {
+    if(revisions === null || traffic === null) {
         return ""
     }
 
@@ -176,18 +176,19 @@ function NamespaceRevisions(props) {
                 </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
-        <UpdateTraffic service={service} traffic={traffic}/>
+        <UpdateTraffic setNamespaceServiceRevisionTraffic={setNamespaceServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
         </FlexBox>
     )
 }
 
 function UpdateTraffic(props){
 
-    const {traffic, service} = props
+    const {traffic, service, revisions, setNamespaceServiceRevisionTraffic} = props
 
-    const [revOne, setRevOne] = useState(100)
+    const [revOne, setRevOne] = useState(traffic[0] ? traffic[0].revisionName : "")
+    const [revTwo, setRevTwo] = useState(traffic[1] ? traffic[1].revisionname : "")
+    const [tpercent, setTPercent] = useState(traffic[0] ? traffic[0].traffic : 0)
 
-    console.log(traffic)
     return(
         <FlexBox className="gap" style={{maxWidth:"300px", fontSize:"12px"}}>
             <ContentPanel style={{width:"100%", height:"fit-content"}}>
@@ -201,33 +202,77 @@ function UpdateTraffic(props){
                 </ContentPanelTitle>
                     <ContentPanelBody className="secrets-panel">
                         <FlexBox className="gap col" style={{paddingLeft:"10px"}}>
-                            <div className="col gap">
+                            <FlexBox className="col gap">
                                 <FlexBox className="col" style={{paddingRight:"13px"}}>
-                                    Revision One
-                                    <select>
-
+                                    <span style={{fontWeight:"bold"}}>Rev 1</span>
+                                    <select value={revOne} onChange={(e)=>{
+                                        if(e.target.value === "") {
+                                            setTPercent(0)
+                                        }
+                                        setRevOne(e.target.value)
+                                    }}>
+                                        <option value="">No revision selected</option>
+                                        {revisions.map((obj)=>{
+                                            if(obj.name !== revTwo) {
+                                                return(
+                                                    <option value={obj.name}>{obj.name}</option>
+                                                )
+                                            }
+                                        })}
                                     </select>
                                 </FlexBox>
                                 <FlexBox className="col" style={{paddingRight:"13px"}}>
-                                    Revision Two
-                                    <select>
-
+                                    <span style={{fontWeight:"bold"}}>Rev 2</span>
+                                    <select value={revTwo} onChange={(e)=>{
+                                        if(e.target.value === "") {
+                                            setTPercent(100)
+                                        }
+                                        setRevTwo(e.target.value)
+                                    }}>
+                                        <option value="">No revision selected</option>
+                                        {revisions.map((obj)=>{
+                                            if(obj.name !== revOne) {
+                                                return(
+                                                    <option value={obj.name}>{obj.name}</option>
+                                                )
+                                            } 
+                                        })}
                                     </select>
                                 </FlexBox>
                                 <FlexBox className="col" style={{paddingRight:"23px"}}>
-                                    Traffic Distribution
-                                    <input type="range" />
+                                    <span style={{fontWeight:"bold"}}>Traffic Distribution</span>
+                                    <FlexBox>
+                                        <FlexBox>
+                                            Rev 1
+                                        </FlexBox>
+                                        <FlexBox style={{textAlign:"right", justifyContent:"flex-end"}}>
+                                            Rev 2
+                                        </FlexBox>
+                                    </FlexBox>
+                                    <input 
+                                        disabled={revTwo === "" || revOne === "" ? true:false} 
+                                        id="revisionMarks" 
+                                        style={{paddingLeft:"0px"}} 
+                                        value={tpercent} onChange={(e)=>setTPercent(e.target.value)} 
+                                        type="range" 
+                                    />
+                                    <datalist style={{display:"flex", alignItems:'center'}} id="revisionMarks">
+                                        <option style={{flex:"auto", textAlign:"left", lineHeight:"10px"}} value="0" label={`${tpercent}%`}/>
+                                        <option style={{flex:"auto", textAlign:"right", lineHeight:"10px" }} value="100" label={`${100-tpercent}%`}/>
+                                    </datalist>
                                 </FlexBox>
-                                <div className=""/>
-                            </div>
+                            </FlexBox>
                         </FlexBox>
                     </ContentPanelBody>
                     <ContentPanelFooter>
-                                <FlexBox className="col" style={{paddingRight:"13px", alignItems:"flex-end"}}>
-                                    <Button className="small">
-                                        Save
-                                    </Button>
-                                </FlexBox>
+                        <FlexBox className="col" style={{paddingRight:"13px", alignItems:"flex-end"}}>
+                            <Button className="small" onClick={async ()=>{
+                                let err = await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
+                                console.log(err, "not to sure how to display this err yet")
+                            }}>
+                                Save
+                            </Button>
+                        </FlexBox>
                     </ContentPanelFooter>
             </ContentPanel>
         </FlexBox>
