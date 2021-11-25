@@ -29,7 +29,7 @@
 
 .toggle-details {
     display: flex;
-    width: 95px;
+    min-width: 100px;
 }
 
 .toggle-details > div {

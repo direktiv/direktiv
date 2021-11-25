@@ -4,6 +4,7 @@ import { IoPlay } from "react-icons/io5"
 import { useParams } from "react-router"
 import { Service } from "."
 import AddValueButton from "../../components/add-button"
+import Alert from "../../components/alert"
 import Button from "../../components/button"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon, ContentPanelFooter } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
@@ -188,6 +189,7 @@ function UpdateTraffic(props){
     const [revOne, setRevOne] = useState(traffic[0] ? traffic[0].revisionName : "")
     const [revTwo, setRevTwo] = useState(traffic[1] ? traffic[1].revisionname : "")
     const [tpercent, setTPercent] = useState(traffic[0] ? traffic[0].traffic : 0)
+    const [errMsg, setErrMsg] = useState("")
 
     return(
         <FlexBox className="gap" style={{maxWidth:"300px", fontSize:"12px"}}>
@@ -201,9 +203,9 @@ function UpdateTraffic(props){
                     </FlexBox>
                 </ContentPanelTitle>
                     <ContentPanelBody className="secrets-panel">
-                        <FlexBox className="gap col" style={{paddingLeft:"10px"}}>
+                        <FlexBox className="gap col" style={{}}>
                             <FlexBox className="col gap">
-                                <FlexBox className="col" style={{paddingRight:"13px"}}>
+                                <FlexBox className="col" style={{paddingRight:"4px"}}>
                                     <span style={{fontWeight:"bold"}}>Rev 1</span>
                                     <select value={revOne} onChange={(e)=>{
                                         if(e.target.value === "") {
@@ -221,7 +223,7 @@ function UpdateTraffic(props){
                                         })}
                                     </select>
                                 </FlexBox>
-                                <FlexBox className="col" style={{paddingRight:"13px"}}>
+                                <FlexBox className="col" style={{paddingRight:"4px"}}>
                                     <span style={{fontWeight:"bold"}}>Rev 2</span>
                                     <select value={revTwo} onChange={(e)=>{
                                         if(e.target.value === "") {
@@ -239,7 +241,7 @@ function UpdateTraffic(props){
                                         })}
                                     </select>
                                 </FlexBox>
-                                <FlexBox className="col" style={{paddingRight:"23px"}}>
+                                <FlexBox className="col" style={{paddingRight:"10px"}}>
                                     <span style={{fontWeight:"bold"}}>Traffic Distribution</span>
                                     <FlexBox>
                                         <FlexBox>
@@ -261,15 +263,24 @@ function UpdateTraffic(props){
                                         <option style={{flex:"auto", textAlign:"right", lineHeight:"10px" }} value="100" label={`${100-tpercent}%`}/>
                                     </datalist>
                                 </FlexBox>
+                                <FlexBox>
+                                    { errMsg ? 
+                                        <Alert className="critical">{errMsg}</Alert>
+                                    :<></>}
+                                </FlexBox>
                             </FlexBox>
                         </FlexBox>
                     </ContentPanelBody>
                     <ContentPanelFooter>
-                        <FlexBox className="col" style={{paddingRight:"13px", alignItems:"flex-end"}}>
+                        <FlexBox className="col" style={{alignItems:"flex-end"}}>
                             <Button className="small" onClick={async ()=>{
                                 let err = await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
                                 console.log(err, "not to sure how to display this err yet")
-
+                                if (err) {
+                                    setErrMsg(err)
+                                } else {
+                                    setErrMsg("")
+                                }
                             }}>
                                 Save
                             </Button>

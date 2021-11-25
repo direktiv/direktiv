@@ -287,3 +287,15 @@ tr {
     border-radius: 10px;
     border: 3px solid #ffffff;
   }
+
+
+select {
+  line-height: 48px;
+  height: 48px;
+  background-color: white;
+  border: solid 1px var(--theme-subtle-border);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 8px;
+}
+
