@@ -1,7 +1,7 @@
 import { useParams } from "react-router"
 import FlexBox from "../../components/flexbox"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon, ContentPanelFooter } from "../../components/content-panel"
-import { IoPlay } from "react-icons/io5"
+import { IoCopy, IoDesktop, IoEye, IoEyeOff, IoPlay } from "react-icons/io5"
 import { useNamespaceServiceRevision, usePodLogs } from "direktiv-react-hooks"
 import { Config } from "../../util"
 import { useEffect, useRef, useState } from "react"
@@ -62,7 +62,7 @@ function NamespaceRevisionDetails(props){
                     </ContentPanelTitle>
                         <ContentPanelBody className="secrets-panel" style={{fontSize:"11pt"}}>
                             <FlexBox style={{padding:"10px"}}>
-                                <FlexBox className="col">
+                                <FlexBox className="col gap">
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Created:</span> 
                                         <span style={{marginLeft:"3px"}}>2:12pm, 22/11/2021</span>
@@ -90,7 +90,7 @@ function NamespaceRevisionDetails(props){
                                         </ul>
                                     </div>:""}
                                 </FlexBox>
-                                <FlexBox className="col">
+                                <FlexBox className="col gap">
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Image:</span>
                                         <span style={{marginLeft:"3px"}}>{revisionDetails.image}</span>
@@ -108,7 +108,7 @@ function NamespaceRevisionDetails(props){
                                         <span style={{marginLeft:"3px"}}>{revisionDetails.desiredReplicas}</span>
                                     </div>
                                 </FlexBox>
-                                <FlexBox className="col">
+                                <FlexBox className="col gap">
                                     <span style={{fontWeight:"bold"}}>Conditions:</span>
                                     <ul style={{marginTop:"0px", listStyle:"none", paddingLeft:'10px'}}>
                                             {revisionDetails.conditions.map((obj)=>{
@@ -157,8 +157,8 @@ function PodLogs(props){
                         <FlexBox style={{maxHeight:"30px"}}>
                             {pods.map((obj)=>{
                                 return(
-                                    <div onClick={()=>setTab(obj.name)} style={{cursor:"pointer", backgroundColor: tab === obj.name ? "#223848":"#355166", padding:"5px", maxWidth:"150px"}}>
-                                        {obj.name.split(`namespace-${namespace}-${service}-${revision}-deployment-`)[1]}
+                                    <div onClick={()=>setTab(obj.name)} style={{color: tab === obj.name ? "white": "#b5b5b5", display:"flex", alignItems:"center", cursor:"pointer", backgroundColor: tab === obj.name ? "#223848":"#355166", padding:"5px", maxWidth:"150px", gap:"3px"}}>
+                                        <IoDesktop style={{fill: tab === obj.name ? "white": "#b5b5b5"}}/> {obj.name.split(`namespace-${namespace}-${service}-${revision}-deployment-`)[1]}
                                     </div>
                                 )
                             })}
@@ -172,18 +172,18 @@ function PodLogs(props){
                             </FlexBox>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 
-                                    <div onClick={(e)=>setFollow(!follow)} style={{backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                        Stop Watching
+                                    <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        <IoEyeOff/> Stop watching
                                     </div>
                                     :
-                                    <div onClick={(e)=>setFollow(!follow)} style={{backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                        Follow Logs
+                                    <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        <IoEye/> Follow logs
                                     </div>
                                 }
                                 <div onClick={()=>{
                                     copyTextToClipboard(clipData)
-                                }} style={{backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                    Copy to Clipboard
+                                }} style={{display:"flex", alignItems:"center", gap:"3px", backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    <IoCopy/> Copy to Clipboard
                                 </div>
                             </FlexBox>
                         </FlexBox>
