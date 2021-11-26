@@ -136,8 +136,8 @@ export function Registries(props) {
                     return (
                         <FlexBox key={obj.name} className="secret-tuple">
                             <FlexBox className="key">{obj.name}</FlexBox>
-                            <FlexBox className="val"><span>******</span></FlexBox>
-                            <FlexBox className="val"><span>******</span></FlexBox>
+                            <FlexBox className="val"></FlexBox>
+                            <FlexBox className="val"></FlexBox>
                             <FlexBox className="actions">
                                 <Modal 
                                     escapeToCancel

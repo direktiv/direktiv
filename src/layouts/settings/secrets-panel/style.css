@@ -19,11 +19,24 @@
 .secret-tuple {
     font-size: 12px;
     max-height: 24px;
+    padding: 2px;
+    background-color: white;
+    /* cursor: pointer; */
+    border-radius: 4px;
+}
+
+.secret-tuple .actions {
+    max-width: 20px;
+    margin-top: 2px;
+}
+
+.secret-tuple:hover {
+    background-color: rgba(0,0,0,0.1);
 }
 
 .secret-tuple > .key {
-    min-width: 40%;
-    max-width: 40%;
+    /* min-width: 40%; */
+    /* max-width: 40%; */
 
     padding-left: 8px;
 }
@@ -38,6 +51,7 @@
 
 .secrets-delete-btn {
     cursor: pointer;
+    float: right;
 }
 
 .secret-tuple > .actions {
