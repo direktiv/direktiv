@@ -77,7 +77,6 @@ function NamespaceServices(props) {
     useEffect(()=>{
         async function getcfg() {
             await getNamespaceConfig()
-            
         }
         if(load && config === null) {
             getcfg()
@@ -130,7 +129,7 @@ function NamespaceServices(props) {
                 ]}
                 actionButtons={[
                     ButtonDefinition("Add", async () => {
-                        let err = await createNamespaceService(serviceName, image, scale, size, cmd)
+                        let err = await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
                         if(err) return err
                     }, "small blue", true, false),
                     ButtonDefinition("Cancel", () => {
