@@ -9,6 +9,7 @@ import { AutoSizer, List } from 'react-virtualized'
 import 'react-virtualized/styles.css'; // only needs to be imported once
 import { ServiceStatus } from "."
 import { copyTextToClipboard} from '../../util'
+import * as dayjs from 'dayjs'
 
 export default function PodPanel(props) {
     const {namespace} = props
@@ -65,7 +66,7 @@ function NamespaceRevisionDetails(props){
                                 <FlexBox className="col gap">
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Created:</span> 
-                                        <span style={{marginLeft:"3px"}}>2:12pm, 22/11/2021</span>
+                                        <span style={{marginLeft:"3px"}}>{dayjs.unix(revisionDetails.created).format("HH:mmA, DD/MM/YYYY")}</span>
                                     </div>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Size:</span> 
