@@ -66,15 +66,15 @@ function NamespaceRevisionDetails(props){
                                 <FlexBox className="col gap">
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Created:</span> 
-                                        <span style={{marginLeft:"3px"}}>{dayjs.unix(revisionDetails.created).format("HH:mmA, DD/MM/YYYY")}</span>
+                                        <span style={{marginLeft:"5px"}}>{dayjs.unix(revisionDetails.created).format("HH:mmA, DD/MM/YYYY")}</span>
                                     </div>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Size:</span> 
-                                        <span style={{marginLeft:"3px"}}>{size}</span>
+                                        <span style={{marginLeft:"5px"}}>{size}</span>
                                     </div>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Generation:</span> 
-                                        <span style={{marginLeft:"3px"}}>{revisionDetails.generation}</span>
+                                        <span style={{marginLeft:"5px"}}>{revisionDetails.generation}</span>
                                     </div>
                                     {pods !== null && pods.length > 0 ?
                                     <div>
@@ -94,19 +94,19 @@ function NamespaceRevisionDetails(props){
                                 <FlexBox className="col gap">
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Image:</span>
-                                        <span style={{marginLeft:"3px"}}>{revisionDetails.image}</span>
+                                        <span style={{marginLeft:"5px"}}>{revisionDetails.image}</span>
                                     </div>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Scale:</span>
-                                        <span style={{marginLeft:"3px"}}>{revisionDetails.minScale}</span>
+                                        <span style={{marginLeft:"5px"}}>{revisionDetails.minScale}</span>
                                     </div>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Actual Replicas:</span>
-                                        <span style={{marginLeft:"3px"}}>{revisionDetails.actualReplicas}</span>
+                                        <span style={{marginLeft:"5px"}}>{revisionDetails.actualReplicas}</span>
                                     </div>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Desired Replicas:</span>
-                                        <span style={{marginLeft:"3px"}}>{revisionDetails.desiredReplicas}</span>
+                                        <span style={{marginLeft:"5px"}}>{revisionDetails.desiredReplicas}</span>
                                     </div>
                                 </FlexBox>
                                 <FlexBox className="col gap">
@@ -167,7 +167,7 @@ function PodLogs(props){
                         <FlexBox style={{flexGrow:1}}>
                             <Logs setClipData={setClipData} clipData={clipData} follow={follow} pod={tab} setFollow={setFollow}/>
                         </FlexBox>
-                        <FlexBox style={{maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                        <FlexBox style={{height:"40px", maxHeight:"70px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
                             <FlexBox>
                                 {tab}
                             </FlexBox>
