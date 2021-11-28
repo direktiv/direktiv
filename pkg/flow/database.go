@@ -741,7 +741,54 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 		return nil, err
 	}
 
-	query := wd.in.QueryVars().Where(entvar.NameEQ(key))
+	query := wd.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourIsNil())
+	if load {
+		query = query.WithVardata()
+	}
+
+	vref, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query variable ref: %v", parent(), err)
+		return nil, err
+	}
+
+	if load && vref.Edges.Vardata == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("variable data not found"),
+		}
+		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
+		return nil, err
+	}
+
+	if !load {
+		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
+		if err != nil {
+			srv.sugar.Debugf("%s failed to query variable metadata: %v", parent(), err)
+			return nil, err
+		}
+		vref.Edges.Vardata = vdata
+	}
+
+	vref.Edges.Instance = wd.in
+
+	d := new(instvarData)
+	d.instData = wd
+	d.vref = vref
+	d.vdata = vref.Edges.Vardata
+
+	return d, nil
+
+}
+
+func (srv *server) traverseToThreadVariable(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance, key string, load bool) (*instvarData, error) {
+
+	wd, err := srv.getInstance(ctx, nsc, namespace, instance, false)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
+		return nil, err
+	}
+
+	query := wd.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread"))
 	if load {
 		query = query.WithVardata()
 	}

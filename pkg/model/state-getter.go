@@ -25,16 +25,13 @@ type GetterDefinition struct {
 // Validate validates against the getter definition
 func (o *GetterDefinition) Validate() error {
 
-	if o.Scope == "" {
-		return errors.New(`scope required ("instance", "workflow", or "namespace")`)
-	}
-
 	switch o.Scope {
 	case "instance":
 	case "workflow":
 	case "namespace":
+	case "thread":
 	default:
-		return fmt.Errorf(`invalid scope '%s' (requires "instance", "workflow", or "namespace")`, o.Scope)
+		return ErrVarScope
 	}
 
 	if o.Key == "" {

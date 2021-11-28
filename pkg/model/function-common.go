@@ -107,6 +107,8 @@ type FunctionFileDefinition struct {
 	Type  string `yaml:"type,omitempty" json:"type,omitempty"`
 }
 
+var ErrVarScope = errors.New(`bad scope (choose 'namespace', 'workflow', 'thread' or 'instance')`)
+
 func (o FunctionFileDefinition) Validate() error {
 
 	if o.Key == "" {
@@ -122,8 +124,9 @@ func (o FunctionFileDefinition) Validate() error {
 	case "namespace":
 	case "workflow":
 	case "instance":
+	case "thread":
 	default:
-		return errors.New("bad scope (choose 'namespace', 'workflow', or 'instance')")
+		return ErrVarScope
 	}
 
 	switch o.Type {
