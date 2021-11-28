@@ -8,7 +8,7 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "dayjs": "^1.10.7",
-    "direktiv-react-hooks": "^0.0.26",
+    "direktiv-react-hooks": "^0.0.33",
     "rc-slider": "^9.7.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
