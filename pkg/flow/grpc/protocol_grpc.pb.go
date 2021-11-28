@@ -4231,6 +4231,8 @@ type InternalClient interface {
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
 	WorkflowVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_WorkflowVariableParcelsClient, error)
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetWorkflowVariableParcelsClient, error)
+	ThreadVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_ThreadVariableParcelsClient, error)
+	SetThreadVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetThreadVariableParcelsClient, error)
 	InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error)
 }
@@ -4393,8 +4395,74 @@ func (x *internalSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetVariableI
 	return m, nil
 }
 
+func (c *internalClient) ThreadVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_ThreadVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], "/direktiv_flow.Internal/ThreadVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalThreadVariableParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Internal_ThreadVariableParcelsClient interface {
+	Recv() (*VariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalThreadVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalThreadVariableParcelsClient) Recv() (*VariableInternalResponse, error) {
+	m := new(VariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *internalClient) SetThreadVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetThreadVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], "/direktiv_flow.Internal/SetThreadVariableParcels", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalSetThreadVariableParcelsClient{stream}
+	return x, nil
+}
+
+type Internal_SetThreadVariableParcelsClient interface {
+	Send(*SetVariableInternalRequest) error
+	CloseAndRecv() (*SetVariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalSetThreadVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalSetThreadVariableParcelsClient) Send(m *SetVariableInternalRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *internalSetThreadVariableParcelsClient) CloseAndRecv() (*SetVariableInternalResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetVariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *internalClient) InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], "/direktiv_flow.Internal/InstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[6], "/direktiv_flow.Internal/InstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -4426,7 +4494,7 @@ func (x *internalInstanceVariableParcelsClient) Recv() (*VariableInternalRespons
 }
 
 func (c *internalClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], "/direktiv_flow.Internal/SetInstanceVariableParcels", opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[7], "/direktiv_flow.Internal/SetInstanceVariableParcels", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -4469,6 +4537,8 @@ type InternalServer interface {
 	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error
 	WorkflowVariableParcels(*VariableInternalRequest, Internal_WorkflowVariableParcelsServer) error
 	SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error
+	ThreadVariableParcels(*VariableInternalRequest, Internal_ThreadVariableParcelsServer) error
+	SetThreadVariableParcels(Internal_SetThreadVariableParcelsServer) error
 	InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error
 	SetInstanceVariableParcels(Internal_SetInstanceVariableParcelsServer) error
 	mustEmbedUnimplementedInternalServer()
@@ -4495,6 +4565,12 @@ func (UnimplementedInternalServer) WorkflowVariableParcels(*VariableInternalRequ
 }
 func (UnimplementedInternalServer) SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetWorkflowVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) ThreadVariableParcels(*VariableInternalRequest, Internal_ThreadVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method ThreadVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) SetThreadVariableParcels(Internal_SetThreadVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetThreadVariableParcels not implemented")
 }
 func (UnimplementedInternalServer) InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method InstanceVariableParcels not implemented")
@@ -4645,6 +4721,53 @@ func (x *internalSetWorkflowVariableParcelsServer) Recv() (*SetVariableInternalR
 	return m, nil
 }
 
+func _Internal_ThreadVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(VariableInternalRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(InternalServer).ThreadVariableParcels(m, &internalThreadVariableParcelsServer{stream})
+}
+
+type Internal_ThreadVariableParcelsServer interface {
+	Send(*VariableInternalResponse) error
+	grpc.ServerStream
+}
+
+type internalThreadVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalThreadVariableParcelsServer) Send(m *VariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Internal_SetThreadVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(InternalServer).SetThreadVariableParcels(&internalSetThreadVariableParcelsServer{stream})
+}
+
+type Internal_SetThreadVariableParcelsServer interface {
+	SendAndClose(*SetVariableInternalResponse) error
+	Recv() (*SetVariableInternalRequest, error)
+	grpc.ServerStream
+}
+
+type internalSetThreadVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalSetThreadVariableParcelsServer) SendAndClose(m *SetVariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *internalSetThreadVariableParcelsServer) Recv() (*SetVariableInternalRequest, error) {
+	m := new(SetVariableInternalRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Internal_InstanceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(VariableInternalRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -4727,6 +4850,16 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SetWorkflowVariableParcels",
 			Handler:       _Internal_SetWorkflowVariableParcels_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "ThreadVariableParcels",
+			Handler:       _Internal_ThreadVariableParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetThreadVariableParcels",
+			Handler:       _Internal_SetThreadVariableParcels_Handler,
 			ClientStreams: true,
 		},
 		{

@@ -30,7 +30,7 @@ func (Workflow) Edges() []ent.Edge {
 		edge.From("namespace", Namespace.Type).Ref("workflows").Unique().Required().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("revisions", Revision.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("refs", Ref.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("instances", Instance.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("instances", Instance.Type),
 		edge.To("routes", Route.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("vars", VarRef.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),

@@ -479,74 +479,76 @@ func (srv *server) traverseToInstance(ctx context.Context, nsc *ent.NamespaceCli
 	rt, err := d.in.QueryRuntime().Select(entirt.FieldFlow).WithCaller().Only(ctx)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query instance runtime: %v", parent(), err)
-		return nil, err
+		// return nil, err
 	}
 	d.in.Edges.Runtime = rt
 
 	rev, err := d.in.QueryRevision().Only(ctx)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query instance revision: %v", parent(), err)
-		return nil, err
+		// return nil, err
 	}
 	d.in.Edges.Revision = rev
+
+	nd := new(nodeData)
+	d.nodeData = nd
 
 	wf, err := d.in.QueryWorkflow().Only(ctx)
 	if err != nil {
 		srv.sugar.Debugf("%s failed to query instance workflow: %v", parent(), err)
-		return nil, err
-	}
-	d.in.Edges.Workflow = wf
-
-	ino, err := wf.QueryInode().Only(ctx)
-	if err != nil {
-		srv.sugar.Debugf("%s failed to query workflow inode: %v", parent(), err)
-		return nil, err
-	}
-	wf.Edges.Inode = ino
-
-	elems := make([]string, 0)
-
-	var recurser func(x *ent.Inode) error
-
-	recurser = func(x *ent.Inode) error {
-
-		parent, err := x.QueryParent().Only(ctx)
-
+		// return nil, err
+	} else {
+		d.in.Edges.Workflow = wf
+		ino, err := wf.QueryInode().Only(ctx)
 		if err != nil {
+			srv.sugar.Debugf("%s failed to query workflow inode: %v", parent(), err)
+			return nil, err
+		}
+		wf.Edges.Inode = ino
 
-			if IsNotFound(err) {
-				return nil
+		elems := make([]string, 0)
+
+		var recurser func(x *ent.Inode) error
+
+		recurser = func(x *ent.Inode) error {
+
+			parent, err := x.QueryParent().Only(ctx)
+
+			if err != nil {
+
+				if IsNotFound(err) {
+					return nil
+				}
+
+				return err
+
 			}
 
-			return err
+			x.Edges.Parent = parent
+
+			err = recurser(parent)
+			if err != nil {
+				return err
+			}
+
+			elems = append(elems, parent.Name)
+
+			return nil
 
 		}
 
-		x.Edges.Parent = parent
-
-		err = recurser(parent)
+		err = recurser(ino)
 		if err != nil {
-			return err
+			srv.sugar.Debugf("%s failed to resolve parent(s): %v", parent(), err)
+			return nil, err
 		}
 
-		elems = append(elems, parent.Name)
-
-		return nil
+		d.ino = ino
+		d.base = ino.Name
+		d.dir = filepath.Join(elems...)
+		d.path = filepath.Join(d.dir, d.base)
 
 	}
-
-	err = recurser(ino)
-	if err != nil {
-		srv.sugar.Debugf("%s failed to resolve parent(s): %v", parent(), err)
-		return nil, err
-	}
-
-	nd := new(nodeData)
-	d.nodeData = nd
-	d.ino = ino
-	d.dir = filepath.Join(elems...)
-	d.base = ino.Name
-	d.path = filepath.Join(d.dir, d.base)
 
 	return d, nil
 
@@ -739,7 +741,54 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, nsc *ent.Name
 		return nil, err
 	}
 
-	query := wd.in.QueryVars().Where(entvar.NameEQ(key))
+	query := wd.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourIsNil())
+	if load {
+		query = query.WithVardata()
+	}
+
+	vref, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query variable ref: %v", parent(), err)
+		return nil, err
+	}
+
+	if load && vref.Edges.Vardata == nil {
+		err = &NotFoundError{
+			Label: fmt.Sprintf("variable data not found"),
+		}
+		srv.sugar.Debugf("%s failed to query variable data: %v", parent(), err)
+		return nil, err
+	}
+
+	if !load {
+		vdata, err := vref.QueryVardata().Select(entvardata.FieldCreatedAt, entvardata.FieldHash, entvardata.FieldSize, entvardata.FieldUpdatedAt).Only(ctx)
+		if err != nil {
+			srv.sugar.Debugf("%s failed to query variable metadata: %v", parent(), err)
+			return nil, err
+		}
+		vref.Edges.Vardata = vdata
+	}
+
+	vref.Edges.Instance = wd.in
+
+	d := new(instvarData)
+	d.instData = wd
+	d.vref = vref
+	d.vdata = vref.Edges.Vardata
+
+	return d, nil
+
+}
+
+func (srv *server) traverseToThreadVariable(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance, key string, load bool) (*instvarData, error) {
+
+	wd, err := srv.getInstance(ctx, nsc, namespace, instance, false)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
+		return nil, err
+	}
+
+	query := wd.in.QueryVars().Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread"))
 	if load {
 		query = query.WithVardata()
 	}

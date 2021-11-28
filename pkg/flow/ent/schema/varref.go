@@ -19,6 +19,7 @@ func (VarRef) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
 		field.String("name").Match(VarNameRegex).Optional().Annotations(entgql.OrderField("NAME")),
+		field.String("behaviour").Optional(),
 	}
 }
 
