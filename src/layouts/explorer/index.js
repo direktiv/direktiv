@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './style.css';
 import { IoAdd, IoFolderOpen, IoSearch } from 'react-icons/io5';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -13,6 +13,9 @@ import Button from '../../components/button';
 import Pagination from '../../components/pagination';
 
 function Explorer(props) {
+
+    const [pageNo, setPageNo] = useState(1);
+
     return(
         <>
             <SearchBar />
@@ -58,7 +61,7 @@ function Explorer(props) {
                             Open API Commands
                         </Button>
                     </FlexBox>
-                    <Pagination max={10} currentIndex={1} />
+                    <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} />
                 </FlexBox>
             </FlexBox>
         </>

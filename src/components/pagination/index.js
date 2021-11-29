@@ -5,7 +5,7 @@ import {BiChevronLeft, BiChevronRight} from 'react-icons/bi';
 
 function Pagination(props) {
 
-    let {max, currentIndex} = props;
+    let {max, currentIndex, pageNoSetter} = props;
     let min = currentIndex-1;
     if (min < 1) {
         min = 1
@@ -36,7 +36,7 @@ function Pagination(props) {
             )
             pageBtns.push(
                 <PaginationButton currentIndex={i === currentIndex} label={max} onClick={() => {
-                    console.log("navigate to page " + max);
+                    pageNoSetter(max)
                 }}/>
             )
 
@@ -44,20 +44,38 @@ function Pagination(props) {
         } else {
             pageBtns.push(
                 <PaginationButton currentIndex={i === currentIndex} label={i} onClick={() => {
-                    console.log("navigate to page " + i);
+                    pageNoSetter(i)
                 }}/>
             )
         }
     }
 
+    let leftPaginationBtnClasses = "pagination-btn";
+    let leftChevronClasses = "auto-margin"
+    if (currentIndex === 1) {
+        leftChevronClasses += " hidden"
+        leftPaginationBtnClasses += " disabled"
+    }
+
+    let rightPaginationBtnClasses = "pagination-btn";
+    let rightChevronClasses = "auto-margin"
+    if (currentIndex === max) {
+        rightChevronClasses += " hidden"
+        rightPaginationBtnClasses += " disabled"
+    }
+
     return(
         <FlexBox className="pagination-container auto-margin">
-            <FlexBox className="pagination-btn" style={{ maxWidth: "24px" }}>
-                <BiChevronLeft className="auto-margin" />
+            <FlexBox className={leftPaginationBtnClasses} style={{ maxWidth: "24px" }} onClick={() => {
+                pageNoSetter(currentIndex-1)
+            }}>
+                <BiChevronLeft className={leftChevronClasses} />
             </FlexBox>
             {pageBtns}
-            <FlexBox className="pagination-btn" >
-                <BiChevronRight className="auto-margin" />
+            <FlexBox className={rightPaginationBtnClasses} onClick={() => {
+                pageNoSetter(currentIndex+1)
+            }}>
+                <BiChevronRight className={rightChevronClasses} />
             </FlexBox>
         </FlexBox>
     )

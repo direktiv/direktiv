@@ -7,6 +7,7 @@
     cursor: pointer;
     border-radius: 4px;
     max-width: 20px;
+    user-select: none;
 }
 
 .pagination-btn > div {
