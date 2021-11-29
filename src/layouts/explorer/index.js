@@ -119,12 +119,12 @@ function DirListItem(props) {
                 <FlexBox className="explorer-item-name">
                     {name}
                 </FlexBox>
-                <FlexBox className="explorer-item-actions">
+                <FlexBox className="explorer-item-actions gap">
                     <FlexBox>
-                        <FiEdit />
+                        <FiEdit className="auto-margin" />
                     </FlexBox>
                     <FlexBox>
-                        <HiOutlineTrash />
+                        <HiOutlineTrash className="auto-margin red-text" />
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
@@ -145,12 +145,12 @@ function WorkflowListItem(props) {
                 <FlexBox className="explorer-item-name">
                     {name}
                 </FlexBox>
-                <FlexBox className="explorer-item-actions">
+                <FlexBox className="explorer-item-actions gap">
                     <FlexBox>
-                        <FiEdit />
+                        <FiEdit className="auto-margin" />
                     </FlexBox>
                     <FlexBox>
-                        <HiOutlineTrash />
+                        <HiOutlineTrash className="auto-margin red-text" />
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
