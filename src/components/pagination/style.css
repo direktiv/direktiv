@@ -1,0 +1,22 @@
+.pagination-container {
+    color: var(--theme-dark-gray-text);
+    max-width: 216px;
+}
+
+.pagination-btn {
+    cursor: pointer;
+    border-radius: 4px;
+    max-width: 20px;
+}
+
+.pagination-btn > div {
+    width: 100%;
+}
+
+.pagination-btn:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+.active-pagination-btn {
+    color: var(--theme-brand-blue);
+}

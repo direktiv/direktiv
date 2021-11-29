@@ -8,12 +8,15 @@ import { GenerateRandomKey } from '../../util';
 import { FiEdit, FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
 import { HiOutlineTrash } from 'react-icons/hi';
+import { BsCodeSlash } from 'react-icons/bs';
+import Button from '../../components/button';
+import Pagination from '../../components/pagination';
 
 function Explorer(props) {
     return(
         <>
             <SearchBar />
-            <FlexBox className="col" style={{ paddingRight: "8px" }}>
+            <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
                 <ContentPanel>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -46,6 +49,17 @@ function Explorer(props) {
                         <ExplorerList />
                     </ContentPanelBody>
                 </ContentPanel>
+                <FlexBox style={{maxHeight: "32px"}}>
+                    <FlexBox>
+                        <Button className="small light" style={{ display: "flex" }}>
+                            <ContentPanelHeaderButtonIcon>
+                                <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
+                            </ContentPanelHeaderButtonIcon>
+                            Open API Commands
+                        </Button>
+                    </FlexBox>
+                    <Pagination max={10} currentIndex={1} />
+                </FlexBox>
             </FlexBox>
         </>
     )
@@ -75,7 +89,7 @@ function ExplorerList(props) {
     }]
 
     return(
-        <FlexBox className="col">
+        <FlexBox className="explorer-list col">
             {tmp.map((obj) => {
                 console.log(obj);
                 if (obj.type === "dir") {
