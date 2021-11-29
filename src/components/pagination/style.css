@@ -19,5 +19,6 @@
 }
 
 .active-pagination-btn {
-    color: var(--theme-brand-blue);
+    background-color: var(--theme-brand-blue);
+    color: white;
 }
