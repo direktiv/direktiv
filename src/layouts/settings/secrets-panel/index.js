@@ -33,7 +33,7 @@ function SecretsPanel(props){
                     <div>
                         Secrets
                     </div>
-                    <HelpIcon msg={"Add secrets to reference in your workflows"} />
+                    <HelpIcon msg={"Encrypted key/value pairs that can be referenced within workflows. Suitable for storing sensitive information (such as tokens) for use in workflows."} />
                 </FlexBox>
                 <div>
                     <Modal title="New secret" 

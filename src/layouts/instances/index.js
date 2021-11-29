@@ -34,7 +34,7 @@ function InstancesPage(props) {
                         <div>
                             Instances
                         </div>
-                        <HelpIcon msg={"A list of instances run by workflows within the current active namespace."} />
+                        <HelpIcon msg={"A list of recently executed instances."} />
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody>

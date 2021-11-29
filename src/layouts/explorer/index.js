@@ -83,7 +83,7 @@ function ExplorerList(props) {
                     <div>
                         Explorer
                     </div>
-                    <HelpIcon msg={"List of workflows or directories"} />
+                    <HelpIcon msg={"Directory/workflow browser."} />
                 </FlexBox>
                 <div className="explorer-sort-by">
                     <div className="esb-label inline" style={{marginRight: "8px"}}>
