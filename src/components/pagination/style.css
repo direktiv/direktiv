@@ -1,6 +1,6 @@
 .pagination-container {
     color: var(--theme-dark-gray-text);
-    max-width: 216px;
+    /* max-width: 216px; */
 }
 
 .pagination-btn {

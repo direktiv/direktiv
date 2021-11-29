@@ -23,30 +23,35 @@ function Pagination(props) {
         rangeMin = max - 5;
     } 
 
+    let count = 0;
+
     let pageBtns = [];
     for (let i = rangeMin; i < min+5; i++) {
-
-        if (i > max) {
-            break
-        }
-
-        if ((i === min+4) && (i !== max)) {
-            pageBtns.push(
-                <PaginationButton label="..."/>
-            )
-            pageBtns.push(
-                <PaginationButton currentIndex={i === currentIndex} label={max} onClick={() => {
-                    pageNoSetter(max)
-                }}/>
-            )
-
-            break;
-        } else {
-            pageBtns.push(
-                <PaginationButton currentIndex={i === currentIndex} label={i} onClick={() => {
-                    pageNoSetter(i)
-                }}/>
-            )
+        if (i > 0) {
+            if (i > max) {
+                break
+            }
+    
+            if ((i === min+4) && (i !== max)) {
+                count += 2;
+                pageBtns.push(
+                    <PaginationButton label="..."/>
+                )
+                pageBtns.push(
+                    <PaginationButton currentIndex={i === currentIndex} label={max} onClick={() => {
+                        pageNoSetter(max)
+                    }}/>
+                )
+    
+                break;
+            } else {
+                count++;
+                pageBtns.push(
+                    <PaginationButton currentIndex={i === currentIndex} label={i} onClick={() => {
+                        pageNoSetter(i)
+                    }}/>
+                )
+            }
         }
     }
 
@@ -65,7 +70,7 @@ function Pagination(props) {
     }
 
     return(
-        <FlexBox className="pagination-container auto-margin">
+        <FlexBox className="pagination-container auto-margin" style={{ maxWidth: ((count + 2) * 24) + (count-1 * 8) + "px" }}>
             <FlexBox className={leftPaginationBtnClasses} style={{ maxWidth: "24px" }} onClick={() => {
                 pageNoSetter(currentIndex-1)
             }}>
