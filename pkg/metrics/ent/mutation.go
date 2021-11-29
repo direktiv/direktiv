@@ -34,6 +34,7 @@ type MetricsMutation struct {
 	id             *int
 	namespace      *string
 	workflow       *string
+	revision       *string
 	instance       *string
 	state          *string
 	timestamp      *time.Time
@@ -122,8 +123,8 @@ func (m MetricsMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *MetricsMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -201,6 +202,42 @@ func (m *MetricsMutation) OldWorkflow(ctx context.Context) (v string, err error)
 // ResetWorkflow resets all changes to the "workflow" field.
 func (m *MetricsMutation) ResetWorkflow() {
 	m.workflow = nil
+}
+
+// SetRevision sets the "revision" field.
+func (m *MetricsMutation) SetRevision(s string) {
+	m.revision = &s
+}
+
+// Revision returns the value of the "revision" field in the mutation.
+func (m *MetricsMutation) Revision() (r string, exists bool) {
+	v := m.revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevision returns the old "revision" field's value of the Metrics entity.
+// If the Metrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricsMutation) OldRevision(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevision: %w", err)
+	}
+	return oldValue.Revision, nil
+}
+
+// ResetRevision resets all changes to the "revision" field.
+func (m *MetricsMutation) ResetRevision() {
+	m.revision = nil
 }
 
 // SetInstance sets the "instance" field.
@@ -613,6 +650,11 @@ func (m *MetricsMutation) ResetTransition() {
 	delete(m.clearedFields, metrics.FieldTransition)
 }
 
+// Where appends a list predicates to the MetricsMutation builder.
+func (m *MetricsMutation) Where(ps ...predicate.Metrics) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *MetricsMutation) Op() Op {
 	return m.op
@@ -627,12 +669,15 @@ func (m *MetricsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MetricsMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.namespace != nil {
 		fields = append(fields, metrics.FieldNamespace)
 	}
 	if m.workflow != nil {
 		fields = append(fields, metrics.FieldWorkflow)
+	}
+	if m.revision != nil {
+		fields = append(fields, metrics.FieldRevision)
 	}
 	if m.instance != nil {
 		fields = append(fields, metrics.FieldInstance)
@@ -673,6 +718,8 @@ func (m *MetricsMutation) Field(name string) (ent.Value, bool) {
 		return m.Namespace()
 	case metrics.FieldWorkflow:
 		return m.Workflow()
+	case metrics.FieldRevision:
+		return m.Revision()
 	case metrics.FieldInstance:
 		return m.Instance()
 	case metrics.FieldState:
@@ -704,6 +751,8 @@ func (m *MetricsMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldNamespace(ctx)
 	case metrics.FieldWorkflow:
 		return m.OldWorkflow(ctx)
+	case metrics.FieldRevision:
+		return m.OldRevision(ctx)
 	case metrics.FieldInstance:
 		return m.OldInstance(ctx)
 	case metrics.FieldState:
@@ -744,6 +793,13 @@ func (m *MetricsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWorkflow(v)
+		return nil
+	case metrics.FieldRevision:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevision(v)
 		return nil
 	case metrics.FieldInstance:
 		v, ok := value.(string)
@@ -916,6 +972,9 @@ func (m *MetricsMutation) ResetField(name string) error {
 		return nil
 	case metrics.FieldWorkflow:
 		m.ResetWorkflow()
+		return nil
+	case metrics.FieldRevision:
+		m.ResetRevision()
 		return nil
 	case metrics.FieldInstance:
 		m.ResetInstance()

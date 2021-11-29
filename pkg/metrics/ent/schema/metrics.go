@@ -16,6 +16,7 @@ func (Metrics) Fields() []ent.Field {
 		// field.String("id").Unique(),
 		field.String("namespace").NotEmpty(),
 		field.String("workflow").NotEmpty(),
+		field.String("revision"),
 		field.String("instance").NotEmpty(),
 		field.String("state").NotEmpty(),
 		field.Time("timestamp"),

@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "namespace", Type: field.TypeString},
 		{Name: "workflow", Type: field.TypeString},
+		{Name: "revision", Type: field.TypeString},
 		{Name: "instance", Type: field.TypeString},
 		{Name: "state", Type: field.TypeString},
 		{Name: "timestamp", Type: field.TypeTime},
@@ -25,10 +26,9 @@ var (
 	}
 	// MetricsTable holds the schema information for the "metrics" table.
 	MetricsTable = &schema.Table{
-		Name:        "metrics",
-		Columns:     MetricsColumns,
-		PrimaryKey:  []*schema.Column{MetricsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "metrics",
+		Columns:    MetricsColumns,
+		PrimaryKey: []*schema.Column{MetricsColumns[0]},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

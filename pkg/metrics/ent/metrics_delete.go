@@ -20,9 +20,9 @@ type MetricsDelete struct {
 	mutation *MetricsMutation
 }
 
-// Where adds a new predicate to the MetricsDelete builder.
+// Where appends a list predicates to the MetricsDelete builder.
 func (md *MetricsDelete) Where(ps ...predicate.Metrics) *MetricsDelete {
-	md.mutation.predicates = append(md.mutation.predicates, ps...)
+	md.mutation.Where(ps...)
 	return md
 }
 
@@ -46,6 +46,9 @@ func (md *MetricsDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(md.hooks) - 1; i >= 0; i-- {
+			if md.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = md.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, md.mutation); err != nil {
