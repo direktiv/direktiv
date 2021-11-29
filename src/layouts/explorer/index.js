@@ -12,6 +12,10 @@ import { useNodes } from 'direktiv-react-hooks';
 import { useNavigate, useParams } from 'react-router';
 import Modal, {ButtonDefinition} from '../../components/modal'
 import DirektivEditor from '../../components/editor';
+import { BsCodeSlash } from 'react-icons/bs';
+import Button from '../../components/button';
+import Pagination from '../../components/pagination';
+
 
 function Explorer(props) {
     const params = useParams()
@@ -28,7 +32,7 @@ function Explorer(props) {
     return(
         <>
             <SearchBar />
-            <FlexBox className="col" style={{ paddingRight: "8px" }}>
+            <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
                 <ExplorerList  namespace={namespace} path={filepath}/>
             </FlexBox>
         </>
@@ -54,6 +58,7 @@ function ExplorerList(props) {
     const [name, setName] = useState("")
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
+    // const [pageNo, setPageNo] = useState(1);
 
     const {data, err, templates, createNode, deleteNode, renameNode, toggleWorkflow, getWorkflowRouter } = useNodes(Config.url, true, namespace, path)
 
@@ -68,6 +73,7 @@ function ExplorerList(props) {
     }
 
     return(
+        <>
         <ContentPanel>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
@@ -183,6 +189,18 @@ function ExplorerList(props) {
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
+        <FlexBox style={{maxHeight: "32px"}}>
+        <FlexBox>
+            <Button className="small light" style={{ display: "flex" }}>
+                <ContentPanelHeaderButtonIcon>
+                    <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
+                </ContentPanelHeaderButtonIcon>
+                Open API Commands
+            </Button>
+        </FlexBox>
+        {/* <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} /> */}
+    </FlexBox>
+    </>
     )
 }
 

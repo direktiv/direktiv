@@ -59,3 +59,8 @@
 .explorer-item-actions > div:hover {
     background-color: rgba(0,0,0,0.1);
 }
+
+.explorer-list {
+    min-height: 500px;
+    max-height: 500px;
+}
