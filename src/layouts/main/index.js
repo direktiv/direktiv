@@ -84,13 +84,16 @@ function NamespaceNavigation(props){
     return(
         <FlexBox className="content-col col">
             <FlexBox className="breadcrumbs-row">
-                <Breadcrumbs/>
+                <Breadcrumbs namespace={namespace}/>
             </FlexBox>
             <FlexBox className="col" style={{paddingBottom: "8px"}}>
                 {namespaces !== null ? 
                 <Routes>
                     <Route path="/" element={<div>index route:)</div>} />
+                    {/* Explorer routing */}
                     <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} />
+                    <Route path="/n/:namespace/:type/*" element={<Explorer namespace={namespace} />} />
+
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>

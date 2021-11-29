@@ -56,6 +56,6 @@
     cursor: pointer;
 }
 
-.explorer-item-actions div:hover {
+.explorer-item-actions > div:hover {
     background-color: rgba(0,0,0,0.1);
 }

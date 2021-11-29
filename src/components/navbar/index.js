@@ -146,9 +146,18 @@ function NavItems(props) {
     let monitoring = matchPath("/n/:namespace/monitoring", pathname)
     // let builder = matchPath("/n/:namespace/builder", pathname)
     let events = matchPath("/n/:namespace/events", pathname)
+
+    // instance path matching
     let instances = matchPath("/n/:namespace/instances", pathname)
+    let instanceid = matchPath("/n/:namespace/instances/:id", pathname)
+    
     let permissions = matchPath("/n/:namespaces/permissions", pathname)
+
+    // services pathname matching
     let services = matchPath("/n/:namespace/services", pathname)
+    let service = matchPath("/n/:namespace/services/:service", pathname)
+    let revision = matchPath("/n/:namespace/services/:service/:revision", pathname)
+
     let settings = matchPath("/n/:namespace/settings", pathname)
 
 
@@ -178,7 +187,7 @@ function NavItems(props) {
                 </li> */}
                 <li>
                     <Link to={`/n/${namespace}/instances`}>
-                        <NavItem className={instances ? "active":""} label="Instances">
+                        <NavItem className={instances || instanceid ? "active":""} label="Instances">
                             <BsCodeSquare/>
                         </NavItem>
                     </Link>
@@ -199,7 +208,7 @@ function NavItems(props) {
                 </li>
                 <li>
                     <Link to={`/n/${namespace}/services`}>
-                        <NavItem className={services ? "active":""} label="Services">
+                        <NavItem className={services || service || revision ? "active":""} label="Services">
                             <IoCubeOutline/>
                         </NavItem>
                     </Link>
@@ -222,6 +231,9 @@ function GlobalNavItems(props) {
 
     let jq = matchPath("/jq", pathname)
     let gs = matchPath("/g/services", pathname)
+    let gservice = matchPath("/g/services/:service", pathname)
+    let grevision = matchPath("/g/services/:service/:revision", pathname)
+
     let gr = matchPath("/g/registries", pathname)
 
     return (
@@ -236,7 +248,7 @@ function GlobalNavItems(props) {
                 </li>
                 <li>
                     <Link to={"/g/services"}>
-                        <NavItem className={gs ? "active":""} label="Global Services">
+                        <NavItem className={gs || gservice || grevision ? "active":""} label="Global Services">
                             <IoGlobeOutline/>
                         </NavItem>
                     </Link>

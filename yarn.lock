@@ -4107,10 +4107,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-direktiv-react-hooks@^0.0.33:
-  version "0.0.33"
-  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.33.tgz#5a3196d831d6dae2eea516fc1997f14582ccba78"
-  integrity sha512-RNaUwZuyJ9XtShJGuEUy47wxEZIkjjJbg+r8XEBhxosTdmd6oYUI2vrScpP+Ur/zN3AODFv3MBuqSsnhSXuVUw==
+direktiv-react-hooks@^0.0.37:
+  version "0.0.37"
+  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.37.tgz#ddce11c45ebd06282375d475f7361351d4286ac5"
+  integrity sha512-lOKi2eRW+aBjZmwqF3EB7nZQbu/zXRl18Pq4Mbxuk/lx+S5E9GBmKZPeFJN79Z2vcEe9NxLlcAifmcMmlvH2ig==
   dependencies:
     "@types/event-source-polyfill" "^1.0.0"
     event-source-polyfill "^1.0.25"

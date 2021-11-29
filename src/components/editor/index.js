@@ -2,7 +2,7 @@ import Editor, {useMonaco} from "@monaco-editor/react";
 import { useEffect } from "react";
 
 export default function DirektivEditor(props) {
-    const {dvalue, dlang, value, height, width, setDValue, onMount} = props
+    const {dvalue, dlang, value, height, width, setDValue, onMount, readonly} = props
     
     const monaco = useMonaco()
 
@@ -16,6 +16,9 @@ export default function DirektivEditor(props) {
 
     return (
         <Editor
+            options={{
+                readOnly: readonly
+            }}
             height={height}
             width={width}
             defaultLanguage={dlang}
