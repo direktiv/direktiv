@@ -109,16 +109,16 @@ function AddVariablePanel(props) {
 
     return(
         <Tabs 
-            style={{minHeight: "400px", minWidth: "450px"}}
+            style={{minHeight: "400px", minWidth: "600px"}}
             headers={["Manual", "Upload"]}
             tabs={[(
                 <FlexBox id="written" className="col gap" style={{fontSize: "12px"}}>
                     <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
-                    <FlexBox className="gap" style={{maxHeight: "300px"}}>
+                    <FlexBox className="gap" style={{maxHeight: "600px"}}>
                         <FlexBox style={{overflow:"hidden"}}>
-                            <DirektivEditor dlang={"shell"} width={"450px"} dvalue={dValue} setDValue={setDValue} height={"300px"}/>
+                            <DirektivEditor dlang={"shell"} width={"600px"} dvalue={dValue} setDValue={setDValue} height={"600px"}/>
                         </FlexBox>
                     </FlexBox>
                 </FlexBox>
