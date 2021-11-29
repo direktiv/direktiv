@@ -102,6 +102,18 @@ type FlowClient interface {
 	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
+	// COMING SOON:
+	//
+	// rpc ValidateWorkflow (ValidateWorkflowRequest) returns (ValidateWorkflowResponse) {}
+	// Dependencies // Return dependency graph.
+	// Crons // List of cron schedules on the namespace.
+	// Broadcast // Broadcast Cloudevent.
+	EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error)
+	EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error)
+	EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error)
+	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
+	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
+	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
@@ -1424,6 +1436,106 @@ func (c *flowClient) WorkflowMetrics(ctx context.Context, in *WorkflowMetricsReq
 	return out, nil
 }
 
+func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error) {
+	out := new(EventListenersResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/EventListeners", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], "/direktiv_flow.Flow/EventListenersStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowEventListenersStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_EventListenersStreamClient interface {
+	Recv() (*EventListenersResponse, error)
+	grpc.ClientStream
+}
+
+type flowEventListenersStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowEventListenersStreamClient) Recv() (*EventListenersResponse, error) {
+	m := new(EventListenersResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error) {
+	out := new(EventHistoryResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/EventHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[25], "/direktiv_flow.Flow/EventHistoryStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowEventHistoryStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_EventHistoryStreamClient interface {
+	Recv() (*EventHistoryResponse, error)
+	grpc.ClientStream
+}
+
+type flowEventHistoryStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowEventHistoryStreamClient) Recv() (*EventHistoryResponse, error) {
+	m := new(EventHistoryResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error) {
+	out := new(HistoricalEventResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/HistoricalEvent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ReplayEvent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ToggleWorkflow", in, out, opts...)
@@ -1574,6 +1686,18 @@ type FlowServer interface {
 	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error)
 	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
+	// COMING SOON:
+	//
+	// rpc ValidateWorkflow (ValidateWorkflowRequest) returns (ValidateWorkflowResponse) {}
+	// Dependencies // Return dependency graph.
+	// Crons // List of cron schedules on the namespace.
+	// Broadcast // Broadcast Cloudevent.
+	EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error)
+	EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error
+	EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error)
+	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
+	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
+	ReplayEvent(context.Context, *ReplayEventRequest) (*empty.Empty, error)
 	ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error)
 	SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*empty.Empty, error)
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
@@ -1836,6 +1960,24 @@ func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNode
 }
 func (UnimplementedFlowServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
+}
+func (UnimplementedFlowServer) EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EventListeners not implemented")
+}
+func (UnimplementedFlowServer) EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method EventListenersStream not implemented")
+}
+func (UnimplementedFlowServer) EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EventHistory not implemented")
+}
+func (UnimplementedFlowServer) EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method EventHistoryStream not implemented")
+}
+func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HistoricalEvent not implemented")
+}
+func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
 }
 func (UnimplementedFlowServer) ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleWorkflow not implemented")
@@ -3452,6 +3594,120 @@ func _Flow_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_EventListeners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventListenersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).EventListeners(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/EventListeners",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).EventListeners(ctx, req.(*EventListenersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_EventListenersStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(EventListenersRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).EventListenersStream(m, &flowEventListenersStreamServer{stream})
+}
+
+type Flow_EventListenersStreamServer interface {
+	Send(*EventListenersResponse) error
+	grpc.ServerStream
+}
+
+type flowEventListenersStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowEventListenersStreamServer) Send(m *EventListenersResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_EventHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).EventHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/EventHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).EventHistory(ctx, req.(*EventHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_EventHistoryStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(EventHistoryRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).EventHistoryStream(m, &flowEventHistoryStreamServer{stream})
+}
+
+type Flow_EventHistoryStreamServer interface {
+	Send(*EventHistoryResponse) error
+	grpc.ServerStream
+}
+
+type flowEventHistoryStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowEventHistoryStreamServer) Send(m *EventHistoryResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_HistoricalEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HistoricalEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).HistoricalEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/HistoricalEvent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).HistoricalEvent(ctx, req.(*HistoricalEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReplayEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).ReplayEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/ReplayEvent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ReplayEvent(ctx, req.(*ReplayEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_ToggleWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ToggleWorkflowRequest)
 	if err := dec(in); err != nil {
@@ -3822,6 +4078,22 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_WorkflowMetrics_Handler,
 		},
 		{
+			MethodName: "EventListeners",
+			Handler:    _Flow_EventListeners_Handler,
+		},
+		{
+			MethodName: "EventHistory",
+			Handler:    _Flow_EventHistory_Handler,
+		},
+		{
+			MethodName: "HistoricalEvent",
+			Handler:    _Flow_HistoricalEvent_Handler,
+		},
+		{
+			MethodName: "ReplayEvent",
+			Handler:    _Flow_ReplayEvent_Handler,
+		},
+		{
 			MethodName: "ToggleWorkflow",
 			Handler:    _Flow_ToggleWorkflow_Handler,
 		},
@@ -3970,6 +4242,16 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SetInstanceVariableParcels",
 			Handler:       _Flow_SetInstanceVariableParcels_Handler,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "EventListenersStream",
+			Handler:       _Flow_EventListenersStream_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "EventHistoryStream",
+			Handler:       _Flow_EventHistoryStream_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "pkg/flow/grpc/protocol.proto",

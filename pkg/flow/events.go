@@ -16,6 +16,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -25,6 +26,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -555,7 +557,311 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
+func eventListenersOrder(p *pagination) ent.EventsPaginateOption {
+
+	field := ent.EventsOrderFieldUpdatedAt
+	direction := ent.OrderDirectionAsc
+
+	if p.order != nil {
+
+		if x := p.order.Field; x != "" && x == "UPDATED" {
+			field = ent.EventsOrderFieldUpdatedAt
+		}
+
+	}
+
+	return ent.WithEventsOrder(&ent.EventsOrder{
+		Direction: direction,
+		Field:     field,
+	})
+
+}
+
+func eventListenersFilter(p *pagination) ent.EventsPaginateOption {
+
+	if p.filter == nil {
+		return nil
+	}
+
+	filter := p.filter.Val
+
+	return ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+
+		if filter == "" {
+			return query, nil
+		}
+
+		field := p.filter.Field
+		if field == "" {
+			return query, nil
+		}
+
+		// switch field {
+		// case "NAME":
+
+		// 	ftype := p.filter.Type
+		// 	if ftype == "" {
+		// 		return query, nil
+		// 	}
+
+		// 	switch ftype {
+		// 	case "CONTAINS":
+		// 		return query.Where(entns.NameContains(filter)), nil
+		// 	}
+		// }
+
+		return query, nil
+
+	})
+
+}
+
+func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	namespace := req.GetNamespace()
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []ent.EventsPaginateOption{}
+	opts = append(opts, eventListenersOrder(p))
+	filter := eventListenersFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+
+	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	query := ns.QueryNamespacelisteners()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.EventListenersResponse
+
+	err = atob(cx, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Namespace = namespace
+
+	m := make(map[string]string)
+
+	for idx, edge := range cx.Edges {
+
+		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
+
+		in, _ := edge.Node.Instance(ctx)
+		if in != nil {
+			resp.Edges[idx].Node.Instance = in.ID.String()
+		}
+
+		wf, err := edge.Node.Workflow(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		path, exists := m[wf.ID.String()]
+		if !exists {
+			wfd, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			if err != nil {
+				return nil, err
+			}
+			path = wfd.path
+			m[wf.ID.String()] = path
+		}
+
+		resp.Edges[idx].Node.Workflow = path
+
+		resp.Edges[idx].Node.Mode = "or"
+		if edge.Node.Count > 1 {
+			resp.Edges[idx].Node.Mode = "and"
+		}
+
+		edefs := make([]*grpc.EventDef, 0)
+		for _, ev := range edge.Node.Events {
+
+			var et string
+			if v, ok := ev["type"]; ok {
+				et, _ = v.(string)
+			}
+
+			delete(ev, "type")
+
+			filters := make(map[string]string)
+
+			for k, v := range ev {
+				if !strings.HasPrefix(k, "filter-") {
+					continue
+				}
+				k = strings.TrimPrefix(k, "filter-")
+				if s, ok := v.(string); ok {
+					filters[k] = s
+				}
+			}
+
+			edefs = append(edefs, &grpc.EventDef{
+				Type:    et,
+				Filters: filters,
+			})
+
+		}
+
+		resp.Edges[idx].Node.Events = edefs
+
+	}
+
+	return &resp, nil
+
+}
+
+func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc.Flow_EventListenersStreamServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+	phash := ""
+	nhash := ""
+
+	namespace := req.GetNamespace()
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return err
+	}
+
+	opts := []ent.EventsPaginateOption{}
+	opts = append(opts, eventListenersOrder(p))
+	filter := eventListenersFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+
+	ns, err := flow.getNamespace(ctx, nsc, namespace)
+	if err != nil {
+		return err
+	}
+
+	sub := flow.pubsub.SubscribeEventListeners(ns)
+	defer flow.cleanup(sub.Close)
+
+resend:
+
+	query := ns.QueryNamespacelisteners()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return err
+	}
+
+	var resp = &grpc.EventListenersResponse{}
+
+	err = atob(cx, &resp)
+	if err != nil {
+		return err
+	}
+
+	resp.Namespace = namespace
+
+	m := make(map[string]string)
+
+	for idx, edge := range cx.Edges {
+
+		// resp.Edges[idx].Node.UpdatedAt = edge.Node.UpdatedAt
+
+		in, _ := edge.Node.Instance(ctx)
+		if in != nil {
+			resp.Edges[idx].Node.Instance = in.ID.String()
+		}
+
+		wf, err := edge.Node.Workflow(ctx)
+		if err != nil {
+			return err
+		}
+
+		path, exists := m[wf.ID.String()]
+		if !exists {
+			wfd, err := flow.reverseTraverseToWorkflow(ctx, wf.ID.String())
+			if err != nil {
+				return err
+			}
+			path = wfd.path
+			m[wf.ID.String()] = path
+		}
+
+		resp.Edges[idx].Node.Workflow = path
+
+		resp.Edges[idx].Node.Mode = "or"
+		if edge.Node.Count > 1 {
+			resp.Edges[idx].Node.Mode = "and"
+		}
+
+		edefs := make([]*grpc.EventDef, 0)
+		for _, ev := range edge.Node.Events {
+
+			var et string
+			if v, ok := ev["type"]; ok {
+				et, _ = v.(string)
+			}
+
+			delete(ev, "type")
+
+			filters := make(map[string]string)
+
+			for k, v := range ev {
+				if !strings.HasPrefix(k, "filter-") {
+					continue
+				}
+				k = strings.TrimPrefix(k, "filter-")
+				if s, ok := v.(string); ok {
+					filters[k] = s
+				}
+			}
+
+			edefs = append(edefs, &grpc.EventDef{
+				Type:    et,
+				Filters: filters,
+			})
+
+		}
+
+		resp.Edges[idx].Node.Events = edefs
+
+	}
+
+	nhash = checksum(resp)
+	if nhash != phash {
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+	}
+	phash = nhash
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
+
+}
+
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	namespace := in.GetNamespace()
 	rawevent := in.GetCloudevent()
@@ -605,6 +911,307 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 
 }
 
+func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventRequest) (*grpc.HistoricalEventResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	namespace := in.GetNamespace()
+	eid := in.GetId()
+
+	ns, err := flow.getNamespace(ctx, flow.db.Namespace, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	cevent, err := ns.QueryCloudevents().Where(cevents.EventIdEQ(eid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.HistoricalEventResponse
+
+	resp.Id = eid
+	resp.Namespace = namespace
+	resp.ReceivedAt = timestamppb.New(cevent.Created)
+
+	resp.Source = cevent.Event.Source()
+	resp.Type = cevent.Event.Type()
+
+	resp.Cloudevent = []byte(cevent.Event.String())
+
+	return &resp, nil
+
+}
+
+func cloudeventsOrder(p *pagination) ent.CloudEventsPaginateOption {
+
+	field := ent.CloudEventsOrderFieldCreated
+	direction := ent.OrderDirectionDesc
+
+	if p.order != nil {
+
+		if x := p.order.Field; x != "" && x == "ID" {
+			field = ent.CloudEventsOrderFieldID
+		}
+
+		if x := p.order.Field; x != "" && x == "RECEIVED" {
+			field = ent.CloudEventsOrderFieldCreated
+		}
+
+		if x := p.order.Direction; x != "" && x == "DESC" {
+			direction = ent.OrderDirectionDesc
+		}
+
+		if x := p.order.Direction; x != "" && x == "ASC" {
+			direction = ent.OrderDirectionAsc
+		}
+
+	}
+
+	return ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
+		Direction: direction,
+		Field:     field,
+	})
+
+}
+
+func cloudeventsFilter(p *pagination) ent.CloudEventsPaginateOption {
+
+	if p.filter == nil {
+		return nil
+	}
+
+	filter := p.filter.Val
+
+	return ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+
+		if filter == "" {
+			return query, nil
+		}
+
+		field := p.filter.Field
+		if field == "" {
+			return query, nil
+		}
+
+		// switch field {
+		// case "AS":
+
+		// 	ftype := p.filter.Type
+		// 	if ftype == "" {
+		// 		return query, nil
+		// 	}
+
+		// 	switch ftype {
+		// 	case "CONTAINS":
+		// 		return query.Where(entcevents.AsContains(filter)), nil
+		// 	}
+		// }
+
+		return query, nil
+
+	})
+
+}
+
+func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []ent.CloudEventsPaginateOption{}
+	opts = append(opts, cloudeventsOrder(p))
+	filter := cloudeventsFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	query := ns.QueryCloudevents()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.EventHistoryResponse
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = new(grpc.PageInfo)
+	resp.Namespace = ns.Name
+
+	err = atob(cx.PageInfo, resp.Events.PageInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Events.TotalCount = int32(cx.TotalCount)
+
+	for _, x := range cx.Edges {
+
+		edge := new(grpc.EventsEdge)
+		resp.Events.Edges = append(resp.Events.Edges, edge)
+
+		err = atob(x.Cursor, &edge.Cursor)
+		if err != nil {
+			return nil, err
+		}
+
+		edge.Node = new(grpc.Event)
+		edge.Node.Id = x.Node.EventId
+		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
+		edge.Node.Source = x.Node.Event.Source()
+		edge.Node.Type = x.Node.Event.Type()
+		edge.Node.Cloudevent = []byte(x.Node.Event.String())
+
+	}
+
+	return &resp, nil
+
+}
+
+func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flow_EventHistoryStreamServer) error {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+	phash := ""
+	nhash := ""
+
+	p, err := getPagination(req.Pagination)
+	if err != nil {
+		return err
+	}
+
+	opts := []ent.CloudEventsPaginateOption{}
+	opts = append(opts, cloudeventsOrder(p))
+	filter := cloudeventsFilter(p)
+	if filter != nil {
+		opts = append(opts, filter)
+	}
+
+	nsc := flow.db.Namespace
+	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	if err != nil {
+		return err
+	}
+
+	sub := flow.pubsub.SubscribeEvents(ns)
+	defer flow.cleanup(sub.Close)
+
+resend:
+
+	query := ns.QueryCloudevents()
+	cx, err := query.Paginate(ctx, p.After(), p.First(), p.Before(), p.Last(), opts...)
+	if err != nil {
+		return err
+	}
+
+	resp := new(grpc.EventHistoryResponse)
+	resp.Events = new(grpc.Events)
+	resp.Events.PageInfo = new(grpc.PageInfo)
+	resp.Namespace = ns.Name
+
+	err = atob(cx.PageInfo, resp.Events.PageInfo)
+	if err != nil {
+		return err
+	}
+
+	resp.Events.TotalCount = int32(cx.TotalCount)
+
+	for _, x := range cx.Edges {
+
+		edge := new(grpc.EventsEdge)
+		resp.Events.Edges = append(resp.Events.Edges, edge)
+
+		err = atob(x.Cursor, &edge.Cursor)
+		if err != nil {
+			return err
+		}
+
+		edge.Node = new(grpc.Event)
+		edge.Node.Id = x.Node.EventId
+		edge.Node.ReceivedAt = timestamppb.New(x.Node.Created)
+		edge.Node.Source = x.Node.Event.Source()
+		edge.Node.Type = x.Node.Event.Type()
+		edge.Node.Cloudevent = []byte(x.Node.Event.String())
+
+	}
+
+	nhash = checksum(resp)
+	if nhash != phash {
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+	}
+	phash = nhash
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
+
+}
+
+func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	nsc := flow.db.Namespace
+	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	eid := req.GetId()
+
+	cevent, err := ns.QueryCloudevents().Where(cevents.EventIdEQ(eid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.events.ReplayCloudevent(ctx, ns, cevent)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp emptypb.Empty
+
+	return &resp, nil
+
+}
+
+func (events *events) ReplayCloudevent(ctx context.Context, ns *ent.Namespace, cevent *ent.CloudEvents) error {
+
+	event := cevent.Event
+
+	events.logToNamespace(ctx, time.Now(), ns, "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+
+	err := events.handleEvent(ns, &event)
+	if err != nil {
+		return err
+	}
+
+	// if eventing is configured, event goes to knative event service
+	// if it is from knative sink not
+	if events.server.conf.Eventing && ctx.Value(EventingCtxKeySource) == nil {
+		PublishKnativeEvent(&event)
+	}
+
+	return nil
+
+}
+
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace, event *cloudevents.Event, timer int64) error {
 
 	events.logToNamespace(ctx, time.Now(), ns, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
@@ -616,6 +1223,8 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace
 	if err != nil {
 		return err
 	}
+
+	events.pubsub.NotifyEvents(ns)
 
 	// handle event
 	if timer == 0 {

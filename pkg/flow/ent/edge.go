@@ -36,6 +36,14 @@ func (e *Events) Instance(ctx context.Context) (*Instance, error) {
 	return result, MaskNotFound(err)
 }
 
+func (e *Events) Namespace(ctx context.Context) (*Namespace, error) {
+	result, err := e.Edges.NamespaceOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryNamespace().Only(ctx)
+	}
+	return result, err
+}
+
 func (ew *EventsWait) Workflowevent(ctx context.Context) (*Events, error) {
 	result, err := ew.Edges.WorkfloweventOrErr()
 	if IsNotLoaded(err) {
@@ -224,6 +232,14 @@ func (n *Namespace) Cloudevents(ctx context.Context) ([]*CloudEvents, error) {
 	result, err := n.Edges.CloudeventsOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryCloudevents().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Namespace) Namespacelisteners(ctx context.Context) ([]*Events, error) {
+	result, err := n.Edges.NamespacelistenersOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryNamespacelisteners().All(ctx)
 	}
 	return result, err
 }

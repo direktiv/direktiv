@@ -1208,6 +1208,59 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
 
+	// swagger:operation GET /api/namespaces/{namespace}/event-listeners Events getEventListeners
+	// ---
+	// description: |
+	//   Get current event listeners.
+	// summary: Get current event listeners.
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got event listeners"
+	handlerPair(r, RN_EventListeners, "/namespaces/{ns}/event-listeners", h.EventListeners, h.EventListenersSSE)
+
+	// swagger:operation GET /api/namespaces/{namespace}/events Events getEventHistory
+	// ---
+	// description: |
+	//   Get recent events history.
+	// summary: Get events history.
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got events history"
+	handlerPair(r, RN_EventHistory, "/namespaces/{ns}/events", h.EventHistory, h.EventHistorySSE)
+
+	// swagger:operation POST /api/namespaces/{namespace}/events/{event}/replay Other replayCloudevent
+	// ---
+	// description: |
+	//   Replay a cloud event to a namespace.
+	// summary: Replay Cloud Event
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: event
+	//   type: string
+	//   required: true
+	//   description: 'target cloudevent'
+	// responses:
+	//   '200':
+	//     "description": "successfully replayed cloud event"
+	r.HandleFunc("/namespaces/{ns}/events/{event}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
+
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
 	// ---
 	// description: |
@@ -1451,6 +1504,160 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandlerPair(r, RN_GetNode, "", h.GetNode, h.GetNodeSSE)
 
+}
+
+func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+	namespace := mux.Vars(r)["ns"]
+
+	in := &grpc.EventListenersRequest{
+		Pagination: p,
+		Namespace:  namespace,
+	}
+
+	resp, err := h.client.EventListeners(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+	namespace := mux.Vars(r)["ns"]
+
+	ctx := r.Context()
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.EventListenersRequest{
+		Pagination: p,
+		Namespace:  namespace,
+	}
+
+	resp, err := h.client.EventListenersStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
+}
+
+func (h *flowHandler) EventHistory(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+	namespace := mux.Vars(r)["ns"]
+
+	in := &grpc.EventHistoryRequest{
+		Pagination: p,
+		Namespace:  namespace,
+	}
+
+	resp, err := h.client.EventHistory(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+	namespace := mux.Vars(r)["ns"]
+
+	ctx := r.Context()
+	p, err := pagination(r)
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	in := &grpc.EventHistoryRequest{
+		Pagination: p,
+		Namespace:  namespace,
+	}
+
+	resp, err := h.client.EventHistoryStream(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	ch := make(chan interface{}, 1)
+	defer func() {
+
+		_ = resp.CloseSend()
+
+		for {
+			_, more := <-ch
+			if !more {
+				return
+			}
+		}
+
+	}()
+
+	go func() {
+
+		defer close(ch)
+
+		for {
+
+			x, err := resp.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+
+			ch <- x
+
+		}
+
+	}()
+
+	sse(w, ch)
 }
 
 func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
@@ -3459,6 +3666,24 @@ validate:
 	}
 
 	resp, err := h.client.BroadcastCloudevent(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	event := mux.Vars(r)["event"]
+
+	in := &grpc.ReplayEventRequest{
+		Namespace: namespace,
+		Id:        event,
+	}
+
+	resp, err := h.client.ReplayEvent(ctx, in)
 	respond(w, resp, err)
 
 }

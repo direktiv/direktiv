@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -33,6 +34,7 @@ type EventsQuery struct {
 	withWorkflow     *WorkflowQuery
 	withWfeventswait *EventsWaitQuery
 	withInstance     *InstanceQuery
+	withNamespace    *NamespaceQuery
 	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -129,6 +131,28 @@ func (eq *EventsQuery) QueryInstance() *InstanceQuery {
 			sqlgraph.From(events.Table, events.FieldID, selector),
 			sqlgraph.To(instance.Table, instance.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, events.InstanceTable, events.InstanceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNamespace chains the current query on the "namespace" edge.
+func (eq *EventsQuery) QueryNamespace() *NamespaceQuery {
+	query := &NamespaceQuery{config: eq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(events.Table, events.FieldID, selector),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, events.NamespaceTable, events.NamespaceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -320,6 +344,7 @@ func (eq *EventsQuery) Clone() *EventsQuery {
 		withWorkflow:     eq.withWorkflow.Clone(),
 		withWfeventswait: eq.withWfeventswait.Clone(),
 		withInstance:     eq.withInstance.Clone(),
+		withNamespace:    eq.withNamespace.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -356,6 +381,17 @@ func (eq *EventsQuery) WithInstance(opts ...func(*InstanceQuery)) *EventsQuery {
 		opt(query)
 	}
 	eq.withInstance = query
+	return eq
+}
+
+// WithNamespace tells the query-builder to eager-load the nodes that are connected to
+// the "namespace" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EventsQuery) WithNamespace(opts ...func(*NamespaceQuery)) *EventsQuery {
+	query := &NamespaceQuery{config: eq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withNamespace = query
 	return eq
 }
 
@@ -425,13 +461,14 @@ func (eq *EventsQuery) sqlAll(ctx context.Context) ([]*Events, error) {
 		nodes       = []*Events{}
 		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			eq.withWorkflow != nil,
 			eq.withWfeventswait != nil,
 			eq.withInstance != nil,
+			eq.withNamespace != nil,
 		}
 	)
-	if eq.withWorkflow != nil || eq.withInstance != nil {
+	if eq.withWorkflow != nil || eq.withInstance != nil || eq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -540,6 +577,35 @@ func (eq *EventsQuery) sqlAll(ctx context.Context) ([]*Events, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.Instance = n
+			}
+		}
+	}
+
+	if query := eq.withNamespace; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Events)
+		for i := range nodes {
+			if nodes[i].namespace_namespacelisteners == nil {
+				continue
+			}
+			fk := *nodes[i].namespace_namespacelisteners
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(namespace.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "namespace_namespacelisteners" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Namespace = n
 			}
 		}
 	}

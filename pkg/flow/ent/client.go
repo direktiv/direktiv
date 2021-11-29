@@ -453,6 +453,22 @@ func (c *EventsClient) QueryInstance(e *Events) *InstanceQuery {
 	return query
 }
 
+// QueryNamespace queries the namespace edge of a Events.
+func (c *EventsClient) QueryNamespace(e *Events) *NamespaceQuery {
+	query := &NamespaceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(events.Table, events.FieldID, id),
+			sqlgraph.To(namespace.Table, namespace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, events.NamespaceTable, events.NamespaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *EventsClient) Hooks() []Hook {
 	return c.hooks.Events
@@ -1370,6 +1386,22 @@ func (c *NamespaceClient) QueryCloudevents(n *Namespace) *CloudEventsQuery {
 			sqlgraph.From(namespace.Table, namespace.FieldID, id),
 			sqlgraph.To(cloudevents.Table, cloudevents.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, namespace.CloudeventsTable, namespace.CloudeventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNamespacelisteners queries the namespacelisteners edge of a Namespace.
+func (c *NamespaceClient) QueryNamespacelisteners(n *Namespace) *EventsQuery {
+	query := &EventsQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(namespace.Table, namespace.FieldID, id),
+			sqlgraph.To(events.Table, events.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, namespace.NamespacelistenersTable, namespace.NamespacelistenersColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil

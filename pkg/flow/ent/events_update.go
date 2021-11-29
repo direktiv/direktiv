@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -13,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
@@ -68,6 +70,12 @@ func (eu *EventsUpdate) AddCount(i int) *EventsUpdate {
 	return eu
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (eu *EventsUpdate) SetUpdatedAt(t time.Time) *EventsUpdate {
+	eu.mutation.SetUpdatedAt(t)
+	return eu
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (eu *EventsUpdate) SetWorkflowID(id uuid.UUID) *EventsUpdate {
 	eu.mutation.SetWorkflowID(id)
@@ -113,6 +121,17 @@ func (eu *EventsUpdate) SetInstance(i *Instance) *EventsUpdate {
 	return eu.SetInstanceID(i.ID)
 }
 
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (eu *EventsUpdate) SetNamespaceID(id uuid.UUID) *EventsUpdate {
+	eu.mutation.SetNamespaceID(id)
+	return eu
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (eu *EventsUpdate) SetNamespace(n *Namespace) *EventsUpdate {
+	return eu.SetNamespaceID(n.ID)
+}
+
 // Mutation returns the EventsMutation object of the builder.
 func (eu *EventsUpdate) Mutation() *EventsMutation {
 	return eu.mutation
@@ -151,12 +170,19 @@ func (eu *EventsUpdate) ClearInstance() *EventsUpdate {
 	return eu
 }
 
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (eu *EventsUpdate) ClearNamespace() *EventsUpdate {
+	eu.mutation.ClearNamespace()
+	return eu
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (eu *EventsUpdate) Save(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
 	)
+	eu.defaults()
 	if len(eu.hooks) == 0 {
 		if err = eu.check(); err != nil {
 			return 0, err
@@ -211,10 +237,21 @@ func (eu *EventsUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (eu *EventsUpdate) defaults() {
+	if _, ok := eu.mutation.UpdatedAt(); !ok {
+		v := events.UpdateDefaultUpdatedAt()
+		eu.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (eu *EventsUpdate) check() error {
 	if _, ok := eu.mutation.WorkflowID(); eu.mutation.WorkflowCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"workflow\"")
+	}
+	if _, ok := eu.mutation.NamespaceID(); eu.mutation.NamespaceCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"namespace\"")
 	}
 	return nil
 }
@@ -276,6 +313,13 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: events.FieldCount,
+		})
+	}
+	if value, ok := eu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: events.FieldUpdatedAt,
 		})
 	}
 	if eu.mutation.WorkflowCleared() {
@@ -402,6 +446,41 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.NamespaceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   events.NamespaceTable,
+			Columns: []string{events.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   events.NamespaceTable,
+			Columns: []string{events.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{events.Label}
@@ -458,6 +537,12 @@ func (euo *EventsUpdateOne) AddCount(i int) *EventsUpdateOne {
 	return euo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (euo *EventsUpdateOne) SetUpdatedAt(t time.Time) *EventsUpdateOne {
+	euo.mutation.SetUpdatedAt(t)
+	return euo
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (euo *EventsUpdateOne) SetWorkflowID(id uuid.UUID) *EventsUpdateOne {
 	euo.mutation.SetWorkflowID(id)
@@ -503,6 +588,17 @@ func (euo *EventsUpdateOne) SetInstance(i *Instance) *EventsUpdateOne {
 	return euo.SetInstanceID(i.ID)
 }
 
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (euo *EventsUpdateOne) SetNamespaceID(id uuid.UUID) *EventsUpdateOne {
+	euo.mutation.SetNamespaceID(id)
+	return euo
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (euo *EventsUpdateOne) SetNamespace(n *Namespace) *EventsUpdateOne {
+	return euo.SetNamespaceID(n.ID)
+}
+
 // Mutation returns the EventsMutation object of the builder.
 func (euo *EventsUpdateOne) Mutation() *EventsMutation {
 	return euo.mutation
@@ -541,6 +637,12 @@ func (euo *EventsUpdateOne) ClearInstance() *EventsUpdateOne {
 	return euo
 }
 
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (euo *EventsUpdateOne) ClearNamespace() *EventsUpdateOne {
+	euo.mutation.ClearNamespace()
+	return euo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (euo *EventsUpdateOne) Select(field string, fields ...string) *EventsUpdateOne {
@@ -554,6 +656,7 @@ func (euo *EventsUpdateOne) Save(ctx context.Context) (*Events, error) {
 		err  error
 		node *Events
 	)
+	euo.defaults()
 	if len(euo.hooks) == 0 {
 		if err = euo.check(); err != nil {
 			return nil, err
@@ -608,10 +711,21 @@ func (euo *EventsUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (euo *EventsUpdateOne) defaults() {
+	if _, ok := euo.mutation.UpdatedAt(); !ok {
+		v := events.UpdateDefaultUpdatedAt()
+		euo.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (euo *EventsUpdateOne) check() error {
 	if _, ok := euo.mutation.WorkflowID(); euo.mutation.WorkflowCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"workflow\"")
+	}
+	if _, ok := euo.mutation.NamespaceID(); euo.mutation.NamespaceCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"namespace\"")
 	}
 	return nil
 }
@@ -690,6 +804,13 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: events.FieldCount,
+		})
+	}
+	if value, ok := euo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: events.FieldUpdatedAt,
 		})
 	}
 	if euo.mutation.WorkflowCleared() {
@@ -808,6 +929,41 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.NamespaceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   events.NamespaceTable,
+			Columns: []string{events.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   events.NamespaceTable,
+			Columns: []string{events.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
 				},
 			},
 		}
