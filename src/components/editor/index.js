@@ -1,5 +1,6 @@
 import Editor, {useMonaco} from "@monaco-editor/react";
 import { useEffect } from "react";
+import './style.css'
 
 export default function DirektivEditor(props) {
     const {dvalue, dlang, value, height, width, setDValue, onMount, readonly} = props
