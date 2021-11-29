@@ -27,7 +27,7 @@ export default function NamespaceRevisionsPanel(props) {
     )
 }
 
-function RevisionCreatePanel(props){
+export function RevisionCreatePanel(props){
     const {image, setImage, scale, setScale, size, setSize, cmd, setCmd, traffic, setTraffic, maxscale} = props
 
     return(
@@ -182,7 +182,7 @@ function NamespaceRevisions(props) {
     )
 }
 
-function UpdateTraffic(props){
+export function UpdateTraffic(props){
 
     const {traffic, service, revisions, setNamespaceServiceRevisionTraffic} = props
 

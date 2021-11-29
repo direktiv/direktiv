@@ -15,6 +15,9 @@ import GlobalRegistriesPanel from '../global-registries';
 import NamespaceServices from '../namespace-services';
 import NamespaceRevisions from '../namespace-services/revisions';
 import PodPanel from '../namespace-services/pod';
+import GlobalServicesPanel from '../global-services';
+import GlobalRevisionsPanel from '../global-services/revisions';
+import GlobalPodPanel from '../global-services/pod'
 
 
 function NamespaceNavigation(props){
@@ -100,7 +103,11 @@ function NamespaceNavigation(props){
 
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<JQPlayground />} />
-                    <Route path="/g/services" element={<div>g services</div>}/>
+
+                    <Route path="/g/services" element={<GlobalServicesPanel/>} />
+                    <Route path="/g/services/:service" element={<GlobalRevisionsPanel/>} />
+                    <Route path="/g/services/:service/:revision" element={<GlobalPodPanel/>} />
+
                     <Route path="/g/registries" element={<GlobalRegistriesPanel />} />
                 </Routes>:""}
             </FlexBox>

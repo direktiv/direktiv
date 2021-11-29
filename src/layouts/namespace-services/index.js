@@ -26,7 +26,7 @@ export default function ServicesPanel(props) {
     )
 }
 
-function ServiceCreatePanel(props) {
+export function ServiceCreatePanel(props) {
     const {name, setName, image, setImage, scale, setScale, size, setSize, cmd, setCmd, maxscale} = props
 
     return(
@@ -72,13 +72,14 @@ function NamespaceServices(props) {
     const [size, setSize] = useState(0)
     const [cmd, setCmd] = useState("")
 
-    const {data, err, config, getNamespaceConfig, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace)
+    const {data, err, config, getNamespaceConfig, getNamespaceServices, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace)
 
     useEffect(()=>{
         async function getcfg() {
             await getNamespaceConfig()
+            await getNamespaceServices()
         }
-        if(load && config === null) {
+        if(load && config === null && data === null) {
             getcfg()
             setLoad(false)
         }

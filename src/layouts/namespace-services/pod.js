@@ -134,13 +134,21 @@ function NamespaceRevisionDetails(props){
     )
 }
 
-function PodLogs(props){
+export function PodLogs(props){
     const {namespace, service, revision, pods} = props
 
     const [follow, setFollow] = useState(true)
-
+    const [width, setWidth] = useState(window.innerWidth);
     const [tab, setTab] = useState(pods[0] ? pods[0].name: "")
     const [clipData, setClipData] = useState(null)
+
+    useEffect(()=>{
+        const handleWindowResize = () => setWidth(window.innerWidth)
+        window.addEventListener("resize", handleWindowResize);
+
+        // Return a function from the effect that removes the event listener
+        return () => window.removeEventListener("resize", handleWindowResize);
+    },[])
 
 
     return (
@@ -157,9 +165,15 @@ function PodLogs(props){
                     <FlexBox className="col" style={{backgroundColor:"#223848"}}>
                         <FlexBox style={{maxHeight:"30px"}}>
                             {pods.map((obj)=>{
+                                let name = `global-${service}-${revision}-deployment-`
+                                if(namespace){
+                                    name = `namespace-${namespace}-${service}-${revision}-deployment-`
+                                }
+
                                 return(
                                     <div onClick={()=>setTab(obj.name)} style={{color: tab === obj.name ? "white": "#b5b5b5", display:"flex", alignItems:"center", cursor:"pointer", backgroundColor: tab === obj.name ? "#223848":"#355166", padding:"5px", maxWidth:"150px", gap:"3px"}}>
-                                        <IoDesktop style={{fill: tab === obj.name ? "white": "#b5b5b5"}}/> {obj.name.split(`namespace-${namespace}-${service}-${revision}-deployment-`)[1]}
+                                        <IoDesktop style={{fill: tab === obj.name ? "white": "#b5b5b5"}}/> 
+                                        <span style={{textOverflow: "ellipsis", whiteSpace:"nowrap", overflow:"hidden"}}>{obj.name.split(name)[1]}</span>
                                     </div>
                                 )
                             })}
@@ -167,24 +181,24 @@ function PodLogs(props){
                         <FlexBox style={{flexGrow:1}}>
                             <Logs setClipData={setClipData} clipData={clipData} follow={follow} pod={tab} setFollow={setFollow}/>
                         </FlexBox>
-                        <FlexBox style={{height:"40px", maxHeight:"70px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                        <FlexBox style={{height:"40px", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
                             <FlexBox>
                                 {tab}
                             </FlexBox>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 
                                     <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                        <IoEyeOff/> Stop watching
+                                        <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
                                     </div>
                                     :
                                     <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                        <IoEye/> Follow logs
+                                        <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
                                     </div>
                                 }
                                 <div onClick={()=>{
                                     copyTextToClipboard(clipData)
                                 }} style={{display:"flex", alignItems:"center", gap:"3px", backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                    <IoCopy/> Copy to Clipboard
+                                    <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
                                 </div>
                             </FlexBox>
                         </FlexBox>
