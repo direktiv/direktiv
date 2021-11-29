@@ -39,7 +39,7 @@ export function GlobalRegistries(){
                     <IoLogoDocker />
                 </ContentPanelTitleIcon>
                 <FlexBox>
-                    Global Container Registries  
+                    Container Registries  
                 </FlexBox>
                 <div>
                     <Modal title="New registry"
@@ -109,7 +109,7 @@ export function GlobalPrivateRegistries(){
                     <IoLogoDocker />
                 </ContentPanelTitleIcon>
                 <FlexBox>
-                    Global Private Container Registries  
+                   Private Container Registries  
                 </FlexBox>
                 <div>
                     <Modal title="New registry"

@@ -49,7 +49,7 @@ export default function GlobalServicesPanel(props) {
                         <IoPlay/>
                     </ContentPanelTitleIcon>
                     <FlexBox>
-                        Global Services
+                        Services
                     </FlexBox>
                     <div>
                     <Modal title="New global service" 

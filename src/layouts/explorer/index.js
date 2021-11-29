@@ -4,12 +4,26 @@ import { IoAdd, IoFolderOpen, IoSearch } from 'react-icons/io5';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import { VscTriangleDown } from 'react-icons/vsc';
-import { GenerateRandomKey } from '../../util';
+import { Config, GenerateRandomKey } from '../../util';
 import { FiEdit, FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
 import { HiOutlineTrash } from 'react-icons/hi';
+import { useNodes } from 'direktiv-react-hooks';
+import { useParams } from 'react-router';
 
 function Explorer(props) {
+    const {path} = useParams()
+    const {namespace}  = props
+
+    let filepath = "/"
+    if(!namespace){
+        return ""
+    }
+
+    if(path !== undefined){
+        filepath = path
+    }
+
     return(
         <>
             <SearchBar />
@@ -43,7 +57,7 @@ function Explorer(props) {
                         </ContentPanelHeaderButton>
                     </ContentPanelTitle>
                     <ContentPanelBody>
-                        <ExplorerList />
+                        <ExplorerList namespace={namespace} path={filepath}/>
                     </ContentPanelBody>
                 </ContentPanel>
             </FlexBox>
@@ -65,7 +79,7 @@ function SearchBar(props) {
 }
 
 function ExplorerList(props) {
-
+    const {namespace, path} = props
     let tmp = [{
         "type": "dir",
         "name": "important"
@@ -73,6 +87,10 @@ function ExplorerList(props) {
         "type": "wf",
         "name": "example"
     }]
+
+
+    const {data, err} = useNodes(Config.url, true, namespace, path)
+    console.log(data, err)
 
     return(
         <FlexBox className="col">

@@ -90,10 +90,11 @@ function NamespaceNavigation(props){
                 {namespaces !== null ? 
                 <Routes>
                     <Route path="/" element={<div>index route:)</div>} />
-                    <Route path="/n/:namespace" element={<Explorer />} />
+                    <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} />
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
+                    <Route path="/n/:namespace/instances/:id" element={<div>instance id</div>} />
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     <Route path="/n/:namespace/services" element={<NamespaceServices namespace={namespace}/>}/>
                     <Route path="/n/:namespace/services/:service" element={<NamespaceRevisions namespace={namespace}/>}/>

@@ -103,7 +103,7 @@ function NamespaceServices(props) {
                 <IoPlay/>
             </ContentPanelTitleIcon>
             <FlexBox>
-                Namespace Services
+                Services
             </FlexBox>
             <div>
             <Modal title="New namespace service" 

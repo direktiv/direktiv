@@ -78,13 +78,13 @@ function HowToJQ(){
                                 For information on the JQ syntax, please refer to the offical JQ manual online.
                             </div>
                             <Button className="reveal-btn small shadow">
-                                                    <FlexBox className="gap">
-                                                        <IoLink className="auto-margin" />
-                                                        <a href="https://stedolan.github.io/jq/manual/">
-                                                            View JQ Manual
-                                                        </a>
-                                                    </FlexBox>
-                                                </Button>
+                                <FlexBox className="gap">
+                                    <IoLink className="auto-margin" />
+                                    <a href="https://stedolan.github.io/jq/manual/">
+                                        View JQ Manual
+                                    </a>
+                                </FlexBox>
+                            </Button>
                         </FlexBox>
                     </ContentPanelBody>
             </ContentPanel>
@@ -211,7 +211,7 @@ function JQOutput(props) {
                 </ContentPanelTitle>
                 <ContentPanelBody >
                     <FlexBox style={{overflow:"hidden" , height: "422px", maxHeight:"422px"}}>
-                        <DirektivEditor value={output} height="100%" dlang={"json"} />
+                        <DirektivEditor readonly={true} value={output} height="100%" dlang={"json"} />
                     </FlexBox>
                 </ContentPanelBody>
         </ContentPanel>
@@ -235,7 +235,7 @@ function JQInput(props) {
                 </ContentPanelTitle>
                 <ContentPanelBody >
                     <FlexBox style={{overflow:"hidden" , height: "422px", maxHeight:"422px"}}>
-                        <DirektivEditor value={input} setDValue={setInput}  height="100%" dlang={"json"}/>
+                        <DirektivEditor readonly={false} value={input} setDValue={setInput}  height="100%" dlang={"json"}/>
                     </FlexBox>
                 </ContentPanelBody>
         </ContentPanel>

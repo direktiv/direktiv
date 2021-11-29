@@ -11,7 +11,7 @@ import { Config } from '../../util';
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -135,6 +135,8 @@ const running = "pending";
 
 function InstanceRow(props) {
     let {state, name, started, startedFrom, finished, finishedFrom, id, namespace} = props;
+    const navigate = useNavigate()
+
     console.log(state)
     let label;
     if (state === success) {
@@ -145,14 +147,16 @@ function InstanceRow(props) {
         label = <RunningState />
     }
 
-    return(<tr className="instance-row">
+    return(
+    
+    <tr onClick={()=>{
+        navigate(`/n/${namespace}/instances/${id}`)
+    }} className="instance-row" style={{cursor: "pointer"}}>
         <td>
             {label}
         </td>
         <td>
-            <Link to={`/n/${namespace}/instances/${id}`}>
                 {name}
-            </Link>
         </td>
         <td>
             {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text">({startedFrom})</span>
@@ -160,7 +164,8 @@ function InstanceRow(props) {
         <td>
             {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text">({finishedFrom})</span>
         </td>
-    </tr>)
+    </tr>
+    )
 }
 
 function StateLabel(props) {
