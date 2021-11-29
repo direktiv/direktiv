@@ -34,3 +34,26 @@
 .inline {
     display: inline;
 }
+
+.explorer-item-icon {
+    min-width: 42px;
+    max-width: 42px;
+    font-size: 20px;
+    color: var(--theme-brand-blue);
+}
+
+.explorer-item-container {
+    line-height: 42px;
+}
+
+.explorer-item-actions {
+    max-width: 120px;
+}
+
+.explorer-item-actions > div {
+    border-radius: 4px;
+}
+
+.explorer-item-actions > div:hover {
+    background-color: rgba(255,255,255,0.1);
+}
