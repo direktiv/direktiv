@@ -1207,11 +1207,58 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
-	// TODO: SWAGGER_SPEC
+
+	// swagger:operation GET /api/namespaces/{namespace}/event-listeners Events getEventListeners
+	// ---
+	// description: |
+	//   Get current event listeners.
+	// summary: Get current event listeners.
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got event listeners"
 	handlerPair(r, RN_EventListeners, "/namespaces/{ns}/event-listeners", h.EventListeners, h.EventListenersSSE)
-	// TODO: SWAGGER_SPEC
+
+	// swagger:operation GET /api/namespaces/{namespace}/events Events getEventHistory
+	// ---
+	// description: |
+	//   Get recent events history.
+	// summary: Get events history.
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// responses:
+	//   '200':
+	//     "description": "successfully got events history"
 	handlerPair(r, RN_EventHistory, "/namespaces/{ns}/events", h.EventHistory, h.EventHistorySSE)
-	// TODO: SWAGGER_SPEC
+
+	// swagger:operation POST /api/namespaces/{namespace}/events/{event}/replay Other replayCloudevent
+	// ---
+	// description: |
+	//   Replay a cloud event to a namespace.
+	// summary: Replay Cloud Event
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: event
+	//   type: string
+	//   required: true
+	//   description: 'target cloudevent'
+	// responses:
+	//   '200':
+	//     "description": "successfully replayed cloud event"
 	r.HandleFunc("/namespaces/{ns}/events/{event}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
