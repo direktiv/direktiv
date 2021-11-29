@@ -31,6 +31,12 @@ func (ru *RevisionUpdate) Where(ps ...predicate.Revision) *RevisionUpdate {
 	return ru
 }
 
+// SetMetadata sets the "metadata" field.
+func (ru *RevisionUpdate) SetMetadata(m map[string]interface{}) *RevisionUpdate {
+	ru.mutation.SetMetadata(m)
+	return ru
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (ru *RevisionUpdate) SetWorkflowID(id uuid.UUID) *RevisionUpdate {
 	ru.mutation.SetWorkflowID(id)
@@ -211,6 +217,13 @@ func (ru *RevisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := ru.mutation.Metadata(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: revision.FieldMetadata,
+		})
+	}
 	if ru.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -371,6 +384,12 @@ type RevisionUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *RevisionMutation
+}
+
+// SetMetadata sets the "metadata" field.
+func (ruo *RevisionUpdateOne) SetMetadata(m map[string]interface{}) *RevisionUpdateOne {
+	ruo.mutation.SetMetadata(m)
+	return ruo
 }
 
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
@@ -576,6 +595,13 @@ func (ruo *RevisionUpdateOne) sqlSave(ctx context.Context) (_node *Revision, err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := ruo.mutation.Metadata(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: revision.FieldMetadata,
+		})
 	}
 	if ruo.mutation.WorkflowCleared() {
 		edge := &sqlgraph.EdgeSpec{

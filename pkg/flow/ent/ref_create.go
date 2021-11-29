@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -40,6 +41,20 @@ func (rc *RefCreate) SetNillableImmutable(b *bool) *RefCreate {
 // SetName sets the "name" field.
 func (rc *RefCreate) SetName(s string) *RefCreate {
 	rc.mutation.SetName(s)
+	return rc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (rc *RefCreate) SetCreatedAt(t time.Time) *RefCreate {
+	rc.mutation.SetCreatedAt(t)
+	return rc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (rc *RefCreate) SetNillableCreatedAt(t *time.Time) *RefCreate {
+	if t != nil {
+		rc.SetCreatedAt(*t)
+	}
 	return rc
 }
 
@@ -161,6 +176,10 @@ func (rc *RefCreate) defaults() {
 		v := ref.DefaultImmutable
 		rc.mutation.SetImmutable(v)
 	}
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		v := ref.DefaultCreatedAt()
+		rc.mutation.SetCreatedAt(v)
+	}
 	if _, ok := rc.mutation.ID(); !ok {
 		v := ref.DefaultID()
 		rc.mutation.SetID(v)
@@ -179,6 +198,9 @@ func (rc *RefCreate) check() error {
 		if err := ref.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "name": %w`, err)}
 		}
+	}
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
 	}
 	if _, ok := rc.mutation.WorkflowID(); !ok {
 		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
@@ -233,6 +255,14 @@ func (rc *RefCreate) createSpec() (*Ref, *sqlgraph.CreateSpec) {
 			Column: ref.FieldName,
 		})
 		_node.Name = value
+	}
+	if value, ok := rc.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ref.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
 	}
 	if nodes := rc.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

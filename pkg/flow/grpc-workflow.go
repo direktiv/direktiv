@@ -183,7 +183,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	revc := tx.Revision
 
-	rev, err := revc.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).Save(ctx)
+	rev, err := revc.Create().SetHash(hash).SetSource(data).SetWorkflow(wf).SetMetadata(make(map[string]interface{})).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +284,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 		func() error {
 
-			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(d.wf).Save(ctx)
+			rev, err = revc.Create().SetHash(hash).SetSource(data).SetWorkflow(d.wf).SetMetadata(make(map[string]interface{})).Save(ctx)
 			if err != nil {
 				return err
 			}
@@ -381,10 +381,25 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	refc := tx.Ref
 
+	metadata := req.GetMetadata()
+
 	if k > 1 {
 		// already saved, gracefully back out
 		rollback(tx)
 		goto respond
+	}
+
+	if metadata != nil && len(metadata) != 0 {
+		obj := make(map[string]interface{})
+		err := unmarshal(string(metadata), &obj)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = d.rev().Update().SetMetadata(obj).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = refc.Create().SetImmutable(true).SetName(d.rev().ID.String()).SetRevision(d.rev()).SetWorkflow(d.wf).Exec(ctx)

@@ -71,6 +71,7 @@ message UpdateWorkflowResponse {
 message SaveHeadRequest {
 	string namespace = 1;
 	string path = 2;
+	bytes metadata = 3;
 }
 
 message SaveHeadResponse {

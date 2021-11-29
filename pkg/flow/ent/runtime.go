@@ -149,6 +149,10 @@ func init() {
 	refDescName := refFields[2].Descriptor()
 	// ref.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	ref.NameValidator = refDescName.Validators[0].(func(string) error)
+	// refDescCreatedAt is the schema descriptor for created_at field.
+	refDescCreatedAt := refFields[3].Descriptor()
+	// ref.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ref.DefaultCreatedAt = refDescCreatedAt.Default.(func() time.Time)
 	// refDescID is the schema descriptor for id field.
 	refDescID := refFields[0].Descriptor()
 	// ref.DefaultID holds the default value on creation for the id field.
