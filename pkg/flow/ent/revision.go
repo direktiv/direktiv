@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -24,6 +25,8 @@ type Revision struct {
 	Hash string `json:"hash,omitempty"`
 	// Source holds the value of the "source" field.
 	Source []byte `json:"source,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RevisionQuery when eager-loading is set.
 	Edges              RevisionEdges `json:"edges"`
@@ -80,7 +83,7 @@ func (*Revision) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case revision.FieldSource:
+		case revision.FieldSource, revision.FieldMetadata:
 			values[i] = new([]byte)
 		case revision.FieldHash:
 			values[i] = new(sql.NullString)
@@ -128,6 +131,14 @@ func (r *Revision) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field source", values[i])
 			} else if value != nil {
 				r.Source = *value
+			}
+		case revision.FieldMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &r.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
+				}
 			}
 		case revision.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -185,6 +196,8 @@ func (r *Revision) String() string {
 	builder.WriteString(r.Hash)
 	builder.WriteString(", source=")
 	builder.WriteString(fmt.Sprintf("%v", r.Source))
+	builder.WriteString(", metadata=")
+	builder.WriteString(fmt.Sprintf("%v", r.Metadata))
 	builder.WriteByte(')')
 	return builder.String()
 }

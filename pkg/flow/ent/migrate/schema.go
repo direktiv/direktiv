@@ -268,6 +268,7 @@ var (
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "immutable", Type: field.TypeBool, Default: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "revision_refs", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_refs", Type: field.TypeUUID, Nullable: true},
 	}
@@ -279,13 +280,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "refs_revisions_refs",
-				Columns:    []*schema.Column{RefsColumns[3]},
+				Columns:    []*schema.Column{RefsColumns[4]},
 				RefColumns: []*schema.Column{RevisionsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "refs_workflows_refs",
-				Columns:    []*schema.Column{RefsColumns[4]},
+				Columns:    []*schema.Column{RefsColumns[5]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -294,7 +295,7 @@ var (
 			{
 				Name:    "ref_name_workflow_refs",
 				Unique:  true,
-				Columns: []*schema.Column{RefsColumns[2], RefsColumns[4]},
+				Columns: []*schema.Column{RefsColumns[2], RefsColumns[5]},
 			},
 		},
 	}
@@ -304,6 +305,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "hash", Type: field.TypeString},
 		{Name: "source", Type: field.TypeBytes},
+		{Name: "metadata", Type: field.TypeJSON},
 		{Name: "workflow_revisions", Type: field.TypeUUID, Nullable: true},
 	}
 	// RevisionsTable holds the schema information for the "revisions" table.
@@ -314,7 +316,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "revisions_workflows_revisions",
-				Columns:    []*schema.Column{RevisionsColumns[4]},
+				Columns:    []*schema.Column{RevisionsColumns[5]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

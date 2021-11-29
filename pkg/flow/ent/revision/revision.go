@@ -19,6 +19,8 @@ const (
 	FieldHash = "hash"
 	// FieldSource holds the string denoting the source field in the database.
 	FieldSource = "source"
+	// FieldMetadata holds the string denoting the metadata field in the database.
+	FieldMetadata = "metadata"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
 	// EdgeRefs holds the string denoting the refs edge name in mutations.
@@ -56,6 +58,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldHash,
 	FieldSource,
+	FieldMetadata,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "revisions"

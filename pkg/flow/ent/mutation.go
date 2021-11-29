@@ -6833,6 +6833,7 @@ type RefMutation struct {
 	id              *uuid.UUID
 	immutable       *bool
 	name            *string
+	created_at      *time.Time
 	clearedFields   map[string]struct{}
 	workflow        *uuid.UUID
 	clearedworkflow bool
@@ -7003,6 +7004,42 @@ func (m *RefMutation) ResetName() {
 	m.name = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *RefMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *RefMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Ref entity.
+// If the Ref object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RefMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *RefMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by id.
 func (m *RefMutation) SetWorkflowID(id uuid.UUID) {
 	m.workflow = &id
@@ -7154,12 +7191,15 @@ func (m *RefMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RefMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.immutable != nil {
 		fields = append(fields, ref.FieldImmutable)
 	}
 	if m.name != nil {
 		fields = append(fields, ref.FieldName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, ref.FieldCreatedAt)
 	}
 	return fields
 }
@@ -7173,6 +7213,8 @@ func (m *RefMutation) Field(name string) (ent.Value, bool) {
 		return m.Immutable()
 	case ref.FieldName:
 		return m.Name()
+	case ref.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -7186,6 +7228,8 @@ func (m *RefMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldImmutable(ctx)
 	case ref.FieldName:
 		return m.OldName(ctx)
+	case ref.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Ref field %s", name)
 }
@@ -7208,6 +7252,13 @@ func (m *RefMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case ref.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Ref field %s", name)
@@ -7263,6 +7314,9 @@ func (m *RefMutation) ResetField(name string) error {
 		return nil
 	case ref.FieldName:
 		m.ResetName()
+		return nil
+	case ref.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Ref field %s", name)
@@ -7397,6 +7451,7 @@ type RevisionMutation struct {
 	created_at       *time.Time
 	hash             *string
 	source           *[]byte
+	metadata         *map[string]interface{}
 	clearedFields    map[string]struct{}
 	workflow         *uuid.UUID
 	clearedworkflow  bool
@@ -7604,6 +7659,42 @@ func (m *RevisionMutation) ResetSource() {
 	m.source = nil
 }
 
+// SetMetadata sets the "metadata" field.
+func (m *RevisionMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *RevisionMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the Revision entity.
+// If the Revision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RevisionMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *RevisionMutation) ResetMetadata() {
+	m.metadata = nil
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by id.
 func (m *RevisionMutation) SetWorkflowID(id uuid.UUID) {
 	m.workflow = &id
@@ -7770,7 +7861,7 @@ func (m *RevisionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RevisionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.created_at != nil {
 		fields = append(fields, revision.FieldCreatedAt)
 	}
@@ -7779,6 +7870,9 @@ func (m *RevisionMutation) Fields() []string {
 	}
 	if m.source != nil {
 		fields = append(fields, revision.FieldSource)
+	}
+	if m.metadata != nil {
+		fields = append(fields, revision.FieldMetadata)
 	}
 	return fields
 }
@@ -7794,6 +7888,8 @@ func (m *RevisionMutation) Field(name string) (ent.Value, bool) {
 		return m.Hash()
 	case revision.FieldSource:
 		return m.Source()
+	case revision.FieldMetadata:
+		return m.Metadata()
 	}
 	return nil, false
 }
@@ -7809,6 +7905,8 @@ func (m *RevisionMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldHash(ctx)
 	case revision.FieldSource:
 		return m.OldSource(ctx)
+	case revision.FieldMetadata:
+		return m.OldMetadata(ctx)
 	}
 	return nil, fmt.Errorf("unknown Revision field %s", name)
 }
@@ -7838,6 +7936,13 @@ func (m *RevisionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSource(v)
+		return nil
+	case revision.FieldMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Revision field %s", name)
@@ -7896,6 +8001,9 @@ func (m *RevisionMutation) ResetField(name string) error {
 		return nil
 	case revision.FieldSource:
 		m.ResetSource()
+		return nil
+	case revision.FieldMetadata:
+		m.ResetMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown Revision field %s", name)

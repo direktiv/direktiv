@@ -14,13 +14,21 @@ import (
 
 func refOrder(p *pagination) ent.RefPaginateOption {
 
-	field := ent.RefOrderFieldName
-	direction := ent.OrderDirectionAsc
+	field := ent.RefOrderFieldCreatedAt
+	direction := ent.OrderDirectionDesc
 
 	if p.order != nil {
 
 		if x := p.order.Field; x != "" && x == "NAME" {
 			field = ent.RefOrderFieldName
+		}
+
+		if x := p.order.Field; x != "" && x == "CREATED" {
+			field = ent.RefOrderFieldCreatedAt
+		}
+
+		if x := p.order.Direction; x != "" && x == "ASC" {
+			direction = ent.OrderDirectionAsc
 		}
 
 		if x := p.order.Direction; x != "" && x == "DESC" {
