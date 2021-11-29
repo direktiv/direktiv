@@ -1,5 +1,6 @@
 import { useJQPlayground } from 'direktiv-react-hooks';
 import { useEffect, useState } from 'react';
+import { IoLink, IoReload } from 'react-icons/io5';
 import { VscFileCode } from 'react-icons/vsc';
 import Button from '../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -19,6 +20,7 @@ export default function JQPlayground() {
 
     if(err){
         // jq query went busted
+        console.log(err, "jq err")
     }
 
     return(
@@ -38,6 +40,8 @@ export default function JQPlayground() {
                 <FlexBox className="gap wrap">
                     <HowToJQ />
                     <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/>
+                    {/* <HowToJQ />
+                    <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/> */}
                 </FlexBox>
             </FlexBox>
         </FlexBox>
@@ -52,14 +56,36 @@ function HowToJQ(){
                         <ContentPanelTitleIcon>
                             <VscFileCode/>
                         </ContentPanelTitleIcon>
-                        <FlexBox className="gap" style={{ alignItems: "center" }}>
+                        <FlexBox className="gap" style={{ alignItems: "center"}}>
                             <div>
                                 How it works
                             </div>
                             <HelpIcon msg={"Brief instructions on how JQ Playground works"} />
                         </FlexBox>
                     </ContentPanelTitle>
-                    <ContentPanelBody >
+                    <ContentPanelBody>
+                        <FlexBox className="col gap" style={{fontSize:"10pt"}}>
+                            <span style={{fontWeight:"bold"}}>JQ Playground is an envrioment where you can quickly test your jq commands against JSON.</span>
+                            <span>There are two inputs in the playground:</span>
+                            <ul>
+                                <li><span style={{fontWeight:"bold"}}>Filter</span> - This is the jq command that will be used to transform your JSON input</li>
+                                <li><span style={{fontWeight:"bold"}}>JSON</span> - This is the JSON input that will be transformed</li>
+                            </ul>
+                            <div>
+                                The transformed JSON is shown in the Result output field.
+                            </div>
+                            <div>
+                                For information on the JQ syntax, please refer to the offical JQ manual online.
+                            </div>
+                            <Button className="reveal-btn small shadow">
+                                                    <FlexBox className="gap">
+                                                        <IoLink className="auto-margin" />
+                                                        <a href="https://stedolan.github.io/jq/manual/">
+                                                            View JQ Manual
+                                                        </a>
+                                                    </FlexBox>
+                                                </Button>
+                        </FlexBox>
                     </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
@@ -75,9 +101,14 @@ function ExamplesJQ(props){
         await executeJQ(f, btoa(i))
     }
 
+    const half = Math.ceil(cheatSheet.length / 2);    
+
+    const firstHalf = cheatSheet.slice(0, half)
+    const secondHalf = cheatSheet.slice(-half)
+
     return(
-        <FlexBox >
-            <ContentPanel style={{width:"100%", minHeight:"280px"}}>
+        <FlexBox style={{flex: 2}}>
+            <ContentPanel style={{minHeight:"280px"}}>
                 <ContentPanelTitle>
                         <ContentPanelTitleIcon>
                             <VscFileCode/>
@@ -90,20 +121,28 @@ function ExamplesJQ(props){
                         </FlexBox>
                     </ContentPanelTitle>
                     <ContentPanelBody >
-                        <table>
+
+                        <table >
                             <tbody>
-                                {cheatSheet.map((obj)=>{
+                                {firstHalf.map((obj)=>{
                                     console.log(obj)
                                     return(
                                         <tr>
-                                            <td>
+                                            <td className="jq-example">
                                                 {obj.example}
                                             </td>
                                             <td>
                                                 {obj.tip}
                                             </td>
                                             <td onClick={()=>loadJQ(obj.filter, obj.json)}>
-                                                load
+                                                <Button className="reveal-btn small shadow">
+                                                    <FlexBox className="gap">
+                                                        <IoReload className="auto-margin" />
+                                                        <div>
+                                                            Load
+                                                        </div>
+                                                    </FlexBox>
+                                                </Button>
                                             </td>
                                         </tr>
                                     )
@@ -111,7 +150,33 @@ function ExamplesJQ(props){
                             </tbody>
                             
                         </table>
-                        
+                        <table>
+         <tbody>
+                                {secondHalf.map((obj)=>{
+                                    console.log(obj)
+                                    return(
+                                        <tr>
+                                            <td className="jq-example">
+                                                {obj.example}
+                                            </td>
+                                            <td>
+                                                {obj.tip}
+                                            </td>
+                                            <td onClick={()=>loadJQ(obj.filter, obj.json)}>
+                                                <Button className="reveal-btn small shadow">
+                                                    <FlexBox className="gap">
+                                                        <IoReload className="auto-margin" />
+                                                        <div>
+                                                            Load
+                                                        </div>
+                                                    </FlexBox>
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
                     </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
@@ -145,7 +210,7 @@ function JQOutput(props) {
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody >
-                    <FlexBox style={{overflow:"hidden", maxHeight:"200px"}}>
+                    <FlexBox style={{overflow:"hidden" , height: "422px", maxHeight:"422px"}}>
                         <DirektivEditor value={output} height="100%" dlang={"json"} />
                     </FlexBox>
                 </ContentPanelBody>
@@ -169,7 +234,7 @@ function JQInput(props) {
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody >
-                    <FlexBox style={{overflow:"hidden" , maxHeight:"200px"}}>
+                    <FlexBox style={{overflow:"hidden" , height: "422px", maxHeight:"422px"}}>
                         <DirektivEditor value={input} setDValue={setInput}  height="100%" dlang={"json"}/>
                     </FlexBox>
                 </ContentPanelBody>
@@ -195,12 +260,13 @@ function JQFilter(props) {
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody >
-                    <FlexBox className="gap wrap">
-                        <FlexBox  style={{fontSize: "12px"}}>
-                            <input onChange={(e)=>setFilter(e.target.value)} value={query} placeholder={"Enter a Filter to JQ on"} type="text" />
+                    <FlexBox className="gap wrap" style={{height:"40px"}}>
+                        <FlexBox style={{fontSize: "12pt"}} >
+                            <input style={{height:"28px", width:"100%"}} onChange={(e)=>setFilter(e.target.value)} value={query} placeholder={"Enter a Filter to JQ on"} type="text" />
                         </FlexBox>
-                        <FlexBox>
-                            <Button onClick={()=>executeJQ(query, btoa(data))}>
+                        <FlexBox style={{maxWidth:"65px"}}>
+                             
+                            <Button className="small" onClick={()=>executeJQ(query, btoa(data))}>
                                 Execute
                             </Button>
                         </FlexBox>
