@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './style.css';
 import FlexBox from '../flexbox';
 import {IoChevronDown} from 'react-icons/io5';
@@ -39,6 +39,16 @@ function NamespaceSelector(props) {
         namespaceSelectorClass += " loading"
         chevronClass += " hidden"
     }
+
+    useEffect(()=>{
+        function resetSelector() {
+            setShowSelector(!showSelector)
+            window.removeEventListener('click', resetSelector)
+        }
+        if(showSelector) {
+            window.addEventListener('click', resetSelector)
+        }
+    },[showSelector])
 
     return (
         <>
