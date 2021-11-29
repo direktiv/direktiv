@@ -143,6 +143,8 @@ service Flow {
 
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 
+	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
+
 	// Linting
 	// LintRevision
 	// LintPayload

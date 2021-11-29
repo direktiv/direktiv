@@ -72,3 +72,32 @@ var eventHistoryCmd = &cobra.Command{
 
 	},
 }
+
+var eventReplayCmd = &cobra.Command{
+	Use:  "replay-event NAMESPACE ID",
+	Args: cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+
+		namespace := args[0]
+		id := args[1]
+
+		c, closer, err := client()
+		if err != nil {
+			exit(err)
+		}
+		defer closer.Close()
+
+		req := &grpc.ReplayEventRequest{
+			Namespace: namespace,
+			Id:        id,
+		}
+
+		resp, err := c.ReplayEvent(ctx, req)
+		if err != nil {
+			exit(err)
+		}
+
+		print(resp)
+
+	},
+}

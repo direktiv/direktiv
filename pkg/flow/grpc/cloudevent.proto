@@ -88,3 +88,8 @@ message EventHistoryResponse {
 	Events events = 1;
 	string namespace = 2;
 }
+
+message ReplayEventRequest {
+	string namespace = 1;
+	string id = 2;
+}

@@ -113,6 +113,7 @@ type FlowClient interface {
 	EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error)
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
+	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
@@ -1526,6 +1527,15 @@ func (c *flowClient) HistoricalEvent(ctx context.Context, in *HistoricalEventReq
 	return out, nil
 }
 
+func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ReplayEvent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ToggleWorkflow", in, out, opts...)
@@ -1687,6 +1697,7 @@ type FlowServer interface {
 	EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error)
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
+	ReplayEvent(context.Context, *ReplayEventRequest) (*empty.Empty, error)
 	ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error)
 	SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*empty.Empty, error)
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
@@ -1964,6 +1975,9 @@ func (UnimplementedFlowServer) EventHistoryStream(*EventHistoryRequest, Flow_Eve
 }
 func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HistoricalEvent not implemented")
+}
+func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
 }
 func (UnimplementedFlowServer) ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleWorkflow not implemented")
@@ -3676,6 +3690,24 @@ func _Flow_HistoricalEvent_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReplayEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).ReplayEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/ReplayEvent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ReplayEvent(ctx, req.(*ReplayEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_ToggleWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ToggleWorkflowRequest)
 	if err := dec(in); err != nil {
@@ -4056,6 +4088,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "HistoricalEvent",
 			Handler:    _Flow_HistoricalEvent_Handler,
+		},
+		{
+			MethodName: "ReplayEvent",
+			Handler:    _Flow_ReplayEvent_Handler,
 		},
 		{
 			MethodName: "ToggleWorkflow",

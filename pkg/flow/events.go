@@ -1163,6 +1163,55 @@ resend:
 
 }
 
+func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest) (*emptypb.Empty, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	nsc := flow.db.Namespace
+	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	eid := req.GetId()
+
+	cevent, err := ns.QueryCloudevents().Where(cevents.EventIdEQ(eid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.events.ReplayCloudevent(ctx, ns, cevent)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp emptypb.Empty
+
+	return &resp, nil
+
+}
+
+func (events *events) ReplayCloudevent(ctx context.Context, ns *ent.Namespace, cevent *ent.CloudEvents) error {
+
+	event := cevent.Event
+
+	events.logToNamespace(ctx, time.Now(), ns, "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+
+	err := events.handleEvent(ns, &event)
+	if err != nil {
+		return err
+	}
+
+	// if eventing is configured, event goes to knative event service
+	// if it is from knative sink not
+	if events.server.conf.Eventing && ctx.Value(EventingCtxKeySource) == nil {
+		PublishKnativeEvent(&event)
+	}
+
+	return nil
+
+}
+
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *ent.Namespace, event *cloudevents.Event, timer int64) error {
 
 	events.logToNamespace(ctx, time.Now(), ns, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
