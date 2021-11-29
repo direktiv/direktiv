@@ -82,7 +82,11 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		case "instance":
 
-			ref, err = im.in.QueryVars().Where(entvar.NameEQ(v.Key)).WithVardata().Only(ctx)
+			ref, err = im.in.QueryVars().Where(entvar.NameEQ(v.Key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
+
+		case "thread":
+
+			ref, err = im.in.QueryVars().Where(entvar.NameEQ(v.Key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
 
 		case "workflow":
 

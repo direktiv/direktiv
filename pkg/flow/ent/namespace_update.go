@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
+	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
@@ -150,6 +151,21 @@ func (nu *NamespaceUpdate) AddCloudevents(c ...*CloudEvents) *NamespaceUpdate {
 	return nu.AddCloudeventIDs(ids...)
 }
 
+// AddNamespacelistenerIDs adds the "namespacelisteners" edge to the Events entity by IDs.
+func (nu *NamespaceUpdate) AddNamespacelistenerIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.AddNamespacelistenerIDs(ids...)
+	return nu
+}
+
+// AddNamespacelisteners adds the "namespacelisteners" edges to the Events entity.
+func (nu *NamespaceUpdate) AddNamespacelisteners(e ...*Events) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return nu.AddNamespacelistenerIDs(ids...)
+}
+
 // Mutation returns the NamespaceMutation object of the builder.
 func (nu *NamespaceUpdate) Mutation() *NamespaceMutation {
 	return nu.mutation
@@ -279,6 +295,27 @@ func (nu *NamespaceUpdate) RemoveCloudevents(c ...*CloudEvents) *NamespaceUpdate
 		ids[i] = c[i].ID
 	}
 	return nu.RemoveCloudeventIDs(ids...)
+}
+
+// ClearNamespacelisteners clears all "namespacelisteners" edges to the Events entity.
+func (nu *NamespaceUpdate) ClearNamespacelisteners() *NamespaceUpdate {
+	nu.mutation.ClearNamespacelisteners()
+	return nu
+}
+
+// RemoveNamespacelistenerIDs removes the "namespacelisteners" edge to Events entities by IDs.
+func (nu *NamespaceUpdate) RemoveNamespacelistenerIDs(ids ...uuid.UUID) *NamespaceUpdate {
+	nu.mutation.RemoveNamespacelistenerIDs(ids...)
+	return nu
+}
+
+// RemoveNamespacelisteners removes "namespacelisteners" edges to Events entities.
+func (nu *NamespaceUpdate) RemoveNamespacelisteners(e ...*Events) *NamespaceUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return nu.RemoveNamespacelistenerIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -723,6 +760,60 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if nu.mutation.NamespacelistenersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedNamespacelistenersIDs(); len(nodes) > 0 && !nu.mutation.NamespacelistenersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.NamespacelistenersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{namespace.Label}
@@ -858,6 +949,21 @@ func (nuo *NamespaceUpdateOne) AddCloudevents(c ...*CloudEvents) *NamespaceUpdat
 	return nuo.AddCloudeventIDs(ids...)
 }
 
+// AddNamespacelistenerIDs adds the "namespacelisteners" edge to the Events entity by IDs.
+func (nuo *NamespaceUpdateOne) AddNamespacelistenerIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.AddNamespacelistenerIDs(ids...)
+	return nuo
+}
+
+// AddNamespacelisteners adds the "namespacelisteners" edges to the Events entity.
+func (nuo *NamespaceUpdateOne) AddNamespacelisteners(e ...*Events) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return nuo.AddNamespacelistenerIDs(ids...)
+}
+
 // Mutation returns the NamespaceMutation object of the builder.
 func (nuo *NamespaceUpdateOne) Mutation() *NamespaceMutation {
 	return nuo.mutation
@@ -987,6 +1093,27 @@ func (nuo *NamespaceUpdateOne) RemoveCloudevents(c ...*CloudEvents) *NamespaceUp
 		ids[i] = c[i].ID
 	}
 	return nuo.RemoveCloudeventIDs(ids...)
+}
+
+// ClearNamespacelisteners clears all "namespacelisteners" edges to the Events entity.
+func (nuo *NamespaceUpdateOne) ClearNamespacelisteners() *NamespaceUpdateOne {
+	nuo.mutation.ClearNamespacelisteners()
+	return nuo
+}
+
+// RemoveNamespacelistenerIDs removes the "namespacelisteners" edge to Events entities by IDs.
+func (nuo *NamespaceUpdateOne) RemoveNamespacelistenerIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
+	nuo.mutation.RemoveNamespacelistenerIDs(ids...)
+	return nuo
+}
+
+// RemoveNamespacelisteners removes "namespacelisteners" edges to Events entities.
+func (nuo *NamespaceUpdateOne) RemoveNamespacelisteners(e ...*Events) *NamespaceUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return nuo.RemoveNamespacelistenerIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1447,6 +1574,60 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: cloudevents.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.NamespacelistenersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedNamespacelistenersIDs(); len(nodes) > 0 && !nuo.mutation.NamespacelistenersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.NamespacelistenersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   namespace.NamespacelistenersTable,
+			Columns: []string{namespace.NamespacelistenersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: events.FieldID,
 				},
 			},
 		}

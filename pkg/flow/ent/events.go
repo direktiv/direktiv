@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
@@ -27,11 +29,16 @@ type Events struct {
 	Signature []byte `json:"signature,omitempty"`
 	// Count holds the value of the "count" field.
 	Count int `json:"count,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventsQuery when eager-loading is set.
-	Edges                   EventsEdges `json:"edges"`
-	instance_eventlisteners *uuid.UUID
-	workflow_wfevents       *uuid.UUID
+	Edges                        EventsEdges `json:"edges"`
+	instance_eventlisteners      *uuid.UUID
+	namespace_namespacelisteners *uuid.UUID
+	workflow_wfevents            *uuid.UUID
 }
 
 // EventsEdges holds the relations/edges for other nodes in the graph.
@@ -42,9 +49,11 @@ type EventsEdges struct {
 	Wfeventswait []*EventsWait `json:"wfeventswait,omitempty"`
 	// Instance holds the value of the instance edge.
 	Instance *Instance `json:"instance,omitempty"`
+	// Namespace holds the value of the namespace edge.
+	Namespace *Namespace `json:"namespace,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // WorkflowOrErr returns the Workflow value or an error if the edge
@@ -84,6 +93,20 @@ func (e EventsEdges) InstanceOrErr() (*Instance, error) {
 	return nil, &NotLoadedError{edge: "instance"}
 }
 
+// NamespaceOrErr returns the Namespace value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e EventsEdges) NamespaceOrErr() (*Namespace, error) {
+	if e.loadedTypes[3] {
+		if e.Namespace == nil {
+			// The edge namespace was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: namespace.Label}
+		}
+		return e.Namespace, nil
+	}
+	return nil, &NotLoadedError{edge: "namespace"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Events) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -93,11 +116,15 @@ func (*Events) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case events.FieldCount:
 			values[i] = new(sql.NullInt64)
+		case events.FieldCreatedAt, events.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case events.FieldID:
 			values[i] = new(uuid.UUID)
 		case events.ForeignKeys[0]: // instance_eventlisteners
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case events.ForeignKeys[1]: // workflow_wfevents
+		case events.ForeignKeys[1]: // namespace_namespacelisteners
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case events.ForeignKeys[2]: // workflow_wfevents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Events", columns[i])
@@ -148,6 +175,18 @@ func (e *Events) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				e.Count = int(value.Int64)
 			}
+		case events.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				e.CreatedAt = value.Time
+			}
+		case events.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				e.UpdatedAt = value.Time
+			}
 		case events.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_eventlisteners", values[i])
@@ -156,6 +195,13 @@ func (e *Events) assignValues(columns []string, values []interface{}) error {
 				*e.instance_eventlisteners = *value.S.(*uuid.UUID)
 			}
 		case events.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field namespace_namespacelisteners", values[i])
+			} else if value.Valid {
+				e.namespace_namespacelisteners = new(uuid.UUID)
+				*e.namespace_namespacelisteners = *value.S.(*uuid.UUID)
+			}
+		case events.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field workflow_wfevents", values[i])
 			} else if value.Valid {
@@ -180,6 +226,11 @@ func (e *Events) QueryWfeventswait() *EventsWaitQuery {
 // QueryInstance queries the "instance" edge of the Events entity.
 func (e *Events) QueryInstance() *InstanceQuery {
 	return (&EventsClient{config: e.config}).QueryInstance(e)
+}
+
+// QueryNamespace queries the "namespace" edge of the Events entity.
+func (e *Events) QueryNamespace() *NamespaceQuery {
+	return (&EventsClient{config: e.config}).QueryNamespace(e)
 }
 
 // Update returns a builder for updating this Events.
@@ -213,6 +264,10 @@ func (e *Events) String() string {
 	builder.WriteString(fmt.Sprintf("%v", e.Signature))
 	builder.WriteString(", count=")
 	builder.WriteString(fmt.Sprintf("%v", e.Count))
+	builder.WriteString(", created_at=")
+	builder.WriteString(e.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

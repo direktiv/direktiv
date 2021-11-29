@@ -648,6 +648,8 @@ type EventsMutation struct {
 	signature           *[]byte
 	count               *int
 	addcount            *int
+	created_at          *time.Time
+	updated_at          *time.Time
 	clearedFields       map[string]struct{}
 	workflow            *uuid.UUID
 	clearedworkflow     bool
@@ -656,6 +658,8 @@ type EventsMutation struct {
 	clearedwfeventswait bool
 	instance            *uuid.UUID
 	clearedinstance     bool
+	namespace           *uuid.UUID
+	clearednamespace    bool
 	done                bool
 	oldValue            func(context.Context) (*Events, error)
 	predicates          []predicate.Events
@@ -923,6 +927,78 @@ func (m *EventsMutation) ResetCount() {
 	m.addcount = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *EventsMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *EventsMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Events entity.
+// If the Events object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventsMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *EventsMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *EventsMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *EventsMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Events entity.
+// If the Events object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventsMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *EventsMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by id.
 func (m *EventsMutation) SetWorkflowID(id uuid.UUID) {
 	m.workflow = &id
@@ -1055,6 +1131,45 @@ func (m *EventsMutation) ResetInstance() {
 	m.clearedinstance = false
 }
 
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
+func (m *EventsMutation) SetNamespaceID(id uuid.UUID) {
+	m.namespace = &id
+}
+
+// ClearNamespace clears the "namespace" edge to the Namespace entity.
+func (m *EventsMutation) ClearNamespace() {
+	m.clearednamespace = true
+}
+
+// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
+func (m *EventsMutation) NamespaceCleared() bool {
+	return m.clearednamespace
+}
+
+// NamespaceID returns the "namespace" edge ID in the mutation.
+func (m *EventsMutation) NamespaceID() (id uuid.UUID, exists bool) {
+	if m.namespace != nil {
+		return *m.namespace, true
+	}
+	return
+}
+
+// NamespaceIDs returns the "namespace" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NamespaceID instead. It exists only for internal usage by the builders.
+func (m *EventsMutation) NamespaceIDs() (ids []uuid.UUID) {
+	if id := m.namespace; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNamespace resets all changes to the "namespace" edge.
+func (m *EventsMutation) ResetNamespace() {
+	m.namespace = nil
+	m.clearednamespace = false
+}
+
 // Where appends a list predicates to the EventsMutation builder.
 func (m *EventsMutation) Where(ps ...predicate.Events) {
 	m.predicates = append(m.predicates, ps...)
@@ -1074,7 +1189,7 @@ func (m *EventsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EventsMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.events != nil {
 		fields = append(fields, events.FieldEvents)
 	}
@@ -1086,6 +1201,12 @@ func (m *EventsMutation) Fields() []string {
 	}
 	if m.count != nil {
 		fields = append(fields, events.FieldCount)
+	}
+	if m.created_at != nil {
+		fields = append(fields, events.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, events.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -1103,6 +1224,10 @@ func (m *EventsMutation) Field(name string) (ent.Value, bool) {
 		return m.Signature()
 	case events.FieldCount:
 		return m.Count()
+	case events.FieldCreatedAt:
+		return m.CreatedAt()
+	case events.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -1120,6 +1245,10 @@ func (m *EventsMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldSignature(ctx)
 	case events.FieldCount:
 		return m.OldCount(ctx)
+	case events.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case events.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Events field %s", name)
 }
@@ -1156,6 +1285,20 @@ func (m *EventsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCount(v)
+		return nil
+	case events.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case events.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Events field %s", name)
@@ -1242,13 +1385,19 @@ func (m *EventsMutation) ResetField(name string) error {
 	case events.FieldCount:
 		m.ResetCount()
 		return nil
+	case events.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case events.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	}
 	return fmt.Errorf("unknown Events field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EventsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.workflow != nil {
 		edges = append(edges, events.EdgeWorkflow)
 	}
@@ -1257,6 +1406,9 @@ func (m *EventsMutation) AddedEdges() []string {
 	}
 	if m.instance != nil {
 		edges = append(edges, events.EdgeInstance)
+	}
+	if m.namespace != nil {
+		edges = append(edges, events.EdgeNamespace)
 	}
 	return edges
 }
@@ -1279,13 +1431,17 @@ func (m *EventsMutation) AddedIDs(name string) []ent.Value {
 		if id := m.instance; id != nil {
 			return []ent.Value{*id}
 		}
+	case events.EdgeNamespace:
+		if id := m.namespace; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EventsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedwfeventswait != nil {
 		edges = append(edges, events.EdgeWfeventswait)
 	}
@@ -1308,7 +1464,7 @@ func (m *EventsMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EventsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedworkflow {
 		edges = append(edges, events.EdgeWorkflow)
 	}
@@ -1317,6 +1473,9 @@ func (m *EventsMutation) ClearedEdges() []string {
 	}
 	if m.clearedinstance {
 		edges = append(edges, events.EdgeInstance)
+	}
+	if m.clearednamespace {
+		edges = append(edges, events.EdgeNamespace)
 	}
 	return edges
 }
@@ -1331,6 +1490,8 @@ func (m *EventsMutation) EdgeCleared(name string) bool {
 		return m.clearedwfeventswait
 	case events.EdgeInstance:
 		return m.clearedinstance
+	case events.EdgeNamespace:
+		return m.clearednamespace
 	}
 	return false
 }
@@ -1344,6 +1505,9 @@ func (m *EventsMutation) ClearEdge(name string) error {
 		return nil
 	case events.EdgeInstance:
 		m.ClearInstance()
+		return nil
+	case events.EdgeNamespace:
+		m.ClearNamespace()
 		return nil
 	}
 	return fmt.Errorf("unknown Events unique edge %s", name)
@@ -1361,6 +1525,9 @@ func (m *EventsMutation) ResetEdge(name string) error {
 		return nil
 	case events.EdgeInstance:
 		m.ResetInstance()
+		return nil
+	case events.EdgeNamespace:
+		m.ResetNamespace()
 		return nil
 	}
 	return fmt.Errorf("unknown Events edge %s", name)
@@ -5610,35 +5777,38 @@ func (m *LogMsgMutation) ResetEdge(name string) error {
 // NamespaceMutation represents an operation that mutates the Namespace nodes in the graph.
 type NamespaceMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	created_at         *time.Time
-	updated_at         *time.Time
-	_config            *string
-	name               *string
-	clearedFields      map[string]struct{}
-	inodes             map[uuid.UUID]struct{}
-	removedinodes      map[uuid.UUID]struct{}
-	clearedinodes      bool
-	workflows          map[uuid.UUID]struct{}
-	removedworkflows   map[uuid.UUID]struct{}
-	clearedworkflows   bool
-	instances          map[uuid.UUID]struct{}
-	removedinstances   map[uuid.UUID]struct{}
-	clearedinstances   bool
-	logs               map[uuid.UUID]struct{}
-	removedlogs        map[uuid.UUID]struct{}
-	clearedlogs        bool
-	vars               map[uuid.UUID]struct{}
-	removedvars        map[uuid.UUID]struct{}
-	clearedvars        bool
-	cloudevents        map[uuid.UUID]struct{}
-	removedcloudevents map[uuid.UUID]struct{}
-	clearedcloudevents bool
-	done               bool
-	oldValue           func(context.Context) (*Namespace, error)
-	predicates         []predicate.Namespace
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	created_at                *time.Time
+	updated_at                *time.Time
+	_config                   *string
+	name                      *string
+	clearedFields             map[string]struct{}
+	inodes                    map[uuid.UUID]struct{}
+	removedinodes             map[uuid.UUID]struct{}
+	clearedinodes             bool
+	workflows                 map[uuid.UUID]struct{}
+	removedworkflows          map[uuid.UUID]struct{}
+	clearedworkflows          bool
+	instances                 map[uuid.UUID]struct{}
+	removedinstances          map[uuid.UUID]struct{}
+	clearedinstances          bool
+	logs                      map[uuid.UUID]struct{}
+	removedlogs               map[uuid.UUID]struct{}
+	clearedlogs               bool
+	vars                      map[uuid.UUID]struct{}
+	removedvars               map[uuid.UUID]struct{}
+	clearedvars               bool
+	cloudevents               map[uuid.UUID]struct{}
+	removedcloudevents        map[uuid.UUID]struct{}
+	clearedcloudevents        bool
+	namespacelisteners        map[uuid.UUID]struct{}
+	removednamespacelisteners map[uuid.UUID]struct{}
+	clearednamespacelisteners bool
+	done                      bool
+	oldValue                  func(context.Context) (*Namespace, error)
+	predicates                []predicate.Namespace
 }
 
 var _ ent.Mutation = (*NamespaceMutation)(nil)
@@ -6194,6 +6364,60 @@ func (m *NamespaceMutation) ResetCloudevents() {
 	m.removedcloudevents = nil
 }
 
+// AddNamespacelistenerIDs adds the "namespacelisteners" edge to the Events entity by ids.
+func (m *NamespaceMutation) AddNamespacelistenerIDs(ids ...uuid.UUID) {
+	if m.namespacelisteners == nil {
+		m.namespacelisteners = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.namespacelisteners[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNamespacelisteners clears the "namespacelisteners" edge to the Events entity.
+func (m *NamespaceMutation) ClearNamespacelisteners() {
+	m.clearednamespacelisteners = true
+}
+
+// NamespacelistenersCleared reports if the "namespacelisteners" edge to the Events entity was cleared.
+func (m *NamespaceMutation) NamespacelistenersCleared() bool {
+	return m.clearednamespacelisteners
+}
+
+// RemoveNamespacelistenerIDs removes the "namespacelisteners" edge to the Events entity by IDs.
+func (m *NamespaceMutation) RemoveNamespacelistenerIDs(ids ...uuid.UUID) {
+	if m.removednamespacelisteners == nil {
+		m.removednamespacelisteners = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.namespacelisteners, ids[i])
+		m.removednamespacelisteners[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNamespacelisteners returns the removed IDs of the "namespacelisteners" edge to the Events entity.
+func (m *NamespaceMutation) RemovedNamespacelistenersIDs() (ids []uuid.UUID) {
+	for id := range m.removednamespacelisteners {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NamespacelistenersIDs returns the "namespacelisteners" edge IDs in the mutation.
+func (m *NamespaceMutation) NamespacelistenersIDs() (ids []uuid.UUID) {
+	for id := range m.namespacelisteners {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNamespacelisteners resets all changes to the "namespacelisteners" edge.
+func (m *NamespaceMutation) ResetNamespacelisteners() {
+	m.namespacelisteners = nil
+	m.clearednamespacelisteners = false
+	m.removednamespacelisteners = nil
+}
+
 // Where appends a list predicates to the NamespaceMutation builder.
 func (m *NamespaceMutation) Where(ps ...predicate.Namespace) {
 	m.predicates = append(m.predicates, ps...)
@@ -6363,7 +6587,7 @@ func (m *NamespaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NamespaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.inodes != nil {
 		edges = append(edges, namespace.EdgeInodes)
 	}
@@ -6381,6 +6605,9 @@ func (m *NamespaceMutation) AddedEdges() []string {
 	}
 	if m.cloudevents != nil {
 		edges = append(edges, namespace.EdgeCloudevents)
+	}
+	if m.namespacelisteners != nil {
+		edges = append(edges, namespace.EdgeNamespacelisteners)
 	}
 	return edges
 }
@@ -6425,13 +6652,19 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case namespace.EdgeNamespacelisteners:
+		ids := make([]ent.Value, 0, len(m.namespacelisteners))
+		for id := range m.namespacelisteners {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NamespaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removedinodes != nil {
 		edges = append(edges, namespace.EdgeInodes)
 	}
@@ -6449,6 +6682,9 @@ func (m *NamespaceMutation) RemovedEdges() []string {
 	}
 	if m.removedcloudevents != nil {
 		edges = append(edges, namespace.EdgeCloudevents)
+	}
+	if m.removednamespacelisteners != nil {
+		edges = append(edges, namespace.EdgeNamespacelisteners)
 	}
 	return edges
 }
@@ -6493,13 +6729,19 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case namespace.EdgeNamespacelisteners:
+		ids := make([]ent.Value, 0, len(m.removednamespacelisteners))
+		for id := range m.removednamespacelisteners {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NamespaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.clearedinodes {
 		edges = append(edges, namespace.EdgeInodes)
 	}
@@ -6517,6 +6759,9 @@ func (m *NamespaceMutation) ClearedEdges() []string {
 	}
 	if m.clearedcloudevents {
 		edges = append(edges, namespace.EdgeCloudevents)
+	}
+	if m.clearednamespacelisteners {
+		edges = append(edges, namespace.EdgeNamespacelisteners)
 	}
 	return edges
 }
@@ -6537,6 +6782,8 @@ func (m *NamespaceMutation) EdgeCleared(name string) bool {
 		return m.clearedvars
 	case namespace.EdgeCloudevents:
 		return m.clearedcloudevents
+	case namespace.EdgeNamespacelisteners:
+		return m.clearednamespacelisteners
 	}
 	return false
 }
@@ -6570,6 +6817,9 @@ func (m *NamespaceMutation) ResetEdge(name string) error {
 		return nil
 	case namespace.EdgeCloudevents:
 		m.ResetCloudevents()
+		return nil
+	case namespace.EdgeNamespacelisteners:
+		m.ResetNamespacelisteners()
 		return nil
 	}
 	return fmt.Errorf("unknown Namespace edge %s", name)
@@ -8945,6 +9195,7 @@ type VarRefMutation struct {
 	typ              string
 	id               *uuid.UUID
 	name             *string
+	behaviour        *string
 	clearedFields    map[string]struct{}
 	vardata          *uuid.UUID
 	clearedvardata   bool
@@ -9091,6 +9342,55 @@ func (m *VarRefMutation) NameCleared() bool {
 func (m *VarRefMutation) ResetName() {
 	m.name = nil
 	delete(m.clearedFields, varref.FieldName)
+}
+
+// SetBehaviour sets the "behaviour" field.
+func (m *VarRefMutation) SetBehaviour(s string) {
+	m.behaviour = &s
+}
+
+// Behaviour returns the value of the "behaviour" field in the mutation.
+func (m *VarRefMutation) Behaviour() (r string, exists bool) {
+	v := m.behaviour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBehaviour returns the old "behaviour" field's value of the VarRef entity.
+// If the VarRef object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VarRefMutation) OldBehaviour(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBehaviour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBehaviour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBehaviour: %w", err)
+	}
+	return oldValue.Behaviour, nil
+}
+
+// ClearBehaviour clears the value of the "behaviour" field.
+func (m *VarRefMutation) ClearBehaviour() {
+	m.behaviour = nil
+	m.clearedFields[varref.FieldBehaviour] = struct{}{}
+}
+
+// BehaviourCleared returns if the "behaviour" field was cleared in this mutation.
+func (m *VarRefMutation) BehaviourCleared() bool {
+	_, ok := m.clearedFields[varref.FieldBehaviour]
+	return ok
+}
+
+// ResetBehaviour resets all changes to the "behaviour" field.
+func (m *VarRefMutation) ResetBehaviour() {
+	m.behaviour = nil
+	delete(m.clearedFields, varref.FieldBehaviour)
 }
 
 // SetVardataID sets the "vardata" edge to the VarData entity by id.
@@ -9268,9 +9568,12 @@ func (m *VarRefMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VarRefMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.name != nil {
 		fields = append(fields, varref.FieldName)
+	}
+	if m.behaviour != nil {
+		fields = append(fields, varref.FieldBehaviour)
 	}
 	return fields
 }
@@ -9282,6 +9585,8 @@ func (m *VarRefMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case varref.FieldName:
 		return m.Name()
+	case varref.FieldBehaviour:
+		return m.Behaviour()
 	}
 	return nil, false
 }
@@ -9293,6 +9598,8 @@ func (m *VarRefMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case varref.FieldName:
 		return m.OldName(ctx)
+	case varref.FieldBehaviour:
+		return m.OldBehaviour(ctx)
 	}
 	return nil, fmt.Errorf("unknown VarRef field %s", name)
 }
@@ -9308,6 +9615,13 @@ func (m *VarRefMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case varref.FieldBehaviour:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBehaviour(v)
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef field %s", name)
@@ -9342,6 +9656,9 @@ func (m *VarRefMutation) ClearedFields() []string {
 	if m.FieldCleared(varref.FieldName) {
 		fields = append(fields, varref.FieldName)
 	}
+	if m.FieldCleared(varref.FieldBehaviour) {
+		fields = append(fields, varref.FieldBehaviour)
+	}
 	return fields
 }
 
@@ -9359,6 +9676,9 @@ func (m *VarRefMutation) ClearField(name string) error {
 	case varref.FieldName:
 		m.ClearName()
 		return nil
+	case varref.FieldBehaviour:
+		m.ClearBehaviour()
+		return nil
 	}
 	return fmt.Errorf("unknown VarRef nullable field %s", name)
 }
@@ -9369,6 +9689,9 @@ func (m *VarRefMutation) ResetField(name string) error {
 	switch name {
 	case varref.FieldName:
 		m.ResetName()
+		return nil
+	case varref.FieldBehaviour:
+		m.ResetBehaviour()
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef field %s", name)

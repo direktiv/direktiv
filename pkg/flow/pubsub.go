@@ -443,6 +443,42 @@ func (pubsub *pubsub) NotifyNamespaceLogs(ns *ent.Namespace) {
 
 }
 
+func (pubsub *pubsub) namespaceEventListeners(ns *ent.Namespace) string {
+
+	return fmt.Sprintf("nsel:%s", ns.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeEventListeners(ns *ent.Namespace) *subscription {
+
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns))
+
+}
+
+func (pubsub *pubsub) NotifyEventListeners(ns *ent.Namespace) {
+
+	pubsub.publish(pubsubNotify(pubsub.namespaceEventListeners(ns)))
+
+}
+
+func (pubsub *pubsub) namespaceEvents(ns *ent.Namespace) string {
+
+	return fmt.Sprintf("nsev:%s", ns.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeEvents(ns *ent.Namespace) *subscription {
+
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEvents(ns))
+
+}
+
+func (pubsub *pubsub) NotifyEvents(ns *ent.Namespace) {
+
+	pubsub.publish(pubsubNotify(pubsub.namespaceEvents(ns)))
+
+}
+
 func (pubsub *pubsub) walkInodeKeys(ino *ent.Inode) []string {
 
 	array := make([]string, 0)

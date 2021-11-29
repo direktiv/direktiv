@@ -38,6 +38,20 @@ func (vrc *VarRefCreate) SetNillableName(s *string) *VarRefCreate {
 	return vrc
 }
 
+// SetBehaviour sets the "behaviour" field.
+func (vrc *VarRefCreate) SetBehaviour(s string) *VarRefCreate {
+	vrc.mutation.SetBehaviour(s)
+	return vrc
+}
+
+// SetNillableBehaviour sets the "behaviour" field if the given value is not nil.
+func (vrc *VarRefCreate) SetNillableBehaviour(s *string) *VarRefCreate {
+	if s != nil {
+		vrc.SetBehaviour(*s)
+	}
+	return vrc
+}
+
 // SetID sets the "id" field.
 func (vrc *VarRefCreate) SetID(u uuid.UUID) *VarRefCreate {
 	vrc.mutation.SetID(u)
@@ -238,6 +252,14 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			Column: varref.FieldName,
 		})
 		_node.Name = value
+	}
+	if value, ok := vrc.mutation.Behaviour(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: varref.FieldBehaviour,
+		})
+		_node.Behaviour = value
 	}
 	if nodes := vrc.mutation.VardataIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

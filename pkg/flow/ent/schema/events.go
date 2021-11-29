@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
@@ -22,6 +24,8 @@ func (Events) Fields() []ent.Field {
 		field.JSON("correlations", []string{}),
 		field.Bytes("signature").Optional(),
 		field.Int("count"),
+		field.Time("created_at").Default(time.Now).Immutable(),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED")),
 	}
 }
 
@@ -30,9 +34,11 @@ func (Events) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("workflow", Workflow.Type).
 			Ref("wfevents").
-			Unique().Required(),
+			Unique().Required().Annotations(entgql.OrderField("WORKFLOW")),
 		edge.To("wfeventswait", EventsWait.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.From("instance", Instance.Type).
-			Ref("eventlisteners").Unique(),
+			Ref("eventlisteners").Unique().Annotations(entgql.OrderField("INSTANCE")),
+		edge.From("namespace", Namespace.Type).Unique().Required().
+			Ref("namespacelisteners"),
 	}
 }

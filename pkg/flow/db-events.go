@@ -112,7 +112,16 @@ func (events *events) getWorkflowEventByWorkflowUID(ctx context.Context, evc *en
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow) error {
 
-	_, err := evc.
+	var err error
+	ns := wf.Edges.Namespace
+	if ns == nil {
+		ns, err = wf.Namespace(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = evc.
 		Delete().
 		Where(entev.HasWorkflowWith(entwf.ID(wf.ID))).
 		Exec(ctx)
@@ -120,11 +129,15 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, evc *ent
 		return err
 	}
 
+	events.pubsub.NotifyEventListeners(ns)
+
 	return nil
 
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, in *ent.Instance) error {
+
+	ns := in.Edges.Namespace
 
 	_, err := events.db.Events.
 		Delete().
@@ -133,6 +146,8 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, in *ent.
 	if err != nil {
 		return err
 	}
+
+	events.pubsub.NotifyEventListeners(ns)
 
 	return nil
 
@@ -162,6 +177,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 		return err
 	}
 
+	ns := wf.Edges.Namespace
+	if ns == nil {
+		ns, err = wf.Namespace(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(ms.Events) > 0 && ms.Enabled {
 
 		var ev []map[string]interface{}
@@ -184,6 +207,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 		}
 
 		_, err = evc.Create().
+			SetNamespace(ns).
 			SetWorkflow(wf).
 			SetEvents(ev).
 			SetCorrelations(correlations).
@@ -195,6 +219,8 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 		}
 
 	}
+
+	events.pubsub.NotifyEventListeners(ns)
 
 	return nil
 
@@ -220,7 +246,10 @@ func (events *events) addInstanceEventListener(ctx context.Context, evc *ent.Eve
 		count = len(sevents)
 	}
 
+	ns := wf.Edges.Namespace
+
 	_, err := evc.Create().
+		SetNamespace(ns).
 		SetWorkflow(wf).
 		SetInstance(in).
 		SetEvents(ev).
@@ -232,6 +261,8 @@ func (events *events) addInstanceEventListener(ctx context.Context, evc *ent.Eve
 	if err != nil {
 		return err
 	}
+
+	events.pubsub.NotifyEventListeners(ns)
 
 	return nil
 

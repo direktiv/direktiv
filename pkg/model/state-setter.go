@@ -76,10 +76,6 @@ func (a *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 func (o *SetterDefinition) Validate() error {
 
-	if o.Scope == "" {
-		return errors.New(`scope required ("instance", "workflow", or "namespace")`)
-	}
-
 	match, err := regexp.MatchString(RegexVarMimeType, o.MimeType)
 	if err != nil {
 		return errors.New(`regex validation of mime type failed`)
@@ -93,8 +89,9 @@ func (o *SetterDefinition) Validate() error {
 	case "instance":
 	case "workflow":
 	case "namespace":
+	case "thread":
 	default:
-		return fmt.Errorf(`invalid scope '%s' (requires "instance", "workflow", or "namespace")`, o.Scope)
+		return ErrVarScope
 	}
 
 	if o.Key == "" {

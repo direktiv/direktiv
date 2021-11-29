@@ -46,7 +46,10 @@ var (
 		{Name: "correlations", Type: field.TypeJSON},
 		{Name: "signature", Type: field.TypeBytes, Nullable: true},
 		{Name: "count", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "instance_eventlisteners", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_namespacelisteners", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_wfevents", Type: field.TypeUUID, Nullable: true},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -57,13 +60,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "events_instances_eventlisteners",
-				Columns:    []*schema.Column{EventsColumns[5]},
+				Columns:    []*schema.Column{EventsColumns[7]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
+				Symbol:     "events_namespaces_namespacelisteners",
+				Columns:    []*schema.Column{EventsColumns[8]},
+				RefColumns: []*schema.Column{NamespacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
 				Symbol:     "events_workflows_wfevents",
-				Columns:    []*schema.Column{EventsColumns[6]},
+				Columns:    []*schema.Column{EventsColumns[9]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -157,13 +166,13 @@ var (
 				Symbol:     "instances_revisions_instances",
 				Columns:    []*schema.Column{InstancesColumns[9]},
 				RefColumns: []*schema.Column{RevisionsColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "instances_workflows_instances",
 				Columns:    []*schema.Column{InstancesColumns[10]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -358,6 +367,7 @@ var (
 	VarRefsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Nullable: true},
+		{Name: "behaviour", Type: field.TypeString, Nullable: true},
 		{Name: "instance_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "var_data_varrefs", Type: field.TypeUUID, Nullable: true},
@@ -371,25 +381,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "var_refs_instances_vars",
-				Columns:    []*schema.Column{VarRefsColumns[2]},
+				Columns:    []*schema.Column{VarRefsColumns[3]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "var_refs_namespaces_vars",
-				Columns:    []*schema.Column{VarRefsColumns[3]},
+				Columns:    []*schema.Column{VarRefsColumns[4]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "var_refs_var_data_varrefs",
-				Columns:    []*schema.Column{VarRefsColumns[4]},
+				Columns:    []*schema.Column{VarRefsColumns[5]},
 				RefColumns: []*schema.Column{VarDataColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "var_refs_workflows_vars",
-				Columns:    []*schema.Column{VarRefsColumns[5]},
+				Columns:    []*schema.Column{VarRefsColumns[6]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -445,7 +455,8 @@ var (
 func init() {
 	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsTable.ForeignKeys[0].RefTable = InstancesTable
-	EventsTable.ForeignKeys[1].RefTable = WorkflowsTable
+	EventsTable.ForeignKeys[1].RefTable = NamespacesTable
+	EventsTable.ForeignKeys[2].RefTable = WorkflowsTable
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 	InodesTable.ForeignKeys[0].RefTable = InodesTable
 	InodesTable.ForeignKeys[1].RefTable = NamespacesTable

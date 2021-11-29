@@ -135,7 +135,16 @@ service Flow {
 	// Dependencies // Return dependency graph.
 	// Crons // List of cron schedules on the namespace.
 	// Broadcast // Broadcast Cloudevent.
-	// EventListeners // Get list of event listeners.
+	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
+	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {} 
+
+	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
+	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
+
+	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
+
+	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
+
 	// Linting
 	// LintRevision
 	// LintPayload
@@ -164,6 +173,8 @@ service Internal {
 	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc WorkflowVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetWorkflowVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
+	rpc ThreadVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
+	rpc SetThreadVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc InstanceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 }

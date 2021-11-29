@@ -13,6 +13,8 @@ const (
 	FieldID = "oid"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldBehaviour holds the string denoting the behaviour field in the database.
+	FieldBehaviour = "behaviour"
 	// EdgeVardata holds the string denoting the vardata edge name in mutations.
 	EdgeVardata = "vardata"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
@@ -57,6 +59,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldBehaviour,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "var_refs"

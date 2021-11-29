@@ -22,6 +22,8 @@ type VarRef struct {
 	ID uuid.UUID `json:"-"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Behaviour holds the value of the "behaviour" field.
+	Behaviour string `json:"behaviour,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the VarRefQuery when eager-loading is set.
 	Edges            VarRefEdges `json:"edges"`
@@ -107,7 +109,7 @@ func (*VarRef) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case varref.FieldName:
+		case varref.FieldName, varref.FieldBehaviour:
 			values[i] = new(sql.NullString)
 		case varref.FieldID:
 			values[i] = new(uuid.UUID)
@@ -145,6 +147,12 @@ func (vr *VarRef) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				vr.Name = value.String
+			}
+		case varref.FieldBehaviour:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field behaviour", values[i])
+			} else if value.Valid {
+				vr.Behaviour = value.String
 			}
 		case varref.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -224,6 +232,8 @@ func (vr *VarRef) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", vr.ID))
 	builder.WriteString(", name=")
 	builder.WriteString(vr.Name)
+	builder.WriteString(", behaviour=")
+	builder.WriteString(vr.Behaviour)
 	builder.WriteByte(')')
 	return builder.String()
 }

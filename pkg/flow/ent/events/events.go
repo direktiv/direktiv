@@ -3,6 +3,8 @@
 package events
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -19,12 +21,18 @@ const (
 	FieldSignature = "signature"
 	// FieldCount holds the string denoting the count field in the database.
 	FieldCount = "count"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
 	// EdgeWfeventswait holds the string denoting the wfeventswait edge name in mutations.
 	EdgeWfeventswait = "wfeventswait"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
+	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
+	EdgeNamespace = "namespace"
 	// Table holds the table name of the events in the database.
 	Table = "events"
 	// WorkflowTable is the table that holds the workflow relation/edge.
@@ -48,6 +56,13 @@ const (
 	InstanceInverseTable = "instances"
 	// InstanceColumn is the table column denoting the instance relation/edge.
 	InstanceColumn = "instance_eventlisteners"
+	// NamespaceTable is the table that holds the namespace relation/edge.
+	NamespaceTable = "events"
+	// NamespaceInverseTable is the table name for the Namespace entity.
+	// It exists in this package in order to avoid circular dependency with the "namespace" package.
+	NamespaceInverseTable = "namespaces"
+	// NamespaceColumn is the table column denoting the namespace relation/edge.
+	NamespaceColumn = "namespace_namespacelisteners"
 )
 
 // Columns holds all SQL columns for events fields.
@@ -57,12 +72,15 @@ var Columns = []string{
 	FieldCorrelations,
 	FieldSignature,
 	FieldCount,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"instance_eventlisteners",
+	"namespace_namespacelisteners",
 	"workflow_wfevents",
 }
 
@@ -82,6 +100,12 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

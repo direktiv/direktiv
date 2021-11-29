@@ -6,12 +6,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/workflow"
 	"github.com/google/uuid"
 )
@@ -44,6 +46,34 @@ func (ec *EventsCreate) SetSignature(b []byte) *EventsCreate {
 // SetCount sets the "count" field.
 func (ec *EventsCreate) SetCount(i int) *EventsCreate {
 	ec.mutation.SetCount(i)
+	return ec
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ec *EventsCreate) SetCreatedAt(t time.Time) *EventsCreate {
+	ec.mutation.SetCreatedAt(t)
+	return ec
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ec *EventsCreate) SetNillableCreatedAt(t *time.Time) *EventsCreate {
+	if t != nil {
+		ec.SetCreatedAt(*t)
+	}
+	return ec
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (ec *EventsCreate) SetUpdatedAt(t time.Time) *EventsCreate {
+	ec.mutation.SetUpdatedAt(t)
+	return ec
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (ec *EventsCreate) SetNillableUpdatedAt(t *time.Time) *EventsCreate {
+	if t != nil {
+		ec.SetUpdatedAt(*t)
+	}
 	return ec
 }
 
@@ -96,6 +126,17 @@ func (ec *EventsCreate) SetNillableInstanceID(id *uuid.UUID) *EventsCreate {
 // SetInstance sets the "instance" edge to the Instance entity.
 func (ec *EventsCreate) SetInstance(i *Instance) *EventsCreate {
 	return ec.SetInstanceID(i.ID)
+}
+
+// SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
+func (ec *EventsCreate) SetNamespaceID(id uuid.UUID) *EventsCreate {
+	ec.mutation.SetNamespaceID(id)
+	return ec
+}
+
+// SetNamespace sets the "namespace" edge to the Namespace entity.
+func (ec *EventsCreate) SetNamespace(n *Namespace) *EventsCreate {
+	return ec.SetNamespaceID(n.ID)
 }
 
 // Mutation returns the EventsMutation object of the builder.
@@ -169,6 +210,14 @@ func (ec *EventsCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ec *EventsCreate) defaults() {
+	if _, ok := ec.mutation.CreatedAt(); !ok {
+		v := events.DefaultCreatedAt()
+		ec.mutation.SetCreatedAt(v)
+	}
+	if _, ok := ec.mutation.UpdatedAt(); !ok {
+		v := events.DefaultUpdatedAt()
+		ec.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := ec.mutation.ID(); !ok {
 		v := events.DefaultID()
 		ec.mutation.SetID(v)
@@ -186,8 +235,17 @@ func (ec *EventsCreate) check() error {
 	if _, ok := ec.mutation.Count(); !ok {
 		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "count"`)}
 	}
+	if _, ok := ec.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+	}
+	if _, ok := ec.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+	}
 	if _, ok := ec.mutation.WorkflowID(); !ok {
 		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
+	}
+	if _, ok := ec.mutation.NamespaceID(); !ok {
+		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
 	}
 	return nil
 }
@@ -253,6 +311,22 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 		})
 		_node.Count = value
 	}
+	if value, ok := ec.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: events.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
+	}
+	if value, ok := ec.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: events.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
+	}
 	if nodes := ec.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -310,6 +384,26 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.instance_eventlisteners = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.NamespaceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   events.NamespaceTable,
+			Columns: []string{events.NamespaceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: namespace.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.namespace_namespacelisteners = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
