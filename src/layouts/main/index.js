@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './style.css';
 import Breadcrumbs from '../../components/breadcrumbs';
 import Settings from '../settings';
+import Explorer from '../explorer';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
 
@@ -86,7 +87,7 @@ function NamespaceNavigation(props){
                 {namespaces !== null ? 
                 <Routes>
                     <Route path="/" element={<div>index route:)</div>} />
-                    <Route path="/n/:namespace" element={<div>explorer</div>} />
+                    <Route path="/n/:namespace" element={<Explorer />} />
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>

@@ -1,0 +1,36 @@
+.explorer-searchbar {
+    position: absolute;
+    right:  8px;
+    top: 30px;
+}
+
+.explorer-searchbar .flex-box {
+    background-color: white;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 4px;
+    border: solid 1px var(--theme-background);
+    height: 32px;
+}
+
+.explorer-searchbar input {
+    border: none;
+    border-radius: 0px;
+}
+
+.explorer-searchbar input:focus-visible {
+    outline: none;
+}
+
+.explorer-sort-by {
+    font-size: 12px;
+    display: flex;
+}
+
+.esb-field {
+    color: var(--theme-dark-gray-text);
+}
+
+.inline {
+    display: inline;
+}
