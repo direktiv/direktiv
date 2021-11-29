@@ -22,50 +22,50 @@ func (srv *server) dependencyGraphPoller() {
 }
 
 type workflowDependencyGraph struct {
-	Subflows        map[string]bool
-	Parents         map[string]bool
-	NSFunctions     map[string]bool
-	GlobalFunctions map[string]bool
-	NSVars          map[string]bool
-	Secrets         map[string]bool
+	Subflows        map[string]bool `json:"subflows"`
+	Parents         map[string]bool `json:"parents"`
+	NSFunctions     map[string]bool `json:"namespace_functions"`
+	GlobalFunctions map[string]bool `json:"global_functions"`
+	NSVars          map[string]bool `json:"namespace_variables"`
+	Secrets         map[string]bool `json:"secrets"`
 }
 
 type secretsDependencyGraph struct {
-	Workflows map[string]bool
+	Workflows map[string]bool `json:"workflows"`
 }
 
 type nsvarDependencyGraph struct {
-	Workflows map[string]bool
+	Workflows map[string]bool `json:"workflows"`
 }
 
 type nsFunctionDependencyGraph struct {
-	Workflows map[string]bool
+	Workflows map[string]bool `json:"workflows"`
 }
 
 type namespaceDependencyGraph struct {
-	ID          string
-	Workflows   map[string]*workflowDependencyGraph
-	Secrets     map[string]*secretsDependencyGraph
-	Vars        map[string]*nsvarDependencyGraph
-	NSFunctions map[string]*nsFunctionDependencyGraph
+	ID          string                                `json:"-"`
+	Workflows   map[string]*workflowDependencyGraph   `json:"workflows"`
+	Secrets     map[string]*secretsDependencyGraph    `json:"secrets"`
+	Vars        map[string]*nsvarDependencyGraph      `json:"variables"`
+	NSFunctions map[string]*nsFunctionDependencyGraph `json:"namespace_functions"`
 }
 
 type wfDependency struct {
-	Namespace string
-	Workflow  string
+	Namespace string `json:"namespace"`
+	Workflow  string `json:"workflow"`
 }
 
 type globalFunctionNamespaceDependenciesGraph struct {
-	Workflows map[string]bool
+	Workflows map[string]bool `json:"workflows"`
 }
 
 type globalFunctionDependencyGraph struct {
-	Namespaces map[string]*globalFunctionNamespaceDependenciesGraph
+	Namespaces map[string]*globalFunctionNamespaceDependenciesGraph `json:"namespaces"`
 }
 
 type dependencyGraph struct {
-	Namespaces      map[string]*namespaceDependencyGraph
-	GlobalFunctions map[string]*globalFunctionDependencyGraph
+	Namespaces      map[string]*namespaceDependencyGraph      `json:"namespaces"`
+	GlobalFunctions map[string]*globalFunctionDependencyGraph `json:"global_functions"`
 }
 
 func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {

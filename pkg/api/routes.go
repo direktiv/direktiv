@@ -94,6 +94,9 @@ const (
 	RN_UpdateServiceTraffic = "updateServiceTraffic"
 	RN_DeleteService        = "deleteService"
 
+	RN_GlobalDependencies     = "globalDependencies"
+	RN_NamespacedDependencies = "namespacedDependencies"
+
 	RN_ListNamespacePods             = "listNamespacePods"
 	RN_CreateNamespaceService        = "createNamespaceService"
 	RN_DeleteNamespaceServices       = "deleteNamespaceService"

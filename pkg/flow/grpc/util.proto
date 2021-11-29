@@ -17,6 +17,14 @@ message JQResponse {
 	repeated string results = 3;
 }
 
+message NamespacedDependencyGraphRequest {
+	string namespace = 1;
+}
+
+message DependencyGraphResponse {
+	bytes data = 1;
+}
+
 message WorkflowMetricsRequest {
 	string namespace = 1;
 	string path = 2;

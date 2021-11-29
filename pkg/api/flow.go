@@ -23,6 +23,7 @@ import (
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type flowHandler struct {
@@ -457,6 +458,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/milliseconds", h.NamespaceMetricsMilliseconds).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
+
+	r.HandleFunc("/dependencies", h.Dependencies).Name(RN_GlobalDependencies).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/dependencies", h.NamespacedDependencies).Name(RN_NamespacedDependencies).Methods(http.MethodGet)
 
 	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-sankey", h.MetricsSankey)
 
@@ -4414,5 +4418,62 @@ func (h *flowHandler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ToggleWorkflow(ctx, in)
 	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) Dependencies(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+
+	in := &emptypb.Empty{}
+
+	// NOTE: this is a demo function for now. Needs cleaning up.
+
+	resp, err := h.client.GlobalDependencyGraph(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	m := make(map[string]interface{})
+	err = json.Unmarshal(resp.GetData(), &m)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	respondJSON(w, m, err)
+
+}
+
+func (h *flowHandler) NamespacedDependencies(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	in := &grpc.NamespacedDependencyGraphRequest{
+		Namespace: namespace,
+	}
+
+	// NOTE: this is a demo function for now. Needs cleaning up.
+
+	resp, err := h.client.NamespacedDependencyGraph(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	m := make(map[string]interface{})
+	err = json.Unmarshal(resp.GetData(), &m)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	respondJSON(w, m, err)
 
 }
