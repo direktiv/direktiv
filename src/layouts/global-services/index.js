@@ -6,7 +6,7 @@ import FlexBox from "../../components/flexbox";
 import { Config } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
-import { IoPlay } from "react-icons/io5";
+import { IoPlay, IoWarning } from "react-icons/io5";
 // import Slider, { SliderTooltip, Handle } from 'rc-slider';
 
 export default function GlobalServicesPanel(props) {
@@ -94,6 +94,19 @@ export default function GlobalServicesPanel(props) {
                 <ContentPanelBody className="secrets-panel">
                     <FlexBox className="gap col">
                         <FlexBox className="col gap">
+                        {data.length === 0 ?
+                     <div className="col">
+                     <FlexBox style={{ height:"40px", }}>
+                             <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                                 <IoWarning/>
+                                 <div style={{fontSize:"10pt", }}>
+                                     No services have been created.
+                                 </div>
+                             </FlexBox>
+                     </FlexBox>
+                 </div>
+                    :
+                    <>
                             {
                                 data.map((obj)=>{
                                     return(
@@ -107,7 +120,7 @@ export default function GlobalServicesPanel(props) {
                                         />
                                     )
                                 })
-                            }
+                            }</>}
                         </FlexBox>
                     </FlexBox>
                 </ContentPanelBody>

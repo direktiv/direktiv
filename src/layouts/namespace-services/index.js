@@ -1,5 +1,5 @@
 import { useNamespaceServices } from "direktiv-react-hooks";
-import { IoChevronDownOutline, IoChevronForwardOutline, IoPlay } from "react-icons/io5";
+import { IoChevronDownOutline, IoChevronForwardOutline, IoPlay, IoWarning } from "react-icons/io5";
 import "./style.css"
 import {useEffect, useState} from "react"
 import { RiDeleteBin2Line } from "react-icons/ri";
@@ -148,6 +148,19 @@ function NamespaceServices(props) {
         <ContentPanelBody className="secrets-panel">
             <FlexBox className="gap col">
                 <FlexBox className="col gap">
+                    {data.length === 0 ?
+                     <div className="col">
+                     <FlexBox style={{ height:"40px", }}>
+                             <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                                 <IoWarning />
+                                 <div style={{fontSize:"10pt", }}>
+                                     No services have been created.
+                                 </div>
+                             </FlexBox>
+                     </FlexBox>
+                 </div>
+                    :
+                    <>
                     {
                         data.map((obj)=>{
                             return(
@@ -162,6 +175,7 @@ function NamespaceServices(props) {
                             )
                         })
                     }
+                    </>}
                 </FlexBox>
             </FlexBox>
         </ContentPanelBody>

@@ -148,9 +148,10 @@ function Variables(props) {
 
     return(
         <FlexBox>
-            {variables.length === 0  ? "":
+            {variables.length === 0  ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No variables are stored...</div>:
             <table className="variables-table">
                 <tbody>
+                 
                     {variables.map((obj)=>{
                         return(
                             <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>

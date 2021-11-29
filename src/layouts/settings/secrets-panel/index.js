@@ -96,6 +96,15 @@ function Secrets(props) {
     return(
         <>
             <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
+                    {secrets.length === 0 ?
+                             <FlexBox className="secret-tuple" >
+                             <FlexBox className="key">No secrets are stored...</FlexBox>
+                             <FlexBox className="val"></FlexBox>
+                             <FlexBox className="actions">
+                             </FlexBox>
+                         </FlexBox>
+                    :
+                    <>
                     {secrets.map((obj)=>{
 
                         let key = GenerateRandomKey("secret-")
@@ -140,7 +149,7 @@ function Secrets(props) {
                                 </FlexBox>
                             </FlexBox>
                         )
-                    })}
+                    })}</>}
             </FlexBox>
         </>
     );

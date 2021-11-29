@@ -82,10 +82,11 @@ function InstancesTable(props) {
     }
 
     return(
-
+        <>
+        {
+            data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently ran...</div>:
     <table className="instances-table">
-     {
-         data.length === 0 ? "":
+
      <>       <thead>
                 <tr>
                     <th>
@@ -105,8 +106,8 @@ function InstancesTable(props) {
             <tbody>
                 {data !== null ? 
                 <>
-                    {
-                    data.map((obj)=>{
+                    <>
+                    {data.map((obj)=>{
                     return(
                         <InstanceRow 
                             namespace={namespace}
@@ -119,11 +120,11 @@ function InstancesTable(props) {
                             finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
                         />
                     )
-                    })}
+                    })}</>
                 </>
                 :<></>}
-            </tbody></>}
-        </table>
+            </tbody></>
+        </table>}</>
     );
 }
 

@@ -178,6 +178,22 @@ function ExplorerList(props) {
             </ContentPanelTitle>
             <ContentPanelBody>
                 <FlexBox className="col">
+                    {data.children.edges.length === 0 ? 
+                            <div className="explorer-item">
+                                <FlexBox className="explorer-item-container">
+                                    <FlexBox style={{display:"flex", alignItems:"center"}} className="explorer-item-icon">
+                                        <IoSearch />
+                                    </FlexBox>
+                                    <FlexBox style={{fontSize:"10pt"}} className="explorer-item-name">
+                                        No results found under '{path}'.
+                                    </FlexBox>
+                                    <FlexBox className="explorer-item-actions gap">
+                    
+                                    </FlexBox>
+                                </FlexBox>
+                            </div>
+                    :
+                    <>
                     {data.children.edges.map((obj) => {
                         if (obj.node.type === "directory") {
                             return (<DirListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
@@ -185,7 +201,7 @@ function ExplorerList(props) {
                             return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
                         }
                         return ""
-                    })}
+                    })}</>}
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>

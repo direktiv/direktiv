@@ -132,6 +132,16 @@ export function Registries(props) {
     return(
         <>
             <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
+            {registries.length === 0 ? 
+                     <FlexBox className="secret-tuple">
+                     <FlexBox className="key">No registries are stored...</FlexBox>
+                     <FlexBox className="val"></FlexBox>
+                     <FlexBox className="val"></FlexBox>
+                     <FlexBox className="actions">
+                     </FlexBox>
+                 </FlexBox>
+            :
+            <>
             {registries.map((obj)=>{
                     return (
                         <FlexBox key={obj.name} className="secret-tuple">
@@ -173,7 +183,7 @@ export function Registries(props) {
                             </FlexBox>
                         </FlexBox>
                     )
-                })}
+                })}</>}
             </FlexBox>
         </>
     );
