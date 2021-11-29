@@ -40,8 +40,6 @@ export default function JQPlayground() {
                 <FlexBox className="gap wrap">
                     <HowToJQ />
                     <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/>
-                    {/* <HowToJQ />
-                    <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/> */}
                 </FlexBox>
             </FlexBox>
         </FlexBox>

@@ -11,7 +11,7 @@ import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/mod
 import AddValueButton from "../../components/add-button";
 import {Link} from 'react-router-dom'
 // import Slider, { SliderTooltip, Handle } from 'rc-slider';
-
+import HelpIcon from "../../components/help"
 
 export default function ServicesPanel(props) {
     const {namespace} = props
@@ -102,9 +102,12 @@ function NamespaceServices(props) {
             <ContentPanelTitleIcon>
                 <IoPlay/>
             </ContentPanelTitleIcon>
-            <FlexBox>
-                Services
-            </FlexBox>
+            <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                        <div>
+                            Services 
+                        </div>
+                        <HelpIcon msg={"Create a namespace based service that can only be referenced by workflows in that namespace"} />
+                    </FlexBox>
             <div>
             <Modal title="New namespace service" 
                 escapeToCancel

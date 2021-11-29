@@ -201,7 +201,7 @@ input:focus-visible {
   height: 0;
 }
 
-.slider {
+.slider-broadcast {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -214,11 +214,11 @@ input:focus-visible {
   border-radius: 34px;
 }
 
-input:checked + .slider {
+input:checked + .slider-broadcast {
   background-color: var(--theme-brand-blue);
 }
 
-.slider:before {
+.slider-broadcast:before {
   position: absolute;
   content: "";
   height: 18px;
@@ -231,7 +231,7 @@ input:checked + .slider {
   border-radius: 50%;
 }
 
-input:checked + .slider:before {
+input:checked + .slider-broadcast:before {
   background-color: white;
   -webkit-transform: translateX(14px);
   -ms-transform: translateX(14px);

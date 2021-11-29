@@ -9,6 +9,8 @@ import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
 import {useSecrets} from 'direktiv-react-hooks'
 import {Config, GenerateRandomKey} from '../../../util'
+import HelpIcon from '../../../components/help';
+
 
 function SecretsPanel(props){
     const {namespace} = props
@@ -27,8 +29,11 @@ function SecretsPanel(props){
                 <ContentPanelTitleIcon>
                     <IoLockClosedOutline />
                 </ContentPanelTitleIcon>
-                <FlexBox>
-                    Secrets   
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Secrets
+                    </div>
+                    <HelpIcon msg={"Add secrets to reference in your workflows"} />
                 </FlexBox>
                 <div>
                     <Modal title="New secret" 

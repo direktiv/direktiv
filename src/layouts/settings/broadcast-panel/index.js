@@ -5,6 +5,7 @@ import { BsSliders } from 'react-icons/bs';
 import FlexBox from '../../../components/flexbox';
 import {Config, GenerateRandomKey} from '../../../util';
 import { useBroadcastConfiguration } from 'direktiv-react-hooks';
+import HelpIcon from '../../../components/help';
 
 function BroadcastConfigurationsPanel(props){
     const {namespace} = props
@@ -16,7 +17,12 @@ function BroadcastConfigurationsPanel(props){
                 <ContentPanelTitleIcon>
                     <BsSliders />
                 </ContentPanelTitleIcon>
-                Broadcast Configurations   
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Broadcast Configurations   
+                    </div>
+                    <HelpIcon msg={"Configure what events on direktiv fire off cloud events"} />
+                </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody >
                 {data !== null ?
@@ -245,7 +251,7 @@ function BroadcastOptionsRow(props) {
                     <FlexBox key={"broadcast-opts-"+title+"-"+i}>
                         <label className="switch" style={{visibility: "hidden"}}>
                             <input type="checkbox" />
-                            <span className="slider"></span>
+                            <span className="slider-broadcast"></span>
                         </label>
                     </FlexBox>
                 </FlexBox>
@@ -257,7 +263,7 @@ function BroadcastOptionsRow(props) {
                     <FlexBox key={"broadcast-opts-"+title+"-"+i}>
                         <label className="switch">
                         <input onClick={()=>{ options[i].onClick()}} defaultChecked={options[i].value} type="checkbox" />
-                            <span className="slider"></span>
+                            <span className="slider-broadcast"></span>
                         </label>
                     </FlexBox>
                 </FlexBox>

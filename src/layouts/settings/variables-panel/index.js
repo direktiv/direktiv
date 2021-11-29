@@ -13,6 +13,8 @@ import {useDropzone} from 'react-dropzone'
 import {BsUpload} from 'react-icons/bs';
 import Tabs from '../../../components/tabs';
 import { RiDeleteBin2Line } from 'react-icons/ri';
+import HelpIcon from '../../../components/help';
+
 
 function VariablesPanel(props){
 
@@ -34,8 +36,11 @@ function VariablesPanel(props){
                 <ContentPanelTitleIcon>
                     <IoLockClosedOutline />
                 </ContentPanelTitleIcon>
-                <FlexBox>
-                    Variables   
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Variables
+                    </div>
+                    <HelpIcon msg={"Add variables to reference in your workflows"} />
                 </FlexBox>
                 <div>
                     <Modal title="New variable" 

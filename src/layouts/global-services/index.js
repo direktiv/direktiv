@@ -8,6 +8,7 @@ import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/mod
 import AddValueButton from "../../components/add-button";
 import { IoPlay, IoWarning } from "react-icons/io5";
 // import Slider, { SliderTooltip, Handle } from 'rc-slider';
+import HelpIcon from "../../components/help"
 
 export default function GlobalServicesPanel(props) {
     const {data, err, config, createGlobalService, getConfig, getGlobalServices, deleteGlobalService} = useGlobalServices(Config.url, true)
@@ -48,8 +49,11 @@ export default function GlobalServicesPanel(props) {
                     <ContentPanelTitleIcon>
                         <IoPlay/>
                     </ContentPanelTitleIcon>
-                    <FlexBox>
-                        Services
+                    <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                        <div>
+                            Services 
+                        </div>
+                        <HelpIcon msg={"Create a global service that can be referenced from any workflow."} />
                     </FlexBox>
                     <div>
                     <Modal title="New global service" 

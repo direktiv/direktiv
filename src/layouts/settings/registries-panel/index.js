@@ -8,6 +8,7 @@ import {SecretsDeleteButton} from '../secrets-panel';
 import Alert from '../../../components/alert';
 import { useRegistries } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
+import HelpIcon from '../../../components/help';
 
 function RegistriesPanel(props){
 
@@ -33,8 +34,11 @@ function RegistriesPanel(props){
                 <ContentPanelTitleIcon>
                     <IoLogoDocker />
                 </ContentPanelTitleIcon>
-                <FlexBox>
-                    Container Registries  
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Container Registries   
+                    </div>
+                    <HelpIcon msg={"Add extra registries to pull images from"} />
                 </FlexBox>
                 <div>
                     <Modal title="New registry"

@@ -15,7 +15,7 @@ import DirektivEditor from '../../components/editor';
 import { BsCodeSlash } from 'react-icons/bs';
 import Button from '../../components/button';
 import Pagination from '../../components/pagination';
-
+import HelpIcon from "../../components/help"
 
 function Explorer(props) {
     const params = useParams()
@@ -79,8 +79,11 @@ function ExplorerList(props) {
                 <ContentPanelTitleIcon>
                     <IoFolderOpen/>
                 </ContentPanelTitleIcon>
-                <FlexBox>
-                    Explorer
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Explorer
+                    </div>
+                    <HelpIcon msg={"List of workflows or directories"} />
                 </FlexBox>
                 <div className="explorer-sort-by">
                     <div className="esb-label inline" style={{marginRight: "8px"}}>

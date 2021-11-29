@@ -8,6 +8,7 @@ import Alert from '../../components/alert';
 import { useGlobalRegistries, useGlobalPrivateRegistries } from 'direktiv-react-hooks';
 import {AddRegistryPanel, Registries} from '../settings/registries-panel'
 import { Config } from '../../util';
+import HelpIcon from '../../components/help';
 
 
 export default function GlobalRegistriesPanel(){
@@ -38,8 +39,11 @@ export function GlobalRegistries(){
                 <ContentPanelTitleIcon>
                     <IoLogoDocker />
                 </ContentPanelTitleIcon>
-                <FlexBox>
-                    Container Registries  
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Container Registries  
+                    </div>
+                    <HelpIcon msg={"Add a registry that can be accessed by any service"} />
                 </FlexBox>
                 <div>
                     <Modal title="New registry"
@@ -108,8 +112,11 @@ export function GlobalPrivateRegistries(){
                 <ContentPanelTitleIcon>
                     <IoLogoDocker />
                 </ContentPanelTitleIcon>
-                <FlexBox>
-                   Private Container Registries  
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Private Container Registries  
+                    </div>
+                    <HelpIcon msg={"Add a registry that is only available to global services"} />
                 </FlexBox>
                 <div>
                     <Modal title="New registry"
