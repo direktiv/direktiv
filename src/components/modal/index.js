@@ -254,7 +254,11 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
                 setDisplayAlert(true)
             } else if (btn.closesModal) {
                 closeModal()
+            } else {
+                setAlertMessage("")
+                setDisplayAlert(false)
             }
+
         }
 
         out.push(

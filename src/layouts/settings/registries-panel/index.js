@@ -70,12 +70,16 @@ function RegistriesPanel(props){
                                 if(err) return err
                                 await  getRegistries()
                             }, "small blue", true, false),
-                            ButtonDefinition("Test Connection", () => {
+                            ButtonDefinition("Test Connection", async () => {
                                 setTestConnLoading(true)
-                                setTimeout(()=>{
+                                let err = await TestRegistry(url, username, token)
+                                if(err) {
                                     setTestConnLoading(false)
-                                    setSuccessFeedback(true)
-                                },2000)
+                                    setSuccessFeedback(false)
+                                    return err
+                                }
+                                setTestConnLoading(false)
+                                setSuccessFeedback(true)
                             }, testConnBtnClasses, false, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
@@ -102,6 +106,39 @@ function RegistriesPanel(props){
 }
 
 export default RegistriesPanel;
+
+async function TestRegistry(url, username, token) {
+
+    let resp = await fetch(`${Config.url}functions/registries/test`, {
+        method: "POST",
+        body: JSON.stringify({
+            username,
+            password: token,
+            url
+        })
+    })
+
+    // if response is ok the the connection is valid
+    if(resp.ok) {
+        return
+    }
+
+    if(resp.status === 500) {
+        let json = await resp.json()
+        return json.message
+    }
+
+    if(resp.status === 401) {
+        if(url === "https://registry.hub.docker.com") {
+            let text = await resp.text()
+            return text
+        } else {
+            let json = await resp.json()
+            return json.errors[0].message
+        }
+    }
+    
+}
 
 // const registries = ["https://docker.io", "https://gcr.io", "https://us.gcr.io"]
 
