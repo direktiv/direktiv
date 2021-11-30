@@ -10,7 +10,7 @@
 </p>
 <hr/>
 
-[![Build](https://github.com/direktiv/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/direktiv/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/direktiv/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/direktiv/direktiv)](https://goreportcard.com/report/github.com/direktiv/direktiv) [![Discord](https://img.shields.io/badge/chat-on%20discord-6A7EC2)](https://discord.gg/VjF6wn4)
+[![Build](https://github.com/direktiv/direktiv/actions/workflows/build.yml/badge.svg)](https://github.com/direktiv/direktiv/actions/workflows/build.yml) <a href="https://codeclimate.com/github/direktiv/direktiv/maintainability"><img src="https://api.codeclimate.com/v1/badges/39969b6bb893928434ae/maintainability" /></a> [![Go Report Card](https://goreportcard.com/badge/github.com/direktiv/direktiv)](https://goreportcard.com/report/github.com/direktiv/direktiv) [![Slack]( 	https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)](https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g)
 
 
 # What is direktiv?
