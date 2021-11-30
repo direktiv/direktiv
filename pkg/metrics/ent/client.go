@@ -187,7 +187,9 @@ func (c *MetricsClient) DeleteOneID(id int) *MetricsDeleteOne {
 
 // Query returns a query builder for Metrics.
 func (c *MetricsClient) Query() *MetricsQuery {
-	return &MetricsQuery{config: c.config}
+	return &MetricsQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Metrics entity by its id.

@@ -22,23 +22,23 @@ func init() {
 	// metrics.WorkflowValidator is a validator for the "workflow" field. It is called by the builders before save.
 	metrics.WorkflowValidator = metricsDescWorkflow.Validators[0].(func(string) error)
 	// metricsDescInstance is the schema descriptor for instance field.
-	metricsDescInstance := metricsFields[2].Descriptor()
+	metricsDescInstance := metricsFields[3].Descriptor()
 	// metrics.InstanceValidator is a validator for the "instance" field. It is called by the builders before save.
 	metrics.InstanceValidator = metricsDescInstance.Validators[0].(func(string) error)
 	// metricsDescState is the schema descriptor for state field.
-	metricsDescState := metricsFields[3].Descriptor()
+	metricsDescState := metricsFields[4].Descriptor()
 	// metrics.StateValidator is a validator for the "state" field. It is called by the builders before save.
 	metrics.StateValidator = metricsDescState.Validators[0].(func(string) error)
 	// metricsDescWorkflowMs is the schema descriptor for workflow_ms field.
-	metricsDescWorkflowMs := metricsFields[5].Descriptor()
+	metricsDescWorkflowMs := metricsFields[6].Descriptor()
 	// metrics.WorkflowMsValidator is a validator for the "workflow_ms" field. It is called by the builders before save.
 	metrics.WorkflowMsValidator = metricsDescWorkflowMs.Validators[0].(func(int64) error)
 	// metricsDescIsolateMs is the schema descriptor for isolate_ms field.
-	metricsDescIsolateMs := metricsFields[6].Descriptor()
+	metricsDescIsolateMs := metricsFields[7].Descriptor()
 	// metrics.IsolateMsValidator is a validator for the "isolate_ms" field. It is called by the builders before save.
 	metrics.IsolateMsValidator = metricsDescIsolateMs.Validators[0].(func(int64) error)
 	// metricsDescNext is the schema descriptor for next field.
-	metricsDescNext := metricsFields[9].Descriptor()
+	metricsDescNext := metricsFields[10].Descriptor()
 	// metrics.NextValidator is a validator for the "next" field. It is called by the builders before save.
 	metrics.NextValidator = func() func(int8) error {
 		validators := metricsDescNext.Validators

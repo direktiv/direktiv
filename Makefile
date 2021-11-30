@@ -93,6 +93,7 @@ ent: ## Manually regenerates ent database packages.
 	go generate ./pkg/flow/ent
 	go generate ./pkg/secrets/ent
 	go generate ./pkg/functions/ent
+	go generate ./pkg/metrics/ent
 
 # Cleans API client inside of pkg api
 .PHONY: api-clean-client

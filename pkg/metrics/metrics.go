@@ -43,6 +43,7 @@ func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 	r := c.db.Metrics.Create()
 	r = r.SetNamespace(args.Namespace)
 	r = r.SetWorkflow(args.Workflow)
+	r = r.SetRevision(args.Revision)
 	r = r.SetInstance(args.Instance)
 	r = r.SetState(args.State)
 	r = r.SetTimestamp(time.Now())
