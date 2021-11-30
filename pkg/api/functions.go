@@ -30,9 +30,12 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
@@ -964,6 +967,42 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 
 	// Registry ..
 
+	// swagger:operation POST /api/functions/registries/test testRegistry
+	// ---
+	// description: |
+	//   Test a registry with provided url, username and token
+	// summary: Test a registry to make sure the connection is okay
+	// - in: body
+	//   name: Registry Payload
+	//   required: true
+	//   description: Payload that contains registry data
+	//   schema:
+	//     type: object
+	//     example:
+	//       username: "admin"
+	//       url: "https://prod.customreg.io"
+	//       token: "8QwFLg%D$qg*"
+	//     required:
+	//       - url
+	//       - username
+	//       - password
+	//     properties:
+	//       password:
+	//         type: string
+	//         description: "token to authenticate with the registry"
+	//       username:
+	//         type: string
+	//         description: "username to authenticate with the registry"
+	//       url:
+	//         type: string
+	//         description: The url to test if the registry is valid
+	// responses:
+	//   '200':
+	//     "description": "registry is valid"
+	//   '401':
+	//     "description": "unauthorized to access the registry"
+	r.HandleFunc("/registries/test", h.testRegistry).Methods(http.MethodPost).Name(RN_TestRegistry)
+
 	// swagger:operation GET /api/functions/registries/namespaces/{namespace} Registries getRegistries
 	// ---
 	// description: |
@@ -1252,6 +1291,108 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	})
 
 	respond(w, resp, err)
+
+}
+
+func (h *functionHandler) testRegistry(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	d := make(map[string]string)
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	if d["url"] == "" || d["username"] == "" || d["password"] == "" {
+		respond(w, nil, errors.New("url, username and password need to be provided"))
+		return
+	}
+
+	if d["url"] == "https://registry.hub.docker.com" {
+		// double request one for the token the other to see if its a valid connection
+		req, err := http.NewRequest("POST", fmt.Sprintf("%s/v2/users/login", d["url"]), strings.NewReader(fmt.Sprintf("{\n\"username\":\"%s\",\n\"password\":\"%s\"}", d["username"], d["password"])))
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		req.Header.Add("content-type", "application/json")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+		defer resp.Body.Close()
+
+		t := make(map[string]string)
+		err = json.NewDecoder(resp.Body).Decode(&t)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+
+		if t["token"] == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("credentials provided are incorrect"))
+			return
+		}
+
+		checkReq, err := http.NewRequest("GET", fmt.Sprintf("%s/v2/repositories/namespaces", d["url"]), nil)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+
+		checkReq.Header.Add("Authorization", fmt.Sprintf("JWT %s", t["token"]))
+
+		resp, err = http.DefaultClient.Do(checkReq)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+		defer resp.Body.Close()
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+
+		w.WriteHeader(resp.StatusCode)
+		w.Write(data)
+	} else {
+		checkReq, err := http.NewRequest("GET", fmt.Sprintf("%s/v2/_catalog", d["url"]), nil)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+		checkReq.SetBasicAuth(d["username"], d["password"])
+
+		resp, err := http.DefaultClient.Do(checkReq)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+		defer resp.Body.Close()
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			respond(w, nil, err)
+			return
+
+		}
+
+		w.WriteHeader(resp.StatusCode)
+		w.Write(data)
+	}
 
 }
 
