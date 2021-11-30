@@ -474,6 +474,11 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, errors.New("cannot move node into itself")
 	}
 
+	oldpd, err := flow.getInode(ctx, nil, d.ns(), d.dir, false)
+	if err != nil {
+		return nil, err
+	}
+
 	dir, base := filepath.Split(path)
 
 	ino := d.ino
@@ -494,6 +499,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	}
 
 	flow.logToNamespace(ctx, time.Now(), d.ns(), "Renamed %s from '%s' to '%s'.", d.ino.Type, req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyInode(oldpd.ino)
 	flow.pubsub.NotifyInode(pd.ino)
 	flow.pubsub.CloseInode(d.ino)
 

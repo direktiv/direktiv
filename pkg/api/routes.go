@@ -44,6 +44,7 @@ const (
 	RN_DeleteGlobalPrivateRegistry = "deleteGlobalPrivateRegistry"
 	RN_GetNamespaceMetrics         = "getNamespaceMetrics"
 	RN_GetWorkflowMetrics          = "getWorkflowMetrics"
+	RN_TestRegistry                = "testRegistry"
 	// RN_ListWorkflows                = "listWorkflows"
 	// RN_GetWorkflow                  = "getWorkflow"
 	// RN_ToggleWorkflow               = "toggleWorkflow"
