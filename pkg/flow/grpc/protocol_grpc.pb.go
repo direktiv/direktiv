@@ -99,6 +99,8 @@ type FlowClient interface {
 	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
+	GlobalDependencyGraph(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*DependencyGraphResponse, error)
+	NamespacedDependencyGraph(ctx context.Context, in *NamespacedDependencyGraphRequest, opts ...grpc.CallOption) (*DependencyGraphResponse, error)
 	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
@@ -1409,6 +1411,24 @@ func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOpt
 	return out, nil
 }
 
+func (c *flowClient) GlobalDependencyGraph(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*DependencyGraphResponse, error) {
+	out := new(DependencyGraphResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/GlobalDependencyGraph", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NamespacedDependencyGraph(ctx context.Context, in *NamespacedDependencyGraphRequest, opts ...grpc.CallOption) (*DependencyGraphResponse, error) {
+	out := new(DependencyGraphResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/NamespacedDependencyGraph", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateNodeAttributes", in, out, opts...)
@@ -1683,6 +1703,8 @@ type FlowServer interface {
 	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*empty.Empty, error)
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
+	GlobalDependencyGraph(context.Context, *empty.Empty) (*DependencyGraphResponse, error)
+	NamespacedDependencyGraph(context.Context, *NamespacedDependencyGraphRequest) (*DependencyGraphResponse, error)
 	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error)
 	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
@@ -1951,6 +1973,12 @@ func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameIn
 }
 func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
+}
+func (UnimplementedFlowServer) GlobalDependencyGraph(context.Context, *empty.Empty) (*DependencyGraphResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GlobalDependencyGraph not implemented")
+}
+func (UnimplementedFlowServer) NamespacedDependencyGraph(context.Context, *NamespacedDependencyGraphRequest) (*DependencyGraphResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NamespacedDependencyGraph not implemented")
 }
 func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNodeAttributes not implemented")
@@ -3540,6 +3568,42 @@ func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_GlobalDependencyGraph_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).GlobalDependencyGraph(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/GlobalDependencyGraph",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).GlobalDependencyGraph(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NamespacedDependencyGraph_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NamespacedDependencyGraphRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NamespacedDependencyGraph(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/NamespacedDependencyGraph",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NamespacedDependencyGraph(ctx, req.(*NamespacedDependencyGraphRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Flow_CreateNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateNodeAttributesRequest)
 	if err := dec(in); err != nil {
@@ -4064,6 +4128,14 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "JQ",
 			Handler:    _Flow_JQ_Handler,
+		},
+		{
+			MethodName: "GlobalDependencyGraph",
+			Handler:    _Flow_GlobalDependencyGraph_Handler,
+		},
+		{
+			MethodName: "NamespacedDependencyGraph",
+			Handler:    _Flow_NamespacedDependencyGraph_Handler,
 		},
 		{
 			MethodName: "CreateNodeAttributes",
