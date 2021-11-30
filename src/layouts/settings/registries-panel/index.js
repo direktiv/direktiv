@@ -38,7 +38,7 @@ function RegistriesPanel(props){
                     <div>
                         Container Registries   
                     </div>
-                    <HelpIcon msg={"Add extra registries to pull images from"} />
+                    <HelpIcon msg={"Additional container registries can be added for images to be pulled from when defining services/isolates."} />
                 </FlexBox>
                 <div>
                     <Modal title="New registry"

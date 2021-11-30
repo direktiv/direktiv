@@ -21,7 +21,7 @@ function BroadcastConfigurationsPanel(props){
                     <div>
                         Broadcast Configurations   
                     </div>
-                    <HelpIcon msg={"Configure what events on direktiv fire off cloud events"} />
+                    <HelpIcon msg={"Toggle which Direktiv system events will cause a Cloud Event to be sent to the current namespace."} />
                 </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody >

@@ -34,7 +34,7 @@ function InstancesPage(props) {
                         <div>
                             Instances
                         </div>
-                        <HelpIcon msg={"A list of instances run by workflows within the current active namespace."} />
+                        <HelpIcon msg={"A list of recently executed instances."} />
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody>
@@ -84,7 +84,7 @@ function InstancesTable(props) {
     return(
         <>
         {
-            data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently ran...</div>:
+            data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
     <table className="instances-table">
 
      <>       <thead>

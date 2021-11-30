@@ -40,7 +40,7 @@ function VariablesPanel(props){
                     <div>
                         Variables
                     </div>
-                    <HelpIcon msg={"Add variables to reference in your workflows"} />
+                    <HelpIcon msg={"Unencrypted key/value pairs that can be referenced within workflows."} />
                 </FlexBox>
                 <div>
                     <Modal title="New variable" 

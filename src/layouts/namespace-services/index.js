@@ -106,7 +106,7 @@ function NamespaceServices(props) {
                         <div>
                             Services 
                         </div>
-                        <HelpIcon msg={"Create a namespace based service that can only be referenced by workflows in that namespace"} />
+                        <HelpIcon msg={"Services that are available to be used by workflows in the same namespace."} />
                     </FlexBox>
             <div>
             <Modal title="New namespace service" 
