@@ -330,7 +330,9 @@ func (srv *server) resolveDependencyGraphLinks(dg *dependencyGraph) error {
 		}
 
 		for _, vref := range vrefs {
-			ndg.Vars[vref.Name] = new(nsvarDependencyGraph)
+			ndg.Vars[vref.Name] = &nsvarDependencyGraph{
+				Workflows: make(map[string]bool),
+			}
 		}
 
 		for wf, wdg := range ndg.Workflows {
@@ -364,7 +366,9 @@ func (srv *server) resolveDependencyGraphLinks(dg *dependencyGraph) error {
 
 		for _, secret := range resp.Secrets {
 			s := secret.String()
-			ndg.Secrets[s] = new(secretsDependencyGraph)
+			ndg.Secrets[s] = &secretsDependencyGraph{
+				Workflows: make(map[string]bool),
+			}
 		}
 
 		for wf, wdg := range ndg.Workflows {
