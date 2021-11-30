@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/ref"
@@ -22,6 +23,8 @@ type Ref struct {
 	Immutable bool `json:"immutable,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RefQuery when eager-loading is set.
 	Edges         RefEdges `json:"edges"`
@@ -88,6 +91,8 @@ func (*Ref) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullBool)
 		case ref.FieldName:
 			values[i] = new(sql.NullString)
+		case ref.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case ref.FieldID:
 			values[i] = new(uuid.UUID)
 		case ref.ForeignKeys[0]: // revision_refs
@@ -126,6 +131,12 @@ func (r *Ref) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				r.Name = value.String
+			}
+		case ref.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				r.CreatedAt = value.Time
 			}
 		case ref.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -188,6 +199,8 @@ func (r *Ref) String() string {
 	builder.WriteString(fmt.Sprintf("%v", r.Immutable))
 	builder.WriteString(", name=")
 	builder.WriteString(r.Name)
+	builder.WriteString(", created_at=")
+	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

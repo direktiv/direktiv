@@ -32,6 +32,12 @@ func (mc *MetricsCreate) SetWorkflow(s string) *MetricsCreate {
 	return mc
 }
 
+// SetRevision sets the "revision" field.
+func (mc *MetricsCreate) SetRevision(s string) *MetricsCreate {
+	mc.mutation.SetRevision(s)
+	return mc
+}
+
 // SetInstance sets the "instance" field.
 func (mc *MetricsCreate) SetInstance(s string) *MetricsCreate {
 	mc.mutation.SetInstance(s)
@@ -128,11 +134,17 @@ func (mc *MetricsCreate) Save(ctx context.Context) (*Metrics, error) {
 				return nil, err
 			}
 			mc.mutation = mutation
-			node, err = mc.sqlSave(ctx)
+			if node, err = mc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(mc.hooks) - 1; i >= 0; i-- {
+			if mc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = mc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, mc.mutation); err != nil {
@@ -151,68 +163,84 @@ func (mc *MetricsCreate) SaveX(ctx context.Context) *Metrics {
 	return v
 }
 
+// Exec executes the query.
+func (mc *MetricsCreate) Exec(ctx context.Context) error {
+	_, err := mc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (mc *MetricsCreate) ExecX(ctx context.Context) {
+	if err := mc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (mc *MetricsCreate) check() error {
 	if _, ok := mc.mutation.Namespace(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required field \"namespace\"")}
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required field "namespace"`)}
 	}
 	if v, ok := mc.mutation.Namespace(); ok {
 		if err := metrics.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf("ent: validator failed for field \"namespace\": %w", err)}
+			return &ValidationError{Name: "namespace", err: fmt.Errorf(`ent: validator failed for field "namespace": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Workflow(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required field \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required field "workflow"`)}
 	}
 	if v, ok := mc.mutation.Workflow(); ok {
 		if err := metrics.WorkflowValidator(v); err != nil {
-			return &ValidationError{Name: "workflow", err: fmt.Errorf("ent: validator failed for field \"workflow\": %w", err)}
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "workflow": %w`, err)}
 		}
 	}
+	if _, ok := mc.mutation.Revision(); !ok {
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "revision"`)}
+	}
 	if _, ok := mc.mutation.Instance(); !ok {
-		return &ValidationError{Name: "instance", err: errors.New("ent: missing required field \"instance\"")}
+		return &ValidationError{Name: "instance", err: errors.New(`ent: missing required field "instance"`)}
 	}
 	if v, ok := mc.mutation.Instance(); ok {
 		if err := metrics.InstanceValidator(v); err != nil {
-			return &ValidationError{Name: "instance", err: fmt.Errorf("ent: validator failed for field \"instance\": %w", err)}
+			return &ValidationError{Name: "instance", err: fmt.Errorf(`ent: validator failed for field "instance": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.State(); !ok {
-		return &ValidationError{Name: "state", err: errors.New("ent: missing required field \"state\"")}
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "state"`)}
 	}
 	if v, ok := mc.mutation.State(); ok {
 		if err := metrics.StateValidator(v); err != nil {
-			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "state": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Timestamp(); !ok {
-		return &ValidationError{Name: "timestamp", err: errors.New("ent: missing required field \"timestamp\"")}
+		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "timestamp"`)}
 	}
 	if _, ok := mc.mutation.WorkflowMs(); !ok {
-		return &ValidationError{Name: "workflow_ms", err: errors.New("ent: missing required field \"workflow_ms\"")}
+		return &ValidationError{Name: "workflow_ms", err: errors.New(`ent: missing required field "workflow_ms"`)}
 	}
 	if v, ok := mc.mutation.WorkflowMs(); ok {
 		if err := metrics.WorkflowMsValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf("ent: validator failed for field \"workflow_ms\": %w", err)}
+			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf(`ent: validator failed for field "workflow_ms": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.IsolateMs(); !ok {
-		return &ValidationError{Name: "isolate_ms", err: errors.New("ent: missing required field \"isolate_ms\"")}
+		return &ValidationError{Name: "isolate_ms", err: errors.New(`ent: missing required field "isolate_ms"`)}
 	}
 	if v, ok := mc.mutation.IsolateMs(); ok {
 		if err := metrics.IsolateMsValidator(v); err != nil {
-			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf("ent: validator failed for field \"isolate_ms\": %w", err)}
+			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf(`ent: validator failed for field "isolate_ms": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Invoker(); !ok {
-		return &ValidationError{Name: "invoker", err: errors.New("ent: missing required field \"invoker\"")}
+		return &ValidationError{Name: "invoker", err: errors.New(`ent: missing required field "invoker"`)}
 	}
 	if _, ok := mc.mutation.Next(); !ok {
-		return &ValidationError{Name: "next", err: errors.New("ent: missing required field \"next\"")}
+		return &ValidationError{Name: "next", err: errors.New(`ent: missing required field "next"`)}
 	}
 	if v, ok := mc.mutation.Next(); ok {
 		if err := metrics.NextValidator(v); err != nil {
-			return &ValidationError{Name: "next", err: fmt.Errorf("ent: validator failed for field \"next\": %w", err)}
+			return &ValidationError{Name: "next", err: fmt.Errorf(`ent: validator failed for field "next": %w`, err)}
 		}
 	}
 	return nil
@@ -221,8 +249,8 @@ func (mc *MetricsCreate) check() error {
 func (mc *MetricsCreate) sqlSave(ctx context.Context) (*Metrics, error) {
 	_node, _spec := mc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, mc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -257,6 +285,14 @@ func (mc *MetricsCreate) createSpec() (*Metrics, *sqlgraph.CreateSpec) {
 			Column: metrics.FieldWorkflow,
 		})
 		_node.Workflow = value
+	}
+	if value, ok := mc.mutation.Revision(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: metrics.FieldRevision,
+		})
+		_node.Revision = value
 	}
 	if value, ok := mc.mutation.Instance(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -361,19 +397,23 @@ func (mcb *MetricsCreateBulk) Save(ctx context.Context) ([]*Metrics, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, mcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, mcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, mcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -397,4 +437,17 @@ func (mcb *MetricsCreateBulk) SaveX(ctx context.Context) []*Metrics {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (mcb *MetricsCreateBulk) Exec(ctx context.Context) error {
+	_, err := mcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (mcb *MetricsCreateBulk) ExecX(ctx context.Context) {
+	if err := mcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

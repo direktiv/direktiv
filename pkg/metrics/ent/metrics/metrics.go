@@ -11,6 +11,8 @@ const (
 	FieldNamespace = "namespace"
 	// FieldWorkflow holds the string denoting the workflow field in the database.
 	FieldWorkflow = "workflow"
+	// FieldRevision holds the string denoting the revision field in the database.
+	FieldRevision = "revision"
 	// FieldInstance holds the string denoting the instance field in the database.
 	FieldInstance = "instance"
 	// FieldState holds the string denoting the state field in the database.
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldID,
 	FieldNamespace,
 	FieldWorkflow,
+	FieldRevision,
 	FieldInstance,
 	FieldState,
 	FieldTimestamp,

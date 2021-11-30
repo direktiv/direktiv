@@ -2680,6 +2680,16 @@ var (
 			}
 		},
 	}
+	// RefOrderFieldCreatedAt orders Ref by created_at.
+	RefOrderFieldCreatedAt = &RefOrderField{
+		field: ref.FieldCreatedAt,
+		toCursor: func(r *Ref) Cursor {
+			return Cursor{
+				ID:    r.ID,
+				Value: r.CreatedAt,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
@@ -2688,6 +2698,8 @@ func (f RefOrderField) String() string {
 	switch f.field {
 	case ref.FieldName:
 		str = "NAME"
+	case ref.FieldCreatedAt:
+		str = "CREATED"
 	}
 	return str
 }
@@ -2706,6 +2718,8 @@ func (f *RefOrderField) UnmarshalGQL(v interface{}) error {
 	switch str {
 	case "NAME":
 		*f = *RefOrderFieldName
+	case "CREATED":
+		*f = *RefOrderFieldCreatedAt
 	default:
 		return fmt.Errorf("%s is not a valid RefOrderField", str)
 	}
@@ -2937,6 +2951,49 @@ func (r *RevisionQuery) Paginate(
 	}
 
 	return conn, nil
+}
+
+var (
+	// RevisionOrderFieldCreatedAt orders Revision by created_at.
+	RevisionOrderFieldCreatedAt = &RevisionOrderField{
+		field: revision.FieldCreatedAt,
+		toCursor: func(r *Revision) Cursor {
+			return Cursor{
+				ID:    r.ID,
+				Value: r.CreatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f RevisionOrderField) String() string {
+	var str string
+	switch f.field {
+	case revision.FieldCreatedAt:
+		str = "CREATED"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f RevisionOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *RevisionOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("RevisionOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED":
+		*f = *RevisionOrderFieldCreatedAt
+	default:
+		return fmt.Errorf("%s is not a valid RevisionOrderField", str)
+	}
+	return nil
 }
 
 // RevisionOrderField defines the ordering field of Revision.

@@ -158,11 +158,21 @@ func setupPrometheusEndpoint() {
 
 }
 
+// WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
+// if ref is not set in the request, it will be automatically be set to latest
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	d, err := flow.traverseToRef(ctx, flow.db.Namespace, req.GetNamespace(), req.GetPath(), req.GetRef())
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
-		Namespace: req.Namespace,
-		Workflow:  req.Path,
+		Namespace: d.namespace(),
+		Workflow:  d.path,
+		Revision:  d.rev().ID.String(),
 		Since:     req.SinceTimestamp.AsTime(),
 	})
 	if err != nil {
@@ -249,7 +259,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		return
 	}
 
-	workflow := im.in.As
+	workflow := GetInodePath(im.in.As)
 
 	reportStateEnd(ns.Name, workflow, im.logic.ID(), im.in.Edges.Runtime.StateBeginTime)
 
@@ -265,6 +275,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 	args.Namespace = ns.Name
 	args.Workflow = workflow
+	args.Revision = im.in.Edges.Revision.ID.String()
 	args.Instance = im.ID().String()
 
 	caller := engine.InstanceCaller(ctx, im)

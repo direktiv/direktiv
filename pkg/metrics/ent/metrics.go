@@ -20,6 +20,8 @@ type Metrics struct {
 	Namespace string `json:"namespace,omitempty"`
 	// Workflow holds the value of the "workflow" field.
 	Workflow string `json:"workflow,omitempty"`
+	// Revision holds the value of the "revision" field.
+	Revision string `json:"revision,omitempty"`
 	// Instance holds the value of the "instance" field.
 	Instance string `json:"instance,omitempty"`
 	// State holds the value of the "state" field.
@@ -46,11 +48,11 @@ func (*Metrics) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case metrics.FieldID, metrics.FieldWorkflowMs, metrics.FieldIsolateMs, metrics.FieldNext:
-			values[i] = &sql.NullInt64{}
-		case metrics.FieldNamespace, metrics.FieldWorkflow, metrics.FieldInstance, metrics.FieldState, metrics.FieldErrorCode, metrics.FieldInvoker, metrics.FieldTransition:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullInt64)
+		case metrics.FieldNamespace, metrics.FieldWorkflow, metrics.FieldRevision, metrics.FieldInstance, metrics.FieldState, metrics.FieldErrorCode, metrics.FieldInvoker, metrics.FieldTransition:
+			values[i] = new(sql.NullString)
 		case metrics.FieldTimestamp:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Metrics", columns[i])
 		}
@@ -83,6 +85,12 @@ func (m *Metrics) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field workflow", values[i])
 			} else if value.Valid {
 				m.Workflow = value.String
+			}
+		case metrics.FieldRevision:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field revision", values[i])
+			} else if value.Valid {
+				m.Revision = value.String
 			}
 		case metrics.FieldInstance:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -170,6 +178,8 @@ func (m *Metrics) String() string {
 	builder.WriteString(m.Namespace)
 	builder.WriteString(", workflow=")
 	builder.WriteString(m.Workflow)
+	builder.WriteString(", revision=")
+	builder.WriteString(m.Revision)
 	builder.WriteString(", instance=")
 	builder.WriteString(m.Instance)
 	builder.WriteString(", state=")

@@ -3,6 +3,8 @@
 package ref
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -15,6 +17,8 @@ const (
 	FieldImmutable = "immutable"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
 	EdgeWorkflow = "workflow"
 	// EdgeRevision holds the string denoting the revision edge name in mutations.
@@ -51,6 +55,7 @@ var Columns = []string{
 	FieldID,
 	FieldImmutable,
 	FieldName,
+	FieldCreatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "refs"
@@ -80,6 +85,8 @@ var (
 	DefaultImmutable bool
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

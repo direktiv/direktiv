@@ -50,6 +50,12 @@ func (rc *RevisionCreate) SetSource(b []byte) *RevisionCreate {
 	return rc
 }
 
+// SetMetadata sets the "metadata" field.
+func (rc *RevisionCreate) SetMetadata(m map[string]interface{}) *RevisionCreate {
+	rc.mutation.SetMetadata(m)
+	return rc
+}
+
 // SetID sets the "id" field.
 func (rc *RevisionCreate) SetID(u uuid.UUID) *RevisionCreate {
 	rc.mutation.SetID(u)
@@ -189,6 +195,9 @@ func (rc *RevisionCreate) check() error {
 	if _, ok := rc.mutation.Source(); !ok {
 		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "source"`)}
 	}
+	if _, ok := rc.mutation.Metadata(); !ok {
+		return &ValidationError{Name: "metadata", err: errors.New(`ent: missing required field "metadata"`)}
+	}
 	if _, ok := rc.mutation.WorkflowID(); !ok {
 		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
 	}
@@ -247,6 +256,14 @@ func (rc *RevisionCreate) createSpec() (*Revision, *sqlgraph.CreateSpec) {
 			Column: revision.FieldSource,
 		})
 		_node.Source = value
+	}
+	if value, ok := rc.mutation.Metadata(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: revision.FieldMetadata,
+		})
+		_node.Metadata = value
 	}
 	if nodes := rc.mutation.WorkflowIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

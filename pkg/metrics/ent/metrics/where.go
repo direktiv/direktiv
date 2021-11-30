@@ -106,6 +106,13 @@ func Workflow(v string) predicate.Metrics {
 	})
 }
 
+// Revision applies equality check predicate on the "revision" field. It's identical to RevisionEQ.
+func Revision(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRevision), v))
+	})
+}
+
 // Instance applies equality check predicate on the "instance" field. It's identical to InstanceEQ.
 func Instance(v string) predicate.Metrics {
 	return predicate.Metrics(func(s *sql.Selector) {
@@ -388,6 +395,117 @@ func WorkflowEqualFold(v string) predicate.Metrics {
 func WorkflowContainsFold(v string) predicate.Metrics {
 	return predicate.Metrics(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldWorkflow), v))
+	})
+}
+
+// RevisionEQ applies the EQ predicate on the "revision" field.
+func RevisionEQ(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionNEQ applies the NEQ predicate on the "revision" field.
+func RevisionNEQ(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionIn applies the In predicate on the "revision" field.
+func RevisionIn(vs ...string) predicate.Metrics {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Metrics(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldRevision), v...))
+	})
+}
+
+// RevisionNotIn applies the NotIn predicate on the "revision" field.
+func RevisionNotIn(vs ...string) predicate.Metrics {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Metrics(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldRevision), v...))
+	})
+}
+
+// RevisionGT applies the GT predicate on the "revision" field.
+func RevisionGT(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionGTE applies the GTE predicate on the "revision" field.
+func RevisionGTE(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionLT applies the LT predicate on the "revision" field.
+func RevisionLT(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionLTE applies the LTE predicate on the "revision" field.
+func RevisionLTE(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionContains applies the Contains predicate on the "revision" field.
+func RevisionContains(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionHasPrefix applies the HasPrefix predicate on the "revision" field.
+func RevisionHasPrefix(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionHasSuffix applies the HasSuffix predicate on the "revision" field.
+func RevisionHasSuffix(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionEqualFold applies the EqualFold predicate on the "revision" field.
+func RevisionEqualFold(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldRevision), v))
+	})
+}
+
+// RevisionContainsFold applies the ContainsFold predicate on the "revision" field.
+func RevisionContainsFold(v string) predicate.Metrics {
+	return predicate.Metrics(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldRevision), v))
 	})
 }
 
