@@ -113,7 +113,7 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 			wdg.NSVars = make(map[string]bool)
 			wdg.Secrets = make(map[string]bool)
 
-			ndg.Workflows[wfd.path] = wdg
+			ndg.Workflows[GetInodePath(wfd.path)] = wdg
 
 			revisions, err := workflow.QueryRevisions().All(ctx)
 			if err != nil {
@@ -137,7 +137,7 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 					switch fn.(type) {
 					case *model.SubflowFunctionDefinition:
 						sfd := fn.(*model.SubflowFunctionDefinition)
-						wdg.Subflows[sfd.Workflow] = false
+						wdg.Subflows[GetInodePath(sfd.Workflow)] = false
 					case *model.ReusableFunctionDefinition:
 						rfd := fn.(*model.ReusableFunctionDefinition)
 						files = rfd.Files

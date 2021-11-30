@@ -459,7 +459,12 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/milliseconds", h.NamespaceMetricsMilliseconds).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
 
+	// TODO: api-docs h.Dependencies
+	// This is an experimental api. Add Docs when it's complete
 	r.HandleFunc("/dependencies", h.Dependencies).Name(RN_GlobalDependencies).Methods(http.MethodGet)
+
+	// TODO: api-docs h.NamespacedDependencies
+	// This is an experimental api. Add Docs when it's complete
 	r.HandleFunc("/namespaces/{ns}/dependencies", h.NamespacedDependencies).Name(RN_NamespacedDependencies).Methods(http.MethodGet)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey Metrics workflowMetricsSankey
