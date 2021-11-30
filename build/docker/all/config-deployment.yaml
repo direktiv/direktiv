@@ -7,6 +7,11 @@ metadata:
     serving.knative.dev/release: v0.25.1
 
 data:
+  # This is the Go import path for the binary that is containerized
+  # and substituted here.
+  # TODO: switch to 'queue-sidecar-image' after 0.27
+  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:6b642967b884ae8971c6fa1f0d3a436c06ccf90ec03da81f85e74768773eb290
+
   # This block is not actually functional configuration,
   # but serves to illustrate the available configuration
   # options and document them in a way that is accessible
@@ -17,40 +22,57 @@ data:
   # to actually change the configuration.
 
   # List of repositories for which tag to digest resolving should be skipped
-  registriesSkippingTagResolving: "kind.local,ko.local,dev.local,localhost:31212"
+  registries-skipping-tag-resolving: "kind.local,ko.local,dev.local,localhost:5000,localhost:31212"
 
-  # digestResolutionTimeout is the maximum time allowed for an image's
-  # digests to be resolved.
-  digestResolutionTimeout: "10s"
+  # Maximum time allowed for an image's digests to be resolved.
+  digest-resolution-timeout: "10s"
 
-  # ProgressDeadline is the duration we wait for the deployment to
-  # be ready before considering it failed.
-  progressDeadline: "600s"
+  # Duration we wait for the deployment to be ready before considering it failed.
+  progress-deadline: "600s"
 
-  # queueSidecarCPURequest is the requests.cpu to set for the queue proxy sidecar container.
+  # Sets the queue proxy's CPU request.
   # If omitted, a default value (currently "25m"), is used.
-  queueSidecarCPURequest: "25m"
+  queue-sidecar-cpu-request: "25m"
 
-  # queueSidecarCPULimit is the limits.cpu to set for the queue proxy sidecar container.
+  # Sets the queue proxy's CPU limit.
   # If omitted, no value is specified and the system default is used.
-  queueSidecarCPULimit: "1000m"
+  queue-sidecar-cpu-limit: "1000m"
 
-  # queueSidecarMemoryRequest is the requests.memory to set for the queue proxy container.
+  # Sets the queue proxy's memory request.
   # If omitted, no value is specified and the system default is used.
-  queueSidecarMemoryRequest: "400Mi"
+  queue-sidecar-memory-request: "400Mi"
 
-  # queueSidecarMemoryLimit is the limits.memory to set for the queue proxy container.
+  # Sets the queue proxy's memory limit.
   # If omitted, no value is specified and the system default is used.
-  queueSidecarMemoryLimit: "800Mi"
+  queue-sidecar-memory-limit: "800Mi"
 
-  # queueSidecarEphemeralStorageRequest is the requests.ephemeral-storage to
-  # set for the queue proxy sidecar container.
+  # Sets the queue proxy's ephemeral storage request.
   # If omitted, no value is specified and the system default is used.
-  queueSidecarEphemeralStorageRequest: "512Mi"
+  queue-sidecar-ephemeral-storage-request: "512Mi"
 
-  # queueSidecarEphemeralStorageLimit is the limits.ephemeral-storage to set
-  # for the queue proxy sidecar container.
+  # Sets the queue proxy's ephemeral storage limit.
   # If omitted, no value is specified and the system default is used.
-  queueSidecarEphemeralStorageLimit: "1024Mi"
+  queue-sidecar-ephemeral-storage-limit: "1024Mi"
 
-  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:5af97fa5e19c6fd1e04642e7cf6eb01e6982b4cfee19d8fd16649423277c2eb9
+  # The freezer service endpoint that queue-proxy calls when its traffic drops to zero or
+  # scales up from zero.
+  #
+  # Freezer service is available at: https://github.com/knative-sandbox/container-freezer
+  # or users may write their own service.
+  #
+  # The value will need to include both the host and the port that will be accessed.
+  # For the host, $HOST_IP can be passed, and the appropriate host IP value will be swapped
+  # in at runtime, which will enable the freezer daemonset to be reachable via the node IP.
+  #
+  # As an example:
+  #     concurrency-state-endpoint: "http://$HOST_IP:9696"
+  #
+  # If not set, queue proxy takes no action (this is the default behavior).
+  #
+  # When enabled, a serviceAccountToken will be mounted to queue-proxy using
+  # a projected volume. This requires the Service Account Token Volume Projection feature
+  # to be enabled. For details, see this link:
+  # https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection
+  #
+  # NOTE THAT THIS IS AN EXPERIMENTAL / ALPHA FEATURE
+  concurrency-state-endpoint: ""
