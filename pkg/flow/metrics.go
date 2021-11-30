@@ -158,6 +158,8 @@ func setupPrometheusEndpoint() {
 
 }
 
+// WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
+// if ref is not set in the request, it will be automatically be set to latest
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
