@@ -16,6 +16,7 @@ func (srv *server) dependencyGraphPoller() {
 
 	for {
 		srv.updateDependencyGraph()
+		// Dependency Polling Rate
 		time.Sleep(time.Minute)
 	}
 
@@ -289,7 +290,7 @@ func (srv *server) resolveDependencyGraphLinks(dg *dependencyGraph) error {
 			srv.sugar.Error("Dependency graph update error: %v", err)
 		} else {
 			for _, fn := range nsresp.Functions {
-				s := fn.GetServiceName()
+				s := fn.GetInfo().GetName()
 				nsfdg := new(nsFunctionDependencyGraph)
 				nsfdg.Workflows = make(map[string]bool)
 				ndg.NSFunctions[s] = nsfdg
@@ -365,7 +366,7 @@ func (srv *server) resolveDependencyGraphLinks(dg *dependencyGraph) error {
 		}
 
 		for _, secret := range resp.Secrets {
-			s := secret.String()
+			s := secret.GetName()
 			ndg.Secrets[s] = &secretsDependencyGraph{
 				Workflows: make(map[string]bool),
 			}
