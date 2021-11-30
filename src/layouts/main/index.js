@@ -18,6 +18,7 @@ import PodPanel from '../namespace-services/pod';
 import GlobalServicesPanel from '../global-services';
 import GlobalRevisionsPanel from '../global-services/revisions';
 import GlobalPodPanel from '../global-services/pod'
+import Loader from '../../components/loader';
 
 
 function NamespaceNavigation(props){
@@ -28,7 +29,6 @@ function NamespaceNavigation(props){
 
     // on mount check if namespace is stored in local storage and exists in the response given back
     useEffect(()=>{
-
         // only do this check if its not provided in the params
         if (namespaces !== null && namespaces.length > 0) {
             let urlpath = window.location.pathname.split("/")
@@ -78,7 +78,7 @@ function NamespaceNavigation(props){
     },[namespaces, navigate, setNamespace, namespace, load])
 
     if(load) {
-        return ""
+        return "xxx"
     }
 
     return(
@@ -123,8 +123,14 @@ function MainLayout(props) {
     let {onClick, style, className} = props;
 
     const { data, err, createErr, deleteErr, createNamespace, deleteNamespace } = useNamespaces(Config.url, true)
+    const [load, setLoad] = useState(true)
     const [namespace, setNamespace] = useState(null)
 
+    useEffect(()=>{
+        if(data !== null) {
+            setLoad(false)
+        }
+    },[data])
 
     // TODO work out how to handle this error when listing namespaces
     if(err !== null) {
@@ -137,7 +143,6 @@ function MainLayout(props) {
     //         <div>we loading</div>
     //     )
     // }
-
     return(
         <div id="main-layout" onClick={onClick} style={style} className={className}>
             <FlexBox className="row gap tall" style={{minHeight: "100vh"}}>
@@ -145,14 +150,14 @@ function MainLayout(props) {
                     Left col: navigation
                     Right : page contents 
                 */}
-
-                <BrowserRouter>
-                    <FlexBox className="navigation-col">
-                        <NavBar setNamespace={setNamespace} namespace={namespace} createErr={createErr} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
-                    </FlexBox>
-                    <NamespaceNavigation deleteErr={deleteErr} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
-                </BrowserRouter>
-
+                <Loader load={load} timer={500}>
+                    <BrowserRouter>
+                        <FlexBox className="navigation-col">
+                            <NavBar setNamespace={setNamespace} namespace={namespace} createErr={createErr} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                        </FlexBox>
+                        <NamespaceNavigation deleteErr={deleteErr} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
+                    </BrowserRouter>
+                </Loader>
             </FlexBox>
         </div>
     );

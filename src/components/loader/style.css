@@ -1,0 +1,115 @@
+@keyframes direktivloader {
+    0%{
+        background-image: url(../../assets/animated-logo/1.png);
+    }
+    3%{
+        background-image: url(../../assets/animated-logo/2.png);
+    }
+    6%{
+        background-image: url(../../assets/animated-logo/3.png);
+    }
+    9%{
+        background-image: url(../../assets/animated-logo/4.png);
+    }
+    12%{
+        background-image: url(../../assets/animated-logo/5.png);
+    }
+    15%{
+        background-image: url(../../assets/animated-logo/6.png);
+    }
+    18%{
+        background-image: url(../../assets/animated-logo/7.png);
+    }
+    21%{
+        background-image: url(../../assets/animated-logo/8.png);
+    }
+    24%{
+        background-image: url(../../assets/animated-logo/9.png);
+    }
+    27%{
+        background-image: url(../../assets/animated-logo/10.png);
+    }
+    30%{
+        background-image: url(../../assets/animated-logo/11.png);
+    }
+    33%{
+        background-image: url(../../assets/animated-logo/12.png);
+    }
+    36%{
+        background-image: url(../../assets/animated-logo/13.png);
+    }
+    39%{
+        background-image: url(../../assets/animated-logo/14.png);
+    }
+    42%{
+        background-image: url(../../assets/animated-logo/15.png);
+    }
+    45%{
+        background-image: url(../../assets/animated-logo/16.png);
+    }
+    48%{
+        background-image: url(../../assets/animated-logo/17.png);
+    }
+    52%{
+        background-image: url(../../assets/animated-logo/18.png);
+    }
+    55%{
+        background-image: url(../../assets/animated-logo/19.png);
+    }
+    58%{
+        background-image: url(../../assets/animated-logo/20.png);
+    }
+    61%{
+        background-image: url(../../assets/animated-logo/21.png);
+    }
+    64%{
+        background-image: url(../../assets/animated-logo/22.png);
+    }
+    67%{
+        background-image: url(../../assets/animated-logo/23.png);
+    }
+    70%{
+        background-image: url(../../assets/animated-logo/24.png);
+    }
+    73%{
+        background-image: url(../../assets/animated-logo/25.png);
+    }
+    76%{
+        background-image: url(../../assets/animated-logo/26.png);
+    }
+    79%{
+        background-image: url(../../assets/animated-logo/27.png);
+    }
+    82%{
+        background-image: url(../../assets/animated-logo/28.png);
+    }
+    85%{
+        background-image: url(../../assets/animated-logo/29.png);
+    }
+    88%{
+        background-image: url(../../assets/animated-logo/30.png);
+    }
+    91%{
+        background-image: url(../../assets/animated-logo/31.png);
+    }
+    94%{
+        background-image: url(../../assets/animated-logo/32.png);
+    }
+    100%{
+        background-image: url(../../assets/animated-logo/1.png);
+    }
+}
+
+
+
+.loader{
+    width: 350px;
+    height: 250px;
+    background-size: contain;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    -webkit-animation: direktivloader 1.5s infinite;
+            animation: direktivloader 1.5s infinite;
+    -webkit-animation-timing-function: steps(1, end);
+            animation-timing-function: steps(1, end);
+}
