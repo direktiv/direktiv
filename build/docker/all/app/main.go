@@ -152,8 +152,11 @@ func main() {
 		res, err := http.Get("http://localhost/api/namespaces")
 		if err != nil {
 			time.Sleep(1 * time.Second)
+			continue
 		}
-		if res.StatusCode == 200 {
+
+		// if api key set it is unauthorized but that is fine too
+		if res.StatusCode == 200 || res.StatusCode == 401 {
 			break
 		}
 		time.Sleep(1 * time.Second)
@@ -201,9 +204,15 @@ func runHelm(kc string) {
 	/* #nosec */
 	defer f.Close()
 
+	log.Printf("adding apikey if configured\n")
+	if os.Getenv("APIKEY") != "" {
+		if _, err = f.Write([]byte(fmt.Sprintf("\napikey: \"%v\"\n", os.Getenv("APIKEY")))); err != nil {
+			fmt.Printf("could not add api key: %v", err)
+		}
+	}
+
 	addProxy(f)
 
-	//
 	log.Printf("creating service namespace\n")
 	/* #nosec */
 	cmd := exec.Command(kc, "create", "namespace", "direktiv-services-direktiv")
@@ -332,6 +341,7 @@ func startingK3s() error {
 		"--disable", "traefik", "--write-kubeconfig-mode=644", "--kube-apiserver-arg",
 		"feature-gates=TTLAfterFinished=true")
 
+	log.Println("evacuate cgroup2")
 	if err := cgrouputil.EvacuateCgroup2("init"); err != nil {
 		log.Println("could not evacuate cgroup2")
 		return err
