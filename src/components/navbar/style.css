@@ -74,3 +74,109 @@
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: var(--theme-border-radius);
 }
+
+#responsive-bar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    background-color: white;
+    border-bottom: solid 1px var(--theme-subtle-border);
+    z-index: 1;
+}
+
+@media screen and (max-width: 1000px) {
+
+    .breadcrumbs-row {
+        padding-top: 42px;
+    }
+
+    .responsive-nav {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        height: 100vh;
+        width: 100vw;
+        z-index: 10;
+    }
+
+    .responsive-nav.toggled {
+        display: inherit;
+    }
+
+    .responsive-nav-overlay {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        height: 100vh;
+        width: 100vw;
+        background-color: rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        z-index: 1;
+        
+        
+        transition: opacity 0.3s ease-in-out 0s;
+    }
+    
+    .responsive-nav-overlay.toggled {
+        opacity: 1;
+        transition: opacity 0.3s ease-in-out 0s;
+        pointer-events: unset;
+    }
+
+    .responsive-nav .panel {
+        background-color: #F8F8F9;
+        position: absolute;
+        width: 230px;
+        left: -230px;
+        height: 100vh;
+    }
+
+    .responsive-nav .panel.toggled {
+        background-color: #F8F8F9;
+        left: 0px;
+    }
+
+    .navigation-master {
+        position: absolute;
+        top: 0px;
+        left: -230px;
+        z-index: 20;
+    }
+
+    .responsive-nav .panel, .navigation-master {
+        transition: left 0.3s ease-in-out 0s;
+    }
+
+    .navigation-master.toggled {
+        left: 0px;
+    }
+
+
+    .navigation-master.hidden {
+        display: none;
+    }
+
+    .content-col {
+        position: absolute;
+        left: 8px;
+        width: calc(100vw - 8px);
+    }
+
+    html {
+        max-height: 100vh !important;
+        overflow-y: hidden;
+    }
+
+}
+
+@media screen and (min-width: 1001px) {
+    .hide-on-large {
+        display: none;
+    }
+}
+
+.menu-toggle-parent {
+    /* flex-direction: row-reverse; */
+    color: var(--theme-dark-gray-text);
+}

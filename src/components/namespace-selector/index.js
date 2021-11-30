@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import Identicon from 'react-identicons';
 
 function NamespaceSelector(props) {
-    let {style, className, namespaces, namespace} = props;
+    let {style, className, namespaces, namespace, toggleResponsive} = props;
     if (!className) {
         className = ""
     }
@@ -69,7 +69,7 @@ function NamespaceSelector(props) {
                 <FlexBox className={selectorBorderClass}>
                     <FlexBox className={selectorClass}>
                         {namespaces !== null ? 
-                        <NamespaceList setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
+                        <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
                     </FlexBox>
                 </FlexBox>
             </FlexBox>

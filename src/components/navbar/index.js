@@ -7,13 +7,14 @@ import NamespaceSelector from '../namespace-selector';
 import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
-import {IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
+import {IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline, IoMenu} from 'react-icons/io5';
 import {GrFormAdd} from 'react-icons/gr'
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
+import Button from '../button';
 
 function NavBar(props) {
 
-    let {onClick, style, className, createNamespace, namespace, namespaces, createErr} = props;
+    let {onClick, style, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive} = props;
 
     if (!className) {
         className = ""
@@ -25,49 +26,56 @@ function NavBar(props) {
         className += " loading"
     }
     
+    if (toggleResponsive) {
+        className += " toggled"
+    }
+
     return (
-        <FlexBox onClick={onClick} style={{...style}} className={className}>
-            <FlexBox className="col tall" style={{ gap: "12px" }}>
-                <FlexBox className="navbar-logo">
-                    <img alt="logo" src={Logo} />
-                </FlexBox>
-                <div className="navbar-panel shadow col">
+        <>
+            <ResponsiveNavbar toggled={toggleResponsive} setToggled={setToggleResponsive} />
+            <FlexBox onClick={onClick} style={{...style}} className={className}>
+                <FlexBox className="col tall" style={{ gap: "12px" }}>
+                    <FlexBox className="navbar-logo">
+                        <img alt="logo" src={Logo} />
+                    </FlexBox>
+                    <div className="navbar-panel shadow col">
+                        <FlexBox>
+                            <NamespaceSelector toggleResponsive={setToggleResponsive} namespace={namespace} namespaces={namespaces}/>
+                        </FlexBox>
+                        <FlexBox>
+                            <NewNamespaceBtn createErr={createErr} createNamespace={createNamespace} />
+                        </FlexBox>
+                        <NavItems toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
+                    </div>
+
+                    <div className="navbar-panel shadow col">
+                        <GlobalNavItems />
+                    </div>
+
                     <FlexBox>
-                        <NamespaceSelector namespace={namespace} namespaces={namespaces}/>
+                        <FlexBox className="nav-items" style={{ paddingLeft: "10px" }}>
+                            <ul style={{ marginTop: "0px" }}>
+                                <li>
+                                    <NavItem className="red-text" label="Log Out">
+                                        <IoLogOutOutline/>
+                                    </NavItem>
+                                </li>
+                            </ul>
+                        </FlexBox>
                     </FlexBox>
-                    <FlexBox>
-                        <NewNamespaceBtn createErr={createErr} createNamespace={createNamespace} />
-                    </FlexBox>
-                    <NavItems namespace={namespace} style={{ marginTop: "12px" }} />
-                </div>
 
-                <div className="navbar-panel shadow col">
-                    <GlobalNavItems />
-                </div>
-
-                <FlexBox>
-                    <FlexBox className="nav-items" style={{ paddingLeft: "10px" }}>
-                        <ul style={{ marginTop: "0px" }}>
-                            <li>
-                                <NavItem className="red-text" label="Log Out">
-                                    <IoLogOutOutline/>
-                                </NavItem>
-                            </li>
-                        </ul>
+                    <FlexBox className="col navbar-userinfo">
+                        <FlexBox className="navbar-username">
+                            UserName007
+                        </FlexBox>
+                        <FlexBox className="navbar-version">
+                            Version: 0.5.8 (abdgdj)
+                        </FlexBox>
                     </FlexBox>
+
                 </FlexBox>
-
-                <FlexBox className="col navbar-userinfo">
-                    <FlexBox className="navbar-username">
-                        UserName007
-                    </FlexBox>
-                    <FlexBox className="navbar-version">
-                        Version: 0.5.8 (abdgdj)
-                    </FlexBox>
-                </FlexBox>
-
             </FlexBox>
-        </FlexBox>
+        </>
     );
 }
 
@@ -138,7 +146,7 @@ function NewNamespaceBtn(props) {
 
 function NavItems(props) {
 
-    let {style, namespace} = props;
+    let {style, namespace, toggleResponsive} = props;
 
     const {pathname} = useLocation()
 
@@ -165,14 +173,18 @@ function NavItems(props) {
         <FlexBox style={{...style}} className="nav-items">
             <ul>
                 <li>
-                    <Link to={`/n/${namespace}`}>
+                    <Link to={`/n/${namespace}`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={explorer ? "active":""} label="Explorer">
                             <BsFolder2Open/>
                         </NavItem>
                     </Link>
                 </li>
                 <li>
-                    <Link to={`/n/${namespace}/monitoring`}>
+                    <Link to={`/n/${namespace}/monitoring`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={monitoring ? "active":""} label="Monitoring">
                             <BsSpeedometer/>
                         </NavItem>
@@ -186,35 +198,45 @@ function NavItems(props) {
                     </Link>
                 </li> */}
                 <li>
-                    <Link to={`/n/${namespace}/instances`}>
+                    <Link to={`/n/${namespace}/instances`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={instances || instanceid ? "active":""} label="Instances">
                             <BsCodeSquare/>
                         </NavItem>
                     </Link>
                 </li>
                 <li>
-                    <Link to={`/n/${namespace}/events`}>
+                    <Link to={`/n/${namespace}/events`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={events ? "active":""} label="Events">
                             <BsCodeSquare/>
                         </NavItem>
                     </Link>
                 </li>
                 <li>
-                    <Link to={`/n/${namespace}/permissions`}>
+                    <Link to={`/n/${namespace}/permissions`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={permissions ? "active":""} label="Permissions">
                             <IoLockClosedOutline/>
                         </NavItem>
                     </Link>
                 </li>
                 <li>
-                    <Link to={`/n/${namespace}/services`}>
+                    <Link to={`/n/${namespace}/services`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={services || service || revision ? "active":""} label="Services">
                             <IoCubeOutline/>
                         </NavItem>
                     </Link>
                 </li>
                 <li>
-                    <Link to={`/n/${namespace}/settings`}>
+                    <Link to={`/n/${namespace}/settings`} onClick={() => {
+                        toggleResponsive(false)
+                    }}>
                         <NavItem className={settings ? "active":""} label="Settings">
                             <BsSliders/>
                         </NavItem>
@@ -282,4 +304,38 @@ function NavItem(props) {
                 </FlexBox>
             </FlexBox>
     );
+}
+
+function ResponsiveNavbar(props) {
+
+    let {toggled, setToggled} = props;
+    let panelClasses = "panel";
+    let responsiveNavClasses = "responsive-nav hide-on-large";
+    let responsiveNavOverlayClasses = "responsive-nav-overlay hide-on-large";
+
+    if (toggled) {
+        panelClasses += " toggled"
+        responsiveNavClasses += " toggled"
+        responsiveNavOverlayClasses += " toggled"
+    } else {
+        panelClasses += " disabled"
+        responsiveNavClasses += " disabled"
+        responsiveNavOverlayClasses += " disabled"
+    }
+
+    return(
+        <>
+            <div className={responsiveNavOverlayClasses}>
+
+            </div>
+            <FlexBox id="clickme" className={responsiveNavClasses} onClick={(e) => {
+                setToggled(false)
+                e.stopPropagation()
+            }}>
+                <div className={panelClasses}>
+                    
+                </div>
+            </FlexBox>
+        </>
+    )
 }

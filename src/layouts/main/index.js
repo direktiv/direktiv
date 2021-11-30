@@ -5,7 +5,7 @@ import Settings from '../settings';
 import Explorer from '../explorer';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
-
+import Logo from '../../assets/nav-logo.png'
 import { useNamespaces } from 'direktiv-react-hooks' 
 import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
@@ -18,6 +18,8 @@ import PodPanel from '../namespace-services/pod';
 import GlobalServicesPanel from '../global-services';
 import GlobalRevisionsPanel from '../global-services/revisions';
 import GlobalPodPanel from '../global-services/pod'
+import Button from '../../components/button';
+import { IoMenu } from 'react-icons/io5';
 
 
 function NamespaceNavigation(props){
@@ -119,12 +121,13 @@ function NamespaceNavigation(props){
     )
 }
 
+
 function MainLayout(props) {
     let {onClick, style, className} = props;
 
     const { data, err, createErr, deleteErr, createNamespace, deleteNamespace } = useNamespaces(Config.url, true)
     const [namespace, setNamespace] = useState(null)
-
+    const [toggleResponsive, setToggleResponsive] = useState(false);
 
     // TODO work out how to handle this error when listing namespaces
     if(err !== null) {
@@ -140,7 +143,8 @@ function MainLayout(props) {
 
     return(
         <div id="main-layout" onClick={onClick} style={style} className={className}>
-            <FlexBox className="row gap tall" style={{minHeight: "100vh"}}>
+            <ResponsiveHeaderBar toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive}/>
+            <FlexBox id="master-container" className="row gap tall" style={{minHeight: "100vh"}}>
                 {/* 
                     Left col: navigation
                     Right : page contents 
@@ -148,7 +152,7 @@ function MainLayout(props) {
 
                 <BrowserRouter>
                     <FlexBox className="navigation-col">
-                        <NavBar setNamespace={setNamespace} namespace={namespace} createErr={createErr} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                        <NavBar toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createErr={createErr} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                     </FlexBox>
                     <NamespaceNavigation deleteErr={deleteErr} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                 </BrowserRouter>
@@ -159,3 +163,41 @@ function MainLayout(props) {
 }
 
 export default MainLayout;
+
+
+function ResponsiveHeaderBar(props) {
+
+    let {toggleResponsive, setToggleResponsive} = props;
+
+    return(
+        <FlexBox id="responsive-bar" className="hide-on-large" style={{
+            flexDirection: "row-reverse"
+        }}>
+            <div style={{minWidth: "50px", maxWidth: "50px"}}>
+
+            </div>
+            <FlexBox>
+                <img src={Logo} className="auto-margin" style={{
+                    height: "42px"
+                }}/>
+            </FlexBox>
+            <div className="menu-toggle-parent" style={{minWidth: "50px", maxWidth: "50px"}}>
+                <div style={{float: "right", marginLeft: "12px"}}>
+                    <Button onClick={(e) => {
+                            setToggleResponsive(!toggleResponsive)
+                            e.stopPropagation()
+                        }} className="light small" style={{
+                            marginTop: "5px",
+                            marginLeft: "5px",
+                            maxWidth: "32px",
+                            paddingBottom: "8px"
+                        }}>
+                            <IoMenu className="auto-margin" style={{
+                                fontSize: "18px"
+                            }} />
+                    </Button>
+                </div>
+            </div>
+        </FlexBox>
+    )
+}
