@@ -237,7 +237,7 @@ func (srv *server) resolveDependencyGraphLinks(dg *dependencyGraph) error {
 		srv.sugar.Error("Dependency graph update error: %v", err)
 	} else {
 		for _, fn := range lfresp.Functions {
-			s := fn.GetServiceName()
+			s := fn.GetInfo().GetName()
 			gfdg := new(globalFunctionDependencyGraph)
 			gfdg.Namespaces = make(map[string]*globalFunctionNamespaceDependenciesGraph)
 			dg.GlobalFunctions[s] = gfdg
