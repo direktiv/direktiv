@@ -18,12 +18,9 @@ import PodPanel from '../namespace-services/pod';
 import GlobalServicesPanel from '../global-services';
 import GlobalRevisionsPanel from '../global-services/revisions';
 import GlobalPodPanel from '../global-services/pod'
-<<<<<<< HEAD
 import Loader from '../../components/loader';
-=======
 import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
->>>>>>> 3de66cd73f1829592e14fb2fb73850f41441271b
 
 
 function NamespaceNavigation(props){
