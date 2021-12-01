@@ -1,4 +1,5 @@
 import React from 'react';
+import './style.css';
 import SecretsPanel from './secrets-panel';
 import RegistriesPanel from './registries-panel';
 import FlexBox from '../../components/flexbox';
@@ -18,12 +19,12 @@ function Settings(props) {
         <FlexBox id="settings-page" className="col gap" style={{ paddingRight: "8px" }}>
             <FlexBox className="gap col">
                 <FlexBox className="gap wrap" style={{ minHeight: "350px" }}>
-                    <FlexBox style={{ minWidth: "380px" }}>
+                    <div id="secrets-panel-container" >
                         <SecretsPanel namespace={namespace} />
-                    </FlexBox>
-                    <FlexBox style={{ minWidth: "380px" }}>
+                    </div>
+                    <div id="registries-panel-container" >
                         <RegistriesPanel namespace={namespace} />
-                    </FlexBox>
+                    </div>
                 </FlexBox>
             </FlexBox>
             <FlexBox>

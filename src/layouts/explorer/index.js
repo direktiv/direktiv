@@ -10,7 +10,7 @@ import { FcWorkflow } from 'react-icons/fc';
 import { HiOutlineTrash } from 'react-icons/hi';
 import { useNodes } from 'direktiv-react-hooks';
 import { useNavigate, useParams } from 'react-router';
-import Modal, {ButtonDefinition} from '../../components/modal'
+import Modal, {ButtonDefinition, KeyDownDefinition} from '../../components/modal'
 import DirektivEditor from '../../components/editor';
 import { BsCodeSlash } from 'react-icons/bs';
 import Button from '../../components/button';
@@ -31,7 +31,6 @@ function Explorer(props) {
 
     return(
         <>
-            <SearchBar />
             <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
                 <ExplorerList  namespace={namespace} path={filepath}/>
             </FlexBox>
@@ -44,9 +43,9 @@ export default Explorer;
 function SearchBar(props) {
     return(
         <div className="explorer-searchbar">
-            <FlexBox className="">
+            <FlexBox className="" style={{height: "29px"}}>
                 <IoSearch className="auto-margin" />
-                <input placeholder={"Search items"}></input>
+                <input placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
             </FlexBox>
         </div>
     );
@@ -58,7 +57,7 @@ function ExplorerList(props) {
     const [name, setName] = useState("")
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
-    // const [pageNo, setPageNo] = useState(1);
+    const [pageNo, setPageNo] = useState(1);
 
     const {data, err, templates, createNode, deleteNode, renameNode, toggleWorkflow, getWorkflowRouter } = useNodes(Config.url, true, namespace, path)
 
@@ -74,6 +73,19 @@ function ExplorerList(props) {
 
     return(
         <>
+        <FlexBox className="gap" style={{maxHeight: "32px"}}>
+            <FlexBox>
+                <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
+                    <ContentPanelHeaderButtonIcon>
+                        <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
+                    </ContentPanelHeaderButtonIcon>
+                    API Commands
+                </Button>
+            </FlexBox>
+            <FlexBox style={{flexDirection: "row-reverse"}}>
+                <SearchBar />
+            </FlexBox>
+        </FlexBox>
         <ContentPanel>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
@@ -85,99 +97,112 @@ function ExplorerList(props) {
                     </div>
                     <HelpIcon msg={"Directory/workflow browser."} />
                 </FlexBox>
-                <div className="explorer-sort-by">
-                    <div className="esb-label inline" style={{marginRight: "8px"}}>
-                        Sort by:
-                    </div>
-                    <div className="esb-field inline">
-                        <FlexBox className="gap">
-                            <div className="inline">
-                                Name
-                            </div>
-                            <VscTriangleDown className="auto-margin"/>
-                        </FlexBox>
-                    </div>
-                </div>
-                <ContentPanelHeaderButton style={{ maxWidth: "90px", width: "90px", minWidth: "90px" }}>
-                    <Modal title="New Directory" 
-                        escapeToCancel
-                        button={(
-                            <div style={{display:"flex"}}>
-                                <ContentPanelHeaderButtonIcon>
-                                    <IoAdd/>
-                                </ContentPanelHeaderButtonIcon>
-                                Directory
-                            </div>
-                        )}  
-                        onClose={()=>{
-                            setName("")
-                        
-                        }}
-                        actionButtons={[
-                            ButtonDefinition("Add", async () => {
-                                let err = await createNode(name, "directory")
-                                if(err) return err
-                            }, "small blue", true, false),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
-                        ]}
-                    >
-                        <FlexBox  className="col gap" style={{fontSize: "12px"}}>
-                            <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                                <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
-                            </div>
-                        </FlexBox>
-                    </Modal>
-                </ContentPanelHeaderButton>
-                <ContentPanelHeaderButton style={{ maxWidth: "80px", width: "80px", minWidth: "80px" }}>
-                    <Modal title="New Workflow" 
-                        escapeToCancel
-                        button={(
-                            <div style={{display:"flex"}}>
-                                <ContentPanelHeaderButtonIcon>
-                                    <IoAdd/>
-                                </ContentPanelHeaderButtonIcon>
-                                Workflow
-                            </div>
-                        )}  
-                        onClose={()=>{
-                            setWfData("")
-                            setWfTemplate("")
-                            setName("")
-                        }}
-                        actionButtons={[
-                            ButtonDefinition("Add", async () => {
-                                let err = await createNode(name, "workflow", wfData)
-                                if (err) return err
-                            }, "small blue", true, false),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
-                        ]}
-                    >
-                        <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "450px"}}>
-                            <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                                <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name" />
-                            </div>
-                            <select value={wfTemplate} onChange={(e)=>{
-                                setWfTemplate(e.target.value)
-                                // todo set wfdata to template on change
-                                setWfData(templates[e.target.value])
-                            }}>
-                                <option value="" >Choose a workflow template...</option>
-                                {Object.keys(templates).map((obj)=>{
-                                    return(
-                                        <option value={obj}>{obj}</option>
-                                    )
-                                })}
-                            </select>
-                            <FlexBox className="gap" style={{maxHeight: "500px"}}>
-                                <FlexBox style={{overflow:"hidden"}}>
-                                    <DirektivEditor dlang={"yaml"} width={"500px"} value={wfData} setDValue={setWfData} height={"500px"}/>
+                <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
+                    <ContentPanelHeaderButton className="explorer-action-btn">
+                        <Modal title="New Workflow" 
+                            escapeToCancel
+                            button={(
+                                <div style={{display:"flex"}}>
+                                    <ContentPanelHeaderButtonIcon>
+                                        <IoAdd/>
+                                    </ContentPanelHeaderButtonIcon>
+                                    <span className="hide-on-small">Workflow</span>
+                                    <span className="hide-on-medium-and-up">WF</span>
+                                </div>
+                            )}  
+                            onClose={()=>{
+                                setWfData("")
+                                setWfTemplate("")
+                                setName("")
+                            }}
+                            actionButtons={[
+                                ButtonDefinition("Add", async () => {
+                                    let err = await createNode(name, "workflow", wfData)
+                                    if (err) return err
+                                }, "small blue", true, false),
+                                ButtonDefinition("Cancel", () => {
+                                }, "small light", true, false)
+                            ]}
+                        >
+                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "450px"}}>
+                                <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                                    <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name" />
+                                </div>
+                                <select value={wfTemplate} onChange={(e)=>{
+                                    setWfTemplate(e.target.value)
+                                    // todo set wfdata to template on change
+                                    setWfData(templates[e.target.value])
+                                }}>
+                                    <option value="" >Choose a workflow template...</option>
+                                    {Object.keys(templates).map((obj)=>{
+                                        return(
+                                            <option value={obj}>{obj}</option>
+                                        )
+                                    })}
+                                </select>
+                                <FlexBox className="gap" style={{maxHeight: "500px"}}>
+                                    <FlexBox style={{overflow:"hidden"}}>
+                                        <DirektivEditor dlang={"yaml"} width={"500px"} value={wfData} setDValue={setWfData} height={"500px"}/>
+                                    </FlexBox>
                                 </FlexBox>
                             </FlexBox>
-                        </FlexBox>
-                    </Modal>
-                </ContentPanelHeaderButton>
+                        </Modal>
+                    </ContentPanelHeaderButton>
+                    <ContentPanelHeaderButton className="explorer-action-btn">
+                        <Modal title="New Directory" 
+                            escapeToCancel
+                            button={(
+                                <div style={{display:"flex"}}>
+                                    <ContentPanelHeaderButtonIcon>
+                                        <IoAdd/>
+                                    </ContentPanelHeaderButtonIcon>
+                                    <span className="hide-on-small">Directory</span>
+                                    <span className="hide-on-medium-and-up">Dir</span>
+                                </div>
+                            )}  
+                            onClose={()=>{
+                                setName("")
+                            
+                            }}
+                            actionButtons={[
+                                ButtonDefinition("Add", async () => {
+                                    let err = await createNode(name, "directory")
+                                    if(err) return err
+                                }, "small blue", true, false),
+                                ButtonDefinition("Cancel", () => {
+                                }, "small light", true, false)
+                            ]}
+
+                            keyDownActions={[
+                                KeyDownDefinition("Enter", async () => {
+                                    let err = await createNode(name, "directory")
+                                    if(err) return err
+                                    setName("")
+                                }, true)
+                            ]}
+
+                        >
+                            <FlexBox  className="col gap" style={{fontSize: "12px"}}>
+                                <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                                    <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
+                                </div>
+                            </FlexBox>
+                        </Modal>
+                    </ContentPanelHeaderButton>
+                    <div className="explorer-sort-by explorer-action-btn hide-on-small">
+                        <div className="esb-label inline" style={{marginRight: "8px"}}>
+                            Sort by:
+                        </div>
+                        <div className="esb-field inline">
+                            <FlexBox className="gap">
+                                <div className="inline">
+                                    Name
+                                </div>
+                                <VscTriangleDown className="auto-margin"/>
+                            </FlexBox>
+                        </div>
+                    </div>
+                </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody>
                 <FlexBox className="col">
@@ -208,17 +233,9 @@ function ExplorerList(props) {
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
-        <FlexBox style={{maxHeight: "32px"}}>
-        <FlexBox>
-            <Button className="small light" style={{ display: "flex" }}>
-                <ContentPanelHeaderButtonIcon>
-                    <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
-                </ContentPanelHeaderButtonIcon>
-                Open API Commands
-            </Button>
-        </FlexBox>
-        {/* <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} /> */}
-    </FlexBox>
+    {/* <FlexBox>
+        <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} />
+    </FlexBox> */}
     </>
     )
 }

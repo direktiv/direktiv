@@ -55,7 +55,10 @@ function Scary(props) {
                 <Modal title="Delete namespace" 
                         escapeToCancel
                         button={(
-                            <Button className="auto-margin small red">
+                            <Button className="auto-margin small red" style={{
+                                minWidth: "120px",
+                                textAlign: "center"
+                            }}>
                                 Delete Namespace
                             </Button>
                         )}  

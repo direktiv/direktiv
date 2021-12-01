@@ -114,7 +114,7 @@ function AddVariablePanel(props) {
 
     return(
         <Tabs 
-            style={{minHeight: "400px", minWidth: "600px"}}
+            style={{minHeight: "400px", minWidth: "90%"}}
             headers={["Manual", "Upload"]}
             tabs={[(
                 <FlexBox id="written" className="col gap" style={{fontSize: "12px"}}>

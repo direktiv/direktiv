@@ -97,92 +97,92 @@ function NamespaceServices(props) {
     }
 
     return(
-        <ContentPanel style={{width:"100%"}}>
-        <ContentPanelTitle>
-            <ContentPanelTitleIcon>
-                <IoPlay/>
-            </ContentPanelTitleIcon>
-            <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
-                        <div>
-                            Services 
-                        </div>
-                        <HelpIcon msg={"Services that are available to be used by workflows in the same namespace."} />
-                    </FlexBox>
-            <div>
-            <Modal title="New namespace service" 
-                escapeToCancel
-                modalStyle={{
-                    maxWidth: "300px"
-                }}
-                onOpen={() => {
-                    console.log("ON OPEN");
-                }}
-                onClose={()=>{
-                    setServiceName("")
-                    setImage("")
-                    setScale(0)
-                    setSize(0)
-                    setCmd("")
-                }}
-                button={(
-                    <AddValueButton  label=" " />
-                )}  
-                keyDownActions={[
-                    KeyDownDefinition("Enter", async () => {
-                    }, true)
-                ]}
-                actionButtons={[
-                    ButtonDefinition("Add", async () => {
-                        let err = await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
-                        if(err) return err
-                    }, "small blue", true, false),
-                    ButtonDefinition("Cancel", () => {
-                    }, "small light", true, false)
-                ]}
-            >
-                {config !== null ? 
-                    <ServiceCreatePanel cmd={cmd} setCmd={setCmd} size={size} setSize={setSize} name={serviceName} setName={setServiceName} image={image} setImage={setImage} scale={scale} setScale={setScale} maxscale={config.maxscale} />
-                    :
-                    ""
-                }
-            </Modal>
-        </div>
-        </ContentPanelTitle>
-        <ContentPanelBody className="secrets-panel">
-            <FlexBox className="gap col">
-                <FlexBox className="col gap">
-                    {data.length === 0 ?
-                     <div className="col">
-                     <FlexBox style={{ height:"40px", }}>
-                             <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
-                                 <IoWarning />
-                                 <div style={{fontSize:"10pt", }}>
-                                     No services have been created.
-                                 </div>
-                             </FlexBox>
-                     </FlexBox>
-                 </div>
-                    :
-                    <>
-                    {
-                        data.map((obj)=>{
-                            return(
-                                <Service 
-                                    url={`/n/${namespace}/services/${obj.info.name}`} 
-                                    deleteService={deleteNamespaceService} 
-                                    conditions={obj.conditions} 
-                                    name={obj.info.name} 
-                                    status={obj.status} 
-                                    image={obj.info.image} 
-                                />
-                            )
-                        })
+        <ContentPanel style={{width:"100%", minWidth: "300px"}}>
+            <ContentPanelTitle>
+                <ContentPanelTitleIcon>
+                    <IoPlay/>
+                </ContentPanelTitleIcon>
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                            <div>
+                                Services 
+                            </div>
+                            <HelpIcon msg={"Services that are available to be used by workflows in the same namespace."} />
+                        </FlexBox>
+                <div>
+                <Modal title="New namespace service" 
+                    escapeToCancel
+                    modalStyle={{
+                        maxWidth: "300px"
+                    }}
+                    onOpen={() => {
+                        console.log("ON OPEN");
+                    }}
+                    onClose={()=>{
+                        setServiceName("")
+                        setImage("")
+                        setScale(0)
+                        setSize(0)
+                        setCmd("")
+                    }}
+                    button={(
+                        <AddValueButton  label=" " />
+                    )}  
+                    keyDownActions={[
+                        KeyDownDefinition("Enter", async () => {
+                        }, true)
+                    ]}
+                    actionButtons={[
+                        ButtonDefinition("Add", async () => {
+                            let err = await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
+                            if(err) return err
+                        }, "small blue", true, false),
+                        ButtonDefinition("Cancel", () => {
+                        }, "small light", true, false)
+                    ]}
+                >
+                    {config !== null ? 
+                        <ServiceCreatePanel cmd={cmd} setCmd={setCmd} size={size} setSize={setSize} name={serviceName} setName={setServiceName} image={image} setImage={setImage} scale={scale} setScale={setScale} maxscale={config.maxscale} />
+                        :
+                        ""
                     }
-                    </>}
+                </Modal>
+            </div>
+            </ContentPanelTitle>
+            <ContentPanelBody className="secrets-panel">
+                <FlexBox className="gap col">
+                    <FlexBox className="col gap">
+                        {data.length === 0 ?
+                        <div className="col">
+                        <FlexBox style={{ height:"40px", }}>
+                                <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                                    <IoWarning />
+                                    <div style={{fontSize:"10pt", }}>
+                                        No services have been created.
+                                    </div>
+                                </FlexBox>
+                        </FlexBox>
+                    </div>
+                        :
+                        <>
+                        {
+                            data.map((obj)=>{
+                                return(
+                                    <Service 
+                                        url={`/n/${namespace}/services/${obj.info.name}`} 
+                                        deleteService={deleteNamespaceService} 
+                                        conditions={obj.conditions} 
+                                        name={obj.info.name} 
+                                        status={obj.status} 
+                                        image={obj.info.image} 
+                                    />
+                                )
+                            })
+                        }
+                        </>}
+                    </FlexBox>
                 </FlexBox>
-            </FlexBox>
-        </ContentPanelBody>
-    </ContentPanel>
+            </ContentPanelBody>
+        </ContentPanel>
 
     )
 }
@@ -190,8 +190,63 @@ function NamespaceServices(props) {
 export function Service(props) {
     const {name, image, status, conditions, deleteService, url, revision, dontDelete} = props
 
+    // return(
+    //     <ContentPanel>
+    //         <ContentPanelTitle style={{backgroundColor: "rgba(252, 253, 254, 1)"}}>
+    //             <ContentPanelTitleIcon>
+    //                 <ServiceStatus status={status} />
+    //             </ContentPanelTitleIcon>
+    //             {dontDelete ?
+    //                 <Modal  title="Delete namespace service" 
+    //                 escapeToCancel
+    //                 modalStyle={{
+    //                     maxWidth: "300px"
+    //                 }}
+    //                 onOpen={() => {
+    //                     console.log("ON OPEN");
+    //                 }}
+    //                 onClose={()=>{
+    //                 }}
+    //                 button={(
+    //                     <div style={{float: "right"}}>
+    //                         <ServicesDeleteButton />
+    //                     </div>
+    //                 )}  
+    //                 actionButtons={[
+    //                     ButtonDefinition("Delete", async () => {
+    //                         if(revision !== undefined) {
+    //                             let err = await deleteService(revision)
+    //                             if (err) return err
+    //                         }else {
+    //                             let err = await deleteService(name)
+    //                             if (err) return err
+    //                         }
+                         
+    //                     }, "small red", true, false),
+    //                     ButtonDefinition("Cancel", () => {
+    //                     }, "small light", true, false)
+    //                 ]}
+    //                 >
+    //                     <FlexBox className="col gap">
+    //                         <FlexBox >
+    //                             Are you sure you want to delete '{name}'?
+    //                             <br/>
+    //                             This action cannot be undone.
+    //                         </FlexBox>
+    //                 </FlexBox>
+    //                 </Modal>
+    //             :<></>}
+    //         </ContentPanelTitle>
+    //         <ContentPanelBody style={{padding: "16px"}}>
+    //             <div>
+    //                 lol
+    //             </div>
+    //         </ContentPanelBody>
+    //     </ContentPanel>
+    // )
+
     return(
-        <div className="col">
+        <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>
                 <Link to={url} style={{ width: "100%", display: "flex", alignItems: "center" }}>
                     <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>

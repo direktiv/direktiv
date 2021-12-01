@@ -96,10 +96,10 @@ function InstancesTable(props) {
                         Name
                     </th>
                     <th>
-                        Started at
+                        Started <span className="hide-on-small">at</span>
                     </th>
                     <th>
-                        Last Updated
+                        <span className="hide-on-small">Last</span> Updated
                     </th>
                 </tr>
             </thead>
@@ -160,10 +160,10 @@ function InstanceRow(props) {
                 {name}
         </td>
         <td>
-            {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text">({startedFrom})</span>
+            {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-small">({startedFrom})</span>
         </td>
         <td>
-            {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text">({finishedFrom})</span>
+            {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-small">({finishedFrom})</span>
         </td>
     </tr>
     )
@@ -177,7 +177,7 @@ function StateLabel(props) {
         <div>
             <FlexBox className={className} style={{ alignItems: "center" }} >
                 <BsDot style={{ height: "32px", width: "32px", marginRight: "-8px" }} />
-                <div>{label}</div>
+                <div className="hide-on-small">{label}</div>
             </FlexBox>
         </div>
     )
