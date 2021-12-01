@@ -49,7 +49,7 @@ export default InstancesPage;
 
 function InstancesTable(props) {
     const {namespace} = props
-    const {data, err} = useInstances(Config.url, true, namespace)
+    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"))
     console.log('current data', data, err)
     if(data === null) {
         return ""

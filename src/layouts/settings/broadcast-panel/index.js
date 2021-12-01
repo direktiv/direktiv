@@ -9,7 +9,7 @@ import HelpIcon from '../../../components/help';
 
 function BroadcastConfigurationsPanel(props){
     const {namespace} = props
-    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace)
+    const {data, setBroadcastConfiguration, getBroadcastConfiguration} = useBroadcastConfiguration(Config.url, namespace, localStorage.getItem("apikey"))
 
     return (
         <ContentPanel className="broadcast-panel">

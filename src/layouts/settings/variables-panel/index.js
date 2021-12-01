@@ -23,7 +23,7 @@ function VariablesPanel(props){
     const [dValue, setDValue] = useState("")
     const [file, setFile] = useState(null)
 
-    const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace)
+    const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     // something went wrong with error listing for variables
     if(err !== null){

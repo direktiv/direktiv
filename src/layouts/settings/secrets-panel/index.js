@@ -18,7 +18,7 @@ function SecretsPanel(props){
 
     const [keyValue, setKeyValue] = useState("")
     const [vValue, setVValue] = useState("")
-    const {data, err, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace)
+    const {data, err, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace, localStorage.getItem("apikey"))
    
     console.log("Secrets", err, data)
     // createErr is the error when creating a secret

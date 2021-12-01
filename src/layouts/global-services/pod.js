@@ -12,7 +12,7 @@ import * as dayjs from 'dayjs'
 export default function GlobalPodPanel(props) {
     const {service, revision} = useParams()
 
-    const {revisionDetails, pods, err} = useGlobalServiceRevision(Config.url, service, revision)
+    const {revisionDetails, pods, err} = useGlobalServiceRevision(Config.url, service, revision, localStorage.getItem("apikey"))
 
     if (err) {
         console.log(err, "listing pods")

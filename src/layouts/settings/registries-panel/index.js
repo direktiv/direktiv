@@ -13,7 +13,7 @@ import HelpIcon from '../../../components/help';
 function RegistriesPanel(props){
 
     const {namespace} = props
-    const {data, err, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace)
+    const {data, err, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace, localStorage.getItem("apikey"))
 
     const [testConnLoading, setTestConnLoading] = useState(false)
     const [successFeedback, setSuccessFeedback] = useState("")
