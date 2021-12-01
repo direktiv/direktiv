@@ -14,19 +14,13 @@ export default function Loader(props) {
         }
     },[timer])
 
-
-    // display blank like nothing has changed while its currently loading
-    if(!display){
-        return ""
-    }
-
     if(load) {
         // return a loader
         
         return (
-            <div style={{display:"flex", alignItems:"center", justifyContent:"center", flex: 1, width:"100%", height:"100%"}}>
-            <div className="loader">
-            </div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flex: 1, width:"100%", height:"100%"}}>
+                <div style={{visibility: display ? "visible": "hidden"}} className="loader">
+                </div>
             </div>
 
         )

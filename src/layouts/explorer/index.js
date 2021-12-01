@@ -93,7 +93,7 @@ function ExplorerList(props) {
 
     return(
         <>
-        <Loader load={load} timer={200}>
+        <Loader load={load} timer={1000}>
         <SearchBar />
             <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
         <ContentPanel>
