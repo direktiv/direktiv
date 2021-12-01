@@ -9,7 +9,7 @@ GIT_HASH := $(shell git rev-parse --short HEAD)
 GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
 RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
-FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")   
+FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
 
 .SECONDARY:
 
@@ -35,7 +35,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: build/flow-binary build/api-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary
+binaries: build/flow-binary build/api-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary build/flow-dbinit
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
@@ -48,16 +48,17 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/secrets
 	rm -f build/sidecar
 	rm -f build/functions
+	rm -f build/flow-dbinit
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete --all ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
 
 .PHONY: images
-images: image-api image-flow image-init-pod image-secrets image-sidecar image-functions
+images: image-api image-flow image-init-pod image-secrets image-sidecar image-functions image-flow-dbinit
 
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions
+push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions push-flow-dbinit
 
 HELM_CONFIG := "scripts/dev.yaml"
 
@@ -112,7 +113,7 @@ api-client: api-clean-client  api-docs
 
 .PHONY: api-docs
 api-docs: ## Generates API documentation, (Also fixes markdown tables, examples & description)
-api-docs: 
+api-docs:
 	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
 	cd pkg/api
 	swagger generate spec -o scripts/api/swagger.json -m

@@ -28,6 +28,7 @@
 /build/apiserver
 /build/direktiv
 /build/direkcli
+/build/flow-dbinit
 /build/direkcli-linux
 /build/secrets
 /build/api
@@ -47,6 +48,7 @@
 /binaries
 
 /build/docker/*
+!*build/docker/flow-dbinit
 !*build/docker/all
 !*build/docker/functions
 !*build/docker/secrets
