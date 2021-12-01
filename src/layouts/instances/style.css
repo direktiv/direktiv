@@ -37,3 +37,9 @@
     padding-right: 16px;
     border-radius: 30px;
 }
+
+@media screen and (max-width: 600px) {
+    .success-label, .fail-label, .cancel-label, .running-label {
+        padding-right: 8px;
+    }
+}

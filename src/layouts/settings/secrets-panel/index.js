@@ -24,7 +24,7 @@ function SecretsPanel(props){
     // createErr is the error when creating a secret
 
     return (
-        <ContentPanel style={{width: "100%"}}>
+        <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
                     <IoLockClosedOutline />
@@ -84,9 +84,9 @@ function SecretsPanel(props){
                     {data !== null ? 
                         <Secrets deleteSecret={deleteSecret} getSecrets={getSecrets} secrets={data}  />: ""}
                     </FlexBox>
-                    <FlexBox style={{maxHeight: "44px"}}>
+                    <div>
                         <Alert>Once a secret is removed, it can never be restored.</Alert>
-                    </FlexBox>
+                    </div>
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>

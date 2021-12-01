@@ -29,7 +29,7 @@ function RegistriesPanel(props){
 
     console.log("Registries", err)
     return (
-        <ContentPanel style={{width: "100%", minHeight: "180px"}}>
+        <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
                     <IoLogoDocker />
@@ -44,8 +44,7 @@ function RegistriesPanel(props){
                     <Modal title="New registry"
                         escapeToCancel
                         modalStyle={{
-                            maxWidth: "450px",
-                            minWidth: "450px"
+                            maxWidth: "450px"
                         }}
                         button={(
                             <AddValueButton label=" " />
@@ -96,9 +95,9 @@ function RegistriesPanel(props){
                         <Registries deleteRegistry={deleteRegistry} getRegistries={getRegistries} registries={data}/>
                             :""}
                     </FlexBox>
-                    <FlexBox style={{maxHeight: "44px"}}>
+                    <div>
                         <Alert>Once a registry is removed, it can never be restored.</Alert>
-                    </FlexBox>
+                    </div>
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>

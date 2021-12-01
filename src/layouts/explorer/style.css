@@ -1,7 +1,8 @@
 .explorer-searchbar {
-    position: absolute;
+    /* max-width: 200px; */
+    /* position: absolute;
     right:  8px;
-    top: 30px;
+    top: 30px; */
 }
 
 .explorer-searchbar .flex-box {
@@ -63,4 +64,8 @@
 .explorer-list {
     min-height: 500px;
     max-height: 500px;
+}
+
+.explorer-action-btn {
+    max-width:fit-content;
 }

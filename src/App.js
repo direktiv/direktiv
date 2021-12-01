@@ -1,4 +1,5 @@
 import './App.css';
+import './util/responsive.css';
 import MainLayout from './layouts/main';
 
 function App() {

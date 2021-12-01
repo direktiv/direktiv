@@ -22,7 +22,7 @@ export default ContentPanel;
 
 export function ContentPanelTitle(props) {
     
-    let {children, className} = props;
+    let {style, children, className} = props;
     if (!className) {
         className = ""
     }
@@ -30,7 +30,7 @@ export function ContentPanelTitle(props) {
     className = "content-panel-title " + className
 
     return(
-        <FlexBox className={className}>
+        <FlexBox style={{...style}} className={className}>
             {children}
         </FlexBox>
     );
