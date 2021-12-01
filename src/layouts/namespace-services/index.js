@@ -314,7 +314,7 @@ function ServiceDetails(props) {
     const {conditions} = props
 
     return(
-        <ul style={{listStyle:"none", paddingLeft:"25px", paddingRight:"40px", width:"100%"}}>
+        <ul className="condition-list" style={{listStyle:"none", paddingLeft:"25px", paddingRight:"40px", width:"100%"}}>
             {conditions.map((obj)=>{
                 return(
                     <Condition status={obj.status} name={obj.name} reason={obj.reason} message={obj.message}/>
@@ -338,69 +338,73 @@ function Condition(props){
         failMsgClasses += "visible"
     }
 
-
-    return(
-        <li  style={{display:"flex", gap:"10px"}}>
-        <div>
-            <ServiceStatus status={status}/>
-        </div>
-        <FlexBox className="col gap" style={{marginBottom:"10px"}}>
-            <FlexBox>
-                <FlexBox>
-                    {name}
-                </FlexBox>
-                {status !== 'True' && reason !== "" && message !== "" ? 
-                    <FlexBox style={{justifyContent:"flex-end"}}>
-                        {showDetails ? 
-                            <div className="toggle-details" onClick={()=>setShowDetails(!showDetails)} style={{color:"#dbd9d9", display:"flex", alignItems:"center", fontSize:"10pt", cursor:"pointer"}}>
-                                <IoChevronDownOutline /> 
-                                <div>Hide Details</div>
-                            </div>
-                            :
-                            <div className="toggle-details" onClick={()=>setShowDetails(!showDetails)} style={{color:"#dbd9d9", display:"flex", alignItems:"center", fontSize:"10pt", cursor:"pointer"}}>
-                                <IoChevronForwardOutline /> 
-                                <div>Show Details</div>
-                            </div>
-                        }
-                    </FlexBox>
-                    :
-                    ""
-                }
-            </FlexBox>
-            <>
-            {status === 'Unknown' ?
-                <div className={waitMsgClasses}>
-            {reason !== ""  ? 
-                <div className="grey-text" style={{fontSize:"10pt", fontStyle:"italic"}}>
-                    {reason}
-                </div>:""}
-            {message !== "" ? 
-                <div>
-                    <div className="msg-box">
-                        {message}
+    return (
+        <li style={{ display: "flex", gap: "8px" }}>
+            <FlexBox className="col">
+                <FlexBox className="gap">
+                    <div>
+                        <ServiceStatus status={status}/>
                     </div>
-                </div>
-                :
-                ""
-                }
-            </div>:""}
-            {status === 'False' ? 
-                <div className={failMsgClasses} >
+                    <FlexBox className="gap">
+                        <FlexBox>
+                            {name}
+                        </FlexBox>
+                        {status !== 'True' && reason !== "" && message !== "" ?
+                        <FlexBox style={{
+                            maxWidth: "120px"
+                        }}>
+                            <div className="toggle-details" onClick={() => {setShowDetails(!showDetails)}} style={{
+                                color:"#dbd9d9", 
+                                display:"flex", 
+                                alignItems:"center", 
+                                fontSize:"10pt", 
+                                cursor:"pointer"
+                            }}>
+                            {showDetails ?
+                            <>
+                                <IoChevronDownOutline />
+                                <div>Hide Details</div>
+                            </>
+                            :   
+                            <>
+                                <IoChevronForwardOutline />
+                                <div>Show Details</div>
+                            </>}
+                            </div>
+                        </FlexBox>
+                        :""}
+                    </FlexBox>
+                </FlexBox>
+                <FlexBox>
+                {status === 'Unknown' ?
+                    <div className={waitMsgClasses}>
+                reason !== ""  ? 
                     <div className="grey-text" style={{fontSize:"10pt", fontStyle:"italic"}}>
                         {reason}
-                    </div>
+                    </div>:""}
+                {message !== "" ? 
                     <div>
-                        <div className="msg-box"> 
+                        <div className="msg-box">
                             {message}
                         </div>
                     </div>
-                </div>
-            :
-            ""
-            }
-            </>
-        </FlexBox>
-    </li>
+                :""}
+                    </div>
+                :""}
+
+                { status === 'False' ? 
+                    <div className={failMsgClasses}>
+                        <div className="grey-text" style={{fontSize: "10pt", fontStyle: "italic"}}>
+                            {reason}
+                        </div>
+                        <div className="msg-box">
+                            {message}
+                        </div>
+                    </div>
+                :""}
+                </FlexBox>
+            </FlexBox>
+        </li>
     )
 }
 
