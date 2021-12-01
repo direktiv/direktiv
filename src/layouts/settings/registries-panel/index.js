@@ -22,6 +22,11 @@ function RegistriesPanel(props){
     const [username, setUsername] = useState("")
     const [token, setToken] = useState("")
 
+    // err handling
+    const [urlErr, setURLErr] = useState("")
+    const [userErr, setUserErr] = useState("")
+    const [tokenErr, setTokenErr] = useState("")
+
     let testConnBtnClasses = "small green"
     if (testConnLoading) {
         testConnBtnClasses += " btn-loading"
@@ -53,11 +58,28 @@ function RegistriesPanel(props){
                             setURL("")
                             setToken("")
                             setUsername("")
+                            setURLErr("")
+                            setTokenErr("")
+                            setUserErr("")
                             setSuccessFeedback(false)
                             setTestConnLoading(false)
                         }}
                         keyDownActions={[
                             KeyDownDefinition("Enter", async () => {
+                                let filledOut = true
+                                if(url === ""){
+                                    setURLErr("url must be filled out")
+                                    filledOut = false
+                                }
+                                if(username === "") {
+                                    setUserErr("username must be filled out")
+                                    filledOut = false
+                                }
+                                if(token === "") {
+                                    setTokenErr("token must be filled out")
+                                    filledOut = false
+                                }
+                                if(!filledOut) return "all fields must be filled out"
                                 let err = await createRegistry(url, `${username}:${token}`)
                                 if(err) return err
                                 await getRegistries()
@@ -65,11 +87,39 @@ function RegistriesPanel(props){
                         ]}
                         actionButtons={[
                             ButtonDefinition("Add", async() => {
+                                let filledOut = true
+                                if(url === ""){
+                                    setURLErr("url must be filled out")
+                                    filledOut = false
+                                }
+                                if(username === "") {
+                                    setUserErr("username must be filled out")
+                                    filledOut = false
+                                }
+                                if(token === "") {
+                                    setTokenErr("token must be filled out")
+                                    filledOut = false
+                                }
+                                if(!filledOut) return "all fields must be filled out"
                                 let err = await createRegistry(url, `${username}:${token}`)
                                 if(err) return err
                                 await  getRegistries()
                             }, "small blue", true, false),
                             ButtonDefinition("Test Connection", async () => {
+                                let filledOut = true
+                                if(url === ""){
+                                    setURLErr("url must be filled out")
+                                    filledOut = false
+                                }
+                                if(username === "") {
+                                    setUserErr("username must be filled out")
+                                    filledOut = false
+                                }
+                                if(token === "") {
+                                    setTokenErr("token must be filled out")
+                                    filledOut = false
+                                }
+                                if(!filledOut) return "all fields must be filled out"
                                 setTestConnLoading(true)
                                 let err = await TestRegistry(url, username, token)
                                 if(err) {
@@ -84,7 +134,7 @@ function RegistriesPanel(props){
                             }, "small light", true, false)
                         ]}
                     >
-                        <AddRegistryPanel successMsg={successFeedback} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
+                        <AddRegistryPanel urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} successMsg={successFeedback} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
                     </Modal> 
                 </div>
             </ContentPanelTitle>
@@ -142,7 +192,7 @@ async function TestRegistry(url, username, token) {
 // const registries = ["https://docker.io", "https://gcr.io", "https://us.gcr.io"]
 
 export function AddRegistryPanel(props) {
-    const {successMsg, url, setURL, token, setToken, username, setUsername} = props
+    const {successMsg, url, setURL, token, setToken, username, setUsername, urlErr, userErr, tokenErr} = props
 
     return (
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
@@ -152,15 +202,22 @@ export function AddRegistryPanel(props) {
             </FlexBox>
             :<></>}
             <FlexBox className="gap">
-                <FlexBox>
+                <FlexBox className="col">
                     <input value={url} onChange={(e)=>setURL(e.target.value)} autoFocus placeholder="Enter URL" />
+                    <span style={{fontWeight:"normal", color:"red", fontSize:"10pt", lineHeight:"20px"}}>{urlErr}</span>
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox><input value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="Enter username" /></FlexBox>
+                <FlexBox className="col">
+                    <input value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="Enter username" />
+                    <span style={{fontWeight:"normal", color:"red", fontSize:"10pt", lineHeight:"20px"}}>{userErr}</span>
+                </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox><input value={token} onChange={(e)=>setToken(e.target.value)} type="password" placeholder="Enter token" /></FlexBox>
+                <FlexBox className="col">
+                    <input value={token} onChange={(e)=>setToken(e.target.value)} type="password" placeholder="Enter token" />
+                    <span style={{fontWeight:"normal", color:"red", fontSize:"10pt", lineHeight:"20px"}}>{tokenErr}</span>
+                </FlexBox>
             </FlexBox>
         </FlexBox>
     );
