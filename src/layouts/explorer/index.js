@@ -93,7 +93,7 @@ function ExplorerList(props) {
 
     return(
         <>
-        <Loader load={load} timer={1000}></Loader>
+        <Loader load={load} timer={1000}>
         <FlexBox className="gap" style={{maxHeight: "32px"}}>
             <FlexBox>
                 <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
@@ -258,8 +258,9 @@ function ExplorerList(props) {
     {/* <FlexBox>
         <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} />
     </FlexBox> */}
+    </Loader>
+  
     </>
-    
     )
 }
 
