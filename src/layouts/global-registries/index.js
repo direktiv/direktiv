@@ -26,7 +26,7 @@ export default function GlobalRegistriesPanel(){
 
 export function GlobalRegistries(){
 
-    const {data, err, getRegistries, createRegistry, deleteRegistry} = useGlobalRegistries(Config.url)
+    const {data, err, getRegistries, createRegistry, deleteRegistry} = useGlobalRegistries(Config.url, localStorage.getItem("apikey"))
 
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")

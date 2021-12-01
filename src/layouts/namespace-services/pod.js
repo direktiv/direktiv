@@ -29,7 +29,7 @@ export default function PodPanel(props) {
 
 function NamespaceRevisionDetails(props){
     const {service, namespace, revision} = props
-    const {revisionDetails, pods, err} = useNamespaceServiceRevision(Config.url, namespace, service, revision)
+    const {revisionDetails, pods, err} = useNamespaceServiceRevision(Config.url, namespace, service, revision, localStorage.getItem("apikey"))
 
     console.log(revisionDetails)
 
@@ -211,7 +211,7 @@ export function PodLogs(props){
 function Logs(props) {
     const {pod, follow, clipData, setClipData} = props
 
-    const {data, err} = usePodLogs(Config.url, pod)
+    const {data, err} = usePodLogs(Config.url, pod, localStorage.getItem("apikey"))
 
     useEffect(()=>{
         if(data !== null) {

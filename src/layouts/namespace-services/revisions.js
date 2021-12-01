@@ -66,7 +66,7 @@ export function RevisionCreatePanel(props){
 function NamespaceRevisions(props) {
     const {namespace, service} = props
 
-    const {revisions, fn, config, traffic, err, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service)
+    const {revisions, fn, config, traffic, err, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service,localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")

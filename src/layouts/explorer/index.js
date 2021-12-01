@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './style.css';
 import { IoAdd, IoClose, IoFolder, IoFolderOpen, IoSearch } from 'react-icons/io5';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -16,6 +16,7 @@ import { BsCodeSlash } from 'react-icons/bs';
 import Button from '../../components/button';
 import Pagination from '../../components/pagination';
 import HelpIcon from "../../components/help"
+import Loader from '../../components/loader';
 
 function Explorer(props) {
     const params = useParams()
@@ -31,10 +32,7 @@ function Explorer(props) {
 
     return(
         <>
-            <SearchBar />
-            <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
-                <ExplorerList  namespace={namespace} path={filepath}/>
-            </FlexBox>
+            <ExplorerList  namespace={namespace} path={filepath}/>
         </>
     )
 }
@@ -55,25 +53,49 @@ function SearchBar(props) {
 function ExplorerList(props) {
     const {namespace, path} = props
 
+    const [currPath, setCurrPath] = useState("")
+    
     const [name, setName] = useState("")
+    const [load, setLoad] = useState(true)
+
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
 
-    const {data, err, templates, createNode, deleteNode, renameNode, toggleWorkflow, getWorkflowRouter } = useNodes(Config.url, true, namespace, path)
+    const {data, err, templates, createNode, deleteNode, renameNode, toggleWorkflow, getWorkflowRouter } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"))
 
     console.log(data, err, templates)
 
-    if(data === null) {
-        return ""
-    }
+    // control loading icon todo work out how to display this error
+    useEffect(()=>{
+        if(data !== null || err !== null) {
+            setLoad(false)
+        }
+    },[data, err])
 
-    if(data.node.type === "workflow") {
-        return <div>its a workflow not a directory</div>
+    useEffect(()=>{
+        if(path !== currPath) {
+            setCurrPath(path)
+            setLoad(true)
+        }
+    },[path, currPath])
+
+    // if(data === null) {
+    //     return ""
+    // }
+
+    if(data !== null) {
+        if(data.node.type === "workflow") {
+            return <div>its a workflow not a directory</div>
+        }
     }
+    
 
     return(
         <>
+        <Loader load={load} timer={200}>
+        <SearchBar />
+            <FlexBox className="col gap" style={{ paddingRight: "8px" }}>
         <ContentPanel>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
@@ -179,33 +201,34 @@ function ExplorerList(props) {
                     </Modal>
                 </ContentPanelHeaderButton>
             </ContentPanelTitle>
-            <ContentPanelBody>
-                <FlexBox className="col">
-                    {data.children.edges.length === 0 ? 
-                            <div className="explorer-item">
-                                <FlexBox className="explorer-item-container">
-                                    <FlexBox style={{display:"flex", alignItems:"center"}} className="explorer-item-icon">
-                                        <IoSearch />
+            <ContentPanelBody style={{height:"100%"}}>
+                    <FlexBox className="col">
+                        {data !== null ? <>
+                        {data.children.edges.length === 0 ? 
+                                <div className="explorer-item">
+                                    <FlexBox className="explorer-item-container">
+                                        <FlexBox style={{display:"flex", alignItems:"center"}} className="explorer-item-icon">
+                                            <IoSearch />
+                                        </FlexBox>
+                                        <FlexBox style={{fontSize:"10pt"}} className="explorer-item-name">
+                                            No results found under '{path}'.
+                                        </FlexBox>
+                                        <FlexBox className="explorer-item-actions gap">
+                        
+                                        </FlexBox>
                                     </FlexBox>
-                                    <FlexBox style={{fontSize:"10pt"}} className="explorer-item-name">
-                                        No results found under '{path}'.
-                                    </FlexBox>
-                                    <FlexBox className="explorer-item-actions gap">
-                    
-                                    </FlexBox>
-                                </FlexBox>
-                            </div>
-                    :
-                    <>
-                    {data.children.edges.map((obj) => {
-                        if (obj.node.type === "directory") {
-                            return (<DirListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
-                        } else if (obj.node.type === "workflow") {
-                            return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
-                        }
-                        return ""
-                    })}</>}
-                </FlexBox>
+                                </div>
+                        :
+                        <>
+                        {data.children.edges.map((obj) => {
+                            if (obj.node.type === "directory") {
+                                return (<DirListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
+                            } else if (obj.node.type === "workflow") {
+                                return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
+                            }
+                            return ""
+                        })}</>}</>: ""}
+                    </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
         <FlexBox style={{maxHeight: "32px"}}>
@@ -219,7 +242,11 @@ function ExplorerList(props) {
         </FlexBox>
         {/* <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} /> */}
     </FlexBox>
+    </FlexBox>
+    </Loader>
+
     </>
+    
     )
 }
 

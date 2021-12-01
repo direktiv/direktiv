@@ -12,7 +12,7 @@ import { useGlobalService } from "direktiv-react-hooks"
 
 export default function GlobalRevisionsPanel(props){
     const {service} = useParams()
-    const {revisions, config, fn, traffic, err, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service)
+    const {revisions, config, fn, traffic, err, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")

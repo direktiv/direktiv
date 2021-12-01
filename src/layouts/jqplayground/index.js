@@ -16,7 +16,7 @@ export default function JQPlayground() {
     const [filter, setFilter] = useState(".")
     const [input, setInput] = useState(JSON.stringify({}, null, 2))
 
-    const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url)
+    const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url, localStorage.getItem("apikey"))
 
     if(err){
         // jq query went busted

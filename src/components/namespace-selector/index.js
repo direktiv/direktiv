@@ -144,7 +144,7 @@ function NamespaceListItemLink(props) {
 
 function NamespaceList(props){
     const {namespaces, setShowSelector} = props
-
+    console.log(namespaces, "NAMESPACES")
     return (
         <FlexBox className="namespaces-list gap col">
             {namespaces.map((obj)=>{

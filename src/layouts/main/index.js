@@ -21,10 +21,11 @@ import GlobalPodPanel from '../global-services/pod'
 import Loader from '../../components/loader';
 import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
+import Login from '../login';
 
 
 function NamespaceNavigation(props){
-    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
+    const {err, namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
 
     const [load, setLoad] = useState(true)
     const navigate = useNavigate()
@@ -125,16 +126,27 @@ function NamespaceNavigation(props){
 function MainLayout(props) {
     let {onClick, style, className} = props;
 
-    const { data, err, createErr, deleteErr, createNamespace, deleteNamespace } = useNamespaces(Config.url, true)
+    console.log(localStorage.getItem('apikey'), "API KEY BEFORE HOOK")
+    const [akey, setAKey] = useState(localStorage.getItem('apikey'))
     const [load, setLoad] = useState(true)
+    const [login, setLogin] = useState(false)
     const [namespace, setNamespace] = useState(null)
+    const [toggleResponsive, setToggleResponsive] = useState(false);
+    const {data, err, createNamespace, deleteNamespace} = useNamespaces(Config.url, true, akey)
 
+    // const [versions, setVersions] = useState(false)
+    
     useEffect(()=>{
         if(data !== null) {
             setLoad(false)
         }
-    },[data])
-    const [toggleResponsive, setToggleResponsive] = useState(false);
+        if(err !== null) {
+            if(err.status && err.status === 401){
+                setLogin(true)
+            }
+            setLoad(false)
+        }
+    },[data, err])
 
     // TODO work out how to handle this error when listing namespaces
     if(err !== null) {
@@ -155,13 +167,17 @@ function MainLayout(props) {
                     Left col: navigation
                     Right : page contents 
                 */}
-                <Loader load={load} timer={500}>
-                    <BrowserRouter>
-                        <FlexBox className="navigation-col">
-                            <NavBar  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createErr={createErr} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
-                        </FlexBox>
-                        <NamespaceNavigation deleteErr={deleteErr} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
-                    </BrowserRouter>
+                <Loader load={load} timer={1000}>
+                        {login ? 
+                            <Login setLogin={setLogin} setAKey={setAKey} />
+                            :
+                            <BrowserRouter>
+                              <FlexBox className="navigation-col">
+                                <NavBar  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                              </FlexBox>
+                              <NamespaceNavigation deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
+                            </BrowserRouter>
+                        }
                 </Loader>
             </FlexBox>
         </div>

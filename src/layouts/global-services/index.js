@@ -11,7 +11,7 @@ import { IoPlay, IoWarning } from "react-icons/io5";
 import HelpIcon from "../../components/help"
 
 export default function GlobalServicesPanel(props) {
-    const {data, err, config, createGlobalService, getConfig, getGlobalServices, deleteGlobalService} = useGlobalServices(Config.url, true)
+    const {data, err, config, createGlobalService, getConfig, getGlobalServices, deleteGlobalService} = useGlobalServices(Config.url, true, localStorage.getItem("apikey"))
     const [load, setLoad] = useState(true)
 
     const [serviceName, setServiceName] = useState("")
