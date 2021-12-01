@@ -8,6 +8,7 @@ metadata:
 data:
   flow-config.yaml: |
       functions-service: {{ include "direktiv.fullname" . }}-functions.{{ .Release.Namespace }}
+      functions-timeout: {{ .Values.functions.timeout }}
       flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
       {{- if .Values.thanos.enabled }}
       prometheus-backend: {{ include "direktiv.fullname" . }}-thanos-query-frontend.{{ .Release.Namespace }}
