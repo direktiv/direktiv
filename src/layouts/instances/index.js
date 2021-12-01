@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.css';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
@@ -12,35 +12,19 @@ import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { Link, useNavigate } from 'react-router-dom';
+import Loader from '../../components/loader';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
 function InstancesPage(props) {
     const {namespace} = props
-
-    if(namespace === null) {
+    if(!namespace) {
         return ""
     }
-
     return(
         <div style={{ paddingRight: "8px" }}>
-            <ContentPanel>
-                <ContentPanelTitle>
-                    <ContentPanelTitleIcon>
-                        <VscFileCode/>
-                    </ContentPanelTitleIcon>
-                    <FlexBox className="gap" style={{ alignItems: "center" }}>
-                        <div>
-                            Instances
-                        </div>
-                        <HelpIcon msg={"A list of recently executed instances."} />
-                    </FlexBox>
-                </ContentPanelTitle>
-                <ContentPanelBody>
-                    <InstancesTable namespace={namespace} /> 
-                </ContentPanelBody>
-            </ContentPanel>
+            <InstancesTable namespace={namespace}/>
         </div>
     );
 }
@@ -49,42 +33,35 @@ export default InstancesPage;
 
 function InstancesTable(props) {
     const {namespace} = props
+    const [load, setLoad] = useState(true)
+
     const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"))
-    console.log('current data', data, err)
-    if(data === null) {
-        return ""
-    }
 
-    let pageData = (
-        <p>
-            Recently run instances will be displayed here.
-        </p>
-    )
-
-    if (data !== null) {
-        if (data.length > 0) {
-            pageData = [];
-            data.map((obj)=>{
-                return(
-                    <InstanceRow 
-                        namespace={namespace}
-                        state={obj.node.status} 
-                        name={obj.node.as} 
-                        id={obj.node.id}
-                        started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
-                        startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                        finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
-                        finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
-                    />
-                )
-                })
+    useEffect(()=>{
+        if(data !== null || err !== null) {
+            setLoad(false)
         }
-    }
+    },[data, err])
 
     return(
+        <Loader load={load} timer={1000}>
+
+        <ContentPanel>
+        <ContentPanelTitle>
+            <ContentPanelTitleIcon>
+                <VscFileCode/>
+            </ContentPanelTitleIcon>
+            <FlexBox className="gap" style={{ alignItems: "center" }}>
+                <div>
+                    Instances
+                </div>
+                <HelpIcon msg={"A list of recently executed instances."} />
+            </FlexBox>
+        </ContentPanelTitle>
+        <ContentPanelBody>
         <>
         {
-            data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
+            data !== null && data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
     <table className="instances-table">
 
      <>       <thead>
@@ -125,6 +102,10 @@ function InstancesTable(props) {
                 :<></>}
             </tbody></>
         </table>}</>
+        </ContentPanelBody>
+    </ContentPanel>
+    </Loader>
+        
     );
 }
 
