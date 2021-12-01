@@ -22,12 +22,18 @@ function VariablesPanel(props){
     const [keyValue, setKeyValue] = useState("")
     const [dValue, setDValue] = useState("")
     const [file, setFile] = useState(null)
+    const [uploading, setUploading] = useState(false)
 
     const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     // something went wrong with error listing for variables
     if(err !== null){
         console.log(err, 'handle variable list error')
+    }
+
+    let uploadingBtn = "small green"
+    if (uploading) {
+        uploadingBtn += " btn-loading"
     }
 
     return (
@@ -52,17 +58,23 @@ function VariablesPanel(props){
                             setKeyValue("")
                             setDValue("")
                             setFile(null)
+                            setUploading(false)
                         }}
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
+                                
                                 if(document.getElementById("file-picker")){
+                                    setUploading(true)
                                     let err = await setNamespaceVariable(keyValue, file)
-                                    if (err) return err
+                                    if (err) {
+                                        setUploading(false)
+                                        return err
+                                    }
                                 } else {
                                     let err = await setNamespaceVariable(keyValue, dValue)
                                     if (err) return err
                                 }
-                            }, "small blue", true, false),
+                            }, uploadingBtn, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
                         ]}
@@ -85,16 +97,17 @@ export default VariablesPanel;
 
 
 function VariableFilePicker(props) {
-    const {file, setFile} = props
+    const {file, setFile, id} = props
 
     const onDrop = useCallback(acceptedFiles => {
+        console.log('hello')
         setFile(acceptedFiles[0])
     },[setFile])
     
     const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 
     return (
-        <FlexBox className="file-input" style={{flexDirection:"column"}} {...getRootProps()}>
+        <div {...getRootProps()} className="file-input" id={id} style={{display:"flex", flex:"auto", flexDirection:"column"}} >
             <div>
                 <input {...getInputProps()} />
                 <p>Drag 'n' drop the file here, or click to select file</p>
@@ -105,7 +118,7 @@ function VariableFilePicker(props) {
                     ""
                 }
             </div>
-        </FlexBox>
+        </div>
     )
 }
 
@@ -133,7 +146,7 @@ function AddVariablePanel(props) {
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
                     <FlexBox className="gap">
-                        <VariableFilePicker file={file} setFile={setFile} />
+                        <VariableFilePicker file={file} setFile={setFile} id="add-variable-panel" />
                     </FlexBox>
                 </FlexBox>
             )]}
@@ -246,7 +259,7 @@ function Variables(props) {
                                             } 
                                         >
                                             <FlexBox className="col gap">
-                                                <VariableFilePicker file={file} setFile={setFile} />
+                                                <VariableFilePicker id="modal-file-picker" file={file} setFile={setFile} />
                                             </FlexBox>
                                         </Modal>
                                         <Modal
