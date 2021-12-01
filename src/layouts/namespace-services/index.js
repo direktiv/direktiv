@@ -155,7 +155,6 @@ function NamespaceServices(props) {
                         <div className="col">
                         <FlexBox style={{ height:"40px", }}>
                                 <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
-                                    <IoWarning />
                                     <div style={{fontSize:"10pt", }}>
                                         No services have been created.
                                     </div>
