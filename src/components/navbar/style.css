@@ -88,7 +88,6 @@
 .navigation-master {
     max-height: 100vh;
     overflow-y: auto;
-    padding-right: 12px;
 }
 
 @media screen and (max-width: 1000px) {
@@ -148,6 +147,7 @@
         top: 0px;
         left: -230px;
         z-index: 20;
+        padding-right: 12px;
     }
 
     .responsive-nav .panel, .navigation-master {
