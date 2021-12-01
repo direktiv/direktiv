@@ -14,6 +14,16 @@ export default function Loader(props) {
         }
     },[timer])
 
+    // when children change reset the timer
+    useEffect(()=>{
+        if(display){
+            setDisplay(false)
+            setTimeout(()=>{
+                setDisplay(true)
+            },timer)
+        }
+    },[children])
+
     if(load) {
         // return a loader
         
