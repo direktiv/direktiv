@@ -8,8 +8,12 @@ export default function DirektivEditor(props) {
     const monaco = useMonaco()
 
     useEffect(()=>{
+        // console.log(monaco)
+        // if(monaco !== null) {
+        //     monaco.editor.colorize(dvalue, dlang)
+        // }
         // monaco.editor.layout()
-    },[monaco])
+    },[monaco, dlang])
 
     function handleEditorChange(value, event) {
         setDValue(value)
@@ -22,7 +26,7 @@ export default function DirektivEditor(props) {
             }}
             height={height}
             width={width}
-            defaultLanguage={dlang}
+            language={dlang}
             defaultValue={dvalue}
             value={value}
             theme={"vs-dark"}
