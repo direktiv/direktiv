@@ -66,12 +66,20 @@ function VariablesPanel(props){
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
                                     setUploading(true)
+                                    if(keyValue === "") {
+                                        setUploading(false)
+                                        return "Variable key name needs to be provided."
+                                    }
                                     let err = await setNamespaceVariable(keyValue, file, mimeType)
                                     if (err) {
                                         setUploading(false)
                                         return err
                                     }
                                 } else {
+                                    if(keyValue === "") {
+                                        setUploading(false)
+                                        return "Variable key name needs to be provided."
+                                    }
                                     let err = await setNamespaceVariable(keyValue, dValue, mimeType)
                                     if (err) return err
                                 }
