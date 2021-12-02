@@ -49,10 +49,7 @@ function InitialWorkflowHook(props){
                 <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
-                        <AllRevisionsTab 
-                            getInstancesForWorkflow={getInstancesForWorkflow}
-                            getRevisions={getRevisions} 
-                        />
+                        <OverviewTab getInstancesForWorkflow={getInstancesForWorkflow} />
                     :<></>}
                     { activeTab === 1 ?
                         <RevisionSelectorTab />
@@ -69,10 +66,10 @@ function TabBar(props) {
 
     let {activeTab, setActiveTab} = props;
     let tabLabels = [
-        "All Revisions",
-        "Revision Selector",
-        "Functions",
-        "Editor", 
+        "Overview",
+        "Revisions",
+        "Working Revisions",
+        "Dependency Graph", 
         "Settings"
     ]
 
@@ -96,6 +93,15 @@ function TabBar(props) {
     return (
         <FlexBox className="tab-bar">
             {tabDOMs}
+            <FlexBox className="tab-bar-item gap">
+            <label className="switch">
+                <input type="checkbox" />
+                <span className="slider-broadcast"></span>
+            </label>
+            <div className="rev-toggle-label hide-on-small">
+                Enabled
+            </div>
+            </FlexBox>
         </FlexBox>
     )
 }
@@ -152,7 +158,7 @@ function WorkflowInstances(props) {
     )
 }
 
-function AllRevisionsTab(props) {
+function OverviewTab(props) {
     const {getInstancesForWorkflow,  namespace} = props
 
     const [load, setLoad] = useState(true)
@@ -209,8 +215,8 @@ function AllRevisionsTab(props) {
                     </ContentPanel>
                 </FlexBox>
             </FlexBox>
-            <FlexBox>
-                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+            <FlexBox style={{maxHeight: "140px"}}>
+                <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
                             <BsCodeSquare />
@@ -220,7 +226,8 @@ function AllRevisionsTab(props) {
                         </div>
                     </ContentPanelTitle>
                 </ContentPanel>
-            </FlexBox>          
+            </FlexBox>
+      
             <FlexBox>
                 <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                     <ContentPanelTitle>

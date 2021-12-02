@@ -28,6 +28,7 @@
 }
 
 .tab-bar-item {
+    font-size: 12px;
     width: 20%;
     box-sizing: border-box;
     cursor: pointer;
@@ -82,4 +83,10 @@
 
 .revision-panel-btn-bar > div:active {
     background-color: rgba(0, 0, 0, 0.15);
+}
+
+.rev-toggle-label {
+    font-size: 12px;
+    font-weight: 100;
+    color: var(--theme-grey-light-blue);
 }
