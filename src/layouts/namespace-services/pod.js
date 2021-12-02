@@ -181,7 +181,9 @@ export function PodLogs(props){
                         </FlexBox>
                         <FlexBox style={{height:"40px", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
                             <FlexBox>
-                                {tab}
+                                <div className="pod-label">
+                                    {tab}
+                                </div>
                             </FlexBox>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 

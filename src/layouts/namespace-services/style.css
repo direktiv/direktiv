@@ -46,3 +46,11 @@
 .condition-list li:not(:last-child) {
     margin-bottom: 10px;
 }
+
+.pod-label {
+    max-width: 200px;
+    max-height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+}

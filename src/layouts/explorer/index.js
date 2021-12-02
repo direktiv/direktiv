@@ -16,6 +16,7 @@ import { BsCodeSlash } from 'react-icons/bs';
 import Button from '../../components/button';
 import HelpIcon from "../../components/help"
 import Loader from '../../components/loader';
+import WorkflowPage from './workflow';
 
 function Explorer(props) {
     const params = useParams()
@@ -79,7 +80,7 @@ function ExplorerList(props) {
 
     if(data !== null) {
         if(data.node.type === "workflow") {
-            return <div>its a workflow not a directory</div>
+            return <WorkflowPage/>
         }
     }
     
