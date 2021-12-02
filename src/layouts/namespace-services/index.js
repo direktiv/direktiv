@@ -313,6 +313,11 @@ function ServiceDetails(props) {
     return(
         <ul className="condition-list" style={{listStyle:"none", paddingLeft:"25px", paddingRight:"40px", width:"100%"}}>
             {conditions.map((obj)=>{
+                if(obj.name === 'Active' && obj.reason === 'NoTraffic' && obj.message === "The target is not receiving traffic."){
+                    return(
+                        <Condition status={"True"} name={obj.name} reason={""} message={""} />
+                    )
+                }
                 return(
                     <Condition status={obj.status} name={obj.name} reason={obj.reason} message={obj.message}/>
                 )
@@ -374,8 +379,8 @@ function Condition(props){
                 </FlexBox>
                 <FlexBox>
                 {status === 'Unknown' ?
-                    <div className={waitMsgClasses}>
-                reason !== ""  ? 
+                    <div className={waitMsgClasses} style={{marginLeft:"14px"}}>
+                {reason !== ""  ? 
                     <div className="grey-text" style={{fontSize:"10pt", fontStyle:"italic"}}>
                         {reason}
                     </div>:""}
@@ -390,7 +395,7 @@ function Condition(props){
                 :""}
 
                 { status === 'False' ? 
-                    <div className={failMsgClasses}>
+                    <div className={failMsgClasses} style={{marginLeft:"14px"}}>
                         <div className="grey-text" style={{fontSize: "10pt", fontStyle: "italic"}}>
                             {reason}
                         </div>
