@@ -141,7 +141,7 @@ function AddVariablePanel(props) {
     case "text/css":
         lang = "css"
         break
-    case "text/yaml":
+    case "application/yaml":
         lang = "yaml"
         break
     default:
@@ -161,7 +161,7 @@ function AddVariablePanel(props) {
                         <select style={{width:"100%"}} defaultValue={mimeType} onChange={(e)=>setMimeType(e.target.value)}>
                             <option value="">Choose a mimetype</option>
                             <option value="application/json">json</option>
-                            <option value="text/yaml">yaml</option>
+                            <option value="application/yaml">yaml</option>
                             <option value="application/x-sh">shell</option>
                             <option value="text/plain">plaintext</option>
                             <option value="text/html">html</option>
@@ -237,7 +237,7 @@ function Variable(props) {
         case "text/css":
             lang = "css"
             break
-        case "text/yaml":
+        case "application/yaml":
             lang = "yaml"
             break
         default:
@@ -246,7 +246,7 @@ function Variable(props) {
 
     return(
         <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
-        <td style={{ width: "180px", maxWidth: "180px" }}>{obj.node.name}</td>
+        <td className="wrap-word" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>{obj.node.name}</td>
         <td className="muted-text">
             {obj.node.size <= 2500000 ? 
                 <Modal
@@ -299,7 +299,7 @@ function Variable(props) {
                                 <select style={{width:"100%"}} defaultValue={mimeType} onChange={(e)=>setType(e.target.value)}>
                                     <option value="">Choose a mimetype</option>
                                     <option value="application/json">json</option>
-                                    <option value="text/yaml">yaml</option>
+                                    <option value="application/yaml">yaml</option>
                                     <option value="application/x-sh">shell</option>
                                     <option value="text/plain">plaintext</option>
                                     <option value="text/html">html</option>

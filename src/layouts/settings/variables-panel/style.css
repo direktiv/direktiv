@@ -1,3 +1,6 @@
+.wrap-word {
+    word-wrap: inherit;
+}
 .variables-table {
     font-size: 12px;
 }
