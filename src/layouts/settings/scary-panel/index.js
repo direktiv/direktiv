@@ -10,26 +10,28 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 function ScarySettings(props) {
     const {deleteNamespace, namespace, deleteErr} = props
     return (<>
-        <ContentPanel className="scary-panel">
-            <ContentPanelTitle>
-                <ContentPanelTitleIcon>
-                    <IoLockClosedOutline className="red-text" />
-                </ContentPanelTitleIcon>
-                <FlexBox className="red-text">
-                    Important Settings   
-                </FlexBox>
-            </ContentPanelTitle>
-            <ContentPanelBody className="secrets-panel">
-                <FlexBox className="gap col">
-                    <FlexBox className="scary-settings"> 
-                        <Scary namespace={namespace} deleteErr={deleteErr} deleteNamespace={deleteNamespace}/>
+        <div>
+            <ContentPanel className="scary-panel">
+                <ContentPanelTitle>
+                    <ContentPanelTitleIcon>
+                        <IoLockClosedOutline className="red-text" />
+                    </ContentPanelTitleIcon>
+                    <FlexBox className="red-text">
+                        Important Settings   
                     </FlexBox>
-                    <FlexBox>
-                        <Alert className="critical">These settings are super dangerous! Use at your own risk!</Alert>
+                </ContentPanelTitle>
+                <ContentPanelBody className="secrets-panel">
+                    <FlexBox className="gap col">
+                        <FlexBox className="scary-settings"> 
+                            <Scary namespace={namespace} deleteErr={deleteErr} deleteNamespace={deleteNamespace}/>
+                        </FlexBox>
+                        <FlexBox>
+                            <Alert className="critical">These settings are super dangerous! Use at your own risk!</Alert>
+                        </FlexBox>
                     </FlexBox>
-                </FlexBox>
-            </ContentPanelBody>
-        </ContentPanel>
+                </ContentPanelBody>
+            </ContentPanel>
+        </div>
     </>)
 }
 
