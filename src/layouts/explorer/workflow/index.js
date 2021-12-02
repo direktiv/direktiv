@@ -227,7 +227,6 @@ function OverviewTab(props) {
                     </ContentPanelTitle>
                 </ContentPanel>
             </FlexBox>
-      
             <FlexBox>
                 <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                     <ContentPanelTitle>
