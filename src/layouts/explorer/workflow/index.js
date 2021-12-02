@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
-import ContentPanel, { ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
+import ContentPanel, { ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
 
 function WorkflowPage(props) {
@@ -15,6 +15,9 @@ function WorkflowPage(props) {
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
                         <AllRevisionsTab />
+                    :<></>}
+                    { activeTab === 1 ?
+                        <RevisionSelectorTab />
                     :<></>}
                 </FlexBox>
             </FlexBox>
@@ -97,6 +100,34 @@ function AllRevisionsTab(props) {
                         <div>
                             All Revisions
                         </div>
+                    </ContentPanelTitle>
+                </ContentPanel>
+            </FlexBox>
+        </>
+    )
+}
+
+function RevisionSelectorTab(props) {
+    return(
+        <>
+            <FlexBox>
+                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                    <ContentPanelTitle>
+                        <ContentPanelTitleIcon>
+                            <BsCodeSquare />
+                        </ContentPanelTitleIcon>
+                        <div>
+                            Revision name 001
+                        </div>
+                        <FlexBox style={{justifyContent: "end", paddingRight: "8px"}}>
+                            <div>
+                                <FlexBox className="revision-panel-btn-bar">
+                                    <div>Editor</div>
+                                    <div>Diagram</div>
+                                    <div>Sankey</div>
+                                </FlexBox>
+                            </div>
+                        </FlexBox>
                     </ContentPanelTitle>
                 </ContentPanel>
             </FlexBox>

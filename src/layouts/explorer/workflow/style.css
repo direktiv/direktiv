@@ -46,3 +46,32 @@
     color: rgba(62, 148, 197, 1);
     background: #F7FBFD;
 }
+
+.revision-panel-btn-bar {
+    border: solid 1px var(--theme-subtle-border);
+    border-radius: 4px;
+    max-height: 28px;
+    margin-top: 6px;
+}
+
+.revision-panel-btn-bar > div:not(:last-of-type) {
+    border-right: solid 1px var(--theme-subtle-border);
+}
+
+.revision-panel-btn-bar > div {
+    cursor: pointer;
+    width: 64px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.revision-panel-btn-bar > div:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.revision-panel-btn-bar > div:active {
+    background-color: rgba(0, 0, 0, 0.15);
+}
