@@ -22,6 +22,7 @@
   },
   "scripts": {
     "start": "REACT_APP_API=$DIREKTIV_API react-scripts start",
+    "start-win": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
