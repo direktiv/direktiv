@@ -254,8 +254,8 @@ function Variable(props) {
 
     return(
         <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
-        <td className="wrap-word" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>{obj.node.name}</td>
-        <td className="muted-text">
+        <td className="wrap-word variable-name" style={{ width: "180px", maxWidth: "180px", textOverflow:"ellipsis",  overflow:"hidden" }}>{obj.node.name}</td>
+        <td className="muted-text show-variable">
             {obj.node.size <= 2500000 ? 
                 <Modal
                     escapeToCancel
@@ -278,7 +278,7 @@ function Variable(props) {
                             <FlexBox className="gap">
                                 <IoEyeOutline className="auto-margin" />
                                 <div>
-                                    Show value
+                                    Show <span className="hide-on-small">value</span>
                                 </div>
                             </FlexBox>
                         </Button>
@@ -320,7 +320,7 @@ function Variable(props) {
                 "Cannot show filesize greater than 2.5MiB"
                 }
         </td>
-        <td style={{ width: "80px", maxWidth: "80px" }}>{fileSize(obj.node.size)}</td>
+        <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.node.size)}</td>
         <td style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}> 
             <FlexBox style={{gap: "2px"}}>
                 <FlexBox>

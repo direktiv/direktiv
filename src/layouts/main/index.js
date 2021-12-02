@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './style.css';
+import SmallLogo from '../../assets/small-logo.jpeg';
 import Breadcrumbs from '../../components/breadcrumbs';
 import Settings from '../settings';
 import Explorer from '../explorer';
@@ -198,7 +199,7 @@ function ResponsiveHeaderBar(props) {
 
             </div>
             <FlexBox>
-                <img src={Logo} alt="Direktiv" className="auto-margin" style={{
+                <img src={SmallLogo} alt="Direktiv" className="auto-margin" style={{
                     height: "42px"
                 }}/>
             </FlexBox>

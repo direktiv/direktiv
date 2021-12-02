@@ -55,3 +55,19 @@
 .file-input > div {
     margin: auto;
 }
+
+@media screen and (max-width: 600px) {
+    .variable-name {
+        max-width:100px !important;
+    }
+
+    .show-variable {
+        max-width: 150px !important;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .variable-name {
+        max-width:60px !important;
+    }
+}
