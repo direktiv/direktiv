@@ -90,3 +90,10 @@
     font-weight: 100;
     color: var(--theme-grey-light-blue);
 }
+
+.uninteractive {
+    cursor: auto;
+}
+.uninteractive:hover, .uninteractive:active{
+    background-color: unset !important;
+}

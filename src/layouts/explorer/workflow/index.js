@@ -93,7 +93,7 @@ function TabBar(props) {
     return (
         <FlexBox className="tab-bar">
             {tabDOMs}
-            <FlexBox className="tab-bar-item gap">
+            <FlexBox className="tab-bar-item gap uninteractive">
             <label className="switch">
                 <input type="checkbox" />
                 <span className="slider-broadcast"></span>
