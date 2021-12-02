@@ -1069,6 +1069,56 @@
         }
       }
     },
+    "/api/functions/registries/test": {
+      "post": {
+        "description": "Test a registry with provided url, username and token\n",
+        "summary": "Test a registry to make sure the connection is okay",
+        "operationId": "testRegistry",
+        "parameters": [
+          {
+            "description": "Payload that contains registry data",
+            "name": "Registry Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "url",
+                "username",
+                "password"
+              ],
+              "properties": {
+                "password": {
+                  "description": "token to authenticate with the registry",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The url to test if the registry is valid",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "username to authenticate with the registry",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "token": "8QwFLg%D$qg*",
+                "url": "https://prod.customreg.io",
+                "username": "admin"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "registry is valid"
+          },
+          "401": {
+            "description": "unauthorized to access the registry"
+          }
+        }
+      }
+    },
     "/api/functions/{serviceName}": {
       "get": {
         "description": "Get details of a global scoped knative service.\n",
@@ -1641,6 +1691,85 @@
         "responses": {
           "200": {
             "description": "namespace config has been successfully been updated"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/event-listeners": {
+      "get": {
+        "description": "Get current event listeners.\n",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Get current event listeners.",
+        "operationId": "getEventListeners",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got event listeners"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/events": {
+      "get": {
+        "description": "Get recent events history.\n",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Get events history.",
+        "operationId": "getEventHistory",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got events history"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/events/{event}/replay": {
+      "post": {
+        "description": "Replay a cloud event to a namespace.\n",
+        "tags": [
+          "Other"
+        ],
+        "summary": "Replay Cloud Event",
+        "operationId": "replayCloudevent",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target cloudevent",
+            "name": "event",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully replayed cloud event"
           }
         }
       }
@@ -2633,6 +2762,43 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey": {
+      "get": {
+        "description": "Get Sankey metrics of a workflow revision.\nIf ref query is not provided, metrics for the latest revision\nwill be retrieved.\n",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Get Sankey metrics of a workflow revision.",
+        "operationId": "workflowMetricsSankey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target workflow revision reference",
+            "name": "ref",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow metrics"
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds": {
       "get": {
         "description": "Get the state timing metrics of a workflow's instance.\nThis returns the timing of individual states in a workflow.\n",
@@ -3454,12 +3620,12 @@
       "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
     },
     "OkBody": {
-      "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
+      "description": "OkBody OkBody is an arbitrary placeholder response that represents an ok response body",
       "type": "object",
       "additionalProperties": {
         "type": "object"
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     },
     "SetNamespaceConfigBody": {
       "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",

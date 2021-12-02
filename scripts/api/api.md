@@ -53,6 +53,15 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
   
 
 
+###  events
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| GET | /api/namespaces/{namespace}/events | [get event history](#get-event-history) | Get events history. |
+| GET | /api/namespaces/{namespace}/event-listeners | [get event listeners](#get-event-listeners) | Get current event listeners. |
+  
+
+
 ###  global_services
 
 | Method  | URI     | Name   | Summary |
@@ -103,6 +112,7 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | GET | /api/namespaces/{namespace}/metrics/successful | [namespace metrics successful](#namespace-metrics-successful) | Gets Namespace Successful Workflow Instances Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked | [workflow metrics invoked](#workflow-metrics-invoked) | Gets Invoked Workflow Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-failed | [workflow metrics milliseconds](#workflow-metrics-milliseconds) | Gets Workflow Time Metrics |
+| GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey | [workflow metrics sankey](#workflow-metrics-sankey) | Get Sankey metrics of a workflow revision. |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds | [workflow metrics state milliseconds](#workflow-metrics-state-milliseconds) | Gets a Workflow State Time Metrics |
 | GET | /api/namespaces/{namespace}/tree/{workflow}?op=metrics-successful | [workflow metrics successful](#workflow-metrics-successful) | Gets Successful Workflow Metrics |
   
@@ -146,12 +156,21 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
   
 
 
+###  operations
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| POST | /api/functions/registries/test | [test registry](#test-registry) | Test a registry to make sure the connection is okay |
+  
+
+
 ###  other
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
+| POST | /api/namespaces/{namespace}/events/{event}/replay | [replay cloudevent](#replay-cloudevent) | Replay Cloud Event |
 | GET | /api/version | [version](#version) | Returns version information for servers in the cluster. |
   
 
@@ -1350,6 +1369,64 @@ an error has occurred
 
 [ErrorResponse](#error-response)
 
+### <span id="get-event-history"></span> Get events history. (*getEventHistory*)
+
+```
+GET /api/namespaces/{namespace}/events
+```
+
+Get recent events history.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-event-history-200) | OK | successfully got events history |  | [schema](#get-event-history-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-event-history-200"></span> 200 - successfully got events history
+Status: OK
+
+###### <span id="get-event-history-200-schema"></span> Schema
+
+### <span id="get-event-listeners"></span> Get current event listeners. (*getEventListeners*)
+
+```
+GET /api/namespaces/{namespace}/event-listeners
+```
+
+Get current event listeners.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-event-listeners-200) | OK | successfully got event listeners |  | [schema](#get-event-listeners-200-schema) |
+
+#### Responses
+
+
+##### <span id="get-event-listeners-200"></span> 200 - successfully got event listeners
+Status: OK
+
+###### <span id="get-event-listeners-200-schema"></span> Schema
+
 ### <span id="get-global-private-registries"></span> Get List of Global Private Registries (*getGlobalPrivateRegistries*)
 
 ```
@@ -2498,6 +2575,36 @@ Status: OK
 
 ###### <span id="namespace-metrics-successful-200-schema"></span> Schema
 
+### <span id="replay-cloudevent"></span> Replay Cloud Event (*replayCloudevent*)
+
+```
+POST /api/namespaces/{namespace}/events/{event}/replay
+```
+
+Replay a cloud event to a namespace.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| event | `path` | string | `string` |  | ✓ |  | target cloudevent |
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#replay-cloudevent-200) | OK | successfully replayed cloud event |  | [schema](#replay-cloudevent-200-schema) |
+
+#### Responses
+
+
+##### <span id="replay-cloudevent-200"></span> 200 - successfully replayed cloud event
+Status: OK
+
+###### <span id="replay-cloudevent-200-schema"></span> Schema
+
 ### <span id="server-logs"></span> Get Direktiv Server Logs (*serverLogs*)
 
 ```
@@ -2743,6 +2850,60 @@ Variable data can be anything.
 Status: OK
 
 ###### <span id="set-workflow-variable-200-schema"></span> Schema
+
+### <span id="test-registry"></span> Test a registry to make sure the connection is okay (*testRegistry*)
+
+```
+POST /api/functions/registries/test
+```
+
+Test a registry with provided url, username and token
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Registry Payload | `body` | [TestRegistryBody](#test-registry-body) | `TestRegistryBody` | | ✓ | | Payload that contains registry data |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#test-registry-200) | OK | registry is valid |  | [schema](#test-registry-200-schema) |
+| [401](#test-registry-401) | Unauthorized | unauthorized to access the registry |  | [schema](#test-registry-401-schema) |
+
+#### Responses
+
+
+##### <span id="test-registry-200"></span> 200 - registry is valid
+Status: OK
+
+###### <span id="test-registry-200-schema"></span> Schema
+
+##### <span id="test-registry-401"></span> 401 - unauthorized to access the registry
+Status: Unauthorized
+
+###### <span id="test-registry-401-schema"></span> Schema
+
+###### Inlined models
+
+**<span id="test-registry-body"></span> TestRegistryBody**
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| password | string| `string` | ✓ | | token to authenticate with the registry |  |
+| url | string| `string` | ✓ | | The url to test if the registry is valid |  |
+| username | string| `string` | ✓ | | username to authenticate with the registry |  |
+
+
 
 ### <span id="toggle-workflow"></span> Set Cloud Event for Workflow to Log to (*toggleWorkflow*)
 
@@ -3290,6 +3451,39 @@ Status: OK
 
 ###### <span id="workflow-metrics-milliseconds-200-schema"></span> Schema
 
+### <span id="workflow-metrics-sankey"></span> Get Sankey metrics of a workflow revision. (*workflowMetricsSankey*)
+
+```
+GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey
+```
+
+Get Sankey metrics of a workflow revision.
+If ref query is not provided, metrics for the latest revision
+will be retrieved.
+
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
+| ref | `query` | string | `string` |  |  |  | target workflow revision reference |
+
+#### All responses
+
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#workflow-metrics-sankey-200) | OK | successfully got workflow metrics |  | [schema](#workflow-metrics-sankey-200-schema) |
+
+#### Responses
+
+
+##### <span id="workflow-metrics-sankey-200"></span> 200 - successfully got workflow metrics
+Status: OK
+
+###### <span id="workflow-metrics-sankey-200-schema"></span> Schema
+
 ### <span id="workflow-metrics-state-milliseconds"></span> Gets a Workflow State Time Metrics (*workflowMetricsStateMilliseconds*)
 
 ```
@@ -3594,7 +3788,7 @@ Status: OK
 ### <span id="ok-body"></span> OkBody
 
 
-> OkBody is an arbitrary placeholder response that represents an ok response body
+> OkBody OkBody is an arbitrary placeholder response that represents an ok response body
   
 
 
