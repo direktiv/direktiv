@@ -63,14 +63,16 @@ function NavBar(props) {
                         </FlexBox>
                     </FlexBox>
 
-                    <FlexBox className="col navbar-userinfo">
-                        <FlexBox className="navbar-username">
-                            UserName007
+                    <div>
+                        <FlexBox className="col navbar-userinfo">
+                            <FlexBox className="navbar-username">
+                                UserName007
+                            </FlexBox>
+                            <FlexBox className="navbar-version">
+                                Version: 0.5.8 (abdgdj)
+                            </FlexBox>
                         </FlexBox>
-                        <FlexBox className="navbar-version">
-                            Version: 0.5.8 (abdgdj)
-                        </FlexBox>
-                    </FlexBox>
+                    </div>
 
                 </FlexBox>
             </FlexBox>
