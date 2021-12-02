@@ -80,7 +80,7 @@ function ExplorerList(props) {
 
     if(data !== null) {
         if(data.node.type === "workflow") {
-            return <WorkflowPage/>
+            return <WorkflowPage namespace={namespace}/>
         }
     }
     

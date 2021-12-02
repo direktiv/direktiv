@@ -96,7 +96,7 @@ function NamespaceNavigation(props){
                     <Route path="/" element={<div>index route:)</div>} />
                     {/* Explorer routing */}
                     <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} />
-                    <Route path="/n/:namespace/:type/*" element={<Explorer namespace={namespace} />} />
+                    <Route path="/n/:namespace/explorer/*" element={<Explorer namespace={namespace} />} />
 
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}

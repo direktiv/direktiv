@@ -28,8 +28,6 @@ export default function ServicesPanel(props) {
 export function ServiceCreatePanel(props) {
     const {name, setName, image, setImage, scale, setScale, size, setSize, cmd, setCmd, maxscale} = props
 
-
-
     return(
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
                 <FlexBox className="col gap">

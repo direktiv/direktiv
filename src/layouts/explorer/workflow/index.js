@@ -1,20 +1,58 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
-import ContentPanel, { ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
+import { useWorkflow } from 'direktiv-react-hooks';
+import { Config } from '../../../util';
+import { useParams } from 'react-router';
+
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc"
+import { InstanceRow } from '../../instances';
+dayjs.extend(utc)
+dayjs.extend(relativeTime);
+
+
 
 function WorkflowPage(props) {
+    const {namespace} = props
+    const params = useParams()
+    let filepath = "/"
+
+    if(!namespace) {
+        return ""
+    }
+
+    if(params["*"] !== undefined){
+        filepath = `/${params["*"]}`
+    }
+
+    return(
+        <InitialWorkflowHook namespace={namespace} filepath={filepath}/>
+    )
+}
+
+function InitialWorkflowHook(props){
+    const {namespace, filepath} = props
 
     const [activeTab, setActiveTab] = useState(0)
 
+    const {data, err, getInstancesForWorkflow, getRevisions} = useWorkflow(Config.url, true, namespace, filepath)
+    
+    console.log(data, err, "test")
+    
     return(
         <>
             <FlexBox id="workflow-page" className="gap col" style={{paddingRight: "8px"}}>
                 <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
-                        <AllRevisionsTab />
+                        <AllRevisionsTab 
+                            getInstancesForWorkflow={getInstancesForWorkflow}
+                            getRevisions={getRevisions} 
+                        />
                     :<></>}
                     { activeTab === 1 ?
                         <RevisionSelectorTab />
@@ -62,11 +100,90 @@ function TabBar(props) {
     )
 }
 
+function WorkflowInstances(props) {
+    const {instances, namespace} = props
+
+    return(
+        <ContentPanelBody>
+                    <>
+        {
+            instances !== null && instances.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
+            <table className="instances-table">
+
+     <>       <thead>
+                <tr>
+                    <th>
+                        State
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Started <span className="hide-on-small">at</span>
+                    </th>
+                    <th>
+                        <span className="hide-on-small">Last</span> Updated
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {instances !== null ? 
+                <>
+                    <>
+                    {instances.map((obj)=>{
+                    return(
+                        <InstanceRow
+                            namespace={namespace}
+                            state={obj.node.status} 
+                            name={obj.node.as} 
+                            id={obj.node.id}
+                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                            startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
+                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                            finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
+                        />
+                    )
+                    })}</>
+                </>
+                :<></>}
+            </tbody></>
+        </table>}</>
+        </ContentPanelBody>
+    )
+}
+
 function AllRevisionsTab(props) {
+    const {getInstancesForWorkflow,  namespace} = props
+
+    const [load, setLoad] = useState(true)
+    const [instances, setInstances] = useState([])
+    const [err, setErr] = useState(null)
+
+    // fetch instances using the workflow hook from above
+    useEffect(()=>{
+        async function listData() {
+            if(load){
+                // get the instances
+                let resp = await getInstancesForWorkflow()
+                if(Array.isArray(resp)){
+                    setInstances(resp)
+                    console.log(resp)
+                } else {
+                    setErr(resp)
+                }
+
+            }
+            setLoad(false)
+        }
+        listData()
+    },[load, getInstancesForWorkflow])
+
+    console.log(err, "FETCHING INSTANCES OR REVISIONS")
+
     return(
         <>
-            <FlexBox className="gap wrap">
-                <FlexBox>
+            <FlexBox className="gap">
+                <FlexBox style={{maxWidth:"1000px"}}>
                     <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
@@ -76,6 +193,7 @@ function AllRevisionsTab(props) {
                                 Instances
                             </div>
                         </ContentPanelTitle>
+                        <WorkflowInstances instances={instances} namespace={namespace} />
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox>
@@ -98,7 +216,19 @@ function AllRevisionsTab(props) {
                             <BsCodeSquare />
                         </ContentPanelTitleIcon>
                         <div>
-                            All Revisions
+                            Traffic Distribution
+                        </div>
+                    </ContentPanelTitle>
+                </ContentPanel>
+            </FlexBox>          
+            <FlexBox>
+                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                    <ContentPanelTitle>
+                        <ContentPanelTitleIcon>
+                            <BsCodeSquare />
+                        </ContentPanelTitleIcon>
+                        <div>
+                            Functions
                         </div>
                     </ContentPanelTitle>
                 </ContentPanel>
@@ -106,6 +236,7 @@ function AllRevisionsTab(props) {
         </>
     )
 }
+
 
 function RevisionSelectorTab(props) {
     return(

@@ -85,6 +85,7 @@ function InstancesTable(props) {
                 <>
                     <>
                     {data.map((obj)=>{
+                        console.log(obj)
                     return(
                         <InstanceRow 
                             namespace={namespace}
@@ -115,7 +116,7 @@ const fail = "failed";
 // const cancelled = "cancelled";
 const running = "pending";
 
-function InstanceRow(props) {
+export function InstanceRow(props) {
     let {state, name, started, startedFrom, finished, finishedFrom, id, namespace} = props;
     const navigate = useNavigate()
 
