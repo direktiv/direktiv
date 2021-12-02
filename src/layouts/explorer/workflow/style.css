@@ -2,6 +2,12 @@
     color: var(--theme-dark-gray-text);
 }
 
+@media screen and (max-width: 600px) {
+    .tab-bar {
+        font-size: 12px;
+    }
+}
+
 .tab-bar {
     background-color: white;
     border-radius: 4px;
@@ -24,10 +30,12 @@
 .tab-bar-item {
     width: 20%;
     box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
     user-select: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .tab-bar-item:not(:last-child) {
