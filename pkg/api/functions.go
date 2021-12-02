@@ -972,6 +972,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Test a registry with provided url, username and token
 	// summary: Test a registry to make sure the connection is okay
+	// parameters:
 	// - in: body
 	//   name: Registry Payload
 	//   required: true

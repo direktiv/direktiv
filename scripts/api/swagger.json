@@ -1069,6 +1069,56 @@
         }
       }
     },
+    "/api/functions/registries/test": {
+      "post": {
+        "description": "Test a registry with provided url, username and token\n",
+        "summary": "Test a registry to make sure the connection is okay",
+        "operationId": "testRegistry",
+        "parameters": [
+          {
+            "description": "Payload that contains registry data",
+            "name": "Registry Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "url",
+                "username",
+                "password"
+              ],
+              "properties": {
+                "password": {
+                  "description": "token to authenticate with the registry",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The url to test if the registry is valid",
+                  "type": "string"
+                },
+                "username": {
+                  "description": "username to authenticate with the registry",
+                  "type": "string"
+                }
+              },
+              "example": {
+                "token": "8QwFLg%D$qg*",
+                "url": "https://prod.customreg.io",
+                "username": "admin"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "registry is valid"
+          },
+          "401": {
+            "description": "unauthorized to access the registry"
+          }
+        }
+      }
+    },
     "/api/functions/{serviceName}": {
       "get": {
         "description": "Get details of a global scoped knative service.\n",
@@ -1641,6 +1691,85 @@
         "responses": {
           "200": {
             "description": "namespace config has been successfully been updated"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/event-listeners": {
+      "get": {
+        "description": "Get current event listeners.\n",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Get current event listeners.",
+        "operationId": "getEventListeners",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got event listeners"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/events": {
+      "get": {
+        "description": "Get recent events history.\n",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Get events history.",
+        "operationId": "getEventHistory",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got events history"
+          }
+        }
+      }
+    },
+    "/api/namespaces/{namespace}/events/{event}/replay": {
+      "post": {
+        "description": "Replay a cloud event to a namespace.\n",
+        "tags": [
+          "Other"
+        ],
+        "summary": "Replay Cloud Event",
+        "operationId": "replayCloudevent",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target cloudevent",
+            "name": "event",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully replayed cloud event"
           }
         }
       }
@@ -2633,6 +2762,43 @@
         }
       }
     },
+    "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey": {
+      "get": {
+        "description": "Get Sankey metrics of a workflow revision.\nIf ref query is not provided, metrics for the latest revision\nwill be retrieved.\n",
+        "tags": [
+          "Metrics"
+        ],
+        "summary": "Get Sankey metrics of a workflow revision.",
+        "operationId": "workflowMetricsSankey",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "path to target workflow",
+            "name": "workflow",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "target workflow revision reference",
+            "name": "ref",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successfully got workflow metrics"
+          }
+        }
+      }
+    },
     "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-state-milliseconds": {
       "get": {
         "description": "Get the state timing metrics of a workflow's instance.\nThis returns the timing of individual states in a workflow.\n",
@@ -3221,237 +3387,19 @@
     }
   },
   "definitions": {
-    "CreateGlobalPrivateRegistryBody": {
-      "description": "CreateGlobalPrivateRegistryBody create global private registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "type": "object",
-      "required": [
-        "data",
-        "reg"
-      ],
-      "properties": {
-        "data": {
-          "description": "Target registry connection data containing the user and token.",
-          "type": "string",
-          "x-go-name": "Data"
-        },
-        "reg": {
-          "description": "Target registry URL",
-          "type": "string",
-          "x-go-name": "Reg"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "CreateGlobalRegistryBody": {
-      "description": "CreateGlobalRegistryBody create global registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "type": "object",
-      "required": [
-        "data",
-        "reg"
-      ],
-      "properties": {
-        "data": {
-          "description": "Target registry connection data containing the user and token.",
-          "type": "string",
-          "x-go-name": "Data"
-        },
-        "reg": {
-          "description": "Target registry URL",
-          "type": "string",
-          "x-go-name": "Reg"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "CreateGlobalServiceBody": {
-      "description": "CreateGlobalServiceBody create global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
-      "type": "object",
-      "required": [
-        "cmd",
-        "image",
-        "minScale",
-        "name",
-        "size"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "Target image a service will use",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "Minimum amount of service pods to be live",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MinScale"
-        },
-        "name": {
-          "description": "Name of new service",
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "size": {
-          "description": "Size of created service pods",
-          "type": "string",
-          "enum": [
-            "[small medium large]"
-          ],
-          "x-go-name": "Size"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "CreateNamespaceServiceBody": {
-      "description": "CreateNamespaceServiceBody create namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v12\",\"minScale\":\"1\",\"name\":\"fast-request\",\"size\":\"small\"}",
-      "type": "object",
-      "required": [
-        "cmd",
-        "image",
-        "minScale",
-        "name",
-        "size"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "Target image a service will use",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "Minimum amount of service pods to be live",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MinScale"
-        },
-        "name": {
-          "description": "Name of new service",
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "size": {
-          "description": "Size of created service pods",
-          "type": "string",
-          "enum": [
-            "[small medium large]"
-          ],
-          "x-go-name": "Size"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "CreateRegistryBody": {
-      "description": "CreateRegistryBody create registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "type": "object",
-      "required": [
-        "data",
-        "reg"
-      ],
-      "properties": {
-        "data": {
-          "description": "Target registry connection data containing the user and token.",
-          "type": "string",
-          "x-go-name": "Data"
-        },
-        "reg": {
-          "description": "Target registry URL",
-          "type": "string",
-          "x-go-name": "Reg"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteGlobalPrivateRegistryBody": {
-      "description": "DeleteGlobalPrivateRegistryBody delete global private registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "type": "object",
-      "required": [
-        "reg"
-      ],
-      "properties": {
-        "reg": {
-          "description": "Target registry URL",
-          "type": "string",
-          "x-go-name": "Reg"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteGlobalRegistryBody": {
-      "description": "DeleteGlobalRegistryBody delete global registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "type": "object",
-      "required": [
-        "reg"
-      ],
-      "properties": {
-        "reg": {
-          "description": "Target registry URL",
-          "type": "string",
-          "x-go-name": "Reg"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
-    "DeleteRegistryBody": {
-      "description": "DeleteRegistryBody delete registry body\nExample: {\"data\":\"admin:8QwFLg%D$qg*\",\"reg\":\"https://prod.customreg.io\"}",
-      "type": "object",
-      "required": [
-        "reg"
-      ],
-      "properties": {
-        "reg": {
-          "description": "Target registry URL",
-          "type": "string",
-          "x-go-name": "Reg"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/registries"
-    },
     "ErrorResponse": {
-      "description": "ErrorResponse error response",
       "type": "object",
       "properties": {
         "Message": {
-          "description": "error",
           "type": "string",
           "x-go-name": "Error"
         },
         "StatusCode": {
-          "description": "status code",
           "type": "integer",
           "format": "int64"
         }
       },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
-    },
-    "JqPlaygroundBody": {
-      "description": "JqPlaygroundBody jq playground body\nExample: {\"data\":\"eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30=\",\"query\":\"map(select(. \\u003e= 2))\"}",
-      "type": "object",
-      "required": [
-        "data",
-        "query"
-      ],
-      "properties": {
-        "data": {
-          "description": "JSON data encoded in base64",
-          "type": "string",
-          "x-go-name": "Data"
-        },
-        "query": {
-          "description": "jq query to manipulate JSON data",
-          "type": "string",
-          "x-go-name": "Query"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/other"
+      "x-go-package": "github.com/direktiv/direktiv/pkg/api"
     },
     "OkBody": {
       "description": "OkBody is an arbitrary placeholder response that represents an ok response body",
@@ -3460,208 +3408,6 @@
         "type": "object"
       },
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
-    },
-    "SetNamespaceConfigBody": {
-      "description": "SetNamespaceConfigBody set namespace config body\nExample: {\"broadcast\":{\"directory.create\":false,\"directory.delete\":false,\"instance.failed\":false,\"instance.started\":false,\"instance.success\":false,\"instance.variable.create\":false,\"instance.variable.delete\":false,\"instance.variable.update\":false,\"namespace.variable.create\":false,\"namespace.variable.delete\":false,\"namespace.variable.update\":false,\"workflow.create\":false,\"workflow.delete\":false,\"workflow.update\":false,\"workflow.variable.create\":false,\"workflow.variable.delete\":false,\"workflow.variable.update\":false}}",
-      "type": "object",
-      "properties": {
-        "broadcast": {
-          "description": "Configuration on which direktiv operations will trigger coud events on the namespace",
-          "type": "object",
-          "x-go-name": "Broadcast"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespaces"
-    },
-    "SetWorkflowCloudEventLogsBody": {
-      "description": "SetWorkflowCloudEventLogsBody set workflow cloud event logs body\nExample: {\"logger\":\"mylog\"}",
-      "type": "object",
-      "required": [
-        "logger"
-      ],
-      "properties": {
-        "logger": {
-          "description": "Target Cloud Event",
-          "type": "string",
-          "x-go-name": "Logger"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
-    },
-    "ToggleWorkflowBody": {
-      "description": "ToggleWorkflowBody toggle workflow body\nExample: {\"live\":false}",
-      "type": "object",
-      "required": [
-        "live"
-      ],
-      "properties": {
-        "live": {
-          "description": "Workflow live status",
-          "type": "boolean",
-          "x-go-name": "Live"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/workflows"
-    },
-    "UpdateGlobalServiceBody": {
-      "description": "UpdateGlobalServiceBody update global service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
-      "type": "object",
-      "required": [
-        "cmd",
-        "image",
-        "minScale",
-        "size",
-        "trafficPercent"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "Target image a service will use",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "Minimum amount of service pods to be live",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MinScale"
-        },
-        "size": {
-          "description": "Size of created service pods",
-          "type": "string",
-          "enum": [
-            "[small medium large]"
-          ],
-          "x-go-name": "Size"
-        },
-        "trafficPercent": {
-          "description": "Traffic percentage new revision will use",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "TrafficPercent"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateGlobalServiceTrafficBody": {
-      "description": "UpdateGlobalServiceTrafficBody update global service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"global-fast-request-00002\"},{\"percent\":40,\"revision\":\"global-fast-request-00001\"}]}",
-      "type": "object",
-      "required": [
-        "values"
-      ],
-      "properties": {
-        "values": {
-          "description": "List of revision traffic targets",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UpdateGlobalServiceTrafficParamsBodyValuesItems0"
-          },
-          "x-go-name": "Values"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateGlobalServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateGlobalServiceTrafficParamsBodyValuesItems0 update global service traffic params body values items0",
-      "type": "object",
-      "properties": {
-        "percent": {
-          "description": "Target traffice percentage",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Percent"
-        },
-        "revision": {
-          "description": "Target service revision",
-          "type": "string",
-          "x-go-name": "Revision"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/global_services"
-    },
-    "UpdateNamespaceServiceBody": {
-      "description": "UpdateNamespaceServiceBody update namespace service body\nExample: {\"cmd\":\"\",\"image\":\"direktiv/request:v10\",\"minScale\":\"1\",\"size\":\"small\",\"trafficPercent\":50}",
-      "type": "object",
-      "required": [
-        "cmd",
-        "image",
-        "minScale",
-        "size",
-        "trafficPercent"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "Target image a service will use",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "Minimum amount of service pods to be live",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MinScale"
-        },
-        "size": {
-          "description": "Size of created service pods",
-          "type": "string",
-          "enum": [
-            "[small medium large]"
-          ],
-          "x-go-name": "Size"
-        },
-        "trafficPercent": {
-          "description": "Traffic percentage new revision will use",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "TrafficPercent"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "UpdateNamespaceServiceTrafficBody": {
-      "description": "UpdateNamespaceServiceTrafficBody update namespace service traffic body\nExample: {\"values\":[{\"percent\":60,\"revision\":\"namespace-direktiv-fast-request-00002\"},{\"percent\":40,\"revision\":\"namespace-direktiv-fast-request-00001\"}]}",
-      "type": "object",
-      "required": [
-        "values"
-      ],
-      "properties": {
-        "values": {
-          "description": "List of revision traffic targets",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UpdateNamespaceServiceTrafficParamsBodyValuesItems0"
-          },
-          "x-go-name": "Values"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
-    },
-    "UpdateNamespaceServiceTrafficParamsBodyValuesItems0": {
-      "description": "UpdateNamespaceServiceTrafficParamsBodyValuesItems0 update namespace service traffic params body values items0",
-      "type": "object",
-      "properties": {
-        "percent": {
-          "description": "Target traffice percentage",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Percent"
-        },
-        "revision": {
-          "description": "Target service revision",
-          "type": "string",
-          "x-go-name": "Revision"
-        }
-      },
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/client/namespace_services"
     },
     "UpdateServiceRequest": {
       "description": "UpdateServiceRequest UpdateServiceRequest update service request",
@@ -3705,49 +3451,6 @@
       },
       "x-go-name": "updateServiceRequest",
       "x-go-package": "github.com/direktiv/direktiv/pkg/api"
-    },
-    "updateServiceRequest": {
-      "description": "UpdateServiceRequest UpdateServiceRequest UpdateServiceRequest update service request",
-      "type": "object",
-      "required": [
-        "cmd",
-        "image",
-        "minScale",
-        "size",
-        "trafficPercent"
-      ],
-      "properties": {
-        "cmd": {
-          "description": "cmd",
-          "type": "string",
-          "x-go-name": "Cmd"
-        },
-        "image": {
-          "description": "image",
-          "type": "string",
-          "x-go-name": "Image"
-        },
-        "minScale": {
-          "description": "minScale",
-          "type": "integer",
-          "format": "int32",
-          "x-go-name": "MinScale"
-        },
-        "size": {
-          "description": "size",
-          "type": "integer",
-          "format": "int32",
-          "x-go-name": "Size"
-        },
-        "trafficPercent": {
-          "description": "trafficPercent",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "TrafficPercent"
-        }
-      },
-      "x-go-name": "UpdateServiceRequest",
-      "x-go-package": "github.com/direktiv/direktiv/pkg/api/models"
     }
   },
   "securityDefinitions": {

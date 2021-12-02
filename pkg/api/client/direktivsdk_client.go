@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/direktiv/direktiv/pkg/api/client/directory"
+	"github.com/direktiv/direktiv/pkg/api/client/events"
 	"github.com/direktiv/direktiv/pkg/api/client/global_services"
 	"github.com/direktiv/direktiv/pkg/api/client/instances"
 	"github.com/direktiv/direktiv/pkg/api/client/logs"
@@ -18,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/api/client/namespace_services"
 	"github.com/direktiv/direktiv/pkg/api/client/namespaces"
 	"github.com/direktiv/direktiv/pkg/api/client/node"
+	"github.com/direktiv/direktiv/pkg/api/client/operations"
 	"github.com/direktiv/direktiv/pkg/api/client/other"
 	"github.com/direktiv/direktiv/pkg/api/client/registries"
 	"github.com/direktiv/direktiv/pkg/api/client/secrets"
@@ -69,6 +71,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Direktivsd
 	cli := new(Direktivsdk)
 	cli.Transport = transport
 	cli.Directory = directory.New(transport, formats)
+	cli.Events = events.New(transport, formats)
 	cli.GlobalServices = global_services.New(transport, formats)
 	cli.Instances = instances.New(transport, formats)
 	cli.Logs = logs.New(transport, formats)
@@ -76,6 +79,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Direktivsd
 	cli.NamespaceServices = namespace_services.New(transport, formats)
 	cli.Namespaces = namespaces.New(transport, formats)
 	cli.Node = node.New(transport, formats)
+	cli.Operations = operations.New(transport, formats)
 	cli.Other = other.New(transport, formats)
 	cli.Registries = registries.New(transport, formats)
 	cli.Secrets = secrets.New(transport, formats)
@@ -128,6 +132,8 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 type Direktivsdk struct {
 	Directory directory.ClientService
 
+	Events events.ClientService
+
 	GlobalServices global_services.ClientService
 
 	Instances instances.ClientService
@@ -141,6 +147,8 @@ type Direktivsdk struct {
 	Namespaces namespaces.ClientService
 
 	Node node.ClientService
+
+	Operations operations.ClientService
 
 	Other other.ClientService
 
@@ -161,6 +169,7 @@ type Direktivsdk struct {
 func (c *Direktivsdk) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 	c.Directory.SetTransport(transport)
+	c.Events.SetTransport(transport)
 	c.GlobalServices.SetTransport(transport)
 	c.Instances.SetTransport(transport)
 	c.Logs.SetTransport(transport)
@@ -168,6 +177,7 @@ func (c *Direktivsdk) SetTransport(transport runtime.ClientTransport) {
 	c.NamespaceServices.SetTransport(transport)
 	c.Namespaces.SetTransport(transport)
 	c.Node.SetTransport(transport)
+	c.Operations.SetTransport(transport)
 	c.Other.SetTransport(transport)
 	c.Registries.SetTransport(transport)
 	c.Secrets.SetTransport(transport)
