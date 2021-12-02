@@ -13,7 +13,7 @@ import HelpIcon from '../../../components/help';
 function RegistriesPanel(props){
 
     const {namespace} = props
-    const {data, err, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace, localStorage.getItem("apikey"))
+    const {data, getRegistries, createRegistry, deleteRegistry}  = useRegistries(Config.url, namespace, localStorage.getItem("apikey"))
 
     const [testConnLoading, setTestConnLoading] = useState(false)
     const [successFeedback, setSuccessFeedback] = useState("")
@@ -32,7 +32,6 @@ function RegistriesPanel(props){
         testConnBtnClasses += " btn-loading"
     }
 
-    console.log("Registries", err)
     return (
         <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>
             <ContentPanelTitle>

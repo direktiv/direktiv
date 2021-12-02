@@ -1,10 +1,10 @@
 import { useParams } from "react-router"
 import FlexBox from "../../components/flexbox"
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon, ContentPanelFooter } from "../../components/content-panel"
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
 import { IoCopy, IoDesktop, IoEye, IoEyeOff, IoPlay } from "react-icons/io5"
 import { useNamespaceServiceRevision, usePodLogs } from "direktiv-react-hooks"
 import { Config } from "../../util"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { AutoSizer, List } from 'react-virtualized'
 import 'react-virtualized/styles.css'; // only needs to be imported once
 import { ServiceStatus } from "."
@@ -31,8 +31,6 @@ function NamespaceRevisionDetails(props){
     const {service, namespace, revision} = props
     const {revisionDetails, pods, err} = useNamespaceServiceRevision(Config.url, namespace, service, revision, localStorage.getItem("apikey"))
 
-    console.log(revisionDetails)
-
     if(err) {
         console.log(err, "listing pods")
     }
@@ -51,7 +49,7 @@ function NamespaceRevisionDetails(props){
 
     return(
         <FlexBox className="col gap">
-            <FlexBox >
+            <div >
                 <ContentPanel style={{width:"100%"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -62,8 +60,8 @@ function NamespaceRevisionDetails(props){
                         </FlexBox>
                     </ContentPanelTitle>
                         <ContentPanelBody className="secrets-panel" style={{fontSize:"11pt"}}>
-                            <FlexBox style={{padding:"10px"}}>
-                                <FlexBox className="col gap">
+                            <FlexBox className="wrap gap" style={{padding:"10px"}}>
+                                <FlexBox className="col gap" style={{minWidth: "200px"}}>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Created:</span> 
                                         <span style={{marginLeft:"5px"}}>{dayjs.unix(revisionDetails.created).format("HH:mmA, DD/MM/YYYY")}</span>
@@ -91,7 +89,7 @@ function NamespaceRevisionDetails(props){
                                         </ul>
                                     </div>:""}
                                 </FlexBox>
-                                <FlexBox className="col gap">
+                                <FlexBox className="col gap" style={{minWidth: "200px"}}>
                                     <div>
                                         <span style={{fontWeight:"bold"}}>Image:</span>
                                         <span style={{marginLeft:"5px"}}>{revisionDetails.image}</span>
@@ -109,7 +107,7 @@ function NamespaceRevisionDetails(props){
                                         <span style={{marginLeft:"5px"}}>{revisionDetails.desiredReplicas}</span>
                                     </div>
                                 </FlexBox>
-                                <FlexBox className="col gap">
+                                <FlexBox className="col gap" style={{minWidth: "200px"}}>
                                     <span style={{fontWeight:"bold"}}>Conditions:</span>
                                     <ul style={{marginTop:"0px", listStyle:"none", paddingLeft:'10px'}}>
                                             {revisionDetails.conditions.map((obj)=>{
@@ -125,7 +123,7 @@ function NamespaceRevisionDetails(props){
                             </FlexBox>
                         </ContentPanelBody>
                 </ContentPanel>
-            </FlexBox>
+            </div>
             {pods !== null && pods.length > 0 ?
             <FlexBox>
                 <PodLogs namespace={namespace} service={service} revision={revision} pods={pods} />
@@ -211,7 +209,7 @@ export function PodLogs(props){
 function Logs(props) {
     const {pod, follow, clipData, setClipData} = props
 
-    const {data, err} = usePodLogs(Config.url, pod, localStorage.getItem("apikey"))
+    const {data} = usePodLogs(Config.url, pod, localStorage.getItem("apikey"))
 
     useEffect(()=>{
         if(data !== null) {
@@ -222,7 +220,7 @@ function Logs(props) {
                 setClipData(data.data)
             }
         }
-    },[data])
+    },[data, clipData, setClipData])
 
     const renderRow = ({index, key, style}) => (
         <div key={key} style={style}>

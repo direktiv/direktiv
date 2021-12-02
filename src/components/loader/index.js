@@ -22,7 +22,7 @@ export default function Loader(props) {
                 setDisplay(true)
             },timer)
         }
-    },[children])
+    },[children, display, timer])
 
     if(load) {
         // return a loader

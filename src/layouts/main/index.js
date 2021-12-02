@@ -25,7 +25,7 @@ import Login from '../login';
 
 
 function NamespaceNavigation(props){
-    const {err, namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
+    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
 
     const [load, setLoad] = useState(true)
     const navigate = useNavigate()
@@ -126,7 +126,6 @@ function NamespaceNavigation(props){
 function MainLayout(props) {
     let {onClick, style, className} = props;
 
-    console.log(localStorage.getItem('apikey'), "API KEY BEFORE HOOK")
     const [akey, setAKey] = useState(localStorage.getItem('apikey'))
     const [load, setLoad] = useState(true)
     const [login, setLogin] = useState(false)
@@ -199,7 +198,7 @@ function ResponsiveHeaderBar(props) {
 
             </div>
             <FlexBox>
-                <img src={Logo} className="auto-margin" style={{
+                <img src={Logo} alt="Direktiv" className="auto-margin" style={{
                     height: "42px"
                 }}/>
             </FlexBox>

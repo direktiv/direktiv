@@ -18,9 +18,8 @@ function SecretsPanel(props){
 
     const [keyValue, setKeyValue] = useState("")
     const [vValue, setVValue] = useState("")
-    const {data, err, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace, localStorage.getItem("apikey"))
+    const {data, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace, localStorage.getItem("apikey"))
    
-    console.log("Secrets", err, data)
     // createErr is the error when creating a secret
 
     return (
@@ -44,7 +43,6 @@ function SecretsPanel(props){
                         }}
 
                         onOpen={() => {
-                            console.log("ON OPEN");
                         }}
 
                         onClose={()=>{
@@ -133,7 +131,6 @@ function Secrets(props) {
                                             [
                                                 // label, onClick, classList, closesModal, async
                                                 ButtonDefinition("Delete", async () => {
-                                                    console.log("DELETE FUNC");
                                                     let err = await deleteSecret(obj.node.name)
                                                     if (err) return err
                                                     await getSecrets()

@@ -67,7 +67,6 @@ function Scary(props) {
                                 deleteNamespace(namespace)
                             }, delBtnClasses, true, false),
                             ButtonDefinition("Cancel", () => {
-                                console.log("close modal");
                             }, "small light", true, false)
                         ]}
                     >

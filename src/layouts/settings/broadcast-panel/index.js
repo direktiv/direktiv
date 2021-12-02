@@ -39,7 +39,6 @@ export default BroadcastConfigurationsPanel;
 
 function BroadcastOptions(props) {
     const {config, setBroadcastConfiguration, getBroadcastConfiguration} = props
-    console.log(config)
     return(
         <FlexBox>
             <FlexBox className="col gap">

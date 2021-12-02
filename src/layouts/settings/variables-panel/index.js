@@ -103,7 +103,7 @@ function VariableFilePicker(props) {
     const onDrop = useCallback(acceptedFiles => {
         setFile(acceptedFiles[0])
         setMimeType(acceptedFiles[0].type)
-    },[setFile])
+    },[setFile, setMimeType])
     
     const {getRootProps, getInputProps} = useDropzone({onDrop, multiple: false})
 
@@ -213,7 +213,7 @@ function Variables(props) {
 }
 
 function Variable(props) {
-    const {obj, namespace, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable} = props
+    const {obj, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable} = props
     const [val, setValue] = useState("")
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)

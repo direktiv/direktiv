@@ -6,8 +6,7 @@ import FlexBox from "../../components/flexbox";
 import { Config } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
-import { IoPlay, IoWarning } from "react-icons/io5";
-// import Slider, { SliderTooltip, Handle } from 'rc-slider';
+import { IoPlay } from "react-icons/io5";
 import HelpIcon from "../../components/help"
 
 export default function GlobalServicesPanel(props) {
@@ -20,8 +19,6 @@ export default function GlobalServicesPanel(props) {
     const [size, setSize] = useState(0)
     const [cmd, setCmd] = useState("")
 
-    console.log(data, err, config)
-
     useEffect(()=>{
         async function getcfg() {
             await getConfig()
@@ -31,11 +28,10 @@ export default function GlobalServicesPanel(props) {
             getcfg()
             setLoad(false)
         }
-    },[config, getConfig, load])
+    },[config, getConfig, load, data, getGlobalServices])
 
     if (err !== null) {
         // error happened with listing services
-        console.log(err)
     }
 
     if(data === null) {
@@ -62,7 +58,6 @@ export default function GlobalServicesPanel(props) {
                             maxWidth: "300px"
                         }}
                         onOpen={() => {
-                            console.log("ON OPEN");
                         }}
                         onClose={()=>{
                             setServiceName("")

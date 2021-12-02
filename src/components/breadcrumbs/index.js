@@ -25,7 +25,6 @@ function Breadcrumbs(props) {
             <ul>
                 {breadcrumbs.map((obj)=>{
                     // ignore breadcrumbs for dividers
-                    console.log(obj.key)
                     if(obj.key === "/g" || obj.key === "/n" || obj.key === "/" || obj.key === `/n/${namespace}/explorer` ) {
                         return ""
                     }

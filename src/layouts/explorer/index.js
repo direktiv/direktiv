@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
-import { IoAdd, IoClose, IoFolder, IoFolderOpen, IoSearch } from 'react-icons/io5';
+import { IoAdd, IoClose, IoFolderOpen, IoSearch } from 'react-icons/io5';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import { VscTriangleDown } from 'react-icons/vsc';
@@ -14,7 +14,6 @@ import Modal, {ButtonDefinition, KeyDownDefinition} from '../../components/modal
 import DirektivEditor from '../../components/editor';
 import { BsCodeSlash } from 'react-icons/bs';
 import Button from '../../components/button';
-import Pagination from '../../components/pagination';
 import HelpIcon from "../../components/help"
 import Loader from '../../components/loader';
 
@@ -60,11 +59,9 @@ function ExplorerList(props) {
 
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
-    const [pageNo, setPageNo] = useState(1);
+    // const [pageNo, setPageNo] = useState(1);
 
-    const {data, err, templates, createNode, deleteNode, renameNode, toggleWorkflow, getWorkflowRouter } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"))
-
-    console.log(data, err, templates)
+    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"))
 
     // control loading icon todo work out how to display this error
     useEffect(()=>{
@@ -79,10 +76,6 @@ function ExplorerList(props) {
             setLoad(true)
         }
     },[path, currPath])
-
-    // if(data === null) {
-    //     return ""
-    // }
 
     if(data !== null) {
         if(data.node.type === "workflow") {
@@ -156,8 +149,9 @@ function ExplorerList(props) {
                                 }}>
                                     <option value="" >Choose a workflow template...</option>
                                     {Object.keys(templates).map((obj)=>{
+                                        let key = GenerateRandomKey("")
                                         return(
-                                            <option value={obj}>{obj}</option>
+                                            <option key={key} value={obj}>{obj}</option>
                                         )
                                     })}
                                 </select>
@@ -287,7 +281,6 @@ function DirListItem(props) {
                     <FlexBox className="explorer-item-name">
                         <input type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
-                                console.log('enter pressed')
                                 let err = await renameNode("", path, renameValue)
                                 if(err){
                                     setErr(err)
@@ -373,7 +366,6 @@ function WorkflowListItem(props) {
     const [rename, setRename] = useState(false)
     const [err, setErr] = useState("")
 
-    console.log(name, path)
     return(
         <div style={{cursor:"pointer"}} onClick={()=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
@@ -387,7 +379,6 @@ function WorkflowListItem(props) {
                     <FlexBox className="explorer-item-name">
                         <input type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
-                                console.log('enter pressed')
                                 let err = await renameNode("", path, renameValue)
                                 if(err){
                                     setErr(err)

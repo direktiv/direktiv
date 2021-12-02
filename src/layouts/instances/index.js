@@ -11,7 +11,7 @@ import { Config } from '../../util';
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
 
 dayjs.extend(utc)
@@ -119,7 +119,6 @@ function InstanceRow(props) {
     let {state, name, started, startedFrom, finished, finishedFrom, id, namespace} = props;
     const navigate = useNavigate()
 
-    console.log(state)
     let label;
     if (state === success) {
         label = <SuccessState />
@@ -176,11 +175,11 @@ function FailState() {
     )
 }
 
-function CancelledState() {
-    return (
-        <StateLabel className={"cancel-label"} label={"Cancelled"} />
-    )
-}
+// function CancelledState() {
+//     return (
+//         <StateLabel className={"cancel-label"} label={"Cancelled"} />
+//     )
+// }
 
 function RunningState() {
     return (

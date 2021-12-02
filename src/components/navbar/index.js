@@ -7,10 +7,9 @@ import NamespaceSelector from '../namespace-selector';
 import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
 import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
-import {IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline, IoMenu} from 'react-icons/io5';
+import {IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
 import {GrFormAdd} from 'react-icons/gr'
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
-import Button from '../button';
 
 function NavBar(props) {
 

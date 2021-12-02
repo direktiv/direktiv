@@ -26,13 +26,12 @@ export default function GlobalRegistriesPanel(){
 
 export function GlobalRegistries(){
 
-    const {data, err, getRegistries, createRegistry, deleteRegistry} = useGlobalRegistries(Config.url, localStorage.getItem("apikey"))
+    const {data, getRegistries, createRegistry, deleteRegistry} = useGlobalRegistries(Config.url, localStorage.getItem("apikey"))
 
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")
     const [token, setToken] = useState("")
 
-    console.log(data, err)
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>
@@ -99,13 +98,12 @@ export function GlobalRegistries(){
 
 export function GlobalPrivateRegistries(){
 
-    const {data, err, getRegistries, createRegistry, deleteRegistry} = useGlobalPrivateRegistries(Config.url)
+    const {data, getRegistries, createRegistry, deleteRegistry} = useGlobalPrivateRegistries(Config.url)
 
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")
     const [token, setToken] = useState("")
 
-    console.log(data, err)
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>

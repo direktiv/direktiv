@@ -4,7 +4,7 @@ import { useParams } from "react-router"
 import { Service } from "../namespace-services"
 import { RevisionCreatePanel, UpdateTraffic } from "../namespace-services/revisions"
 import AddValueButton from "../../components/add-button"
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon, ContentPanelFooter } from "../../components/content-panel"
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal"
 import { Config } from "../../util"
@@ -12,7 +12,7 @@ import { useGlobalService } from "direktiv-react-hooks"
 
 export default function GlobalRevisionsPanel(props){
     const {service} = useParams()
-    const {revisions, config, fn, traffic, err, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, localStorage.getItem("apikey"))
+    const {revisions, config, traffic, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")

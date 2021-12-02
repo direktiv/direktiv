@@ -1,6 +1,5 @@
 import { useNamespaceService } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
-import { FaBimobject } from "react-icons/fa"
 import { IoPlay } from "react-icons/io5"
 import { useParams } from "react-router"
 import { Service } from "."
@@ -64,7 +63,7 @@ export function RevisionCreatePanel(props){
 function NamespaceRevisions(props) {
     const {namespace, service} = props
 
-    const {revisions, fn, config, traffic, err, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service,localStorage.getItem("apikey"))
+    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service,localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
@@ -115,7 +114,6 @@ function NamespaceRevisions(props) {
                                     maxWidth: "300px"
                                 }}
                                 onOpen={() => {
-                                    console.log("ON OPEN");
                                 }}
                                 onClose={()=>{
                                 }}
@@ -221,6 +219,8 @@ export function UpdateTraffic(props){
                                                     return(
                                                         <option value={obj.name}>{obj.name}</option>
                                                     )
+                                                } else {
+                                                    return <></>
                                                 }
                                             })}
                                         </select>
@@ -239,6 +239,8 @@ export function UpdateTraffic(props){
                                                     return(
                                                         <option value={obj.name}>{obj.name}</option>
                                                     )
+                                                } else {
+                                                    return <></>
                                                 } 
                                             })}
                                         </select>
@@ -277,7 +279,6 @@ export function UpdateTraffic(props){
                             <FlexBox className="col" style={{alignItems:"flex-end"}}>
                                 <Button className="small" onClick={async ()=>{
                                     let err = await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
-                                    console.log(err, "not to sure how to display this err yet")
                                     if (err) {
                                         setErrMsg(err)
                                     } else {

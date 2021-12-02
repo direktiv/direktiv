@@ -1,5 +1,5 @@
 import { useNamespaceServices } from "direktiv-react-hooks";
-import { IoChevronDownOutline, IoChevronForwardOutline, IoPlay, IoWarning } from "react-icons/io5";
+import { IoChevronDownOutline, IoChevronForwardOutline, IoPlay } from "react-icons/io5";
 import "./style.css"
 import {useEffect, useState} from "react"
 import { RiDeleteBin2Line } from "react-icons/ri";
@@ -10,7 +10,6 @@ import { Config } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
 import {Link} from 'react-router-dom'
-// import Slider, { SliderTooltip, Handle } from 'rc-slider';
 import HelpIcon from "../../components/help"
 
 export default function ServicesPanel(props) {
@@ -83,7 +82,7 @@ function NamespaceServices(props) {
             getcfg()
             setLoad(false)
         }
-    },[config, getNamespaceConfig])
+    },[config, getNamespaceConfig, data, getNamespaceServices, load])
 
 
 
@@ -115,7 +114,6 @@ function NamespaceServices(props) {
                         maxWidth: "300px"
                     }}
                     onOpen={() => {
-                        console.log("ON OPEN");
                     }}
                     onClose={()=>{
                         setServiceName("")
@@ -271,7 +269,6 @@ export function Service(props) {
                             maxWidth: "300px"
                         }}
                         onOpen={() => {
-                            console.log("ON OPEN");
                         }}
                         onClose={()=>{
                         }}

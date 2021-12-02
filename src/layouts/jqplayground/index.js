@@ -123,7 +123,6 @@ function ExamplesJQ(props){
                         <table >
                             <tbody>
                                 {firstHalf.map((obj)=>{
-                                    console.log(obj)
                                     return(
                                         <tr>
                                             <td className="jq-example">
@@ -151,7 +150,6 @@ function ExamplesJQ(props){
                         <table>
          <tbody>
                                 {secondHalf.map((obj)=>{
-                                    console.log(obj)
                                     return(
                                         <tr>
                                             <td className="jq-example">
