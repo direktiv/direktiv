@@ -3,11 +3,11 @@ import './style.css';
 import FlexBox from '../flexbox';
 import {IoChevronDown} from 'react-icons/io5';
 import { GenerateRandomKey } from '../../util';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Identicon from 'react-identicons';
 
 function NamespaceSelector(props) {
-    let {style, className, namespaces, namespace, toggleResponsive} = props;
+    let {pathname, style, className, namespaces, namespace, toggleResponsive} = props;
     if (!className) {
         className = ""
     }
@@ -49,6 +49,9 @@ function NamespaceSelector(props) {
             window.addEventListener('click', resetSelector)
         }
     },[showSelector])
+
+    let x = useParams("namespace");
+    console.log(x);
 
     return (
         <>

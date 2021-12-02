@@ -29,6 +29,8 @@ function NavBar(props) {
         className += " toggled"
     }
 
+    const {pathname} = useLocation()
+
     return (
         <>
             <ResponsiveNavbar toggled={toggleResponsive} setToggled={setToggleResponsive} />
@@ -39,12 +41,12 @@ function NavBar(props) {
                     </FlexBox>
                     <div className="navbar-panel shadow col">
                         <FlexBox>
-                            <NamespaceSelector toggleResponsive={setToggleResponsive} namespace={namespace} namespaces={namespaces}/>
+                            <NamespaceSelector pathname={pathname} toggleResponsive={setToggleResponsive} namespace={namespace} namespaces={namespaces}/>
                         </FlexBox>
                         <FlexBox>
                             <NewNamespaceBtn createErr={createErr} createNamespace={createNamespace} />
                         </FlexBox>
-                        <NavItems toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
+                        <NavItems pathname={pathname} toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
                     </div>
 
                     <div className="navbar-panel shadow col">
@@ -147,9 +149,7 @@ function NewNamespaceBtn(props) {
 
 function NavItems(props) {
 
-    let {style, namespace, toggleResponsive} = props;
-
-    const {pathname} = useLocation()
+    let {pathname, style, namespace, toggleResponsive} = props;
 
     let explorer = matchPath("/n/:namespace", pathname)
     let monitoring = matchPath("/n/:namespace/monitoring", pathname)

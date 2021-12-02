@@ -14,7 +14,7 @@ function WorkflowPage(props) {
                 <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
-                        <AllRevisionsTab />
+                        <OverviewTab />
                     :<></>}
                     { activeTab === 1 ?
                         <RevisionSelectorTab />
@@ -31,10 +31,10 @@ function TabBar(props) {
 
     let {activeTab, setActiveTab} = props;
     let tabLabels = [
-        "All Revisions",
-        "Revision Selector",
-        "Functions",
-        "Editor", 
+        "Overview",
+        "Revisions",
+        "Working Revisions",
+        "Dependency Graph", 
         "Settings"
     ]
 
@@ -58,11 +58,20 @@ function TabBar(props) {
     return (
         <FlexBox className="tab-bar">
             {tabDOMs}
+            <FlexBox className="tab-bar-item gap">
+            <label className="switch">
+                <input type="checkbox" />
+                <span className="slider-broadcast"></span>
+            </label>
+            <div className="rev-toggle-label hide-on-small">
+                Enabled
+            </div>
+            </FlexBox>
         </FlexBox>
     )
 }
 
-function AllRevisionsTab(props) {
+function OverviewTab(props) {
     return(
         <>
             <FlexBox className="gap wrap">
@@ -90,6 +99,18 @@ function AllRevisionsTab(props) {
                         </ContentPanelTitle>
                     </ContentPanel>
                 </FlexBox>
+            </FlexBox>
+            <FlexBox style={{maxHeight: "140px"}}>
+                <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
+                    <ContentPanelTitle>
+                        <ContentPanelTitleIcon>
+                            <BsCodeSquare />
+                        </ContentPanelTitleIcon>
+                        <div>
+                            Traffic Distribution
+                        </div>
+                    </ContentPanelTitle>
+                </ContentPanel>
             </FlexBox>
             <FlexBox>
                 <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
