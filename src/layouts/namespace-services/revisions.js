@@ -151,15 +151,18 @@ function NamespaceRevisions(props) {
                             <FlexBox className="gap col">
                                 {revisions.map((obj) => {
                                     let dontDelete = false
+                                    let t = 0
                                     for (let i=0; i < traffic.length; i++) {
                                         if(traffic[i].revisionName === obj.name){
                                             dontDelete= true
+                                            t = traffic[i].traffic
                                             break
                                         }
                                     }
 
                                     return (
                                         <Service 
+                                            traffic={t}
                                             dontDelete={dontDelete}
                                             revision={obj.rev}
                                             deleteService={deleteNamespaceServiceRevision}
@@ -184,12 +187,28 @@ function NamespaceRevisions(props) {
 export function UpdateTraffic(props){
 
     const {traffic, service, revisions, setNamespaceServiceRevisionTraffic} = props
-
     const [revOne, setRevOne] = useState(traffic[0] ? traffic[0].revisionName : "")
     const [revTwo, setRevTwo] = useState(traffic[1] ? traffic[1].revisionname : "")
     const [tpercent, setTPercent] = useState(traffic[0] ? traffic[0].traffic : 0)
     const [errMsg, setErrMsg] = useState("")
 
+    // handle data from traffic stream updating
+    useEffect(()=>{
+        if(traffic[0]) {
+            setRevOne(traffic[0].revisionName)
+            setTPercent(traffic[0].traffic)
+        } else {
+            setRevOne("")
+            setTPercent(0)
+        }
+        if(traffic[1]){
+            setRevTwo(traffic[1].revisionName)
+        } else {
+            setRevTwo("")
+        }
+    },[traffic])
+
+    console.log(revTwo)
     return(
         <FlexBox style={{flex: 1, minWidth: "370px"}}>
             <FlexBox className="gap" style={{fontSize:"12px", maxHeight: "fit-content"}}>

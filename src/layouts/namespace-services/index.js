@@ -28,6 +28,8 @@ export default function ServicesPanel(props) {
 export function ServiceCreatePanel(props) {
     const {name, setName, image, setImage, scale, setScale, size, setSize, cmd, setCmd, maxscale} = props
 
+
+
     return(
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
                 <FlexBox className="col gap">
@@ -185,7 +187,7 @@ function NamespaceServices(props) {
 }
 
 export function Service(props) {
-    const {name, image, status, conditions, deleteService, url, revision, dontDelete} = props
+    const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic} = props
 
     // return(
     //     <ContentPanel>
@@ -298,7 +300,10 @@ export function Service(props) {
                             </FlexBox>
                         </FlexBox>
                     </Modal>
-                </div>:""}
+                </div>:          
+                <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto", fontSize:"10pt", fontWeight:"bold"}}>
+                    {traffic}%
+                </div>}
             </FlexBox>
             <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                 <ServiceDetails conditions={conditions} />

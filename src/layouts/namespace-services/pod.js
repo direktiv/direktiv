@@ -111,6 +111,14 @@ function NamespaceRevisionDetails(props){
                                     <span style={{fontWeight:"bold"}}>Conditions:</span>
                                     <ul style={{marginTop:"0px", listStyle:"none", paddingLeft:'10px'}}>
                                             {revisionDetails.conditions.map((obj)=>{
+                                                if(obj.name === 'Active' && obj.reason === 'NoTraffic' && obj.message === "The target is not receiving traffic."){
+                                                    return(
+                                                        <li style={{display:"flex", alignItems:'center', gap:"5px"}}>
+                                                            <ServiceStatus status={"True"}/>
+                                                            {obj.name}
+                                                        </li>
+                                                    )
+                                                }
                                                 return(
                                                     <li style={{display:"flex", alignItems:'center', gap:"5px"}}>
                                                         <ServiceStatus status={obj.status}/>
