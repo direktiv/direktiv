@@ -154,8 +154,10 @@ function NamespaceRevisions(props) {
                                 {revisions.map((obj) => {
                                     let dontDelete = false
                                     for (let i=0; i < traffic.length; i++) {
-                                        dontDelete = true
-                                        break
+                                        if(traffic[i].revisionName === obj.name){
+                                            dontDelete= true
+                                            break
+                                        }
                                     }
 
                                     return (
@@ -174,32 +176,6 @@ function NamespaceRevisions(props) {
                         </FlexBox>
 
                     </ContentPanelBody>
-                    {/* <ContentPanelBody className="secrets-panel">
-                        <FlexBox className="gap col">
-                            <FlexBox className="col gap">
-                                {revisions.map((obj)=>{
-                                    let dontDelete = false
-                                    for(var i=0; i < traffic.length; i++) {
-                                        if(traffic[i].revisionName === obj.name){
-                                            dontDelete= true
-                                            break
-                                        }
-                                    }
-                                    return(
-                                        <Service 
-                                            dontDelete={dontDelete}
-                                            revision={obj.rev}
-                                            deleteService={deleteNamespaceServiceRevision}
-                                            url={`/n/${namespace}/services/${service}/${obj.rev}`}
-                                            conditions={obj.conditions}
-                                            name={obj.name}
-                                            status={obj.status}
-                                        />
-                                    )
-                                })}
-                            </FlexBox>
-                        </FlexBox>
-                    </ContentPanelBody> */}
                 </ContentPanel>
             </FlexBox>
             <UpdateTraffic setNamespaceServiceRevisionTraffic={setNamespaceServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
