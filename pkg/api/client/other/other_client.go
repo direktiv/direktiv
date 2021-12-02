@@ -34,6 +34,8 @@ type ClientService interface {
 
 	JqPlayground(params *JqPlaygroundParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JqPlaygroundOK, error)
 
+	ReplayCloudevent(params *ReplayCloudeventParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ReplayCloudeventOK, error)
+
 	Version(params *VersionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VersionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
@@ -122,6 +124,48 @@ func (a *Client) JqPlayground(params *JqPlaygroundParams, authInfo runtime.Clien
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for jqPlayground: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  ReplayCloudevent replays cloud event
+
+  Replay a cloud event to a namespace.
+
+*/
+func (a *Client) ReplayCloudevent(params *ReplayCloudeventParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ReplayCloudeventOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewReplayCloudeventParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "replayCloudevent",
+		Method:             "POST",
+		PathPattern:        "/api/namespaces/{namespace}/events/{event}/replay",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &ReplayCloudeventReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ReplayCloudeventOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for replayCloudevent: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
