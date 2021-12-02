@@ -1,5 +1,5 @@
 .modal-overlay, .modal-container {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
 
