@@ -191,33 +191,35 @@ function OverviewTab(props) {
 
     return(
         <>
-            <FlexBox className="gap">
-                <FlexBox style={{maxWidth:"1000px"}}>
-                    <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
-                        <ContentPanelTitle>
-                            <ContentPanelTitleIcon>
-                                <BsCodeSquare />
-                            </ContentPanelTitleIcon>
-                            <div>
-                                Instances
-                            </div>
-                        </ContentPanelTitle>
-                        <WorkflowInstances instances={instances} namespace={namespace} />
-                    </ContentPanel>
+            <div className="gap">
+                <FlexBox className="gap">
+                    <FlexBox style={{maxWidth:"1000px", maxHeight: "342px"}}>
+                        <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                            <ContentPanelTitle>
+                                <ContentPanelTitleIcon>
+                                    <BsCodeSquare />
+                                </ContentPanelTitleIcon>
+                                <div>
+                                    Instances
+                                </div>
+                            </ContentPanelTitle>
+                            <WorkflowInstances instances={instances} namespace={namespace} />
+                        </ContentPanel>
+                    </FlexBox>
+                    <FlexBox style={{maxHeight: "342px"}}>
+                        <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                            <ContentPanelTitle>
+                                <ContentPanelTitleIcon>
+                                    <BsCodeSquare />
+                                </ContentPanelTitleIcon>
+                                <div>
+                                    Success/Failure Rate
+                                </div>
+                            </ContentPanelTitle>
+                        </ContentPanel>
+                    </FlexBox>
                 </FlexBox>
-                <FlexBox>
-                    <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
-                        <ContentPanelTitle>
-                            <ContentPanelTitleIcon>
-                                <BsCodeSquare />
-                            </ContentPanelTitleIcon>
-                            <div>
-                                Success/Failure Rate
-                            </div>
-                        </ContentPanelTitle>
-                    </ContentPanel>
-                </FlexBox>
-            </FlexBox>
+            </div>
             <FlexBox style={{maxHeight: "140px"}}>
                 <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
                     <ContentPanelTitle>
