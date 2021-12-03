@@ -105,7 +105,7 @@ function VariablesPanel(props){
 export default VariablesPanel;
 
 
-function VariableFilePicker(props) {
+export function VariableFilePicker(props) {
     const {file, setFile, id, setMimeType} = props
 
     const onDrop = useCallback(acceptedFiles => {
@@ -130,6 +130,7 @@ function VariableFilePicker(props) {
         </div>
     )
 }
+
 
 function AddVariablePanel(props) {
     const {keyValue, setKeyValue, dValue, setDValue, file, setFile, mimeType, setMimeType} = props

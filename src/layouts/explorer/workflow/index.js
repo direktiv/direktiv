@@ -4,7 +4,7 @@ import FlexBox from '../../../components/flexbox';
 import {Link} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
-import { useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
+import { useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 import { useParams } from 'react-router';
 
@@ -14,6 +14,11 @@ import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
 import { ServiceStatus } from '../../namespace-services';
+import Modal, { ButtonDefinition } from '../../../components/modal';
+import AddValueButton from '../../../components/add-button';
+import DirektivEditor from '../../../components/editor';
+import { VariableFilePicker } from '../../settings/variables-panel';
+import Tabs from '../../../components/tabs';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -58,7 +63,7 @@ function InitialWorkflowHook(props){
                         <RevisionSelectorTab />
                     :<></>}
                     { activeTab === 4 ?
-                        <SettingsTab />
+                        <SettingsTab namespace={namespace} workflow={filepath} />
                     :<></>}
                 </FlexBox>
             </FlexBox>
@@ -314,6 +319,20 @@ function RevisionSelectorTab(props) {
 
 function SettingsTab(props) {
 
+    const {namespace, workflow} = props
+    const [keyValue, setKeyValue] = useState("")
+    const [dValue, setDValue] = useState("")
+    const [file, setFile] = useState(null)
+    const [uploading, setUploading] = useState(false)
+    const [mimeType, setMimeType] = useState("application/json")
+    const {data, err, setWorkflowVariable, getWorkflowVariable, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, workflow, localStorage.getItem("apikey"))
+
+    
+    let uploadingBtn = "small green"
+    if (uploading) {
+        uploadingBtn += " btn-loading"
+    }
+    
     return (
         <>
             <FlexBox className="gap wrap col">
@@ -324,9 +343,46 @@ function SettingsTab(props) {
                                 <IoMdLock/>
                             </ContentPanelTitleIcon>
                             Variables
-                            <ContentPanelHeaderButton>
-                                + Add
-                            </ContentPanelHeaderButton>
+                                <Modal title="New variable" 
+                                    escapeToCancel
+                                    button={(
+                                        <AddValueButton label=" " />
+                                    )}  
+                                    onClose={()=>{
+                                        setKeyValue("")
+                                        setDValue("")
+                                        setFile(null)
+                                        setUploading(false)
+                                        setMimeType("application/json")
+                                    }}
+                                    actionButtons={[
+                                        ButtonDefinition("Add", async () => {
+                                            if(document.getElementById("file-picker")){
+                                                setUploading(true)
+                                                if(keyValue === "") {
+                                                    setUploading(false)
+                                                    return "Variable key name needs to be provided."
+                                                }
+                                                let err = await setWorkflowVariable(keyValue, file, mimeType)
+                                                if (err) {
+                                                    setUploading(false)
+                                                    return err
+                                                }
+                                            } else {
+                                                if(keyValue === "") {
+                                                    setUploading(false)
+                                                    return "Variable key name needs to be provided."
+                                                }
+                                                let err = await setWorkflowVariable(keyValue, dValue, mimeType)
+                                                if (err) return err
+                                            }
+                                        }, uploadingBtn, true, false),
+                                        ButtonDefinition("Cancel", () => {
+                                        }, "small light", true, false)
+                                    ]}
+                                >
+                                    <AddVariablePanel mimeType={mimeType} setMimeType={setMimeType} file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
+                                </Modal>
                         </ContentPanelTitle>
                         <ContentPanelBody>
 
@@ -384,3 +440,69 @@ function SettingsTab(props) {
     )
 
 }
+
+function AddVariablePanel(props) {
+    const {keyValue, setKeyValue, dValue, setDValue, file, setFile, mimeType, setMimeType} = props
+
+    let lang = ""
+
+    switch(mimeType){
+    case "application/json":
+        lang = "json"
+        break
+    case "application/x-sh":
+        lang = "shell"
+        break
+    case "text/html":
+        lang = "html"
+        break
+    case "text/css":
+        lang = "css"
+        break
+    case "application/yaml":
+        lang = "yaml"
+        break
+    default:
+        lang = "plain"
+    }
+
+    return(
+        <Tabs
+            style={{minHeight: "400px", minWidth: "90%"}}
+            headers={["Manual", "Upload"]}
+            tabs={[(
+                <FlexBox id="written" className="col gap" style={{fontSize: "12px"}}>
+                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                        <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+                    </div>
+                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                        <select style={{width:"100%"}} defaultValue={mimeType} onChange={(e)=>setMimeType(e.target.value)}>
+                            <option value="">Choose a mimetype</option>
+                            <option value="application/json">json</option>
+                            <option value="application/yaml">yaml</option>
+                            <option value="application/x-sh">shell</option>
+                            <option value="text/plain">plaintext</option>
+                            <option value="text/html">html</option>
+                            <option value="text/css">css</option>
+                        </select>
+                    </div>
+                    <FlexBox className="gap" style={{maxHeight: "600px"}}>
+                        <FlexBox style={{overflow:"hidden"}}>
+                            <DirektivEditor dlang={lang} width={"600px"} dvalue={dValue} setDValue={setDValue} height={"600px"}/>
+                        </FlexBox>
+                    </FlexBox>
+                </FlexBox>
+            ),(
+                <FlexBox id="file-picker" className="col gap" style={{fontSize: "12px"}}>
+                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                        <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
+                    </div>
+                    <FlexBox className="gap">
+                        <VariableFilePicker setKeyValue={setKeyValue} setMimeType={setMimeType} mimeType={mimeType} file={file} setFile={setFile} id="add-variable-panel" />
+                    </FlexBox>
+                </FlexBox>
+            )]}
+        />
+    )
+}
+
