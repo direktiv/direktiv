@@ -87,7 +87,7 @@ function WorkingRevision(props) {
         if(wf !== workflow) {
             setWorkflow(wf)
         }
-    },[wf])
+    },[wf, workflow])
 
     return(
         <FlexBox style={{width:"100%"}}>
@@ -101,12 +101,29 @@ function WorkingRevision(props) {
                     </div>
                 </ContentPanelTitle>
                 <ContentPanelBody>
-                    <FlexBox className="col">
-                        <FlexBox>
+                    <FlexBox className="col" style={{overflow:"hidden"}}>
+                        <FlexBox >
                             <DirektivEditor dlang="yaml"  dvalue={workflow} setDValue={setWorkflow} />
                         </FlexBox>
-                        <FlexBox style={{backgroundColor:"#223848", height:"40px", maxHeight:"40px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
-                           f
+                        <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                            <div style={{display:"flex", flex:1 }}>
+                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    Undo
+                                </div>
+                            </div>
+                            <div style={{display:"flex", flex:1, justifyContent:"center"}}>
+                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    Run
+                                </div>
+                            </div>
+                            <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
+                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    Save
+                                </div>
+                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    Save as new revision
+                                </div>
+                            </div>
                         </FlexBox>
                     </FlexBox>
                 </ContentPanelBody>
