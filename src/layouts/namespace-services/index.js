@@ -298,10 +298,12 @@ export function Service(props) {
                             </FlexBox>
                         </FlexBox>
                     </Modal>
-                </div>:          
+                </div>: 
+                <>     
+                {traffic ?     
                 <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto", fontSize:"10pt", fontWeight:"bold"}}>
                     {traffic}%
-                </div>}
+                </div>:""}</>}
             </FlexBox>
             <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                 <ServiceDetails conditions={conditions} />

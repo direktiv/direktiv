@@ -1,7 +1,7 @@
 import React from 'react';
 import './style.css';
 import FlexBox from '../flexbox';
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import useBreadcrumbs from 'use-react-router-breadcrumbs'
 import {GenerateRandomKey} from '../../util';
 
@@ -15,7 +15,7 @@ const routes = [
 function Breadcrumbs(props) {
     const {namespace} = props
     const breadcrumbs = useBreadcrumbs(routes)
-
+    const [searchParams, setSearchParams] = useSearchParams()
     if (!namespace){
         return ""
     }
@@ -29,6 +29,8 @@ function Breadcrumbs(props) {
                         return ""
                     }
                     let key = GenerateRandomKey("crumb-");
+
+               
                     return(
                         <li id={key} key={key}>
                             <Link to={obj.key}>
@@ -37,6 +39,21 @@ function Breadcrumbs(props) {
                         </li>
                     )
                 })}
+                {searchParams.get("function") && searchParams.get("version") ? 
+                    <li id={`${searchParams.get("function")}-${searchParams.get("version")}`} key={`${searchParams.get("function")}-${searchParams.get("version")}`}>
+                        <Link to={`${window.location.pathname}?function=${searchParams.get("function")}&version=${searchParams.get("version")}`}>
+                            {searchParams.get("function")}
+                        </Link>
+                    </li>
+                    :""
+                }
+                { searchParams.get("revision") && searchParams.get("function") && searchParams.get("version") ? 
+                       <li id={`${searchParams.get("function")}-${searchParams.get("version")}-${searchParams.get("revision")}`} key={`${searchParams.get("function")}-${searchParams.get("version")}-${searchParams.get("revision")}`}>
+                       <Link to={`${window.location.pathname}?function=${searchParams.get("function")}&version=${searchParams.get("version")}&revision=${searchParams.get("revision")}`}>
+                           {searchParams.get("revision")}
+                       </Link>
+                   </li>
+                :""}
             </ul>
         </FlexBox>
     );
