@@ -16,6 +16,7 @@ import { IoMdLock } from 'react-icons/io';
 import { ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import { RiDeleteBin2Line } from 'react-icons/ri';
+import DirektivEditor from '../../../components/editor';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -46,6 +47,10 @@ function InitialWorkflowHook(props){
 
     const {data, err, getInstancesForWorkflow, getRevisions, deleteRevision} = useWorkflow(Config.url, true, namespace, filepath)
     console.log(data, "INITIAL WORKFLOW")
+    if(data === null) {
+        return ""
+    }
+
     return(
         <>
             <FlexBox id="workflow-page" className="gap col" style={{paddingRight: "8px"}}>
@@ -58,7 +63,7 @@ function InitialWorkflowHook(props){
                         <RevisionSelectorTab deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
                     :<></>}
                     { activeTab === 2 ?
-                        <WorkingRevision />
+                        <WorkingRevision wf={atob(data.revision.source)} />
                     :<></>}
                     { activeTab === 4 ?
                         <SettingsTab />
@@ -72,6 +77,15 @@ function InitialWorkflowHook(props){
 export default WorkflowPage;
 
 function WorkingRevision(props) {
+    const {wf} = props
+
+    const [workflow, setWorkflow] = useState(wf)
+
+    useEffect(()=>{
+        if(wf !== workflow) {
+            setWorkflow(wf)
+        }
+    },[wf])
 
     return(
         <FlexBox style={{width:"100%"}}>
@@ -85,7 +99,14 @@ function WorkingRevision(props) {
                     </div>
                 </ContentPanelTitle>
                 <ContentPanelBody>
-                    xxx
+                    <FlexBox className="col">
+                        <FlexBox>
+                            <DirektivEditor dlang="yaml"  dvalue={workflow} setDValue={setWorkflow} />
+                        </FlexBox>
+                        <FlexBox style={{backgroundColor:"#223848", height:"40px", maxHeight:"40px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                           f
+                        </FlexBox>
+                    </FlexBox>
                 </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
