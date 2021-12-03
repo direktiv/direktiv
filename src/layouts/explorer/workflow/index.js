@@ -19,9 +19,9 @@ import AddValueButton from '../../../components/add-button';
 import DirektivEditor from '../../../components/editor';
 import { VariableFilePicker } from '../../settings/variables-panel';
 import Tabs from '../../../components/tabs';
+import { RiDeleteBin2Line } from 'react-icons/ri';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
-
 
 
 function WorkflowPage(props) {
@@ -47,10 +47,12 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(0)
 
-    const {data, err, getInstancesForWorkflow, getRevisions} = useWorkflow(Config.url, true, namespace, filepath)
-    
-    console.log(data, err, "test")
-    
+    const {data, err, getInstancesForWorkflow, getRevisions, deleteRevision} = useWorkflow(Config.url, true, namespace, filepath)
+    console.log(data, "INITIAL WORKFLOW")
+    if(data === null) {
+        return ""
+    }
+
     return(
         <>
             <FlexBox id="workflow-page" className="gap col" style={{paddingRight: "8px"}}>
@@ -60,7 +62,10 @@ function InitialWorkflowHook(props){
                         <OverviewTab namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
-                        <RevisionSelectorTab />
+                        <RevisionSelectorTab deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                    :<></>}
+                    { activeTab === 2 ?
+                        <WorkingRevision wf={atob(data.revision.source)} />
                     :<></>}
                     { activeTab === 4 ?
                         <SettingsTab namespace={namespace} workflow={filepath} />
@@ -72,6 +77,43 @@ function InitialWorkflowHook(props){
 }
 
 export default WorkflowPage;
+
+function WorkingRevision(props) {
+    const {wf} = props
+
+    const [workflow, setWorkflow] = useState(wf)
+
+    useEffect(()=>{
+        if(wf !== workflow) {
+            setWorkflow(wf)
+        }
+    },[wf])
+
+    return(
+        <FlexBox style={{width:"100%"}}>
+            <ContentPanel style={{width:"100%"}}>
+                <ContentPanelTitle>
+                    <ContentPanelTitleIcon>
+                        <BsCodeSquare />
+                    </ContentPanelTitleIcon>
+                    <div>
+                        Working Revision
+                    </div>
+                </ContentPanelTitle>
+                <ContentPanelBody>
+                    <FlexBox className="col">
+                        <FlexBox>
+                            <DirektivEditor dlang="yaml"  dvalue={workflow} setDValue={setWorkflow} />
+                        </FlexBox>
+                        <FlexBox style={{backgroundColor:"#223848", height:"40px", maxHeight:"40px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                           f
+                        </FlexBox>
+                    </FlexBox>
+                </ContentPanelBody>
+            </ContentPanel>
+        </FlexBox>
+    )
+}
 
 function TabBar(props) {
 
@@ -187,7 +229,6 @@ function OverviewTab(props) {
                 let resp = await getInstancesForWorkflow()
                 if(Array.isArray(resp)){
                     setInstances(resp)
-                    console.log(resp)
                 } else {
                     setErr(resp)
                 }
@@ -198,7 +239,6 @@ function OverviewTab(props) {
         listData()
     },[load, getInstancesForWorkflow])
 
-    console.log(err, "FETCHING INSTANCES OR REVISIONS")
 
     return(
         <>
@@ -264,7 +304,6 @@ function WorkflowServices(props) {
     const {namespace, filepath} = props
 
     const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
-    console.log(data, err)
     if (data === null) {
         return ""
     }
@@ -273,7 +312,6 @@ function WorkflowServices(props) {
         <ContentPanelBody>
             <ul style={{listStyle:"none", margin:0, paddingLeft:"10px"}}>
                 {data.map((obj)=>{
-                    console.log(obj)
                     return(
                         <Link to={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}>
                             <li style={{display:"flex", alignItems:'center', gap :"10px"}}>
@@ -290,6 +328,117 @@ function WorkflowServices(props) {
  
 
 function RevisionSelectorTab(props) {
+    const {getRevisions, deleteRevision} = props
+    const [load, setLoad] = useState(true)
+    const [revisions, setRevisions] = useState([])
+    const [err, setErr] = useState(null)
+
+    // fetch revisions using the workflow hook from above
+    useEffect(()=>{
+        async function listData() {
+            if(load){
+                // get the instances
+                let resp = await getRevisions()
+                if(Array.isArray(resp)){
+                    setRevisions(resp)
+                } else {
+                    setErr(resp)
+                }
+
+            }
+            setLoad(false)
+        }
+        listData()
+    },[load, getRevisions])
+    console.log(revisions, err)
+    return(
+        <>
+            <FlexBox className="gap col wrap" style={{height:"100%"}}>
+                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                    <ContentPanelTitle>
+                        <ContentPanelTitleIcon>
+                            <BsCodeSquare />
+                        </ContentPanelTitleIcon>
+                        <div>
+                            All Revisions
+                        </div>
+                    </ContentPanelTitle>
+                    <ContentPanelBody>
+                        <table>
+                            <tbody>
+                                {
+                                    revisions.map((obj)=>{
+                                        return(
+                                            <tr>
+                                                <td>
+                                                    {obj.node.name}
+                                                </td>
+                                                <td>
+                                                <Modal
+                                                    escapeToCancel
+                                                    style={{
+                                                        flexDirection: "row-reverse",
+                                                    }}
+                                                    title="Delete a revision" 
+                                                    button={(
+                                                        <div className="secrets-delete-btn grey-text auto-margin red-text" style={{display: "flex", alignItems: "center", height: "100%"}}>
+                                                        <RiDeleteBin2Line className="auto-margin"/>
+                                                    </div>
+                                                    )}
+                                                    actionButtons={
+                                                        [
+                                                            ButtonDefinition("Delete", async () => {
+                                                                let err = await deleteRevision(obj.node.name)
+                                                                if (err) return err
+                                                            }, "small red", true, false),
+                                                            ButtonDefinition("Cancel", () => {
+                                                            }, "small light", true, false)
+                                                        ]
+                                                    } 
+                                                >
+                                                        <FlexBox className="col gap">
+                                                    <FlexBox >
+                                                        Are you sure you want to delete '{obj.node.name}'?
+                                                        <br/>
+                                                        This action cannot be undone.
+                                                    </FlexBox>
+                                                </FlexBox>
+                                                </Modal>
+                                                </td>
+                                                <td>
+                                                    set working rev
+                                                </td>
+                                                <td>
+                                                    open revision
+                                                </td>
+                                            </tr>
+                                        )
+                                    })
+                                }
+                            </tbody>
+                        </table>
+                    </ContentPanelBody>
+                </ContentPanel>
+                <ContentPanel style={{ width: "100%", minWidth: "300px", minHeight:"200px"}}>
+                    <ContentPanelTitle>
+                        <ContentPanelTitleIcon>
+                            <BsCodeSquare />
+                        </ContentPanelTitleIcon>
+                        <div>
+                            Revision Traffic Shaping
+                        </div>
+                    </ContentPanelTitle>
+                    <ContentPanelBody>
+                        testing
+                    </ContentPanelBody>
+                </ContentPanel>
+            </FlexBox>
+        </>
+    )
+}
+
+
+function RevisionSelectedTab(props) {
     return(
         <>
             <FlexBox>
@@ -299,7 +448,7 @@ function RevisionSelectorTab(props) {
                             <BsCodeSquare />
                         </ContentPanelTitleIcon>
                         <div>
-                            Revision name 001
+                            Revision Name
                         </div>
                         <FlexBox style={{justifyContent: "end", paddingRight: "8px"}}>
                             <div>
@@ -311,6 +460,9 @@ function RevisionSelectorTab(props) {
                             </div>
                         </FlexBox>
                     </ContentPanelTitle>
+                    <ContentPanelBody>
+                        testing
+                    </ContentPanelBody>
                 </ContentPanel>
             </FlexBox>
         </>

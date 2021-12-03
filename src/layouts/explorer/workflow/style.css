@@ -12,6 +12,7 @@
     background-color: white;
     border-radius: 4px;
     border: solid 1px var(--theme-subtle-border);
+    min-height: 42px;
     max-height: 42px;
     font-weight: 700;
     color: var(--theme-dark-gray-text);
