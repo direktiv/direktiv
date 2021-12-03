@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^12.1.10",
     "dayjs": "^1.10.7",
     "direktiv-react-hooks": "^0.0.56",
+    "monaco-themes": "^0.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-dropzone": "^11.4.2",

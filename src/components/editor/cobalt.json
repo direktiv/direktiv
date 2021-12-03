@@ -1,9 +1,4 @@
-import Editor, {useMonaco} from "@monaco-editor/react";
-import { useEffect } from "react";
-import './style.css'
-// import * as cobalt from './cobalt.json'
-
-const cobalt = {
+{
     "base": "vs-dark",
     "inherit": true,
     "rules": [
@@ -256,40 +251,3 @@ const cobalt = {
       "editorWhitespace.foreground": "#FFFFFF26"
     }
   }
-
-
-export default function DirektivEditor(props) {
-    const {dvalue, dlang, value, height, width, setDValue, onMount, readonly} = props
-    
-    const monaco = useMonaco()
-
-    useEffect(()=>{
-        // console.log(monaco)
-        if(monaco !== null) {
-            monaco.editor.defineTheme('cobalt', cobalt)
-            monaco.editor.setTheme('cobalt')
-        }
-        // monaco.editor.layout()
-    },[monaco])
-
-    function handleEditorChange(value, event) {
-        setDValue(value)
-    }
-
-    return (
-        <Editor
-            options={{
-                readOnly: readonly
-            }}
-            height={height}
-            width={width}
-            language={dlang}
-            defaultValue={dvalue}
-            value={value}
-            theme={"cobalt"}
-            loading={"This shows when component is loading"}
-            onChange={handleEditorChange}
-            onMount={onMount}
-        />
-    )
-}
