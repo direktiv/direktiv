@@ -9,3 +9,9 @@
         display: none !important;
     }
 }
+
+@media screen and (max-width: 1050px) {
+    .hide-on-med {
+        display: none !important;
+    }
+}
