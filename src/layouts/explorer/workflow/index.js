@@ -192,8 +192,8 @@ function OverviewTab(props) {
     return(
         <>
             <div className="gap">
-                <FlexBox className="gap">
-                    <FlexBox style={{maxWidth:"1000px", maxHeight: "342px"}}>
+                <FlexBox className="gap wrap">
+                    <FlexBox style={{ minWidth: "370px", width:"60%", maxHeight: "342px"}}>
                         <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
@@ -206,7 +206,7 @@ function OverviewTab(props) {
                             <WorkflowInstances instances={instances} namespace={namespace} />
                         </ContentPanel>
                     </FlexBox>
-                    <FlexBox style={{maxHeight: "342px"}}>
+                    <FlexBox style={{ minWidth: "370px", maxHeight: "342px" }}>
                         <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>

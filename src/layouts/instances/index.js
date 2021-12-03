@@ -73,10 +73,10 @@ function InstancesTable(props) {
                         Name
                     </th>
                     <th>
-                        Started <span className="hide-on-small">at</span>
+                        Started <span className="hide-on-med">at</span>
                     </th>
                     <th>
-                        <span className="hide-on-small">Last</span> Updated
+                        <span className="hide-on-med">Last</span> Updated
                     </th>
                 </tr>
             </thead>
@@ -141,10 +141,10 @@ export function InstanceRow(props) {
                 {name}
         </td>
         <td>
-            {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-small">({startedFrom})</span>
+            {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span>
         </td>
         <td>
-            {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-small">({finishedFrom})</span>
+            {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span>
         </td>
     </tr>
     )
@@ -156,9 +156,9 @@ function StateLabel(props) {
 
     return (
         <div>
-            <FlexBox className={className} style={{ alignItems: "center" }} >
-                <BsDot style={{ height: "32px", width: "32px", marginRight: "-8px" }} />
-                <div className="hide-on-small">{label}</div>
+            <FlexBox className={className} style={{ alignItems: "center", padding: "0px" }} >
+                <BsDot style={{ height: "32px", width: "32px" }} />
+                <div className="hide-on-med" style={{marginLeft: "-8px", marginRight: "16px"}}>{label}</div>
             </FlexBox>
         </div>
     )
