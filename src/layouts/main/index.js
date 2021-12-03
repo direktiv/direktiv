@@ -95,17 +95,25 @@ function NamespaceNavigation(props){
                 <Routes>
                     <Route path="/" element={<div>index route:)</div>} />
                     {/* Explorer routing */}
-                    <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} />
-                    <Route path="/n/:namespace/explorer/*" element={<Explorer namespace={namespace} />} />
+                    <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} >
+                        <Route path="explorer/*" element={<Explorer namespace={namespace} />} />
+                    </Route>
+                   
+                
 
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/instances/:id" element={<div>instance id</div>} />
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
+                    
+               
+                    {/* namespace services */}
                     <Route path="/n/:namespace/services" element={<NamespaceServices namespace={namespace}/>}/>
                     <Route path="/n/:namespace/services/:service" element={<NamespaceRevisions namespace={namespace}/>}/>
                     <Route path="/n/:namespace/services/:service/:revision" element={<PodPanel namespace={namespace}/>}/>
+                    
+                    
                     <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
                     <Route path="/n/:namespace/events" element={<div>events</div>}/>
 

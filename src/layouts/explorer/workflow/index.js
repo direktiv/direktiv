@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
+import {Link} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
-import { useWorkflow } from 'direktiv-react-hooks';
+import { useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 import { useParams } from 'react-router';
 
@@ -12,6 +13,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
+import { ServiceStatus } from '../../namespace-services';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -50,7 +52,7 @@ function InitialWorkflowHook(props){
                 <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
-                        <OverviewTab getInstancesForWorkflow={getInstancesForWorkflow} />
+                        <OverviewTab namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
                         <RevisionSelectorTab />
@@ -166,7 +168,7 @@ function WorkflowInstances(props) {
 }
 
 function OverviewTab(props) {
-    const {getInstancesForWorkflow,  namespace} = props
+    const {getInstancesForWorkflow,  namespace, filepath} = props
 
     const [load, setLoad] = useState(true)
     const [instances, setInstances] = useState([])
@@ -243,15 +245,44 @@ function OverviewTab(props) {
                             <BsCodeSquare />
                         </ContentPanelTitleIcon>
                         <div>
-                            Functions
+                            Workflow Services
                         </div>
                     </ContentPanelTitle>
+                    <WorkflowServices namespace={namespace} filepath={filepath} />
                 </ContentPanel>
             </FlexBox>
         </>
     )
 }
 
+function WorkflowServices(props) {
+    const {namespace, filepath} = props
+
+    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
+    console.log(data, err)
+    if (data === null) {
+        return ""
+    }
+
+    return(
+        <ContentPanelBody>
+            <ul style={{listStyle:"none", margin:0, paddingLeft:"10px"}}>
+                {data.map((obj)=>{
+                    console.log(obj)
+                    return(
+                        <Link to={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}>
+                            <li style={{display:"flex", alignItems:'center', gap :"10px"}}>
+                                <ServiceStatus status={obj.status}/>
+                                {obj.info.name}({obj.info.image})
+                            </li>
+                        </Link>
+                    )
+                })}
+            </ul>
+        </ContentPanelBody>
+    )
+}
+ 
 
 function RevisionSelectorTab(props) {
     return(

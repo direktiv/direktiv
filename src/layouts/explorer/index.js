@@ -17,17 +17,34 @@ import Button from '../../components/button';
 import HelpIcon from "../../components/help"
 import Loader from '../../components/loader';
 import WorkflowPage from './workflow';
+import { useSearchParams } from 'react-router-dom';
+import WorkflowRevisions from './workflow/revision';
+import WorkflowPod from './workflow/pod'
 
 function Explorer(props) {
     const params = useParams()
+    const [searchParams, setSearchParams] = useSearchParams()
+
     const {namespace}  = props
-    let filepath = "/"
+    let filepath = `/`
     if(!namespace){
         return ""
     }
-
     if(params["*"] !== undefined){
         filepath = `/${params["*"]}`
+    }
+
+    // pod revisions
+    if (searchParams.get('function') && searchParams.get('version') && searchParams.get('revision')){
+        return (
+            <WorkflowPod filepath={filepath} namespace={namespace} service={searchParams.get('function')} version={searchParams.get('version')} revision={searchParams.get('revision')}/>
+        )
+    }
+    // service revisions
+    if (searchParams.get('function') && searchParams.get('version')){
+        return(
+            <WorkflowRevisions filepath={filepath} namespace={namespace} service={searchParams.get('function')} version={searchParams.get('version')}/>
+        )
     }
 
     return(
