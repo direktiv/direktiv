@@ -12,6 +12,7 @@ import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
+import { IoMdLock } from 'react-icons/io';
 import { ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import { RiDeleteBin2Line } from 'react-icons/ri';
@@ -58,6 +59,9 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision />
+                    :<></>}
+                    { activeTab === 4 ?
+                        <SettingsTab />
                     :<></>}
                 </FlexBox>
             </FlexBox>
@@ -440,4 +444,77 @@ function RevisionSelectedTab(props) {
             </FlexBox>
         </>
     )
+}
+
+function SettingsTab(props) {
+
+    return (
+        <>
+            <FlexBox className="gap wrap col">
+                <div style={{width: "100%", minHeight: "200px"}}>
+                    <ContentPanel style={{width: "100%", height: "100%"}}>
+                        <ContentPanelTitle>
+                            <ContentPanelTitleIcon>
+                                <IoMdLock/>
+                            </ContentPanelTitleIcon>
+                            Variables
+                            <ContentPanelHeaderButton>
+                                + Add
+                            </ContentPanelHeaderButton>
+                        </ContentPanelTitle>
+                        <ContentPanelBody>
+
+                        </ContentPanelBody>
+                    </ContentPanel>
+                </div>
+                <FlexBox className="gap wrap">
+                    <FlexBox style={{maxHeight: "200px", flexGrow: "5"}}>
+                        <div style={{width: "100%", minHeight: "200px"}}>
+                            <ContentPanel style={{width: "100%", height: "100%"}}>
+                                <ContentPanelTitle>
+                                    <ContentPanelTitleIcon>
+                                        <IoMdLock/>
+                                    </ContentPanelTitleIcon>
+                                    Add Attributes
+                                    <ContentPanelHeaderButton>
+                                        + Add
+                                    </ContentPanelHeaderButton>
+                                </ContentPanelTitle>
+                                <ContentPanelBody>
+
+                                </ContentPanelBody>
+                            </ContentPanel>
+                        </div>
+                    </FlexBox>
+                    <FlexBox style={{maxHeight: "200px", flexGrow: "1"}}>          
+                        <div style={{width: "100%", minHeight: "200px"}}>
+                            <ContentPanel style={{width: "100%", height: "100%"}}>
+                                <ContentPanelTitle>
+                                    <ContentPanelTitleIcon>
+                                        <IoMdLock/>
+                                    </ContentPanelTitleIcon>
+                                    Log to Event
+                                </ContentPanelTitle>
+                                <ContentPanelBody>
+                                    <FlexBox className="gap" style={{
+                                        alignItems: "center",
+                                        justifyContent: "center"
+                                    }}>
+                                        <label className="switch">
+                                            <input type="checkbox" />
+                                            <span className="slider-broadcast"></span>
+                                        </label>
+                                        <div className="rev-toggle-label hide-on-small">
+                                            Enabled
+                                        </div>                          
+                                    </FlexBox>
+                                </ContentPanelBody>
+                            </ContentPanel>
+                        </div>
+                    </FlexBox>
+                </FlexBox>
+            </FlexBox>
+        </>
+    )
+
 }
