@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import Button from '../../../components/button';
 import { BsCodeSquare } from 'react-icons/bs';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
 import {GenerateRandomKey} from '../../../util';
+import {BiChevronLeft} from 'react-icons/bi';
 
 function RevisionTab(props) {
 
@@ -13,7 +15,12 @@ function RevisionTab(props) {
         <FlexBox>
         <FlexBox className="col gap" style={{maxHeight:"100px"}}>
             <FlexBox>
-                Back to All Revisions
+                <Button className="small light" style={{ minWidth: "160px", maxWidth: "160px" }}>
+                    <FlexBox className="gap" style={{ alignItems: "center", justifyContent: "center" }}>
+                        <BiChevronLeft style={{ fontSize: "16px" }} />
+                        <div>Back to All Revisions</div>
+                    </FlexBox>
+                </Button>
             </FlexBox>
             <FlexBox>
             <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
