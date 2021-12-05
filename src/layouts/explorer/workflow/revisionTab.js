@@ -193,9 +193,8 @@ export function RevisionSelectorTab(props) {
                         All Revisions
                     </div>
                 </ContentPanelTitle>
-                <ContentPanelBody>
+                <ContentPanelBody style={{flexDirection: "column"}}>
                     {revisions.map((obj) => {
-                        console.log(obj);
                         return (
                             <FlexBox className="gap wrap" style={{
                                 alignItems: "center"
