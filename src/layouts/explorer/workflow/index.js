@@ -21,7 +21,7 @@ import { RiDeleteBin2Line } from 'react-icons/ri';
 import AddWorkflowVariablePanel from './variables';
 import Button from '../../../components/button';
 import { IoEyeOutline } from 'react-icons/io5';
-import RevisionTab from './revisionTab';
+import RevisionTab, { RevisionSelectorTab } from './revisionTab';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -382,132 +382,6 @@ function WorkflowServices(props) {
         </ContentPanelBody>
     )
 }
-
-
-function RevisionSelectorTab(props) {
-    const {getRevisions, deleteRevision, searchParams, setSearchParams} = props
-    const [load, setLoad] = useState(true)
-    const [revisions, setRevisions] = useState([])
-    const [revision, setRevision] = useState(null)
-    const [err, setErr] = useState(null)
-
-    // fetch revisions using the workflow hook from above
-    useEffect(()=>{
-        async function listData() {
-            if(load){
-                // get the instances
-                let resp = await getRevisions()
-                if(Array.isArray(resp)){
-                    setRevisions(resp)
-                } else {
-                    setErr(resp)
-                }
-
-            }
-            setLoad(false)
-        }
-        listData()
-    },[load, getRevisions])
-
-    useEffect(()=>{
-        if(searchParams.get('revision') !== null) {
-            setRevision(searchParams.get('revision'))
-        }
-    },[searchParams])
-    if(revision !== null) {
-        return(
-            <RevisionTab  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
-        )
-    }
-
-    return(
-        <>
-            <FlexBox className="gap col wrap" style={{height:"100%"}}>
-                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <BsCodeSquare />
-                        </ContentPanelTitleIcon>
-                        <div>
-                            All Revisions
-                        </div>
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        <table>
-                            <tbody>
-                                {
-                                    revisions.map((obj)=>{
-                                        return(
-                                            <tr>
-                                                <td>
-                                                    {obj.node.name}
-                                                </td>
-                                                <td>
-                                                <Modal
-                                                    escapeToCancel
-                                                    style={{
-                                                        flexDirection: "row-reverse",
-                                                    }}
-                                                    title="Delete a revision" 
-                                                    button={(
-                                                        <div className="secrets-delete-btn grey-text auto-margin red-text" style={{display: "flex", alignItems: "center", height: "100%"}}>
-                                                        <RiDeleteBin2Line className="auto-margin"/>
-                                                    </div>
-                                                    )}
-                                                    actionButtons={
-                                                        [
-                                                            ButtonDefinition("Delete", async () => {
-                                                                let err = await deleteRevision(obj.node.name)
-                                                                if (err) return err
-                                                            }, "small red", true, false),
-                                                            ButtonDefinition("Cancel", () => {
-                                                            }, "small light", true, false)
-                                                        ]
-                                                    } 
-                                                >
-                                                        <FlexBox className="col gap">
-                                                    <FlexBox >
-                                                        Are you sure you want to delete '{obj.node.name}'?
-                                                        <br/>
-                                                        This action cannot be undone.
-                                                    </FlexBox>
-                                                </FlexBox>
-                                                </Modal>
-                                                </td>
-                                                <td>
-                                                    set working rev
-                                                </td>
-                                                <td onClick={()=>{
-                                                    setSearchParams({tab: 1, revision: obj.node.name}, {replace: true})
-                                                }}>
-                                                    open revision
-                                                </td>
-                                            </tr>
-                                        )
-                                    })
-                                }
-                            </tbody>
-                        </table>
-                    </ContentPanelBody>
-                </ContentPanel>
-                <ContentPanel style={{ width: "100%", minWidth: "300px", minHeight:"200px"}}>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <BsCodeSquare />
-                        </ContentPanelTitleIcon>
-                        <div>
-                            Revision Traffic Shaping
-                        </div>
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        testing
-                    </ContentPanelBody>
-                </ContentPanel>
-            </FlexBox>
-        </>
-    )
-}
-
 
 function RevisionSelectedTab(props) {
     return(
