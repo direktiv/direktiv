@@ -7,6 +7,7 @@ import {BsCodeSquare} from 'react-icons/bs'
 import { useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 import { useNavigate, useParams } from 'react-router';
+import {  GenerateRandomKey } from '../../../util';
 
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -15,10 +16,7 @@ import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
 import { ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
-import AddValueButton from '../../../components/add-button';
 import DirektivEditor from '../../../components/editor';
-import { VariableFilePicker } from '../../settings/variables-panel';
-import Tabs from '../../../components/tabs';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import AddWorkflowVariablePanel from './variables';
 import Button from '../../../components/button';
@@ -42,7 +40,7 @@ function WorkflowPage(props) {
     let filepath = "/"
 
     if(!namespace) {
-        return ""
+        return <></>
     }
 
     if(params["*"] !== undefined){
@@ -62,7 +60,7 @@ function InitialWorkflowHook(props){
     const {data, err, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath)
 
     if(data === null) {
-        return ""
+        return <></>
     }
 
     return(
@@ -118,7 +116,6 @@ function WorkingRevision(props) {
         }
     },[oldWf, wf])
 
-    console.log(workflow, "WORKFLOW")
     return(
         <FlexBox style={{width:"100%"}}>
             <ContentPanel style={{width:"100%"}}>
@@ -190,8 +187,9 @@ function TabBar(props) {
             className += " active"
         }
 
+        let key = GenerateRandomKey("tab-item-")
         tabDOMs.push(
-            <FlexBox className={className} onClick={() => {
+            <FlexBox key={key} className={className} onClick={() => {
                 setActiveTab(i)
                 setSearchParams({tab: i}, {replace:true})
             }}>
@@ -222,12 +220,11 @@ function WorkflowInstances(props) {
     return(
         <ContentPanelBody>
             <>
-            <div>
+            <div style={{width: "100%"}}>
         {
             instances !== null && instances.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
-            <table className="instances-table">
-
-     <>       <thead>
+            <table className="instances-table" style={{width: "100%"}}>
+            <thead>
                 <tr>
                     <th>
                         State
@@ -248,8 +245,10 @@ function WorkflowInstances(props) {
                 <>
                     <>
                     {instances.map((obj)=>{
+                    let key = GenerateRandomKey("instance-")
                     return(
                         <InstanceRow
+                            key={key}
                             namespace={namespace}
                             state={obj.node.status} 
                             name={obj.node.as} 
@@ -263,7 +262,7 @@ function WorkflowInstances(props) {
                     })}</>
                 </>
                 :<></>}
-            </tbody></>
+            </tbody>
         </table>}
             </div>
             </>
@@ -362,7 +361,7 @@ function WorkflowServices(props) {
 
     const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
     if (data === null) {
-        return ""
+        return <></>
     }
 
     return(

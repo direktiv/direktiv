@@ -8,10 +8,9 @@ import { Service } from "../../namespace-services"
 export default function WorkflowRevisions(props) {
     const {namespace, service, version, filepath} = props
     const {revisions, err} = useWorkflowService(Config.url, namespace, filepath, service, version)
-    console.log(revisions, err)
 
     if(revisions === null) {
-        return ""
+        return <></>
     }
 
     return (

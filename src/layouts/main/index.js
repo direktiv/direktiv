@@ -159,7 +159,7 @@ function MainLayout(props) {
     // TODO work out how to handle this error when listing namespaces
     if(err !== null) {
         // createNamespace, deleteNamespace or listing namespaces has an error
-        console.log(err)
+        // console.log(err)
     }
     // if (data === null) {
     //     // still loading :)
