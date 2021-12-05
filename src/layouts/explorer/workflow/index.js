@@ -58,7 +58,7 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const {data, err, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
     const [router, setRouter] = useState(null)
 
     useEffect(()=>{
@@ -82,7 +82,7 @@ function InitialWorkflowHook(props){
                         <OverviewTab namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
-                        <RevisionSelectorTab searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                        <RevisionSelectorTab getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 
@@ -398,7 +398,7 @@ function WorkflowServices(props) {
 
 
 function RevisionSelectorTab(props) {
-    const {getRevisions, deleteRevision, searchParams, setSearchParams} = props
+    const {getRevisions, deleteRevision, searchParams, setSearchParams, getWorkflowRevisionData} = props
     const [load, setLoad] = useState(true)
     const [revisions, setRevisions] = useState([])
     const [revision, setRevision] = useState(null)
@@ -429,7 +429,7 @@ function RevisionSelectorTab(props) {
     },[searchParams])
     if(revision !== null) {
         return(
-            <RevisionTab  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
+            <RevisionTab setRevision={setRevision} getRevisionWorkflowData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
         )
     }
 
