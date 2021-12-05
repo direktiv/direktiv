@@ -4,8 +4,8 @@ import FlexBox from '../../../components/flexbox';
 import {Link} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
-import { useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
-import { Config } from '../../../util';
+import { useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
+import { Config, GenerateRandomKey } from '../../../util';
 import { useParams } from 'react-router';
 
 import * as dayjs from "dayjs"
@@ -15,10 +15,7 @@ import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
 import { ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
-import AddValueButton from '../../../components/add-button';
 import DirektivEditor from '../../../components/editor';
-import { VariableFilePicker } from '../../settings/variables-panel';
-import Tabs from '../../../components/tabs';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import AddWorkflowVariablePanel from './variables';
 dayjs.extend(utc)
@@ -31,7 +28,7 @@ function WorkflowPage(props) {
     let filepath = "/"
 
     if(!namespace) {
-        return ""
+        return <></>
     }
 
     if(params["*"] !== undefined){
@@ -49,9 +46,9 @@ function InitialWorkflowHook(props){
     const [activeTab, setActiveTab] = useState(0)
 
     const {data, err, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath)
-    console.log(data, "INITIAL WORKFLOW")
+
     if(data === null) {
-        return ""
+        return <></>
     }
 
     return(
@@ -179,8 +176,9 @@ function TabBar(props) {
             className += " active"
         }
 
+        let key = GenerateRandomKey("tab-item-")
         tabDOMs.push(
-            <FlexBox className={className} onClick={() => {
+            <FlexBox key={key} className={className} onClick={() => {
                 setActiveTab(i)
             }}>
                 {tabLabels[i]}
@@ -214,8 +212,7 @@ function WorkflowInstances(props) {
         {
             instances !== null && instances.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
             <table className="instances-table" style={{width: "100%"}}>
-
-     <>       <thead>
+            <thead>
                 <tr>
                     <th>
                         State
@@ -236,8 +233,10 @@ function WorkflowInstances(props) {
                 <>
                     <>
                     {instances.map((obj)=>{
+                    let key = GenerateRandomKey("instance-")
                     return(
                         <InstanceRow
+                            key={key}
                             namespace={namespace}
                             state={obj.node.status} 
                             name={obj.node.as} 
@@ -251,7 +250,7 @@ function WorkflowInstances(props) {
                     })}</>
                 </>
                 :<></>}
-            </tbody></>
+            </tbody>
         </table>}
             </div>
             </>
@@ -350,7 +349,7 @@ function WorkflowServices(props) {
 
     const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
     if (data === null) {
-        return ""
+        return <></>
     }
 
     return(

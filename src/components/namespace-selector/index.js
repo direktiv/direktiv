@@ -50,8 +50,8 @@ function NamespaceSelector(props) {
         }
     },[showSelector])
 
-    let x = useParams("namespace");
-    console.log(x);
+    // let x = useParams("namespace");
+    // console.log(x);
 
     return (
         <>

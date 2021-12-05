@@ -24,15 +24,11 @@ function AddWorkflowVariablePanel(props) {
     const [mimeType, setMimeType] = useState("application/json")
 
     let wfVar = workflow.substring(1)
-    console.log(namespace, wfVar);
 
-    const {data, err, setWorkflowVariable, getWorkflowVariable, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
-
-    console.log(data);
-    console.log(err);
+    const {data, setWorkflowVariable, getWorkflowVariable, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
 
     if (data === null) {
-        return ""
+        return <></>
     }
 
     let uploadingBtn = "small green"
@@ -281,9 +277,7 @@ function Variable(props) {
                             </FlexBox>
                         </FlexBox>
                     </FlexBox>
-                </Modal>:
-                "Cannot show filesize greater than 2.5MiB"
-                }
+                </Modal>:<div>"Cannot show filesize greater than 2.5MiB"</div>}
         </td>
         <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.node.size)}</td>
         <td style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}> 

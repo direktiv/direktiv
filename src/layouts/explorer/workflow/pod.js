@@ -17,7 +17,7 @@ export default function WorkflowPod(props) {
     }
     
     if(revisionDetails === null){
-        return ""
+        return <></>
     }
 
     let size = "small"
@@ -67,7 +67,7 @@ export default function WorkflowPod(props) {
                                             )
                                         })}
                                     </ul>
-                                </div>:""}
+                                </div>:<></>}
                             </FlexBox>
                             <FlexBox className="col gap" style={{minWidth: "200px"}}>
                                 <div>
@@ -115,7 +115,7 @@ export default function WorkflowPod(props) {
         {pods !== null && pods.length > 0 ?
         <FlexBox>
             <PodLogs namespace={namespace} service={service} revision={revision} pods={pods} />
-        </FlexBox>:""}
+        </FlexBox>:<></>}
     </FlexBox>
     )
 }

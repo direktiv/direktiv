@@ -11,7 +11,7 @@ export default function WorkflowRevisions(props) {
     console.log(revisions, err)
 
     if(revisions === null) {
-        return ""
+        return <></>
     }
 
     return (
