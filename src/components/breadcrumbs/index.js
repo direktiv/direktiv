@@ -17,7 +17,7 @@ function Breadcrumbs(props) {
     const breadcrumbs = useBreadcrumbs(routes)
     const [searchParams, setSearchParams] = useSearchParams()
     if (!namespace){
-        return ""
+        return <></>
     }
 
     return(
