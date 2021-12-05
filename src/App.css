@@ -121,6 +121,10 @@ body {
   filter: brightness(80%);
 }
 
+.btn.bold {
+  font-weight: bold;
+}
+
 .btn.small {
   height: 18px;
   line-height: 18px;
