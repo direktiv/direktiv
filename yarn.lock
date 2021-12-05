@@ -4109,10 +4109,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-direktiv-react-hooks@^0.0.57:
-  version "0.0.57"
-  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.57.tgz#aaf2224d548de0d9180a59b86c1b53776f84d208"
-  integrity sha512-iYNUmx+xu2zMGn9ow1k7dI4NioWvOiUZXsmJLKSf5S3EoofD+TqszVNt0N1Ts6vld7FWdLQKO35U67z/9IaP/g==
+direktiv-react-hooks@^0.0.58:
+  version "0.0.58"
+  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.58.tgz#6d3425be6407121eec12ffa1f95aa7e1dde20dc4"
+  integrity sha512-tFMlXl2c7s06n2w8kpS5U0WOfMAizU0BZMOQgbtmqDurKZsvHRhXFFbno1OsAv/2hk0Gbp6Er4aCzWbLP664sw==
   dependencies:
     "@types/event-source-polyfill" "^1.0.0"
     cross-fetch "^3.1.4"
@@ -4959,11 +4959,6 @@ fast-levenshtein@^2.0.6, fast-levenshtein@~2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
-
-fast-plist@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/fast-plist/-/fast-plist-0.1.2.tgz#a45aff345196006d406ca6cdcd05f69051ef35b8"
-  integrity sha1-pFr/NFGWAG1AbKbNzQX2kFHvNbg=
 
 fastq@^1.6.0:
   version "1.10.1"
@@ -7394,13 +7389,6 @@ mkdirp@^1.0.3, mkdirp@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
-
-monaco-themes@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/monaco-themes/-/monaco-themes-0.4.0.tgz#4bcb0584efdf6586a5edb76287e7e51457f591cd"
-  integrity sha512-AJL7Sk3j1DrQo94RqaYBr+IrGNP/2f5drFkKXKyjNZHYY/j+2Pv+O4+WETYkrTj9m1Zm2K3YRuGP/I3+5rHPxw==
-  dependencies:
-    fast-plist "^0.1.2"
 
 move-concurrently@^1.0.1:
   version "1.0.1"

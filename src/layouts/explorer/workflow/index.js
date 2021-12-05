@@ -48,7 +48,7 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(0)
 
-    const {data, err, getInstancesForWorkflow, getRevisions, deleteRevision} = useWorkflow(Config.url, true, namespace, filepath)
+    const {data, err, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath)
     console.log(data, "INITIAL WORKFLOW")
     if(data === null) {
         return ""
@@ -66,7 +66,13 @@ function InitialWorkflowHook(props){
                         <RevisionSelectorTab deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
                     :<></>}
                     { activeTab === 2 ?
-                        <WorkingRevision wf={atob(data.revision.source)} />
+                        <WorkingRevision 
+                            executeWorkflow={executeWorkflow}
+                            saveWorkflow={saveWorkflow} 
+                            updateWorkflow={updateWorkflow} 
+                            discardWorkflow={discardWorkflow} 
+                            wf={atob(data.revision.source)} 
+                        />
                     :<></>}
                     { activeTab === 4 ?
                         <SettingsTab namespace={namespace} workflow={filepath} />
@@ -80,16 +86,28 @@ function InitialWorkflowHook(props){
 export default WorkflowPage;
 
 function WorkingRevision(props) {
-    const {wf} = props
+    const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow} = props
 
-    const [workflow, setWorkflow] = useState(wf)
+    const [load, setLoad] = useState(true)
+    const [oldWf, setOldWf] = useState("")
+    const [workflow, setWorkflow] = useState("")
 
     useEffect(()=>{
-        if(wf !== workflow) {
+        if(wf !== workflow && load) {
+            setLoad(false)
             setWorkflow(wf)
+            setOldWf(wf)
         }
     },[wf, workflow])
+   
+    useEffect(()=>{
+        if (oldWf !== wf) {
+            setWorkflow(wf)
+            setOldWf(wf)
+        }
+    },[oldWf, wf])
 
+    console.log(workflow, "WORKFLOW")
     return(
         <FlexBox style={{width:"100%"}}>
             <ContentPanel style={{width:"100%"}}>
@@ -104,24 +122,33 @@ function WorkingRevision(props) {
                 <ContentPanelBody>
                     <FlexBox className="col" style={{overflow:"hidden"}}>
                         <FlexBox >
-                            <DirektivEditor dlang="yaml"  dvalue={workflow} setDValue={setWorkflow} />
+                            <DirektivEditor dlang="yaml" value={oldWf} dvalue={workflow} setDValue={setWorkflow} />
                         </FlexBox>
                         <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center'}}>
                             <div style={{display:"flex", flex:1 }}>
-                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                <div onClick={async ()=> {
+                                    await discardWorkflow()
+                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                     Undo
                                 </div>
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
-                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                <div onClick={async ()=>{
+                                    let id = await executeWorkflow()
+                                    console.log(id, "ID")
+                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                     Run
                                 </div>
                             </div>
                             <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
-                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                <div onClick={async()=>{
+                                    await updateWorkflow(workflow)
+                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                     Save
                                 </div>
-                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                <div onClick={async()=>{
+                                    await saveWorkflow()
+                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                     Save as new revision
                                 </div>
                             </div>
