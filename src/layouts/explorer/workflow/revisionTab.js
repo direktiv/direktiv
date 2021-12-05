@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BsCodeSquare } from 'react-icons/bs';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
@@ -7,7 +7,17 @@ import {GenerateRandomKey} from '../../../util';
 function RevisionTab(props) {
 
     const {searchParams, setSearchParams, revision} = props
-    const [tabBtn, setTabBtn] = useState(0);
+    const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
+
+    useEffect(()=>{
+        if(searchParams.get('revtab') === null) {
+            setSearchParams({
+                tab: searchParams.get('tab'),
+                revision: revision,
+                revtab: 0
+            }, {replace: true})
+        }
+    },[searchParams])
 
     return(
         <FlexBox>
@@ -24,7 +34,7 @@ function RevisionTab(props) {
                     <div>
                        {revision}
                     </div>
-                    <TabbedButtons tabBtn={tabBtn} setTabBtn={setTabBtn} />
+                    <TabbedButtons revision={revision} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
                     {/* <FlexBox style={{maxWidth:"150px"}}>
                         <FlexBox>
                             <Button className="reveal-btn small shadow">
@@ -70,7 +80,7 @@ export default RevisionTab;
 
 function TabbedButtons(props) {
 
-    let {tabBtn, setTabBtn} = props;
+    let {tabBtn, setTabBtn, searchParams, setSearchParams, revision} = props;
 
     let tabBtns = [];
     let tabBtnLabels = ["YAML", "Diagram", "Sankey"];
@@ -87,6 +97,11 @@ function TabbedButtons(props) {
         tabBtns.push(<FlexBox key={key} className={classes}>
             <div onClick={() => {
                 setTabBtn(i)
+                setSearchParams({
+                    tab: searchParams.get('tab'),
+                    revision: revision,
+                    revtab: i
+                }, {replace: true})
             }}>
                 {tabBtnLabels[i]}
             </div>
