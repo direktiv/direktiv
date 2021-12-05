@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
-import {Link} from 'react-router-dom'
+import {Link, useSearchParams} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
-import { useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
-import { Config, GenerateRandomKey } from '../../../util';
-import { useParams } from 'react-router';
+import { useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
+import { Config } from '../../../util';
+import { useNavigate, useParams } from 'react-router';
+import {  GenerateRandomKey } from '../../../util';
 
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -18,13 +19,24 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 import DirektivEditor from '../../../components/editor';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import AddWorkflowVariablePanel from './variables';
+import Button from '../../../components/button';
+import { IoEyeOutline } from 'react-icons/io5';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
 
 function WorkflowPage(props) {
     const {namespace} = props
+    const [searchParams, setSearchParams] = useSearchParams()
     const params = useParams()
+
+    // set tab query param on load
+    useEffect(()=>{
+        if(searchParams.get('tab') === null) {
+            setSearchParams({tab: 0}, {replace:true})
+        }
+    },[searchParams, setSearchParams])
+    
     let filepath = "/"
 
     if(!namespace) {
@@ -36,14 +48,14 @@ function WorkflowPage(props) {
     }
 
     return(
-        <InitialWorkflowHook namespace={namespace} filepath={filepath}/>
+        <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
     )
 }
 
 function InitialWorkflowHook(props){
-    const {namespace, filepath} = props
+    const {namespace, filepath, searchParams, setSearchParams} = props
 
-    const [activeTab, setActiveTab] = useState(0)
+    const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
     const {data, err, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath)
 
@@ -54,13 +66,13 @@ function InitialWorkflowHook(props){
     return(
         <>
             <FlexBox id="workflow-page" className="gap col" style={{paddingRight: "8px"}}>
-                <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
+                <TabBar setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
                         <OverviewTab namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
-                        <RevisionSelectorTab deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                        <RevisionSelectorTab searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 
@@ -104,7 +116,6 @@ function WorkingRevision(props) {
         }
     },[oldWf, wf])
 
-    console.log(workflow, "WORKFLOW")
     return(
         <FlexBox style={{width:"100%"}}>
             <ContentPanel style={{width:"100%"}}>
@@ -159,7 +170,7 @@ function WorkingRevision(props) {
 
 function TabBar(props) {
 
-    let {activeTab, setActiveTab} = props;
+    let {activeTab, setActiveTab, setSearchParams} = props;
     let tabLabels = [
         "Overview",
         "Revisions",
@@ -180,6 +191,7 @@ function TabBar(props) {
         tabDOMs.push(
             <FlexBox key={key} className={className} onClick={() => {
                 setActiveTab(i)
+                setSearchParams({tab: i}, {replace:true})
             }}>
                 {tabLabels[i]}
             </FlexBox>
@@ -370,11 +382,69 @@ function WorkflowServices(props) {
     )
 }
  
+function RevisionView(props) {
+    const {searchParams, setSearchParams, revision} = props
+    return(
+        <FlexBox>
+        <FlexBox className="col gap" style={{maxHeight:"100px"}}>
+            <FlexBox>
+                Back to All Revisions
+            </FlexBox>
+            <FlexBox>
+            <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                <ContentPanelTitle>
+                    <ContentPanelTitleIcon>
+                        <BsCodeSquare />
+                    </ContentPanelTitleIcon>
+                    <div>
+                       {revision}
+                    </div>
+                    <FlexBox style={{maxWidth:"150px"}}>
+                        <FlexBox>
+                            <Button className="reveal-btn small shadow">
+                                <FlexBox className="gap">
+                                    <div>
+                                       YAML
+                                    </div>
+                                </FlexBox>
+                            </Button>
+                        </FlexBox>
+                        <FlexBox>
+                            <Button className="reveal-btn small shadow">
+                                <FlexBox className="gap">
+                                    <div>
+                                       Diagram
+                                    </div>
+                                </FlexBox>
+                            </Button>
+                        </FlexBox>
+                        <FlexBox>
+                            <Button className="reveal-btn small shadow">
+                                <FlexBox className="gap">
+                                    <div>
+                                       Sankey
+                                    </div>
+                                </FlexBox>
+                            </Button>
+                        </FlexBox>
+                    </FlexBox>
+                </ContentPanelTitle>
+                <ContentPanelBody>
+                    
+                </ContentPanelBody>
+            </ContentPanel>
+            </FlexBox>
+        </FlexBox>
+    </FlexBox>
+    )
+
+}
 
 function RevisionSelectorTab(props) {
-    const {getRevisions, deleteRevision} = props
+    const {getRevisions, deleteRevision, searchParams, setSearchParams} = props
     const [load, setLoad] = useState(true)
     const [revisions, setRevisions] = useState([])
+    const [revision, setRevision] = useState(null)
     const [err, setErr] = useState(null)
 
     // fetch revisions using the workflow hook from above
@@ -394,7 +464,18 @@ function RevisionSelectorTab(props) {
         }
         listData()
     },[load, getRevisions])
-    console.log(revisions, err)
+
+    useEffect(()=>{
+        if(searchParams.get('revision') !== null) {
+            setRevision(searchParams.get('revision'))
+        }
+    },[searchParams])
+    if(revision !== null) {
+        return(
+            <RevisionView  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
+        )
+    }
+
     return(
         <>
             <FlexBox className="gap col wrap" style={{height:"100%"}}>
@@ -452,7 +533,9 @@ function RevisionSelectorTab(props) {
                                                 <td>
                                                     set working rev
                                                 </td>
-                                                <td>
+                                                <td onClick={()=>{
+                                                    setSearchParams({tab: 1, revision: obj.node.name}, {replace: true})
+                                                }}>
                                                     open revision
                                                 </td>
                                             </tr>
