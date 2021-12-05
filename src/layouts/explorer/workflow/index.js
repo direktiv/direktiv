@@ -21,6 +21,7 @@ import { RiDeleteBin2Line } from 'react-icons/ri';
 import AddWorkflowVariablePanel from './variables';
 import Button from '../../../components/button';
 import { IoEyeOutline } from 'react-icons/io5';
+import RevisionTab from './revisionTab';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -394,64 +395,7 @@ function WorkflowServices(props) {
         </ContentPanelBody>
     )
 }
- 
-function RevisionView(props) {
-    const {searchParams, setSearchParams, revision} = props
-    return(
-        <FlexBox>
-        <FlexBox className="col gap" style={{maxHeight:"100px"}}>
-            <FlexBox>
-                Back to All Revisions
-            </FlexBox>
-            <FlexBox>
-            <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
-                <ContentPanelTitle>
-                    <ContentPanelTitleIcon>
-                        <BsCodeSquare />
-                    </ContentPanelTitleIcon>
-                    <div>
-                       {revision}
-                    </div>
-                    <FlexBox style={{maxWidth:"150px"}}>
-                        <FlexBox>
-                            <Button className="reveal-btn small shadow">
-                                <FlexBox className="gap">
-                                    <div>
-                                       YAML
-                                    </div>
-                                </FlexBox>
-                            </Button>
-                        </FlexBox>
-                        <FlexBox>
-                            <Button className="reveal-btn small shadow">
-                                <FlexBox className="gap">
-                                    <div>
-                                       Diagram
-                                    </div>
-                                </FlexBox>
-                            </Button>
-                        </FlexBox>
-                        <FlexBox>
-                            <Button className="reveal-btn small shadow">
-                                <FlexBox className="gap">
-                                    <div>
-                                       Sankey
-                                    </div>
-                                </FlexBox>
-                            </Button>
-                        </FlexBox>
-                    </FlexBox>
-                </ContentPanelTitle>
-                <ContentPanelBody>
-                    
-                </ContentPanelBody>
-            </ContentPanel>
-            </FlexBox>
-        </FlexBox>
-    </FlexBox>
-    )
 
-}
 
 function RevisionSelectorTab(props) {
     const {getRevisions, deleteRevision, searchParams, setSearchParams} = props
@@ -485,7 +429,7 @@ function RevisionSelectorTab(props) {
     },[searchParams])
     if(revision !== null) {
         return(
-            <RevisionView  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
+            <RevisionTab  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
         )
     }
 
