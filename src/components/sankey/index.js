@@ -1,4 +1,5 @@
 import {useState, useEffect} from 'react'
+import './style.css';
 import AutoSizer from "react-virtualized-auto-sizer"
 import * as d3 from 'd3' 
 import { sankeyCircular, sankeyJustify } from 'd3-sankey-circular'
@@ -135,6 +136,28 @@ function SankeyDiagram(props) {
         var svg = d3.select("#sankey-graph").append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom);
+
+
+        var defs = svg.append("defs")
+
+        var lg = defs.append("linearGradient")
+        .attr("id", "gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "100%")
+
+        var stop1 = lg.append("stop")
+        .attr("offset", "0%")
+        .style("stop-color", "#00bc9b")
+        .style("stop-opacity", "0.5")
+
+        var stop2 = lg.append("stop")
+        .attr("offset", "100%")
+        .style("stop-color", "#5eaefd")
+        .style("stop-opacity", "0.5")
+
+
         var g = svg.append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         var linkG = g.append("g")
@@ -182,17 +205,18 @@ function SankeyDiagram(props) {
         var link = linkG.data(sankeyLinks)
           .enter()
           .append("g")
-        
-        link.append("path") 
+
+        var path = link.append("path") 
           .attr("class", "sankey-link")
           .attr("d", function(linkz){
             return linkz.path;
           })
           .style("stroke-width", function (d) { return Math.max(1, d.width); })
           .style("opacity", 0.7)
-          .style("stroke", function (linkz, i) {
-            return  "black"
-          })
+          .style("stroke", "url(#gradient)")
+        //   .style("stroke", function(linkz, i){
+        //       return nodeColour(linkz.source.x0);
+        //   })
           
           link.append("title")
           .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + d.value; });
