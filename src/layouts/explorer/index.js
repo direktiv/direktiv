@@ -351,7 +351,9 @@ function DirListItem(props) {
                             actionButtons={
                                 [
                                     ButtonDefinition("Delete", async () => {
-                                        let err = await deleteNode(path)
+                                        let p = path.split('/', -1);
+                                        let pLast = p[p.length-1];
+                                        let err = await deleteNode(pLast)
                                         if (err) return err
                                     }, "small red", true, false),
                                     ButtonDefinition("Cancel", () => {
@@ -449,7 +451,10 @@ function WorkflowListItem(props) {
                                 actionButtons={
                                     [
                                         ButtonDefinition("Delete", async () => {
-                                            let err = await deleteNode(path)
+                                        let p = path.split('/', -1);
+                                        let pLast = p[p.length-1];
+
+                                        let err = await deleteNode(pLast)
                                             if (err) return err
                                         }, "small red", true, false),
                                         ButtonDefinition("Cancel", () => {
