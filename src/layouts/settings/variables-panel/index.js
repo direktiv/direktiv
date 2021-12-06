@@ -207,7 +207,7 @@ function Variables(props) {
     return(
         <FlexBox>
             {variables.length === 0  ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No variables are stored...</div>:
-            <table className="variables-table">
+            <table className="variables-table" style={{width: "100%"}}>
                 <tbody>
                  
                     {variables.map((obj)=>{

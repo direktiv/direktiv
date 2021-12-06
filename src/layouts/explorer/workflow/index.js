@@ -465,18 +465,23 @@ function SettingsTab(props) {
                                     </ContentPanelTitleIcon>
                                     Log to Event
                                 </ContentPanelTitle>
-                                <ContentPanelBody>
-                                    <FlexBox className="gap" style={{
-                                        alignItems: "center",
-                                        justifyContent: "center"
-                                    }}>
-                                        <label className="switch">
-                                            <input type="checkbox" />
-                                            <span className="slider-broadcast"></span>
-                                        </label>
-                                        <div className="rev-toggle-label hide-on-small">
-                                            Enabled
-                                        </div>                          
+                                <ContentPanelBody className="col" style={{
+                                    alignItems: "center"
+                                }}>
+                                    <FlexBox className="gap" style={{flexDirection: "column", alignItems: "center"}}>
+                                        <FlexBox className="gap" style={{
+                                            alignItems: "center",
+                                            justifyContent: "center"
+                                        }}>
+                                            <label className="switch">
+                                                <input type="checkbox" />
+                                                <span className="slider-broadcast"></span>
+                                            </label>
+                                            <div className="rev-toggle-label hide-on-small">
+                                                Enabled
+                                            </div>                          
+                                        </FlexBox>
+                                        <input style={{width: "auto", maxWidth: "200px"}} type="text" placeholder="Message" />
                                     </FlexBox>
                                 </ContentPanelBody>
                             </ContentPanel>
