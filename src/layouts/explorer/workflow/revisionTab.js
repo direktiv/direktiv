@@ -11,10 +11,11 @@ import WorkflowDiagram from '../../../components/diagram';
 import YAML from 'js-yaml'
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import { RiDeleteBin2Line } from 'react-icons/ri';
+import SankeyDiagram from '../../../components/sankey';
 
 function RevisionTab(props) {
 
-    const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData} = props
+    const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow} = props
     const [load, setLoad] = useState(true)
     const [workflow, setWorkflowData] = useState(null)
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
@@ -80,8 +81,8 @@ function RevisionTab(props) {
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                         <div onClick={async ()=>{
-                                            // let id = await executeWorkflow()
-                                            // console.log(id, "ID")
+                                            let id = await executeWorkflow("", revision)
+                                            console.log(id, "ID")
                                         }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                             Run
                                         </div>
@@ -94,7 +95,7 @@ function RevisionTab(props) {
                             ""
                         }
                         {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
-                        {tabBtn === 2 ? <div>sankey</div>:""}
+                        {tabBtn === 2 ? <SankeyDiagram revision={revision} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                     </ContentPanelBody>
                 </ContentPanel>
                 </FlexBox>
@@ -147,7 +148,7 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {getRevisions, deleteRevision, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    const {getRevisions, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
     const [load, setLoad] = useState(true)
     const [revisions, setRevisions] = useState([])
     const [revision, setRevision] = useState(null)
@@ -179,7 +180,7 @@ export function RevisionSelectorTab(props) {
 
     if(revision !== null) {
         return(
-            <RevisionTab setRevision={setRevision} getWorkflowRevisionData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
+            <RevisionTab getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} setRevision={setRevision} getWorkflowRevisionData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
         )
     }
 
