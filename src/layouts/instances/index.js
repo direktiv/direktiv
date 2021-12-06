@@ -73,7 +73,7 @@ function InstancesTable(props) {
                         Name
                     </th>
                     <th className="center-align">
-                        ID
+                        Revision ID
                     </th>
                     <th className="center-align">
                         Started <span className="hide-on-med">at</span>
@@ -132,6 +132,9 @@ export function InstanceRow(props) {
         label = <RunningState />
     }
 
+    let wfStr = name.split(':')[0]
+    let revStr = name.split(':')[1]
+
     return(
     
     <tr onClick={()=>{
@@ -140,11 +143,11 @@ export function InstanceRow(props) {
         <td className="label-cell">
             {label}
         </td>
-        <td className="center-align">
-            {name}
+        <td className="center-align" style={{fontSize: "10px", lineHeight: "20px"}}>
+            {wfStr}
         </td>
         <td style={{ fontSize: "10px", lineHeight: "20px" }} className="center-align">
-            {id}
+            {revStr}
         </td>
         <td className="center-align">
             {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span>

@@ -247,7 +247,7 @@ function WorkflowInstances(props) {
                         Name
                     </th>
                     <th className="center-align">
-                        ID
+                        Revision ID
                     </th>
                     <th className="center-align">
                         Started <span className="hide-on-small">at</span>
