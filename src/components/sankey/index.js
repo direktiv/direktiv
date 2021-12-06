@@ -11,6 +11,7 @@ export default function Sankey(props) {
     const [links, setLinks] = useState([])
     const [nodes, setNodes] = useState([])
     const [load, setLoad] = useState(false)
+    const [ini, setIni] = useState(true)
 
     useEffect(()=>{
         async function fetchMet() {
@@ -84,8 +85,11 @@ export default function Sankey(props) {
         
             setLoad(false)
         }
-        gatherMetrics()
-    },[getWorkflowSankeyMetrics, revision])
+        if(ini) {
+            gatherMetrics()
+            setIni(false)
+        }
+    },[getWorkflowSankeyMetrics, revision, ini])
 
     return(
         <div style={{height:"90%", width:"90%", minHeight:"300px", margin:"auto", marginTop:"20px", overflow:"hidden"}}>
