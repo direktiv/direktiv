@@ -4,7 +4,7 @@ import FlexBox from '../../../components/flexbox';
 import {Link, useSearchParams} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
-import { useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
+import { useNamespaceDependencies, useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 import { useNavigate, useParams } from 'react-router';
 import {  GenerateRandomKey } from '../../../util';
@@ -22,6 +22,7 @@ import AddWorkflowVariablePanel from './variables';
 import Button from '../../../components/button';
 import { IoEyeOutline } from 'react-icons/io5';
 import RevisionTab, { RevisionSelectorTab } from './revisionTab';
+import DependencyDiagram from '../../../components/dependency-diagram';
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -93,6 +94,11 @@ function InitialWorkflowHook(props){
                             wf={atob(data.revision.source)} 
                         />
                     :<></>}
+                    { activeTab === 3 ?
+                        <WorkflowDependencies namespace={namespace} workflow={filepath} />
+                    :
+                    <></>
+                    }
                     { activeTab === 4 ?
                         <SettingsTab namespace={namespace} workflow={filepath} />
                     :<></>}
@@ -103,6 +109,49 @@ function InitialWorkflowHook(props){
 }
 
 export default WorkflowPage;
+
+
+function WorkflowDependencies(props) {
+    const {workflow, namespace} = props
+    const [load, setLoad] = useState(true)
+    const [dependencies, setDependencies] = useState(null)
+    const {data, err, getWorkflows} = useNamespaceDependencies(Config.url, namespace, localStorage.getItem('apikey'))
+
+    useEffect(()=>{
+        async function getDependencies() {
+            if(load && data !== null){
+                let wfo = await getWorkflows()
+                let arr = Object.keys(wfo)
+                for(let i=0 ; i < arr.length; i++) {
+                    if(arr[i] === workflow) {
+                        setDependencies(wfo[workflow])
+                        break
+                    }
+                }
+                setLoad(false)
+            }
+        }
+        getDependencies()
+    },[load, data])
+
+    return(
+        <FlexBox style={{width:"100%"}}>
+            <ContentPanel style={{width:"100%"}}>
+                <ContentPanelTitle>
+                    <ContentPanelTitleIcon>
+                        <BsCodeSquare />
+                    </ContentPanelTitleIcon>
+                    <div>
+                        Dependency Graph
+                    </div>
+                </ContentPanelTitle>
+                <ContentPanelBody>
+                    <DependencyDiagram dependencies={dependencies} workflow={workflow} type={"workflow"}/>
+                </ContentPanelBody>
+            </ContentPanel>
+        </FlexBox>
+    )
+}
 
 function WorkingRevision(props) {
     const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow} = props
