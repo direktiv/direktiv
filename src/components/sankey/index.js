@@ -209,10 +209,10 @@ function SankeyDiagram(props) {
           })
           .style("stroke-width", function (d) { return Math.max(1, d.width); })
           .style("opacity", 0.7)
-          .style("stroke", "url(#gradient)")
-        //   .style("stroke", function(linkz, i){
-        //       return nodeColour(linkz.source.x0);
-        //   })
+          .style("stroke", function(linkz, i){
+            return nodeColour(linkz.source.x0);
+          })
+        //   .style("stroke", "url(#gradient)")
           
           link.append("title")
           .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + d.value; });
