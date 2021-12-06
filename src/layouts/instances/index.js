@@ -66,16 +66,19 @@ function InstancesTable(props) {
 
      <>       <thead>
                 <tr>
-                    <th>
+                    <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>
                         State
                     </th>
-                    <th>
+                    <th className="center-align">
                         Name
                     </th>
-                    <th>
+                    <th className="center-align">
+                        Revision ID
+                    </th>
+                    <th className="center-align">
                         Started <span className="hide-on-med">at</span>
                     </th>
-                    <th>
+                    <th className="center-align">
                         <span className="hide-on-med">Last</span> Updated
                     </th>
                 </tr>
@@ -137,13 +140,16 @@ export function InstanceRow(props) {
         <td>
             {label}
         </td>
-        <td>
-                {name}
+        <td className="center-align">
+            {name}
         </td>
-        <td>
+        <td style={{ fontSize: "10px" }} className="center-align">
+            {id}
+        </td>
+        <td className="center-align">
             {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span>
         </td>
-        <td>
+        <td className="center-align">
             {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span>
         </td>
     </tr>
