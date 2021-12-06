@@ -43,3 +43,9 @@
         padding-right: 8px;
     }
 }
+
+@media screen and (max-width: 1050px) {
+    .success-label, .fail-label, .cancel-label, .running-label {
+        margin: auto;
+    }
+}

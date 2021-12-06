@@ -73,7 +73,7 @@ function InstancesTable(props) {
                         Name
                     </th>
                     <th className="center-align">
-                        Revision ID
+                        ID
                     </th>
                     <th className="center-align">
                         Started <span className="hide-on-med">at</span>
@@ -137,13 +137,13 @@ export function InstanceRow(props) {
     <tr onClick={()=>{
         navigate(`/n/${namespace}/instances/${id}`)
     }} className="instance-row" style={{cursor: "pointer"}}>
-        <td>
+        <td className="label-cell">
             {label}
         </td>
         <td className="center-align">
             {name}
         </td>
-        <td style={{ fontSize: "10px" }} className="center-align">
+        <td style={{ fontSize: "10px", lineHeight: "20px" }} className="center-align">
             {id}
         </td>
         <td className="center-align">
@@ -159,10 +159,11 @@ export function InstanceRow(props) {
 function StateLabel(props) {
 
     let {className, label} = props;
+    className += " label-cell"
 
     return (
         <div>
-            <FlexBox className={className} style={{ alignItems: "center", padding: "0px" }} >
+            <FlexBox className={className} style={{ alignItems: "center", padding: "0px", width: "fit-content" }} >
                 <BsDot style={{ height: "32px", width: "32px" }} />
                 <div className="hide-on-med" style={{marginLeft: "-8px", marginRight: "16px"}}>{label}</div>
             </FlexBox>

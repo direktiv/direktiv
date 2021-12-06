@@ -240,16 +240,19 @@ function WorkflowInstances(props) {
             <table className="instances-table" style={{width: "100%"}}>
             <thead>
                 <tr>
-                    <th>
+                    <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>
                         State
                     </th>
-                    <th>
+                    <th className="center-align">
                         Name
                     </th>
-                    <th>
+                    <th className="center-align">
+                        ID
+                    </th>
+                    <th className="center-align">
                         Started <span className="hide-on-small">at</span>
                     </th>
-                    <th>
+                    <th className="center-align">
                         <span className="hide-on-small">Last</span> Updated
                     </th>
                 </tr>
