@@ -16,7 +16,7 @@ function RevisionTab(props) {
 
     const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData} = props
     const [load, setLoad] = useState(true)
-    const [workflow, setWorkflowData] = useState("")
+    const [workflow, setWorkflowData] = useState(null)
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
 
     useEffect(()=>{
@@ -25,7 +25,7 @@ function RevisionTab(props) {
                 tab: searchParams.get('tab'),
                 revision: revision,
                 revtab: 0
-            }, {replace: true})
+            })
         }
     },[searchParams])
 
@@ -50,7 +50,7 @@ function RevisionTab(props) {
                         setRevision(null)
                         setSearchParams({
                             tab: searchParams.get('tab')
-                        }, {replace: true})
+                        })
                     }} className="small light" style={{ minWidth: "160px", maxWidth: "160px" }}>
                         <FlexBox className="gap" style={{ alignItems: "center", justifyContent: "center" }}>
                             <BiChevronLeft style={{ fontSize: "16px" }} />
@@ -93,7 +93,7 @@ function RevisionTab(props) {
                             :
                             ""
                         }
-                        {tabBtn === 1 ? <WorkflowDiagram workflow={YAML.load(workflow)}/>:""}
+                        {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
                         {tabBtn === 2 ? <div>sankey</div>:""}
                     </ContentPanelBody>
                 </ContentPanel>
@@ -129,7 +129,7 @@ function TabbedButtons(props) {
                     tab: searchParams.get('tab'),
                     revision: revision,
                     revtab: i
-                }, {replace: true})
+                })
             }}>
                 {tabBtnLabels[i]}
             </div>
@@ -176,9 +176,10 @@ export function RevisionSelectorTab(props) {
             setRevision(searchParams.get('revision'))
         }
     },[searchParams])
+
     if(revision !== null) {
         return(
-            <RevisionTab getWorkflowRevisionData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
+            <RevisionTab setRevision={setRevision} getWorkflowRevisionData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
         )
     }
 
@@ -238,6 +239,7 @@ export function RevisionSelectorTab(props) {
                                                             ButtonDefinition("Delete", async () => {
                                                                 let err = await deleteRevision(obj.node.name)
                                                                 if (err) return err
+                                                                setRevisions(await getRevisions())
                                                             }, "small red", true, false),
                                                             ButtonDefinition("Cancel", () => {
                                                             }, "small light", true, false)
@@ -256,7 +258,7 @@ export function RevisionSelectorTab(props) {
                                             Use Revision
                                         </Button>
                                         <Button className="small light bold" onClick={()=>{
-                                                    setSearchParams({tab: 1, revision: obj.node.name}, {replace: true})
+                                                    setSearchParams({tab: 1, revision: obj.node.name})
                                         }}>
                                             Open Revision
                                         </Button>
@@ -328,7 +330,7 @@ export function RevisionSelectorTab(props) {
                                                     set working rev
                                                 </td>
                                                 <td onClick={()=>{
-                                                    setSearchParams({tab: 1, revision: obj.node.name}, {replace: true})
+                                                    setSearchParams({tab: 1, revision: obj.node.name})
                                                 }}>
                                                     open revision
                                                 </td>
