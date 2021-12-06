@@ -58,22 +58,31 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath)
+    const {data, err, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const [router, setRouter] = useState(null)
 
-    if(data === null) {
+    useEffect(()=>{
+        async function getD() {
+            if(data !== null && router === null) {
+                setRouter(await getWorkflowRouter())
+            }
+        }
+        getD()
+    },[router, data])
+
+    if(data === null || router === null) {
         return <></>
     }
-
     return(
         <>
             <FlexBox id="workflow-page" className="gap col" style={{paddingRight: "8px"}}>
-                <TabBar setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <TabBar setRouter={setRouter} router={router} getWorkflowRouter={getWorkflowRouter} toggleWorkflow={toggleWorkflow}  setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
                         <OverviewTab namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
-                        <RevisionSelectorTab searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                        <RevisionSelectorTab getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 
@@ -171,7 +180,7 @@ function WorkingRevision(props) {
 
 function TabBar(props) {
 
-    let {activeTab, setActiveTab, setSearchParams} = props;
+    let {activeTab, setActiveTab, setSearchParams, toggleWorkflow, getWorkflowRouter, router, setRouter} = props;
     let tabLabels = [
         "Overview",
         "Revisions",
@@ -179,6 +188,7 @@ function TabBar(props) {
         "Dependency Graph", 
         "Settings"
     ]
+
 
     let tabDOMs = [];
     for (let i = 0; i < 5; i++) {
@@ -204,7 +214,10 @@ function TabBar(props) {
             {tabDOMs}
             <FlexBox className="tab-bar-item gap uninteractive">
             <label className="switch">
-                <input type="checkbox" />
+                <input onChange={async()=>{
+                    await toggleWorkflow(!router.live)
+                    setRouter(await getWorkflowRouter())
+                }} type="checkbox" checked={router ? router.live : false}/>
                 <span className="slider-broadcast"></span>
             </label>
             <div className="rev-toggle-label hide-on-small">
