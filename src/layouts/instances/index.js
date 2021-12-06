@@ -62,7 +62,7 @@ function InstancesTable(props) {
         <>
         {
             data !== null && data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
-    <table className="instances-table">
+    <table className="instances-table" style={{width: "100%"}}>
 
      <>       <thead>
                 <tr>
