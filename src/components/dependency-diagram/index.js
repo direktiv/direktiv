@@ -157,6 +157,32 @@ function DependencyGraph(props) {
 function generateElements(getLayoutedElements, dependencies, workflow) {
     let newElements = []
 
+    let parentNodes = Object.keys(dependencies.parents).map((obj)=>{
+        return(
+            {
+                id: `parent-${obj}`,
+                position: position,
+                data: {
+                    label: obj,
+                    type: 'parent'
+                },
+                type: dependencies.parents[obj] ? "found": "missing"
+            }
+        )
+    })
+
+    let parentEdges = Object.keys(dependencies.parents).map((obj)=>{
+        return(
+            {
+                id: `${obj}-${workflow}`,
+                source: `parent-${obj}`,
+                target: workflow,
+                type: 'pathfinding',
+                arrowHeadType: 'arrow'
+            }
+        )
+    })
+
     newElements.push({
         id: workflow,
         position: position,
@@ -190,5 +216,106 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
         })
     })
 
-    return getLayoutedElements(newElements.concat(secretNodes, secretEdges))
+    let globalNodes = Object.keys(dependencies.global_functions).map((obj)=>{
+        return(
+            {
+                id: `g-${obj}`,
+                position: position,
+                data: {
+                    label: obj,
+                    type: 'knative-global'
+                },
+                type: dependencies.global_functions[obj] ? "found": "missing"
+            }
+        )
+    })
+    let globalEdges = Object.keys(dependencies.global_functions).map((obj)=>{
+        return( {
+            id: `${workflow}-g-${obj}`,
+            source: workflow,
+            target: `g-${obj}`,
+            type: 'pathfinding',
+            arrowHeadType: 'arrow'
+        })
+    })
+
+    let namespaceNodes = Object.keys(dependencies.namespace_functions).map((obj)=>{
+        return(
+            {
+                id: `ns-${obj}`,
+                position: position,
+                data: {
+                    label: obj,
+                    type: 'knative-namespace'
+                },
+                type: dependencies.namespace_functions[obj] ? "found": "missing"
+            }
+        )
+    })
+    let namespaceEdges = Object.keys(dependencies.namespace_functions).map((obj)=>{
+        return( {
+            id: `${workflow}-ns-${obj}`,
+            source: workflow,
+            target: `ns-${obj}`,
+            type: 'pathfinding',
+            arrowHeadType: 'arrow'
+        })
+    })
+
+    let subflowNodes = Object.keys(dependencies.subflows).map((obj)=>{
+        return(
+            {
+                id: `subflow-${obj}`,
+                position: position,
+                data: {
+                    label: obj,
+                    type: 'subflow'
+                },
+                type: dependencies.subflows[obj] ? "found": "missing"
+            }
+        )
+    })
+    let subflowEdges = Object.keys(dependencies.subflows).map((obj)=>{
+        return( {
+            id: `${workflow}-subflow-${obj}`,
+            source: workflow,
+            target: `subflow-${obj}`,
+            type: 'pathfinding',
+            arrowHeadType: 'arrow'
+        })
+    })
+
+    let namespaceVarNodes = Object.keys(dependencies.namespace_variables).map((obj)=>{
+        return(
+            {
+                id: `nsvar-${obj}`,
+                position: position,
+                data: {
+                    label: obj,
+                    type: 'namespace-variable'
+                },
+                type: dependencies.namespace_variables[obj] ? "found": "missing"
+            }
+        )
+    })
+    let namespaceVarEdges = Object.keys(dependencies.namespace_variables).map((obj)=>{
+        return( {
+            id: `${workflow}-nsvar-${obj}`,
+            source: workflow,
+            target: `nsvar-${obj}`,
+            type: 'pathfinding',
+            arrowHeadType: 'arrow'
+        })
+    })
+
+    return getLayoutedElements(
+        newElements.concat(
+            parentNodes, parentEdges,
+            secretNodes, secretEdges,
+            globalNodes, globalEdges,
+            namespaceNodes, namespaceEdges,
+            subflowNodes, subflowEdges,
+            namespaceVarNodes, namespaceVarEdges
+        )
+    )
 }
