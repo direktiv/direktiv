@@ -14,12 +14,17 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
-import { ServiceStatus } from '../../namespace-services';
+import { Service, ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
 import { RevisionSelectorTab, RevisionTrafficShaper } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
+
+import Slider, { Range } from 'rc-slider';
+import 'rc-slider/assets/index.css';
+
+
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -77,7 +82,7 @@ function InitialWorkflowHook(props){
                 <TabBar setRouter={setRouter} router={router} getWorkflowRouter={getWorkflowRouter} toggleWorkflow={toggleWorkflow}  setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
-                        <OverviewTab namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
+                        <OverviewTab router={router} namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
                         <>
@@ -337,8 +342,8 @@ function WorkflowInstances(props) {
 }
 
 function OverviewTab(props) {
-    const {getInstancesForWorkflow,  namespace, filepath} = props
-
+    const {getInstancesForWorkflow,  namespace, filepath, router} = props
+    console.log(router)
     const [load, setLoad] = useState(true)
     const [instances, setInstances] = useState([])
     const [err, setErr] = useState(null)
@@ -403,6 +408,7 @@ function OverviewTab(props) {
                             Traffic Distribution
                         </div>
                     </ContentPanelTitle>
+                    <TrafficDistribution routes={router.routes}/>
                 </ContentPanel>
             </FlexBox>
             <FlexBox>
@@ -422,6 +428,41 @@ function OverviewTab(props) {
     )
 }
 
+function TrafficDistribution(props) {
+    const {routes} = props
+
+    // using latest for traffic
+    if (routes.length === 0) {
+        return (
+            <ContentPanelBody>
+                <FlexBox className="col gap" style={{justifyContent:"center"}}>
+                    <Slider className="traffic-distribution" disabled={true}/>
+                    <FlexBox className="col" style={{fontSize:"10pt", marginTop:"5px", maxHeight:"20px", color: "#C1C5C8"}}>
+                        latest<span style={{fontSize:"8pt"}}>100%</span>
+                    </FlexBox>
+                </FlexBox>
+            </ContentPanelBody>
+        )
+    }
+
+
+    return(
+        <ContentPanelBody>
+            <FlexBox className="col gap">
+                <Slider className="traffic-distribution" disabled={true}/>
+                <FlexBox style={{fontSize:"10pt", marginTop:"5px"}}>
+                    <FlexBox>
+                        Revision One
+                    </FlexBox>
+                    <FlexBox style={{justifyContent:"flex-end"}}>
+                        Revision Two
+                    </FlexBox>
+                </FlexBox>
+            </FlexBox>
+        </ContentPanelBody>
+    )
+}
+
 function WorkflowServices(props) {
     const {namespace, filepath} = props
 
@@ -432,50 +473,22 @@ function WorkflowServices(props) {
 
     return(
         <ContentPanelBody>
-            <ul style={{listStyle:"none", margin:0, paddingLeft:"10px"}}>
+            <FlexBox className="col gap">
                 {data.map((obj)=>{
                     return(
-                        <Link to={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}>
-                            <li style={{display:"flex", alignItems:'center', gap :"10px"}}>
-                                <ServiceStatus status={obj.status}/>
-                                {obj.info.name}({obj.info.image})
-                            </li>
-                        </Link>
+                        <Service
+                            dontDelete={true}
+                            url={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}
+                            name={obj.info.name}
+                            status={obj.status}
+                            image={obj.info.image}
+                            conditions={obj.conditions}
+                        />
+      
                     )
                 })}
-            </ul>
-        </ContentPanelBody>
-    )
-}
-
-function RevisionSelectedTab(props) {
-    return(
-        <>
-            <FlexBox>
-                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <BsCodeSquare />
-                        </ContentPanelTitleIcon>
-                        <div>
-                            Revision Name
-                        </div>
-                        <FlexBox style={{justifyContent: "end", paddingRight: "8px"}}>
-                            <div>
-                                <FlexBox className="revision-panel-btn-bar">
-                                    <div>Editor</div>
-                                    <div>Diagram</div>
-                                    <div>Sankey</div>
-                                </FlexBox>
-                            </div>
-                        </FlexBox>
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        testing
-                    </ContentPanelBody>
-                </ContentPanel>
             </FlexBox>
-        </>
+        </ContentPanelBody>
     )
 }
 
@@ -502,7 +515,7 @@ function SettingsTab(props) {
                                         + Add
                                     </ContentPanelHeaderButton>
                                 </ContentPanelTitle>
-                                <ContentPanelBody>
+                                <ContentPanelBody> 
 
                                 </ContentPanelBody>
                             </ContentPanel>

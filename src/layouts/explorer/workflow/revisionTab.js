@@ -14,6 +14,9 @@ import { RiDeleteBin2Line } from 'react-icons/ri';
 import SankeyDiagram from '../../../components/sankey';
 import { IoSettings } from 'react-icons/io5';
 
+import Slider, { Range } from 'rc-slider';
+import 'rc-slider/assets/index.css';
+
 function RevisionTab(props) {
 
     const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow} = props
