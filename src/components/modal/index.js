@@ -176,7 +176,7 @@ function ModalOverlay(props) {
                     <div style={{ ...modalStyle }} className="modal-body auto-margin" onClick={(e) => {
                         e.stopPropagation()
                     }}>
-                        <ContentPanel>
+                        <ContentPanel style={{maxHeight: "80vh"}}>
                             <ContentPanelTitle>
                                 <FlexBox style={{ maxWidth: "18px" }}>
                                     <ContentPanelTitleIcon>
