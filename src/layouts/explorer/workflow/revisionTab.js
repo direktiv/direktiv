@@ -12,8 +12,9 @@ import YAML from 'js-yaml'
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import SankeyDiagram from '../../../components/sankey';
 import { IoSettings } from 'react-icons/io5';
-import 'rc-slider/assets/index.css';
 
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 function RevisionTab(props) {
 
     const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow} = props
@@ -144,7 +145,7 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {getRevisions, setRevisions, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    const {getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
     // const [load, setLoad] = useState(true)
     const [revision, setRevision] = useState(null)
 
