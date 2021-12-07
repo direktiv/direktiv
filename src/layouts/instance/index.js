@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './style.css'
 import { Config } from '../../util';
+import Button from '../../components/button';
 import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
@@ -61,58 +62,84 @@ function InstancePage(props) {
     
 
     return (<>
-
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
-            <FlexBox>
-                <ContentPanel style={{width: "100%"}}>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <AiFillCode />
-                        </ContentPanelTitleIcon>
-                        <FlexBox className="gap" style={{alignItems:"center"}}>
-                            <div>
-                            Instance Details
-                            </div>
-                            {label} 
-                        </FlexBox>
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        <FlexBox className="col gap">
-                            <div style={{padding: "4px", display: "flex", flexWrap:"wrap", gap: "8px"}}>
-                                <FlexBox className="wrap gap">
-                                    <InstanceTuple label={"Workflow"} value={data.as} linkTo={linkURL} />
-                                    <InstanceTuple label={"ID"} value={data.id} />
-                                    <InstanceTuple label={"Updated at"} value={data.updatedAt} />
-                                    <InstanceTuple label={"Created at"} value={data.createdAt} />
-                                </FlexBox>
-                            </div>
-                            { data.status === "failed" ? 
-                            <div>
-                                <FlexBox className="wrap gap">
-                                    { data.errorCode ? <InstanceTuple label={"Error code"} value={data.errorCode} /> :<></>}
-                                    { data.errorMessage ? <InstanceTuple label={"Error message"} value={data.errorMessage} /> :<></>}
-                                    <InstanceTuple label={""} value={""} /><InstanceTuple label={""} value={""} />
-                                </FlexBox>
-                            </div> :<></>}
-                            <FlexBox>
-                                <div style={{width: "100%", minWidth: "100%", height: "100%", minHeight: "100%", backgroundColor: "#0e0e0e"}}>
-                                    <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
-                                </div>
-                            </FlexBox>
-                        </FlexBox>
-                    </ContentPanelBody>
-                </ContentPanel>
-            </FlexBox>
             <FlexBox className="gap wrap">
-                <FlexBox style={{minWidth: "300px"}}>
+                <FlexBox style={{minWidth: "300px", flex: "5"}}>
                     <ContentPanel style={{width: "100%"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
                                 <AiFillCode />
                             </ContentPanelTitleIcon>
-                            <FlexBox className="gap">
+                            <FlexBox className="gap" style={{alignItems:"center"}}>
                                 <div>
-                                Input Data
+                                Instance Details
+                                </div>
+                                {label} 
+                                <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px"}}>
+                                    <Link to={linkURL}>
+                                        <Button className="small light">
+                                            View Workflow
+                                        </Button>
+                                    </Link>
+                                </FlexBox>
+                            </FlexBox>
+                        </ContentPanelTitle>
+                        <ContentPanelBody>
+                            <FlexBox className="col gap">
+                                {/* <div style={{padding: "4px", flexWrap:"wrap", gap: "8px"}}>
+                                    <FlexBox className="wrap gap">
+                                        <InstanceTuple label={"Workflow"} value={data.as} linkTo={linkURL} />
+                                        <InstanceTuple label={"ID"} value={data.id} />
+                                        <InstanceTuple label={"Updated at"} value={data.updatedAt} />
+                                        <InstanceTuple label={"Created at"} value={data.createdAt} />
+                                    </FlexBox>
+                                </div>
+                                { data.status === "failed" ? 
+                                <div>
+                                    <FlexBox className="wrap gap">
+                                        { data.errorCode ? <InstanceTuple label={"Error code"} value={data.errorCode} /> :<></>}
+                                        { data.errorMessage ? <InstanceTuple label={"Error message"} value={data.errorMessage} /> :<></>}
+                                        <InstanceTuple label={""} value={""} /><InstanceTuple label={""} value={""} />
+                                    </FlexBox>
+                                </div> :<></>} */}
+                                <FlexBox>
+                                    <div style={{width: "100%", minWidth: "100%", height: "100%", minHeight: "100%", backgroundColor: "#0e0e0e"}}>
+                                        <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                                    </div>
+                                </FlexBox>
+                            </FlexBox>
+                        </ContentPanelBody>
+                    </ContentPanel>
+                </FlexBox>
+                <FlexBox className="gap wrap" style={{minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
+                    <FlexBox style={{minWidth: "300px"}}>
+                        <ContentPanel style={{width: "100%"}}>
+                            <ContentPanelTitle>
+                                <ContentPanelTitleIcon>
+                                    <AiFillCode />
+                                </ContentPanelTitleIcon>
+                                <FlexBox className="gap">
+                                    <div>
+                                    Input Data
+                                    </div>
+                                </FlexBox>
+                            </ContentPanelTitle>
+                            <ContentPanelBody>
+                            </ContentPanelBody>
+                        </ContentPanel>
+                    </FlexBox>
+                </FlexBox>
+            </FlexBox>
+            <FlexBox className="gap wrap">
+                <FlexBox style={{minWidth: "300px", flex: "5"}}>
+                    <ContentPanel style={{width: "100%"}}>
+                        <ContentPanelTitle>
+                            <ContentPanelTitleIcon>
+                                <AiFillCode />
+                            </ContentPanelTitleIcon>
+                            <FlexBox className="gap" style={{alignItems:"center"}}>
+                                <div>
+                                Logical Flow Graph
                                 </div>
                             </FlexBox>
                         </ContentPanelTitle>
@@ -120,7 +147,7 @@ function InstancePage(props) {
                         </ContentPanelBody>
                     </ContentPanel>
                 </FlexBox>
-                <FlexBox style={{minWidth: "300px"}}>
+                <FlexBox style={{minWidth: "300px", flex: "2"}}>
                     <ContentPanel style={{width: "100%"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
