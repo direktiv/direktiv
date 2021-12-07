@@ -64,7 +64,7 @@ export default function WorkflowDiagram(props) {
             }
             setLoad(false)
         }
-    },[load, workflow])
+    },[load, workflow,flow, instanceStatus])
 
     if(load) {
         return <></>

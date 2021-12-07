@@ -138,24 +138,24 @@ function SankeyDiagram(props) {
                     .attr("height", height + margin.top + margin.bottom);
 
 
-        var defs = svg.append("defs")
+        // var defs = svg.append("defs")
 
-        var lg = defs.append("linearGradient")
-        .attr("id", "gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "100%")
+        // var lg = defs.append("linearGradient")
+        // .attr("id", "gradient")
+        // .attr("x1", "0%")
+        // .attr("y1", "0%")
+        // .attr("x2", "100%")
+        // .attr("y2", "100%")
 
-        var stop1 = lg.append("stop")
-        .attr("offset", "0%")
-        .style("stop-color", "#00bc9b")
-        .style("stop-opacity", "0.5")
+        // var stop1 = lg.append("stop")
+        // .attr("offset", "0%")
+        // .style("stop-color", "#00bc9b")
+        // .style("stop-opacity", "0.5")
 
-        var stop2 = lg.append("stop")
-        .attr("offset", "100%")
-        .style("stop-color", "#5eaefd")
-        .style("stop-opacity", "0.5")
+        // var stop2 = lg.append("stop")
+        // .attr("offset", "100%")
+        // .style("stop-color", "#5eaefd")
+        // .style("stop-opacity", "0.5")
 
 
         var g = svg.append("g")
@@ -206,7 +206,7 @@ function SankeyDiagram(props) {
           .enter()
           .append("g")
 
-        var path = link.append("path") 
+        link.append("path") 
           .attr("class", "sankey-link")
           .attr("d", function(linkz){
             return linkz.path;

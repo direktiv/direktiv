@@ -10,11 +10,8 @@ import DirektivEditor from '../../../components/editor';
 import WorkflowDiagram from '../../../components/diagram';
 import YAML from 'js-yaml'
 import Modal, { ButtonDefinition } from '../../../components/modal';
-import { RiDeleteBin2Line } from 'react-icons/ri';
 import SankeyDiagram from '../../../components/sankey';
 import { IoSettings } from 'react-icons/io5';
-
-import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 function RevisionTab(props) {
@@ -32,7 +29,7 @@ function RevisionTab(props) {
                 revtab: 0
             })
         }
-    },[searchParams])
+    },[searchParams, revision, setSearchParams])
 
     useEffect(()=>{
         async function getRevWorkflow() {
@@ -43,7 +40,7 @@ function RevisionTab(props) {
             }
         }
         getRevWorkflow()
-    },[load, searchParams])
+    },[load, searchParams, getWorkflowRevisionData, revision])
 
     console.log(workflow)
 
@@ -181,6 +178,10 @@ export function RevisionSelectorTab(props) {
             setRevision(searchParams.get('revision'))
         }
     },[searchParams])
+
+    if (err) {
+        // TODO report err
+    }
 
     if(revision !== null) {
         return(

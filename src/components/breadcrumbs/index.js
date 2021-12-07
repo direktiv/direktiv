@@ -15,7 +15,7 @@ const routes = [
 function Breadcrumbs(props) {
     const {namespace} = props
     const breadcrumbs = useBreadcrumbs(routes)
-    const [searchParams, setSearchParams] = useSearchParams()
+    const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
     if (!namespace){
         return <></>
     }

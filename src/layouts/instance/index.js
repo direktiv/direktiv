@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import './style.css'
 import { Config } from '../../util';
 import { useParams } from 'react-router';
@@ -31,7 +31,7 @@ function InstancePage(props) {
     const params = useParams()
     let instanceID = params["id"];
 
-    let {data, err, getInput, getOutput, getInstance} = useInstance(Config.url, true, namespace, instanceID);
+    let {data, err} = useInstance(Config.url, true, namespace, instanceID);
     if (data === null) {
         return <></>
     }

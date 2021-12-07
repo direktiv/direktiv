@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
-import {Link, useSearchParams} from 'react-router-dom'
+import {useSearchParams} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
-import { useNamespaceDependencies, useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
+import { useNamespaceDependencies, useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 import { useParams } from 'react-router';
 import {  GenerateRandomKey } from '../../../util';
@@ -14,14 +14,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
-import { Service, ServiceStatus } from '../../namespace-services';
-import Modal, { ButtonDefinition } from '../../../components/modal';
+import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
 import { RevisionSelectorTab, RevisionTrafficShaper } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
 
-import Slider, { Range } from 'rc-slider';
+import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 
@@ -61,7 +60,7 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const {data, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
     const [router, setRouter] = useState(null)
 
     useEffect(()=>{
@@ -71,7 +70,7 @@ function InitialWorkflowHook(props){
             }
         }
         getD()
-    },[router, data])
+    },[router, data, getWorkflowRouter])
 
     if(data === null || router === null) {
         return <></>
@@ -120,7 +119,7 @@ function WorkflowDependencies(props) {
     const {workflow, namespace} = props
     const [load, setLoad] = useState(true)
     const [dependencies, setDependencies] = useState(null)
-    const {data, err, getWorkflows} = useNamespaceDependencies(Config.url, namespace, localStorage.getItem('apikey'))
+    const {data, getWorkflows} = useNamespaceDependencies(Config.url, namespace, localStorage.getItem('apikey'))
 
     useEffect(()=>{
         async function getDependencies() {
@@ -137,7 +136,7 @@ function WorkflowDependencies(props) {
             }
         }
         getDependencies()
-    },[load, data])
+    },[load, data, getWorkflows, workflow])
 
     return(
         <FlexBox style={{width:"100%"}}>
@@ -171,7 +170,7 @@ function WorkingRevision(props) {
             setWorkflow(wf)
             setOldWf(wf)
         }
-    },[wf, workflow])
+    },[wf, workflow, load])
    
     useEffect(()=>{
         if (oldWf !== wf) {
@@ -366,6 +365,9 @@ function OverviewTab(props) {
         listData()
     },[load, getInstancesForWorkflow])
 
+    if (err) {
+        // TODO report error
+    }
 
     return(
         <>
@@ -469,6 +471,10 @@ function WorkflowServices(props) {
     const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
     if (data === null) {
         return <></>
+    }
+
+    if (err) {
+        // TODO report error
     }
 
     return(

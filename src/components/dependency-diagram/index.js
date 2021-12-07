@@ -58,7 +58,7 @@ export default function DependencyDiagram(props) {
             }    
         }
         drawGraph()
-    },[load, dependencies])
+    },[load, dependencies, type, workflow])
 
 
     if(load){
