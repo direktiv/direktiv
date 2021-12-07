@@ -152,6 +152,7 @@ function NavItems(props) {
     let {pathname, style, namespace, toggleResponsive} = props;
 
     let explorer = matchPath("/n/:namespace", pathname)
+    let wfexplorer = matchPath("/n/:namespace/explorer/*", pathname)
     let monitoring = matchPath("/n/:namespace/monitoring", pathname)
     // let builder = matchPath("/n/:namespace/builder", pathname)
     let events = matchPath("/n/:namespace/events", pathname)
@@ -177,7 +178,7 @@ function NavItems(props) {
                     <Link to={`/n/${namespace}`} onClick={() => {
                         toggleResponsive(false)
                     }}>
-                        <NavItem className={explorer ? "active":""} label="Explorer">
+                        <NavItem className={explorer || wfexplorer ? "active":""} label="Explorer">
                             <BsFolder2Open/>
                         </NavItem>
                     </Link>

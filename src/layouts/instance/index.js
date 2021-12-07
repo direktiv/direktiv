@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import './style.css'
-import { Config } from '../../util';
+import { Config, copyTextToClipboard } from '../../util';
 import Button from '../../components/button';
 import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -10,6 +10,7 @@ import {useInstance, useInstanceLogs} from 'direktiv-react-hooks';
 import { FailState, RunningState, SuccessState } from '../instances';
 import { Link } from 'react-router-dom';
 import { AutoSizer, List } from 'react-virtualized';
+import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
 
 function InstancePageWrapper(props) {
 
@@ -28,11 +29,14 @@ function InstancePage(props) {
 
     let {namespace} = props;
     const [follow, setFollow] = useState(true)
-    
+    const [width, setWidth] = useState(window.innerWidth);
+    const [clipData, setClipData] = useState(null)
+
     const params = useParams()
     let instanceID = params["id"];
 
-    let {data, err} = useInstance(Config.url, true, namespace, instanceID);
+    let {data, err, cancelInstance, getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID);
+    
     if (data === null) {
         return <></>
     }
@@ -54,9 +58,11 @@ function InstancePage(props) {
     let wfName = data.as.split(":")[0]
     let revName = data.as.split(":")[1]
 
-    let linkURL = `/n/${namespace}/explorer/${wfName}`;
+    let linkURL = `/n/${namespace}/explorer/${wfName}?tab=2`;
     if (revName) {
-        linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
+        if(revName !== "latest"){
+            linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
+        }
     }
 
     
@@ -72,7 +78,7 @@ function InstancePage(props) {
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap" style={{alignItems:"center"}}>
                                 <div>
-                                Instance Details
+                                    Instance Details
                                 </div>
                                 {label} 
                                 <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px"}}>
@@ -85,7 +91,10 @@ function InstancePage(props) {
                             </FlexBox>
                         </ContentPanelTitle>
                         <ContentPanelBody>
-                            <FlexBox className="col gap">
+                            <FlexBox className="col">
+                                <FlexBox style={{flexGrow:1, backgroundColor:"#223848", color:"white"}}>
+                                    <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                                </FlexBox>
                                 {/* <div style={{padding: "4px", flexWrap:"wrap", gap: "8px"}}>
                                     <FlexBox className="wrap gap">
                                         <InstanceTuple label={"Workflow"} value={data.as} linkTo={linkURL} />
@@ -102,10 +111,23 @@ function InstancePage(props) {
                                         <InstanceTuple label={""} value={""} /><InstanceTuple label={""} value={""} />
                                     </FlexBox>
                                 </div> :<></>} */}
-                                <FlexBox>
-                                    <div style={{width: "100%", minWidth: "100%", height: "100%", minHeight: "100%", backgroundColor: "#0e0e0e"}}>
-                                        <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                            <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                                <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
+                                    {follow ? 
+                                        <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                            <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
+                                        </div>
+                                        :
+                                        <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                            <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
+                                        </div>
+                                    }
+                                    <div onClick={()=>{
+                                        copyTextToClipboard(clipData)
+                                    }} style={{display:"flex", alignItems:"center", gap:"3px", backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
                                     </div>
+                                </FlexBox>
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelBody>
@@ -197,7 +219,7 @@ function Logs(props){
 
     let {namespace, instanceID, follow} = props;
     let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID)
-
+    console.log(data, err)
     if (!data) {
         return <></>
     }
@@ -206,7 +228,8 @@ function Logs(props){
         return <></> // TODO 
     }
 
-    function rowRenderer({key, index, style}) {
+    function rowRenderer({index, key, style}) {
+        console.log(index, key, style)
         return (
           <div key={key} style={style}>
             {data[index].node.msg}
@@ -216,8 +239,7 @@ function Logs(props){
       
 
     return(
-        <>
-            <div style={{flex:"1 1 auto", paddingLeft:'10px'}}>
+        <div style={{flex:"1 1 auto", paddingLeft:'10px'}}>
             <AutoSizer>
                 {({height, width})=>(
                     <List
@@ -230,7 +252,6 @@ function Logs(props){
                     />
                 )}
             </AutoSizer>
-            </div>
-        </>
+        </div>
     )
 }

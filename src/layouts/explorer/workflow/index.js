@@ -6,7 +6,7 @@ import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIco
 import {BsCodeSquare} from 'react-icons/bs'
 import { useNamespaceDependencies, useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import {  GenerateRandomKey } from '../../../util';
 
 import * as dayjs from "dayjs"
@@ -111,6 +111,7 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 
+                            namespace={namespace}
                             executeWorkflow={executeWorkflow}
                             saveWorkflow={saveWorkflow} 
                             updateWorkflow={updateWorkflow} 
@@ -178,12 +179,13 @@ function WorkflowDependencies(props) {
 }
 
 function WorkingRevision(props) {
-    const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow} = props
+    const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
 
+    const navigate = useNavigate()
     const [load, setLoad] = useState(true)
     const [oldWf, setOldWf] = useState("")
     const [workflow, setWorkflow] = useState("")
-
+    const [input, setInput] = useState("{\n\t\n}")
     useEffect(()=>{
         if(wf !== workflow && load) {
             setLoad(false)
@@ -229,9 +231,23 @@ function WorkingRevision(props) {
                                     className="run-workflow-modal"
                                     modalStyle={{color: "black"}}
                                     title="Run Workflow"
+                                    onClose={()=>{
+                                        setInput("{\n\t\n}")
+                                    }}
                                     actionButtons={[
                                         ButtonDefinition("Run", async () => {
-                                            await executeWorkflow()
+                                            let r = ""
+                                            if(input === "{\n\t\n}"){
+                                                r = await executeWorkflow()
+                                            } else {
+                                                r = await executeWorkflow(input)
+                                            }
+                                            if(r.includes("execute workflow")){
+                                                // is an error
+                                                return r
+                                            } else {
+                                                navigate(`/n/${namespace}/instances/${r}`)
+                                            }
                                         }, "small blue", true, false),
                                         ButtonDefinition("Cancel", async () => {
                                         }, "small light", true, false)
@@ -242,7 +258,9 @@ function WorkingRevision(props) {
                                         </div>
                                     )}
                                 >
-                                    TODO input editor here
+                                    <FlexBox style={{overflow:"hidden"}}>
+                                        <DirektivEditor height="200px" width="300px" dlang="json" dvalue={input} setDValue={setInput}/>
+                                    </FlexBox>
                                 </Modal>
                             </div>
                             <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
