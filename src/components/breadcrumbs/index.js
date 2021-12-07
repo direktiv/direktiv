@@ -26,7 +26,7 @@ function Breadcrumbs(props) {
                 {breadcrumbs.map((obj)=>{
                     // ignore breadcrumbs for dividers
                     if(obj.key === "/g" || obj.key === "/n" || obj.key === "/" || obj.key === `/n/${namespace}/explorer` ) {
-                        return <></>
+                        return ""
                     }
                     let key = GenerateRandomKey("crumb-");
 
@@ -48,7 +48,7 @@ function Breadcrumbs(props) {
                     :""
                 }
                 { searchParams.get("revision") && searchParams.get("function") && searchParams.get("version") ? 
-                       <li id={`${searchParams.get("function")}-${searchParams.get("version")}-${searchParams.get("revision")}`} key={`${searchParams.get("function")}-${searchParams.get("version")}-${searchParams.get("revision")}`}>
+                    <li id={`${searchParams.get("function")}-${searchParams.get("version")}-${searchParams.get("revision")}`} key={`${searchParams.get("function")}-${searchParams.get("version")}-${searchParams.get("revision")}`}>
                        <Link to={`${window.location.pathname}?function=${searchParams.get("function")}&version=${searchParams.get("version")}&revision=${searchParams.get("revision")}`}>
                            {searchParams.get("revision")}
                        </Link>
