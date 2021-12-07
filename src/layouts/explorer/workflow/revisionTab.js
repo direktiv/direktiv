@@ -15,6 +15,7 @@ import { IoSettings } from 'react-icons/io5';
 
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useNavigate } from 'react-router';
 function RevisionTab(props) {
 
     const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow} = props
@@ -145,11 +146,14 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {setRouter, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    const {setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    
+    const navigate = useNavigate()
     // const [load, setLoad] = useState(true)
     const [revision, setRevision] = useState(null)
     const [rev1, setRev1] = useState(router.routes.length === 0 ? "latest": "")
     const [rev2, setRev2] = useState("")
+    const [tag, setTag] = useState("")
 
     useEffect(()=>{
         if(searchParams.get('revision') !== null) {
@@ -167,6 +171,8 @@ export function RevisionSelectorTab(props) {
         )
     }
 
+  
+
     return (
         <FlexBox className="col gap">
             <div>
@@ -181,6 +187,22 @@ export function RevisionSelectorTab(props) {
                     </ContentPanelTitle>
                     <ContentPanelBody style={{flexDirection: "column"}}>
                         {revisions.map((obj) => {
+                            let ref1 = false
+                            let ref2 = false
+                            if(router.routes[0]){
+                                if(router.routes[0].ref === obj.node.name){
+                                    ref1= true
+                                }
+                            }
+                            if(router.routes[1]){
+                                if(router.routes[1].ref === obj.node.name){
+                                    ref2 = true
+                                }
+                            }
+
+                            for(var i=0; i < router.routes.length; i++) {
+                                if(obj.node.name === router.routes[i].ref){}
+                            }
                             return (
                                 <FlexBox className="gap wrap" style={{
                                     alignItems: "center"
@@ -200,6 +222,53 @@ export function RevisionSelectorTab(props) {
                                             </FlexBox>
                                         </div>
                                     </FlexBox>
+                                    {obj.node.name !== "latest" ? 
+                                        <FlexBox style={{
+                                            flex: "1",
+                                            maxWidth: "150px"
+                                        }}>
+                                            <FlexBox className="col revision-label-tuple">
+                                                <Modal
+                                                    escapeToCancel
+                                                    style={{
+                                                        flexDirection: "row-reverse",
+                                                        marginRight: "8px"
+                                                    }}
+                                                    title="Tag" 
+                                                    onClose={()=>{
+                                                        setTag("")
+                                                    }}
+                                                    button={(
+                                                        <Button className="reveal-btn small shadow">
+                                                            <FlexBox className="gap">
+                                                                <div>
+                                                                    Tag
+                                                                </div>
+                                                            </FlexBox>
+                                                        </Button>
+                                                    )}
+                                                    actionButtons={
+                                                        [
+                                                            ButtonDefinition("Tag", async () => {
+                                                                let err = await tagWorkflow(obj.node.name, tag)
+                                                                if(err) return err
+                                                                setRevisions(await getRevisions())
+                                                            }, "small blue", true, false),
+                                                            ButtonDefinition("Cancel", () => {
+                                                            }, "small light", true, false)
+                                                        ]
+                                                    } 
+                                                >
+                                                    <FlexBox>
+                                                        <input autoFocus value={tag} onChange={(e)=>setTag(e.target.value)} placeholder="Enter Tag or leave blank to untag" />
+                                                    </FlexBox>
+                                                </Modal>
+                                            </FlexBox>
+                                        </FlexBox>
+                                    :<FlexBox style={{
+                                        flex: "1",
+                                        maxWidth: "150px"
+                                    }}></FlexBox>}
                                     {router.routes.length > 0 ? 
                                     <>
                                         {router.routes[0] && router.routes[0].ref === obj.node.name  ? 
@@ -238,6 +307,13 @@ export function RevisionSelectorTab(props) {
                                                 </FlexBox>
                                             </FlexBox>
                                         :""}
+                                        {!ref1 && !ref2 ? 
+                                          <FlexBox style={{
+                                            flex: "1",
+                                            maxWidth: "150px"
+                                        }}></FlexBox>
+                                        :""
+                                        }
                                     </>
                                     : <>
                                         {obj.node.name === "latest" ? 
@@ -298,7 +374,11 @@ export function RevisionSelectorTab(props) {
                                                         </FlexBox>
                                                     </FlexBox>
                                                     </Modal>
-                                            <Button className="small light bold">
+                                            <Button className="small light bold" onClick={async()=>{
+                                                let data = await getWorkflowRevisionData(obj.node.name)
+                                                await updateWorkflow(atob(data.revision.source))
+                                                navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
+                                            }}>
                                                 Use Revision
                                             </Button>
                                             <Button className="small light bold" onClick={()=>{
