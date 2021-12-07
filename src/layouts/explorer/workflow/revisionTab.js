@@ -294,27 +294,28 @@ export function RevisionTrafficShaper(props) {
             </ContentPanelTitle>
             <ContentPanelBody>
                 <FlexBox className="gap wrap" style={{justifyContent: "space-between"}}>
-                    <FlexBox style={{minWidth: "300px", maxWidth: "300px", justifyContent: "center"}}>
+                    <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
                         <FlexBox className="gap col">
                             <div>
                                 <b>Revision 1</b>
                             </div>
-                            <input></input>
+                            <input style={{width: "auto"}}></input>
                         </FlexBox>
                     </FlexBox>
-                    <FlexBox style={{minWidth: "300px", maxWidth: "300px", justifyContent: "center"}}>
+                    <FlexBox style={{ maxWidth: "300px", justifyContent: "center"}}>
                         <FlexBox className="gap col">
                             <div>
                                 <b>Revision 2</b>
                             </div>
-                            <input></input>
+                            <input style={{width: "auto"}}></input>
                         </FlexBox>
                     </FlexBox>
-                    <FlexBox style={{minWidth: "300px", maxWidth: "300px", justifyContent: "center"}}>
+                    <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
                         <FlexBox className="gap col">
                             <div>
                                 <b>Slider</b>
                             </div>
+                            <input style={{width: "auto"}}></input>
                         </FlexBox>
                     </FlexBox>
                 </FlexBox>
