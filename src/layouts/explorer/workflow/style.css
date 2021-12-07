@@ -270,3 +270,69 @@
 } */
 
 
+/* ADD AND DELETE ATTRIBUTES */
+
+
+.input-tag {
+    background: white;
+    border: 1px solid #d6d6d6;
+    border-radius: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px 5px 0;
+  }
+  
+  .input-tag input {
+    border: none !important;
+    width: 100%;
+  }
+  
+  .input-tag input:focus{
+    box-shadow: none !important;
+  }
+  
+  .input-tag__tags {
+    display: inline-flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  .input-tag__tags li {
+    align-items: center;
+    background: #2396d8;
+    border-radius: 2px;
+    color: white;
+    display: flex;
+    font-weight: 300;
+    list-style: none;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    padding: 2.5px 5px;
+  }
+  
+  .input-tag__tags li button {
+    align-items: center;
+    appearance: none;
+    background: #2396d8;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 12pt;
+    height: 15px;
+    justify-content: center;
+    line-height: 0;
+    margin-left: 8px;
+    padding: 0;
+    transform: rotate(45deg);
+    width: 15px;
+  }
+  
+  .input-tag__tags li.input-tag__tags__input {
+    background: none;
+    flex-grow: 1;
+    padding: 0;
+  }
