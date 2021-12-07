@@ -20,7 +20,7 @@ dayjs.extend(relativeTime);
 function InstancesPage(props) {
     const {namespace} = props
     if(!namespace) {
-        return ""
+        return <></>
     }
     return(
         <div style={{ paddingRight: "8px" }}>
