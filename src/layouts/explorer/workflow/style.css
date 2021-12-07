@@ -176,7 +176,7 @@
 }
 
 .traffic-distribution .rc-slider-track {
-    background-color: #EC4F79;
+    background-color: #EC4F79 !important;
     height: 20px;
     z-index: 2;
     border-radius: 10px;
@@ -185,5 +185,87 @@
 .traffic-distribution .rc-slider-step {
     background-color: #55BA86;
     height: 20px;
+    border-radius: 10px;
+}
+
+
+/* traffic shaping */
+.rc-slider-disabled.red-green {
+    background: transparent;
+}
+
+.red-green .rc-slider-handle {
+    z-index: 3;
+    width: 28px;
+    height: 28px;
+}
+.red-green .rc-slider-rail {
+    height: 20px;
+}
+
+.red-green .rc-slider-track {
+    background-color: #EC4F79 !important;
+    height: 20px;
+    z-index: 2;
+    border-radius: 10px;
+}
+.red-green .rc-slider-step {
+    background-color: #55BA86;
+    height: 20px;
+    border-radius: 10px;
+}
+/* traffic distri mini slider */
+
+.rc-slider-disabled.traffic-mini-distribution {
+    background: transparent;
+}
+
+.traffic-mini-distribution .rc-slider-handle {
+    display: none;
+}
+
+.traffic-mini-distribution .rc-slider-rail {
+    height: 5px;
+}
+
+.traffic-mini-distribution .rc-slider-track {
+    background-color: #EC4F79;
+    height: 5px;
+    z-index: 2;
+    border-radius: 10px;
+}
+
+
+.rc-slider-disabled.traffic-mini2-distribution {
+    background: transparent;
+    background-color: transparent;
+}
+
+.traffic-mini2-distribution .rc-slider-handle {
+    display: none;
+}
+
+.traffic-mini2-distribution .rc-slider-rail {
+    height: 5px;
+}
+
+.traffic-mini2-distribution .rc-slider-track {
+    background-color: #EC4F79;
+    height: 5px;
+    z-index: 2;
+    border-radius: 10px;
+}
+
+
+.traffic-mini2-distribution .rc-slider-track {
+    background-color: #55BA86 !important;
+    height: 5px;
+    z-index: 2;
+    border-radius: 10px;
+}
+
+.traffic-mini-distribution .rc-slider-step {
+    /* background-color: #55BA86; */
+    height: 5px;
     border-radius: 10px;
 }
