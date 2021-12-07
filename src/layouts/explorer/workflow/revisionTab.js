@@ -236,9 +236,6 @@ export function RevisionSelectorTab(props) {
                                                 </FlexBox>
                                             </FlexBox>
                                         :""}
-                                        {router.routes.map((obj)=>{
-                                            return ""
-                                        })}
                                     </>
                                     : <>
                                         {obj.node.name === "latest" ? 
@@ -412,16 +409,24 @@ export function RevisionTrafficShaper(props) {
                             <div>
                                 <b>Traffic Distribution</b>
                             </div>
+                            <FlexBox style={{fontSize:"10pt", marginTop:"5px", maxHeight:"20px", color: "#C1C5C8"}}>
+                                {rev1 ? 
+                                <FlexBox className="col">
+                                    <span title={rev1}>{rev1.substr(0, 8)}</span>
+                                </FlexBox>:""}
+                                {rev2 ? 
+                                <FlexBox className="col" style={{ textAlign:'right'}}>
+                                    <span title={rev2}>{rev2.substr(0,8)}</span>
+                                </FlexBox>:""}
+                            </FlexBox>
                             <Slider disabled={rev1 !== "" && rev2 !== "" ? false: true} className="red-green" value={traffic} onChange={(e)=>{setTraffic(e)}}/>
                             <FlexBox style={{marginTop:"10px", fontSize:"10pt", color: "#C1C5C8"}}>
                                 {rev1 !== "" ? 
                                 <FlexBox className="col">
-                                    <span title={rev1}>{rev1.substr(0,8)}</span>
                                     <span>{traffic}%</span>
                                 </FlexBox>: ""}
                                 {rev2 !== "" ?
                                 <FlexBox  className="col" style={{justifyContent:'flex-end', textAlign:"right"}}>
-                                    <span title={rev2}>{rev2.substr(0, 8)}</span>
                                     <span>{100-traffic}%</span>
                                 </FlexBox>:""}
                             </FlexBox>
