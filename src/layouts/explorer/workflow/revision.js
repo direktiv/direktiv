@@ -1,7 +1,7 @@
 import { useWorkflowService } from "direktiv-react-hooks"
 import { Config } from "../../../util"
 import FlexBox from "../../../components/flexbox"
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon, ContentPanelFooter } from "../../../components/content-panel"
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../../components/content-panel"
 import { IoPlay } from "react-icons/io5"
 import { Service } from "../../namespace-services"
 
@@ -11,6 +11,10 @@ export default function WorkflowRevisions(props) {
 
     if(revisions === null) {
         return <></>
+    }
+
+    if (err) {
+        // TODO report error
     }
 
     return (

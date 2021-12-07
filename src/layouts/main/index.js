@@ -6,7 +6,6 @@ import Settings from '../settings';
 import Explorer from '../explorer';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
-import Logo from '../../assets/nav-logo.png'
 import { useNamespaces } from 'direktiv-react-hooks' 
 import { Config } from '../../util'
 import { BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom'
@@ -23,7 +22,6 @@ import Loader from '../../components/loader';
 import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
 import Login from '../login';
-import InstancePage from '../instance';
 import InstancePageWrapper from '../instance';
 
 

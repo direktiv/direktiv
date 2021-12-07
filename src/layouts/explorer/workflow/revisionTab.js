@@ -10,11 +10,8 @@ import DirektivEditor from '../../../components/editor';
 import WorkflowDiagram from '../../../components/diagram';
 import YAML from 'js-yaml'
 import Modal, { ButtonDefinition } from '../../../components/modal';
-import { RiDeleteBin2Line } from 'react-icons/ri';
 import SankeyDiagram from '../../../components/sankey';
 import { IoSettings } from 'react-icons/io5';
-
-import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 function RevisionTab(props) {
@@ -32,7 +29,7 @@ function RevisionTab(props) {
                 revtab: 0
             })
         }
-    },[searchParams])
+    },[searchParams, revision, setSearchParams])
 
     useEffect(()=>{
         async function getRevWorkflow() {
@@ -43,9 +40,7 @@ function RevisionTab(props) {
             }
         }
         getRevWorkflow()
-    },[load, searchParams])
-
-    console.log(workflow)
+    },[load, searchParams, getWorkflowRevisionData, revision])
 
     return(
         <FlexBox>
@@ -85,8 +80,7 @@ function RevisionTab(props) {
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                         <div onClick={async ()=>{
-                                            let id = await executeWorkflow("", revision)
-                                            console.log(id, "ID")
+                                            await executeWorkflow("", revision)
                                         }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                             Run
                                         </div>
@@ -117,8 +111,6 @@ function TabbedButtons(props) {
 
     let tabBtns = [];
     let tabBtnLabels = ["YAML", "Diagram", "Sankey"];
-
-    console.log(tabBtn);
 
     for (let i = 0; i < tabBtnLabels.length; i++) {
         let key = GenerateRandomKey();
@@ -161,6 +153,10 @@ export function RevisionSelectorTab(props) {
             setRevision(searchParams.get('revision'))
         }
     },[searchParams])
+
+    if (err) {
+        // TODO report err
+    }
 
     if(revision !== null) {
         return(

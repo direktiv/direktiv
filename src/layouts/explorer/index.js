@@ -23,7 +23,7 @@ import WorkflowPod from './workflow/pod'
 
 function Explorer(props) {
     const params = useParams()
-    const [searchParams, setSearchParams] = useSearchParams()
+    const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
     const {namespace}  = props
     let filepath = `/`
