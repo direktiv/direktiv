@@ -200,6 +200,42 @@ export function RevisionSelectorTab(props) {
                                     </FlexBox>
                                     {router.routes.length > 0 ? 
                                     <>
+                                        {router.routes[0] && router.routes[0].ref === obj.node.name ? 
+                                            <FlexBox style={{
+                                                flex: "1",
+                                                maxWidth: "150px"
+                                            }}>
+                                            <FlexBox className="col revision-label-tuple">
+                                                    <div>
+                                                        Traffic amount
+                                                    </div>
+                                                    <div style={{width:'100%'}}>
+                                                        <Slider defaultValue={router.routes[0].weight} className="traffic-mini-distribution" disabled={true}/>
+                                                        <div>
+                                                           {router.routes[0].weight}%
+                                                        </div>
+                                                    </div>
+                                                </FlexBox>
+                                            </FlexBox>
+                                        :""}
+                                        {router.routes[1]  && router.routes[1].ref === obj.node.name ? 
+                                            <FlexBox style={{
+                                                flex: "1",
+                                                maxWidth: "150px"
+                                            }}>
+                                            <FlexBox className="col revision-label-tuple">
+                                                    <div>
+                                                        Traffic amount
+                                                    </div>
+                                                    <div style={{width:'100%'}}>
+                                                        <Slider defaultValue={router.routes[1].weight} className="traffic-mini2-distribution" disabled={true}/>
+                                                        <div>
+                                                            {router.routes[1].weight}%
+                                                        </div>
+                                                    </div>
+                                                </FlexBox>
+                                            </FlexBox>
+                                        :""}
                                         {router.routes.map((obj)=>{
                                             return ""
                                         })}
