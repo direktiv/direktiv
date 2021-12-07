@@ -145,7 +145,7 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    const {setRouter, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
     // const [load, setLoad] = useState(true)
     const [revision, setRevision] = useState(null)
 
@@ -166,118 +166,123 @@ export function RevisionSelectorTab(props) {
     }
 
     return (
-        <div className="col">
-            <ContentPanel style={{width: "100%", minWidth: "300px"}}>
-                <ContentPanelTitle>
-                    <ContentPanelTitleIcon>
-                        <BsCodeSquare/>
-                    </ContentPanelTitleIcon>
-                    <div>
-                        All Revisions
-                    </div>
-                </ContentPanelTitle>
-                <ContentPanelBody style={{flexDirection: "column"}}>
-                    {revisions.map((obj) => {
-                        return (
-                            <FlexBox className="gap wrap" style={{
-                                alignItems: "center"
-                            }}>
-                                <FlexBox className="wrap gap" style={{
-                                    flex: "4",
-                                    minWidth: "300px"
+        <FlexBox className="col gap">
+            <div>
+                <ContentPanel style={{width: "100%", minWidth: "300px"}}>
+                    <ContentPanelTitle>
+                        <ContentPanelTitleIcon>
+                            <BsCodeSquare/>
+                        </ContentPanelTitleIcon>
+                        <div>
+                            All Revisions
+                        </div>
+                    </ContentPanelTitle>
+                    <ContentPanelBody style={{flexDirection: "column"}}>
+                        {revisions.map((obj) => {
+                            return (
+                                <FlexBox className="gap wrap" style={{
+                                    alignItems: "center"
                                 }}>
+                                    <FlexBox className="wrap gap" style={{
+                                        flex: "4",
+                                        minWidth: "300px"
+                                    }}>
+                                        <div>
+                                            <FlexBox className="col revision-label-tuple">
+                                                <div>
+                                                    ID
+                                                </div>
+                                                <div>
+                                                    {obj.node.name}
+                                                </div>
+                                            </FlexBox>
+                                        </div>
+                                    </FlexBox>
+                                    {router.routes.length > 0 ? 
+                                    <>
+                                        {router.routes.map((obj)=>{
+                                            return ""
+                                        })}
+                                    </>
+                                    : <>
+                                        {obj.node.name === "latest" ? 
+                                        <FlexBox style={{
+                                            flex: "1",
+                                            maxWidth: "150px"
+                                        }}>
+                                            <FlexBox className="col revision-label-tuple">
+                                                <div>
+                                                    Traffic amount
+                                                </div>
+                                                <div style={{width:'100%'}}>
+                                                    <Slider defaultValue={100} className="traffic-mini2-distribution" disabled={true}/>
+                                                    <div>
+                                                        100%
+                                                    </div>
+                                                </div>
+                                            </FlexBox>
+                                        </FlexBox>
+                                        :""}
+                                    </>}
+                                    {/* <FlexBox style={{
+                                        flex: "1",
+                                        minWidth: "300px"
+                                    }}>
+                                        
+                                    </FlexBox> */}
                                     <div>
-                                        <FlexBox className="col revision-label-tuple">
-                                            <div>
-                                                ID
-                                            </div>
-                                            <div>
-                                                {obj.node.name}
-                                            </div>
+                                        <FlexBox className="gap">
+                                                <Modal
+                                                        escapeToCancel
+                                                        style={{
+                                                            flexDirection: "row-reverse",
+                                                        }}
+                                                        title="Delete a revision" 
+                                                        button={(
+                                                            <Button className="small light bold">
+                                                                <HiOutlineTrash className="red-text" style={{fontSize: "16px"}} />
+                                                            </Button>
+                                                        )}
+                                                        actionButtons={
+                                                            [
+                                                                ButtonDefinition("Delete", async () => {
+                                                                    let err = await deleteRevision(obj.node.name)
+                                                                    if (err) return err
+                                                                    setRevisions(await getRevisions())
+                                                                }, "small red", true, false),
+                                                                ButtonDefinition("Cancel", () => {
+                                                                }, "small light", true, false)
+                                                            ]
+                                                        } 
+                                                    >
+                                                            <FlexBox className="col gap">
+                                                        <FlexBox >
+                                                            Are you sure you want to delete '{obj.node.name}'?
+                                                            <br/>
+                                                            This action cannot be undone.
+                                                        </FlexBox>
+                                                    </FlexBox>
+                                                    </Modal>
+                                            <Button className="small light bold">
+                                                Use Revision
+                                            </Button>
+                                            <Button className="small light bold" onClick={()=>{
+                                                setSearchParams({tab: 1, revision: obj.node.name})
+                                            }}>
+                                                Open Revision
+                                            </Button>
                                         </FlexBox>
                                     </div>
                                 </FlexBox>
-                                {router.routes.length > 0 ? 
-                                  <>
-                                    {router.routes.map((obj)=>{
-                                        return ""
-                                    })}
-                                  </>
-                                : <>
-                                    {obj.node.name === "latest" ? 
-                                    <FlexBox style={{
-                                        flex: "1",
-                                        maxWidth: "150px"
-                                    }}>
-                                        <FlexBox className="col revision-label-tuple">
-                                            <div>
-                                                Traffic amount
-                                            </div>
-                                            <div style={{width:'100%'}}>
-                                                <Slider defaultValue={100} className="traffic-mini2-distribution" disabled={true}/>
-                                                <div>
-                                                    100%
-                                                </div>
-                                            </div>
-                                        </FlexBox>
-                                    </FlexBox>
-                                    :""}
-                                </>}
-                                {/* <FlexBox style={{
-                                    flex: "1",
-                                    minWidth: "300px"
-                                }}>
-                                    
-                                </FlexBox> */}
-                                <div>
-                                    <FlexBox className="gap">
-                                            <Modal
-                                                    escapeToCancel
-                                                    style={{
-                                                        flexDirection: "row-reverse",
-                                                    }}
-                                                    title="Delete a revision" 
-                                                    button={(
-                                                        <Button className="small light bold">
-                                                            <HiOutlineTrash className="red-text" style={{fontSize: "16px"}} />
-                                                        </Button>
-                                                    )}
-                                                    actionButtons={
-                                                        [
-                                                            ButtonDefinition("Delete", async () => {
-                                                                let err = await deleteRevision(obj.node.name)
-                                                                if (err) return err
-                                                                setRevisions(await getRevisions())
-                                                            }, "small red", true, false),
-                                                            ButtonDefinition("Cancel", () => {
-                                                            }, "small light", true, false)
-                                                        ]
-                                                    } 
-                                                >
-                                                        <FlexBox className="col gap">
-                                                    <FlexBox >
-                                                        Are you sure you want to delete '{obj.node.name}'?
-                                                        <br/>
-                                                        This action cannot be undone.
-                                                    </FlexBox>
-                                                </FlexBox>
-                                                </Modal>
-                                        <Button className="small light bold">
-                                            Use Revision
-                                        </Button>
-                                        <Button className="small light bold" onClick={()=>{
-                                            setSearchParams({tab: 1, revision: obj.node.name})
-                                        }}>
-                                            Open Revision
-                                        </Button>
-                                    </FlexBox>
-                                </div>
-                            </FlexBox>
-                        )
-                    })}
-                </ContentPanelBody>
-            </ContentPanel>
-        </div>
+                            )
+                        })}
+                    </ContentPanelBody>
+                </ContentPanel>
+            </div>
+            <div>
+                <RevisionTrafficShaper setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
+            </div>
+        </FlexBox>
     )
 
 }

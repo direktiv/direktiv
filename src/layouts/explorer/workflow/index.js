@@ -17,7 +17,7 @@ import { IoMdLock } from 'react-icons/io';
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
-import { RevisionSelectorTab, RevisionTrafficShaper } from './revisionTab';
+import { RevisionSelectorTab } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
 
 import Slider from 'rc-slider';
@@ -104,8 +104,7 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 1 ?
                         <>
-                        <RevisionSelectorTab setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
-                        <RevisionTrafficShaper setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
+                        <RevisionSelectorTab setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
                         </>
                     :<></>}
                     { activeTab === 2 ?
