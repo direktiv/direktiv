@@ -24,6 +24,7 @@ import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
 import Login from '../login';
 import InstancePage from '../instance';
+import InstancePageWrapper from '../instance';
 
 
 function NamespaceNavigation(props){
@@ -105,7 +106,7 @@ function NamespaceNavigation(props){
                     <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
-                    <Route path="/n/:namespace/instances/:id" element={<InstancePage namespace={namespace} />} />
+                    <Route path="/n/:namespace/instances/:id" element={<InstancePageWrapper namespace={namespace} />} />
                     <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
                     
                

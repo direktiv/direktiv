@@ -1,19 +1,34 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import './style.css'
 import { Config } from '../../util';
 import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {AiFillCode} from 'react-icons/ai';
-import {useInstance} from 'direktiv-react-hooks';
+import {useInstance, useInstanceLogs} from 'direktiv-react-hooks';
 import { FailState, RunningState, SuccessState } from '../instances';
 import { Link } from 'react-router-dom';
+import { AutoSizer, List } from 'react-virtualized';
+
+function InstancePageWrapper(props) {
+
+    let {namespace} = props;
+    if (!namespace) {
+        return <></>
+    }
+
+    return <InstancePage namespace={namespace} />
+
+}
+
+export default InstancePageWrapper;
 
 function InstancePage(props) {
 
-    const params = useParams()
-
     let {namespace} = props;
+    const [follow, setFollow] = useState(true)
+    
+    const params = useParams()
     let instanceID = params["id"];
 
     let {data, err, getInput, getOutput, getInstance} = useInstance(Config.url, true, namespace, instanceID);
@@ -43,6 +58,8 @@ function InstancePage(props) {
     if (revName) {
         linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
     }
+
+    
 
     return (<>
 
@@ -80,7 +97,7 @@ function InstancePage(props) {
                             </div> :<></>}
                             <FlexBox>
                                 <div style={{width: "100%", minWidth: "100%", height: "100%", minHeight: "100%", backgroundColor: "#0e0e0e"}}>
-
+                                    <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
                                 </div>
                             </FlexBox>
                         </FlexBox>
@@ -126,7 +143,6 @@ function InstancePage(props) {
     </>)
 }
 
-export default InstancePage;
 
 function InstanceTuple(props) {
     
@@ -149,4 +165,47 @@ function InstanceTuple(props) {
             </div>
         </FlexBox>
     </>)
+}
+
+function Logs(props){ 
+
+    let {namespace, instanceID, follow} = props;
+    let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID)
+
+    if (!data) {
+        return <></>
+    }
+
+    if (err) {
+        return <></> // TODO 
+    }
+
+    function rowRenderer({key, index, style}) {
+        console.log(data[index]);
+        return (
+          <div key={key} style={style}>
+            {data[index].node.msg}
+          </div>
+        );
+    }
+      
+
+    return(
+        <>
+            <div style={{flex:"1 1 auto", paddingLeft:'10px'}}>
+            <AutoSizer>
+                {({height, width})=>(
+                    <List
+                        width={width}
+                        height={height}
+                        rowRenderer={rowRenderer}
+                        scrollToIndex={follow ? data.length - 1: 0}
+                        rowCount={data.length}
+                        rowHeight={20}
+                    />
+                )}
+            </AutoSizer>
+            </div>
+        </>
+    )
 }

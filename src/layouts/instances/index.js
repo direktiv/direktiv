@@ -88,7 +88,6 @@ function InstancesTable(props) {
                 <>
                     <>
                     {data.map((obj)=>{
-                        console.log(obj)
                     return(
                         <InstanceRow 
                             namespace={namespace}
