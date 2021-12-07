@@ -1,7 +1,10 @@
 import dagre from 'dagre'
+import './style.css';
 import ReactFlow, {ReactFlowProvider, MiniMap, isNode, Handle, useZoomPanHelper} from 'react-flow-renderer'
 import React, { useEffect, useState } from "react"
 import { position } from '../diagram'
+import FlexBox from '../flexbox'
+import {BiDotsVerticalRounded} from 'react-icons/bi';
 
 
 export default function DependencyDiagram(props) {
@@ -78,24 +81,38 @@ export default function DependencyDiagram(props) {
 function Found(props) {
     const {data} = props
     const {label, type} = data
+
+    let includeActions = false;
+    let actions = [];
+    if (type.toLowerCase() === "subflow") {
+        includeActions = true;
+        actions.push(
+            <BiDotsVerticalRounded key="state-action-1" /> // TODO - real action btn
+        )
+    }
+
     return(
-        <div className="state" style={{color:"white",width:"80px", height:"50px", backgroundColor:"#55BA86"}}>
-            <Handle
-                type="target"
-                position="left"
-                id="default"
-            />
-            <div style={{display:"flex", padding:"1px", gap:"3px", alignItems:"center", fontSize:"6pt", textAlign:"left", borderBottom: "solid 1px rgba(0, 0, 0, 0.1)"}}> 
-                <div style={{flex:"auto", fontWeight:"bold"}}>
+        <div className="dependency-diagram state green-state" title={label}>
+            <FlexBox className="state-info flex-centered col">
+                <Handle
+                    type="target"
+                    position="left"
+                    id="default"
+                />
+                <div className="state-type">
                     {type}
                 </div>
-            </div>
-            <h1 style={{fontWeight:"300", fontSize:"7pt", marginTop:"2px"}}>{label}</h1>
-            <Handle
-                type="source"
-                position="right"
-                id="default"
-            /> 
+                <div className="state-label">{label}</div>
+                <Handle
+                    type="source"
+                    position="right"
+                    id="default"
+                /> 
+            </FlexBox>
+            { includeActions ? 
+            <div className="state-actions">
+                {actions}
+            </div>:<></>}
         </div>
     )
 }
@@ -104,24 +121,25 @@ function Found(props) {
 function Missing(props) {
     const {data} = props
     const {label, type} = data
+
     return(
-        <div title="This dependency does not exist." className="state" style={{color:"white", width:"80px", height:"50px", backgroundColor: "#EC4F79"}}>
-            <Handle
-                type="target"
-                position="left"
-                id="default"
-            />
-            <div style={{display:"flex", padding:"1px", gap:"3px", alignItems:"center", fontSize:"6pt", textAlign:"left", borderBottom: "solid 1px rgba(0, 0, 0, 0.1)"}}> 
-                <div style={{flex:"auto", fontWeight:"bold"}}>
+        <div className="dependency-diagram state red-state" title="This dependency does not exist.">
+            <FlexBox className="state-info flex-centered col">
+                <Handle
+                    type="target"
+                    position="left"
+                    id="default"
+                />
+                <div className="state-type">
                     {type}
                 </div>
-            </div>
-            <h1 style={{fontWeight:"300", fontSize:"7pt", marginTop:"2px"}}>{label}</h1>
-            <Handle
-                type="source"
-                position="right"
-                id="default"
-            /> 
+                <div>{label}</div>
+                <Handle
+                    type="source"
+                    position="right"
+                    id="default"
+                /> 
+            </FlexBox>
         </div>
     )
 }
@@ -142,7 +160,7 @@ function DependencyGraph(props) {
             }}
             nodesDraggable={false}
             nodesConnectable={false}
-            elementsSelectable={false}
+            // elementsSelectable={false}
             paneMoveable={false}
         >
             <MiniMap
@@ -188,7 +206,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
         position: position,
         data: {
             label: workflow,
-            type: 'workflow'
+            type: 'workflow'.toUpperCase()
         },
         type: 'found'
     })
@@ -200,7 +218,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'secret'
+                    type: 'secret'.toUpperCase()
                 },
                 type: dependencies.secrets[obj] ? "found": "missing"
             }
@@ -211,8 +229,29 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
             id: `${workflow}-secrets-${obj}`,
             source: workflow,
             target: `secret-${obj}`,
-            type: 'pathfinding',
-            arrowHeadType: 'arrow'
+            type: 'pathfinding'
+        })
+    })
+
+    let subflowNodes = Object.keys(dependencies.subflows).map((obj) => {
+        return (
+            {
+                id: `subflow-${obj}`,
+                position: position,
+                data: {
+                    label: obj,
+                    type: 'subflow'.toUpperCase()
+                },
+                type: dependencies.subflows[obj] ? "found" : "missing"
+            }
+        )
+    })
+    let subflowEdges = Object.keys(dependencies.subflows).map((obj) => {
+        return ({
+            id: `${workflow}-subflows-${obj}`,
+            source: workflow,
+            target: `subflow-${obj}`,
+            type: 'pathfinding'
         })
     })
 
@@ -223,7 +262,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'knative-global'
+                    type: 'knative-global'.toUpperCase()
                 },
                 type: dependencies.global_functions[obj] ? "found": "missing"
             }
@@ -246,7 +285,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'knative-namespace'
+                    type: 'knative-namespace'.toUpperCase()
                 },
                 type: dependencies.namespace_functions[obj] ? "found": "missing"
             }
@@ -262,29 +301,6 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
         })
     })
 
-    let subflowNodes = Object.keys(dependencies.subflows).map((obj)=>{
-        return(
-            {
-                id: `subflow-${obj}`,
-                position: position,
-                data: {
-                    label: obj,
-                    type: 'subflow'
-                },
-                type: dependencies.subflows[obj] ? "found": "missing"
-            }
-        )
-    })
-    let subflowEdges = Object.keys(dependencies.subflows).map((obj)=>{
-        return( {
-            id: `${workflow}-subflow-${obj}`,
-            source: workflow,
-            target: `subflow-${obj}`,
-            type: 'pathfinding',
-            arrowHeadType: 'arrow'
-        })
-    })
-
     let namespaceVarNodes = Object.keys(dependencies.namespace_variables).map((obj)=>{
         return(
             {
@@ -292,7 +308,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'namespace-variable'
+                    type: 'namespace-variable'.toUpperCase()
                 },
                 type: dependencies.namespace_variables[obj] ? "found": "missing"
             }

@@ -1,0 +1,17 @@
+.instance-details-rev {
+    color: var(--theme-grey-light-blue);
+    font-size: 12px;
+    font-weight: 100;
+}
+
+.instance-details-tuple {
+    color: var(--theme-dark-gray-text);
+}
+
+.instance-details-tuple a {
+    color: var(--theme-brand-blue);
+}
+
+.instance-details-tuple a:hover {
+    text-decoration: underline;
+}

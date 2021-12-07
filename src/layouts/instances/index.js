@@ -88,7 +88,6 @@ function InstancesTable(props) {
                 <>
                     <>
                     {data.map((obj)=>{
-                        console.log(obj)
                     return(
                         <InstanceRow 
                             namespace={namespace}
@@ -143,17 +142,17 @@ export function InstanceRow(props) {
         <td className="label-cell">
             {label}
         </td>
-        <td className="center-align" style={{fontSize: "10px", lineHeight: "20px"}}>
+        <td className="center-align" style={{fontSize: "12px", lineHeight: "20px"}}>
             {wfStr}
         </td>
-        <td style={{ fontSize: "10px", lineHeight: "20px" }} className="center-align">
+        <td style={{ fontSize: "12px", lineHeight: "20px" }} className="center-align">
             {revStr}
         </td>
         <td className="center-align">
-            {started}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span>
+            {started}<span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span>
         </td>
         <td className="center-align">
-            {finished}<span style={{fontSize:"10pt", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span>
+            {finished}<span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span>
         </td>
     </tr>
     )
@@ -174,13 +173,13 @@ function StateLabel(props) {
     )
 }
 
-function SuccessState() {
+export function SuccessState() {
     return (
         <StateLabel className={"success-label"} label={"Successful"} />
     )
 }
 
-function FailState() {
+export function FailState() {
     return (
         <StateLabel className={"fail-label"} label={"Failed"} />
     )
@@ -192,7 +191,7 @@ function FailState() {
 //     )
 // }
 
-function RunningState() {
+export function RunningState() {
     return (
         <StateLabel className={"running-label"} label={"Running"} />
     )

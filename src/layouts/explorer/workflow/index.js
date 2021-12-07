@@ -6,7 +6,7 @@ import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelT
 import {BsCodeSquare} from 'react-icons/bs'
 import { useNamespaceDependencies, useWorkflow, useWorkflowServices, useWorkflowVariables } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {  GenerateRandomKey } from '../../../util';
 
 import * as dayjs from "dayjs"
@@ -17,11 +17,8 @@ import { IoMdLock } from 'react-icons/io';
 import { Service, ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import DirektivEditor from '../../../components/editor';
-import { RiDeleteBin2Line } from 'react-icons/ri';
 import AddWorkflowVariablePanel from './variables';
-import Button from '../../../components/button';
-import { IoEyeOutline } from 'react-icons/io5';
-import RevisionTab, { RevisionSelectorTab } from './revisionTab';
+import { RevisionSelectorTab } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
 
 import Slider, { Range } from 'rc-slider';
@@ -188,7 +185,7 @@ function WorkingRevision(props) {
                         <BsCodeSquare />
                     </ContentPanelTitleIcon>
                     <div>
-                        Working Revision
+                        Active Revision
                     </div>
                 </ContentPanelTitle>
                 <ContentPanelBody>
@@ -238,7 +235,7 @@ function TabBar(props) {
     let tabLabels = [
         "Overview",
         "Revisions",
-        "Working Revisions",
+        "Active Revision",
         "Dependency Graph", 
         "Settings"
     ]
