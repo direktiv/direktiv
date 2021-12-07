@@ -204,7 +204,7 @@ export function RevisionSelectorTab(props) {
                                 if(obj.node.name === router.routes[i].ref){}
                             }
                             return (
-                                <FlexBox className="gap wrap" style={{
+                                <FlexBox key={GenerateRandomKey()} className="gap wrap" style={{
                                     alignItems: "center"
                                 }}>
                                     <FlexBox className="wrap gap" style={{
@@ -461,7 +461,7 @@ export function RevisionTrafficShaper(props) {
                                             return ""
                                         }
                                         return(
-                                            <option value={obj.node.name}>{obj.node.name}</option>
+                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
                                         )
                                     })}
                                 </select>
@@ -482,7 +482,7 @@ export function RevisionTrafficShaper(props) {
                                             return ""
                                         }
                                         return(
-                                            <option value={obj.node.name}>{obj.node.name}</option>
+                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
                                         )
                                     })}
                                 </select>
