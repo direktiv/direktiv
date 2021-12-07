@@ -609,7 +609,7 @@ function SettingsTab(props) {
     return (
         <>
             <FlexBox className="gap wrap col">
-                <div style={{width: "100%", minHeight: "200px"}}>
+                <div style={{width: "100%"}}>
                     <AddWorkflowVariablePanel namespace={namespace} workflow={workflow} />
                 </div>
                 <FlexBox className="gap wrap" style={{maxHeight: "144px"}}>
