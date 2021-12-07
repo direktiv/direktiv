@@ -64,7 +64,7 @@ function InstancePage(props) {
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
             <FlexBox className="gap wrap">
-                <FlexBox style={{minWidth: "300px", flex: "5"}}>
+                <FlexBox style={{minWidth: "340px", flex: "5"}}>
                     <ContentPanel style={{width: "100%"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
@@ -78,7 +78,7 @@ function InstancePage(props) {
                                 <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px"}}>
                                     <Link to={linkURL}>
                                         <Button className="small light">
-                                            View Workflow
+                                            <span className="hide-on-small">View</span> Workflow
                                         </Button>
                                     </Link>
                                 </FlexBox>
