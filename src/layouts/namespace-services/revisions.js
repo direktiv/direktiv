@@ -16,7 +16,7 @@ export default function NamespaceRevisionsPanel(props) {
     const {service} = useParams()
 
     if(!namespace) {
-        return ""
+        return <></>
     }
 
     return (
@@ -93,7 +93,7 @@ function NamespaceRevisions(props) {
     },[config, getNamespaceServiceConfig, load])
 
     if(revisions === null || traffic === null) {
-        return ""
+        return <></>
     }
 
     return(

@@ -28,7 +28,7 @@ function Explorer(props) {
     const {namespace}  = props
     let filepath = `/`
     if(!namespace){
-        return ""
+        return <></>
     }
     if(params["*"] !== undefined){
         filepath = `/${params["*"]}`
@@ -262,8 +262,8 @@ function ExplorerList(props) {
                             } else if (obj.node.type === "workflow") {
                                 return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
                             }
-                            return ""
-                        })}</>}</>: ""}
+                            return <></>
+                        })}</>}</>: <></>}
                     </FlexBox>
             </ContentPanelBody>
         </ContentPanel>

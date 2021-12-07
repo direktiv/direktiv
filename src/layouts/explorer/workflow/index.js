@@ -18,7 +18,7 @@ import { Service, ServiceStatus } from '../../namespace-services';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
-import { RevisionSelectorTab } from './revisionTab';
+import { RevisionSelectorTab, RevisionTrafficShaper } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
 
 import Slider, { Range } from 'rc-slider';
@@ -85,7 +85,10 @@ function InitialWorkflowHook(props){
                         <OverviewTab router={router} namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
+                        <>
                         <RevisionSelectorTab router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                        <RevisionTrafficShaper />
+                        </>
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 

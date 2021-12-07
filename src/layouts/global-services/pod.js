@@ -19,7 +19,7 @@ export default function GlobalPodPanel(props) {
     }
 
     if (revisionDetails === null) {
-        return ""
+        return <></>
     }
 
     let size = "small"

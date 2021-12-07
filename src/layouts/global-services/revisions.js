@@ -42,7 +42,7 @@ export default function GlobalRevisionsPanel(props){
     },[config, getServiceConfig, load])
 
     if(revisions === null) {
-        return ""
+        return <></>
     }
 
 

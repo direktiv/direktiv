@@ -16,7 +16,7 @@ export default function ServicesPanel(props) {
     const {namespace} = props
 
     if(!namespace) {
-        return ""
+        return <></>
     }
     return(
         <FlexBox className="gap wrap" style={{paddingRight:"8px"}}>
@@ -92,7 +92,7 @@ function NamespaceServices(props) {
     }
 
     if(data === null) {
-        return ""
+        return <></>
     }
 
     return(

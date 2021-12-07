@@ -35,7 +35,7 @@ export default function GlobalServicesPanel(props) {
     }
 
     if(data === null) {
-        return ""
+        return <></>
     }
 
     return(

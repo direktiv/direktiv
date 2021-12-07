@@ -62,7 +62,7 @@ export default function DependencyDiagram(props) {
 
 
     if(load){
-        return ""
+        return <></>
     }
 
     if(type === "workflow") {

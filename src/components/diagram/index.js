@@ -67,7 +67,7 @@ export default function WorkflowDiagram(props) {
     },[load, workflow])
 
     if(load) {
-        return ""
+        return <></>
     }
 
     return(
