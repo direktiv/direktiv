@@ -182,45 +182,47 @@ function ExplorerList(props) {
                         </Modal>
                     </ContentPanelHeaderButton>
                     <ContentPanelHeaderButton className="explorer-action-btn">
-                        <Modal title="New Directory" 
-                            escapeToCancel
-                            button={(
-                                <div style={{display:"flex"}}>
-                                    <ContentPanelHeaderButtonIcon>
-                                        <IoAdd/>
-                                    </ContentPanelHeaderButtonIcon>
-                                    <span className="hide-on-small">Directory</span>
-                                    <span className="hide-on-medium-and-up">Dir</span>
-                                </div>
-                            )}  
-                            onClose={()=>{
-                                setName("")
-                            
-                            }}
-                            actionButtons={[
-                                ButtonDefinition("Add", async () => {
-                                    let err = await createNode(name, "directory")
-                                    if(err) return err
-                                }, "small blue", true, false),
-                                ButtonDefinition("Cancel", () => {
-                                }, "small light", true, false)
-                            ]}
-
-                            keyDownActions={[
-                                KeyDownDefinition("Enter", async () => {
-                                    let err = await createNode(name, "directory")
-                                    if(err) return err
+                        <div>
+                            <Modal title="New Directory" 
+                                escapeToCancel
+                                button={(
+                                    <div style={{display:"flex"}}>
+                                        <ContentPanelHeaderButtonIcon>
+                                            <IoAdd/>
+                                        </ContentPanelHeaderButtonIcon>
+                                        <span className="hide-on-small">Directory</span>
+                                        <span className="hide-on-medium-and-up">Dir</span>
+                                    </div>
+                                )}  
+                                onClose={()=>{
                                     setName("")
-                                }, true)
-                            ]}
+                                
+                                }}
+                                actionButtons={[
+                                    ButtonDefinition("Add", async () => {
+                                        let err = await createNode(name, "directory")
+                                        if(err) return err
+                                    }, "small blue", true, false),
+                                    ButtonDefinition("Cancel", () => {
+                                    }, "small light", true, false)
+                                ]}
 
-                        >
-                            <FlexBox  className="col gap" style={{fontSize: "12px"}}>
-                                <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                                    <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
-                                </div>
-                            </FlexBox>
-                        </Modal>
+                                keyDownActions={[
+                                    KeyDownDefinition("Enter", async () => {
+                                        let err = await createNode(name, "directory")
+                                        if(err) return err
+                                        setName("")
+                                    }, true)
+                                ]}
+
+                            >
+                                <FlexBox  className="col gap" style={{fontSize: "12px"}}>
+                                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                                        <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter a directory name" />
+                                    </div>
+                                </FlexBox>
+                            </Modal>
+                        </div>
                     </ContentPanelHeaderButton>
                     <div className="explorer-sort-by explorer-action-btn hide-on-small">
                         <div className="esb-label inline" style={{marginRight: "8px"}}>

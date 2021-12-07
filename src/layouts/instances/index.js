@@ -149,10 +149,12 @@ export function InstanceRow(props) {
             {revStr}
         </td>
         <td className="center-align">
-            {started}<span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span>
+            {started}
+            {/* <span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span> */}
         </td>
         <td className="center-align">
-            {finished}<span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span>
+            {finished}
+            {/* <span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span> */}
         </td>
     </tr>
     )

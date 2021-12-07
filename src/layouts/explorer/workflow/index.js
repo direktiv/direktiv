@@ -23,6 +23,7 @@ import DependencyDiagram from '../../../components/dependency-diagram';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import Button from '../../../components/button';
+import Modal, { ButtonDefinition } from '../../../components/modal';
 
 
 dayjs.extend(utc)
@@ -223,11 +224,26 @@ function WorkingRevision(props) {
                                 </div>
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
-                                <div onClick={async ()=>{
-                                    await executeWorkflow()
-                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                    Run
-                                </div>
+                                <Modal 
+                                    style={{ justifyContent: "center" }}
+                                    className="run-workflow-modal"
+                                    modalStyle={{color: "black"}}
+                                    title="Run Workflow"
+                                    actionButtons={[
+                                        ButtonDefinition("Run", async () => {
+                                            await executeWorkflow()
+                                        }, "small blue", true, false),
+                                        ButtonDefinition("Cancel", async () => {
+                                        }, "small light", true, false)
+                                    ]}
+                                    button={(
+                                        <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                            Run
+                                        </div>
+                                    )}
+                                >
+                                    TODO input editor here
+                                </Modal>
                             </div>
                             <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
                                 <div onClick={async()=>{
