@@ -176,7 +176,7 @@
 }
 
 .traffic-distribution .rc-slider-track {
-    background-color: #EC4F79;
+    background-color: #EC4F79 !important;
     height: 20px;
     z-index: 2;
     border-radius: 10px;
@@ -188,6 +188,32 @@
     border-radius: 10px;
 }
 
+
+/* traffic shaping */
+.rc-slider-disabled.red-green {
+    background: transparent;
+}
+
+.red-green .rc-slider-handle {
+    z-index: 3;
+    width: 28px;
+    height: 28px;
+}
+.red-green .rc-slider-rail {
+    height: 20px;
+}
+
+.red-green .rc-slider-track {
+    background-color: #EC4F79 !important;
+    height: 20px;
+    z-index: 2;
+    border-radius: 10px;
+}
+.red-green .rc-slider-step {
+    background-color: #55BA86;
+    height: 20px;
+    border-radius: 10px;
+}
 /* traffic distri mini slider */
 
 .rc-slider-disabled.traffic-mini-distribution {

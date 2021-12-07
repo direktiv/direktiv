@@ -61,8 +61,27 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const {data, err, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
     const [router, setRouter] = useState(null)
+
+    const [revisions, setRevisions] = useState(null)
+    const [revsErr, setRevsErr] = useState("")
+
+    // fetch revisions using the workflow hook from above
+    useEffect(()=>{
+        async function listData() {
+            if(revisions === null){
+                // get the instances
+                let resp = await getRevisions()
+                if(Array.isArray(resp)){
+                    setRevisions(resp)
+                } else {
+                    setRevsErr(resp)
+                }
+            }
+        }
+        listData()
+    },[getRevisions, revisions])
 
     useEffect(()=>{
         async function getD() {
@@ -71,7 +90,7 @@ function InitialWorkflowHook(props){
             }
         }
         getD()
-    },[router, data])
+    },[router, data, getWorkflowRouter])
 
     if(data === null || router === null) {
         return <></>
@@ -86,8 +105,8 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 1 ?
                         <>
-                        <RevisionSelectorTab router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
-                        <RevisionTrafficShaper />
+                        <RevisionSelectorTab setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                        <RevisionTrafficShaper setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
                         </>
                     :<></>}
                     { activeTab === 2 ?
@@ -448,15 +467,19 @@ function TrafficDistribution(props) {
 
     return(
         <ContentPanelBody>
-            <FlexBox className="col gap">
-                <Slider className="traffic-distribution" disabled={true}/>
-                <FlexBox style={{fontSize:"10pt", marginTop:"5px"}}>
-                    <FlexBox>
-                        Revision One
-                    </FlexBox>
-                    <FlexBox style={{justifyContent:"flex-end"}}>
-                        Revision Two
-                    </FlexBox>
+            <FlexBox className="col gap" style={{justifyContent:'center'}}>
+                <Slider value={routes[0] ? routes[0].weight : 0} className="traffic-distribution" disabled={true}/>
+                <FlexBox style={{fontSize:"10pt", marginTop:"5px", maxHeight:"50px", color: "#C1C5C8"}}>
+                    {routes[0] ? 
+                    <FlexBox className="col">
+                        <span title={routes[0].ref}>{routes[0].ref.substr(0, 8)}</span>
+                        <span>{routes[0].weight}%</span>
+                    </FlexBox>:""}
+                    {routes[1] ? 
+                    <FlexBox className="col" style={{ textAlign:'right'}}>
+                        <span title={routes[1].ref}>{routes[1].ref.substr(0,8)}</span>
+                        <span>{routes[1].weight}%</span>
+                    </FlexBox>:""}
                 </FlexBox>
             </FlexBox>
         </ContentPanelBody>

@@ -152,29 +152,9 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {getRevisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
-    const [load, setLoad] = useState(true)
-    const [revisions, setRevisions] = useState([])
+    const {getRevisions, setRevisions, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    // const [load, setLoad] = useState(true)
     const [revision, setRevision] = useState(null)
-    const [err, setErr] = useState(null)
-
-    // fetch revisions using the workflow hook from above
-    useEffect(()=>{
-        async function listData() {
-            if(load){
-                // get the instances
-                let resp = await getRevisions()
-                if(Array.isArray(resp)){
-                    setRevisions(resp)
-                } else {
-                    setErr(resp)
-                }
-
-            }
-            setLoad(false)
-        }
-        listData()
-    },[load, getRevisions])
 
     useEffect(()=>{
         if(searchParams.get('revision') !== null) {
@@ -289,7 +269,7 @@ export function RevisionSelectorTab(props) {
                                             Use Revision
                                         </Button>
                                         <Button className="small light bold" onClick={()=>{
-                                                    setSearchParams({tab: 1, revision: obj.node.name})
+                                            setSearchParams({tab: 1, revision: obj.node.name})
                                         }}>
                                             Open Revision
                                         </Button>
@@ -306,6 +286,38 @@ export function RevisionSelectorTab(props) {
 }
 
 export function RevisionTrafficShaper(props) {
+    const {editWorkflowRouter, setRouter, getWorkflowRouter, router, revisions} = props
+
+    const [load, setLoad] = useState(true)
+    const [rev1, setRev1] = useState(router.routes.length === 0 ? "latest": "")
+    const [rev2, setRev2] = useState("")
+    const [traffic, setTraffic] = useState(router.routes.length === 0 ? 100 : 0)
+
+    useEffect(()=>{
+        if(load){
+            if (router.routes[0]){
+                setRev1(router.routes[0].ref)
+                setTraffic(router.routes[0].weight)
+            }
+
+            if(router.routes[1]){
+                setRev2(router.routes[1].ref)
+            }
+            setLoad(false)
+        }
+    },[load, router.routes,rev1, rev2])
+
+    console.log(traffic)
+    useEffect(()=>{
+        if(!load){
+            if(rev1 === "") {
+                setTraffic(0)
+            }
+            if(rev2 === "") {
+                setTraffic(100)
+            }
+        }
+    },[rev1, rev2, load])
 
     return(
         <>
@@ -318,14 +330,24 @@ export function RevisionTrafficShaper(props) {
                     Traffic Shaping
                 </div>
             </ContentPanelTitle>
-            <ContentPanelBody>
+            <ContentPanelBody style={{flexDirection:"column"}}>
                 <FlexBox className="gap wrap" style={{justifyContent: "space-between"}}>
                     <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
                         <FlexBox className="gap col">
                             <div>
                                 <b>Revision 1</b>
                             </div>
-                            <input style={{width: "auto"}}></input>
+                            <select onChange={(e)=>setRev1(e.target.value)} value={rev1}>
+                                <option value="">Select a workflow revision</option>
+                                {revisions.map((obj)=>{
+                                    if(rev2 === obj.node.name){
+                                        return ""
+                                    }
+                                    return(
+                                        <option value={obj.node.name}>{obj.node.name}</option>
+                                    )
+                                })}
+                            </select>
                         </FlexBox>
                     </FlexBox>
                     <FlexBox style={{ maxWidth: "300px", justifyContent: "center"}}>
@@ -333,17 +355,69 @@ export function RevisionTrafficShaper(props) {
                             <div>
                                 <b>Revision 2</b>
                             </div>
-                            <input style={{width: "auto"}}></input>
+                            <select onChange={(e)=>setRev2(e.target.value)} value={rev2}>
+                                <option value="">Select a workflow revision</option>
+                                {revisions.map((obj)=>{
+                                    if(rev1 === obj.node.name){
+                                        return ""
+                                    }
+                                    return(
+                                        <option value={obj.node.name}>{obj.node.name}</option>
+                                    )
+                                })}
+                            </select>
+                            {/* <input style={{width: "auto"}}></input> */}
                         </FlexBox>
                     </FlexBox>
-                    <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
+                    <FlexBox style={{maxWidth: "300px", justifyContent: "center", paddingRight:"15px"}}>
                         <FlexBox className="gap col">
                             <div>
-                                <b>Slider</b>
+                                <b>Traffic Distribution</b>
                             </div>
-                            <input style={{width: "auto"}}></input>
+                            <Slider disabled={rev1 !== "" && rev2 !== "" ? false: true} className="red-green" value={traffic} onChange={(e)=>{setTraffic(e)}}/>
+                            <FlexBox style={{marginTop:"10px", fontSize:"10pt", color: "#C1C5C8"}}>
+                                {rev1 !== "" ? 
+                                <FlexBox className="col">
+                                    <span title={rev1}>{rev1.substr(0,8)}</span>
+                                    <span>{traffic}%</span>
+                                </FlexBox>: ""}
+                                {rev2 !== "" ?
+                                <FlexBox  className="col" style={{justifyContent:'flex-end', textAlign:"right"}}>
+                                    <span title={rev2}>{rev2.substr(0, 8)}</span>
+                                    <span>{100-traffic}%</span>
+                                </FlexBox>:""}
+                            </FlexBox>
                         </FlexBox>
                     </FlexBox>
+                </FlexBox>
+                <FlexBox style={{marginTop:"10px", justifyContent:"flex-end"}}>
+                    <Button onClick={async()=>{
+                        let arr = []
+                        if(rev1 !== "" && rev2 !== "") {
+                            arr.push({
+                                ref: rev1,
+                                weight: parseInt(traffic)
+                            })
+                            arr.push({
+                                ref: rev2,
+                                weight: parseInt(100-traffic)
+                            })
+                        } else if(rev1 !== "") {
+                            arr.push({
+                                ref: rev1,
+                                weight: 100
+                            })
+                        } else if(rev2 !== "") {
+                            arr.push({
+                                ref: rev2,
+                                weight: 100
+                            })
+                        }
+                        await editWorkflowRouter(arr, router.live)
+                        setRouter(await getWorkflowRouter())
+                    }} className="small">
+                        Save
+                    </Button>
                 </FlexBox>
             </ContentPanelBody>
         </ContentPanel>
