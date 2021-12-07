@@ -568,9 +568,8 @@ function WorkflowAttributes(props) {
     }
 
     return(
-        <ContentPanelBody> 
-            <FlexBox>
-                <div className="input-tag" >
+            // <FlexBox>
+                <div className="input-tag" style={{width: "100%"}} >
                     <ul className="input-tag__tags">
                         {attris.map((tag, i) => (
                             <li key={tag}>
@@ -581,8 +580,7 @@ function WorkflowAttributes(props) {
                         <li className="input-tag__tags__input"><input type="text" onKeyDown={inputKeyDown} ref={tagInput} /></li>
                     </ul>
                 </div>
-            </FlexBox>
-        </ContentPanelBody>
+            // </FlexBox>
     )
 }
 
@@ -598,9 +596,9 @@ function SettingsTab(props) {
                 <div style={{width: "100%", minHeight: "200px"}}>
                     <AddWorkflowVariablePanel namespace={namespace} workflow={workflow} />
                 </div>
-                <FlexBox className="col gap wrap">
-                    <FlexBox style={{maxHeight: "200px", flexGrow: "1"}}>          
-                        <div style={{width: "100%", minHeight: "200px"}}>
+                <FlexBox className="gap wrap" style={{maxHeight: "144px"}}>
+                    <FlexBox style={{flexGrow: "1"}}>          
+                        <div style={{width: "100%", minHeight: "144px"}}>
                             <ContentPanel style={{width: "100%", height: "100%"}}>
                                 <ContentPanelTitle>
                                     <ContentPanelTitleIcon>
@@ -629,8 +627,8 @@ function SettingsTab(props) {
                             </ContentPanel>
                         </div>
                     </FlexBox>
-                    <FlexBox style={{ flexGrow: "5"}}>
-                        <div style={{width: "100%", minHeight: "200px"}}>
+                    <FlexBox style={{ flexGrow: "5" }}>
+                        {/* <div style={{width: "100%", minHeight: "200px"}}> */}
                             <ContentPanel style={{width: "100%", height: "100%"}}>
                                 <ContentPanelTitle>
                                     <ContentPanelTitleIcon>
@@ -641,9 +639,11 @@ function SettingsTab(props) {
                                         + Add
                                     </ContentPanelHeaderButton> */}
                                 </ContentPanelTitle>
-                                <WorkflowAttributes attributes={workflowData.node.attributes} deleteAttributes={deleteAttributes} addAttributes={addAttributes}/>
+                                <ContentPanelBody>
+                                    <WorkflowAttributes attributes={workflowData.node.attributes} deleteAttributes={deleteAttributes} addAttributes={addAttributes}/>
+                                </ContentPanelBody>
                             </ContentPanel>
-                        </div>
+                        {/* </div> */}
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
