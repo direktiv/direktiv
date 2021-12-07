@@ -262,7 +262,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'knative-global'
+                    type: 'knative-global'.toUpperCase()
                 },
                 type: dependencies.global_functions[obj] ? "found": "missing"
             }
@@ -285,7 +285,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'knative-namespace'
+                    type: 'knative-namespace'.toUpperCase()
                 },
                 type: dependencies.namespace_functions[obj] ? "found": "missing"
             }
@@ -301,29 +301,6 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
         })
     })
 
-    let subflowNodes = Object.keys(dependencies.subflows).map((obj)=>{
-        return(
-            {
-                id: `subflow-${obj}`,
-                position: position,
-                data: {
-                    label: obj,
-                    type: 'subflow'
-                },
-                type: dependencies.subflows[obj] ? "found": "missing"
-            }
-        )
-    })
-    let subflowEdges = Object.keys(dependencies.subflows).map((obj)=>{
-        return( {
-            id: `${workflow}-subflow-${obj}`,
-            source: workflow,
-            target: `subflow-${obj}`,
-            type: 'pathfinding',
-            arrowHeadType: 'arrow'
-        })
-    })
-
     let namespaceVarNodes = Object.keys(dependencies.namespace_variables).map((obj)=>{
         return(
             {
@@ -331,7 +308,7 @@ function generateElements(getLayoutedElements, dependencies, workflow) {
                 position: position,
                 data: {
                     label: obj,
-                    type: 'namespace-variable'
+                    type: 'namespace-variable'.toUpperCase()
                 },
                 type: dependencies.namespace_variables[obj] ? "found": "missing"
             }
