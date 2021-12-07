@@ -151,7 +151,7 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {getRevisions, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    const {getRevisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
     const [load, setLoad] = useState(true)
     const [revisions, setRevisions] = useState([])
     const [revision, setRevision] = useState(null)
@@ -219,12 +219,38 @@ export function RevisionSelectorTab(props) {
                                         </FlexBox>
                                     </div>
                                 </FlexBox>
-                                <FlexBox style={{
+                                {router.routes.length > 0 ? 
+                                  <>
+                                    {router.routes.map((obj)=>{
+                                        return ""
+                                    })}
+                                  </>
+                                : <>
+                                    {obj.node.name === "latest" ? 
+                                    <FlexBox style={{
+                                        flex: "1",
+                                        maxWidth: "150px"
+                                    }}>
+                                        <FlexBox className="col revision-label-tuple">
+                                            <div>
+                                                Traffic amount
+                                            </div>
+                                            <div style={{width:'100%'}}>
+                                                <Slider defaultValue={100} className="traffic-mini2-distribution" disabled={true}/>
+                                                <div>
+                                                    100%
+                                                </div>
+                                            </div>
+                                        </FlexBox>
+                                    </FlexBox>
+                                    :""}
+                                </>}
+                                {/* <FlexBox style={{
                                     flex: "1",
                                     minWidth: "300px"
                                 }}>
-                                    TODO: Traffic Component
-                                </FlexBox>
+                                    
+                                </FlexBox> */}
                                 <div>
                                     <FlexBox className="gap">
                                             <Modal
