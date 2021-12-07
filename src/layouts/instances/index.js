@@ -6,7 +6,7 @@ import {VscFileCode} from 'react-icons/vsc';
 import { BsDot } from 'react-icons/bs';
 import HelpIcon from '../../components/help';
 import { useInstances } from 'direktiv-react-hooks';
-import { Config } from '../../util';
+import { Config, GenerateRandomKey } from '../../util';
 
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -62,9 +62,8 @@ function InstancesTable(props) {
         <>
         {
             data !== null && data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
-    <table className="instances-table" style={{width: "100%"}}>
-
-     <>       <thead>
+            <table className="instances-table" style={{width: "100%"}}>
+            <thead>
                 <tr>
                     <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>
                         State
@@ -90,6 +89,7 @@ function InstancesTable(props) {
                     {data.map((obj)=>{
                     return(
                         <InstanceRow 
+                            key={GenerateRandomKey()}
                             namespace={namespace}
                             state={obj.node.status} 
                             name={obj.node.as} 
@@ -102,8 +102,8 @@ function InstancesTable(props) {
                     )
                     })}</>
                 </>
-                :<></>}
-            </tbody></>
+                :""}
+            </tbody>
         </table>}</>
         </ContentPanelBody>
     </ContentPanel>
