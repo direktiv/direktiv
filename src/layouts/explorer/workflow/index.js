@@ -205,8 +205,7 @@ function WorkingRevision(props) {
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                 <div onClick={async ()=>{
-                                    let id = await executeWorkflow()
-                                    console.log(id, "ID")
+                                    await executeWorkflow()
                                 }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                     Run
                                 </div>
@@ -342,7 +341,6 @@ function WorkflowInstances(props) {
 
 function OverviewTab(props) {
     const {getInstancesForWorkflow,  namespace, filepath, router} = props
-    console.log(router)
     const [load, setLoad] = useState(true)
     const [instances, setInstances] = useState([])
     const [err, setErr] = useState(null)

@@ -41,7 +41,6 @@ function InstancePage(props) {
         return <></>
     }
 
-    console.log(data);
     let label = <></>;
     if (data.status === "complete") {
         label = <SuccessState />
@@ -181,7 +180,6 @@ function Logs(props){
     }
 
     function rowRenderer({key, index, style}) {
-        console.log(data[index]);
         return (
           <div key={key} style={style}>
             {data[index].node.msg}

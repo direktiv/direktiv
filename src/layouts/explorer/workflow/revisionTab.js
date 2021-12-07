@@ -42,8 +42,6 @@ function RevisionTab(props) {
         getRevWorkflow()
     },[load, searchParams, getWorkflowRevisionData, revision])
 
-    console.log(workflow)
-
     return(
         <FlexBox>
             <FlexBox className="col gap">
@@ -82,8 +80,7 @@ function RevisionTab(props) {
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                         <div onClick={async ()=>{
-                                            let id = await executeWorkflow("", revision)
-                                            console.log(id, "ID")
+                                            await executeWorkflow("", revision)
                                         }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
                                             Run
                                         </div>
@@ -114,8 +111,6 @@ function TabbedButtons(props) {
 
     let tabBtns = [];
     let tabBtnLabels = ["YAML", "Diagram", "Sankey"];
-
-    console.log(tabBtn);
 
     for (let i = 0; i < tabBtnLabels.length; i++) {
         let key = GenerateRandomKey();

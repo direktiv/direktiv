@@ -208,7 +208,6 @@ export function UpdateTraffic(props){
         }
     },[traffic])
 
-    console.log(revTwo)
     return(
         <FlexBox style={{flex: 1, minWidth: "370px"}}>
             <FlexBox className="gap" style={{fontSize:"12px", maxHeight: "fit-content"}}>

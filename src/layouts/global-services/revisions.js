@@ -65,7 +65,6 @@ export default function GlobalRevisionsPanel(props){
                                     maxWidth: "300px"
                                 }}
                                 onOpen={() => {
-                                    console.log("ON OPEN");
                                 }}
                                 onClose={()=>{
                                 }}
