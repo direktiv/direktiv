@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
 import {useSearchParams} from 'react-router-dom'
@@ -22,6 +22,7 @@ import DependencyDiagram from '../../../components/dependency-diagram';
 
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import Button from '../../../components/button';
 
 
 dayjs.extend(utc)
@@ -60,12 +61,12 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const {data, err, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
     const [router, setRouter] = useState(null)
 
     const [revisions, setRevisions] = useState(null)
     const [revsErr, setRevsErr] = useState("")
-
+    console.log(data, "workflow data")
     // fetch revisions using the workflow hook from above
     useEffect(()=>{
         async function listData() {
@@ -122,7 +123,7 @@ function InitialWorkflowHook(props){
                     <></>
                     }
                     { activeTab === 4 ?
-                        <SettingsTab namespace={namespace} workflow={filepath} />
+                        <SettingsTab addAttributes={addAttributes} deleteAttributes={deleteAttributes} workflowData={data} setWorkflowLogToEvent={setWorkflowLogToEvent} namespace={namespace} workflow={filepath} />
                     :<></>}
                 </FlexBox>
             </FlexBox>
@@ -525,9 +526,71 @@ function WorkflowServices(props) {
     )
 }
 
+function WorkflowAttributes(props) {
+    const {attributes, deleteAttributes, addAttributes} = props
+
+
+    const [load, setLoad] = useState(true)
+    const [attris, setAttris] = useState(attributes)
+    const tagInput = useRef()
+
+    useEffect(()=>{
+        if(load){
+            setAttris(attributes)
+            setLoad(false)
+        }
+    },[attributes,load])
+
+    const removeTag = async(i) => {
+        // await deleteAttribute(attris[i])
+        await deleteAttributes([attris[i]])
+        const newTags = [...attris]
+        newTags.splice(i,1)
+        setAttris(newTags)
+    }
+
+    const inputKeyDown = async (e) => {
+        const val = e.target.value
+        if((e.key === " " || e.key === "Enter") && val) {
+            if(attris.find(tag => tag.toLowerCase() === val.toLowerCase())){
+                return;
+            }
+            try {
+                await addAttributes([val])
+                setAttris([...attris, val])
+                tagInput.current.value = null
+            } catch(e) {
+                
+            }
+        } else if (e.key === "Backspace" && !val) {
+            removeTag(attris.length - 1)
+        }
+    }
+
+    return(
+        <ContentPanelBody> 
+            <FlexBox>
+                <div className="input-tag" >
+                    <ul className="input-tag__tags">
+                        {attris.map((tag, i) => (
+                            <li key={tag}>
+                                {tag}
+                                <button type="button" onClick={() => { removeTag(i); }}>+</button>
+                            </li>
+                        ))}
+                        <li className="input-tag__tags__input"><input type="text" onKeyDown={inputKeyDown} ref={tagInput} /></li>
+                    </ul>
+                </div>
+            </FlexBox>
+        </ContentPanelBody>
+    )
+}
+
 function SettingsTab(props) {
 
-    const {namespace, workflow} = props
+    const {namespace, workflow, addAttributes, deleteAttributes, workflowData, setWorkflowLogToEvent} = props
+
+    const [logToEvent, setLogToEvent] = useState(workflowData.eventLogging)
 
     return (
         <>
@@ -535,25 +598,7 @@ function SettingsTab(props) {
                 <div style={{width: "100%", minHeight: "200px"}}>
                     <AddWorkflowVariablePanel namespace={namespace} workflow={workflow} />
                 </div>
-                <FlexBox className="gap wrap">
-                    <FlexBox style={{maxHeight: "200px", flexGrow: "5"}}>
-                        <div style={{width: "100%", minHeight: "200px"}}>
-                            <ContentPanel style={{width: "100%", height: "100%"}}>
-                                <ContentPanelTitle>
-                                    <ContentPanelTitleIcon>
-                                        <IoMdLock/>
-                                    </ContentPanelTitleIcon>
-                                    Add Attributes
-                                    <ContentPanelHeaderButton>
-                                        + Add
-                                    </ContentPanelHeaderButton>
-                                </ContentPanelTitle>
-                                <ContentPanelBody> 
-
-                                </ContentPanelBody>
-                            </ContentPanel>
-                        </div>
-                    </FlexBox>
+                <FlexBox className="col gap wrap">
                     <FlexBox style={{maxHeight: "200px", flexGrow: "1"}}>          
                         <div style={{width: "100%", minHeight: "200px"}}>
                             <ContentPanel style={{width: "100%", height: "100%"}}>
@@ -567,21 +612,36 @@ function SettingsTab(props) {
                                     alignItems: "center"
                                 }}>
                                     <FlexBox className="gap" style={{flexDirection: "column", alignItems: "center"}}>
-                                        <FlexBox className="gap" style={{
-                                            alignItems: "center",
-                                            justifyContent: "center"
-                                        }}>
-                                            <label className="switch">
-                                                <input type="checkbox" />
-                                                <span className="slider-broadcast"></span>
-                                            </label>
-                                            <div className="rev-toggle-label hide-on-small">
-                                                Enabled
-                                            </div>                          
+                                        <FlexBox style={{width:"100%"}}>
+                                            <input value={logToEvent} onChange={(e)=>setLogToEvent(e.target.value)} type="text" placeholder="Event to log to" />
                                         </FlexBox>
-                                        <input style={{width: "auto", maxWidth: "200px"}} type="text" placeholder="Message" />
+                                        <FlexBox style={{justifyContent:"flex-end", width:"100%"}}>
+                                            <Button onClick={async()=>{
+                                                let err = await setWorkflowLogToEvent(logToEvent)
+                                                // todo err
+                                                console.log(err, "NOTIFY IF ERR")
+                                            }} className="small">
+                                                Save
+                                            </Button>
+                                        </FlexBox>
                                     </FlexBox>
                                 </ContentPanelBody>
+                            </ContentPanel>
+                        </div>
+                    </FlexBox>
+                    <FlexBox style={{ flexGrow: "5"}}>
+                        <div style={{width: "100%", minHeight: "200px"}}>
+                            <ContentPanel style={{width: "100%", height: "100%"}}>
+                                <ContentPanelTitle>
+                                    <ContentPanelTitleIcon>
+                                        <IoMdLock/>
+                                    </ContentPanelTitleIcon>
+                                    Add Attributes
+                                    {/* <ContentPanelHeaderButton>
+                                        + Add
+                                    </ContentPanelHeaderButton> */}
+                                </ContentPanelTitle>
+                                <WorkflowAttributes attributes={workflowData.node.attributes} deleteAttributes={deleteAttributes} addAttributes={addAttributes}/>
                             </ContentPanel>
                         </div>
                     </FlexBox>

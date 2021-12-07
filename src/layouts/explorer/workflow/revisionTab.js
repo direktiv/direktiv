@@ -148,6 +148,8 @@ export function RevisionSelectorTab(props) {
     const {setRouter, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
     // const [load, setLoad] = useState(true)
     const [revision, setRevision] = useState(null)
+    const [rev1, setRev1] = useState(router.routes.length === 0 ? "latest": "")
+    const [rev2, setRev2] = useState("")
 
     useEffect(()=>{
         if(searchParams.get('revision') !== null) {
@@ -200,7 +202,7 @@ export function RevisionSelectorTab(props) {
                                     </FlexBox>
                                     {router.routes.length > 0 ? 
                                     <>
-                                        {router.routes[0] && router.routes[0].ref === obj.node.name ? 
+                                        {router.routes[0] && router.routes[0].ref === obj.node.name  ? 
                                             <FlexBox style={{
                                                 flex: "1",
                                                 maxWidth: "150px"
@@ -218,7 +220,7 @@ export function RevisionSelectorTab(props) {
                                                 </FlexBox>
                                             </FlexBox>
                                         :""}
-                                        {router.routes[1]  && router.routes[1].ref === obj.node.name ? 
+                                        {router.routes[1]  && router.routes[1].ref === obj.node.name  ? 
                                             <FlexBox style={{
                                                 flex: "1",
                                                 maxWidth: "150px"
@@ -248,7 +250,7 @@ export function RevisionSelectorTab(props) {
                                                     Traffic amount
                                                 </div>
                                                 <div style={{width:'100%'}}>
-                                                    <Slider defaultValue={100} className="traffic-mini2-distribution" disabled={true}/>
+                                                    <Slider defaultValue={100} className="traffic-mini-distribution" disabled={true}/>
                                                     <div>
                                                         100%
                                                     </div>
@@ -313,7 +315,7 @@ export function RevisionSelectorTab(props) {
                 </ContentPanel>
             </div>
             <div>
-                <RevisionTrafficShaper setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
+                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
             </div>
         </FlexBox>
     )
@@ -321,11 +323,10 @@ export function RevisionSelectorTab(props) {
 }
 
 export function RevisionTrafficShaper(props) {
-    const {editWorkflowRouter, setRouter, getWorkflowRouter, router, revisions} = props
+    const {editWorkflowRouter, rev1, rev2, setRev1, setRev2, setRouter, getWorkflowRouter, router, revisions} = props
 
     const [load, setLoad] = useState(true)
-    const [rev1, setRev1] = useState(router.routes.length === 0 ? "latest": "")
-    const [rev2, setRev2] = useState("")
+
     const [traffic, setTraffic] = useState(router.routes.length === 0 ? 100 : 0)
 
     useEffect(()=>{
@@ -372,17 +373,20 @@ export function RevisionTrafficShaper(props) {
                             <div>
                                 <b>Revision 1</b>
                             </div>
-                            <select onChange={(e)=>setRev1(e.target.value)} value={rev1}>
-                                <option value="">Select a workflow revision</option>
-                                {revisions.map((obj)=>{
-                                    if(rev2 === obj.node.name){
-                                        return ""
-                                    }
-                                    return(
-                                        <option value={obj.node.name}>{obj.node.name}</option>
-                                    )
-                                })}
-                            </select>
+                            <FlexBox style={{alignItems:"center"}}>
+                                <select onChange={(e)=>setRev1(e.target.value)} value={rev1}>
+                                    <option value="">Select a workflow revision</option>
+                                    {revisions.map((obj)=>{
+                                        if(rev2 === obj.node.name){
+                                            return ""
+                                        }
+                                        return(
+                                            <option value={obj.node.name}>{obj.node.name}</option>
+                                        )
+                                    })}
+                                </select>
+                            </FlexBox>
+                 
                         </FlexBox>
                     </FlexBox>
                     <FlexBox style={{ maxWidth: "300px", justifyContent: "center"}}>
@@ -390,17 +394,19 @@ export function RevisionTrafficShaper(props) {
                             <div>
                                 <b>Revision 2</b>
                             </div>
-                            <select onChange={(e)=>setRev2(e.target.value)} value={rev2}>
-                                <option value="">Select a workflow revision</option>
-                                {revisions.map((obj)=>{
-                                    if(rev1 === obj.node.name){
-                                        return ""
-                                    }
-                                    return(
-                                        <option value={obj.node.name}>{obj.node.name}</option>
-                                    )
-                                })}
-                            </select>
+                            <FlexBox style={{alignItems:"center"}}>
+                                <select onChange={(e)=>setRev2(e.target.value)} value={rev2}>
+                                    <option value="">Select a workflow revision</option>
+                                    {revisions.map((obj)=>{
+                                        if(rev1 === obj.node.name){
+                                            return ""
+                                        }
+                                        return(
+                                            <option value={obj.node.name}>{obj.node.name}</option>
+                                        )
+                                    })}
+                                </select>
+                            </FlexBox>
                             {/* <input style={{width: "auto"}}></input> */}
                         </FlexBox>
                     </FlexBox>
