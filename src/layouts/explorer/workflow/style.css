@@ -159,3 +159,31 @@
 .revision-label-tuple > div:last-of-type {
     color: var(--theme-grey-light-blue);
 }
+
+
+/* TRAFFIC DISTRIBUTION SLIDER */
+
+.rc-slider-disabled.traffic-distribution {
+    background: transparent;
+}
+
+.traffic-distribution .rc-slider-handle {
+    display: none;
+}
+
+.traffic-distribution .rc-slider-rail {
+    height: 20px;
+}
+
+.traffic-distribution .rc-slider-track {
+    background-color: #EC4F79;
+    height: 20px;
+    z-index: 2;
+    border-radius: 10px;
+}
+
+.traffic-distribution .rc-slider-step {
+    background-color: #55BA86;
+    height: 20px;
+    border-radius: 10px;
+}

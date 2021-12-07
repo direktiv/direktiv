@@ -13,6 +13,9 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import SankeyDiagram from '../../../components/sankey';
 
+import Slider, { Range } from 'rc-slider';
+import 'rc-slider/assets/index.css';
+
 function RevisionTab(props) {
 
     const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow} = props
