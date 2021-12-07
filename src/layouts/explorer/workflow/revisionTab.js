@@ -12,6 +12,7 @@ import YAML from 'js-yaml'
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import SankeyDiagram from '../../../components/sankey';
+import { IoSettings } from 'react-icons/io5';
 
 function RevisionTab(props) {
 
@@ -185,7 +186,7 @@ export function RevisionSelectorTab(props) {
     }
 
     return (
-        <FlexBox className="col">
+        <div className="col">
             <ContentPanel style={{width: "100%", minWidth: "300px"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
@@ -270,93 +271,52 @@ export function RevisionSelectorTab(props) {
                     })}
                 </ContentPanelBody>
             </ContentPanel>
-        </FlexBox>
+        </div>
     )
+
+}
+
+export function RevisionTrafficShaper(props) {
 
     return(
         <>
-            <FlexBox className="gap col wrap" style={{height:"100%"}}>
-                <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <BsCodeSquare />
-                        </ContentPanelTitleIcon>
-                        <div>
-                            All Revisions
-                        </div>
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        <table>
-                            <tbody>
-                                {
-                                    revisions.map((obj)=>{
-                                        return(
-                                            <tr>
-                                                <td>
-                                                    {obj.node.name}
-                                                </td>
-                                                <td>
-                                                <Modal
-                                                    escapeToCancel
-                                                    style={{
-                                                        flexDirection: "row-reverse",
-                                                    }}
-                                                    title="Delete a revision" 
-                                                    button={(
-                                                        <div className="secrets-delete-btn grey-text auto-margin red-text" style={{display: "flex", alignItems: "center", height: "100%"}}>
-                                                        <RiDeleteBin2Line className="auto-margin"/>
-                                                    </div>
-                                                    )}
-                                                    actionButtons={
-                                                        [
-                                                            ButtonDefinition("Delete", async () => {
-                                                                let err = await deleteRevision(obj.node.name)
-                                                                if (err) return err
-                                                            }, "small red", true, false),
-                                                            ButtonDefinition("Cancel", () => {
-                                                            }, "small light", true, false)
-                                                        ]
-                                                    } 
-                                                >
-                                                        <FlexBox className="col gap">
-                                                    <FlexBox >
-                                                        Are you sure you want to delete '{obj.node.name}'?
-                                                        <br/>
-                                                        This action cannot be undone.
-                                                    </FlexBox>
-                                                </FlexBox>
-                                                </Modal>
-                                                </td>
-                                                <td>
-                                                    set working rev
-                                                </td>
-                                                <td onClick={()=>{
-                                                    setSearchParams({tab: 1, revision: obj.node.name})
-                                                }}>
-                                                    open revision
-                                                </td>
-                                            </tr>
-                                        )
-                                    })
-                                }
-                            </tbody>
-                        </table>
-                    </ContentPanelBody>
-                </ContentPanel>
-                <ContentPanel style={{ width: "100%", minWidth: "300px", minHeight:"200px"}}>
-                    <ContentPanelTitle>
-                        <ContentPanelTitleIcon>
-                            <BsCodeSquare />
-                        </ContentPanelTitleIcon>
-                        <div>
-                            Revision Traffic Shaping
-                        </div>
-                    </ContentPanelTitle>
-                    <ContentPanelBody>
-                        testing
-                    </ContentPanelBody>
-                </ContentPanel>
-            </FlexBox>
+        <ContentPanel>
+            <ContentPanelTitle>
+                <ContentPanelTitleIcon>
+                    <IoSettings />
+                </ContentPanelTitleIcon>
+                <div>
+                    Traffic Shaping
+                </div>
+            </ContentPanelTitle>
+            <ContentPanelBody>
+                <FlexBox className="gap wrap" style={{justifyContent: "space-between"}}>
+                    <FlexBox style={{minWidth: "300px", maxWidth: "300px", justifyContent: "center"}}>
+                        <FlexBox className="gap col">
+                            <div>
+                                <b>Revision 1</b>
+                            </div>
+                            <input></input>
+                        </FlexBox>
+                    </FlexBox>
+                    <FlexBox style={{minWidth: "300px", maxWidth: "300px", justifyContent: "center"}}>
+                        <FlexBox className="gap col">
+                            <div>
+                                <b>Revision 2</b>
+                            </div>
+                            <input></input>
+                        </FlexBox>
+                    </FlexBox>
+                    <FlexBox style={{minWidth: "300px", maxWidth: "300px", justifyContent: "center"}}>
+                        <FlexBox className="gap col">
+                            <div>
+                                <b>Slider</b>
+                            </div>
+                        </FlexBox>
+                    </FlexBox>
+                </FlexBox>
+            </ContentPanelBody>
+        </ContentPanel>
         </>
     )
 }
