@@ -18,10 +18,12 @@ import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
 function RevisionTab(props) {
 
-    const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow} = props
+    const navigate = useNavigate()
+    const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow, namespace} = props
     const [load, setLoad] = useState(true)
     const [workflow, setWorkflowData] = useState(null)
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
+    const [input, setInput] = useState("{\n\t\n}")
 
     useEffect(()=>{
         if(searchParams.get('revtab') === null) {
@@ -81,11 +83,42 @@ function RevisionTab(props) {
                                     <div style={{display:"flex", flex:1 }}>
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
-                                        <div className={"btn-terminal"} onClick={async ()=>{
-                                            await executeWorkflow("", revision)
-                                        }}>
-                                            Run
-                                        </div>
+                                        <Modal 
+                                            style={{ justifyContent: "center" }}
+                                            className="run-workflow-modal"
+                                            modalStyle={{color: "black"}}
+                                            title="Run Workflow"
+                                            onClose={()=>{
+                                                setInput("{\n\t\n}")
+                                            }}
+                                            actionButtons={[
+                                                ButtonDefinition("Run", async () => {
+                                                    let r = ""
+                                                    if(input === "{\n\t\n}"){
+                                                        r = await executeWorkflow("", revision)
+                                                    } else {
+                                                        r = await executeWorkflow(input, revision)
+                                                    }
+                                                    if(r.includes("execute workflow")){
+                                                        // is an error
+                                                        return r
+                                                    } else {
+                                                        navigate(`/n/${namespace}/instances/${r}`)
+                                                    }
+                                                }, "small blue", true, false),
+                                                ButtonDefinition("Cancel", async () => {
+                                                }, "small light", true, false)
+                                            ]}
+                                            button={(
+                                                <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                                    Run
+                                                </div>
+                                            )}
+                                        >
+                                            <FlexBox style={{overflow:"hidden"}}>
+                                                <DirektivEditor height="200px" width="300px" dlang="json" dvalue={input} setDValue={setInput}/>
+                                            </FlexBox>
+                                        </Modal>
                                     </div>
                                     <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
                                     </div>
@@ -204,7 +237,7 @@ export function RevisionSelectorTab(props) {
                                 if(obj.node.name === router.routes[i].ref){}
                             }
                             return (
-                                <FlexBox className="gap wrap" style={{
+                                <FlexBox key={GenerateRandomKey()} className="gap wrap" style={{
                                     alignItems: "center"
                                 }}>
                                     <FlexBox className="wrap gap" style={{
@@ -461,7 +494,7 @@ export function RevisionTrafficShaper(props) {
                                             return ""
                                         }
                                         return(
-                                            <option value={obj.node.name}>{obj.node.name}</option>
+                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
                                         )
                                     })}
                                 </select>
@@ -482,7 +515,7 @@ export function RevisionTrafficShaper(props) {
                                             return ""
                                         }
                                         return(
-                                            <option value={obj.node.name}>{obj.node.name}</option>
+                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
                                         )
                                     })}
                                 </select>

@@ -7,7 +7,8 @@ import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIco
 import FlexBox from '../../components/flexbox';
 import {AiFillCode} from 'react-icons/ai';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
-import { FailState, RunningState, SuccessState } from '../instances';
+import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
+
 import { Link } from 'react-router-dom';
 import { AutoSizer, List } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
@@ -68,10 +69,12 @@ function InstancePage(props) {
     let label = <></>;
     if (data.status === "complete") {
         label = <SuccessState />
-    } else if (data.status === "failed") {
+    } else if (data.status === "failed" || data.status === "crashed") {
         label = <FailState />
     }  else  if (data.status === "running") {
         label = <RunningState />
+    } else if (data.status === "cancelled") {
+        label = <CancelledState />
     }
 
     let wfName = data.as.split(":")[0]
