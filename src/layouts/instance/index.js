@@ -112,7 +112,6 @@ function InstancePage(props) {
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelTitle>
-                        <ContentPanelBody>
                             <FlexBox className="col">
                                 <FlexBox style={{flexGrow:1, backgroundColor:"#002240", color:"white"}}>
                                     <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
@@ -136,7 +135,6 @@ function InstancePage(props) {
                                 </FlexBox>
                                 </FlexBox>
                             </FlexBox>
-                        </ContentPanelBody>
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox className="gap wrap" style={{minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
@@ -153,7 +151,6 @@ function InstancePage(props) {
                             </FlexBox>
                         </ContentPanelTitle>
                         <Input getInput={getInput}/>
-                        
                     </ContentPanel>
                     </FlexBox>
                 </FlexBox>
@@ -247,8 +244,12 @@ function Input(props) {
     },[input])
 
     return(
-        <FlexBox >
-            <DirektivEditor dlang="json" value={input} readonly={true}/>
+        <FlexBox>
+            <AutoSizer>
+                {({height, width})=>(
+                    <DirektivEditor height={height} width={width} dlang="json" value={input} readonly={true}/>
+                )}
+            </AutoSizer>
         </FlexBox>
     )
 }
@@ -291,8 +292,12 @@ function Output(props){
     },[status])
 
     return(
-        <FlexBox >
-            <DirektivEditor dlang="json" value={output} readonly={true}/>
+        <FlexBox>
+            <AutoSizer>
+                {({height, width})=>(
+                    <DirektivEditor height={height} width={width} dlang="json" value={output} readonly={true}/>
+                )}
+            </AutoSizer>
         </FlexBox>
     )
 }
