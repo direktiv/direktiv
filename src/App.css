@@ -306,3 +306,46 @@ select {
 .hidden {
   visibility: hidden;
 }
+
+.btn-terminal {
+  align-items: center;
+  gap: 3px;
+  background-color: rgb(53, 81, 102);
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  animation : test 300s infinite;
+
+}
+
+.btn-terminal.terminal-disabled {
+  opacity: 30% !important;
+  pointer-events: none !important;
+  cursor: unset !important;
+}
+
+.btn-terminal.terminal-loading {
+  opacity: 30% !important;
+  pointer-events: none !important;
+  cursor: unset !important;
+
+  animation : shimmer 4s infinite;
+  background: linear-gradient(45deg, rgba(53,81,102,1) 0%, rgb(66, 114, 151) 50%, rgba(53,81,102,1) 100%); 
+  background-size: 1000px 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+
+@keyframes test {
+  100% {
+    transform: translateY(-500%);
+  }
+}

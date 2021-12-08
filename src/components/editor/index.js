@@ -273,6 +273,7 @@ export default function DirektivEditor(props) {
     },[monaco])
 
     function handleEditorChange(value, event) {
+     console.log("value =", value)
         setDValue(value)
     }
 

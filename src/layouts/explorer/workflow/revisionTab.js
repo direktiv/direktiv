@@ -81,9 +81,9 @@ function RevisionTab(props) {
                                     <div style={{display:"flex", flex:1 }}>
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
-                                        <div onClick={async ()=>{
+                                        <div className={"btn-terminal"} onClick={async ()=>{
                                             await executeWorkflow("", revision)
-                                        }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        }}>
                                             Run
                                         </div>
                                     </div>

@@ -114,11 +114,11 @@ function InstancePage(props) {
                             <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
                                 <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                     {follow ? 
-                                        <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
                                             <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
                                         </div>
                                         :
-                                        <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
                                             <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
                                         </div>
                                     }
