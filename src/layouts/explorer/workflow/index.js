@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
 import {useSearchParams} from 'react-router-dom'
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import {BsCodeSquare} from 'react-icons/bs'
 import { useNamespaceDependencies, useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
@@ -68,7 +68,7 @@ function InitialWorkflowHook(props){
 
     const [revisions, setRevisions] = useState(null)
     const [revsErr, setRevsErr] = useState("")
-    console.log(data, "workflow data")
+
     // fetch revisions using the workflow hook from above
     useEffect(()=>{
         async function listData() {
@@ -489,6 +489,10 @@ function OverviewTab(props) {
 
 function TrafficDistribution(props) {
     const {routes} = props
+
+    if (!routes) {
+        return <></>
+    }
 
     // using latest for traffic
     if (routes.length === 0) {
