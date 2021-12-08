@@ -91,7 +91,7 @@ function InstancePage(props) {
 
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
-            <FlexBox className="gap wrap">
+            <FlexBox className="gap wrap" style={{minHeight: "50%"}}>
                 <FlexBox style={{minWidth: "340px", flex: "5"}}>
                     <ContentPanel style={{width: "100%"}}>
                         <ContentPanelTitle>
@@ -142,20 +142,19 @@ function InstancePage(props) {
                 <FlexBox className="gap wrap" style={{minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
                     <FlexBox style={{minWidth: "300px"}}>
                         <ContentPanel style={{width: "100%"}}>
-                            <ContentPanelTitle>
-                                <ContentPanelTitleIcon>
-                                    <AiFillCode />
-                                </ContentPanelTitleIcon>
-                                <FlexBox className="gap">
-                                    <div>
-                                    Input Data
-                                    </div>
-                                </FlexBox>
-                            </ContentPanelTitle>
-                            <ContentPanelBody>
-                                <Input getInput={getInput}/>
-                            </ContentPanelBody>
-                        </ContentPanel>
+                        <ContentPanelTitle>
+                            <ContentPanelTitleIcon>
+                                <AiFillCode />
+                            </ContentPanelTitleIcon>
+                            <FlexBox className="gap">
+                                <div>
+                                Input
+                                </div>
+                            </FlexBox>
+                        </ContentPanelTitle>
+                        <Input getInput={getInput}/>
+                        
+                    </ContentPanel>
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
@@ -248,8 +247,8 @@ function Input(props) {
     },[input])
 
     return(
-        <FlexBox>
-            <DirektivEditor dlang="json" readonly={true} value={input}/>
+        <FlexBox >
+            <DirektivEditor dlang="json" value={input} readonly={true}/>
         </FlexBox>
     )
 }
