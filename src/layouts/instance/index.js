@@ -6,13 +6,17 @@ import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {AiFillCode} from 'react-icons/ai';
-import {useInstance, useInstanceLogs} from 'direktiv-react-hooks';
+import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { FailState, RunningState, SuccessState } from '../instances';
 import { Link } from 'react-router-dom';
 import { AutoSizer, List } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
 import * as dayjs from "dayjs"
+import YAML from 'js-yaml'
+
 import DirektivEditor from '../../components/editor';
+import WorkflowDiagram from '../../components/diagram';
+
 function InstancePageWrapper(props) {
 
     let {namespace} = props;
@@ -30,15 +34,28 @@ function InstancePage(props) {
 
     let {namespace} = props;
     const [load, setLoad] = useState(true)
+    const [wfpath, setWFPath] = useState("")
+    const [rev, setRev] = useState("")
     const [follow, setFollow] = useState(true)
     const [width, setWidth] = useState(window.innerWidth);
     const [clipData, setClipData] = useState(null)
-
     const params = useParams()
+
     let instanceID = params["id"];
 
     let {data, err, cancelInstance, getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID);
     
+
+    useEffect(()=>{
+        if(load && data !== null) {
+            console.log(data)
+            let split = data.as.split(":")
+            setWFPath(split[0])
+            setRev(split[1])
+            setLoad(false)
+        }
+    },[load, data])
+
     if (data === null) {
         return <></>
     }
@@ -153,6 +170,7 @@ function InstancePage(props) {
                             </FlexBox>
                         </ContentPanelTitle>
                         <ContentPanelBody>
+                            <InstanceDiagram status={data.status} namespace={namespace} wfpath={wfpath} rev={rev} flow={data.flow}/>
                         </ContentPanelBody>
                     </ContentPanel>
                 </FlexBox>
@@ -175,6 +193,37 @@ function InstancePage(props) {
         </FlexBox>
 
     </>)
+}
+
+function InstanceDiagram(props) {
+    const {wfpath, rev, flow, namespace, status} = props
+
+    const [load, setLoad] = useState(true)
+    const [wfdata, setWFData] = useState("")
+
+    const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath)
+
+    useEffect(()=>{
+        async function getwf() {
+            if(wfpath !== "" && rev !== "" && load){
+                let ref = await getWorkflowRevisionData(rev)
+                setWFData(atob(ref.revision.source))
+                setLoad(false)
+            }
+        }
+        
+        getwf()
+    },[wfpath, rev, load])
+
+    console.log(wfdata, "WORKFLOW DATA")
+
+    if(load){
+        return <></>
+    }
+
+    return(
+        <WorkflowDiagram instanceStatus={status} disabled={true} flow={flow} workflow={YAML.load(wfdata)}/>
+    )
 }
 
 function Input(props) {
