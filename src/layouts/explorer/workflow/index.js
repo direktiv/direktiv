@@ -14,6 +14,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
+import {IoInformation} from 'react-icons/io5'
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
@@ -216,7 +217,7 @@ function WorkingRevision(props) {
                         <FlexBox >
                             <DirektivEditor dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} />
                         </FlexBox>
-                        <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center'}}>
+                        <FlexBox className="gap zest" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center', position: "relative"}}>
                             <div style={{display:"flex", flex:1 }}>
                                 <div onClick={async ()=> {
                                     // console.log("oldWf =", oldWf)
@@ -275,6 +276,10 @@ function WorkingRevision(props) {
                                 }}>
                                     Save as new revision
                                 </div>
+                                {/* <div className={"btn-terminal editor-info"} onClick={async()=>{
+                                }}>
+                                    <IoInformation style={{width: "80%", height: "80%"}}/>
+                                </div> */}
                             </div>
                         </FlexBox>
                     </FlexBox>
