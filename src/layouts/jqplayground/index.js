@@ -207,7 +207,7 @@ function JQOutput(props) {
                 </ContentPanelTitle>
                 <ContentPanelBody >
                     <FlexBox style={{overflow:"hidden" , height: "422px", maxHeight:"422px"}}>
-                        <DirektivEditor readonly={true} value={output} height="100%" dlang={"json"} />
+                        <DirektivEditor readonly={true} value={output} dlang={"json"} />
                     </FlexBox>
                 </ContentPanelBody>
         </ContentPanel>
@@ -231,7 +231,7 @@ function JQInput(props) {
                 </ContentPanelTitle>
                 <ContentPanelBody >
                     <FlexBox style={{overflow:"hidden" , height: "422px", maxHeight:"422px"}}>
-                        <DirektivEditor readonly={false} value={input} setDValue={setInput}  height="100%" dlang={"json"}/>
+                        <DirektivEditor readonly={false} value={input} setDValue={setInput}  dlang={"json"}/>
                     </FlexBox>
                 </ContentPanelBody>
         </ContentPanel>

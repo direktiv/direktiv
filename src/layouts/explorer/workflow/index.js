@@ -215,9 +215,9 @@ function WorkingRevision(props) {
                 <ContentPanelBody>
                     <FlexBox className="col" style={{overflow:"hidden"}}>
                         <FlexBox >
-                            <DirektivEditor dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} />
+                            <DirektivEditor dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true}/>
                         </FlexBox>
-                        <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center', position: "relative"}}>
+                        <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"44px", maxHeight:"44px", paddingLeft:"10px", minHeight:"44px", borderTop:"1px solid white", alignItems:'center', position: "relative", borderRadius:"0px 0px 8px 8px"}}>
                             <div style={{display:"flex", flex:1 }}>
                                 <div onClick={async ()=> {
                                     await discardWorkflow()
@@ -259,7 +259,7 @@ function WorkingRevision(props) {
                                     )}
                                 >
                                     <FlexBox style={{overflow:"hidden"}}>
-                                        <DirektivEditor height="200px" width="300px" dlang="json" dvalue={input} setDValue={setInput}/>
+                                        <DirektivEditor height="200" width="300" dlang="json" dvalue={input} setDValue={setInput}/>
                                     </FlexBox>
                                 </Modal>
                             </div>

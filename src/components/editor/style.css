@@ -1,0 +1,14 @@
+/* .monaco-editor{
+    padding-top: 12px;
+} */
+
+/* TODO: Find a way to re-enable this */
+.scroll-decoration{
+    box-shadow: none !important;
+}
+
+.monaco-wrapper{
+    padding-top: 12px;
+    padding-bottom: 6px;
+    width: 100%;
+}

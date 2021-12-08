@@ -112,11 +112,13 @@ function InstancePage(props) {
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelTitle>
-                            <FlexBox className="col">
-                                <FlexBox style={{flexGrow:1, backgroundColor:"#002240", color:"white"}}>
-                                    <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                            <FlexBox className="col" style={{padding: "12px 12px 12px 12px"}}>
+                                <FlexBox style={{flexGrow:1, backgroundColor:"#002240", color:"white", borderRadius: "8px 8px 0px 0px", overflow: "hidden"}}>
+                                    {/* <div style={{: "100%"}}> */}
+                                        <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                                    {/* </div> */}
                                 </FlexBox>
-                            <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
+                            <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden"}}>
                                 <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                     {follow ? 
                                         <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
@@ -244,12 +246,14 @@ function Input(props) {
     },[input])
 
     return(
-        <FlexBox>
+        <FlexBox style={{padding: "12px 12px 12px 12px"}}>
+            {/* <div style={{width: "100%", height: "100%"}}> */}
             <AutoSizer>
                 {({height, width})=>(
                     <DirektivEditor height={height} width={width} dlang="json" value={input} readonly={true}/>
                 )}
             </AutoSizer>
+            {/* </div> */}
         </FlexBox>
     )
 }
@@ -292,7 +296,7 @@ function Output(props){
     },[status])
 
     return(
-        <FlexBox>
+        <FlexBox style={{padding: "12px 12px 12px 12px"}}>
             <AutoSizer>
                 {({height, width})=>(
                     <DirektivEditor height={height} width={width} dlang="json" value={output} readonly={true}/>
@@ -378,7 +382,7 @@ function Logs(props){
       
 
     return(
-        <div style={{flex:"1 1 auto", paddingLeft:'5px'}}>
+        <div style={{flex:"1 1 auto", padding:'12px 12px 12px 12px'}}>
             <AutoSizer>
                 {({height, width})=>(
                     <List

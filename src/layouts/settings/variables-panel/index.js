@@ -179,7 +179,7 @@ function AddVariablePanel(props) {
                     </div>
                     <FlexBox className="gap" style={{maxHeight: "600px"}}>
                         <FlexBox style={{overflow:"hidden"}}>
-                            <DirektivEditor dlang={lang} width={"600px"} dvalue={dValue} setDValue={setDValue} height={"600px"}/>
+                            <DirektivEditor dlang={lang} width={600} dvalue={dValue} setDValue={setDValue} height={500}/>
                         </FlexBox>
                     </FlexBox>
                 </FlexBox>
@@ -300,7 +300,7 @@ function Variable(props) {
                     <FlexBox className="col gap" style={{fontSize: "12px"}}>
                         <FlexBox className="gap">
                             <FlexBox style={{overflow:"hidden"}}>
-                                <DirektivEditor dlang={lang} width={"600px"} dvalue={val} setDValue={setValue} height={"600px"}/>
+                                <DirektivEditor dlang={lang} width={600} dvalue={val} setDValue={setValue} height={600}/>
                             </FlexBox>
                         </FlexBox>
                         <FlexBox className="gap">

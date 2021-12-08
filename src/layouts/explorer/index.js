@@ -175,7 +175,7 @@ function ExplorerList(props) {
                                 </select>
                                 <FlexBox className="gap" style={{maxHeight: "500px"}}>
                                     <FlexBox style={{overflow:"hidden"}}>
-                                        <DirektivEditor dlang={"yaml"} width={"500px"} value={wfData} setDValue={setWfData} height={"500px"}/>
+                                        <DirektivEditor dlang={"yaml"} width={"500"} value={wfData} setDValue={setWfData} height={"500"}/>
                                     </FlexBox>
                                 </FlexBox>
                             </FlexBox>

@@ -258,8 +258,11 @@ const cobalt = {
   }
 
 
+// DirektivEditor - Eidtor Component
+// Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
+// TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
-    const {dvalue, dlang, value, height, width, setDValue, onMount, readonly} = props
+    const {dvalue, dlang, value, height, width, setDValue, onMount, readonly, disableBottomRadius} = props
     
     const monaco = useMonaco()
 
@@ -276,13 +279,13 @@ export default function DirektivEditor(props) {
      console.log("value =", value)
         setDValue(value)
     }
-
     return (
+      <div className={"monaco-editor monaco-wrapper"} style={{borderRadius: !disableBottomRadius ? "8px" : "8px 8px 0px 0px", width: width, height: height ? height-18 : height}}>
         <Editor
             options={{
                 readOnly: readonly
             }}
-            height={height}
+            height={height ? height-18 : height}
             width={width}
             language={dlang}
             defaultValue={dvalue}
@@ -292,5 +295,6 @@ export default function DirektivEditor(props) {
             onChange={handleEditorChange}
             onMount={onMount}
         />
+      </div>
     )
 }
