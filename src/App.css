@@ -314,8 +314,6 @@ select {
   padding: 3px 6px;
   cursor: pointer;
   border-radius: 3px;
-  animation : test 300s infinite;
-
 }
 
 .btn-terminal.terminal-disabled {
@@ -340,12 +338,5 @@ select {
   }
   100% {
     background-position: 1000px 0;
-  }
-}
-
-
-@keyframes test {
-  100% {
-    transform: translateY(-500%);
   }
 }
