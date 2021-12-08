@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './style.css'
 import { Config, copyTextToClipboard } from '../../util';
 import Button from '../../components/button';
@@ -11,7 +11,8 @@ import { FailState, RunningState, SuccessState } from '../instances';
 import { Link } from 'react-router-dom';
 import { AutoSizer, List } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
-
+import * as dayjs from "dayjs"
+import DirektivEditor from '../../components/editor';
 function InstancePageWrapper(props) {
 
     let {namespace} = props;
@@ -93,7 +94,7 @@ function InstancePage(props) {
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <FlexBox className="col">
-                                <FlexBox style={{flexGrow:1, backgroundColor:"#223848", color:"white"}}>
+                                <FlexBox style={{flexGrow:1, backgroundColor:"#002240", color:"white"}}>
                                     <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
                                 </FlexBox>
                             <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
@@ -132,6 +133,7 @@ function InstancePage(props) {
                                 </FlexBox>
                             </ContentPanelTitle>
                             <ContentPanelBody>
+                                <Input getInput={getInput}/>
                             </ContentPanelBody>
                         </ContentPanel>
                     </FlexBox>
@@ -146,7 +148,7 @@ function InstancePage(props) {
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap" style={{alignItems:"center"}}>
                                 <div>
-                                Logical Flow Graph
+                                    Logical Flow Graph
                                 </div>
                             </FlexBox>
                         </ContentPanelTitle>
@@ -166,8 +168,7 @@ function InstancePage(props) {
                                 </div>
                             </FlexBox>
                         </ContentPanelTitle>
-                        <ContentPanelBody>
-                        </ContentPanelBody>
+                        <Output getOutput={getOutput} status={data.status}/>
                     </ContentPanel>
                 </FlexBox>
             </FlexBox>
@@ -176,6 +177,74 @@ function InstancePage(props) {
     </>)
 }
 
+function Input(props) {
+    const {getInput} = props
+    
+    const [input, setInput] = useState("")
+
+    useEffect(()=>{
+        async function get() {
+            if(input === "") {
+                let data = await getInput()
+                if(data === "") {
+                    data = "No input data was provided..."
+                }
+                setInput(data)
+            }
+        }
+        get()
+    },[input])
+
+    return(
+        <FlexBox>
+            <DirektivEditor dlang="json" readonly={true} value={input}/>
+        </FlexBox>
+    )
+}
+
+function Output(props){
+    const {getOutput, status} = props
+
+    const [load, setLoad] = useState(true)
+    const [output, setOutput] = useState("Waiting for instance to complete...")
+
+    useEffect(()=>{
+        async function get() {
+            if (load && status !== "pending"){
+                let data = await getOutput()
+                if(data === "") {
+                    data = "No output data was resolved..."
+                } else {
+                    data = JSON.stringify(JSON.parse(data), null, 2)
+                }
+                setOutput(data)
+                setLoad(false)
+            }
+        }
+        get()
+    },[output, load])
+
+    useEffect(()=>{
+        async function reGetOutput() {
+            if(status !== "pending"){
+                let data = await getOutput()
+                if(data === "") {
+                    data = "\"No output data was resolved...\""
+                } else {
+                    data = JSON.stringify(JSON.parse(data), null, 2)
+                }
+                setOutput(data)
+            }
+        }
+       reGetOutput()
+    },[status])
+
+    return(
+        <FlexBox >
+            <DirektivEditor dlang="json" value={output} readonly={true}/>
+        </FlexBox>
+    )
+}
 
 function InstanceTuple(props) {
     
@@ -203,8 +272,24 @@ function InstanceTuple(props) {
 function Logs(props){ 
 
     let {namespace, instanceID, follow} = props;
+    // const [load, setLoad] = useState(true)
+    // const [logs, setLogs] = useState([])
     let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID)
-    console.log(data, err)
+    
+    // useEffect(()=>{
+    //     if(load && data !== null){
+    //         setLogs(data)
+    //         setLoad(false)
+    //     }
+    // },[load])
+
+    // useEffect(()=>{
+    //     if(data !== null) {
+    //         setLogs(logs + data)
+    //     }
+    // },[data, logs])
+
+
     if (!data) {
         return <></>
     }
@@ -215,16 +300,29 @@ function Logs(props){
 
     function rowRenderer({index, key, style}) {
         console.log(index, key, style)
+        if(!data[index]){
+            return ""
+        }
+
         return (
           <div key={key} style={style}>
-            {data[index].node.msg}
+            <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
+                <div className="log-timestamp">
+                    <div>[</div>
+                        <div style={{display: "flex", flex: "auto", justifyContent: "center"}}>{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}</div>
+                    <div>]</div>
+                </div>
+            </div> 
+            <span style={{marginLeft:"5px"}}>
+                {data[index].node.msg}
+            </span>
           </div>
         );
     }
       
 
     return(
-        <div style={{flex:"1 1 auto", paddingLeft:'10px'}}>
+        <div style={{flex:"1 1 auto", paddingLeft:'5px'}}>
             <AutoSizer>
                 {({height, width})=>(
                     <List
