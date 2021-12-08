@@ -28,6 +28,7 @@ export default InstancePageWrapper;
 function InstancePage(props) {
 
     let {namespace} = props;
+    const [load, setLoad] = useState(true)
     const [follow, setFollow] = useState(true)
     const [width, setWidth] = useState(window.innerWidth);
     const [clipData, setClipData] = useState(null)
@@ -95,22 +96,6 @@ function InstancePage(props) {
                                 <FlexBox style={{flexGrow:1, backgroundColor:"#223848", color:"white"}}>
                                     <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
                                 </FlexBox>
-                                {/* <div style={{padding: "4px", flexWrap:"wrap", gap: "8px"}}>
-                                    <FlexBox className="wrap gap">
-                                        <InstanceTuple label={"Workflow"} value={data.as} linkTo={linkURL} />
-                                        <InstanceTuple label={"ID"} value={data.id} />
-                                        <InstanceTuple label={"Updated at"} value={data.updatedAt} />
-                                        <InstanceTuple label={"Created at"} value={data.createdAt} />
-                                    </FlexBox>
-                                </div>
-                                { data.status === "failed" ? 
-                                <div>
-                                    <FlexBox className="wrap gap">
-                                        { data.errorCode ? <InstanceTuple label={"Error code"} value={data.errorCode} /> :<></>}
-                                        { data.errorMessage ? <InstanceTuple label={"Error message"} value={data.errorMessage} /> :<></>}
-                                        <InstanceTuple label={""} value={""} /><InstanceTuple label={""} value={""} />
-                                    </FlexBox>
-                                </div> :<></>} */}
                             <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
                                 <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                     {follow ? 
