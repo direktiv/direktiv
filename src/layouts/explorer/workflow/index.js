@@ -484,6 +484,10 @@ function OverviewTab(props) {
 function TrafficDistribution(props) {
     const {routes} = props
 
+    if (!routes) {
+        return <></>
+    }
+
     // using latest for traffic
     if (routes.length === 0) {
         return (

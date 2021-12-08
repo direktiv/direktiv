@@ -114,8 +114,9 @@ function InstancesTable(props) {
 
 const success = "complete";
 const fail = "failed";
+const crashed = "crashed";
 // there is no cancelled state
-// const cancelled = "cancelled";
+const cancelled = "cancelled";
 const running = "pending";
 
 export function InstanceRow(props) {
@@ -125,10 +126,12 @@ export function InstanceRow(props) {
     let label;
     if (state === success) {
         label = <SuccessState />
-    } else if (state === fail) {
+    } else if (state === fail || state === crashed) {
         label = <FailState />
     }  else  if (state === running) {
         label = <RunningState />
+    } else if (state === cancelled) {
+        label = <CancelledState />
     }
 
     let wfStr = name.split(':')[0]
@@ -187,11 +190,11 @@ export function FailState() {
     )
 }
 
-// function CancelledState() {
-//     return (
-//         <StateLabel className={"cancel-label"} label={"Cancelled"} />
-//     )
-// }
+export function CancelledState() {
+    return (
+        <StateLabel className={"cancel-label"} label={"Cancelled"} />
+    )
+}
 
 export function RunningState() {
     return (
