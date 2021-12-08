@@ -190,7 +190,6 @@ function WorkingRevision(props) {
         if(wf !== workflow && load) {
             setLoad(false)
             setWorkflow(wf)
-            setOldWf(wf)
         }
     },[wf, workflow, load])
    
@@ -215,13 +214,15 @@ function WorkingRevision(props) {
                 <ContentPanelBody>
                     <FlexBox className="col" style={{overflow:"hidden"}}>
                         <FlexBox >
-                            <DirektivEditor dlang="yaml" value={oldWf} dvalue={workflow} setDValue={setWorkflow} />
+                            <DirektivEditor dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} />
                         </FlexBox>
                         <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center'}}>
                             <div style={{display:"flex", flex:1 }}>
                                 <div onClick={async ()=> {
+                                    // console.log("oldWf =", oldWf)
+                                    // console.log("workflow =", workflow)
                                     await discardWorkflow()
-                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                }} className={"btn-terminal"}>
                                     Undo
                                 </div>
                             </div>
@@ -253,7 +254,7 @@ function WorkingRevision(props) {
                                         }, "small light", true, false)
                                     ]}
                                     button={(
-                                        <div style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                        <div className={"btn-terminal"}>
                                             Run
                                         </div>
                                     )}
@@ -264,14 +265,14 @@ function WorkingRevision(props) {
                                 </Modal>
                             </div>
                             <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
-                                <div onClick={async()=>{
+                                <div className={`btn-terminal ${workflow === oldWf ? "terminal-disabled" : ""}`} onClick={async()=>{
                                     await updateWorkflow(workflow)
-                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                }}>
                                     Save
                                 </div>
-                                <div onClick={async()=>{
+                                <div className={"btn-terminal"} onClick={async()=>{
                                     await saveWorkflow()
-                                }} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                }}>
                                     Save as new revision
                                 </div>
                             </div>

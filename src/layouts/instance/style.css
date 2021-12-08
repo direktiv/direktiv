@@ -15,3 +15,8 @@
 .instance-details-tuple a:hover {
     text-decoration: underline;
 }
+
+.log-timestamp {
+    display: flex;
+}
+

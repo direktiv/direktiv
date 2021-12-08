@@ -195,11 +195,11 @@ export function PodLogs(props){
                             </FlexBox>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 
-                                    <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
                                         <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
                                     </div>
                                     :
-                                    <div onClick={(e)=>setFollow(!follow)} style={{display:"flex", alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
                                         <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
                                     </div>
                                 }
