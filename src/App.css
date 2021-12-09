@@ -316,27 +316,63 @@ select {
   border-radius: 3px;
 }
 
+.btn-terminal:hover {
+  background-color: rgb(59, 90, 114);
+}
+
 .btn-terminal.terminal-disabled {
   opacity: 30% !important;
   pointer-events: none !important;
   cursor: unset !important;
 }
 
+.btn-terminal.editor-info {
+  padding: 0px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
 .btn-terminal.terminal-loading {
-  opacity: 30% !important;
+  opacity: 90% !important;
   pointer-events: none !important;
   cursor: unset !important;
 
-  animation : shimmer 4s infinite;
+  animation : shimmer 2s infinite;
+  animation-timing-function: linear;
   background: linear-gradient(45deg, rgba(53,81,102,1) 0%, rgb(66, 114, 151) 50%, rgba(53,81,102,1) 100%); 
-  background-size: 1000px 100%;
+  background-size: 500px 100%;
 }
 
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    background-position: -500px 0;
   }
   100% {
-    background-position: 1000px 0;
+    background-position: 500px 0;
   }
+}
+
+.btn-footer-drawer {
+  position: absolute;
+  right: 13px;
+  top: -13px;
+  width: 26px;
+  height: 26px;
+  background-color: #223848;
+  z-index: 19;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: grey;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.btn-footer-drawer:hover {
+  cursor: pointer;
+  background-color: #294558;  
 }

@@ -124,10 +124,10 @@ function AddVariablePanel(props) {
             headers={["Manual", "Upload"]}
             tabs={[(
                 <FlexBox id="written" className="col gap" style={{fontSize: "12px"}}>
-                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                    <div style={{width: "100%", display: "flex"}}>
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
-                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                    <div style={{width: "100%", display: "flex"}}>
                         <select style={{width:"100%"}} defaultValue={mimeType} onChange={(e)=>setMimeType(e.target.value)}>
                             <option value="">Choose a mimetype</option>
                             <option value="application/json">json</option>
@@ -140,13 +140,13 @@ function AddVariablePanel(props) {
                     </div>
                     <FlexBox className="gap" style={{maxHeight: "600px"}}>
                         <FlexBox style={{overflow:"hidden"}}>
-                            <DirektivEditor dlang={lang} width={"600px"} dvalue={dValue} setDValue={setDValue} height={"600px"}/>
+                            <DirektivEditor dlang={lang} width={600} dvalue={dValue} setDValue={setDValue} height={500}/>
                         </FlexBox>
                     </FlexBox>
                 </FlexBox>
             ),(
                 <FlexBox id="file-picker" className="col gap" style={{fontSize: "12px"}}>
-                    <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
+                    <div style={{width: "100%", display: "flex"}}>
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
                     <FlexBox className="gap">
@@ -260,7 +260,7 @@ function Variable(props) {
                     <FlexBox className="col gap" style={{fontSize: "12px"}}>
                         <FlexBox className="gap">
                             <FlexBox style={{overflow:"hidden"}}>
-                                <DirektivEditor dlang={lang} width={"600px"} dvalue={val} setDValue={setValue} height={"600px"}/>
+                                <DirektivEditor dlang={lang} width={600} dvalue={val} setDValue={setValue} height={600}/>
                             </FlexBox>
                         </FlexBox>
                         <FlexBox className="gap">

@@ -77,9 +77,9 @@ function RevisionTab(props) {
                         {tabBtn === 0 ? 
                             <FlexBox className="col" style={{overflow:"hidden"}}>
                                 <FlexBox >
-                                    <DirektivEditor value={workflow} readonly={true} dlang="yaml" />
+                                    <DirektivEditor value={workflow} readonly={true} disableBottomRadius={true} dlang="yaml" />
                                 </FlexBox>
-                                <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center'}}>
+                                <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"44px", maxHeight:"44px", paddingLeft:"10px", minHeight:"44px", borderTop:"1px solid white", alignItems:'center', borderRadius:"0px 0px 8px 8px", overflow: "hidden"}}>
                                     <div style={{display:"flex", flex:1 }}>
                                     </div>
                                     <div style={{display:"flex", flex:1, justifyContent:"center"}}>
@@ -116,7 +116,7 @@ function RevisionTab(props) {
                                             )}
                                         >
                                             <FlexBox style={{overflow:"hidden"}}>
-                                                <DirektivEditor height="200px" width="300px" dlang="json" dvalue={input} setDValue={setInput}/>
+                                                <DirektivEditor height="200" width="300" dlang="json" dvalue={input} setDValue={setInput}/>
                                             </FlexBox>
                                         </Modal>
                                     </div>
