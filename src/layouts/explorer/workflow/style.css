@@ -196,22 +196,22 @@
 
 .red-green .rc-slider-handle {
     z-index: 3;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
 }
 .red-green .rc-slider-rail {
-    height: 20px;
+    height: 24px;
 }
 
 .red-green .rc-slider-track {
     background-color: #EC4F79 !important;
-    height: 20px;
+    height: 24px;
     z-index: 2;
     border-radius: 10px;
 }
 .red-green .rc-slider-step {
     background-color: #55BA86;
-    height: 20px;
+    height: 24px;
     border-radius: 10px;
 }
 /* traffic distri mini slider */
@@ -346,4 +346,10 @@
 
   .run-workflow-modal {
       color: var(--theme-dark-gray-text);
+  }
+
+  /* Traffic Shape Select */
+
+  .traffic-shape-select{
+    box-shadow: 2px 2px 6px 0px #2C394B0A;
   }

@@ -200,7 +200,7 @@ export function RevisionSelectorTab(props) {
 
     if(revision !== null) {
         return(
-            <RevisionTab getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} setRevision={setRevision} getWorkflowRevisionData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
+            <RevisionTab namespace={namespace} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} setRevision={setRevision} getWorkflowRevisionData={getWorkflowRevisionData}  searchParams={searchParams} setSearchParams={setSearchParams} revision={revision}/>
         )
     }
 
@@ -208,6 +208,9 @@ export function RevisionSelectorTab(props) {
 
     return (
         <FlexBox className="col gap">
+            <div>
+                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
+            </div>
             <div>
                 <ContentPanel style={{width: "100%", minWidth: "300px"}}>
                     <ContentPanelTitle>
@@ -366,7 +369,10 @@ export function RevisionSelectorTab(props) {
                                                 </div>
                                             </FlexBox>
                                         </FlexBox>
-                                        :""}
+                                        :    <FlexBox style={{
+                                            flex: "1",
+                                            maxWidth: "150px"
+                                        }}></FlexBox>}
                                     </>}
                                     {/* <FlexBox style={{
                                         flex: "1",
@@ -427,9 +433,7 @@ export function RevisionSelectorTab(props) {
                     </ContentPanelBody>
                 </ContentPanel>
             </div>
-            <div>
-                <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
-            </div>
+    
         </FlexBox>
     )
 
@@ -454,9 +458,8 @@ export function RevisionTrafficShaper(props) {
             }
             setLoad(false)
         }
-    },[load, router.routes,rev1, rev2])
+    },[load, router.routes,rev1, rev2, setRev1, setRev2])
 
-    console.log(traffic)
     useEffect(()=>{
         if(!load){
             if(rev1 === "") {
@@ -481,7 +484,47 @@ export function RevisionTrafficShaper(props) {
             </ContentPanelTitle>
             <ContentPanelBody style={{flexDirection:"column"}}>
                 <FlexBox className="gap wrap" style={{justifyContent: "space-between"}}>
-                    <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
+                    <FlexBox style={{maxWidth:"350px"}}>
+                        <FlexBox className="col">
+                            <div>
+                                <b>Revision One</b>
+                            </div>
+                            <FlexBox style={{ alignItems:"center"}}>
+                                <select onChange={(e)=>setRev1(e.target.value)} value={rev1} className="traffic-shape-select" style={{border: "1px solid #D6DCE2", color:"#566875", width:'100%', height:"36px"}}>
+                                    <option value="">Select a revision</option>
+                                    {revisions.map((obj)=>{
+                                        if(rev2 === obj.node.name){
+                                            return ""
+                                        }
+                                        return(
+                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
+                                        )
+                                    })}
+                                </select>
+                            </FlexBox>
+                        </FlexBox>
+                    </FlexBox>
+                    <FlexBox style={{maxWidth:"350px"}}>
+                        <FlexBox className="col">
+                            <div>
+                                <b>Revision Two</b>
+                            </div>
+                            <FlexBox style={{alignItems:"center"}}>
+                                <select onChange={(e)=>setRev2(e.target.value)} value={rev2} className="traffic-shape-select" style={{border: "1px solid #D6DCE2", color:"#566875", width:'100%', height:"36px"}}>
+                                    <option value="">Select a revision</option>
+                                    {revisions.map((obj)=>{
+                                        if(rev1 === obj.node.name){
+                                            return ""
+                                        }
+                                        return(
+                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
+                                        )
+                                    })}
+                                </select>
+                            </FlexBox>
+                        </FlexBox>
+                    </FlexBox>
+                    {/* <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
                         <FlexBox className="gap col">
                             <div>
                                 <b>Revision 1</b>
@@ -520,11 +563,10 @@ export function RevisionTrafficShaper(props) {
                                     })}
                                 </select>
                             </FlexBox>
-                            {/* <input style={{width: "auto"}}></input> */}
                         </FlexBox>
-                    </FlexBox>
-                    <FlexBox style={{maxWidth: "300px", justifyContent: "center", paddingRight:"15px"}}>
-                        <FlexBox className="gap col">
+                    </FlexBox> */}
+                    <FlexBox style={{maxWidth: "350px", justifyContent: "center", paddingRight:"15px"}}>
+                        <FlexBox className="col">
                             <div>
                                 <b>Traffic Distribution</b>
                             </div>
@@ -539,7 +581,7 @@ export function RevisionTrafficShaper(props) {
                                 </FlexBox>:""}
                             </FlexBox>
                             <Slider disabled={rev1 !== "" && rev2 !== "" ? false: true} className="red-green" value={traffic} onChange={(e)=>{setTraffic(e)}}/>
-                            <FlexBox style={{marginTop:"10px", fontSize:"10pt", color: "#C1C5C8"}}>
+                            <FlexBox style={{marginTop:"15px", fontSize:"10pt", color: "#C1C5C8"}}>
                                 {rev1 !== "" ? 
                                 <FlexBox className="col">
                                     <span>{traffic}%</span>
@@ -551,6 +593,7 @@ export function RevisionTrafficShaper(props) {
                             </FlexBox>
                         </FlexBox>
                     </FlexBox>
+                    <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
                 </FlexBox>
                 <FlexBox style={{marginTop:"10px", justifyContent:"flex-end"}}>
                     <Button onClick={async()=>{

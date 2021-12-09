@@ -120,7 +120,7 @@ const cancelled = "cancelled";
 const running = "pending";
 
 export function InstanceRow(props) {
-    let {state, name, started, startedFrom, finished, finishedFrom, id, namespace} = props;
+    let {state, name, wf, started, startedFrom, finished, finishedFrom, id, namespace} = props;
     const navigate = useNavigate()
 
     let label;
@@ -145,9 +145,10 @@ export function InstanceRow(props) {
         <td className="label-cell">
             {label}
         </td>
+        {!wf ? 
         <td className="center-align" style={{fontSize: "12px", lineHeight: "20px"}}>
             {wfStr}
-        </td>
+        </td>: ""}
         <td style={{ fontSize: "12px", lineHeight: "20px" }} className="center-align">
             {revStr}
         </td>

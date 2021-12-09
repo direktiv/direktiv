@@ -187,61 +187,6 @@ function NamespaceServices(props) {
 export function Service(props) {
     const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic} = props
 
-    // return(
-    //     <ContentPanel>
-    //         <ContentPanelTitle style={{backgroundColor: "rgba(252, 253, 254, 1)"}}>
-    //             <ContentPanelTitleIcon>
-    //                 <ServiceStatus status={status} />
-    //             </ContentPanelTitleIcon>
-    //             {dontDelete ?
-    //                 <Modal  title="Delete namespace service" 
-    //                 escapeToCancel
-    //                 modalStyle={{
-    //                     maxWidth: "300px"
-    //                 }}
-    //                 onOpen={() => {
-    //                     console.log("ON OPEN");
-    //                 }}
-    //                 onClose={()=>{
-    //                 }}
-    //                 button={(
-    //                     <div style={{float: "right"}}>
-    //                         <ServicesDeleteButton />
-    //                     </div>
-    //                 )}  
-    //                 actionButtons={[
-    //                     ButtonDefinition("Delete", async () => {
-    //                         if(revision !== undefined) {
-    //                             let err = await deleteService(revision)
-    //                             if (err) return err
-    //                         }else {
-    //                             let err = await deleteService(name)
-    //                             if (err) return err
-    //                         }
-                         
-    //                     }, "small red", true, false),
-    //                     ButtonDefinition("Cancel", () => {
-    //                     }, "small light", true, false)
-    //                 ]}
-    //                 >
-    //                     <FlexBox className="col gap">
-    //                         <FlexBox >
-    //                             Are you sure you want to delete '{name}'?
-    //                             <br/>
-    //                             This action cannot be undone.
-    //                         </FlexBox>
-    //                 </FlexBox>
-    //                 </Modal>
-    //             :<></>}
-    //         </ContentPanelTitle>
-    //         <ContentPanelBody style={{padding: "16px"}}>
-    //             <div>
-    //                 lol
-    //             </div>
-    //         </ContentPanelBody>
-    //     </ContentPanel>
-    // )
-
     return(
         <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>

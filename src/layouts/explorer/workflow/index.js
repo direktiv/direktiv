@@ -26,6 +26,8 @@ import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 
 
+import {PieChart} from 'react-minimal-pie-chart'
+
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -62,7 +64,7 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const {data, err, getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
     const [router, setRouter] = useState(null)
 
     const [revisions, setRevisions] = useState(null)
@@ -102,7 +104,7 @@ function InitialWorkflowHook(props){
                 <TabBar setRouter={setRouter} router={router} getWorkflowRouter={getWorkflowRouter} toggleWorkflow={toggleWorkflow}  setSearchParams={setSearchParams} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <FlexBox className="col gap">
                     { activeTab === 0 ? 
-                        <OverviewTab router={router} namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
+                        <OverviewTab getSuccessFailedMetrics={getSuccessFailedMetrics} router={router} namespace={namespace} getInstancesForWorkflow={getInstancesForWorkflow} filepath={filepath}/>
                     :<></>}
                     { activeTab === 1 ?
                         <>
@@ -219,8 +221,6 @@ function WorkingRevision(props) {
                         <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"40px", maxHeight:"40px", paddingLeft:"10px", minHeight:"40px", borderTop:"1px solid white", alignItems:'center'}}>
                             <div style={{display:"flex", flex:1 }}>
                                 <div onClick={async ()=> {
-                                    // console.log("oldWf =", oldWf)
-                                    // console.log("workflow =", workflow)
                                     await discardWorkflow()
                                 }} className={"btn-terminal"}>
                                     Undo
@@ -336,7 +336,6 @@ function TabBar(props) {
 
 function WorkflowInstances(props) {
     const {instances, namespace} = props
-
     return(
         <ContentPanelBody>
             <>
@@ -349,11 +348,11 @@ function WorkflowInstances(props) {
                     <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>
                         State
                     </th>
-                    <th className="center-align">
+                    {/* <th className="center-align">
                         Name
-                    </th>
+                    </th> */}
                     <th className="center-align">
-                        Revision ID
+                        Revision
                     </th>
                     <th className="center-align">
                         Started <span className="hide-on-small">at</span>
@@ -371,6 +370,7 @@ function WorkflowInstances(props) {
                     let key = GenerateRandomKey("instance-")
                     return(
                         <InstanceRow
+                            wf={true}
                             key={key}
                             namespace={namespace}
                             state={obj.node.status} 
@@ -394,7 +394,7 @@ function WorkflowInstances(props) {
 }
 
 function OverviewTab(props) {
-    const {getInstancesForWorkflow,  namespace, filepath, router} = props
+    const {getInstancesForWorkflow,  namespace, filepath, router, getSuccessFailedMetrics} = props
     const [load, setLoad] = useState(true)
     const [instances, setInstances] = useState([])
     const [err, setErr] = useState(null)
@@ -410,7 +410,6 @@ function OverviewTab(props) {
                 } else {
                     setErr(resp)
                 }
-
             }
             setLoad(false)
         }
@@ -448,11 +447,14 @@ function OverviewTab(props) {
                                     Success/Failure Rate
                                 </div>
                             </ContentPanelTitle>
+                            <ContentPanelBody>
+                                <SuccessFailureGraph getSuccessFailedMetrics={getSuccessFailedMetrics} />
+                            </ContentPanelBody>
                         </ContentPanel>
                     </FlexBox>
                 </FlexBox>
             </div>
-            <FlexBox style={{maxHeight: "140px"}}>
+            <FlexBox style={{maxHeight: "200px", minHeight:"140px"}}>
                 <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -479,6 +481,116 @@ function OverviewTab(props) {
                 </ContentPanel>
             </FlexBox>
         </>
+    )
+}
+
+function SuccessFailureGraph(props){
+
+    const {getSuccessFailedMetrics} = props
+    const [metrics, setMetrics] = useState([
+        {title: 'Success', value: 0, color: "url(#success)", percentage: 0},
+        {title: 'Failed', value: 0, color: "url(#failed)", percentage: 0}
+    ])
+    const [total, setTotal] = useState(0)
+    const [load, setLoad] = useState(true)
+    const [err, setErr] = useState("")
+
+    useEffect(()=>{
+        async function get() {
+            if(load){
+                let ms = metrics
+                let mets = await getSuccessFailedMetrics()
+                let t = 0
+                if(mets.success && mets.failure) {
+                    if(mets.success[0]){
+                        ms[0].value = mets.success[0].value[1]
+                        t = t + parseInt(mets.success[0].value[1])
+                    }
+                    if(mets.failure[0]){
+                        ms[1].value = mets.failure[0].value[1]
+                        t = t + parseInt(mets.failure[0].value[1])
+                    }
+
+                    if(mets.success[0]) {
+                        ms[0].percentage = (ms[0].value / t * 100).toFixed(2)
+                    }
+                    if(mets.failure[0]){
+                        ms[1].percentage = (ms[1].value / t * 100).toFixed(2)
+                    }
+
+                    if(t > 0) {
+                        setMetrics(ms)
+                        setTotal(t)
+                    } else {
+                        setErr("No metrics have been found.")
+                    }
+                    
+                } else {
+                    setErr(mets)
+                }
+                setLoad(false)
+            }
+        }
+        get()
+    },[load, getSuccessFailedMetrics, metrics])
+
+    if(load){
+        return ""
+    }
+
+    if(err !== "") {
+        return(
+            <FlexBox style={{justifyContent:"center", alignItems:'center'}}>
+                {err}
+            </FlexBox>
+        )
+    }
+
+    return(
+        <FlexBox className="col" style={{maxHeight:"250px", marginTop:"20px"}}>
+            <PieChart
+                totalValue={total}
+                label={({ dataEntry }) => dataEntry.value}
+                labelStyle={{
+                    fontSize:"6pt",
+                    fontWeight: "bold",
+                    fill: "white"
+                }}
+                data ={metrics}
+            >
+            <defs>
+                <linearGradient gradientTransform="rotate(180)" id="failed">
+                    <stop offset="0%" stopColor="#F3537E" />
+                    <stop offset="100%" stopColor="#DE184D" />
+                </linearGradient>
+                <linearGradient gradientTransform="rotate(180)" id="success">
+                    <stop offset="0%" stopColor="#1FEAC5" />
+                    <stop offset="100%" stopColor="#25B49A" />
+                </linearGradient>
+            </defs>
+            </PieChart>
+            <FlexBox style={{marginTop:"10px", gap:"50px"}}>
+                <FlexBox className="col">
+                    <FlexBox style={{justifyContent:"center", alignItems:"center", gap:"5px", fontWeight:"bold", fontSize:"12pt"}}>
+                        <div style={{height:"8px", width:"8px", background:"linear-gradient(180deg, #1FEAC5 0%, #25B49A 100%)"}} />
+                        Success
+                    </FlexBox>
+                    <FlexBox style={{justifyContent:"center"}}>
+                        {metrics[0].percentage}%
+                    </FlexBox>
+                </FlexBox>
+                <FlexBox className="col">
+                    <FlexBox style={{justifyContent:"center", alignItems:"center", gap:"5px", fontWeight:"bold", fontSize:"12pt"}}>
+                        <div style={{height:"8px", width:"8px", background:"linear-gradient(180deg, #F3537E 0%, #DE184D 100%)"}} />
+                        Failure
+                    </FlexBox>
+                    <FlexBox style={{justifyContent:"center"}}>
+                        {metrics[1].percentage}%
+                    </FlexBox>
+                </FlexBox>
+            </FlexBox>
+        </FlexBox>
+        
     )
 }
 

@@ -49,7 +49,6 @@ function InstancePage(props) {
 
     useEffect(()=>{
         if(load && data !== null) {
-            console.log(data)
             let split = data.as.split(":")
             setWFPath(split[0])
             setRev(split[1])
@@ -212,13 +211,13 @@ function InstanceDiagram(props) {
         }
         
         getwf()
-    },[wfpath, rev, load])
-
-    console.log(wfdata, "WORKFLOW DATA")
+    },[wfpath, rev, load, getWorkflowRevisionData])
 
     if(load){
         return <></>
     }
+    
+    console.log(status, "STATUS OF INSTANCE")
 
     return(
         <WorkflowDiagram instanceStatus={status} disabled={true} flow={flow} workflow={YAML.load(wfdata)}/>
@@ -241,7 +240,7 @@ function Input(props) {
             }
         }
         get()
-    },[input])
+    },[input, getInput])
 
     return(
         <FlexBox>
@@ -274,7 +273,7 @@ function Output(props){
             }
         }
         get()
-    },[output, load])
+    },[output, load, getOutput, status])
 
     useEffect(()=>{
         async function reGetOutput() {
@@ -289,7 +288,7 @@ function Output(props){
             }
         }
        reGetOutput()
-    },[status])
+    },[status, getOutput])
 
     return(
         <FlexBox>
@@ -355,7 +354,6 @@ function Logs(props){
     }
 
     function rowRenderer({index, key, style}) {
-        console.log(index, key, style)
         if(!data[index]){
             return ""
         }

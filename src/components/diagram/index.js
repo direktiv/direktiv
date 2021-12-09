@@ -10,9 +10,10 @@ export default function WorkflowDiagram(props) {
 
     const [load, setLoad] = useState(true)
     const [elements, setElements] = useState([])
+    const [ostatus, setOStatus] = useState(instanceStatus)
 
     useEffect(()=>{
-        if(load && workflow !== null) {
+        if(load && workflow !== null || instanceStatus !== ostatus) {
             // initialize the dagre graph
             const dagreGraph = new dagre.graphlib.Graph()
             dagreGraph.setDefaultEdgeLabel(() => ({}))
@@ -62,8 +63,10 @@ export default function WorkflowDiagram(props) {
             if(saveElements !== null) {
                 setElements(saveElements)
             }
+            setOStatus(instanceStatus)
             setLoad(false)
         }
+        
     },[load, workflow,flow, instanceStatus])
 
     if(load) {
@@ -312,6 +315,7 @@ function generateElements(getLayoutedElements, value, flow, status) {
 
             // Check flow array change edges to green if it passed 
             if(flow){
+                console.log('check flow', status)
                 // check flow for transitions
                 for(let i=0; i < flow.length; i++) {
                     let noTransition = false
