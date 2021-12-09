@@ -106,6 +106,7 @@ resend:
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
 	resp.Oid = d.wf.ID.String()
+	resp.EventLogging = d.wf.LogToEvents
 
 	err = atob(d.rev(), &resp.Revision)
 	if err != nil {
@@ -630,7 +631,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	}
 
 	flow.logToWorkflow(ctx, time.Now(), d, "Workflow now logging to cloudevents: %s", req.GetLogger())
-
+	flow.pubsub.NotifyWorkflow(d.wf)
 	var resp emptypb.Empty
 
 	return &resp, nil
