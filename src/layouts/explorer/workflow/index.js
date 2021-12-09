@@ -328,7 +328,9 @@ function TabBar(props) {
                 <span className="slider-broadcast"></span>
             </label>
             <div className="rev-toggle-label hide-on-small">
-                Enabled
+                {!router.live ? 
+                    "Disabled":
+                    "Enabled"}
             </div>
             </FlexBox>
         </FlexBox>
@@ -455,7 +457,7 @@ function OverviewTab(props) {
                     </FlexBox>
                 </FlexBox>
             </div>
-            <FlexBox style={{maxHeight: "200px", minHeight:"140px"}}>
+            <FlexBox style={{maxHeight: "140px", minHeight:"140px"}}>
                 <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -649,8 +651,18 @@ function WorkflowServices(props) {
     const {namespace, filepath} = props
 
     const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
+    console.log(data, "DATA")
+
     if (data === null) {
-        return <></>
+        return     <div className="col">
+        <FlexBox style={{ height:"40px", }}>
+                <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                    <div style={{fontSize:"10pt", }}>
+                        No services have been created.
+                    </div>
+                </FlexBox>
+        </FlexBox>
+    </div>
     }
 
     if (err) {
@@ -660,6 +672,17 @@ function WorkflowServices(props) {
     return(
         <ContentPanelBody>
             <FlexBox className="col gap">
+                {data.length === 0 ? 
+                       <div className="col">
+                       <FlexBox style={{ height:"40px", }}>
+                               <FlexBox className="gap" style={{alignItems:"center", paddingLeft:"8px"}}>
+                                   <div style={{fontSize:"10pt", }}>
+                                       No services have been created.
+                                   </div>
+                               </FlexBox>
+                       </FlexBox>
+                   </div>
+                :""}
                 {data.map((obj)=>{
                     return(
                         <Service
@@ -721,7 +744,7 @@ function WorkflowAttributes(props) {
 
     return(
             // <FlexBox>
-                <div className="input-tag" style={{width: "100%"}} >
+                <div className="input-tag" style={{width: "100%", padding:"7px"}}>
                     <ul className="input-tag__tags">
                         {attris.map((tag, i) => (
                             <li key={tag}>
@@ -729,7 +752,7 @@ function WorkflowAttributes(props) {
                                 <button type="button" onClick={() => { removeTag(i); }}>+</button>
                             </li>
                         ))}
-                        <li className="input-tag__tags__input"><input type="text" onKeyDown={inputKeyDown} ref={tagInput} /></li>
+                        <li className="input-tag__tags__input"><input placeholder="Enter attribute" type="text" onKeyDown={inputKeyDown} ref={tagInput} /></li>
                     </ul>
                 </div>
             // </FlexBox>
@@ -748,8 +771,8 @@ function SettingsTab(props) {
                 <div style={{width: "100%"}}>
                     <AddWorkflowVariablePanel namespace={namespace} workflow={workflow} />
                 </div>
-                <FlexBox className="gap wrap" style={{maxHeight: "144px"}}>
-                    <FlexBox style={{flexGrow: "1"}}>          
+                <FlexBox className="gap">
+                    <FlexBox  style={{flex:1, maxHeight: "156px", minWidth:"300px"}}>          
                         <div style={{width: "100%", minHeight: "144px"}}>
                             <ContentPanel style={{width: "100%", height: "100%"}}>
                                 <ContentPanelTitle>
@@ -763,8 +786,9 @@ function SettingsTab(props) {
                                 }}>
                                     <FlexBox className="gap" style={{flexDirection: "column", alignItems: "center"}}>
                                         <FlexBox style={{width:"100%"}}>
-                                            <input value={logToEvent} onChange={(e)=>setLogToEvent(e.target.value)} type="text" placeholder="Event to log to" />
+                                            <input value={logToEvent} onChange={(e)=>setLogToEvent(e.target.value)} type="text" placeholder="Enter the 'event' type to send logs to" />
                                         </FlexBox>
+                                        <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
                                         <FlexBox style={{justifyContent:"flex-end", width:"100%"}}>
                                             <Button onClick={async()=>{
                                                 let err = await setWorkflowLogToEvent(logToEvent)
@@ -779,9 +803,10 @@ function SettingsTab(props) {
                             </ContentPanel>
                         </div>
                     </FlexBox>
-                    <FlexBox style={{ flexGrow: "5" }}>
+
+                    <FlexBox style={{flex: 4,maxWidth:"1200px", height:"fit-content", minHeight: "156px"}}>
                         {/* <div style={{width: "100%", minHeight: "200px"}}> */}
-                            <ContentPanel style={{width: "100%", height: "100%"}}>
+                            <ContentPanel style={{width: "100%"}}>
                                 <ContentPanelTitle>
                                     <ContentPanelTitleIcon>
                                         <IoMdLock/>
@@ -798,6 +823,7 @@ function SettingsTab(props) {
                         {/* </div> */}
                     </FlexBox>
                 </FlexBox>
+
             </FlexBox>
         </>
     )

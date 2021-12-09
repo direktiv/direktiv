@@ -283,7 +283,8 @@ export default function DirektivEditor(props) {
       <div className={"monaco-editor monaco-wrapper"} style={{borderRadius: !disableBottomRadius ? "8px" : "8px 8px 0px 0px", width: width, height: height ? height-18 : height}}>
         <Editor
             options={{
-                readOnly: readonly
+                readOnly: readonly,
+                scrollBeyondLastLine: false,
             }}
             height={height ? height-18 : height}
             width={width}
