@@ -158,6 +158,10 @@ body {
   color: var(--theme-red);
 }
 
+.green-text {
+  color: var(--theme-green);
+}
+
 .clickable {
   cursor: pointer !important;
 }
@@ -375,4 +379,8 @@ select {
 .btn-footer-drawer:hover {
   cursor: pointer;
   background-color: #294558;  
+}
+
+.subtle-border-bottom {
+  border-bottom: solid 1px var(--theme-subtle-border);
 }
