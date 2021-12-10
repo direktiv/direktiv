@@ -4,13 +4,12 @@ import ReactFlow, {ReactFlowProvider, MiniMap, isNode, Handle, useZoomPanHelper}
 import React, { useEffect, useState } from "react"
 import { position } from '../diagram'
 import FlexBox from '../flexbox'
-import {BiDotsVerticalRounded} from 'react-icons/bi';
+import {  VscMenu } from 'react-icons/vsc';
 
 
 export default function DependencyDiagram(props) {
 
     const {dependencies, type, workflow} = props
-    console.log(dependencies)
     const [load, setLoad] = useState(true)
     const [elements, setElements] = useState([])
 
@@ -87,7 +86,7 @@ function Found(props) {
     if (type.toLowerCase() === "subflow") {
         includeActions = true;
         actions.push(
-            <BiDotsVerticalRounded key="state-action-1" /> // TODO - real action btn
+            <VscMenu key="state-action-1" /> // TODO - real action btn
         )
     }
 

@@ -6,6 +6,7 @@ import { IoLockClosedOutline } from 'react-icons/io5';
 import Alert from '../../../components/alert';
 import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
+import { VscSettingsGear, VscTrash } from 'react-icons/vsc';
 
 function ScarySettings(props) {
     const {deleteNamespace, namespace, deleteErr} = props
@@ -14,7 +15,7 @@ function ScarySettings(props) {
             <ContentPanel className="scary-panel">
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
-                        <IoLockClosedOutline className="red-text" />
+                        <VscSettingsGear className="red-text" />
                     </ContentPanelTitleIcon>
                     <FlexBox className="red-text">
                         Important Settings   
@@ -56,6 +57,7 @@ function Scary(props) {
             <FlexBox>
                 <Modal title="Delete namespace" 
                         escapeToCancel
+                        titleIcon={<VscTrash/>}
                         button={(
                             <Button className="auto-margin small red" style={{
                                 minWidth: "120px",

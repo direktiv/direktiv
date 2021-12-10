@@ -1,7 +1,7 @@
 import React from 'react';
 import './style.css';
 import FlexBox from '../flexbox';
-import {BiChevronLeft, BiChevronRight} from 'react-icons/bi';
+import {VscChevronLeft, VscChevronRight} from 'react-icons/vsc'
 
 function Pagination(props) {
 
@@ -74,13 +74,13 @@ function Pagination(props) {
             <FlexBox className={leftPaginationBtnClasses} style={{ maxWidth: "24px" }} onClick={() => {
                 pageNoSetter(currentIndex-1)
             }}>
-                <BiChevronLeft className={leftChevronClasses} />
+                <VscChevronLeft className={leftChevronClasses} />
             </FlexBox>
             {pageBtns}
             <FlexBox className={rightPaginationBtnClasses} onClick={() => {
                 pageNoSetter(currentIndex+1)
             }}>
-                <BiChevronRight className={rightChevronClasses} />
+                <VscChevronRight className={rightChevronClasses} />
             </FlexBox>
         </FlexBox>
     )

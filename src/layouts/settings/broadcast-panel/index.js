@@ -6,6 +6,7 @@ import FlexBox from '../../../components/flexbox';
 import {Config, GenerateRandomKey} from '../../../util';
 import { useBroadcastConfiguration } from 'direktiv-react-hooks';
 import HelpIcon from '../../../components/help';
+import { VscSettings } from 'react-icons/vsc';
 
 function BroadcastConfigurationsPanel(props){
     const {namespace} = props
@@ -15,7 +16,7 @@ function BroadcastConfigurationsPanel(props){
         <ContentPanel className="broadcast-panel">
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <BsSliders />
+                    <VscSettings />
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>
