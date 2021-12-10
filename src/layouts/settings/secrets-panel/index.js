@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { IoLockClosedOutline } from 'react-icons/io5';
-import {RiDeleteBin2Line} from 'react-icons/ri';
+import {VscLock, VscTrash} from 'react-icons/vsc'
 import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/modal';
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';
@@ -26,7 +25,7 @@ function SecretsPanel(props){
         <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoLockClosedOutline />
+                    <VscLock />
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>
@@ -37,7 +36,7 @@ function SecretsPanel(props){
                 <div>
                     <Modal title="New secret" 
                         escapeToCancel
-
+                        titleIcon={<VscLock/>}
                         modalStyle={{
                             maxWidth: "300px"
                         }}
@@ -123,6 +122,7 @@ function Secrets(props) {
                                             flexDirection: "row-reverse",
                                             marginRight: "8px"
                                         }}
+                                        titleIcon={<VscLock/>}
                                         title="Remove secret" 
                                         button={(
                                             <SecretsDeleteButton/>
@@ -160,7 +160,7 @@ function Secrets(props) {
 export function SecretsDeleteButton(props) {
     return (
         <div className="secrets-delete-btn red-text">
-            <RiDeleteBin2Line/>
+            <VscTrash />
         </div>
     )
 }

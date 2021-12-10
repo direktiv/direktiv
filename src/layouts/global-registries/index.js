@@ -9,6 +9,7 @@ import { useGlobalRegistries, useGlobalPrivateRegistries } from 'direktiv-react-
 import {AddRegistryPanel, Registries} from '../settings/registries-panel'
 import { Config } from '../../util';
 import HelpIcon from '../../components/help';
+import { VscAdd, VscServer } from 'react-icons/vsc';
 
 
 export default function GlobalRegistriesPanel(){
@@ -36,7 +37,7 @@ export function GlobalRegistries(){
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoLogoDocker />
+                    <VscServer />
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>
@@ -47,6 +48,7 @@ export function GlobalRegistries(){
                 <div>
                     <Modal title="New registry"
                         escapeToCancel
+                        titleIcon={<VscAdd/>}
                         modalStyle={{
                             maxWidth: "450px",
                             minWidth: "450px"
@@ -108,7 +110,7 @@ export function GlobalPrivateRegistries(){
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoLogoDocker />
+                    <VscServer />
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>

@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
 import FlexBox from '../flexbox';
-import {IoChevronDown} from 'react-icons/io5';
+import {VscChevronDown} from 'react-icons/vsc';
+
 import { GenerateRandomKey } from '../../util';
 import { Link } from 'react-router-dom';
 import Identicon from 'react-identicons';
@@ -64,7 +65,7 @@ function NamespaceSelector(props) {
                         <NamespaceListItem disabled namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />
                         <FlexBox className="tall">
                             <div className="auto-margin grey-text">
-                                <IoChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
+                                <VscChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
                             </div>
                         </FlexBox>
                     </FlexBox>
