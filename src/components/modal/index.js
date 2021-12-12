@@ -70,7 +70,6 @@ function Modal(props) {
         {overlay}
         <FlexBox style={{...style}}>
             <div style={{width: "100%", display:'flex', justifyContent: "center", pointerEvents: buttonDisabled ? "none !important" : undefined}} onClick={async(ev) => {
-                console.log("buttonDisabled =", buttonDisabled)
                 if(onOpen){
                     await onOpen()
                 }
