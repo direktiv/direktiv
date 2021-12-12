@@ -9,7 +9,7 @@ import Alert from '../alert';
 
 function Modal(props) {
 
-    let {titleIcon, title, children, button, withCloseButton, activeOverlay, label} = props;
+    let {titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
     let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen } = props;
     const [visible, setVisible] = useState(false);
 
@@ -55,7 +55,7 @@ function Modal(props) {
         return(
             <div>
                 {overlay}
-                <Button onClick={(ev) => {
+                <Button style={{pointerEvents: buttonDisabled ? "none !important" : undefined}} onClick={(ev) => {
                     setVisible(true)
                     ev.stopPropagation()
                 }}>
@@ -69,7 +69,8 @@ function Modal(props) {
         <>
         {overlay}
         <FlexBox style={{...style}}>
-            <div style={{width: "100%", display:'flex', justifyContent: "center"}} onClick={async(ev) => {
+            <div style={{width: "100%", display:'flex', justifyContent: "center", pointerEvents: buttonDisabled ? "none !important" : undefined}} onClick={async(ev) => {
+                console.log("buttonDisabled =", buttonDisabled)
                 if(onOpen){
                     await onOpen()
                 }

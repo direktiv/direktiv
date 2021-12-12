@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
 import {useSearchParams} from 'react-router-dom'
@@ -14,7 +14,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
-import {IoAlertOutline, IoCloseCircleOutline, IoCheckmarkCircleOutline} from 'react-icons/io5'
+import {IoChevronDown, IoCloseCircleOutline, IoCheckmarkCircleOutline, IoChevronUp} from 'react-icons/io5'
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
@@ -230,10 +230,28 @@ function WorkingRevision(props) {
     const navigate = useNavigate()
     const [load, setLoad] = useState(true)
     const [oldWf, setOldWf] = useState("")
-    const [errors, setErrors] = useState([])
-    const [showErrors, setShowErrors] = useState(false)
     const [workflow, setWorkflow] = useState("")
     const [input, setInput] = useState("{\n\t\n}")
+
+    // Error States
+    const [errors, setErrors] = useState([])
+    const [showErrors, setShowErrors] = useState(false)
+
+    // Loading States
+    const [opLoadingStates, setOpLoadingStates] = useState({
+        "IsLoading": false,
+        "Save": false,
+        "Update": false,
+        "Undo": false
+    })
+
+    const pushOpLoadingState = useCallback((target, value)=>{
+        let old = opLoadingStates
+        old[target] = value
+        old["IsLoading"] = (opLoadingStates["Save"] || opLoadingStates["Update"] || opLoadingStates["Undo"])
+        setOpLoadingStates({...old})
+    },[opLoadingStates])
+
     useEffect(()=>{
         if(wf !== workflow && load) {
             setLoad(false)
@@ -245,8 +263,9 @@ function WorkingRevision(props) {
         if (oldWf !== wf) {
             setWorkflow(wf)
             setOldWf(wf)
+            pushOpLoadingState("Save", false)
         }
-    },[oldWf, wf])
+    },[oldWf, wf, pushOpLoadingState])
 
     return(
         <FlexBox style={{width:"100%"}}>
@@ -271,7 +290,7 @@ function WorkingRevision(props) {
                                     setErrors([])
                                     await discardWorkflow()
                                     setShowErrors(false)
-                                }} className={"btn-terminal"}>
+                                }} className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
                                     Undo
                                 </div>
                             </div>
@@ -281,6 +300,7 @@ function WorkingRevision(props) {
                                     className="run-workflow-modal"
                                     modalStyle={{color: "black"}}
                                     title="Run Workflow"
+                                    buttonDisabled={opLoadingStates["IsLoading"]}
                                     onClose={()=>{
                                         setInput("{\n\t\n}")
                                     }}
@@ -303,7 +323,7 @@ function WorkingRevision(props) {
                                         }, "small light", true, false)
                                     ]}
                                     button={(
-                                        <div className={"btn-terminal"}>
+                                        <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
                                             Run
                                         </div>
                                     )}
@@ -314,30 +334,34 @@ function WorkingRevision(props) {
                                 </Modal>
                             </div>
                             <div style={{ display: "flex", flex: 1, gap: "3px", justifyContent: "flex-end", paddingRight: "10px"}}>
-                                <div className={`btn-terminal ${workflow === oldWf ? "terminal-disabled" : ""}`} title={"Save workflow to latest"} onClick={async () => {
-                                    // Clear erros
+                                <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${workflow === oldWf ? "terminal-disabled" : ""}`} title={"Save workflow to latest"} onClick={async () => {
                                     setErrors([])
-                                    let opError = await updateWorkflow(workflow)
-                                    if (opError !== undefined) {
-                                        setErrors([opError])
-                                        setShowErrors(true)
-                                    } else {
+                                    pushOpLoadingState("Save", true)
+                                    updateWorkflow(workflow).then(()=>{
                                         setShowErrors(false)
-                                    }
+                                    }).catch((opError) => {
+                                        setErrors([opError.message])
+                                        setShowErrors(true)
+                                        pushOpLoadingState("Save", false)
+                                    })
                                 }}>
                                     Save
                                 </div>
-                                <div className={"btn-terminal"} title={"Save latest workflow as new revision"} onClick={async () => {
+                                <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
                                     await saveWorkflow()
                                     setShowErrors(false)
                                 }}>
                                     Save as new revision
                                 </div>
-                                <div className={"btn-terminal editor-info"} title={"Show Problems"} onClick={async () => {
+                                <div className={"btn-terminal editor-info"} title={`${showErrors ? "Hide Problems": "Show Problems"}`} onClick={async () => {
                                     setShowErrors(!showErrors)
                                 }}>
-                                    <IoAlertOutline style={{ width: "80%", height: "80%" }} />
+                                    {showErrors?
+                                    <IoChevronDown style={{ width: "80%", height: "80%" }} />
+                                    :
+                                    <IoChevronUp style={{ width: "80%", height: "80%" }} />
+                                    }
                                 </div>
                             </div>
                         </FlexBox>
