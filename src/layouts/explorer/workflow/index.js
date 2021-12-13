@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './style.css';
 import FlexBox from '../../../components/flexbox';
 import {useSearchParams} from 'react-router-dom'
@@ -14,7 +14,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
-import {IoInformation} from 'react-icons/io5'
+import {IoChevronDown, IoCloseCircleOutline, IoCheckmarkCircleOutline, IoChevronUp} from 'react-icons/io5'
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
@@ -181,6 +181,49 @@ function WorkflowDependencies(props) {
     )
 }
 
+function WorkingRevisionErrorBar(props) {
+    const { errors, showErrors } = props
+
+    return (
+        <div className={`editor-drawer ${showErrors ? "expanded" : ""}`}>
+            <FlexBox className="col">
+                <FlexBox className="row" style={{ justifyContent: "flex-start", alignItems: "center", borderBottom: "1px solid #536470", padding: "6px 10px 6px 10px" }}>
+                    <div style={{ paddingRight: "6px" }}>
+                        Problem
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "50%", backgroundColor: "#384c5a", width: "18px", height: "18px", fontWeight: "bold", textAlign: "center" }}>
+                        <pre style={{ margin: "0px", fontSize: "medium" }}>{errors.length}</pre>
+                    </div>
+                </FlexBox>
+                <FlexBox className="col" style={{ padding: "6px 10px 6px 10px", overflowY: "scroll" }}>
+                    {errors.length > 0 ?
+                        <>
+                            {errors.map((err) => {
+                                return (
+                                    <FlexBox className="row" style={{ justifyContent: "flex-start", alignItems: "center", paddingBottom: "4px" }}>
+                                        <IoCloseCircleOutline style={{ paddingRight: "6px", color: "#ec4f79" }} />
+                                        <div>
+                                            {err}
+                                        </div>
+                                    </FlexBox>)
+
+                            })}
+
+                        </>
+                        :
+                        <FlexBox className="row" style={{ justifyContent: "flex-start", alignItems: "center" }}>
+                            <IoCheckmarkCircleOutline style={{ paddingRight: "6px", color: "#28a745" }} />
+                            <div>
+                                No Errors
+                            </div>
+                        </FlexBox>
+                    }
+                </FlexBox>
+            </FlexBox>
+        </div>
+    )
+}
+
 function WorkingRevision(props) {
     const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
 
@@ -189,6 +232,30 @@ function WorkingRevision(props) {
     const [oldWf, setOldWf] = useState("")
     const [workflow, setWorkflow] = useState("")
     const [input, setInput] = useState("{\n\t\n}")
+
+    // Error States
+    const [errors, setErrors] = useState([])
+    const [showErrors, setShowErrors] = useState(false)
+
+    // Loading States
+    // Tracks if a button tied to a operation is currently executing.
+    const [opLoadingStates, setOpLoadingStates] = useState({
+        "IsLoading": false,
+        "Save": false,
+        "Update": false,
+        "Undo": false
+    })
+
+    // Push a operation loading state to a target.
+    const pushOpLoadingState = useCallback((target, value)=>{
+        let old = opLoadingStates
+        old[target] = value
+
+        // If any operation is executing, this is set to ture
+        old["IsLoading"] = (opLoadingStates["Save"] || opLoadingStates["Update"] || opLoadingStates["Undo"])
+        setOpLoadingStates({...old})
+    },[opLoadingStates])
+
     useEffect(()=>{
         if(wf !== workflow && load) {
             setLoad(false)
@@ -200,8 +267,9 @@ function WorkingRevision(props) {
         if (oldWf !== wf) {
             setWorkflow(wf)
             setOldWf(wf)
+            pushOpLoadingState("Save", false)
         }
-    },[oldWf, wf])
+    },[oldWf, wf, pushOpLoadingState])
 
     return(
         <FlexBox style={{width:"100%"}}>
@@ -215,15 +283,18 @@ function WorkingRevision(props) {
                     </div>
                 </ContentPanelTitle>
                 <ContentPanelBody>
-                    <FlexBox className="col" style={{overflow:"hidden"}}>
-                        <FlexBox >
-                            <DirektivEditor dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true}/>
+                    <FlexBox className="col" style={{ overflow: "hidden" }}>
+                        <FlexBox>
+                            <DirektivEditor dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
                         </FlexBox>
-                        <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"44px", maxHeight:"44px", paddingLeft:"10px", minHeight:"44px", borderTop:"1px solid white", alignItems:'center', position: "relative", borderRadius:"0px 0px 8px 8px"}}>
-                            <div style={{display:"flex", flex:1 }}>
-                                <div onClick={async ()=> {
+                        <FlexBox className="gap" style={{ backgroundColor: "#223848", color: "white", height: "44px", maxHeight: "44px", paddingLeft: "10px", minHeight: "44px", alignItems: 'center', position: "relative", borderRadius: "0px 0px 8px 8px" }}>
+                            <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>
+                            <div style={{ display: "flex", flex: 1 }}>
+                                <div onClick={async () => {
+                                    setErrors([])
                                     await discardWorkflow()
-                                }} className={"btn-terminal"}>
+                                    setShowErrors(false)
+                                }} className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
                                     Undo
                                 </div>
                             </div>
@@ -233,6 +304,7 @@ function WorkingRevision(props) {
                                     className="run-workflow-modal"
                                     modalStyle={{color: "black"}}
                                     title="Run Workflow"
+                                    buttonDisabled={opLoadingStates["IsLoading"]}
                                     onClose={()=>{
                                         setInput("{\n\t\n}")
                                     }}
@@ -255,7 +327,7 @@ function WorkingRevision(props) {
                                         }, "small light", true, false)
                                     ]}
                                     button={(
-                                        <div className={"btn-terminal"}>
+                                        <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
                                             Run
                                         </div>
                                     )}
@@ -265,16 +337,35 @@ function WorkingRevision(props) {
                                     </FlexBox>
                                 </Modal>
                             </div>
-                            <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
-                                <div className={`btn-terminal ${workflow === oldWf ? "terminal-disabled" : ""}`} onClick={async()=>{
-                                    await updateWorkflow(workflow)
+                            <div style={{ display: "flex", flex: 1, gap: "3px", justifyContent: "flex-end", paddingRight: "10px"}}>
+                                <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${workflow === oldWf ? "terminal-disabled" : ""}`} title={"Save workflow to latest"} onClick={async () => {
+                                    setErrors([])
+                                    pushOpLoadingState("Save", true)
+                                    updateWorkflow(workflow).then(()=>{
+                                        setShowErrors(false)
+                                    }).catch((opError) => {
+                                        setErrors([opError.message])
+                                        setShowErrors(true)
+                                        pushOpLoadingState("Save", false)
+                                    })
                                 }}>
                                     Save
                                 </div>
-                                <div className={"btn-terminal"} onClick={async()=>{
+                                <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
+                                    setErrors([])
                                     await saveWorkflow()
+                                    setShowErrors(false)
                                 }}>
                                     Save as new revision
+                                </div>
+                                <div className={"btn-terminal editor-info"} title={`${showErrors ? "Hide Problems": "Show Problems"}`} onClick={async () => {
+                                    setShowErrors(!showErrors)
+                                }}>
+                                    {showErrors?
+                                    <IoChevronDown style={{ width: "80%", height: "80%" }} />
+                                    :
+                                    <IoChevronUp style={{ width: "80%", height: "80%" }} />
+                                    }
                                 </div>
                             </div>
                         </FlexBox>
