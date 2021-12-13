@@ -359,26 +359,27 @@ select {
   }
 }
 
-.btn-footer-drawer {
+
+.editor-drawer {
   position: absolute;
-  right: 13px;
-  top: -13px;
-  width: 26px;
-  height: 26px;
+  bottom: 43px;
+  border-bottom: 1px solid #536470;
+  transition: max-height 1s cubic-bezier(0, 1, 0, 1);
+  left: 0px;
+  width: 100%;
+  max-height: 0px;
+  height: fit-content;
+  overflow: hidden;
   background-color: #223848;
-  z-index: 19;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: grey;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px inset, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px inset, rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
-.btn-footer-drawer:hover {
-  cursor: pointer;
-  background-color: #294558;  
+.editor-drawer.expanded {
+  transition: max-height 1s ease-in-out;
+  max-height: 600px;
+  height: fit-content;
 }
 
 .subtle-border-bottom {
