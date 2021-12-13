@@ -1,5 +1,5 @@
 import React from 'react';
-import {IoMdHelpCircle} from 'react-icons/io';
+import { VscInfo } from 'react-icons/vsc';
 
 function HelpIcon(props) {
 
@@ -9,7 +9,7 @@ function HelpIcon(props) {
     }
 
     return (<>
-        <IoMdHelpCircle className="grey-text" title={msg} />
+        <VscInfo className="grey-text" title={msg} />
     </>)
 }
 

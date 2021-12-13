@@ -23,6 +23,7 @@ import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
 import Login from '../login';
 import InstancePageWrapper from '../instance';
+import PermissionsPageWrapper from '../permissions';
 
 
 function NamespaceNavigation(props){
@@ -105,7 +106,7 @@ function NamespaceNavigation(props){
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/instances/:id" element={<InstancePageWrapper namespace={namespace} />} />
-                    <Route path="/n/:namespace/permissions" element={<div>permissions</div>} />
+                    <Route path="/n/:namespace/permissions" element={<PermissionsPageWrapper namespace={namespace} />} />
                     
                
                     {/* namespace services */}

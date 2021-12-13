@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
-import { IoAdd, IoClose, IoFolderOpen, IoSearch } from 'react-icons/io5';
+
+import {  IoFolderOpen, IoSearch } from 'react-icons/io5';
+
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import { VscTriangleDown } from 'react-icons/vsc';
+import { VscTriangleDown, VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
 import { Config, GenerateRandomKey } from '../../util';
 import { FiEdit, FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
@@ -60,7 +62,7 @@ function SearchBar(props) {
     return(
         <div className="explorer-searchbar">
             <FlexBox className="" style={{height: "29px"}}>
-                <IoSearch className="auto-margin" />
+                <VscSearch className="auto-margin" />
                 <input placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
             </FlexBox>
         </div>
@@ -121,7 +123,7 @@ function ExplorerList(props) {
         <ContentPanel>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoFolderOpen/>
+                    <VscFolderOpened/>
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>
@@ -136,7 +138,7 @@ function ExplorerList(props) {
                             button={(
                                 <div style={{display:"flex"}}>
                                     <ContentPanelHeaderButtonIcon>
-                                        <IoAdd/>
+                                        <VscAdd/>
                                     </ContentPanelHeaderButtonIcon>
                                     <span className="hide-on-small">Workflow</span>
                                     <span className="hide-on-medium-and-up">WF</span>
@@ -188,7 +190,7 @@ function ExplorerList(props) {
                                 button={(
                                     <div style={{display:"flex"}}>
                                         <ContentPanelHeaderButtonIcon>
-                                            <IoAdd/>
+                                            <VscAdd/>
                                         </ContentPanelHeaderButtonIcon>
                                         <span className="hide-on-small">Directory</span>
                                         <span className="hide-on-medium-and-up">Dir</span>
@@ -246,7 +248,7 @@ function ExplorerList(props) {
                                 <div className="explorer-item">
                                     <FlexBox className="explorer-item-container">
                                         <FlexBox style={{display:"flex", alignItems:"center"}} className="explorer-item-icon">
-                                            <IoSearch />
+                                            <VscSearch />
                                         </FlexBox>
                                         <FlexBox style={{fontSize:"10pt"}} className="explorer-item-name">
                                             No results found under '{path}'.
@@ -327,7 +329,7 @@ function DirListItem(props) {
                         setErr("")
                         ev.stopPropagation()
                     }}>
-                        <IoClose className="auto-margin" />
+                        <VscClose className="auto-margin" />
                     </FlexBox>
                     :
                     <FlexBox onClick={(ev)=>{
@@ -335,7 +337,7 @@ function DirListItem(props) {
                         setErr("")
                         ev.stopPropagation()
                     }}>
-                        <FiEdit className="auto-margin" />
+                        <VscEdit className="auto-margin" />
                     </FlexBox>}
                     <FlexBox onClick={(ev)=>ev.stopPropagation()}>
 
@@ -347,7 +349,7 @@ function DirListItem(props) {
                             title="Delete a directory" 
                             button={(
                                 <FlexBox>
-                                    <HiOutlineTrash className="auto-margin red-text" />
+                                    <VscTrash className="auto-margin red-text" />
                                 </FlexBox>
                             )}
                             actionButtons={
@@ -427,7 +429,7 @@ function WorkflowListItem(props) {
                         setErr("")
                         ev.stopPropagation()
                     }}>
-                        <IoClose className="auto-margin" />
+                        <VscClose className="auto-margin" />
                     </FlexBox>
                     :
                     <FlexBox onClick={(ev)=>{
@@ -435,7 +437,7 @@ function WorkflowListItem(props) {
                         setErr("")
                         ev.stopPropagation()
                     }}>
-                        <FiEdit className="auto-margin" />
+                        <VscEdit className="auto-margin" />
                     </FlexBox>}
                     <FlexBox onClick={(ev)=>ev.stopPropagation()}>
 

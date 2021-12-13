@@ -6,9 +6,9 @@ import NamespaceSelector from '../namespace-selector';
 
 import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
-import {BsSpeedometer, BsFolder2Open, BsSliders, BsCodeSquare} from 'react-icons/bs';
-import {IoLockClosedOutline, IoCubeOutline, IoExtensionPuzzleOutline, IoGlobeOutline, IoLogOutOutline} from 'react-icons/io5';
-import {GrFormAdd} from 'react-icons/gr'
+import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscLock, VscServer, VscSettings, VscSettingsGear, VscSignOut, VscSymbolEvent, VscVmRunning} from 'react-icons/vsc';
+
+import {IoExtensionPuzzleOutline} from 'react-icons/io5';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
@@ -58,7 +58,7 @@ function NavBar(props) {
                             <ul style={{ marginTop: "0px" }}>
                                 <li>
                                     <NavItem className="red-text" label="Log Out">
-                                        <IoLogOutOutline/>
+                                        <VscSignOut />
                                     </NavItem>
                                 </li>
                             </ul>
@@ -99,9 +99,9 @@ function NewNamespaceBtn(props) {
             button={(
                 <FlexBox className="new-namespace-btn">
                     <div className="auto-margin">
-                        <FlexBox className="row" style={{ gap: "8px" }}>
+                        <FlexBox className="row" style={{ gap: "8px", alignItems:"center" }}>
                             <FlexBox>
-                                +
+                                <VscAdd />
                             </FlexBox>
                             <FlexBox>
                                 New namespace
@@ -111,7 +111,7 @@ function NewNamespaceBtn(props) {
                 </FlexBox>
             )} 
 
-            titleIcon={<GrFormAdd />}
+            titleIcon={<VscAdd/>}
 
             onClose={ () => {setNs("")}}
 
@@ -179,7 +179,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={explorer || wfexplorer ? "active":""} label="Explorer">
-                            <BsFolder2Open/>
+                            <VscFolderOpened/>
                         </NavItem>
                     </Link>
                 </li>
@@ -188,7 +188,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={monitoring ? "active":""} label="Monitoring">
-                            <BsSpeedometer/>
+                            <VscGraph />
                         </NavItem>
                     </Link>
                 </li>
@@ -204,7 +204,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={instances || instanceid ? "active":""} label="Instances">
-                            <BsCodeSquare/>
+                            <VscVmRunning/>
                         </NavItem>
                     </Link>
                 </li>
@@ -213,7 +213,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={events ? "active":""} label="Events">
-                            <BsCodeSquare/>
+                           <VscSymbolEvent/>
                         </NavItem>
                     </Link>
                 </li>
@@ -222,7 +222,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={permissions ? "active":""} label="Permissions">
-                            <IoLockClosedOutline/>
+                            <VscLock/>
                         </NavItem>
                     </Link>
                 </li>
@@ -231,7 +231,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={services || service || revision ? "active":""} label="Services">
-                            <IoCubeOutline/>
+                            <VscLayers/>
                         </NavItem>
                     </Link>
                 </li>
@@ -240,7 +240,7 @@ function NavItems(props) {
                         toggleResponsive(false)
                     }}>
                         <NavItem className={settings ? "active":""} label="Settings">
-                            <BsSliders/>
+                            <VscSettingsGear/>
                         </NavItem>
                     </Link>
                 </li>
@@ -273,14 +273,14 @@ function GlobalNavItems(props) {
                 <li>
                     <Link to={"/g/services"}>
                         <NavItem className={gs || gservice || grevision ? "active":""} label="Global Services">
-                            <IoGlobeOutline/>
+                            <VscLayers />
                         </NavItem>
                     </Link>
                 </li>
                 <li>
                     <Link to={"/g/registries"}>
                         <NavItem className={gr ? "active":""} label="Global Registries">
-                            <IoGlobeOutline/>
+                            <VscServer/>
                         </NavItem>
                     </Link>
                 </li>

@@ -1,0 +1,30 @@
+.group-policy-list-item-count {
+    font-size: 12px;
+    color: var(--theme-grey-light-blue);
+}
+
+.group-policy-list-item {
+    cursor: pointer;
+    border-radius: 4px;
+    max-height: 32px;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.group-policy-list-item:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.group-policy-list-item:active {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.policy-name {
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.policy-name:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}

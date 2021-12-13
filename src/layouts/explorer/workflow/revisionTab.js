@@ -489,7 +489,7 @@ export function RevisionTrafficShaper(props) {
                             <div>
                                 <b>Revision One</b>
                             </div>
-                            <FlexBox style={{ alignItems:"center"}}>
+                            <FlexBox style={{ alignItems:"center", marginTop:"10px"}}>
                                 <select onChange={(e)=>setRev1(e.target.value)} value={rev1} className="traffic-shape-select" style={{border: "1px solid #D6DCE2", color:"#566875", width:'100%', height:"36px"}}>
                                     <option value="">Select a revision</option>
                                     {revisions.map((obj)=>{
@@ -509,7 +509,7 @@ export function RevisionTrafficShaper(props) {
                             <div>
                                 <b>Revision Two</b>
                             </div>
-                            <FlexBox style={{alignItems:"center"}}>
+                            <FlexBox style={{alignItems:"center", marginTop:"10px"}}>
                                 <select onChange={(e)=>setRev2(e.target.value)} value={rev2} className="traffic-shape-select" style={{border: "1px solid #D6DCE2", color:"#566875", width:'100%', height:"36px"}}>
                                     <option value="">Select a revision</option>
                                     {revisions.map((obj)=>{

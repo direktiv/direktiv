@@ -158,6 +158,10 @@ body {
   color: var(--theme-red);
 }
 
+.green-text {
+  color: var(--theme-green);
+}
+
 .clickable {
   cursor: pointer !important;
 }
@@ -376,4 +380,8 @@ select {
   transition: max-height 1s ease-in-out;
   max-height: 600px;
   height: fit-content;
+}
+
+.subtle-border-bottom {
+  border-bottom: solid 1px var(--theme-subtle-border);
 }
