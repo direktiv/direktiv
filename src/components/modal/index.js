@@ -9,7 +9,7 @@ import Alert from '../alert';
 
 function Modal(props) {
 
-    let {titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
+    let {noPadding, titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
     let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen } = props;
     const [visible, setVisible] = useState(false);
 
@@ -48,6 +48,7 @@ function Modal(props) {
                         escapeToCancel={escapeToCancel}
                         keyDownActions={keyDownActions}
                         titleIcon={titleIcon}
+                        noPadding={noPadding}
                     />)
     }
 
@@ -87,7 +88,7 @@ export default Modal;
 
 function ModalOverlay(props) {
 
-    let {titleIcon, modalStyle, title, children, callback, activeOverlay, withCloseButton} = props;
+    let {noPadding, titleIcon, modalStyle, title, children, callback, activeOverlay, withCloseButton} = props;
     let {actionButtons, escapeToCancel, keyDownActions} = props;
     const [displayAlert, setDisplayAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
@@ -164,6 +165,15 @@ function ModalOverlay(props) {
        buttons = generateButtons(callback, setDisplayAlert, setAlertMessage, actionButtons);
     } 
 
+    let contentBodyStyle = {
+        padding: "12px"
+    }
+    if (noPadding) {
+        contentBodyStyle = {
+            padding: "0px"
+        }
+    }
+
     return(
         <>
             <div className={"modal-overlay " + overlayClasses} />
@@ -196,7 +206,7 @@ function ModalOverlay(props) {
                                     {closeButton}
                                 </FlexBox>
                             </ContentPanelTitle>
-                            <ContentPanelBody style={{padding: "12px"}}>
+                            <ContentPanelBody style={contentBodyStyle}>
                                 <FlexBox className="col gap">
                                     { displayAlert ?
                                     <Alert className="critical">{alertMessage}</Alert>

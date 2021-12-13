@@ -24,6 +24,7 @@ import { IoMenu } from 'react-icons/io5';
 import Login from '../login';
 import InstancePageWrapper from '../instance';
 import PermissionsPageWrapper from '../permissions';
+import EventsPageWrapper from '../events';
 
 
 function NamespaceNavigation(props){
@@ -116,7 +117,7 @@ function NamespaceNavigation(props){
                     
                     
                     <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
-                    <Route path="/n/:namespace/events" element={<div>events</div>}/>
+                    <Route path="/n/:namespace/events" element={<EventsPageWrapper namespace={namespace} />}/>
 
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<JQPlayground />} />
