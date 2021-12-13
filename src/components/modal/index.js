@@ -55,7 +55,7 @@ function Modal(props) {
         return(
             <div>
                 {overlay}
-                <Button style={{pointerEvents: buttonDisabled ? "none !important" : undefined}} onClick={(ev) => {
+                <Button style={{pointerEvents: buttonDisabled ? "none" : ""}} onClick={(ev) => {
                     setVisible(true)
                     ev.stopPropagation()
                 }}>
@@ -69,7 +69,7 @@ function Modal(props) {
         <>
         {overlay}
         <FlexBox style={{...style}}>
-            <div style={{width: "100%", display:'flex', justifyContent: "center", pointerEvents: buttonDisabled ? "none !important" : undefined}} onClick={async(ev) => {
+            <div style={{width: "100%", display:'flex', justifyContent: "center", pointerEvents: buttonDisabled ? "none" : ""}} onClick={async(ev) => {
                 if(onOpen){
                     await onOpen()
                 }

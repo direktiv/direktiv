@@ -238,6 +238,7 @@ function WorkingRevision(props) {
     const [showErrors, setShowErrors] = useState(false)
 
     // Loading States
+    // Tracks if a button tied to a operation is currently executing.
     const [opLoadingStates, setOpLoadingStates] = useState({
         "IsLoading": false,
         "Save": false,
@@ -245,9 +246,12 @@ function WorkingRevision(props) {
         "Undo": false
     })
 
+    // Push a operation loading state to a target.
     const pushOpLoadingState = useCallback((target, value)=>{
         let old = opLoadingStates
         old[target] = value
+
+        // If any operation is executing, this is set to ture
         old["IsLoading"] = (opLoadingStates["Save"] || opLoadingStates["Update"] || opLoadingStates["Undo"])
         setOpLoadingStates({...old})
     },[opLoadingStates])
