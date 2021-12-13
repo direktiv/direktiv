@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Config } from '../../util';
-import { VscCloud, VscRedo, VscSymbolEvent } from 'react-icons/vsc';
+import {  VscCloud, VscRedo, VscSymbolEvent } from 'react-icons/vsc';
 import Button from '../../components/button';
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {useEvents} from 'direktiv-react-hooks'
+import Modal, { ButtonDefinition } from '../../components/modal';
+import DirektivEditor from '../../components/editor';
 
 function EventsPageWrapper(props) {
 
@@ -25,8 +27,10 @@ function EventsPage(props) {
     let {namespace} = props;
     console.log(useEvents);
 
-    let resp = useEvents(Config.url, true, namespace)
-    console.log(resp);
+    let {getEventListeners, sendEvent} = useEvents(Config.url, true, namespace)
+    console.log(getEventListeners);
+    console.log(sendEvent);
+
 
     return(
         <>
@@ -40,9 +44,10 @@ function EventsPage(props) {
                             <div>
                                 Cloud Events History
                             </div>
+                            <SendEventModal />
                         </ContentPanelTitle>
                         <ContentPanelBody>
-                            <div style={{maxHeight: "40vh", overflowY: "auto"}}>
+                            <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
                                 <table>
                                     <thead>
                                         <tr>
@@ -73,7 +78,7 @@ function EventsPage(props) {
                                             2.30pm (a while ago)
                                         </td>
                                         <td>
-                                            <div style={{display: "flex", alignItems: "flex-end", justifyContent: "right", paddingRight: "18px"}}>
+                                            <div style={{display: "flex", alignItems: "flex-end", justifyContent: "right", paddingRight: "10px"}}>
                                                 <Button className="small light">
                                                     <VscRedo/>
                                                 </Button>
@@ -94,7 +99,7 @@ function EventsPage(props) {
                             <div>Active Event Listeners</div>
                         </ContentPanelTitle>
                         <ContentPanelBody>
-                            <div style={{maxHeight: "40vh", overflowY: "auto"}}>
+                            <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
                                 <table>
                                     <thead>
                                         <tr>
@@ -128,4 +133,48 @@ function EventsPage(props) {
             </FlexBox>
         </>
     )
+}
+
+function SendEventModal(props) {
+
+    let [eventData, setEventData] = useState(`{
+    "specversion" : "1.0",
+    "type" : "com.github.pull.create",
+    "source" : "https://github.com/cloudevents/spec/pull",
+    "subject" : "123",
+    "id" : "A234-1234-1234",
+    "time" : "2018-04-05T17:31:00Z",
+    "comexampleextension1" : "value",
+    "comexampleothervalue" : 5,
+    "datacontenttype" : "text/xml",
+    "data" : "<much wow=\"xml\"/>"
+}`);
+
+    return (<>
+        <Modal
+            title="Send New Event"
+            button={(
+                <ContentPanelHeaderButton>
+                    <div>
+                        Send New Event
+                    </div>
+                </ContentPanelHeaderButton>
+            )}
+            actionButtons={[
+                ButtonDefinition("Send", () => {}, "small", true, false),
+                ButtonDefinition("Cancel", () => {}, "small light", true, false)
+            ]}
+            noPadding
+        >
+            <FlexBox className="col gap" style={{overflow: "hidden"}}>
+                <FlexBox style={{ minHeight: "40vh", minWidth: "80vw" }}>
+                    <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
+                        options={{
+                            autoLayout: true
+                        }} 
+                    />
+                </FlexBox>
+            </FlexBox>
+        </Modal>
+    </>)
 }
