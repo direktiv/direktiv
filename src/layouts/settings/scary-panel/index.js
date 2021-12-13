@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody} from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
-import { IoLockClosedOutline } from 'react-icons/io5';
 import Alert from '../../../components/alert';
 import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';

@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
 
-import {  IoFolderOpen, IoSearch } from 'react-icons/io5';
-
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import { VscTriangleDown, VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
