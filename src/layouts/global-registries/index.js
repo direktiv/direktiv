@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../components/content-panel';
 import Modal, { ButtonDefinition, KeyDownDefinition } from '../../components/modal';
-import { IoLogoDocker } from 'react-icons/io5';
 import AddValueButton from '../../components/add-button';
 import FlexBox from '../../components/flexbox';
 import Alert from '../../components/alert';

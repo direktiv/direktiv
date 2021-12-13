@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { IoCloudDownloadOutline, IoEyeOutline, IoLockClosedOutline, IoRefresh } from 'react-icons/io5';
 import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';

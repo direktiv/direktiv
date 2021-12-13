@@ -14,7 +14,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
 import { IoMdLock } from 'react-icons/io';
-import {IoChevronDown, IoCloseCircleOutline, IoCheckmarkCircleOutline, IoChevronUp} from 'react-icons/io5'
+import {IoCloseCircleOutline, IoCheckmarkCircleOutline} from 'react-icons/io5'
+import {VscChevronDown, VscChevronUp} from 'react-icons/vsc'
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
@@ -362,9 +363,9 @@ function WorkingRevision(props) {
                                     setShowErrors(!showErrors)
                                 }}>
                                     {showErrors?
-                                    <IoChevronDown style={{ width: "80%", height: "80%" }} />
+                                    <VscChevronDown style={{ width: "80%", height: "80%" }} />
                                     :
-                                    <IoChevronUp style={{ width: "80%", height: "80%" }} />
+                                    <VscChevronUp style={{ width: "80%", height: "80%" }} />
                                     }
                                 </div>
                             </div>

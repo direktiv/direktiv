@@ -1,6 +1,5 @@
 import React from 'react';
 import {ContentPanelHeaderButton, ContentPanelHeaderButtonIcon} from '../content-panel';
-import {IoAddOutline} from 'react-icons/io5';
 import FlexBox from '../flexbox';
 import { VscAdd } from 'react-icons/vsc';
 
