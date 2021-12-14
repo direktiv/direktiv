@@ -155,10 +155,17 @@ function ExplorerList(props) {
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", true, false)
                             ]}
+
+                            keyDownActions={[
+                                KeyDownDefinition("Enter", async () => {
+                                    let err = await createNode(name, "workflow", wfData)
+                                    if (err) return err
+                                }, true, "workflow-name")
+                            ]}
                         >
                             <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "450px"}}>
                                 <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
-                                    <input value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name" />
+                                    <input id={"workflow-name"} value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name"/>
                                 </div>
                                 <select value={wfTemplate} onChange={(e)=>{
                                     setWfTemplate(e.target.value)
