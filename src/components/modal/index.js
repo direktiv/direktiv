@@ -113,6 +113,10 @@ function ModalOverlay(props) {
                 const action = keyDownActions[i];
 
                 let fn = async (e) => {
+                    if (action.id != undefined && action.id !== e.target.id){
+                        return
+                    }
+
                     if (e.code === action.code) {
                         let err = await action.fn()
                         if (err) {
@@ -238,12 +242,17 @@ export function ButtonDefinition(label, onClick, classList, closesModal, async) 
         async: async
     }
 }
-
-export function KeyDownDefinition(code, fn, closeModal) {
+// KeyDownDefinition :
+// code : Target Key Event
+// fn : callback function
+// closeModal : Whether to close modal after fn()
+// id : target element id to listen on. If undefined listener is global
+export function KeyDownDefinition(code, fn, closeModal, targetElementID) {
     return {
         code: code,
         fn: fn,
-        closeModal: closeModal
+        closeModal: closeModal,
+        id: targetElementID,
     }
 }
 
