@@ -79,14 +79,11 @@ function InstancePage(props) {
     let wfName = data.as.split(":")[0]
     let revName = data.as.split(":")[1]
 
-    let linkURL = `/n/${namespace}/explorer/${wfName}?tab=2`;
-    if (revName) {
-        if(revName !== "latest"){
-            linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
-        }
+    let linkURL = "";
+    if (!revName) {
+        revName = "latest"
     }
-
-    
+    linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
 
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>

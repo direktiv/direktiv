@@ -3,7 +3,7 @@ import './style.css';
 import AutoSizer from "react-virtualized-auto-sizer"
 import * as d3 from 'd3' 
 import { sankeyCircular, sankeyJustify } from 'd3-sankey-circular'
-
+import {GenerateRandomKey} from '../../util';
 
 export default function Sankey(props) {
     const {getWorkflowSankeyMetrics, revision} = props
@@ -115,7 +115,6 @@ export default function Sankey(props) {
     )
 }
 
-
 function SankeyDiagram(props) {
 
     const {height, width, nodes, links} = props
@@ -138,14 +137,12 @@ function SankeyDiagram(props) {
                     .attr("height", height + margin.top + margin.bottom);
 
 
-        // var defs = svg.append("defs")
+        var defs = svg.append("defs")
 
         // var lg = defs.append("linearGradient")
         // .attr("id", "gradient")
         // .attr("x1", "0%")
         // .attr("y1", "0%")
-        // .attr("x2", "100%")
-        // .attr("y2", "100%")
 
         // var stop1 = lg.append("stop")
         // .attr("offset", "0%")
@@ -163,7 +160,7 @@ function SankeyDiagram(props) {
         var linkG = g.append("g")
                     .attr("class", "links")
                     .attr("fill", "none")
-                    .attr("stroke-opacity", 0.1)
+                    .attr("stroke-opacity", 0.25)
                     .selectAll("path");
         var nodeG = g.append("g")
                     .attr("class", "nodes")
@@ -190,7 +187,7 @@ function SankeyDiagram(props) {
           .attr("height", function (d) { return d.y1 - d.y0; })
           .attr("width", function (d) { return d.x1 - d.x0; })
           .style("fill", function (d) { return nodeColour(d.x0); })
-          .style("opacity", 0.5)
+          .style("opacity", 0.85)
     
         node.append("text")
           .attr("x", function (d) { return (d.x0 + d.x1) / 2; })
@@ -209,20 +206,40 @@ function SankeyDiagram(props) {
         link.append("path") 
           .attr("class", "sankey-link")
           .attr("d", function(linkz){
-            return linkz.path;
-          })
-          .style("stroke-width", function (d) { return Math.max(1, d.width); })
-          .style("opacity", 0.7)
-          .style("stroke", function(linkz, i){
-            return nodeColour(linkz.source.x0);
-          })
-        //   .style("stroke", "url(#gradient)")
-          
-          link.append("title")
-          .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + d.value; });
+              return linkz.path;
+            })
+            .style("stroke-width", function (d) { return Math.max(1, d.width); })
+            .style("stroke", function(linkz) {
+            
+            let id = GenerateRandomKey()
+            
+            let lingrad = defs.append("linearGradient")
+            .attr("id", id)
+            .attr("x1", linkz.source.x0)
+            .attr("y1", linkz.source.y0)
+            .attr("x2", linkz.target.x0)
+            .attr("y2", linkz.target.y0)
+            .attr("gradientUnits", "userSpaceOnUse")
+            
+            let s1 = lingrad.append("stop")
+            .attr("offset", "0")
+            
+            let s2 = lingrad.append("stop")
+            .attr("offset", "1")
+            
+            s1.attr("stop-color", nodeColour(linkz.source.x0))
+            s2.attr("stop-color", nodeColour(linkz.target.x0))
+            
+            return `url(#${id})`
+        })
+ 
+        
+        link.append("title")
+        .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + d.value; });
     
 
     },[height, width, nodes, links, margin.bottom, margin.left, margin.right, margin.top])
 
     return <div id="sankey-graph" style={{height: height, width:width}}/>
 }
+
