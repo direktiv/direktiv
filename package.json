@@ -13,6 +13,7 @@
     "dayjs": "^1.10.7",
     "direktiv-react-hooks": "^0.0.80",
     "js-yaml": "^4.1.0",
+    "object-hash": "^2.2.0",
     "rc-slider": "^9.7.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

@@ -73,11 +73,11 @@ function RevisionTab(props) {
                         </div>
                         <TabbedButtons revision={revision} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
                     </ContentPanelTitle>
-                    <ContentPanelBody >
+                    <ContentPanelBody style={{padding: "0px"}}>
                         {tabBtn === 0 ? 
                             <FlexBox className="col" style={{overflow:"hidden"}}>
                                 <FlexBox >
-                                    <DirektivEditor value={workflow} readonly={true} disableBottomRadius={true} dlang="yaml" />
+                                    <DirektivEditor style={{borderRadius: "0px"}} value={workflow} readonly={true} disableBottomRadius={true} dlang="yaml" />
                                 </FlexBox>
                                 <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"44px", maxHeight:"44px", paddingLeft:"10px", minHeight:"44px", borderTop:"1px solid white", alignItems:'center', borderRadius:"0px 0px 8px 8px", overflow: "hidden"}}>
                                     <div style={{display:"flex", flex:1 }}>

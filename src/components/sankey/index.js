@@ -5,6 +5,8 @@ import * as d3 from 'd3'
 import { sankeyCircular, sankeyJustify } from 'd3-sankey-circular'
 import {GenerateRandomKey} from '../../util';
 
+import objectHash from 'object-hash';
+
 export default function Sankey(props) {
     const {getWorkflowSankeyMetrics, revision} = props
 
@@ -129,9 +131,10 @@ function SankeyDiagram(props) {
                         .nodeId(function (d) {
                             return d.name;
                         })
-                        .nodeAlign(sankeyJustify)
                         .iterations(32)
-                        .circularLinkGap(2);
+                        .circularLinkGap(2)
+                        .nodeAlign(sankeyJustify)
+                        
         var svg = d3.select("#sankey-graph").append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom);
@@ -186,7 +189,9 @@ function SankeyDiagram(props) {
           .attr("y", function (d) { return d.y0; })
           .attr("height", function (d) { return d.y1 - d.y0; })
           .attr("width", function (d) { return d.x1 - d.x0; })
-          .style("fill", function (d) { return nodeColour(d.x0); })
+          .style("fill", function (d) {
+              return nodeColour((d.x0 + d.x1 + d.y0 + d.y1)%width); 
+          })
           .style("opacity", 0.85)
     
         node.append("text")
@@ -204,12 +209,14 @@ function SankeyDiagram(props) {
           .append("g")
 
         link.append("path") 
-          .attr("class", "sankey-link")
-          .attr("d", function(linkz){
-              return linkz.path;
-            })
-            .style("stroke-width", function (d) { return Math.max(1, d.width); })
-            .style("stroke", function(linkz) {
+        .attr("d", function(linkz){
+            console.log(linkz
+                );
+            return linkz.path;
+        })
+        .attr("class", "sankey-link")
+        .style("stroke-width", function (d) { return Math.max(1, d.width); })
+        .style("stroke", function(linkz) {
             
             let id = GenerateRandomKey()
             
@@ -227,8 +234,13 @@ function SankeyDiagram(props) {
             let s2 = lingrad.append("stop")
             .attr("offset", "1")
             
-            s1.attr("stop-color", nodeColour(linkz.source.x0))
-            s2.attr("stop-color", nodeColour(linkz.target.x0))
+            let sourceColour = (linkz.source.x0 + linkz.source.x1 + linkz.source.y0 + linkz.source.y1)%width
+            let targetColour = (linkz.target.x0 + linkz.target.x1 + linkz.target.y0 + linkz.target.y1)%width
+
+            // console.log(`Source: ${sourceColour}, Target: ${targetColour} ->`, linkz);
+
+            s1.attr("stop-color", nodeColour(sourceColour))
+            s2.attr("stop-color", nodeColour(targetColour))
             
             return `url(#${id})`
         })
