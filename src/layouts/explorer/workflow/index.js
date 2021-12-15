@@ -654,14 +654,14 @@ function SuccessFailureGraph(props){
                 data ={metrics}
             >
             <defs>
-                <linearGradient gradientTransform="rotate(180)" id="failed">
+                <radialGradient id="failed" gradientUnits="userSpaceOnUse">
                     <stop offset="0%" stopColor="#F3537E" />
-                    <stop offset="100%" stopColor="#DE184D" />
-                </linearGradient>
-                <linearGradient gradientTransform="rotate(180)" id="success">
+                    <stop offset="80%" stopColor="#DE184D" />
+                </radialGradient>
+                <radialGradient id="success" gradientUnits="userSpaceOnUse">
                     <stop offset="0%" stopColor="#1FEAC5" />
                     <stop offset="100%" stopColor="#25B49A" />
-                </linearGradient>
+                </radialGradient>
             </defs>
             </PieChart>
             <FlexBox style={{marginTop:"10px", gap:"50px"}}>
