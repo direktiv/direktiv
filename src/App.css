@@ -385,3 +385,15 @@ select {
 .subtle-border-bottom {
   border-bottom: solid 1px var(--theme-subtle-border);
 }
+
+.dropdown-select{
+  box-shadow: 2px 2px 6px 0px #2C394B0A;
+  border: 1px solid #D6DCE2;
+  color: #566875;
+  width: 100%;
+  height: 36px;
+}
+
+.dropdown-select:hover{
+  background-color: #f9f9f9;
+}

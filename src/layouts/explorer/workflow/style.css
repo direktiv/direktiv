@@ -347,9 +347,3 @@
   .run-workflow-modal {
       color: var(--theme-dark-gray-text);
   }
-
-  /* Traffic Shape Select */
-
-  .traffic-shape-select{
-    box-shadow: 2px 2px 6px 0px #2C394B0A;
-  }
