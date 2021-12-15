@@ -67,12 +67,12 @@ function SearchBar(props) {
     );
 }
 
-const orderByDictionary = {
+const orderFieldDictionary = {
     "Name": "NAME", // Default
     "Created": "CREATED"
 }
 
-const orderByKeys = Object.keys(orderByDictionary)
+const orderFieldKeys = Object.keys(orderFieldDictionary)
 
 function ExplorerList(props) {
     const {namespace, path} = props
@@ -81,13 +81,13 @@ function ExplorerList(props) {
     
     const [name, setName] = useState("")
     const [load, setLoad] = useState(true)
-    const [orderByKey, setOrderByKey] = useState(orderByKeys[0])
+    const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
 
-    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"))
+    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), orderFieldDictionary[orderFieldKey])
 
     // control loading icon todo work out how to display this error
     useEffect(()=>{
@@ -246,12 +246,11 @@ function ExplorerList(props) {
                         </FlexBox>
                         <FlexBox className="center">
                             <select onChange={(e)=>{
-                                console.log("e.target.value =", e.target.value)
-                                setOrderByKey(e.target.value)
-                                }} value={orderByKey} className="dropdown-select" style={{paddingBottom: "0px", paddingTop: "0px", height:"27px"}}>
-                                <option value="">{orderByKey}</option>
-                                {orderByKeys.map((key)=>{
-                                    if(key === orderByKey){
+                                setOrderFieldKey(e.target.value)
+                                }} value={orderFieldKey} className="dropdown-select" style={{paddingBottom: "0px", paddingTop: "0px", height:"27px"}}>
+                                <option value="">{orderFieldKey}</option>
+                                {orderFieldKeys.map((key)=>{
+                                    if(key === orderFieldKey){
                                         return ""
                                     }
                                     return(

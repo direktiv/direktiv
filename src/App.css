@@ -392,10 +392,14 @@ select {
   color: var(--theme-dark-gray-text);
   width: 100%;
   height: 36px;
-  z-index: 99999;
+}
+
+select:focus-visible{
+  outline: none
 }
 
 
-.dropdown-select:hover{
+/* Disabled as this interferes with firfox dropdown options */
+/* .dropdown-select:hover{
   filter: brightness(var(--active-brightness));
-}
+} */
