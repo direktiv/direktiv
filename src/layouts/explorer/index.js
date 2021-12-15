@@ -67,6 +67,13 @@ function SearchBar(props) {
     );
 }
 
+const orderByDictionary = {
+    "Name": "NAME", // Default
+    "Created": "CREATED"
+}
+
+const orderByKeys = Object.keys(orderByDictionary)
+
 function ExplorerList(props) {
     const {namespace, path} = props
 
@@ -74,6 +81,7 @@ function ExplorerList(props) {
     
     const [name, setName] = useState("")
     const [load, setLoad] = useState(true)
+    const [orderByKey, setOrderByKey] = useState(orderByKeys[0])
 
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
@@ -232,17 +240,27 @@ function ExplorerList(props) {
                         </div>
                     </ContentPanelHeaderButton>
                     <div className="explorer-sort-by explorer-action-btn hide-on-small">
-                        <div className="esb-label inline" style={{marginRight: "8px"}}>
+                    <FlexBox className="gap" style={{marginRight: "8px"}}>
+                        <FlexBox className="center">
                             Sort by:
-                        </div>
-                        <div className="esb-field inline">
-                            <FlexBox className="gap">
-                                <div className="inline">
-                                    Name
-                                </div>
-                                <VscTriangleDown className="auto-margin"/>
-                            </FlexBox>
-                        </div>
+                        </FlexBox>
+                        <FlexBox className="center">
+                            <select onChange={(e)=>{
+                                console.log("e.target.value =", e.target.value)
+                                setOrderByKey(e.target.value)
+                                }} value={orderByKey} className="dropdown-select" style={{paddingBottom: "0px", paddingTop: "0px", height:"27px"}}>
+                                <option value="">{orderByKey}</option>
+                                {orderByKeys.map((key)=>{
+                                    if(key === orderByKey){
+                                        return ""
+                                    }
+                                    return(
+                                        <option key={GenerateRandomKey()} value={key}>{key}</option>
+                                    )
+                                })}
+                            </select>
+                        </FlexBox>
+                        </FlexBox>
                     </div>
                 </FlexBox>
             </ContentPanelTitle>

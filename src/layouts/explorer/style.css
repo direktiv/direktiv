@@ -30,6 +30,8 @@
 
 .esb-field {
     color: var(--theme-dark-gray-text);
+    align-items: center;
+    display: flex;
 }
 
 .inline {
