@@ -312,7 +312,7 @@ select {
 }
 
 .btn-terminal {
-  align-items: center;
+  line-height: 22px;
   gap: 3px;
   background-color: rgb(53, 81, 102);
   padding: 3px 6px;

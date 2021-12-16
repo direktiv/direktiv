@@ -9,7 +9,7 @@ import Alert from '../alert';
 
 function Modal(props) {
 
-    let {noPadding, titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
+    let {maximised, noPadding, titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
     let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen } = props;
     const [visible, setVisible] = useState(false);
 
@@ -37,6 +37,7 @@ function Modal(props) {
     let overlay = (<></>);
     if (visible) {
         overlay = (<ModalOverlay 
+                        maximised={maximised}
                         modalStyle={modalStyle}
                         children={children} 
                         title={title} 
@@ -88,7 +89,7 @@ export default Modal;
 
 function ModalOverlay(props) {
 
-    let {noPadding, titleIcon, modalStyle, title, children, callback, activeOverlay, withCloseButton} = props;
+    let {maximised, noPadding, titleIcon, modalStyle, title, children, callback, activeOverlay, withCloseButton} = props;
     let {actionButtons, escapeToCancel, keyDownActions} = props;
     const [displayAlert, setDisplayAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
@@ -169,12 +170,20 @@ function ModalOverlay(props) {
        buttons = generateButtons(callback, setDisplayAlert, setAlertMessage, actionButtons);
     } 
 
-    let contentBodyStyle = {
-        padding: "12px"
-    }
-    if (noPadding) {
+    let contentBodyStyle = {}
+    if (!noPadding) {
         contentBodyStyle = {
-            padding: "0px"
+            padding: "12px"
+        }
+    }
+
+
+    let panelStyle = {maxHeight: "90vh", height: "100%", minWidth: "20vw", maxWidth: "80vw"}
+    if (maximised) {
+        panelStyle = { 
+            ...panelStyle, 
+            height: "90vh",
+            width: "90vw"
         }
     }
 
@@ -187,10 +196,10 @@ function ModalOverlay(props) {
                 }
             }}>
                 <FlexBox className="tall">
-                    <div style={{ ...modalStyle }} className="modal-body auto-margin" onClick={(e) => {
+                    <div style={{ display: "flex", width: "100%", justifyContent: "center", ...modalStyle }} className="modal-body auto-margin" onClick={(e) => {
                         e.stopPropagation()
                     }}>
-                        <ContentPanel style={{maxHeight: "80vh"}}>
+                        <ContentPanel style={panelStyle}>
                             <ContentPanelTitle>
                                 <FlexBox style={{ maxWidth: "18px" }}>
                                     <ContentPanelTitleIcon>
@@ -210,21 +219,25 @@ function ModalOverlay(props) {
                                     {closeButton}
                                 </FlexBox>
                             </ContentPanelTitle>
-                            <ContentPanelBody style={contentBodyStyle}>
-                                <FlexBox className="col gap">
-                                    { displayAlert ?
-                                    <Alert className="critical">{alertMessage}</Alert>
-                                    : <></> }
-                                    {children}
-                                </FlexBox>
-                            </ContentPanelBody>
-                            { buttons ? 
-                            <ContentPanelFooter>
-                                <FlexBox className="gap modal-buttons-container" style={{flexDirection: "row-reverse"}}>
-                                    {buttons}
-                                </FlexBox>
-                            </ContentPanelFooter>
-                            :<></>}
+                            <FlexBox className="col gap">
+                                <ContentPanelBody style={{...contentBodyStyle, flex: "auto"}}>
+                                    <FlexBox className="col gap">
+                                        { displayAlert ?
+                                        <Alert className="critical">{alertMessage}</Alert>
+                                        : <></> }
+                                        {children}
+                                    </FlexBox>
+                                </ContentPanelBody>
+                                { buttons ? 
+                                <div>
+                                    <ContentPanelFooter>
+                                        <FlexBox className="gap modal-buttons-container" style={{flexDirection: "row-reverse"}}>
+                                            {buttons}
+                                        </FlexBox>
+                                    </ContentPanelFooter>
+                                </div>
+                                :<></>}
+                            </FlexBox>
                         </ContentPanel>
                     </div>
                 </FlexBox>

@@ -3,7 +3,7 @@ import './style.css'
 import { Config, copyTextToClipboard } from '../../util';
 import Button from '../../components/button';
 import { useParams } from 'react-router';
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelFooter, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {AiFillCode} from 'react-icons/ai';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
@@ -17,6 +17,8 @@ import YAML from 'js-yaml'
 
 import DirektivEditor from '../../components/editor';
 import WorkflowDiagram from '../../components/diagram';
+import { HiOutlineArrowsExpand } from 'react-icons/hi';
+import Modal from '../../components/modal';
 
 function InstancePageWrapper(props) {
 
@@ -99,40 +101,42 @@ function InstancePage(props) {
                                     Instance Details
                                 </div>
                                 {label} 
-                                <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px"}}>
+                                <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px", alignItems: "center"}}>
                                     <Link to={linkURL}>
                                         <Button className="small light">
                                             <span className="hide-on-small">View</span> Workflow
                                         </Button>
                                     </Link>
+                                    <Modal
+                                    escapeToCancel
+                                    activeOverlay
+                                    maximised
+                                    noPadding
+                                    title="Instance Details"
+                                    titleIcon={
+                                        <AiFillCode />
+                                    }
+                                    style={{
+                                        maxWidth: "50px"
+                                    }}
+                                    modalStyle={{
+                                        overflow: "hidden",
+                                        padding: "0px"
+                                    }}
+                                    button={(
+                                        <ContentPanelHeaderButton hackyStyle={{ marginBottom: "8px", height: "29px" }}>
+                                            <ContentPanelHeaderButtonIcon>
+                                                <HiOutlineArrowsExpand />
+                                            </ContentPanelHeaderButtonIcon>
+                                        </ContentPanelHeaderButton>
+                                    )}
+                                >
+                                    <InstanceLogs noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
+                                </Modal>
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelTitle>
-                            <FlexBox className="col" style={{padding: "12px 12px 12px 12px"}}>
-                                <FlexBox style={{flexGrow:1, backgroundColor:"#002240", color:"white", borderRadius: "8px 8px 0px 0px", overflow: "hidden"}}>
-                                    {/* <div style={{: "100%"}}> */}
-                                        <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
-                                    {/* </div> */}
-                                </FlexBox>
-                            <FlexBox style={{height:"40px",backgroundColor:"#223848", color:"white", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden"}}>
-                                <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
-                                    {follow ? 
-                                        <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
-                                            <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
-                                        </div>
-                                        :
-                                        <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
-                                            <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
-                                        </div>
-                                    }
-                                    <div onClick={()=>{
-                                        copyTextToClipboard(clipData)
-                                    }} style={{display:"flex", alignItems:"center", gap:"3px", backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                        <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
-                                    </div>
-                                </FlexBox>
-                                </FlexBox>
-                            </FlexBox>
+                        <InstanceLogs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox className="gap wrap" style={{minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
@@ -147,6 +151,28 @@ function InstancePage(props) {
                                 Input
                                 </div>
                             </FlexBox>
+                            <Modal
+                                escapeToCancel
+                                maximised
+                                noPadding
+                                title="Input"
+                                titleIcon={
+                                    <AiFillCode />
+                                }
+                                modalStyle={{
+                                    overflow: "hidden",
+                                    padding: "0px"
+                                }}
+                                button={(
+                                    <ContentPanelHeaderButton>
+                                        <ContentPanelHeaderButtonIcon>
+                                            <HiOutlineArrowsExpand />
+                                        </ContentPanelHeaderButtonIcon>
+                                    </ContentPanelHeaderButton>
+                                )}
+                            >
+                                <Input getInput={getInput}/>
+                            </Modal>
                         </ContentPanelTitle>
                         <Input getInput={getInput}/>
                     </ContentPanel>
@@ -182,6 +208,28 @@ function InstancePage(props) {
                                 Output
                                 </div>
                             </FlexBox>
+                            <Modal
+                                escapeToCancel
+                                maximised
+                                noPadding
+                                title="Output"
+                                titleIcon={
+                                    <AiFillCode />
+                                }
+                                modalStyle={{
+                                    overflow: "hidden",
+                                    padding: "0px"
+                                }}
+                                button={(
+                                    <ContentPanelHeaderButton>
+                                        <ContentPanelHeaderButtonIcon>
+                                            <HiOutlineArrowsExpand />
+                                        </ContentPanelHeaderButtonIcon>
+                                    </ContentPanelHeaderButton>
+                                )}
+                            >
+                                <Output getOutput={getOutput} status={data.status}/>
+                            </Modal>
                         </ContentPanelTitle>
                         <Output getOutput={getOutput} status={data.status}/>
                     </ContentPanel>
@@ -190,6 +238,59 @@ function InstancePage(props) {
         </FlexBox>
 
     </>)
+}
+
+function InstanceLogs(props) {
+
+    let {noPadding, namespace, instanceID, follow, setFollow, width, clipData} = props;
+
+    let paddingStyle = { padding: "12px" }
+    if (noPadding) {
+        paddingStyle = { padding: "0px" }
+    }
+
+    return (
+        <>
+            <FlexBox className="col" style={{...paddingStyle}}>
+                <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden" }}>
+                    <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                </FlexBox>
+                <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
+                    <FlexBox className="gap" style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
+                        <TerminalButton onClick={()=>{
+                            copyTextToClipboard(clipData)
+                        }}>
+                                <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
+                        </TerminalButton>
+                        {follow ?
+                            <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"}>
+                                <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
+                            </TerminalButton>
+                            :
+                            <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} >
+                                    <IoEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
+                            </TerminalButton>
+                        }
+                    </FlexBox>
+                </div>
+            </FlexBox>
+        </>
+    )
+}
+
+function TerminalButton(props) {
+
+    let {children, onClick} = props;
+    return (
+        <div onClick={onClick} className="btn-terminal" style={{
+            maxHeight: "22px"
+        }}>
+            <FlexBox className="gap" style={{ alignItems: "center", userSelect: "none" }}>
+                {children}
+            </FlexBox>
+        </div>
+    )
+
 }
 
 function InstanceDiagram(props) {
@@ -292,7 +393,7 @@ function Output(props){
     },[status, getOutput])
 
     return(
-        <FlexBox style={{padding: "12px 12px 12px 12px"}}>
+        <FlexBox style={{padding: "0px", overflow: "hidden"}}>
             <AutoSizer>
                 {({height, width})=>(
                     <DirektivEditor height={height} width={width} dlang="json" value={output} readonly={true}/>
@@ -377,17 +478,23 @@ function Logs(props){
       
 
     return(
-        <div style={{flex:"1 1 auto", padding:'12px 12px 12px 12px'}}>
+        <div style={{flex:"1 1 auto", padding:'12px 12px 12px 12px', lineHeight: "20px"}}>
             <AutoSizer>
                 {({height, width})=>(
+                    <div style={{height: "100%", minHeight: "100%"}}>
                     <List
-                        width={width}
-                        height={height}
+                    width={width}
+                    height={height}
+                        style={{
+                            minHeight: "100%"
+                            // maxHeight: "100%"
+                        }}
                         rowRenderer={rowRenderer}
                         scrollToIndex={follow ? data.length - 1: 0}
                         rowCount={data.length}
                         rowHeight={20}
-                    />
+                        />
+                    </div>
                 )}
             </AutoSizer>
         </div>

@@ -86,7 +86,7 @@ export function ContentPanelFooter(props) {
 
 export function ContentPanelHeaderButton(props) {
 
-    let {children, onClick, className, style} = props;
+    let {children, onClick, className, style, hackyStyle} = props;
     if (!className) {
         className=""
     }
@@ -94,7 +94,7 @@ export function ContentPanelHeaderButton(props) {
     return(
         <FlexBox className={className} style={{ ...style, flexDirection: "row-reverse" }}>
             <div onClick={onClick} className="control-panel-header-button">
-                <FlexBox className="shadow">
+                <FlexBox className="shadow" style={{...hackyStyle}}>
                     {children}
                 </FlexBox>
             </div>
@@ -104,10 +104,10 @@ export function ContentPanelHeaderButton(props) {
 
 export function ContentPanelHeaderButtonIcon(props) {
 
-    let {children} = props;
+    let {children, style} = props;
 
     return(
-        <FlexBox className="control-panel-header-button-icon">
+        <FlexBox style={{...style}} className="control-panel-header-button-icon">
             {children}
         </FlexBox>
     );
