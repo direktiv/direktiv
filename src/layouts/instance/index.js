@@ -174,7 +174,9 @@ function InstancePage(props) {
                                 <Input getInput={getInput}/>
                             </Modal>
                         </ContentPanelTitle>
-                        <Input getInput={getInput}/>
+                        <ContentPanelBody>
+                            <Input getInput={getInput}/>
+                        </ContentPanelBody>
                     </ContentPanel>
                     </FlexBox>
                 </FlexBox>
@@ -231,7 +233,9 @@ function InstancePage(props) {
                                 <Output getOutput={getOutput} status={data.status}/>
                             </Modal>
                         </ContentPanelTitle>
-                        <Output getOutput={getOutput} status={data.status}/>
+                        <ContentPanelBody>
+                            <Output getOutput={getOutput} status={data.status}/>
+                        </ContentPanelBody>
                     </ContentPanel>
                 </FlexBox>
             </FlexBox>
@@ -343,7 +347,7 @@ function Input(props) {
     },[input, getInput])
 
     return(
-        <FlexBox style={{padding: "12px 12px 12px 12px"}}>
+        <FlexBox style={{overflow: "hidden"}}>
             {/* <div style={{width: "100%", height: "100%"}}> */}
             <AutoSizer>
                 {({height, width})=>(
