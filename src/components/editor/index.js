@@ -1,4 +1,5 @@
 import Editor, {useMonaco} from "@monaco-editor/react";
+import { linkHorizontal } from "d3-shape";
 import { useEffect } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
@@ -262,7 +263,7 @@ const cobalt = {
 // Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
 // TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
-    const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, onMount, readonly, disableBottomRadius} = props
+    const {style, disableCursor, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, onMount, readonly, disableBottomRadius} = props
     
     const monaco = useMonaco()
 
@@ -271,6 +272,11 @@ export default function DirektivEditor(props) {
         if(monaco !== null) {
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
+
+            // let messageContribution = monaco.getContribution('editor.contrib.messageController');
+            // monaco.editor.onDidAttemptReadOnlyEdit(() => {
+            //   monaco.editor.messageContribution.closeMessage();
+            // })
         }
         // monaco.editor.layout()
     },[monaco])
@@ -278,6 +284,17 @@ export default function DirektivEditor(props) {
     function handleEditorChange(value, event) {
         setDValue(value)
     }
+
+    function handleEditorDidMount(editor, monaco) {
+      if (readonly) {
+        let messageContribution = editor.getContribution('editor.contrib.messageController');
+        console.log(messageContribution);
+        editor.onDidAttemptReadOnlyEdit(() => {
+          messageContribution.dispose();
+        })
+      }
+    }
+
     return (
       <div className={"monaco-editor monaco-wrapper"} style={{ borderRadius: !noBorderRadius ? "8px" : "0px", width: width, height: height ? height-18 : height, ...style}}>
         <Editor
@@ -285,7 +302,8 @@ export default function DirektivEditor(props) {
                 ...options,
                 readOnly: readonly,
                 scrollBeyondLastLine: false,
-            }}
+                cursorBlinking: "smooth"
+              }}
             height={height ? height-18 : height}
             width={width}
             language={dlang}
@@ -294,8 +312,8 @@ export default function DirektivEditor(props) {
             theme={"cobalt"}
             loading={"This shows when component is loading"}
             onChange={handleEditorChange}
-            onMount={onMount}
-        />
+            onMount={handleEditorDidMount}
+            />
       </div>
     )
 }
