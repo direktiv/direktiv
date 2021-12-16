@@ -385,3 +385,21 @@ select {
 .subtle-border-bottom {
   border-bottom: solid 1px var(--theme-subtle-border);
 }
+
+.dropdown-select{
+  box-shadow: var(--theme-shadow-box-shadow);
+  border: var(--border);
+  color: var(--theme-dark-gray-text);
+  width: 100%;
+  height: 36px;
+}
+
+select:focus-visible{
+  outline: none
+}
+
+
+/* Disabled as this interferes with firfox dropdown options */
+/* .dropdown-select:hover{
+  filter: brightness(var(--active-brightness));
+} */

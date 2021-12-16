@@ -67,6 +67,13 @@ function SearchBar(props) {
     );
 }
 
+const orderFieldDictionary = {
+    "Name": "NAME", // Default
+    "Created": "CREATED"
+}
+
+const orderFieldKeys = Object.keys(orderFieldDictionary)
+
 function ExplorerList(props) {
     const {namespace, path} = props
 
@@ -74,12 +81,13 @@ function ExplorerList(props) {
     
     const [name, setName] = useState("")
     const [load, setLoad] = useState(true)
+    const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
 
-    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"))
+    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), orderFieldDictionary[orderFieldKey])
 
     // control loading icon todo work out how to display this error
     useEffect(()=>{
@@ -232,17 +240,26 @@ function ExplorerList(props) {
                         </div>
                     </ContentPanelHeaderButton>
                     <div className="explorer-sort-by explorer-action-btn hide-on-small">
-                        <div className="esb-label inline" style={{marginRight: "8px"}}>
+                    <FlexBox className="gap" style={{marginRight: "8px"}}>
+                        <FlexBox className="center">
                             Sort by:
-                        </div>
-                        <div className="esb-field inline">
-                            <FlexBox className="gap">
-                                <div className="inline">
-                                    Name
-                                </div>
-                                <VscTriangleDown className="auto-margin"/>
-                            </FlexBox>
-                        </div>
+                        </FlexBox>
+                        <FlexBox className="center">
+                            <select onChange={(e)=>{
+                                setOrderFieldKey(e.target.value)
+                                }} value={orderFieldKey} className="dropdown-select" style={{paddingBottom: "0px", paddingTop: "0px", height:"27px"}}>
+                                <option value="">{orderFieldKey}</option>
+                                {orderFieldKeys.map((key)=>{
+                                    if(key === orderFieldKey){
+                                        return ""
+                                    }
+                                    return(
+                                        <option key={GenerateRandomKey()} value={key}>{key}</option>
+                                    )
+                                })}
+                            </select>
+                        </FlexBox>
+                        </FlexBox>
                     </div>
                 </FlexBox>
             </ContentPanelTitle>

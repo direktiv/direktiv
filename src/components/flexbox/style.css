@@ -27,6 +27,20 @@
     gap: 8px;
 }
 
+.flex-box.center-y {
+    align-items: center;
+}
+
+.flex-box.center-x {
+    justify-content: center;
+}
+
+.flex-box.center {
+    justify-content: center;
+    align-items: center;
+}
+
+
 .flex-box.large-gap {
     gap: 12px;
 }
