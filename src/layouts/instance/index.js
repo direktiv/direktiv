@@ -10,7 +10,7 @@ import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
 import { Link } from 'react-router-dom';
-import { AutoSizer, List } from 'react-virtualized';
+import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
 import * as dayjs from "dayjs"
 import YAML from 'js-yaml'
@@ -431,6 +431,10 @@ function InstanceTuple(props) {
 }
 
 function Logs(props){ 
+    const cache = new CellMeasurerCache({
+        fixedWidth: false,
+        defaultHeight: 20
+    })
 
     let {namespace, instanceID, follow} = props;
     // const [load, setLoad] = useState(true)
@@ -459,13 +463,20 @@ function Logs(props){
         return <></> // TODO 
     }
 
-    function rowRenderer({index, key, style}) {
+    function rowRenderer({index, parent, key, style}) {
         if(!data[index]){
             return ""
         }
 
         return (
-          <div key={key} style={style}>
+        <CellMeasurer
+            key={key}
+            cache={cache}
+            parent={parent}
+            columnIndex={0}
+            rowIndex={index}
+        >
+          <div style={style}>
             <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
                 <div className="log-timestamp">
                     <div>[</div>
@@ -476,7 +487,9 @@ function Logs(props){
             <span style={{marginLeft:"5px"}}>
                 {data[index].node.msg}
             </span>
+            <div style={{height: `fit-content`}}></div>
           </div>
+          </CellMeasurer>
         );
     }
       
@@ -489,14 +502,15 @@ function Logs(props){
                     <List
                     width={width}
                     height={height}
-                        style={{
-                            minHeight: "100%"
-                            // maxHeight: "100%"
-                        }}
+                        // style={{
+                        //     minHeight: "100%"
+                        //     // maxHeight: "100%"
+                        // }}
                         rowRenderer={rowRenderer}
+                        deferredMeasurementCache={cache}
                         scrollToIndex={follow ? data.length - 1: 0}
                         rowCount={data.length}
-                        rowHeight={20}
+                        rowHeight={cache.rowHeight}
                         />
                     </div>
                 )}
