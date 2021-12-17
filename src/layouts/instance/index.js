@@ -10,7 +10,7 @@ import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
 import { Link } from 'react-router-dom';
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
+import { AutoSizer, List, CellMeasurer, CellMeasurerCache, WindowScroller } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
 import * as dayjs from "dayjs"
 import YAML from 'js-yaml'
