@@ -89,9 +89,9 @@ function InstancePage(props) {
 
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
-            <FlexBox className="gap wrap" style={{minHeight: "50%"}}>
+            <FlexBox className="gap wrap" style={{minHeight: "50%", flex: "1"}}>
                 <FlexBox style={{minWidth: "340px", flex: "5"}}>
-                    <ContentPanel style={{width: "100%"}}>
+                    <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
                                 <AiFillCode />
@@ -142,9 +142,9 @@ function InstancePage(props) {
                         <InstanceLogs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
                     </ContentPanel>
                 </FlexBox>
-                <FlexBox className="gap wrap" style={{minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
+                <FlexBox className="gap wrap" style={{minHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
                     <FlexBox style={{minWidth: "300px"}}>
-                        <ContentPanel style={{width: "100%"}}>
+                        <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
                                 <AiFillCode />
@@ -188,9 +188,9 @@ function InstancePage(props) {
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
-            <FlexBox className="gap wrap">
+            <FlexBox className="gap wrap" style={{minHeight: "40%", flex: "1"}}>
                 <FlexBox style={{minWidth: "300px", flex: "5"}}>
-                    <ContentPanel style={{width: "100%"}}>
+                    <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
                                 <AiFillCode />
@@ -207,7 +207,7 @@ function InstancePage(props) {
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox style={{minWidth: "300px", flex: "2"}}>
-                    <ContentPanel style={{width: "100%"}}>
+                    <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
                                 <AiFillCode />
@@ -505,33 +505,33 @@ function Logs(props){
     }
       
 
-    return (
-        <WindowScroller>
-            {({height, isScrolling, registerChild, scrollTop}) => {
-                return (
-                    <AutoSizer disableHeight>
-                        {({ width }) => {
-                            return (
-                                <List 
-                                    autoHeight
-                                    height={height}
-                                    isScrolling={isScrolling}
-                                    rowCount={data.length}
-                                    rowHeight={20}
-                                    rowRenderer={rowRenderer}
-                                    scrollTop={scrollTop}
-                                    width={width}
-                                />
-                            )
-                        }}
-                    </AutoSizer>
-                )
-            }}
-        </WindowScroller>
-    )
+    // return (
+    //     <WindowScroller>
+    //         {({height, isScrolling, registerChild, scrollTop}) => {
+    //             return (
+    //                 <AutoSizer disableHeight>
+    //                     {({ width }) => {
+    //                         return (
+    //                             <List 
+    //                                 autoHeight
+    //                                 height={height}
+    //                                 isScrolling={isScrolling}
+    //                                 rowCount={data.length}
+    //                                 rowHeight={20}
+    //                                 rowRenderer={rowRenderer}
+    //                                 scrollTop={scrollTop}
+    //                                 width={width}
+    //                             />
+    //                         )
+    //                     }}
+    //                 </AutoSizer>
+    //             )
+    //         }}
+    //     </WindowScroller>
+    // )
 
     return(
-        <div style={{flex:"1 1 auto", padding:'12px 12px 12px 12px', lineHeight: "20px"}}>
+        <div style={{flex:"1 1 auto", lineHeight: "20px"}}>
             <AutoSizer>
                 {({height, width})=>(
                     <div style={{height: "100%", minHeight: "100%"}}>
