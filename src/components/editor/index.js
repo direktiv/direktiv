@@ -263,7 +263,7 @@ const cobalt = {
 // Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
 // TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
-    const {style, disableCursor, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, onMount, readonly, disableBottomRadius} = props
+    const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly} = props
     
     const monaco = useMonaco()
 
@@ -285,10 +285,11 @@ export default function DirektivEditor(props) {
         setDValue(value)
     }
 
-    function handleEditorDidMount(editor, monaco) {
-      if (readonly) {
+    let handleEditorDidMount = function(editor, monaco) {}
+
+    if (readonly) {
+      handleEditorDidMount = function(editor, monaco) {
         let messageContribution = editor.getContribution('editor.contrib.messageController');
-        console.log(messageContribution);
         editor.onDidAttemptReadOnlyEdit(() => {
           messageContribution.dispose();
         })

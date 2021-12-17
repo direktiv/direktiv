@@ -10,7 +10,7 @@ import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
 import { Link } from 'react-router-dom';
-import { AutoSizer, List } from 'react-virtualized';
+import { AutoSizer, List, WindowScroller } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
 import * as dayjs from "dayjs"
 import YAML from 'js-yaml'
@@ -18,7 +18,7 @@ import YAML from 'js-yaml'
 import DirektivEditor from '../../components/editor';
 import WorkflowDiagram from '../../components/diagram';
 import { HiOutlineArrowsExpand } from 'react-icons/hi';
-import Modal from '../../components/modal';
+import Modal, { ButtonDefinition } from '../../components/modal';
 
 function InstancePageWrapper(props) {
 
@@ -130,6 +130,9 @@ function InstancePage(props) {
                                             </ContentPanelHeaderButtonIcon>
                                         </ContentPanelHeaderButton>
                                     )}
+                                    actionButtons={[
+                                        ButtonDefinition("Close", () => {}, "small light", true, false)
+                                    ]}
                                 >
                                     <InstanceLogs noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
                                 </Modal>
@@ -153,6 +156,7 @@ function InstancePage(props) {
                             </FlexBox>
                             <Modal
                                 escapeToCancel
+                                activeOverlay                                
                                 maximised
                                 noPadding
                                 title="Input"
@@ -170,6 +174,9 @@ function InstancePage(props) {
                                         </ContentPanelHeaderButtonIcon>
                                     </ContentPanelHeaderButton>
                                 )}
+                                actionButtons={[
+                                    ButtonDefinition("Close", () => {}, "small light", true, false)
+                                ]}
                             >
                                 <Input getInput={getInput}/>
                             </Modal>
@@ -212,6 +219,7 @@ function InstancePage(props) {
                             </FlexBox>
                             <Modal
                                 escapeToCancel
+                                activeOverlay
                                 maximised
                                 noPadding
                                 title="Output"
@@ -229,6 +237,9 @@ function InstancePage(props) {
                                         </ContentPanelHeaderButtonIcon>
                                     </ContentPanelHeaderButton>
                                 )}
+                                actionButtons={[
+                                    ButtonDefinition("Close", () => {}, "small light", true, false)
+                                ]}
                             >
                                 <Output getOutput={getOutput} status={data.status}/>
                             </Modal>
@@ -256,7 +267,7 @@ function InstanceLogs(props) {
     return (
         <>
             <FlexBox className="col" style={{...paddingStyle}}>
-                <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden" }}>
+                <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden", padding: "8px" }}>
                     <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
                 </FlexBox>
                 <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
@@ -465,39 +476,68 @@ function Logs(props){
         }
 
         return (
-          <div key={key} style={style}>
-            <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
-                <div className="log-timestamp">
-                    <div>[</div>
-                        <div style={{display: "flex", flex: "auto", justifyContent: "center"}}>{dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}</div>
-                    <div>]</div>
-                </div>
-            </div> 
-            <span style={{marginLeft:"5px"}}>
-                {data[index].node.msg}
-            </span>
-          </div>
-        );
+            <div style={{lineHeight: "20px", whiteSpace: "nowrap"}}>
+                <FlexBox key={key} className="gap">
+                    <div style={{ minWidth: "112px", color: "#b5b5b5" }}>
+                        <FlexBox>
+                            <div>[</div>
+                            <FlexBox style={{ justifyContent: "center" }}>
+                                {dayjs.utc(data[index].node.t).local().format("HH:mm:ss.SSS")}
+                            </FlexBox>
+                            <div>]</div>
+                        </FlexBox>
+                    </div>
+                    <FlexBox>
+                        {data[index].node.msg}
+                    </FlexBox>
+                </FlexBox>
+            </div>
+        )
     }
       
+
+    return (
+        <WindowScroller>
+            {({height, isScrolling, registerChild, scrollTop}) => {
+                return (
+                    <AutoSizer disableHeight>
+                        {({ width }) => {
+                            return (
+                                <List 
+                                    autoHeight
+                                    height={height}
+                                    isScrolling={isScrolling}
+                                    rowCount={data.length}
+                                    rowHeight={20}
+                                    rowRenderer={rowRenderer}
+                                    scrollTop={scrollTop}
+                                    width={width}
+                                />
+                            )
+                        }}
+                    </AutoSizer>
+                )
+            }}
+        </WindowScroller>
+    )
 
     return(
         <div style={{flex:"1 1 auto", padding:'12px 12px 12px 12px', lineHeight: "20px"}}>
             <AutoSizer>
                 {({height, width})=>(
                     <div style={{height: "100%", minHeight: "100%"}}>
-                    <List
-                    width={width}
-                    height={height}
-                        style={{
-                            minHeight: "100%"
-                            // maxHeight: "100%"
-                        }}
-                        rowRenderer={rowRenderer}
-                        scrollToIndex={follow ? data.length - 1: 0}
-                        rowCount={data.length}
-                        rowHeight={20}
-                        />
+                        <List
+                        width={width}
+                        height={height}
+                            style={{
+                                minHeight: "100%"
+                                // maxHeight: "100%"
+                            }}
+                            rowRenderer={rowRenderer}
+                            scrollToIndex={follow ? data.length - 1: 0}
+                            rowCount={data.length}
+                            rowHeight={20}
+                            />
                     </div>
                 )}
             </AutoSizer>

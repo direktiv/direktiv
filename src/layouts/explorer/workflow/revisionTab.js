@@ -264,41 +264,7 @@ export function RevisionSelectorTab(props) {
                                             maxWidth: "150px"
                                         }}>
                                             <FlexBox className="col revision-label-tuple">
-                                                <Modal
-                                                    escapeToCancel
-                                                    style={{
-                                                        flexDirection: "row-reverse",
-                                                        marginRight: "8px"
-                                                    }}
-                                                    title="Tag" 
-                                                    onClose={()=>{
-                                                        setTag("")
-                                                    }}
-                                                    button={(
-                                                        <Button className="reveal-btn small shadow">
-                                                            <FlexBox className="gap">
-                                                                <div>
-                                                                    Tag
-                                                                </div>
-                                                            </FlexBox>
-                                                        </Button>
-                                                    )}
-                                                    actionButtons={
-                                                        [
-                                                            ButtonDefinition("Tag", async () => {
-                                                                let err = await tagWorkflow(obj.node.name, tag)
-                                                                if(err) return err
-                                                                setRevisions(await getRevisions())
-                                                            }, "small blue", true, false),
-                                                            ButtonDefinition("Cancel", () => {
-                                                            }, "small light", true, false)
-                                                        ]
-                                                    } 
-                                                >
-                                                    <FlexBox>
-                                                        <input autoFocus value={tag} onChange={(e)=>setTag(e.target.value)} placeholder="Enter Tag or leave blank to untag" />
-                                                    </FlexBox>
-                                                </Modal>
+                                                <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions}  />
                                             </FlexBox>
                                         </FlexBox>
                                     :<FlexBox style={{
@@ -436,7 +402,50 @@ export function RevisionSelectorTab(props) {
     
         </FlexBox>
     )
+}
 
+function TagRevisionBtn(props) {
+
+    let {tagWorkflow, obj, getRevisions, setRevisions} = props;
+    const [tag, setTag] = useState("")
+
+    return(
+        <Modal
+            escapeToCancel
+            style={{
+                flexDirection: "row-reverse",
+                marginRight: "8px"
+            }}
+            title="Tag" 
+            onClose={()=>{
+                setTag("")
+            }}
+            button={(
+                <Button className="light small">
+                    <FlexBox className="gap">
+                        <div>
+                            Tag
+                        </div>
+                    </FlexBox>
+                </Button>
+            )}
+            actionButtons={
+                [
+                    ButtonDefinition("Tag", async () => {
+                        let err = await tagWorkflow(obj.node.name, tag)
+                        if(err) return err
+                        setRevisions(await getRevisions())
+                    }, "small blue", true, false),
+                    ButtonDefinition("Cancel", () => {
+                    }, "small light", true, false)
+                ]
+            } 
+        >
+            <FlexBox>
+                <input autoFocus value={tag} onChange={(e)=>setTag(e.target.value)} placeholder="Enter Tag or leave blank to untag" />
+            </FlexBox>
+        </Modal>
+    )
 }
 
 export function RevisionTrafficShaper(props) {
