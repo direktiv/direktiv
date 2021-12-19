@@ -9,7 +9,7 @@ GIT_HASH := $(shell git rev-parse --short HEAD)
 GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
 RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
-FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")   
+FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
 
 .SECONDARY:
 
@@ -74,7 +74,7 @@ cluster: push
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
-	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
+	helm install -f ${HELM_CONFIG} direktiv scripts/direktiv-charts/charts/direktiv/
 
 .PHONY: teardown
 teardown: ## Brings down an existing cluster.
@@ -112,7 +112,7 @@ api-client: api-clean-client  api-docs
 
 .PHONY: api-docs
 api-docs: ## Generates API documentation, (Also fixes markdown tables, examples & description)
-api-docs: 
+api-docs:
 	# go get -u github.com/go-swagger/go-swagger/cmd/swagger
 	cd pkg/api
 	swagger generate spec -o scripts/api/swagger.json -m
