@@ -1,7 +1,0 @@
-{{- if .Values.apikey }}
-apiVersion: configuration.konghq.com/v1
-kind: KongPlugin
-metadata:
-  name: {{ include "direktiv.fullname" . }}-auth
-plugin: key-auth
-{{- end }}
