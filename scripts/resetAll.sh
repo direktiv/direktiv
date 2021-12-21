@@ -11,7 +11,7 @@ kubectl create namespace direktiv-services-direktiv
 kubectl create namespace postgres
 
 # prepare linkerd
-kubectl annotate ns knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
+kubectl annotate ns knative-serving default direktiv-services-direktiv postgres linkerd.io/inject=enabled
 
 exe='cd /certs && step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure \

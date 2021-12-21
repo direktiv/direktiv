@@ -49,5 +49,5 @@ func (cfg *Config) GetTelemetryBackendAddr() string {
 }
 
 func (cfg *Config) GetFunctionsTimeout() time.Duration {
-	return time.Millisecond * time.Duration(cfg.FunctionsTimeout)
+	return time.Second * time.Duration(cfg.FunctionsTimeout)
 }
