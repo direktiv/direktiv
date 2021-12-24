@@ -55,6 +55,10 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 .PHONY: images
 images: image-api image-flow image-init-pod image-secrets image-sidecar image-functions
 
+.PHONY: scan
+scan: ## Builds and scans all Docker images
+scan: scan-api scan-flow scan-init-pod scan-secrets scan-sidecar scan-functions
+
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
 push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions
@@ -150,6 +154,10 @@ build/%-binary: Makefile ${GO_SOURCE_FILES}
 	else \
    	touch $@; \
 	fi
+
+.PHONY: scan-%
+scan-%: push-%
+	trivy image --exit-code 1 localhost:5000/$*
 
 .PHONY: image-%
 image-%: build/%-binary
