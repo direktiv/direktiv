@@ -129,14 +129,6 @@ api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to ch
 api-swagger:
 	scripts/api/swagger.sh $(host)
 
-# Helm docs
-
-.PHONY: helm-docs
-helm-docs: ## Generates helm documentation
-helm-docs:
-	GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
-	helm-docs kubernetes/charts
-
 # PROTOC
 
 PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 countdown() {
   echo "sleeping for $1 secs"
