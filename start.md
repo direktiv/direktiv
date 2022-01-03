@@ -9,7 +9,7 @@ sudo npm install --global yarn
 For development it needs [*CORS Everywhere*](https://addons.mozilla.org/en-US/firefox/addon/cors-everywhere/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=search) and can be started like this:
 
 ```
-DIREKTIV_API=http://192.168.1.60/api/ yarn start
+DIREKTIV_API=http://localhost:8080/api/ yarn start
 ```
   
 # Docker container
