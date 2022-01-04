@@ -77,6 +77,7 @@ kubernetes/charts/direktiv/tmpcharts
 
 scripts/api/swagger_in.json
 scripts/devcerts
+scripts/direktiv-charts
 
 scripts/wip/kong/proto
 

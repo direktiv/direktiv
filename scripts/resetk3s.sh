@@ -1,5 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 
+countdown() {
+  echo "sleeping for $1 secs"
+  secs=$1
+  shift
+  while [ $secs -gt 0 ]
+  do
+    printf "\r\033[Kwaiting %.d seconds" $((secs--))
+    sleep 1
+  done
+  echo
+}
+
+echo "stopping k3s"
 service k3s stop
 
 rm -Rf /etc/rancher/k3s
@@ -15,6 +28,7 @@ do
     fi
 done
 
+echo "starting k3s"
 service k3s start
 
-sleep 30
+countdown 10

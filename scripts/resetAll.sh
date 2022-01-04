@@ -2,42 +2,7 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-countdown() {
-  echo "sleeping for 30 secs"
-  secs=30
-  shift
-  while [ $secs -gt 0 ]
-  do
-    printf "\r\033[Kwaiting %.d seconds" $((secs--))
-    sleep 1
-  done
-  echo
-}
-
-echo "stopping k3s"
-
-service k3s stop
-
-echo "deleting k3s data"
-
-rm -Rf /etc/rancher/k3s
-rm -Rf /var/lib/rancher/k3s
-rm -rf /var/lib/cni/networks/cbr0
-
-for name in $(ip -o link show | awk -F': ' '{print $2}' | sed  's/@.*//' | grep veth)
-do
-    r=`ip link show $name | grep cni0`
-    if [ "$r" != "" ]; then
-      echo "deleting $name"
-      ip link delete $name
-    fi
-done
-
-echo "starting k3s"
-
-service k3s start
-
-countdown
+sudo -s source  $dir/resetk3s.sh
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
@@ -46,7 +11,7 @@ kubectl create namespace direktiv-services-direktiv
 kubectl create namespace postgres
 
 # prepare linkerd
-kubectl annotate ns knative-serving default direktiv-services-direktiv linkerd.io/inject=enabled
+kubectl annotate ns knative-serving default direktiv-services-direktiv postgres linkerd.io/inject=enabled
 
 exe='cd /certs && step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure \
@@ -54,14 +19,12 @@ exe='cd /certs && step certificate create root.linkerd.cluster.local ca.crt ca.k
 --profile intermediate-ca --not-after 8760h --no-password --insecure \
 --ca ca.crt --ca-key ca.key'
 
+mkdir -p $dir/devcerts
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 rm -Rf $dir/devcerts/*
 chmod 777 $dir/devcerts
 
-rm -Rf $dir/../kubernetes/charts/direktiv/charts
-rm -Rf $dir/../kubernetes/charts/direktiv/Chart.lock
-
-docker run -v $dir/devcerts:/certs  -i smallstep/step-cli /bin/bash -c "$exe"
+docker run --user 1000:1000 -v $dir/devcerts:/certs  -i smallstep/step-cli /bin/bash -c "$exe"
 
 helm repo add linkerd https://helm.linkerd.io/stable
 exp=$(date -d '+8760 hour' +"%Y-%m-%dT%H:%M:%SZ")
@@ -73,26 +36,27 @@ helm install linkerd2 \
   --set identity.issuer.crtExpiry=$exp \
   linkerd/linkerd2 --wait
 
-helm dependency update $dir/../kubernetes/charts/knative
-helm install -n knative-serving -f $dir/../kubernetes/charts/knative/debug-knative.yaml  knative $dir/../kubernetes/charts/knative
+if [ ! -d "$dir/direktiv-charts" ]; then
+  git clone git@github.com:direktiv/direktiv-charts.git $dir/direktiv-charts
+fi
 
-# install database
-# delete stuff first
+helm dependency update $dir/direktiv-charts/charts/knative
+helm install -n knative-serving knative $dir/direktiv-charts/charts/knative
+
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add direktiv https://charts.direktiv.io
+helm dependency update $dir/direktiv-charts/charts/direktiv
 
-helm repo update
-helm search repo direktiv
-helm dependency update $dir/../kubernetes/charts/direktiv
-helm install -n postgres --set singleNamespace=true postgres direktiv/pgo --wait
+# install db
+helm install -n postgres --set singleNamespace=true postgres $dir/direktiv-charts/charts/pgo --wait
 kubectl apply -f $dir/../kubernetes/install/db/pg.yaml
 
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
-countdown
+echo "waiting for database secret"
+while ! kubectl get secrets -n postgres direktiv-pguser-direktiv
+do
+    sleep 2
+done
 
 echo ""
 echo "database:
