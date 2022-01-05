@@ -95,7 +95,13 @@ function NamespaceNavigation(props){
             <FlexBox className="col" style={{paddingBottom: "8px"}}>
                 {namespaces !== null ? 
                 <Routes>
-                    <Route path="/" element={<div>index route:)</div>} />
+                    <Route path="/" element={
+                        <div className="message-container">
+                            <p className="no-workspace-message">
+                                You are not a part of any namespaces! Create a namespace to continue using Direktiv.
+                            </p>
+                        </div>
+                    }/>
                     {/* Explorer routing */}
                     <Route path="/n/:namespace" element={<Explorer namespace={namespace} />} >
                         <Route path="explorer/*" element={<Explorer namespace={namespace} />} />

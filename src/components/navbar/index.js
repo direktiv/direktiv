@@ -50,7 +50,7 @@ function NavBar(props) {
                     </div>
 
                     <div className="navbar-panel shadow col">
-                        <GlobalNavItems />
+                        <GlobalNavItems namespace={namespace}/>
                     </div>
 
                     <FlexBox>
@@ -88,7 +88,6 @@ function NewNamespaceBtn(props) {
     const {createNamespace} = props
 
     // createErr is filled when someone tries to create namespace but proceeded to error out
-
 
     const [ns, setNs] = useState("")
     const navigate = useNavigate()
@@ -170,22 +169,21 @@ function NavItems(props) {
 
     let settings = matchPath("/n/:namespace/settings", pathname)
 
-
     return (
         <FlexBox style={{...style}} className="nav-items">
             <ul>
-                <li>
-                    <Link to={`/n/${namespace}`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={explorer || wfexplorer ? "active":""} label="Explorer">
                             <VscFolderOpened/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/monitoring`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/monitoring`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={monitoring ? "active":""} label="Monitoring">
                             <VscGraph />
@@ -199,45 +197,45 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li> */}
-                <li>
-                    <Link to={`/n/${namespace}/instances`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/instances`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={instances || instanceid ? "active":""} label="Instances">
                             <VscVmRunning/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/events`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/events`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={events ? "active":""} label="Events">
                            <VscSymbolEvent/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/permissions`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/permissions`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={permissions ? "active":""} label="Permissions">
                             <VscLock/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/services`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/services`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={services || service || revision ? "active":""} label="Services">
                             <VscLayers/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/settings`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/settings`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={settings ? "active":""} label="Settings">
                             <VscSettingsGear/>
@@ -249,7 +247,7 @@ function NavItems(props) {
     );
 }
 
-function GlobalNavItems(props) {
+function GlobalNavItems({namespace}) {
 
     const {pathname} = useLocation()
 
@@ -263,22 +261,22 @@ function GlobalNavItems(props) {
     return (
         <FlexBox className="nav-items">
             <ul>
-                <li style={{marginTop: "0px"}}>
-                    <Link  to={"/jq"}>
+                <li className={`${!namespace ? "disabled-nav-item":""}`} style={{marginTop: "0px"}}>
+                    <Link to={!!namespace && "/jq"}>
                         <NavItem className={jq ? "active":""} label="jq Playground">
                             <IoExtensionPuzzleOutline/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={"/g/services"}>
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && "/g/services"}>
                         <NavItem className={gs || gservice || grevision ? "active":""} label="Global Services">
                             <VscLayers />
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={"/g/registries"}>
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && "/g/registries"}>
                         <NavItem className={gr ? "active":""} label="Global Registries">
                             <VscServer/>
                         </NavItem>

@@ -58,7 +58,7 @@
 .navbar-version {
     margin-top: -4px;
     font-size: 12px;
-    color: var(--theme-dark-gray-text)
+    color: var(--theme-dark-gray-text);
 }
 
 .nav-item {
@@ -75,6 +75,16 @@
     border-radius: var(--theme-border-radius);
 }
 
+.disabled-nav-item .nav-item:hover {
+    cursor: auto;
+    color: inherit;
+    background-color: #FFFFFF;
+}
+
+.disabled-nav-item {
+    color: #BDC7C9;
+}
+
 #responsive-bar {
     position: absolute;
     top: 0px;
@@ -88,6 +98,7 @@
 .navigation-master {
     max-height: 100vh;
     overflow-y: auto;
+    min-width: 210px;
 }
 
 @media screen and (max-width: 1000px) {
