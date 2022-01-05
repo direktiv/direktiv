@@ -140,6 +140,7 @@ function ExplorerList(props) {
                 <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
                     <ContentPanelHeaderButton className="explorer-action-btn">
                         <Modal title="New Workflow" 
+                            modalStyle={{minHeight: "580px"}}
                             escapeToCancel
                             button={(
                                 <div style={{display:"flex"}}>

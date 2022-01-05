@@ -4676,13 +4676,29 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-direktiv-react-hooks@^0.0.82:
-  version "0.0.82"
-  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.82.tgz#734eb99afeba3cb0e32c196601f15d07be246b42"
-  integrity sha512-/TqdVmn3x4ptv/D3mTgbIsxQgkU07q04QnnhwWfeZ6cehTHWtoUIPGGCF7OlmY+E2469NrsuAChGIVEnjJhFfA==
+direktiv-react-hooks@^0.0.83:
+  version "0.0.83"
+  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.83.tgz#51c3535c362ba8f37b921b7082de7d56885cc774"
+  integrity sha512-PzW37hHfsFpCYzcEtXK83oknUMy/tqI9gcqycZcFLt+lzFwwWyxIR/SdjLpDExIZ9VHJZUBxk0hVp1Jsx6mADw==
   dependencies:
     "@types/event-source-polyfill" "^1.0.0"
     cross-fetch "^3.1.4"
+    event-source-polyfill "^1.0.25"
+    http "^0.0.1-security"
+    https "^1.0.0"
+    isomorphic-fetch "^3.0.0"
+    stream "^0.0.2"
+    url "^0.11.0"
+    zlib "^1.0.5"
+
+direktiv-react-hooks@^0.0.86:
+  version "0.0.86"
+  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.86.tgz#bfa1c5cfd9f6e701492ad233bf8d6b1ac18e89aa"
+  integrity sha512-WLcsMl8MILusMmqsX/OMX5Vd+qQjPfhYK5rTjTnjdVa+EWx6vccGBA1sCORmPK0lPFR/HE+i5Wr2mkIPlrHehQ==
+  dependencies:
+    "@types/event-source-polyfill" "^1.0.0"
+    cross-fetch "^3.1.4"
+    direktiv-react-hooks "^0.0.83"
     event-source-polyfill "^1.0.25"
     http "^0.0.1-security"
     https "^1.0.0"
