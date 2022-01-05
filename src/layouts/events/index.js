@@ -7,6 +7,8 @@ import FlexBox from '../../components/flexbox';
 import {useEvents} from 'direktiv-react-hooks'
 import Modal, { ButtonDefinition } from '../../components/modal';
 import DirektivEditor from '../../components/editor';
+import { AutoSizer } from 'react-virtualized';
+
 
 function EventsPageWrapper(props) {
 
@@ -167,12 +169,18 @@ function SendEventModal(props) {
             noPadding
         >
             <FlexBox className="col gap" style={{overflow: "hidden"}}>
-                <FlexBox style={{ minHeight: "40vh", minWidth: "80vw" }}>
-                    <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
-                        options={{
-                            autoLayout: true
-                        }} 
-                    />
+                <FlexBox style={{ minHeight: "40vh", minWidth: "70vw" }}>
+                    <AutoSizer>
+                        {({height, width})=>(
+                        <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
+                            options={{
+                                autoLayout: true
+                            }} 
+                            width={width}
+                            height={height}
+                        />
+                        )}
+                    </AutoSizer>
                 </FlexBox>
             </FlexBox>
         </Modal>
