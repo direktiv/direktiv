@@ -174,7 +174,7 @@ function ExplorerList(props) {
                                 }, true, "workflow-name")
                             ]}
                         >
-                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "450px"}}>
+                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "550px"}}>
                                 <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                                     <input id={"workflow-name"} value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name"/>
                                 </div>
@@ -191,7 +191,7 @@ function ExplorerList(props) {
                                         )
                                     })}
                                 </select>
-                                <FlexBox className="gap" style={{maxHeight: "500px"}}>
+                                <FlexBox className="gap">
                                     <FlexBox style={{overflow:"hidden"}}>
                                     <AutoSizer>
                                         {({height, width})=>(
