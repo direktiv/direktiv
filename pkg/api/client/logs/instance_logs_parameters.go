@@ -59,6 +59,18 @@ func NewInstanceLogsParamsWithHTTPClient(client *http.Client) *InstanceLogsParam
 */
 type InstanceLogsParams struct {
 
+	/* FilterField.
+
+	   field to filter
+	*/
+	FilterField *string
+
+	/* FilterType.
+
+	   filter behaviour
+	*/
+	FilterType *string
+
 	/* Instance.
 
 	   target instance id
@@ -70,6 +82,18 @@ type InstanceLogsParams struct {
 	   target namespace
 	*/
 	Namespace string
+
+	/* OrderDirection.
+
+	   order direction
+	*/
+	OrderDirection *string
+
+	/* OrderField.
+
+	   field to order by
+	*/
+	OrderField *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,6 +148,28 @@ func (o *InstanceLogsParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithFilterField adds the filterField to the instance logs params
+func (o *InstanceLogsParams) WithFilterField(filterField *string) *InstanceLogsParams {
+	o.SetFilterField(filterField)
+	return o
+}
+
+// SetFilterField adds the filterField to the instance logs params
+func (o *InstanceLogsParams) SetFilterField(filterField *string) {
+	o.FilterField = filterField
+}
+
+// WithFilterType adds the filterType to the instance logs params
+func (o *InstanceLogsParams) WithFilterType(filterType *string) *InstanceLogsParams {
+	o.SetFilterType(filterType)
+	return o
+}
+
+// SetFilterType adds the filterType to the instance logs params
+func (o *InstanceLogsParams) SetFilterType(filterType *string) {
+	o.FilterType = filterType
+}
+
 // WithInstance adds the instance to the instance logs params
 func (o *InstanceLogsParams) WithInstance(instance string) *InstanceLogsParams {
 	o.SetInstance(instance)
@@ -146,6 +192,28 @@ func (o *InstanceLogsParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
+// WithOrderDirection adds the orderDirection to the instance logs params
+func (o *InstanceLogsParams) WithOrderDirection(orderDirection *string) *InstanceLogsParams {
+	o.SetOrderDirection(orderDirection)
+	return o
+}
+
+// SetOrderDirection adds the orderDirection to the instance logs params
+func (o *InstanceLogsParams) SetOrderDirection(orderDirection *string) {
+	o.OrderDirection = orderDirection
+}
+
+// WithOrderField adds the orderField to the instance logs params
+func (o *InstanceLogsParams) WithOrderField(orderField *string) *InstanceLogsParams {
+	o.SetOrderField(orderField)
+	return o
+}
+
+// SetOrderField adds the orderField to the instance logs params
+func (o *InstanceLogsParams) SetOrderField(orderField *string) {
+	o.OrderField = orderField
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -153,6 +221,40 @@ func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+
+	if o.FilterField != nil {
+
+		// query param filter.field
+		var qrFilterField string
+
+		if o.FilterField != nil {
+			qrFilterField = *o.FilterField
+		}
+		qFilterField := qrFilterField
+		if qFilterField != "" {
+
+			if err := r.SetQueryParam("filter.field", qFilterField); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FilterType != nil {
+
+		// query param filter.type
+		var qrFilterType string
+
+		if o.FilterType != nil {
+			qrFilterType = *o.FilterType
+		}
+		qFilterType := qrFilterType
+		if qFilterType != "" {
+
+			if err := r.SetQueryParam("filter.type", qFilterType); err != nil {
+				return err
+			}
+		}
+	}
 
 	// path param instance
 	if err := r.SetPathParam("instance", o.Instance); err != nil {
@@ -162,6 +264,40 @@ func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	// path param namespace
 	if err := r.SetPathParam("namespace", o.Namespace); err != nil {
 		return err
+	}
+
+	if o.OrderDirection != nil {
+
+		// query param order.direction
+		var qrOrderDirection string
+
+		if o.OrderDirection != nil {
+			qrOrderDirection = *o.OrderDirection
+		}
+		qOrderDirection := qrOrderDirection
+		if qOrderDirection != "" {
+
+			if err := r.SetQueryParam("order.direction", qOrderDirection); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderField != nil {
+
+		// query param order.field
+		var qrOrderField string
+
+		if o.OrderField != nil {
+			qrOrderField = *o.OrderField
+		}
+		qOrderField := qrOrderField
+		if qOrderField != "" {
+
+			if err := r.SetQueryParam("order.field", qOrderField); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

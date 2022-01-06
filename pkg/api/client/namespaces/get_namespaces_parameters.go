@@ -58,6 +58,31 @@ func NewGetNamespacesParamsWithHTTPClient(client *http.Client) *GetNamespacesPar
    Typically these are written to a http.Request.
 */
 type GetNamespacesParams struct {
+
+	/* FilterField.
+
+	   field to filter
+	*/
+	FilterField *string
+
+	/* FilterType.
+
+	   filter behaviour
+	*/
+	FilterType *string
+
+	/* OrderDirection.
+
+	   order direction
+	*/
+	OrderDirection *string
+
+	/* OrderField.
+
+	   field to order by
+	*/
+	OrderField *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -111,6 +136,50 @@ func (o *GetNamespacesParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithFilterField adds the filterField to the get namespaces params
+func (o *GetNamespacesParams) WithFilterField(filterField *string) *GetNamespacesParams {
+	o.SetFilterField(filterField)
+	return o
+}
+
+// SetFilterField adds the filterField to the get namespaces params
+func (o *GetNamespacesParams) SetFilterField(filterField *string) {
+	o.FilterField = filterField
+}
+
+// WithFilterType adds the filterType to the get namespaces params
+func (o *GetNamespacesParams) WithFilterType(filterType *string) *GetNamespacesParams {
+	o.SetFilterType(filterType)
+	return o
+}
+
+// SetFilterType adds the filterType to the get namespaces params
+func (o *GetNamespacesParams) SetFilterType(filterType *string) {
+	o.FilterType = filterType
+}
+
+// WithOrderDirection adds the orderDirection to the get namespaces params
+func (o *GetNamespacesParams) WithOrderDirection(orderDirection *string) *GetNamespacesParams {
+	o.SetOrderDirection(orderDirection)
+	return o
+}
+
+// SetOrderDirection adds the orderDirection to the get namespaces params
+func (o *GetNamespacesParams) SetOrderDirection(orderDirection *string) {
+	o.OrderDirection = orderDirection
+}
+
+// WithOrderField adds the orderField to the get namespaces params
+func (o *GetNamespacesParams) WithOrderField(orderField *string) *GetNamespacesParams {
+	o.SetOrderField(orderField)
+	return o
+}
+
+// SetOrderField adds the orderField to the get namespaces params
+func (o *GetNamespacesParams) SetOrderField(orderField *string) {
+	o.OrderField = orderField
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GetNamespacesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -118,6 +187,74 @@ func (o *GetNamespacesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 	var res []error
+
+	if o.FilterField != nil {
+
+		// query param filter.field
+		var qrFilterField string
+
+		if o.FilterField != nil {
+			qrFilterField = *o.FilterField
+		}
+		qFilterField := qrFilterField
+		if qFilterField != "" {
+
+			if err := r.SetQueryParam("filter.field", qFilterField); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FilterType != nil {
+
+		// query param filter.type
+		var qrFilterType string
+
+		if o.FilterType != nil {
+			qrFilterType = *o.FilterType
+		}
+		qFilterType := qrFilterType
+		if qFilterType != "" {
+
+			if err := r.SetQueryParam("filter.type", qFilterType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderDirection != nil {
+
+		// query param order.direction
+		var qrOrderDirection string
+
+		if o.OrderDirection != nil {
+			qrOrderDirection = *o.OrderDirection
+		}
+		qOrderDirection := qrOrderDirection
+		if qOrderDirection != "" {
+
+			if err := r.SetQueryParam("order.direction", qOrderDirection); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderField != nil {
+
+		// query param order.field
+		var qrOrderField string
+
+		if o.OrderField != nil {
+			qrOrderField = *o.OrderField
+		}
+		qOrderField := qrOrderField
+		if qOrderField != "" {
+
+			if err := r.SetQueryParam("order.field", qOrderField); err != nil {
+				return err
+			}
+		}
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

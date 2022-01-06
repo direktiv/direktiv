@@ -1480,6 +1480,32 @@
         ],
         "summary": "Get Direktiv Server Logs",
         "operationId": "serverLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successfully got server logs",
@@ -1504,6 +1530,32 @@
         ],
         "summary": "Gets the list of namespaces",
         "operationId": "getNamespaces",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "successfully got list of namespaces"
@@ -1789,6 +1841,30 @@
             "name": "namespace",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1922,6 +1998,30 @@
             "name": "instance",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2142,6 +2242,30 @@
             "name": "namespace",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2691,6 +2815,30 @@
             "name": "workflow",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
           }
         ],
         "responses": {

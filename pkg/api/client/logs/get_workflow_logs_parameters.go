@@ -59,11 +59,35 @@ func NewGetWorkflowLogsParamsWithHTTPClient(client *http.Client) *GetWorkflowLog
 */
 type GetWorkflowLogsParams struct {
 
+	/* FilterField.
+
+	   field to filter
+	*/
+	FilterField *string
+
+	/* FilterType.
+
+	   filter behaviour
+	*/
+	FilterType *string
+
 	/* Namespace.
 
 	   target namespace
 	*/
 	Namespace string
+
+	/* OrderDirection.
+
+	   order direction
+	*/
+	OrderDirection *string
+
+	/* OrderField.
+
+	   field to order by
+	*/
+	OrderField *string
 
 	/* Workflow.
 
@@ -124,6 +148,28 @@ func (o *GetWorkflowLogsParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithFilterField adds the filterField to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithFilterField(filterField *string) *GetWorkflowLogsParams {
+	o.SetFilterField(filterField)
+	return o
+}
+
+// SetFilterField adds the filterField to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetFilterField(filterField *string) {
+	o.FilterField = filterField
+}
+
+// WithFilterType adds the filterType to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithFilterType(filterType *string) *GetWorkflowLogsParams {
+	o.SetFilterType(filterType)
+	return o
+}
+
+// SetFilterType adds the filterType to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetFilterType(filterType *string) {
+	o.FilterType = filterType
+}
+
 // WithNamespace adds the namespace to the get workflow logs params
 func (o *GetWorkflowLogsParams) WithNamespace(namespace string) *GetWorkflowLogsParams {
 	o.SetNamespace(namespace)
@@ -133,6 +179,28 @@ func (o *GetWorkflowLogsParams) WithNamespace(namespace string) *GetWorkflowLogs
 // SetNamespace adds the namespace to the get workflow logs params
 func (o *GetWorkflowLogsParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
+}
+
+// WithOrderDirection adds the orderDirection to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithOrderDirection(orderDirection *string) *GetWorkflowLogsParams {
+	o.SetOrderDirection(orderDirection)
+	return o
+}
+
+// SetOrderDirection adds the orderDirection to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetOrderDirection(orderDirection *string) {
+	o.OrderDirection = orderDirection
+}
+
+// WithOrderField adds the orderField to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithOrderField(orderField *string) *GetWorkflowLogsParams {
+	o.SetOrderField(orderField)
+	return o
+}
+
+// SetOrderField adds the orderField to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetOrderField(orderField *string) {
+	o.OrderField = orderField
 }
 
 // WithWorkflow adds the workflow to the get workflow logs params
@@ -154,9 +222,77 @@ func (o *GetWorkflowLogsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
+	if o.FilterField != nil {
+
+		// query param filter.field
+		var qrFilterField string
+
+		if o.FilterField != nil {
+			qrFilterField = *o.FilterField
+		}
+		qFilterField := qrFilterField
+		if qFilterField != "" {
+
+			if err := r.SetQueryParam("filter.field", qFilterField); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FilterType != nil {
+
+		// query param filter.type
+		var qrFilterType string
+
+		if o.FilterType != nil {
+			qrFilterType = *o.FilterType
+		}
+		qFilterType := qrFilterType
+		if qFilterType != "" {
+
+			if err := r.SetQueryParam("filter.type", qFilterType); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param namespace
 	if err := r.SetPathParam("namespace", o.Namespace); err != nil {
 		return err
+	}
+
+	if o.OrderDirection != nil {
+
+		// query param order.direction
+		var qrOrderDirection string
+
+		if o.OrderDirection != nil {
+			qrOrderDirection = *o.OrderDirection
+		}
+		qOrderDirection := qrOrderDirection
+		if qOrderDirection != "" {
+
+			if err := r.SetQueryParam("order.direction", qOrderDirection); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderField != nil {
+
+		// query param order.field
+		var qrOrderField string
+
+		if o.OrderField != nil {
+			qrOrderField = *o.OrderField
+		}
+		qOrderField := qrOrderField
+		if qOrderField != "" {
+
+			if err := r.SetQueryParam("order.field", qOrderField); err != nil {
+				return err
+			}
+		}
 	}
 
 	// path param workflow
