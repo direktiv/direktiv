@@ -46,7 +46,7 @@ function EventsPage(props) {
                             <div>
                                 Cloud Events History
                             </div>
-                            <SendEventModal />
+                            <SendEventModal sendEvent={sendEvent}/>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
@@ -139,6 +139,7 @@ function EventsPage(props) {
 
 function SendEventModal(props) {
 
+    const {sendEvent} = props
     let [eventData, setEventData] = useState(`{
     "specversion" : "1.0",
     "type" : "com.github.pull.create",
@@ -163,7 +164,10 @@ function SendEventModal(props) {
                 </ContentPanelHeaderButton>
             )}
             actionButtons={[
-                ButtonDefinition("Send", () => {}, "small", true, false),
+                ButtonDefinition("Send", async () => {
+                    let err = await sendEvent(eventData)
+                    if (err) return err
+                }, "small", true, false),
                 ButtonDefinition("Cancel", () => {}, "small light", true, false)
             ]}
             noPadding
