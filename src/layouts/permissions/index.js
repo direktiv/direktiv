@@ -278,7 +278,7 @@ function OPAEditorPanel(props) {
                     </div>
                 </ContentPanelTitle>
                 <ContentPanelBody style={{overflow: "hidden"}}>
-                    <DirektivEditor width="300" dlang="css" value={dummyDataOPA} />
+                    <DirektivEditor width="300" dlang="css" validate={false} value={dummyDataOPA} />
                 </ContentPanelBody>
             </ContentPanel>
         </>
