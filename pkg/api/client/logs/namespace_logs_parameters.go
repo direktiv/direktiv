@@ -63,13 +63,13 @@ type NamespaceLogsParams struct {
 
 	   field to filter
 	*/
-	FilterField *string
+	PageFilterField *string
 
 	/* FilterType.
 
 	   filter behaviour
 	*/
-	FilterType *string
+	PageFilterType *string
 
 	/* Namespace.
 
@@ -81,13 +81,13 @@ type NamespaceLogsParams struct {
 
 	   order direction
 	*/
-	OrderDirection *string
+	PageOrderDirection *string
 
 	/* OrderField.
 
 	   field to order by
 	*/
-	OrderField *string
+	PageOrderField *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -142,26 +142,26 @@ func (o *NamespaceLogsParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFilterField adds the filterField to the namespace logs params
-func (o *NamespaceLogsParams) WithFilterField(filterField *string) *NamespaceLogsParams {
-	o.SetFilterField(filterField)
+// WithPageFilterField adds the filterField to the namespace logs params
+func (o *NamespaceLogsParams) WithPageFilterField(filterField *string) *NamespaceLogsParams {
+	o.SetPageFilterField(filterField)
 	return o
 }
 
-// SetFilterField adds the filterField to the namespace logs params
-func (o *NamespaceLogsParams) SetFilterField(filterField *string) {
-	o.FilterField = filterField
+// SetPageFilterField adds the filterField to the namespace logs params
+func (o *NamespaceLogsParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
 }
 
-// WithFilterType adds the filterType to the namespace logs params
-func (o *NamespaceLogsParams) WithFilterType(filterType *string) *NamespaceLogsParams {
-	o.SetFilterType(filterType)
+// WithPageFilterType adds the filterType to the namespace logs params
+func (o *NamespaceLogsParams) WithPageFilterType(filterType *string) *NamespaceLogsParams {
+	o.SetPageFilterType(filterType)
 	return o
 }
 
-// SetFilterType adds the filterType to the namespace logs params
-func (o *NamespaceLogsParams) SetFilterType(filterType *string) {
-	o.FilterType = filterType
+// SetPageFilterType adds the filterType to the namespace logs params
+func (o *NamespaceLogsParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
 }
 
 // WithNamespace adds the namespace to the namespace logs params
@@ -175,26 +175,26 @@ func (o *NamespaceLogsParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
-// WithOrderDirection adds the orderDirection to the namespace logs params
-func (o *NamespaceLogsParams) WithOrderDirection(orderDirection *string) *NamespaceLogsParams {
-	o.SetOrderDirection(orderDirection)
+// WithPageOrderDirection adds the orderDirection to the namespace logs params
+func (o *NamespaceLogsParams) WithPageOrderDirection(orderDirection *string) *NamespaceLogsParams {
+	o.SetPageOrderDirection(orderDirection)
 	return o
 }
 
-// SetOrderDirection adds the orderDirection to the namespace logs params
-func (o *NamespaceLogsParams) SetOrderDirection(orderDirection *string) {
-	o.OrderDirection = orderDirection
+// SetPageOrderDirection adds the orderDirection to the namespace logs params
+func (o *NamespaceLogsParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
 }
 
-// WithOrderField adds the orderField to the namespace logs params
-func (o *NamespaceLogsParams) WithOrderField(orderField *string) *NamespaceLogsParams {
-	o.SetOrderField(orderField)
+// WithPageOrderField adds the orderField to the namespace logs params
+func (o *NamespaceLogsParams) WithPageOrderField(orderField *string) *NamespaceLogsParams {
+	o.SetPageOrderField(orderField)
 	return o
 }
 
-// SetOrderField adds the orderField to the namespace logs params
-func (o *NamespaceLogsParams) SetOrderField(orderField *string) {
-	o.OrderField = orderField
+// SetPageOrderField adds the orderField to the namespace logs params
+func (o *NamespaceLogsParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,13 +205,13 @@ func (o *NamespaceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FilterField != nil {
+	if o.PageFilterField != nil {
 
 		// query param filter.field
 		var qrFilterField string
 
-		if o.FilterField != nil {
-			qrFilterField = *o.FilterField
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
 		}
 		qFilterField := qrFilterField
 		if qFilterField != "" {
@@ -222,13 +222,13 @@ func (o *NamespaceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.FilterType != nil {
+	if o.PageFilterType != nil {
 
 		// query param filter.type
 		var qrFilterType string
 
-		if o.FilterType != nil {
-			qrFilterType = *o.FilterType
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
 		}
 		qFilterType := qrFilterType
 		if qFilterType != "" {
@@ -244,13 +244,13 @@ func (o *NamespaceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 
-	if o.OrderDirection != nil {
+	if o.PageOrderDirection != nil {
 
 		// query param order.direction
 		var qrOrderDirection string
 
-		if o.OrderDirection != nil {
-			qrOrderDirection = *o.OrderDirection
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
 		}
 		qOrderDirection := qrOrderDirection
 		if qOrderDirection != "" {
@@ -261,13 +261,13 @@ func (o *NamespaceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.OrderField != nil {
+	if o.PageOrderField != nil {
 
 		// query param order.field
 		var qrOrderField string
 
-		if o.OrderField != nil {
-			qrOrderField = *o.OrderField
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
 		}
 		qOrderField := qrOrderField
 		if qOrderField != "" {

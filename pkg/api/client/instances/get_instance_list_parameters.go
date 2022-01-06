@@ -63,13 +63,13 @@ type GetInstanceListParams struct {
 
 	   field to filter
 	*/
-	FilterField *string
+	PageFilterField *string
 
 	/* FilterType.
 
 	   filter behaviour
 	*/
-	FilterType *string
+	PageFilterType *string
 
 	/* Namespace.
 
@@ -81,13 +81,13 @@ type GetInstanceListParams struct {
 
 	   order direction
 	*/
-	OrderDirection *string
+	PageOrderDirection *string
 
 	/* OrderField.
 
 	   field to order by
 	*/
-	OrderField *string
+	PageOrderField *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -142,26 +142,26 @@ func (o *GetInstanceListParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFilterField adds the filterField to the get instance list params
-func (o *GetInstanceListParams) WithFilterField(filterField *string) *GetInstanceListParams {
-	o.SetFilterField(filterField)
+// WithPageFilterField adds the filterField to the get instance list params
+func (o *GetInstanceListParams) WithPageFilterField(filterField *string) *GetInstanceListParams {
+	o.SetPageFilterField(filterField)
 	return o
 }
 
-// SetFilterField adds the filterField to the get instance list params
-func (o *GetInstanceListParams) SetFilterField(filterField *string) {
-	o.FilterField = filterField
+// SetPageFilterField adds the filterField to the get instance list params
+func (o *GetInstanceListParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
 }
 
-// WithFilterType adds the filterType to the get instance list params
-func (o *GetInstanceListParams) WithFilterType(filterType *string) *GetInstanceListParams {
-	o.SetFilterType(filterType)
+// WithPageFilterType adds the filterType to the get instance list params
+func (o *GetInstanceListParams) WithPageFilterType(filterType *string) *GetInstanceListParams {
+	o.SetPageFilterType(filterType)
 	return o
 }
 
-// SetFilterType adds the filterType to the get instance list params
-func (o *GetInstanceListParams) SetFilterType(filterType *string) {
-	o.FilterType = filterType
+// SetPageFilterType adds the filterType to the get instance list params
+func (o *GetInstanceListParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
 }
 
 // WithNamespace adds the namespace to the get instance list params
@@ -175,26 +175,26 @@ func (o *GetInstanceListParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
-// WithOrderDirection adds the orderDirection to the get instance list params
-func (o *GetInstanceListParams) WithOrderDirection(orderDirection *string) *GetInstanceListParams {
-	o.SetOrderDirection(orderDirection)
+// WithPageOrderDirection adds the orderDirection to the get instance list params
+func (o *GetInstanceListParams) WithPageOrderDirection(orderDirection *string) *GetInstanceListParams {
+	o.SetPageOrderDirection(orderDirection)
 	return o
 }
 
-// SetOrderDirection adds the orderDirection to the get instance list params
-func (o *GetInstanceListParams) SetOrderDirection(orderDirection *string) {
-	o.OrderDirection = orderDirection
+// SetPageOrderDirection adds the orderDirection to the get instance list params
+func (o *GetInstanceListParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
 }
 
-// WithOrderField adds the orderField to the get instance list params
-func (o *GetInstanceListParams) WithOrderField(orderField *string) *GetInstanceListParams {
-	o.SetOrderField(orderField)
+// WithPageOrderField adds the orderField to the get instance list params
+func (o *GetInstanceListParams) WithPageOrderField(orderField *string) *GetInstanceListParams {
+	o.SetPageOrderField(orderField)
 	return o
 }
 
-// SetOrderField adds the orderField to the get instance list params
-func (o *GetInstanceListParams) SetOrderField(orderField *string) {
-	o.OrderField = orderField
+// SetPageOrderField adds the orderField to the get instance list params
+func (o *GetInstanceListParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,13 +205,13 @@ func (o *GetInstanceListParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FilterField != nil {
+	if o.PageFilterField != nil {
 
 		// query param filter.field
 		var qrFilterField string
 
-		if o.FilterField != nil {
-			qrFilterField = *o.FilterField
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
 		}
 		qFilterField := qrFilterField
 		if qFilterField != "" {
@@ -222,13 +222,13 @@ func (o *GetInstanceListParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.FilterType != nil {
+	if o.PageFilterType != nil {
 
 		// query param filter.type
 		var qrFilterType string
 
-		if o.FilterType != nil {
-			qrFilterType = *o.FilterType
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
 		}
 		qFilterType := qrFilterType
 		if qFilterType != "" {
@@ -244,13 +244,13 @@ func (o *GetInstanceListParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		return err
 	}
 
-	if o.OrderDirection != nil {
+	if o.PageOrderDirection != nil {
 
 		// query param order.direction
 		var qrOrderDirection string
 
-		if o.OrderDirection != nil {
-			qrOrderDirection = *o.OrderDirection
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
 		}
 		qOrderDirection := qrOrderDirection
 		if qOrderDirection != "" {
@@ -261,13 +261,13 @@ func (o *GetInstanceListParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.OrderField != nil {
+	if o.PageOrderField != nil {
 
 		// query param order.field
 		var qrOrderField string
 
-		if o.OrderField != nil {
-			qrOrderField = *o.OrderField
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
 		}
 		qOrderField := qrOrderField
 		if qOrderField != "" {

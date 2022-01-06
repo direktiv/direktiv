@@ -63,13 +63,13 @@ type InstanceLogsParams struct {
 
 	   field to filter
 	*/
-	FilterField *string
+	PageFilterField *string
 
 	/* FilterType.
 
 	   filter behaviour
 	*/
-	FilterType *string
+	PageFilterType *string
 
 	/* Instance.
 
@@ -87,13 +87,13 @@ type InstanceLogsParams struct {
 
 	   order direction
 	*/
-	OrderDirection *string
+	PageOrderDirection *string
 
 	/* OrderField.
 
 	   field to order by
 	*/
-	OrderField *string
+	PageOrderField *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -148,26 +148,26 @@ func (o *InstanceLogsParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFilterField adds the filterField to the instance logs params
-func (o *InstanceLogsParams) WithFilterField(filterField *string) *InstanceLogsParams {
-	o.SetFilterField(filterField)
+// WithPageFilterField adds the filterField to the instance logs params
+func (o *InstanceLogsParams) WithPageFilterField(filterField *string) *InstanceLogsParams {
+	o.SetPageFilterField(filterField)
 	return o
 }
 
-// SetFilterField adds the filterField to the instance logs params
-func (o *InstanceLogsParams) SetFilterField(filterField *string) {
-	o.FilterField = filterField
+// SetPageFilterField adds the filterField to the instance logs params
+func (o *InstanceLogsParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
 }
 
-// WithFilterType adds the filterType to the instance logs params
-func (o *InstanceLogsParams) WithFilterType(filterType *string) *InstanceLogsParams {
-	o.SetFilterType(filterType)
+// WithPageFilterType adds the filterType to the instance logs params
+func (o *InstanceLogsParams) WithPageFilterType(filterType *string) *InstanceLogsParams {
+	o.SetPageFilterType(filterType)
 	return o
 }
 
-// SetFilterType adds the filterType to the instance logs params
-func (o *InstanceLogsParams) SetFilterType(filterType *string) {
-	o.FilterType = filterType
+// SetPageFilterType adds the filterType to the instance logs params
+func (o *InstanceLogsParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
 }
 
 // WithInstance adds the instance to the instance logs params
@@ -192,26 +192,26 @@ func (o *InstanceLogsParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
-// WithOrderDirection adds the orderDirection to the instance logs params
-func (o *InstanceLogsParams) WithOrderDirection(orderDirection *string) *InstanceLogsParams {
-	o.SetOrderDirection(orderDirection)
+// WithPageOrderDirection adds the orderDirection to the instance logs params
+func (o *InstanceLogsParams) WithPageOrderDirection(orderDirection *string) *InstanceLogsParams {
+	o.SetPageOrderDirection(orderDirection)
 	return o
 }
 
-// SetOrderDirection adds the orderDirection to the instance logs params
-func (o *InstanceLogsParams) SetOrderDirection(orderDirection *string) {
-	o.OrderDirection = orderDirection
+// SetPageOrderDirection adds the orderDirection to the instance logs params
+func (o *InstanceLogsParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
 }
 
-// WithOrderField adds the orderField to the instance logs params
-func (o *InstanceLogsParams) WithOrderField(orderField *string) *InstanceLogsParams {
-	o.SetOrderField(orderField)
+// WithPageOrderField adds the orderField to the instance logs params
+func (o *InstanceLogsParams) WithPageOrderField(orderField *string) *InstanceLogsParams {
+	o.SetPageOrderField(orderField)
 	return o
 }
 
-// SetOrderField adds the orderField to the instance logs params
-func (o *InstanceLogsParams) SetOrderField(orderField *string) {
-	o.OrderField = orderField
+// SetPageOrderField adds the orderField to the instance logs params
+func (o *InstanceLogsParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -222,13 +222,13 @@ func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FilterField != nil {
+	if o.PageFilterField != nil {
 
 		// query param filter.field
 		var qrFilterField string
 
-		if o.FilterField != nil {
-			qrFilterField = *o.FilterField
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
 		}
 		qFilterField := qrFilterField
 		if qFilterField != "" {
@@ -239,13 +239,13 @@ func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.FilterType != nil {
+	if o.PageFilterType != nil {
 
 		// query param filter.type
 		var qrFilterType string
 
-		if o.FilterType != nil {
-			qrFilterType = *o.FilterType
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
 		}
 		qFilterType := qrFilterType
 		if qFilterType != "" {
@@ -266,13 +266,13 @@ func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 
-	if o.OrderDirection != nil {
+	if o.PageOrderDirection != nil {
 
 		// query param order.direction
 		var qrOrderDirection string
 
-		if o.OrderDirection != nil {
-			qrOrderDirection = *o.OrderDirection
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
 		}
 		qOrderDirection := qrOrderDirection
 		if qOrderDirection != "" {
@@ -283,13 +283,13 @@ func (o *InstanceLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.OrderField != nil {
+	if o.PageOrderField != nil {
 
 		// query param order.field
 		var qrOrderField string
 
-		if o.OrderField != nil {
-			qrOrderField = *o.OrderField
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
 		}
 		qOrderField := qrOrderField
 		if qOrderField != "" {

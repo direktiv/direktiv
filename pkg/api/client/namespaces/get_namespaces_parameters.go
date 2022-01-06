@@ -63,25 +63,25 @@ type GetNamespacesParams struct {
 
 	   field to filter
 	*/
-	FilterField *string
+	PageFilterField *string
 
 	/* FilterType.
 
 	   filter behaviour
 	*/
-	FilterType *string
+	PageFilterType *string
 
 	/* OrderDirection.
 
 	   order direction
 	*/
-	OrderDirection *string
+	PageOrderDirection *string
 
 	/* OrderField.
 
 	   field to order by
 	*/
-	OrderField *string
+	PageOrderField *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,48 +136,48 @@ func (o *GetNamespacesParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFilterField adds the filterField to the get namespaces params
-func (o *GetNamespacesParams) WithFilterField(filterField *string) *GetNamespacesParams {
-	o.SetFilterField(filterField)
+// WithPageFilterField adds the filterField to the get namespaces params
+func (o *GetNamespacesParams) WithPageFilterField(filterField *string) *GetNamespacesParams {
+	o.SetPageFilterField(filterField)
 	return o
 }
 
-// SetFilterField adds the filterField to the get namespaces params
-func (o *GetNamespacesParams) SetFilterField(filterField *string) {
-	o.FilterField = filterField
+// SetPageFilterField adds the filterField to the get namespaces params
+func (o *GetNamespacesParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
 }
 
-// WithFilterType adds the filterType to the get namespaces params
-func (o *GetNamespacesParams) WithFilterType(filterType *string) *GetNamespacesParams {
-	o.SetFilterType(filterType)
+// WithPageFilterType adds the filterType to the get namespaces params
+func (o *GetNamespacesParams) WithPageFilterType(filterType *string) *GetNamespacesParams {
+	o.SetPageFilterType(filterType)
 	return o
 }
 
-// SetFilterType adds the filterType to the get namespaces params
-func (o *GetNamespacesParams) SetFilterType(filterType *string) {
-	o.FilterType = filterType
+// SetPageFilterType adds the filterType to the get namespaces params
+func (o *GetNamespacesParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
 }
 
-// WithOrderDirection adds the orderDirection to the get namespaces params
-func (o *GetNamespacesParams) WithOrderDirection(orderDirection *string) *GetNamespacesParams {
-	o.SetOrderDirection(orderDirection)
+// WithPageOrderDirection adds the orderDirection to the get namespaces params
+func (o *GetNamespacesParams) WithPageOrderDirection(orderDirection *string) *GetNamespacesParams {
+	o.SetPageOrderDirection(orderDirection)
 	return o
 }
 
-// SetOrderDirection adds the orderDirection to the get namespaces params
-func (o *GetNamespacesParams) SetOrderDirection(orderDirection *string) {
-	o.OrderDirection = orderDirection
+// SetPageOrderDirection adds the orderDirection to the get namespaces params
+func (o *GetNamespacesParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
 }
 
-// WithOrderField adds the orderField to the get namespaces params
-func (o *GetNamespacesParams) WithOrderField(orderField *string) *GetNamespacesParams {
-	o.SetOrderField(orderField)
+// WithPageOrderField adds the orderField to the get namespaces params
+func (o *GetNamespacesParams) WithPageOrderField(orderField *string) *GetNamespacesParams {
+	o.SetPageOrderField(orderField)
 	return o
 }
 
-// SetOrderField adds the orderField to the get namespaces params
-func (o *GetNamespacesParams) SetOrderField(orderField *string) {
-	o.OrderField = orderField
+// SetPageOrderField adds the orderField to the get namespaces params
+func (o *GetNamespacesParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -188,13 +188,13 @@ func (o *GetNamespacesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FilterField != nil {
+	if o.PageFilterField != nil {
 
 		// query param filter.field
 		var qrFilterField string
 
-		if o.FilterField != nil {
-			qrFilterField = *o.FilterField
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
 		}
 		qFilterField := qrFilterField
 		if qFilterField != "" {
@@ -205,13 +205,13 @@ func (o *GetNamespacesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.FilterType != nil {
+	if o.PageFilterType != nil {
 
 		// query param filter.type
 		var qrFilterType string
 
-		if o.FilterType != nil {
-			qrFilterType = *o.FilterType
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
 		}
 		qFilterType := qrFilterType
 		if qFilterType != "" {
@@ -222,13 +222,13 @@ func (o *GetNamespacesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.OrderDirection != nil {
+	if o.PageOrderDirection != nil {
 
 		// query param order.direction
 		var qrOrderDirection string
 
-		if o.OrderDirection != nil {
-			qrOrderDirection = *o.OrderDirection
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
 		}
 		qOrderDirection := qrOrderDirection
 		if qOrderDirection != "" {
@@ -239,13 +239,13 @@ func (o *GetNamespacesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.OrderField != nil {
+	if o.PageOrderField != nil {
 
 		// query param order.field
 		var qrOrderField string
 
-		if o.OrderField != nil {
-			qrOrderField = *o.OrderField
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
 		}
 		qOrderField := qrOrderField
 		if qOrderField != "" {

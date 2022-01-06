@@ -1483,24 +1483,32 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "PageOrderField",
             "description": "field to order by",
             "name": "order.field",
             "in": "query"
           },
           {
+            "enum": [
+              "DESC",
+              " ASC"
+            ],
             "type": "string",
+            "x-go-name": "PageOrderDirection",
             "description": "order direction",
             "name": "order.direction",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterField",
             "description": "field to filter",
             "name": "filter.field",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterType",
             "description": "filter behaviour",
             "name": "filter.type",
             "in": "query"
@@ -1533,24 +1541,32 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "PageOrderField",
             "description": "field to order by",
             "name": "order.field",
             "in": "query"
           },
           {
+            "enum": [
+              "DESC",
+              " ASC"
+            ],
             "type": "string",
+            "x-go-name": "PageOrderDirection",
             "description": "order direction",
             "name": "order.direction",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterField",
             "description": "field to filter",
             "name": "filter.field",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterType",
             "description": "filter behaviour",
             "name": "filter.type",
             "in": "query"
@@ -1837,34 +1853,42 @@
         "parameters": [
           {
             "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
+            "x-go-name": "PageOrderField",
             "description": "field to order by",
             "name": "order.field",
             "in": "query"
           },
           {
+            "enum": [
+              "DESC",
+              " ASC"
+            ],
             "type": "string",
+            "x-go-name": "PageOrderDirection",
             "description": "order direction",
             "name": "order.direction",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterField",
             "description": "field to filter",
             "name": "filter.field",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterType",
             "description": "filter behaviour",
             "name": "filter.type",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -1987,6 +2011,38 @@
         "parameters": [
           {
             "type": "string",
+            "x-go-name": "PageOrderField",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "DESC",
+              " ASC"
+            ],
+            "type": "string",
+            "x-go-name": "PageOrderDirection",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterField",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterType",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "target namespace",
             "name": "namespace",
             "in": "path",
@@ -1998,30 +2054,6 @@
             "name": "instance",
             "in": "path",
             "required": true
-          },
-          {
-            "type": "string",
-            "description": "field to order by",
-            "name": "order.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "order direction",
-            "name": "order.direction",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "field to filter",
-            "name": "filter.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "filter behaviour",
-            "name": "filter.type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -2238,34 +2270,42 @@
         "parameters": [
           {
             "type": "string",
-            "description": "target namespace",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
+            "x-go-name": "PageOrderField",
             "description": "field to order by",
             "name": "order.field",
             "in": "query"
           },
           {
+            "enum": [
+              "DESC",
+              " ASC"
+            ],
             "type": "string",
+            "x-go-name": "PageOrderDirection",
             "description": "order direction",
             "name": "order.direction",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterField",
             "description": "field to filter",
             "name": "filter.field",
             "in": "query"
           },
           {
             "type": "string",
+            "x-go-name": "PageFilterType",
             "description": "filter behaviour",
             "name": "filter.type",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "target namespace",
+            "name": "namespace",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -2803,6 +2843,42 @@
         "operationId": "getWorkflowLogs",
         "parameters": [
           {
+            "enum": [
+              "CREATED",
+              "UPDATED"
+            ],
+            "type": "string",
+            "x-go-name": "PageOrderField",
+            "description": "field to order by",
+            "name": "order.field",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "DESC",
+              " ASC"
+            ],
+            "type": "string",
+            "x-go-name": "PageOrderDirection",
+            "description": "order direction",
+            "name": "order.direction",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterField",
+            "description": "field to filter",
+            "name": "filter.field",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "PageFilterType",
+            "description": "filter behaviour",
+            "name": "filter.type",
+            "in": "query"
+          },
+          {
             "type": "string",
             "description": "target namespace",
             "name": "namespace",
@@ -2815,30 +2891,6 @@
             "name": "workflow",
             "in": "path",
             "required": true
-          },
-          {
-            "type": "string",
-            "description": "field to order by",
-            "name": "order.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "order direction",
-            "name": "order.direction",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "field to filter",
-            "name": "filter.field",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "filter behaviour",
-            "name": "filter.type",
-            "in": "query"
           }
         ],
         "responses": {

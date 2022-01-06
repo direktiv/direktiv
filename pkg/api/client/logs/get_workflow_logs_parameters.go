@@ -63,13 +63,13 @@ type GetWorkflowLogsParams struct {
 
 	   field to filter
 	*/
-	FilterField *string
+	PageFilterField *string
 
 	/* FilterType.
 
 	   filter behaviour
 	*/
-	FilterType *string
+	PageFilterType *string
 
 	/* Namespace.
 
@@ -81,13 +81,13 @@ type GetWorkflowLogsParams struct {
 
 	   order direction
 	*/
-	OrderDirection *string
+	PageOrderDirection *string
 
 	/* OrderField.
 
 	   field to order by
 	*/
-	OrderField *string
+	PageOrderField *string
 
 	/* Workflow.
 
@@ -148,26 +148,26 @@ func (o *GetWorkflowLogsParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFilterField adds the filterField to the get workflow logs params
-func (o *GetWorkflowLogsParams) WithFilterField(filterField *string) *GetWorkflowLogsParams {
-	o.SetFilterField(filterField)
+// WithPageFilterField adds the filterField to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithPageFilterField(filterField *string) *GetWorkflowLogsParams {
+	o.SetPageFilterField(filterField)
 	return o
 }
 
-// SetFilterField adds the filterField to the get workflow logs params
-func (o *GetWorkflowLogsParams) SetFilterField(filterField *string) {
-	o.FilterField = filterField
+// SetPageFilterField adds the filterField to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
 }
 
-// WithFilterType adds the filterType to the get workflow logs params
-func (o *GetWorkflowLogsParams) WithFilterType(filterType *string) *GetWorkflowLogsParams {
-	o.SetFilterType(filterType)
+// WithPageFilterType adds the filterType to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithPageFilterType(filterType *string) *GetWorkflowLogsParams {
+	o.SetPageFilterType(filterType)
 	return o
 }
 
-// SetFilterType adds the filterType to the get workflow logs params
-func (o *GetWorkflowLogsParams) SetFilterType(filterType *string) {
-	o.FilterType = filterType
+// SetPageFilterType adds the filterType to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
 }
 
 // WithNamespace adds the namespace to the get workflow logs params
@@ -181,26 +181,26 @@ func (o *GetWorkflowLogsParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
-// WithOrderDirection adds the orderDirection to the get workflow logs params
-func (o *GetWorkflowLogsParams) WithOrderDirection(orderDirection *string) *GetWorkflowLogsParams {
-	o.SetOrderDirection(orderDirection)
+// WithPageOrderDirection adds the orderDirection to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithPageOrderDirection(orderDirection *string) *GetWorkflowLogsParams {
+	o.SetPageOrderDirection(orderDirection)
 	return o
 }
 
-// SetOrderDirection adds the orderDirection to the get workflow logs params
-func (o *GetWorkflowLogsParams) SetOrderDirection(orderDirection *string) {
-	o.OrderDirection = orderDirection
+// SetPageOrderDirection adds the orderDirection to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
 }
 
-// WithOrderField adds the orderField to the get workflow logs params
-func (o *GetWorkflowLogsParams) WithOrderField(orderField *string) *GetWorkflowLogsParams {
-	o.SetOrderField(orderField)
+// WithPageOrderField adds the orderField to the get workflow logs params
+func (o *GetWorkflowLogsParams) WithPageOrderField(orderField *string) *GetWorkflowLogsParams {
+	o.SetPageOrderField(orderField)
 	return o
 }
 
-// SetOrderField adds the orderField to the get workflow logs params
-func (o *GetWorkflowLogsParams) SetOrderField(orderField *string) {
-	o.OrderField = orderField
+// SetPageOrderField adds the orderField to the get workflow logs params
+func (o *GetWorkflowLogsParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
 }
 
 // WithWorkflow adds the workflow to the get workflow logs params
@@ -222,13 +222,13 @@ func (o *GetWorkflowLogsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FilterField != nil {
+	if o.PageFilterField != nil {
 
 		// query param filter.field
 		var qrFilterField string
 
-		if o.FilterField != nil {
-			qrFilterField = *o.FilterField
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
 		}
 		qFilterField := qrFilterField
 		if qFilterField != "" {
@@ -239,13 +239,13 @@ func (o *GetWorkflowLogsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.FilterType != nil {
+	if o.PageFilterType != nil {
 
 		// query param filter.type
 		var qrFilterType string
 
-		if o.FilterType != nil {
-			qrFilterType = *o.FilterType
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
 		}
 		qFilterType := qrFilterType
 		if qFilterType != "" {
@@ -261,13 +261,13 @@ func (o *GetWorkflowLogsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		return err
 	}
 
-	if o.OrderDirection != nil {
+	if o.PageOrderDirection != nil {
 
 		// query param order.direction
 		var qrOrderDirection string
 
-		if o.OrderDirection != nil {
-			qrOrderDirection = *o.OrderDirection
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
 		}
 		qOrderDirection := qrOrderDirection
 		if qOrderDirection != "" {
@@ -278,13 +278,13 @@ func (o *GetWorkflowLogsParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.OrderField != nil {
+	if o.PageOrderField != nil {
 
 		// query param order.field
 		var qrOrderField string
 
-		if o.OrderField != nil {
-			qrOrderField = *o.OrderField
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
 		}
 		qOrderField := qrOrderField
 		if qOrderField != "" {

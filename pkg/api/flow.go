@@ -70,26 +70,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Gets the list of namespaces.
 	// parameters:
-	// - in: query
-	//   name: "order.field"
-	//   type: string
-	//   required: false
-	//   description: "field to order by"
-	// - in: query
-	//   name: "order.direction"
-	//   type: string
-	//   required: false
-	//   description: "order direction"
-	// - in: query
-	//   name: "filter.field"
-	//   type: string
-	//   required: false
-	//   description: "field to filter"
-	// - in: query
-	//   name: "filter.type"
-	//   type: string
-	//   required: false
-	//   description: "filter behaviour"
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// summary: Gets the list of namespaces
 	// responses:
 	//   '200':
@@ -253,26 +237,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets Direktiv Server Logs.
 	// summary: Get Direktiv Server Logs
 	// parameters:
-	// - in: query
-	//   name: "order.field"
-	//   type: string
-	//   required: false
-	//   description: "field to order by"
-	// - in: query
-	//   name: "order.direction"
-	//   type: string
-	//   required: false
-	//   description: "order direction"
-	// - in: query
-	//   name: "filter.field"
-	//   type: string
-	//   required: false
-	//   description: "field to filter"
-	// - in: query
-	//   name: "filter.type"
-	//   type: string
-	//   required: false
-	//   description: "filter behaviour"
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// responses:
 	//   200:
 	//     produces: application/json
@@ -292,31 +260,15 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets Namespace Level Logs.
 	// summary: Gets Namespace Level Logs
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
 	//   required: true
 	//   description: 'target namespace'
-	// - in: query
-	//   name: "order.field"
-	//   type: string
-	//   required: false
-	//   description: "field to order by"
-	// - in: query
-	//   name: "order.direction"
-	//   type: string
-	//   required: false
-	//   description: "order direction"
-	// - in: query
-	//   name: "filter.field"
-	//   type: string
-	//   required: false
-	//   description: "field to filter"
-	// - in: query
-	//   name: "filter.type"
-	//   type: string
-	//   required: false
-	//   description: "filter behaviour"
 	// responses:
 	//   '200':
 	//     "description": "successfully got namespace logs"
@@ -328,6 +280,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets the logs of an executed instance.
 	// summary: Gets Instance Logs
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -338,26 +294,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   type: string
 	//   required: true
 	//   description: 'target instance id'
-	// - in: query
-	//   name: "order.field"
-	//   type: string
-	//   required: false
-	//   description: "field to order by"
-	// - in: query
-	//   name: "order.direction"
-	//   type: string
-	//   required: false
-	//   description: "order direction"
-	// - in: query
-	//   name: "filter.field"
-	//   type: string
-	//   required: false
-	//   description: "field to filter"
-	// - in: query
-	//   name: "filter.type"
-	//   type: string
-	//   required: false
-	//   description: "filter behaviour"
 	// responses:
 	//   '200':
 	//     "description": "successfully got instance logs"
@@ -1016,31 +952,15 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets a list of instances in a namespace.
 	// summary: Get List Instances
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
 	//   required: true
 	//   description: 'target namespace'
-	// - in: query
-	//   name: "order.field"
-	//   type: string
-	//   required: false
-	//   description: "field to order by"
-	// - in: query
-	//   name: "order.direction"
-	//   type: string
-	//   required: false
-	//   description: "order direction"
-	// - in: query
-	//   name: "filter.field"
-	//   type: string
-	//   required: false
-	//   description: "field to filter"
-	// - in: query
-	//   name: "filter.type"
-	//   type: string
-	//   required: false
-	//   description: "filter behaviour"
 	// responses:
 	//   '200':
 	//     "description": "successfully got namespace instances"
@@ -1139,6 +1059,13 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Get workflow level logs.
 	// summary: Get Workflow Level Logs
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	//   enum:
+	//     - CREATED
+	//     - UPDATED
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -1149,26 +1076,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   type: string
 	//   required: true
 	//   description: 'path to target workflow'
-	// - in: query
-	//   name: "order.field"
-	//   type: string
-	//   required: false
-	//   description: "field to order by"
-	// - in: query
-	//   name: "order.direction"
-	//   type: string
-	//   required: false
-	//   description: "order direction"
-	// - in: query
-	//   name: "filter.field"
-	//   type: string
-	//   required: false
-	//   description: "field to filter"
-	// - in: query
-	//   name: "filter.type"
-	//   type: string
-	//   required: false
-	//   description: "filter behaviour"
 	// responses:
 	//   '200':
 	//     "description": "successfully got workflow logs"

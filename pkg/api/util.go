@@ -449,65 +449,87 @@ func sseHeartbeat(w http.ResponseWriter, flusher http.Flusher) error {
 }
 
 // Swagger Param Wrappers
+// IMPORTANT: HOW TO LINK PARAMETERS TO OPERATIONS
+// You can link parameters from a struct to a operations by adding the operation id to it.
+// e.g. `swagger:parameters getWorkflowLogs` will add struct parameters to the getWorkflowLogs operation
+//
+// Once you've linked a parameter it will automatically merge with the target operation parameters starting from the top with the exported fields from the struct
+// To deal with this we can add dummy parameters to like so (ref: https://github.com/go-swagger/go-swagger/issues/1416):
+// parameters:
+// - "": "#/parameters/PaginationQuery/order.field"
+// The order is very important. For example if our struct is exporting the fields: order.field, order.direction, filter.field, filter.type
+// We need to setup the operations parameters like so:
+// parameters:
+// - "": "#/parameters/PaginationQuery/order.field"
+// - "": "#/parameters/PaginationQuery/order.direction"
+// - "": "#/parameters/PaginationQuery/filter.field"
+// - "": "#/parameters/PaginationQuery/filter.type"
+// - Any other parameters you wana define
+//
+// Note: dummy parameters must be the first parameters defined in a operation
+// Note: Because swagger:parameters are merged into the operation dummy parameters, we can do useful stuff like this in the operation dummy parameters
+// parameters:
+// - "": "#/parameters/PaginationQuery/order.field"
+//   enum:
+//     - CREATED
+//     - UPDATED
+// ....
+// This can be useful for when different operations have different fields they can order on.
 
-// add getNamespaces serverLogs namespaceLogs instanceLogs workflowLogs getRegistries getNodes getSecrets getNamespaceVariables getWorkflowVariables getInstanceVariables
-// swagger:parameters
-type paginationQueryWrapper struct {
+// swagger:parameters getWorkflowLogs getNamespaces serverLogs namespaceLogs instanceLogs getInstanceList getWorkflowLogs
+type PaginationQuery struct {
 
+	// TODO: swagger-spec. Export Field when spec is done
+	after string `json:"after"`
+
+	// TODO: swagger-spec. Export Field when spec is done
+	first int32 `json:"first"`
+
+	// TODO: swagger-spec. Export Field when spec is done
+	before string `json:"before"`
+
+	// TODO: swagger-spec. Export Field when spec is done
+	last int32 `json:"last"`
+
+	// field to order by
+	//
 	// in: query
-	After string `json:"after"`
-
-	// in: query
-	First int32 `json:"first"`
-
-	// in: query
-	Before string `json:"before"`
-
-	// in: query
-	Last int32 `json:"last"`
-
-	// PAGE ORDER
-
-	// in: query
+	// name: "order.field"
+	// type: string
+	// required: false
+	// description: "field to order by"
 	PageOrderField string `json:"order.field"`
 
+	// order direction
+	//
 	// in: query
+	// name: "order.direction"
+	// type: string
+	// required: false
+	// description: "order direction"
+	// enum: DESC, ASC
 	PageOrderDirection string `json:"order.direction"`
 
-	// PAGE FILTER
-
+	// field to filter
+	//
 	// in: query
+	// name: "filter.field"
+	// type: string
+	// required: false
+	// description: "field to filter"
 	PageFilterField string `json:"filter.field"`
 
+	// filter behaviour
+	//
 	// in: query
-	// description: "Pagination PageFilterDirection"
+	// name: "filter.type"
+	// type: string
+	// required: false
+	// description: "filter behaviour"
 	PageFilterType string `json:"filter.type"`
 
-	// in: query
-	// description: "Pagination PageFilterVal"
-	PageFilterVal string `json:"filter.val"`
-}
-
-type paginationBodyWrapper struct {
-
-	// in: query
-	pagination struct {
-		after  string
-		first  int32
-		before string
-		last   int32
-
-		pageOrder struct {
-			field     string
-			direction string
-		}
-
-		pageFilter struct {
-			field string
-			Type  string `json:"type"`
-			val   string
-		}
-	}
+	// TODO: swagger-spec. Export Field when spec is done
+	pageFilterVal string `json:"filter.val"`
 }
 
 type telemetryHandler struct {
