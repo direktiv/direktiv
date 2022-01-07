@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './style.css';
 import { VscAdd, VscLock, VscTrash } from 'react-icons/vsc';
 import Button from '../../components/button';
@@ -7,6 +7,7 @@ import DirektivEditor from '../../components/editor';
 import FlexBox from '../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../components/modal';
 import { GenerateRandomKey } from '../../util';
+import Select from 'react-select';
 
 function PermissionsPageWrapper(props) {
 
@@ -265,25 +266,28 @@ function GroupPoliciesListItem(props) {
     )
 }
 
-function OPAEditorPanel(props) {
-    return(
-        <>
-            <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
-                <ContentPanelTitle>
-                    <ContentPanelTitleIcon>
-                        <VscLock/>
-                    </ContentPanelTitleIcon>
-                    <div>
-                        Editor - Open Policy Agent
-                    </div>
-                </ContentPanelTitle>
-                <ContentPanelBody style={{overflow: "hidden"}}>
-                    <DirektivEditor width="300" dlang="css" value={dummyDataOPA} />
-                </ContentPanelBody>
-            </ContentPanel>
-        </>
-    )
-}
+// function OPAEditorPanel(props) {
+
+//     splitOPAData(dummyDataOPA)
+
+//     return(
+//         <>
+//             <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
+//                 <ContentPanelTitle>
+//                     <ContentPanelTitleIcon>
+//                         <VscLock/>
+//                     </ContentPanelTitleIcon>
+//                     <div>
+//                         Editor - Open Policy Agent
+//                     </div>
+//                 </ContentPanelTitle>
+//                 <ContentPanelBody style={{overflow: "hidden"}}>
+//                     <DirektivEditor width="300" dlang="css" value={dummyDataOPA} />
+//                 </ContentPanelBody>
+//             </ContentPanel>
+//         </>
+//     )
+// }
 
 const dummyDataOPA = `package direktiv.authz
 
@@ -531,3 +535,108 @@ listWorkflowServices {
   authorizeAPI
 }
 `
+
+const opaRegExp = /[\w\[\]]*[\s]{[\s\w:=.\[\](),!]*}/gm;
+const policyNameRegExp = /[\w_\[\]]*/
+
+function splitOPAData(data) {
+
+  let policies = data.matchAll(opaRegExp);
+  let arr = Array.from(policies, m => m[0]);
+  let policyMap = {};
+
+  for (let i = 0; i < arr.length; i++) {
+    let policyName = arr[i].match(policyNameRegExp)[0];
+    policyMap[policyName] = arr[i];
+  }
+
+  return policyMap;
+}
+
+function OPAEditorPanel(props) {
+
+  const [selectedOption, setSelectedOption] = useState(null)
+  const [policyData, setPolicyData] = useState(null)
+
+  let policyMap = splitOPAData(dummyDataOPA);
+  let opts = [];
+
+  for (const property in policyMap) {
+    opts.push({
+      value: property,
+      label: property
+    })
+  }
+
+  let saveOPA = function() {
+    if (policyData) {
+      let newOPAData = "package direktiv.authz\n\n";
+      for (const property in policyMap) {
+        if (property == selectedOption.value) {
+          newOPAData += policyData + "\n\n"
+        } else {
+          newOPAData += policyMap[property] + "\n\n"
+        }
+      }
+
+      // TODO: When we can start implementing EE functionality,
+      // the 'newOPAData' value contains the full payload to send
+      // to the Direktiv backend!
+      console.log(newOPAData);
+    }
+  }
+
+  let setOption = function(val) {
+    setSelectedOption(val)
+    setPolicyData(policyMap[val])
+  }
+
+  return (
+    <>
+      <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
+        <ContentPanelTitle>
+          <ContentPanelTitleIcon>
+            <VscLock/>
+          </ContentPanelTitleIcon>
+          <div>
+            Editor - Open Policy Agent
+          </div>
+        </ContentPanelTitle>
+        <ContentPanelBody style={{overflow: "hidden"}}>
+          <FlexBox className="col">
+            <div style={{paddingBottom: "8px"}}>
+              <Select 
+                defaultValue={selectedOption}
+                onChange={setOption}
+                options={opts}
+              />
+            </div>
+            <FlexBox>
+              { selectedOption ?
+              <FlexBox>
+                <DirektivEditor width="300" dlang="css" setDValue={setPolicyData} dvalue={policyMap[selectedOption.value]} style={{
+                  borderBottomRightRadius: "0px",
+                  borderBottomLeftRadius: "0px"
+                }} />
+              </FlexBox>
+              :<DirektivEditor width="300" value="" readonly={true} />}
+            </FlexBox>
+            { selectedOption ?
+            <FlexBox className="gap" style={{backgroundColor:"#223848", color:"white", height:"44px", maxHeight:"44px", paddingLeft:"10px", minHeight:"44px", alignItems:'center', borderRadius:"0px 0px 8px 8px", overflow: "hidden"}}>
+              <div style={{display:"flex", flex:1 }}>
+              </div>
+              <div style={{display:"flex", flex:1, justifyContent:"center"}}>
+              </div>
+              <div style={{display:"flex", flex:1, gap :"3px", justifyContent:"flex-end", paddingRight:"10px"}}>
+                <div onClick={saveOPA} style={{alignItems:"center", gap:"3px",backgroundColor:"#355166", paddingTop:"3px", paddingBottom:"3px", paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
+                    Save
+                </div>
+              </div>
+            </FlexBox>
+            :<></>}
+          </FlexBox>
+        </ContentPanelBody>
+      </ContentPanel>
+    </>
+  )
+}

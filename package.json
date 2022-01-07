@@ -24,6 +24,7 @@
     "react-minimal-pie-chart": "^8.2.0",
     "react-router-dom": "^6.0.2",
     "react-scripts": "4.0.3",
+    "react-select": "^5.2.1",
     "react-virtualized": "^9.22.3",
     "react-virtualized-auto-sizer": "^1.0.6",
     "use-react-router-breadcrumbs": "^3.0.1",
