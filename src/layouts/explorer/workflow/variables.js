@@ -13,6 +13,8 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 import Tabs from '../../../components/tabs';
 import { Config } from '../../../util';
 import { VariableFilePicker } from '../../settings/variables-panel';
+import { AutoSizer } from 'react-virtualized';
+
 
 function AddWorkflowVariablePanel(props) {
 
@@ -120,10 +122,10 @@ function AddVariablePanel(props) {
 
     return(
         <Tabs
-            style={{minHeight: "400px", minWidth: "90%"}}
+            style={{minHeight: "500px", minWidth: "90%"}}
             headers={["Manual", "Upload"]}
             tabs={[(
-                <FlexBox id="written" className="col gap" style={{fontSize: "12px"}}>
+                <FlexBox id="written" className="col gap" style={{fontSize: "12px", width: "35vw"}}>
                     <div style={{width: "100%", display: "flex"}}>
                         <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter variable key name" />
                     </div>
@@ -140,7 +142,11 @@ function AddVariablePanel(props) {
                     </div>
                     <FlexBox className="gap" style={{maxHeight: "600px"}}>
                         <FlexBox style={{overflow:"hidden"}}>
-                            <DirektivEditor dlang={lang} width={600} dvalue={dValue} setDValue={setDValue} height={500}/>
+                        <AutoSizer>
+                            {({height, width})=>(
+                            <DirektivEditor dlang={lang} width={width} dvalue={dValue} setDValue={setDValue} height={height}/>
+                            )}
+                        </AutoSizer>
                         </FlexBox>
                     </FlexBox>
                 </FlexBox>
@@ -257,13 +263,17 @@ function Variable(props) {
                         ]
                     } 
                 >
-                    <FlexBox className="col gap" style={{fontSize: "12px"}}>
-                        <FlexBox className="gap">
+                    <FlexBox className="col gap" style={{fontSize: "12px", width: "580px", minHeight: "500px"}}>
+                        <FlexBox className="gap" style={{flexGrow: 1}}>
                             <FlexBox style={{overflow:"hidden"}}>
-                                <DirektivEditor dlang={lang} width={600} dvalue={val} setDValue={setValue} height={600}/>
+                            <AutoSizer>
+                                {({height, width})=>(
+                                <DirektivEditor dlang={lang} width={width} dvalue={val} setDValue={setValue} height={height}/>
+                                )}
+                            </AutoSizer>
                             </FlexBox>
                         </FlexBox>
-                        <FlexBox className="gap">
+                        <FlexBox className="gap" style={{flexGrow: 0, flexShrink: 1}}>
                             <FlexBox>
                                 <select style={{width:"100%"}} defaultValue={mimeType} onChange={(e)=>setType(e.target.value)}>
                                     <option value="">Choose a mimetype</option>

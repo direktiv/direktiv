@@ -266,29 +266,6 @@ function GroupPoliciesListItem(props) {
     )
 }
 
-// function OPAEditorPanel(props) {
-
-//     splitOPAData(dummyDataOPA)
-
-//     return(
-//         <>
-//             <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
-//                 <ContentPanelTitle>
-//                     <ContentPanelTitleIcon>
-//                         <VscLock/>
-//                     </ContentPanelTitleIcon>
-//                     <div>
-//                         Editor - Open Policy Agent
-//                     </div>
-//                 </ContentPanelTitle>
-//                 <ContentPanelBody style={{overflow: "hidden"}}>
-//                     <DirektivEditor width="300" dlang="css" value={dummyDataOPA} />
-//                 </ContentPanelBody>
-//             </ContentPanel>
-//         </>
-//     )
-// }
-
 const dummyDataOPA = `package direktiv.authz
 
 is_in_group[g] {

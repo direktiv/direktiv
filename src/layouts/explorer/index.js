@@ -20,6 +20,8 @@ import WorkflowPage from './workflow';
 import { useSearchParams } from 'react-router-dom';
 import WorkflowRevisions from './workflow/revision';
 import WorkflowPod from './workflow/pod'
+import { AutoSizer } from 'react-virtualized';
+
 
 function Explorer(props) {
     const params = useParams()
@@ -140,7 +142,7 @@ function ExplorerList(props) {
                 <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
                     <ContentPanelHeaderButton className="explorer-action-btn">
                         <Modal title="New Workflow" 
-                            modalStyle={{minHeight: "580px"}}
+                            modalStyle={{height: "90vh"}}
                             escapeToCancel
                             button={(
                                 <div style={{display:"flex"}}>
@@ -172,7 +174,7 @@ function ExplorerList(props) {
                                 }, true, "workflow-name")
                             ]}
                         >
-                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "450px"}}>
+                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "550px"}}>
                                 <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                                     <input id={"workflow-name"} value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name"/>
                                 </div>
@@ -189,9 +191,13 @@ function ExplorerList(props) {
                                         )
                                     })}
                                 </select>
-                                <FlexBox className="gap" style={{maxHeight: "500px"}}>
+                                <FlexBox className="gap">
                                     <FlexBox style={{overflow:"hidden"}}>
-                                        <DirektivEditor dlang={"yaml"} width={"500"} value={wfData} setDValue={setWfData} height={"500"}/>
+                                    <AutoSizer>
+                                        {({height, width})=>(
+                                        <DirektivEditor dlang={"yaml"} width={width} value={wfData} setDValue={setWfData} height={height}/>
+                                        )}
+                                    </AutoSizer>
                                     </FlexBox>
                                 </FlexBox>
                             </FlexBox>

@@ -4770,10 +4770,10 @@ direktiv-react-hooks@^0.0.83:
     url "^0.11.0"
     zlib "^1.0.5"
 
-direktiv-react-hooks@^0.0.86:
-  version "0.0.86"
-  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.86.tgz#bfa1c5cfd9f6e701492ad233bf8d6b1ac18e89aa"
-  integrity sha512-WLcsMl8MILusMmqsX/OMX5Vd+qQjPfhYK5rTjTnjdVa+EWx6vccGBA1sCORmPK0lPFR/HE+i5Wr2mkIPlrHehQ==
+direktiv-react-hooks@^0.0.89:
+  version "0.0.89"
+  resolved "https://registry.yarnpkg.com/direktiv-react-hooks/-/direktiv-react-hooks-0.0.89.tgz#1b8061d399fadda6b6a53aa5693df5ecd0ee1e7f"
+  integrity sha512-NTiMJE/otTWFL1d2A8sDJQZC7E+S2M6Mj7eTgUfeh7NImk/FzzObW8Qr3FfsAuFCLFTcFCRvXcGD5nXIjyrO5A==
   dependencies:
     "@types/event-source-polyfill" "^1.0.0"
     cross-fetch "^3.1.4"
