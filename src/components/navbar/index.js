@@ -162,9 +162,11 @@ function NavItems(props) {
     let instanceid = matchPath("/n/:namespace/instances/:id", pathname)
     
     let navItemMap = {}
-    if(extraNavigation) {
-        for(let i=0; i < extraNavigation.length; i++) {
-            navItemMap[extraNavigation[i].path] = matchPath(extraNavigation[i].path, pathname)
+    if(namespace !== null && namespace !== "") {
+        if(extraNavigation) {
+            for(let i=0; i < extraNavigation.length; i++) {
+                navItemMap[extraNavigation[i].path(namespace)] = matchPath(extraNavigation[i].path(namespace), pathname)
+            }
         }
     }
     // let permissions = matchPath("/n/:namespace/permissions", pathname)
