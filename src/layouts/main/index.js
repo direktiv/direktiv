@@ -121,7 +121,7 @@ function NamespaceNavigation(props){
 
                     {extraRoutes.map((obj)=>{
                         return(
-                            <Route path={obj.route} key={obj.route} element={obj.element} />
+                            <Route path={obj.route} key={obj.route} element={obj.element(namespace)} />
                         )
                     })}
 
