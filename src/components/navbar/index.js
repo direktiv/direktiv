@@ -164,7 +164,7 @@ function NavItems(props) {
     let navItemMap = {}
     if(extraNavigation) {
         for(let i=0; i < extraNavigation.length; i++) {
-            navItemMap[extraNavigation[i].path] = matchPath(pathname)
+            navItemMap[extraNavigation[i].path] = matchPath(extraNavigation[i].path, pathname)
         }
     }
     // let permissions = matchPath("/n/:namespace/permissions", pathname)
