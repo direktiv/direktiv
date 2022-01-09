@@ -23,12 +23,12 @@ import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
 import Login from '../login';
 import InstancePageWrapper from '../instance';
-import PermissionsPageWrapper from '../permissions';
+// import PermissionsPageWrapper from '../permissions';
 import EventsPageWrapper from '../events';
 
 
 function NamespaceNavigation(props){
-    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr} = props
+    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr, extraRoutes} = props
 
     const [load, setLoad] = useState(true)
     const navigate = useNavigate()
@@ -107,7 +107,7 @@ function NamespaceNavigation(props){
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/instances/:id" element={<InstancePageWrapper namespace={namespace} />} />
-                    <Route path="/n/:namespace/permissions" element={<PermissionsPageWrapper namespace={namespace} />} />
+                    {/* <Route path="/n/:namespace/permissions" element={<PermissionsPageWrapper namespace={namespace} />} /> */}
                     
                
                     {/* namespace services */}
@@ -118,6 +118,12 @@ function NamespaceNavigation(props){
                     
                     <Route path="/n/:namespace/settings" element={<Settings deleteErr={deleteErr} namespace={namespace} deleteNamespace={deleteNamespace}/>} />
                     <Route path="/n/:namespace/events" element={<EventsPageWrapper namespace={namespace} />}/>
+
+                    {extraRoutes.map((obj)=>{
+                        return(
+                            <Route path={obj.route} key={obj.route} element={obj.element} />
+                        )
+                    })}
 
                     {/* non-namespace routes */}
                     <Route path="/jq" element={<JQPlayground />} />
@@ -135,7 +141,7 @@ function NamespaceNavigation(props){
 
 
 function MainLayout(props) {
-    let {onClick, style, className} = props;
+    let {onClick, style, className, extraNavigation, extraRoutes} = props;
 
     const [akey, setAKey] = useState(localStorage.getItem('apikey'))
     const [load, setLoad] = useState(true)
@@ -183,9 +189,9 @@ function MainLayout(props) {
                             :
                             <BrowserRouter>
                               <FlexBox className="navigation-col">
-                                <NavBar  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                                <NavBar extraNavigation={extraNavigation}  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                               </FlexBox>
-                              <NamespaceNavigation deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
+                              <NamespaceNavigation extraRoutes={extraRoutes} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                             </BrowserRouter>
                         }
                 </Loader>

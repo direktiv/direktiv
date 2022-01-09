@@ -13,7 +13,7 @@ import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive} = props;
+    let {onClick, style, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
 
     if (!className) {
         className = ""
@@ -46,7 +46,7 @@ function NavBar(props) {
                         <FlexBox>
                             <NewNamespaceBtn createErr={createErr} createNamespace={createNamespace} />
                         </FlexBox>
-                        <NavItems pathname={pathname} toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
+                        <NavItems extraNavigation={extraNavigation} pathname={pathname} toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
                     </div>
 
                     <div className="navbar-panel shadow col">
@@ -149,7 +149,7 @@ function NewNamespaceBtn(props) {
 
 function NavItems(props) {
 
-    let {pathname, style, namespace, toggleResponsive} = props;
+    let {pathname, style, namespace, toggleResponsive, extraNavigation} = props;
 
     let explorer = matchPath("/n/:namespace", pathname)
     let wfexplorer = matchPath("/n/:namespace/explorer/*", pathname)
@@ -161,7 +161,13 @@ function NavItems(props) {
     let instances = matchPath("/n/:namespace/instances", pathname)
     let instanceid = matchPath("/n/:namespace/instances/:id", pathname)
     
-    let permissions = matchPath("/n/:namespaces/permissions", pathname)
+    let navItemMap = {}
+    if(extraNavigation) {
+        for(let i=0; i < extraNavigation.length; i++) {
+            navItemMap[extraNavigation[i].path] = matchPath(pathname)
+        }
+    }
+    // let permissions = matchPath("/n/:namespace/permissions", pathname)
 
     // services pathname matching
     let services = matchPath("/n/:namespace/services", pathname)
@@ -217,7 +223,34 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li>
-                <li>
+                {namespace !== null && namespace !== "" ? 
+                  extraNavigation.map((obj)=>{
+                    if(obj.hreflink){
+                        return (
+                            <li key={obj.title}>
+                                <a href={obj.path(namespace)}>
+                                    <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active": ""} label={obj.title}>
+                                        {obj.icon}
+                                    </NavItem>
+                                </a>
+                            </li>
+                        )
+                    } else {
+                        return (
+                            <li key={obj.title}>
+                                <Link to={obj.path(namespace)} onClick={() => {
+                                    toggleResponsive(false)
+                                }}>
+                                    <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active":""} label={obj.title}>
+                                        {obj.icon}
+                                    </NavItem>
+                                </Link>
+                            </li>
+                        )
+                    }
+                }):""}
+
+                {/* <li>
                     <Link to={`/n/${namespace}/permissions`} onClick={() => {
                         toggleResponsive(false)
                     }}>
@@ -225,7 +258,7 @@ function NavItems(props) {
                             <VscLock/>
                         </NavItem>
                     </Link>
-                </li>
+                </li> */}
                 <li>
                     <Link to={`/n/${namespace}/services`} onClick={() => {
                         toggleResponsive(false)
@@ -244,6 +277,7 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li>
+
             </ul>
         </FlexBox>
     );
