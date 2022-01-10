@@ -33,6 +33,7 @@ const (
 	annotationRegistryTypeGlobalValue        = "global"
 	annotationRegistryTypeGlobalPrivateValue = "global-private"
 	annotationRegistryTypeNamespaceValue     = "namespace"
+	annotationRegistryObfuscatedUser         = "direktiv.io/obf-user"
 )
 
 func getClientSet() (*kubernetes.Clientset, error) {
@@ -240,6 +241,19 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 	sa.Labels[annotationNamespace] = in.GetNamespace()
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeNamespaceValue
 
+	var un string
+	ut := userToken[0]
+	switch len(ut) {
+	case 1, 2, 3:
+		un = fmt.Sprintf("%s***", string(ut[0]))
+	case 4, 5:
+		un = fmt.Sprintf("%s***%s", string(ut[0]), string(ut[len(ut)-1]))
+	default:
+		un = fmt.Sprintf("%s***%s", ut[:2], ut[len(ut)-2:])
+	}
+
+	sa.Annotations[annotationRegistryObfuscatedUser] = un
+
 	_, err = clientset.CoreV1().Secrets(functionsConfig.Namespace).Create(context.Background(),
 		&sa, metav1.CreateOptions{})
 
@@ -268,9 +282,11 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 	for _, s := range secrets.Items {
 		u := s.Annotations[annotationURL]
 		h := s.Annotations[annotationURLHash]
+		user := s.Annotations[annotationRegistryObfuscatedUser]
 		resp.Registries = append(resp.Registries, &igrpc.Registry{
 			Name: &u,
 			Id:   &h,
+			User: &user,
 		})
 	}
 

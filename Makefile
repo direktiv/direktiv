@@ -56,6 +56,10 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 .PHONY: images
 images: image-api image-flow image-init-pod image-secrets image-sidecar image-functions image-flow-dbinit
 
+.PHONY: scan
+scan: ## Builds and scans all Docker images
+scan: scan-api scan-flow scan-init-pod scan-secrets scan-sidecar scan-functions
+
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
 push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions push-flow-dbinit
@@ -75,7 +79,7 @@ cluster: push
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	kubectl delete --all jobs -n direktiv-services-direktiv
-	helm install -f ${HELM_CONFIG} direktiv kubernetes/charts/direktiv/
+	helm install -f ${HELM_CONFIG} direktiv scripts/direktiv-charts/charts/direktiv/
 
 .PHONY: teardown
 teardown: ## Brings down an existing cluster.
@@ -130,14 +134,6 @@ api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to ch
 api-swagger:
 	scripts/api/swagger.sh $(host)
 
-# Helm docs
-
-.PHONY: helm-docs
-helm-docs: ## Generates helm documentation
-helm-docs:
-	GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
-	helm-docs kubernetes/charts
-
 # PROTOC
 
 PROTOBUF_SOURCE_FILES := $(shell find . -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
@@ -159,6 +155,10 @@ build/%-binary: Makefile ${GO_SOURCE_FILES}
 	else \
    	touch $@; \
 	fi
+
+.PHONY: scan-%
+scan-%: push-%
+	trivy image --exit-code 1 localhost:5000/$*
 
 .PHONY: image-%
 image-%: build/%-binary

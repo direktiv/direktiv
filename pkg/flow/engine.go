@@ -736,6 +736,13 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
 
+	// Log warning if timeout exceeds max allowed timeout
+	if actionTimeout := (time.Duration(ar.Workflow.Timeout) * time.Second); actionTimeout > engine.conf.GetFunctionsTimeout() {
+		engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
+			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.conf.GetFunctionsTimeout())},
+		})
+	}
+
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
 	case model.IsolatedContainerFunctionType:

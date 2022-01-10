@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -41,9 +40,7 @@ type mw struct {
 }
 
 func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("REQUEST RECEIVED", r.Method, r.URL.String())
-
+	logger.Infof("request received: %v %v", r.Method, r.URL.String())
 	mw.h.ServeHTTP(w, r)
 }
 

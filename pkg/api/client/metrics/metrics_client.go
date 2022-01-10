@@ -42,6 +42,8 @@ type ClientService interface {
 
 	WorkflowMetricsMilliseconds(params *WorkflowMetricsMillisecondsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsMillisecondsOK, error)
 
+	WorkflowMetricsSankey(params *WorkflowMetricsSankeyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsSankeyOK, error)
+
 	WorkflowMetricsStateMilliseconds(params *WorkflowMetricsStateMillisecondsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsStateMillisecondsOK, error)
 
 	WorkflowMetricsSuccessful(params *WorkflowMetricsSuccessfulParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsSuccessfulOK, error)
@@ -299,6 +301,50 @@ func (a *Client) WorkflowMetricsMilliseconds(params *WorkflowMetricsMilliseconds
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for workflowMetricsMilliseconds: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  WorkflowMetricsSankey gets sankey metrics of a workflow revision
+
+  Get Sankey metrics of a workflow revision.
+If ref query is not provided, metrics for the latest revision
+will be retrieved.
+
+*/
+func (a *Client) WorkflowMetricsSankey(params *WorkflowMetricsSankeyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WorkflowMetricsSankeyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWorkflowMetricsSankeyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "workflowMetricsSankey",
+		Method:             "GET",
+		PathPattern:        "/api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &WorkflowMetricsSankeyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WorkflowMetricsSankeyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for workflowMetricsSankey: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

@@ -2,6 +2,7 @@ package util
 
 import (
 	"io/ioutil"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -9,7 +10,11 @@ import (
 // Config contain direktiv configuration
 type Config struct {
 	FunctionsService string `yaml:"functions-service"`
-	FlowService      string `yaml:"flow-service"`
+
+	// FunctionsTimeout : Action timeout in milliseconds
+	FunctionsTimeout int64 `yaml:"functions-timeout"`
+
+	FlowService string `yaml:"flow-service"`
 
 	PrometheusBackend    string `yaml:"prometheus-backend"`
 	OpenTelemetryBackend string `yaml:"opentelemetry-backend"`
@@ -41,4 +46,8 @@ func (cfg *Config) GetTelemetryBackendAddr() string {
 
 	return cfg.OpenTelemetryBackend
 
+}
+
+func (cfg *Config) GetFunctionsTimeout() time.Duration {
+	return time.Second * time.Duration(cfg.FunctionsTimeout)
 }

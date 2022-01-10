@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Masterminds/semver"
 	"github.com/direktiv/direktiv/pkg/util"
 	_ "github.com/lib/pq"
 )
@@ -15,7 +16,7 @@ var generations map[int]func(*sql.DB) error
 
 func main() {
 
-	log.Printf("checking database for schema updates")
+	log.Printf("Checking database for schema updates...")
 
 	// get db connection
 	conn := os.Getenv(util.DBConn)
@@ -25,31 +26,125 @@ func main() {
 	}
 	defer db.Close()
 
-	// TODO: fetch generation
-	// if no generation detected, we assume it is < 0.6.0
-	generations := make(map[int]func(*sql.DB) error)
-	generations[0] = updateGeneration0
+	// check database has been initialized
+	qstr := `SELECT EXISTS (
+		SELECT FROM pg_catalog.pg_class c
+		JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+		WHERE  n.nspname = 'public'
+		AND    c.relname = 'workflows'
+		AND    c.relkind = 'r'    -- only tables
+	);`
+	row := db.QueryRow(qstr)
+	var initialized bool
+	err = row.Scan(&initialized)
+	if err != nil {
+		log.Printf("error running sql: %v", err)
+		os.Exit(1)
+	}
 
-	startingGeneration := 0
+	if !initialized {
+		log.Printf("Database hasn't been initialized. Aborting.")
+		return
+	}
 
-	for {
-		genFunc, ok := generations[startingGeneration]
-		if !ok {
-			break
+	// initialize generation table if not exists
+	qstr = `CREATE TABLE IF NOT EXISTS db_generation (
+		generation VARCHAR
+	)`
+	_, err = db.Exec(qstr)
+	if err != nil {
+		log.Printf("error running sql: %v", err)
+		os.Exit(1)
+	}
+
+	// initialize upgrade transaction
+	tx, err := db.Begin()
+	if err != nil {
+		log.Printf("error running sql: %v", err)
+		os.Exit(1)
+	}
+	defer tx.Rollback()
+
+	row = tx.QueryRow(`SELECT generation FROM db_generation`)
+	var gen string
+	err = row.Scan(&gen)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			gen = "0.5.10"
+		} else {
+			log.Printf("error running sql: %v", err)
+			os.Exit(1)
 		}
-		log.Printf("updating to generation %d\n", startingGeneration)
-		err := genFunc(db)
+	}
+
+	log.Printf("Current database generation: %v", gen)
+
+	// perform upgrades
+	upgraders := make([]generationUpgrader, 0)
+
+	upgraders = append(upgraders, generationUpgrader{
+		version: "0.6.0",
+		logic:   updateGeneration_0_6_0,
+	})
+
+	for _, upgrader := range upgraders {
+
+		// check if version needs upgrading
+		v1, err := semver.NewVersion(gen)
 		if err != nil {
-			log.Printf("error updating to generation %d: %v\n", startingGeneration, err)
+			log.Printf("error parsing generation: %v", err)
+			os.Exit(1)
+		}
+
+		v2, err := semver.NewVersion(upgrader.version)
+		if err != nil {
 			panic(err)
 		}
-		log.Printf("updating to generation %d finished\n", startingGeneration)
-		startingGeneration++
+
+		if !v2.GreaterThan(v1) {
+			continue
+		}
+
+		// upgrade
+
+		log.Printf("Updating to generation %s\n", upgrader.version)
+
+		err = upgrader.logic(tx)
+		if err != nil {
+			log.Printf("error running sql: %v", err)
+			os.Exit(1)
+		}
+
+		_, err = db.Exec(`DELETE FROM db_generation`)
+		if err != nil {
+			log.Printf("error running sql: %v", err)
+			os.Exit(1)
+		}
+
+		_, err = db.Exec(fmt.Sprintf(`INSERT INTO db_generation(generation) VALUES('%s')`, upgrader.version))
+		if err != nil {
+			log.Printf("error running sql: %v", err)
+			os.Exit(1)
+		}
+
+		log.Printf("Updating to generation %s finished\n", upgrader.version)
+
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Printf("error running sql: %v", err)
+		os.Exit(1)
 	}
 
 }
 
-func updateGeneration0(db *sql.DB) error {
+type generationUpgrader struct {
+	version string
+	logic   func(tx *sql.Tx) error
+}
+
+func updateGeneration_0_6_0(db *sql.Tx) error {
 
 	sqls := []string{
 		fmt.Sprintf("ALTER TABLE refs ADD COLUMN created_at timestamp NOT NULL DEFAULT '%v';", time.Now().UTC().Format("2006-01-02T15:04:05-0700")),
