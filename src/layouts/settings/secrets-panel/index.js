@@ -9,6 +9,7 @@ import Alert from '../../../components/alert';
 import {useSecrets} from 'direktiv-react-hooks'
 import {Config, GenerateRandomKey} from '../../../util'
 import HelpIcon from '../../../components/help';
+import DirektivEditor from '../../../components/editor';
 
 
 function SecretsPanel(props){
@@ -37,9 +38,6 @@ function SecretsPanel(props){
                     <Modal title="New secret" 
                         escapeToCancel
                         titleIcon={<VscLock/>}
-                        modalStyle={{
-                            maxWidth: "300px"
-                        }}
 
                         onOpen={() => {
                         }}
@@ -168,7 +166,6 @@ export function SecretsDeleteButton(props) {
 function AddSecretPanel(props) {
     const {keyValue, vValue, setKeyValue, setVValue} = props
 
-
     return (
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
             <FlexBox className="gap">
@@ -177,7 +174,9 @@ function AddSecretPanel(props) {
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox><input type="password"  value={vValue} onChange={(e)=>setVValue(e.target.value)} placeholder="Enter value" /></FlexBox>
+                <FlexBox style={{overflow:"hidden"}}>
+                    <DirektivEditor dValue={vValue} setDValue={setVValue}  width={600} height={180}/>
+                    </FlexBox>
             </FlexBox>
         </FlexBox>
     );
