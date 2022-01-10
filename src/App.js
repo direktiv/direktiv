@@ -1,9 +1,11 @@
 import './App.css';
 import './util/responsive.css';
 import MainLayout from './layouts/main';
-
+import FlexBox from './components/flexbox';
+import { VscSignOut } from 'react-icons/vsc';
+import {NavItem} from './components/navbar'
 function App() {
-  return (
+    return (
       <div className="App">
         <MainLayout footer={
             <>

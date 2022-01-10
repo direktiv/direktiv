@@ -303,7 +303,7 @@ function GlobalNavItems(props) {
     );
 }
 
-function NavItem(props) {
+export function NavItem(props) {
 
     let {children, label, className} = props;
     if (!className) {
