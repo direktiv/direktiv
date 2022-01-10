@@ -13,7 +13,7 @@ import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive} = props;
+    let {onClick, style, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
 
     if (!className) {
         className = ""
@@ -24,7 +24,7 @@ function NavBar(props) {
     if (!namespace) {
         className += " loading"
     }
-    
+
     if (toggleResponsive) {
         className += " toggled"
     }
@@ -46,7 +46,7 @@ function NavBar(props) {
                         <FlexBox>
                             <NewNamespaceBtn createErr={createErr} createNamespace={createNamespace} />
                         </FlexBox>
-                        <NavItems pathname={pathname} toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
+                        <NavItems extraNavigation={extraNavigation} pathname={pathname} toggleResponsive={setToggleResponsive} namespace={namespace} style={{ marginTop: "12px" }} />
                     </div>
 
                     <div className="navbar-panel shadow col">
@@ -89,55 +89,56 @@ function NewNamespaceBtn(props) {
 
     // createErr is filled when someone tries to create namespace but proceeded to error out
 
+
     const [ns, setNs] = useState("")
     const navigate = useNavigate()
 
     return (
-        <Modal title="New namespace" 
-            escapeToCancel
-            button={(
-                <FlexBox className="new-namespace-btn">
-                    <div className="auto-margin">
-                        <FlexBox className="row" style={{ gap: "8px", alignItems:"center" }}>
-                            <FlexBox>
-                                <VscAdd />
-                            </FlexBox>
-                            <FlexBox>
-                                New namespace
-                            </FlexBox>
-                        </FlexBox>
-                    </div>
-                </FlexBox>
-            )} 
+        <Modal title="New namespace"
+               escapeToCancel
+               button={(
+                   <FlexBox className="new-namespace-btn">
+                       <div className="auto-margin">
+                           <FlexBox className="row" style={{ gap: "8px", alignItems:"center" }}>
+                               <FlexBox>
+                                   <VscAdd />
+                               </FlexBox>
+                               <FlexBox>
+                                   New namespace
+                               </FlexBox>
+                           </FlexBox>
+                       </div>
+                   </FlexBox>
+               )}
 
-            titleIcon={<VscAdd/>}
+               titleIcon={<VscAdd/>}
 
-            onClose={ () => {setNs("")}}
+               onClose={ () => {setNs("")}}
 
-            keyDownActions={[
-                KeyDownDefinition("Enter", async () => {
-                    let err = await createNamespace(ns)
-                    if(err) return err
-                    setTimeout(()=>{
-                        navigate(`/n/${ns}`)
-                    },200)
-                    setNs("")
-                }, true)
-            ]}
+               keyDownActions={[
+                   KeyDownDefinition("Enter", async () => {
+                       let err = await createNamespace(ns)
+                       if(err) return err
+                       setTimeout(()=>{
+                           navigate(`/n/${ns}`)
+                       },200)
+                       setNs("")
+                   }, true)
+               ]}
 
-            actionButtons={[
-                ButtonDefinition("Add", async () => {
-                    let err = await createNamespace(ns)
-                    if(err) return err
-                    setTimeout(()=>{
-                        navigate(`/n/${ns}`)
-                    },200)
-                    setNs("")
-                }, "small blue", true, false),
-                ButtonDefinition("Cancel", () => {
-                    setNs("")
-                }, "small light", true, false)
-            ]}
+               actionButtons={[
+                   ButtonDefinition("Add", async () => {
+                       let err = await createNamespace(ns)
+                       if(err) return err
+                       setTimeout(()=>{
+                           navigate(`/n/${ns}`)
+                       },200)
+                       setNs("")
+                   }, "small blue", true, false),
+                   ButtonDefinition("Cancel", () => {
+                       setNs("")
+                   }, "small light", true, false)
+               ]}
         >
             <FlexBox>
                 <input autoFocus value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
@@ -148,7 +149,7 @@ function NewNamespaceBtn(props) {
 
 function NavItems(props) {
 
-    let {pathname, style, namespace, toggleResponsive} = props;
+    let {pathname, style, namespace, toggleResponsive, extraNavigation} = props;
 
     let explorer = matchPath("/n/:namespace", pathname)
     let wfexplorer = matchPath("/n/:namespace/explorer/*", pathname)
@@ -159,8 +160,16 @@ function NavItems(props) {
     // instance path matching
     let instances = matchPath("/n/:namespace/instances", pathname)
     let instanceid = matchPath("/n/:namespace/instances/:id", pathname)
-    
-    let permissions = matchPath("/n/:namespaces/permissions", pathname)
+
+    let navItemMap = {}
+    if(namespace !== null && namespace !== "") {
+        if(extraNavigation) {
+            for(let i=0; i < extraNavigation.length; i++) {
+                navItemMap[extraNavigation[i].path(namespace)] = matchPath(extraNavigation[i].path(namespace), pathname)
+            }
+        }
+    }
+    // let permissions = matchPath("/n/:namespace/permissions", pathname)
 
     // services pathname matching
     let services = matchPath("/n/:namespace/services", pathname)
@@ -168,6 +177,7 @@ function NavItems(props) {
     let revision = matchPath("/n/:namespace/services/:service/:revision", pathname)
 
     let settings = matchPath("/n/:namespace/settings", pathname)
+
 
     return (
         <FlexBox style={{...style}} className="nav-items">
@@ -211,19 +221,46 @@ function NavItems(props) {
                         !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={events ? "active":""} label="Events">
-                           <VscSymbolEvent/>
+                            <VscSymbolEvent/>
                         </NavItem>
                     </Link>
                 </li>
-                <li className={`${!namespace ? "disabled-nav-item":""}`}>
-                    <Link to={!!namespace && `/n/${namespace}/permissions`} onClick={() => {
-                        !!namespace && toggleResponsive(false)
+                {namespace !== null && namespace !== "" ?
+                    extraNavigation?.map((obj)=>{
+                        if(obj.hreflink){
+                            return (
+                                <li key={obj.title}>
+                                    <a href={obj.path(namespace)}>
+                                        <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active": ""} label={obj.title}>
+                                            {obj.icon}
+                                        </NavItem>
+                                    </a>
+                                </li>
+                            )
+                        } else {
+                            return (
+                                <li key={obj.title}>
+                                    <Link to={obj.path(namespace)} onClick={() => {
+                                        toggleResponsive(false)
+                                    }}>
+                                        <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active":""} label={obj.title}>
+                                            {obj.icon}
+                                        </NavItem>
+                                    </Link>
+                                </li>
+                            )
+                        }
+                    }):""}
+
+                {/* <li>
+                    <Link to={`/n/${namespace}/permissions`} onClick={() => {
+                        toggleResponsive(false)
                     }}>
                         <NavItem className={permissions ? "active":""} label="Permissions">
                             <VscLock/>
                         </NavItem>
                     </Link>
-                </li>
+                </li> */}
                 <li className={`${!namespace ? "disabled-nav-item":""}`}>
                     <Link to={!!namespace && `/n/${namespace}/services`} onClick={() => {
                         !!namespace && toggleResponsive(false)
@@ -242,6 +279,7 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li>
+
             </ul>
         </FlexBox>
     );
@@ -295,14 +333,14 @@ function NavItem(props) {
     }
 
     return (
-            <FlexBox className={"nav-item " + className} style={{ gap: "8px" }}>
-                <FlexBox style={{ maxWidth: "30px", width: "30px", margin: "auto" }}>
-                    {children}
-                </FlexBox>
-                <FlexBox style={{ textAlign: "left" }}>
-                    {label}
-                </FlexBox>
+        <FlexBox className={"nav-item " + className} style={{ gap: "8px" }}>
+            <FlexBox style={{ maxWidth: "30px", width: "30px", margin: "auto" }}>
+                {children}
             </FlexBox>
+            <FlexBox style={{ textAlign: "left" }}>
+                {label}
+            </FlexBox>
+        </FlexBox>
     );
 }
 
@@ -333,7 +371,7 @@ function ResponsiveNavbar(props) {
                 e.stopPropagation()
             }}>
                 <div className={panelClasses}>
-                    
+
                 </div>
             </FlexBox>
         </>
