@@ -288,7 +288,7 @@ func (is *functionsServer) CreateFunctionsPod(ctx context.Context,
 
 	labels[ServiceHeaderName] = info.GetName()
 	labels[ServiceHeaderWorkflowID] = info.GetWorkflow()
-	labels[ServiceHeaderPath] = SanitizeLabel(info.GetPath())
+	labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(info.GetPath()))
 	labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	labels[ServiceHeaderNamespaceID] = info.GetNamespace()
 	labels[ServiceHeaderNamespaceName] = info.GetNamespaceName()
