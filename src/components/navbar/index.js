@@ -251,7 +251,6 @@ function NavItems(props) {
                             )
                         }
                     }):""}
-
                 {/* <li>
                     <Link to={`/n/${namespace}/permissions`} onClick={() => {
                         toggleResponsive(false)

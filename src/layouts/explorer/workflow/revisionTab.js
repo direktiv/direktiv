@@ -179,14 +179,42 @@ function TabbedButtons(props) {
 
 
 export function RevisionSelectorTab(props) {
-    const {setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData} = props
+    const {setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
     
     const navigate = useNavigate()
     // const [load, setLoad] = useState(true)
     const [revision, setRevision] = useState(null)
     const [rev1, setRev1] = useState(router.routes.length === 0 ? "latest": "")
     const [rev2, setRev2] = useState("")
-    const [tag, setTag] = useState("")
+
+    const [tags, setTags] = useState(null)
+
+    function updateTags(newTags){
+        let processedTags = {}
+        newTags.forEach(edge => {
+            if (edge.node.name !== "latest") {
+                processedTags[edge.node.name] = true
+            }
+        });
+        setTags(processedTags)
+    }
+
+    useEffect(()=>{
+        async function listData() {
+            if(tags === null){
+                // get workflow tags
+                let resp = await getTags()
+                if(Array.isArray(resp)){
+                    updateTags(resp)
+                } else {
+                    // FIXME: find location for this error
+                    console.error("could not retrive tags", resp)
+                }
+            }
+        }
+        return listData()
+    },[getTags, tags])
+
 
     useEffect(()=>{
         if(searchParams.get('revision') !== null) {
@@ -258,13 +286,13 @@ export function RevisionSelectorTab(props) {
                                             </FlexBox>
                                         </div>
                                     </FlexBox>
-                                    {obj.node.name !== "latest" ? 
+                                    {(obj.node.name !== "latest") ? 
                                         <FlexBox style={{
                                             flex: "1",
                                             maxWidth: "150px"
                                         }}>
                                             <FlexBox className="col revision-label-tuple">
-                                                <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions}  />
+                                                <TagRevisionBtn tagWorkflow={tagWorkflow} obj={obj} setRevisions={setRevisions} getRevisions={getRevisions} isTag={(tags !== null && tags[obj.node.name])} updateTags={updateTags} getTags={getTags} />
                                             </FlexBox>
                                         </FlexBox>
                                     :<FlexBox style={{
@@ -348,37 +376,74 @@ export function RevisionSelectorTab(props) {
                                     </FlexBox> */}
                                     <div>
                                         <FlexBox className="gap">
+                                            {tags !== null && tags[obj.node.name] ? 
                                                 <Modal
-                                                        escapeToCancel
-                                                        style={{
-                                                            flexDirection: "row-reverse",
-                                                        }}
-                                                        title="Delete a revision" 
-                                                        button={(
-                                                            <Button className="small light bold">
-                                                                <HiOutlineTrash className="red-text" style={{fontSize: "16px"}} />
-                                                            </Button>
-                                                        )}
-                                                        actionButtons={
-                                                            [
-                                                                ButtonDefinition("Delete", async () => {
-                                                                    let err = await deleteRevision(obj.node.name)
-                                                                    if (err) return err
+                                                    escapeToCancel
+                                                    style={{
+                                                        flexDirection: "row-reverse",
+                                                    }}
+                                                    title="Remove a Tag"
+                                                    button={(
+                                                        <Button className="small light bold" title="Remove Tag">
+                                                            <HiOutlineTrash className="red-text" style={{ fontSize: "16px" }} />
+                                                        </Button>
+                                                    )}
+                                                    actionButtons={
+                                                        [
+                                                            ButtonDefinition("Remove", async () => {
+                                                                try {
+                                                                    await removeTag(obj.node.name)
                                                                     setRevisions(await getRevisions())
-                                                                }, "small red", true, false),
-                                                                ButtonDefinition("Cancel", () => {
-                                                                }, "small light", true, false)
-                                                            ]
-                                                        } 
-                                                    >
-                                                            <FlexBox className="col gap">
+                                                                    updateTags(await getTags())
+                                                                } catch(e) {
+                                                                    return e.message
+                                                                }
+
+                                                            }, "small red", true, false),
+                                                            ButtonDefinition("Cancel", () => {
+                                                            }, "small light", true, false)
+                                                        ]
+                                                    }
+                                                >
+                                                    <FlexBox className="col gap">
+                                                        <FlexBox >
+                                                            Are you sure you want to remove the tag '{obj.node.name}'?
+                                                        </FlexBox>
+                                                    </FlexBox>
+                                                </Modal>
+                                                :
+                                                <Modal
+                                                    escapeToCancel
+                                                    style={{
+                                                        flexDirection: "row-reverse",
+                                                    }}
+                                                    title="Delete a revision"
+                                                    button={(
+                                                        <Button className="small light bold" title="Delete Revision">
+                                                            <HiOutlineTrash className="red-text" style={{ fontSize: "16px" }} />
+                                                        </Button>
+                                                    )}
+                                                    actionButtons={
+                                                        [
+                                                            ButtonDefinition("Delete", async () => {
+                                                                let err = await deleteRevision(obj.node.name)
+                                                                if (err) return err
+                                                                setRevisions(await getRevisions())
+                                                            }, "small red", true, false),
+                                                            ButtonDefinition("Cancel", () => {
+                                                            }, "small light", true, false)
+                                                        ]
+                                                    }
+                                                >
+                                                    <FlexBox className="col gap">
                                                         <FlexBox >
                                                             Are you sure you want to delete '{obj.node.name}'?
-                                                            <br/>
+                                                            <br />
                                                             This action cannot be undone.
                                                         </FlexBox>
                                                     </FlexBox>
-                                                    </Modal>
+                                                </Modal>
+                                            }
                                             <Button className="small light bold" onClick={async()=>{
                                                 let data = await getWorkflowRevisionData(obj.node.name)
                                                 await updateWorkflow(atob(data.revision.source))
@@ -406,7 +471,7 @@ export function RevisionSelectorTab(props) {
 
 function TagRevisionBtn(props) {
 
-    let {tagWorkflow, obj, getRevisions, setRevisions} = props;
+    let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags, isTag} = props;
     const [tag, setTag] = useState("")
 
     return(
@@ -432,9 +497,13 @@ function TagRevisionBtn(props) {
             actionButtons={
                 [
                     ButtonDefinition("Tag", async () => {
-                        let err = await tagWorkflow(obj.node.name, tag)
-                        if(err) return err
-                        setRevisions(await getRevisions())
+                        try {
+                            await tagWorkflow(obj.node.name, tag)
+                            setRevisions(await getRevisions())
+                            updateTags(await getTags())
+                        } catch(e) {
+                            return e.message
+                        }                        
                     }, "small blue", true, false),
                     ButtonDefinition("Cancel", () => {
                     }, "small light", true, false)
@@ -442,7 +511,7 @@ function TagRevisionBtn(props) {
             } 
         >
             <FlexBox>
-                <input autoFocus value={tag} onChange={(e)=>setTag(e.target.value)} placeholder="Enter Tag or leave blank to untag" />
+                <input autoFocus value={tag} onChange={(e)=>setTag(e.target.value)} placeholder="Enter Tag" />
             </FlexBox>
         </Modal>
     )

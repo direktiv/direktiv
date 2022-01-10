@@ -5,7 +5,7 @@ import MainLayout from './layouts/main';
 function App() {
   return (
       <div className="App">
-        <MainLayout/>
+        <MainLayout extraRoutes={[]} extraNavigation={[]}/>
       </div>
   );
 }

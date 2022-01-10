@@ -263,7 +263,7 @@ const cobalt = {
 // Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
 // TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
-    const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly} = props
+    const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
     
     const monaco = useMonaco()
 
@@ -272,6 +272,14 @@ export default function DirektivEditor(props) {
         if(monaco !== null) {
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
+            if (monaco.languages[dlang]) {
+              monaco.languages[dlang][`${dlang}Defaults`].setDiagnosticsOptions({
+                validate: validate === undefined ? true : validate,
+              })
+            } else {
+              console.warn(`editor warning: ${dlang} is not a supported language`)
+            }
+              
 
             // let messageContribution = monaco.getContribution('editor.contrib.messageController');
             // monaco.editor.onDidAttemptReadOnlyEdit(() => {
@@ -285,7 +293,8 @@ export default function DirektivEditor(props) {
         setDValue(value)
     }
 
-    let handleEditorDidMount = function(editor, monaco) {}
+    let handleEditorDidMount = function(editor, monaco) {
+    }
 
     if (readonly) {
       handleEditorDidMount = function(editor, monaco) {
@@ -303,7 +312,10 @@ export default function DirektivEditor(props) {
                 ...options,
                 readOnly: readonly,
                 scrollBeyondLastLine: false,
-                cursorBlinking: "smooth"
+                cursorBlinking: "smooth",
+                minimap: {
+                  enabled: minimap === undefined ? false : minimap,
+                },
               }}
             height={height ? height-18 : height}
             width={width}

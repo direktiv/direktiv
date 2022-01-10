@@ -178,7 +178,7 @@ function ModalOverlay(props) {
     }
 
 
-    let panelStyle = {maxHeight: "90vh", height: "100%", minWidth: "20vw", maxWidth: "80vw", overflow: "scroll"}
+    let panelStyle = {maxHeight: "90vh", height: "100%", minWidth: "20vw", maxWidth: "80vw", overflowY: "auto"}
     if (maximised) {
         panelStyle = { 
             ...panelStyle, 

@@ -7,6 +7,8 @@ import FlexBox from '../../components/flexbox';
 import {useEvents} from 'direktiv-react-hooks'
 import Modal, { ButtonDefinition } from '../../components/modal';
 import DirektivEditor from '../../components/editor';
+import { AutoSizer } from 'react-virtualized';
+
 
 function EventsPageWrapper(props) {
 
@@ -44,7 +46,7 @@ function EventsPage(props) {
                             <div>
                                 Cloud Events History
                             </div>
-                            <SendEventModal />
+                            <SendEventModal sendEvent={sendEvent}/>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
@@ -137,6 +139,7 @@ function EventsPage(props) {
 
 function SendEventModal(props) {
 
+    const {sendEvent} = props
     let [eventData, setEventData] = useState(`{
     "specversion" : "1.0",
     "type" : "com.github.pull.create",
@@ -147,7 +150,7 @@ function SendEventModal(props) {
     "comexampleextension1" : "value",
     "comexampleothervalue" : 5,
     "datacontenttype" : "text/xml",
-    "data" : "<much wow=\"xml\"/>"
+    "data" : "<much wow=\\"xml\\"/>"
 }`);
 
     return (<>
@@ -161,18 +164,27 @@ function SendEventModal(props) {
                 </ContentPanelHeaderButton>
             )}
             actionButtons={[
-                ButtonDefinition("Send", () => {}, "small", true, false),
+                ButtonDefinition("Send", async () => {
+                    let err = await sendEvent(eventData)
+                    if (err) return err
+                }, "small", true, false),
                 ButtonDefinition("Cancel", () => {}, "small light", true, false)
             ]}
             noPadding
         >
             <FlexBox className="col gap" style={{overflow: "hidden"}}>
-                <FlexBox style={{ minHeight: "40vh", minWidth: "80vw" }}>
-                    <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
-                        options={{
-                            autoLayout: true
-                        }} 
-                    />
+                <FlexBox style={{ minHeight: "40vh", minWidth: "70vw" }}>
+                    <AutoSizer>
+                        {({height, width})=>(
+                        <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
+                            options={{
+                                autoLayout: true
+                            }} 
+                            width={width}
+                            height={height}
+                        />
+                        )}
+                    </AutoSizer>
                 </FlexBox>
             </FlexBox>
         </Modal>
