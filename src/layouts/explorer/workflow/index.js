@@ -66,9 +66,10 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
+    const {data, err, getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1))
     const [router, setRouter] = useState(null)
 
+    // const [tags, setTags] = useState(null)
     const [revisions, setRevisions] = useState(null)
     const [revsErr, setRevsErr] = useState("")
 
@@ -76,7 +77,7 @@ function InitialWorkflowHook(props){
     useEffect(()=>{
         async function listData() {
             if(revisions === null){
-                // get the instances
+                // get workflow revisions
                 let resp = await getRevisions()
                 if(Array.isArray(resp)){
                     setRevisions(resp)
@@ -110,7 +111,7 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 1 ?
                         <>
-                        <RevisionSelectorTab tagWorkflow={tagWorkflow} namespace={namespace} filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} filepath={filepath} />
+                        <RevisionSelectorTab tagWorkflow={tagWorkflow} namespace={namespace} filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} getTags={getTags} removeTag={removeTag} filepath={filepath} />
                         </>
                     :<></>}
                     { activeTab === 2 ?
