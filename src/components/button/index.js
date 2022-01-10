@@ -3,7 +3,7 @@ import './style.css';
 
 function Button(props){
 
-    let {children, onClick, style, className} = props;
+    let {children, onClick, style, className, title} = props;
     let loader = (<></>);
 
     if (className) {
@@ -15,7 +15,7 @@ function Button(props){
     }
 
     return(
-        <div onClick={onClick} className={"btn " + className} style={style}>
+        <div onClick={onClick} className={"btn " + className} style={style} title={title}>
             {children}
             {loader}
         </div>
