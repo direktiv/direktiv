@@ -13,7 +13,7 @@ import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
+    let {onClick, style, footer, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
 
     if (!className) {
         className = ""
@@ -53,29 +53,7 @@ function NavBar(props) {
                         <GlobalNavItems />
                     </div>
 
-                    <FlexBox>
-                        <FlexBox className="nav-items" style={{ paddingLeft: "10px" }}>
-                            <ul style={{ marginTop: "0px" }}>
-                                <li>
-                                    <NavItem className="red-text" label="Log Out">
-                                        <VscSignOut />
-                                    </NavItem>
-                                </li>
-                            </ul>
-                        </FlexBox>
-                    </FlexBox>
-
-                    <div>
-                        <FlexBox className="col navbar-userinfo">
-                            <FlexBox className="navbar-username">
-                                UserName007
-                            </FlexBox>
-                            <FlexBox className="navbar-version">
-                                Version: 0.5.8 (abdgdj)
-                            </FlexBox>
-                        </FlexBox>
-                    </div>
-
+                    {footer}
                 </FlexBox>
             </FlexBox>
         </>

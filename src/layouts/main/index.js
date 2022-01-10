@@ -141,7 +141,7 @@ function NamespaceNavigation(props){
 
 
 function MainLayout(props) {
-    let {onClick, style, className, extraNavigation, extraRoutes} = props;
+    let {onClick, style, className, extraNavigation, extraRoutes, footer} = props;
 
     const [akey, setAKey] = useState(localStorage.getItem('apikey'))
     const [load, setLoad] = useState(true)
@@ -189,7 +189,7 @@ function MainLayout(props) {
                             :
                             <BrowserRouter>
                               <FlexBox className="navigation-col">
-                                <NavBar extraNavigation={extraNavigation}  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
+                                <NavBar footer={footer} extraNavigation={extraNavigation}  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
                               </FlexBox>
                               <NamespaceNavigation extraRoutes={extraRoutes} deleteNamespace={deleteNamespace} namespace={namespace} setNamespace={setNamespace} namespaces={data}/>
                             </BrowserRouter>
