@@ -13,8 +13,8 @@ import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, footer, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
-
+    let {onClick, style, footer, akeyReq, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
+    console.log(akeyReq)
     if (!className) {
         className = ""
     }

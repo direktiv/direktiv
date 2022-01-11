@@ -16,8 +16,8 @@ export default function Login(props) {
     }
 
     return (
-        <>
-            <FlexBox>
+        <div style={{height:"100vh"}}>
+            <FlexBox style={{height:"90%"}}>
                 <FlexBox className="col gap tall" style={{ gap: "12px" }}>
                     <FlexBox className="navbar-logo" style={{margin:0}}>
                         <img alt="logo" src={Logo} />
@@ -35,11 +35,11 @@ export default function Login(props) {
                             </div>
                         </FlexBox>
                         <div>
-                            Version: 0.5.8(asdasd)
+                            {process.env.REACT_APP_VERSION} 
                         </div>
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
-        </>
+        </div>
     )
 }
