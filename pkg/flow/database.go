@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -36,6 +37,45 @@ func initDatabase(ctx context.Context, addr string) (*ent.Client, error) {
 	if err = db.Schema.Create(ctx); err != nil {
 		_ = db.Close()
 		return nil, err
+	}
+
+	//
+	// initialize generation table if not exists
+	qstr := `CREATE TABLE IF NOT EXISTS db_generation (
+		generation VARCHAR
+	)`
+
+	_, err = db.DB().Exec(qstr)
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+
+	tx, err := db.DB().Begin()
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	row := tx.QueryRow(`SELECT generation FROM db_generation`)
+	var gen string
+	err = row.Scan(&gen)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			_, err = tx.Exec(fmt.Sprintf(`INSERT INTO db_generation(generation) VALUES('%s')`, "0.6.0")) // this value needs to be manually updated each time there's an important database change
+			if err != nil {
+				_ = db.Close()
+				return nil, err
+			}
+			err = tx.Commit()
+			if err != nil {
+				_ = db.Close()
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
 	}
 
 	return db, nil
