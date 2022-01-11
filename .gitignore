@@ -53,6 +53,9 @@ typings/
 # Optional eslint cache
 .eslintcache
 
+# IDE setting
+.idea
+
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/

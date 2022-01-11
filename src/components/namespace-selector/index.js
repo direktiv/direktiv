@@ -56,27 +56,29 @@ function NamespaceSelector(props) {
 
     return (
         <>
-            <FlexBox className="col gap">
-                <FlexBox onClick={() => {
-                    setShowSelector(!showSelector)
-                }} style={{...style, maxHeight: "64px"}} className={className + " ns-hover"}>
+            {(!!namespace) &&
+                <FlexBox className="col gap">
+                    <FlexBox onClick={() => {
+                        setShowSelector(!showSelector)
+                    }} style={{...style, maxHeight: "64px"}} className={className + " ns-hover"}>
 
-                    <FlexBox className={namespaceSelectorClass}>
-                        <NamespaceListItem disabled namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />
-                        <FlexBox className="tall">
-                            <div className="auto-margin grey-text">
-                                <VscChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
-                            </div>
+                        <FlexBox className={namespaceSelectorClass}>
+                            <NamespaceListItem disabled namespace={namespace} label="ACTIVE NAMESPACE" loading={loading} />
+                            <FlexBox className="tall">
+                                <div className="auto-margin grey-text">
+                                    <VscChevronDown className={chevronClass} style={{ marginTop: "8px" }} />
+                                </div>
+                            </FlexBox>
+                        </FlexBox>
+                    </FlexBox>
+                    <FlexBox className={selectorBorderClass}>
+                        <FlexBox className={selectorClass}>
+                            {namespaces !== null ?
+                            <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
                         </FlexBox>
                     </FlexBox>
                 </FlexBox>
-                <FlexBox className={selectorBorderClass}>
-                    <FlexBox className={selectorClass}>
-                        {namespaces !== null ? 
-                        <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
-                    </FlexBox>
-                </FlexBox>
-            </FlexBox>
+            }
         </>
     );
 }

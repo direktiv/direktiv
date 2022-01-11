@@ -24,7 +24,7 @@ function NavBar(props) {
     if (!namespace) {
         className += " loading"
     }
-    
+
     if (toggleResponsive) {
         className += " toggled"
     }
@@ -50,7 +50,7 @@ function NavBar(props) {
                     </div>
 
                     <div className="navbar-panel shadow col">
-                        <GlobalNavItems />
+                        <GlobalNavItems namespace={namespace}/>
                     </div>
 
                     {footer}
@@ -72,51 +72,51 @@ function NewNamespaceBtn(props) {
     const navigate = useNavigate()
 
     return (
-        <Modal title="New namespace" 
-            escapeToCancel
-            button={(
-                <FlexBox className="new-namespace-btn">
-                    <div className="auto-margin">
-                        <FlexBox className="row" style={{ gap: "8px", alignItems:"center" }}>
-                            <FlexBox>
-                                <VscAdd />
-                            </FlexBox>
-                            <FlexBox>
-                                New namespace
-                            </FlexBox>
-                        </FlexBox>
-                    </div>
-                </FlexBox>
-            )} 
+        <Modal title="New namespace"
+               escapeToCancel
+               button={(
+                   <FlexBox className="new-namespace-btn">
+                       <div className="auto-margin">
+                           <FlexBox className="row" style={{ gap: "8px", alignItems:"center" }}>
+                               <FlexBox>
+                                   <VscAdd />
+                               </FlexBox>
+                               <FlexBox>
+                                   New namespace
+                               </FlexBox>
+                           </FlexBox>
+                       </div>
+                   </FlexBox>
+               )}
 
-            titleIcon={<VscAdd/>}
+               titleIcon={<VscAdd/>}
 
-            onClose={ () => {setNs("")}}
+               onClose={ () => {setNs("")}}
 
-            keyDownActions={[
-                KeyDownDefinition("Enter", async () => {
-                    let err = await createNamespace(ns)
-                    if(err) return err
-                    setTimeout(()=>{
-                        navigate(`/n/${ns}`)
-                    },200)
-                    setNs("")
-                }, true)
-            ]}
+               keyDownActions={[
+                   KeyDownDefinition("Enter", async () => {
+                       let err = await createNamespace(ns)
+                       if(err) return err
+                       setTimeout(()=>{
+                           navigate(`/n/${ns}`)
+                       },200)
+                       setNs("")
+                   }, true)
+               ]}
 
-            actionButtons={[
-                ButtonDefinition("Add", async () => {
-                    let err = await createNamespace(ns)
-                    if(err) return err
-                    setTimeout(()=>{
-                        navigate(`/n/${ns}`)
-                    },200)
-                    setNs("")
-                }, "small blue", true, false),
-                ButtonDefinition("Cancel", () => {
-                    setNs("")
-                }, "small light", true, false)
-            ]}
+               actionButtons={[
+                   ButtonDefinition("Add", async () => {
+                       let err = await createNamespace(ns)
+                       if(err) return err
+                       setTimeout(()=>{
+                           navigate(`/n/${ns}`)
+                       },200)
+                       setNs("")
+                   }, "small blue", true, false),
+                   ButtonDefinition("Cancel", () => {
+                       setNs("")
+                   }, "small light", true, false)
+               ]}
         >
             <FlexBox>
                 <input autoFocus value={ns} onChange={(e)=>setNs(e.target.value)} placeholder="Enter namespace name" />
@@ -138,7 +138,7 @@ function NavItems(props) {
     // instance path matching
     let instances = matchPath("/n/:namespace/instances", pathname)
     let instanceid = matchPath("/n/:namespace/instances/:id", pathname)
-    
+
     let navItemMap = {}
     if(namespace !== null && namespace !== "") {
         if(extraNavigation) {
@@ -160,18 +160,18 @@ function NavItems(props) {
     return (
         <FlexBox style={{...style}} className="nav-items">
             <ul>
-                <li>
-                    <Link to={`/n/${namespace}`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={explorer || wfexplorer ? "active":""} label="Explorer">
                             <VscFolderOpened/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/monitoring`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/monitoring`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={monitoring ? "active":""} label="Monitoring">
                             <VscGraph />
@@ -185,51 +185,50 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li> */}
-                <li>
-                    <Link to={`/n/${namespace}/instances`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/instances`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={instances || instanceid ? "active":""} label="Instances">
                             <VscVmRunning/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/events`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/events`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={events ? "active":""} label="Events">
-                           <VscSymbolEvent/>
+                            <VscSymbolEvent/>
                         </NavItem>
                     </Link>
                 </li>
-                {namespace !== null && namespace !== "" ? 
-                  extraNavigation.map((obj)=>{
-                    if(obj.hreflink){
-                        return (
-                            <li key={obj.title}>
-                                <a href={obj.path(namespace)}>
-                                    <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active": ""} label={obj.title}>
-                                        {obj.icon}
-                                    </NavItem>
-                                </a>
-                            </li>
-                        )
-                    } else {
-                        return (
-                            <li key={obj.title}>
-                                <Link to={obj.path(namespace)} onClick={() => {
-                                    toggleResponsive(false)
-                                }}>
-                                    <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active":""} label={obj.title}>
-                                        {obj.icon}
-                                    </NavItem>
-                                </Link>
-                            </li>
-                        )
-                    }
-                }):""}
-
+                {namespace !== null && namespace !== "" ?
+                    extraNavigation?.map((obj)=>{
+                        if(obj.hreflink){
+                            return (
+                                <li key={obj.title}>
+                                    <a href={obj.path(namespace)}>
+                                        <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active": ""} label={obj.title}>
+                                            {obj.icon}
+                                        </NavItem>
+                                    </a>
+                                </li>
+                            )
+                        } else {
+                            return (
+                                <li key={obj.title}>
+                                    <Link to={obj.path(namespace)} onClick={() => {
+                                        toggleResponsive(false)
+                                    }}>
+                                        <NavItem className={navItemMap[obj.path(namespace)] !== null ? "active":""} label={obj.title}>
+                                            {obj.icon}
+                                        </NavItem>
+                                    </Link>
+                                </li>
+                            )
+                        }
+                    }):""}
                 {/* <li>
                     <Link to={`/n/${namespace}/permissions`} onClick={() => {
                         toggleResponsive(false)
@@ -239,18 +238,18 @@ function NavItems(props) {
                         </NavItem>
                     </Link>
                 </li> */}
-                <li>
-                    <Link to={`/n/${namespace}/services`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/services`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={services || service || revision ? "active":""} label="Services">
                             <VscLayers/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={`/n/${namespace}/settings`} onClick={() => {
-                        toggleResponsive(false)
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && `/n/${namespace}/settings`} onClick={() => {
+                        !!namespace && toggleResponsive(false)
                     }}>
                         <NavItem className={settings ? "active":""} label="Settings">
                             <VscSettingsGear/>
@@ -263,7 +262,7 @@ function NavItems(props) {
     );
 }
 
-function GlobalNavItems(props) {
+function GlobalNavItems({namespace}) {
 
     const {pathname} = useLocation()
 
@@ -277,22 +276,22 @@ function GlobalNavItems(props) {
     return (
         <FlexBox className="nav-items">
             <ul>
-                <li style={{marginTop: "0px"}}>
-                    <Link  to={"/jq"}>
+                <li className={`${!namespace ? "disabled-nav-item":""}`} style={{marginTop: "0px"}}>
+                    <Link to={!!namespace && "/jq"}>
                         <NavItem className={jq ? "active":""} label="jq Playground">
                             <IoExtensionPuzzleOutline/>
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={"/g/services"}>
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && "/g/services"}>
                         <NavItem className={gs || gservice || grevision ? "active":""} label="Global Services">
                             <VscLayers />
                         </NavItem>
                     </Link>
                 </li>
-                <li>
-                    <Link to={"/g/registries"}>
+                <li className={`${!namespace ? "disabled-nav-item":""}`}>
+                    <Link to={!!namespace && "/g/registries"}>
                         <NavItem className={gr ? "active":""} label="Global Registries">
                             <VscServer/>
                         </NavItem>
@@ -311,14 +310,14 @@ export function NavItem(props) {
     }
 
     return (
-            <FlexBox className={"nav-item " + className} style={{ gap: "8px" }}>
-                <FlexBox style={{ maxWidth: "30px", width: "30px", margin: "auto" }}>
-                    {children}
-                </FlexBox>
-                <FlexBox style={{ textAlign: "left" }}>
-                    {label}
-                </FlexBox>
+        <FlexBox className={"nav-item " + className} style={{ gap: "8px" }}>
+            <FlexBox style={{ maxWidth: "30px", width: "30px", margin: "auto" }}>
+                {children}
             </FlexBox>
+            <FlexBox style={{ textAlign: "left" }}>
+                {label}
+            </FlexBox>
+        </FlexBox>
     );
 }
 
@@ -349,7 +348,7 @@ function ResponsiveNavbar(props) {
                 e.stopPropagation()
             }}>
                 <div className={panelClasses}>
-                    
+
                 </div>
             </FlexBox>
         </>
