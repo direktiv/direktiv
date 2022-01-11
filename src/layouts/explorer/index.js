@@ -160,7 +160,7 @@ function ExplorerList(props) {
                                 ButtonDefinition("Add", async () => {
                                     let err = await createNode(name, "workflow", wfData)
                                     if (err) return err
-                                }, "small blue", true, false),
+                                }, `small blue ${name.trim() ? "" : "disabled"}`, true, false),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", true, false)
                             ]}
@@ -218,7 +218,7 @@ function ExplorerList(props) {
                                     ButtonDefinition("Add", async () => {
                                         let err = await createNode(name, "directory")
                                         if(err) return err
-                                    }, "small blue", true, false),
+                                    }, `small blue ${name.trim() ? "" : "disabled"}`, true, false),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", true, false)
                                 ]}

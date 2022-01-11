@@ -71,3 +71,6 @@
 .explorer-action-btn {
     max-width:fit-content;
 }
+.disabled {
+    cursor: not-allowed;
+}
