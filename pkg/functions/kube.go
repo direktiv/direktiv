@@ -1000,7 +1000,7 @@ func metaSpec(net string, min, max int, nsID, nsName, wfID, path, name, scope st
 	metaSpec.Labels[ServiceHeaderName] = SanitizeLabel(name)
 	if len(wfID) > 0 {
 		metaSpec.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
-		metaSpec.Labels[ServiceHeaderPath] = SanitizeLabel(path)
+		metaSpec.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(path))
 		metaSpec.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	}
 
@@ -1028,6 +1028,14 @@ func SanitizeLabel(s string) string {
 	return s
 }
 
+func trimRevisionSuffix(s string) string {
+	if i := strings.LastIndex(s, ":"); i > 0 {
+		s = s[:i]
+	}
+
+	return s
+}
+
 func meta(svn, name, nsID, nsName, wfID, path string, scale, size int, scope, hash string) metav1.ObjectMeta {
 
 	meta := metav1.ObjectMeta{
@@ -1042,7 +1050,7 @@ func meta(svn, name, nsID, nsName, wfID, path string, scale, size int, scope, ha
 	meta.Labels[ServiceHeaderName] = SanitizeLabel(name)
 	if len(wfID) > 0 {
 		meta.Labels[ServiceHeaderWorkflowID] = SanitizeLabel(wfID)
-		meta.Labels[ServiceHeaderPath] = SanitizeLabel(path)
+		meta.Labels[ServiceHeaderPath] = trimRevisionSuffix(SanitizeLabel(path))
 		meta.Labels[ServiceHeaderRevision] = SanitizeLabel(hash)
 	}
 
