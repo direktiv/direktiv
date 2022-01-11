@@ -28,6 +28,10 @@ function App() {
                     let json = await resp.json()
                     setLoadVersion(false)
                     setVersion(json.api)
+
+
+                    // TODO if the akey is provided but not needed as authentication isn't required.
+                    // Might need to make an api to check if apikeys are required.
                     if(akey !== "null") {
                         console.log('set akeyreq to true')
                         console.log(akey)
