@@ -28,11 +28,12 @@ function App() {
                     let json = await resp.json()
                     setLoadVersion(false)
                     setVersion(json.api)
-                    if(akey !== null) {
+                    if(akey !== "null") {
+                        console.log('set akeyreq to true')
+                        console.log(akey)
                         setAKeyReq(true)
                     }
                 } else {
-                    console.log(akey)
                     if(resp.status === 401){
                         setLogin(true)
                         setAKeyReq(true)
@@ -42,8 +43,10 @@ function App() {
                 console.log(e, "TODO handle err")
             }
         }
+        if(loadVersion){
             fetchVersion()
-    },[version, loadVersion])
+        }
+    },[version, loadVersion, akey])
 
     const f =   <>
         <FlexBox>
