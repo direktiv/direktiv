@@ -160,14 +160,14 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 		sql := sqls[i]
 		_, err := db.Exec(sql)
 		if err != nil {
-			log.Printf("error running sql: %v", err)
+			return err
 		}
 	}
 
 	rows, err := db.Query(`SELECT events.oid, workflows.namespace_workflows FROM events INNER JOIN workflows ON workflows.oid = events.workflow_wfevents WHERE events.namespace_namespacelisteners IS NULL`)
 	if err != nil {
 		if err != nil {
-			log.Printf("error running sql: %v", err)
+			return err
 		}
 		return nil
 	}
@@ -178,14 +178,12 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 		var oid, id uuid.UUID
 		err = rows.Scan(&oid, &id)
 		if err != nil {
-			log.Printf("error running sql: %v", err)
-			continue
+			return err
 		}
 
 		_, err = db.Exec(fmt.Sprintf(`UPDATE events SET namespace_namespacelisteners = '%s' WHERE oid = '%s'`, id.String(), oid.String()))
 		if err != nil {
-			log.Printf("error running sql: %v", err)
-			continue
+			return err
 		}
 
 	}
