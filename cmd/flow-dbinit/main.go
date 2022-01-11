@@ -9,6 +9,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -148,6 +149,9 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 
 	sqls := []string{
 		fmt.Sprintf("ALTER TABLE refs ADD COLUMN created_at timestamp NOT NULL DEFAULT '%v';", time.Now().UTC().Format("2006-01-02T15:04:05-0700")),
+		fmt.Sprintf("ALTER TABLE events ADD COLUMN created_at timestamp NOT NULL DEFAULT '%v';", time.Now().UTC().Format("2006-01-02T15:04:05-0700")),
+		fmt.Sprintf("ALTER TABLE events ADD COLUMN updated_at timestamp NOT NULL DEFAULT '%v';", time.Now().UTC().Format("2006-01-02T15:04:05-0700")),
+		"ALTER TABLE events ADD COLUMN namespace_namespacelisteners uuid;",
 		"ALTER TABLE revisions ADD COLUMN metadata jsonb NOT NULL DEFAULT '{ \"hello\": \"world\"}'",
 		"delete from metrics;", // we can not save metrics
 	}
@@ -158,6 +162,32 @@ func updateGeneration_0_6_0(db *sql.Tx) error {
 		if err != nil {
 			log.Printf("error running sql: %v", err)
 		}
+	}
+
+	rows, err := db.Query(`SELECT events.oid, workflows.namespace_workflows FROM events INNER JOIN workflows ON workflows.oid = events.workflow_wfevents WHERE events.namespace_namespacelisteners IS NULL`)
+	if err != nil {
+		if err != nil {
+			log.Printf("error running sql: %v", err)
+		}
+		return nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var oid, id uuid.UUID
+		err = rows.Scan(&oid, &id)
+		if err != nil {
+			log.Printf("error running sql: %v", err)
+			continue
+		}
+
+		_, err = db.Exec(fmt.Sprintf(`UPDATE events SET namespace_namespacelisteners = '%s' WHERE oid = '%s'`, id.String(), oid.String()))
+		if err != nil {
+			log.Printf("error running sql: %v", err)
+			continue
+		}
+
 	}
 
 	return nil
