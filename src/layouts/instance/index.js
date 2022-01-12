@@ -46,7 +46,7 @@ function InstancePage(props) {
 
     let instanceID = params["id"];
 
-    let {data, err, cancelInstance, getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID);
+    let {data, err, cancelInstance, getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
     
 
     useEffect(()=>{
@@ -314,7 +314,7 @@ function InstanceDiagram(props) {
     const [load, setLoad] = useState(true)
     const [wfdata, setWFData] = useState("")
 
-    const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath)
+    const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, localStorage.getItem("apikey"))
 
     useEffect(()=>{
         async function getwf() {
@@ -450,7 +450,7 @@ function Logs(props){
     let {namespace, instanceID, follow} = props;
     // const [load, setLoad] = useState(true)
     // const [logs, setLogs] = useState([])
-    let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID)
+    let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
     
     // useEffect(()=>{
     //     if(load && data !== null){

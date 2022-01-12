@@ -1,0 +1,6 @@
+.event-split {
+
+}
+.event-split span:not(:last-child):after{
+    content: ', '
+}
