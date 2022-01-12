@@ -188,18 +188,16 @@ export function PodLogs(props){
                             <Logs setClipData={setClipData} clipData={clipData} follow={follow} pod={tab} setFollow={setFollow}/>
                         </FlexBox>
                         <FlexBox style={{height:"40px", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
-                            <FlexBox>
-                                <div className="pod-label">
-                                    {tab}
-                                </div>
-                            </FlexBox>
+                            <div title={tab} style={{whiteSpace:"nowrap",textOverflow:"ellipsis", overflow:"hidden", maxWidth:"300px"}}>
+                                {tab.split(`${namespace}-${service}-`)[1]}
+                            </div>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 
-                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
+                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
                                         <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
                                     </div>
                                     :
-                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
+                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
                                         <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
                                     </div>
                                 }

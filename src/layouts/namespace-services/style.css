@@ -48,9 +48,6 @@
 }
 
 .pod-label {
-    max-width: 200px;
+    /* max-width: 200px; */
     max-height: 22px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
 }
