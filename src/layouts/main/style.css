@@ -18,7 +18,6 @@
     display: none;
 }
 
-
 .breadcrumbs-row {
     height: 72px;
     max-height: 72px;
@@ -27,4 +26,17 @@
 .content-col {
     max-height: 100vh;
     overflow-y: auto;
+}
+
+.message-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin: 7px 8px 0 0;
+}
+
+.no-workspace-message {
+    text-align: center;
+    margin: 0 50px 70px 50px;
 }

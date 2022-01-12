@@ -7,6 +7,18 @@ import FlexBox from '../../components/flexbox';
 import {useEvents} from 'direktiv-react-hooks'
 import Modal, { ButtonDefinition } from '../../components/modal';
 import DirektivEditor from '../../components/editor';
+import { AutoSizer } from 'react-virtualized';
+
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc"
+import './style.css'
+import { Link } from 'react-router-dom';
+
+dayjs.extend(utc)
+dayjs.extend(relativeTime);
+
+
 
 function EventsPageWrapper(props) {
 
@@ -25,12 +37,8 @@ export default EventsPageWrapper;
 function EventsPage(props) {
 
     let {namespace} = props;
-    console.log(useEvents);
 
-    let {getEventListeners, sendEvent} = useEvents(Config.url, true, namespace)
-    console.log(getEventListeners);
-    console.log(sendEvent);
-
+    let {errHistory, errListeners, eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     return(
         <>
@@ -44,47 +52,52 @@ function EventsPage(props) {
                             <div>
                                 Cloud Events History
                             </div>
-                            <SendEventModal />
+                            <SendEventModal sendEvent={sendEvent}/>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
-                                <table>
+                                <table className="cloudevents-table" style={{width: "100%"}}>
                                     <thead>
                                         <tr>
                                             <th>
                                                 Type
                                             </th>
-                                            <th>
+                                            <th style={{width:"250px"}}>
                                                 Source
                                             </th>
                                             <th>
                                                 Time
                                             </th>
-                                            <th>
-                                                <div style={{display: "flex", alignItems: "flex-end", justifyContent: "right"}}>
+                                            <th style={{textAlign:'center'}}>
                                                     Retrigger  
-                                                </div>
                                             </th>
                                         </tr>
                                     </thead>
+                                    {eventHistory !== null ?
                                     <tbody>
-                                        <td>
-                                            azure.example
-                                        </td>
-                                        <td>
-                                            Azure
-                                        </td>
-                                        <td>
-                                            2.30pm (a while ago)
-                                        </td>
-                                        <td>
-                                            <div style={{display: "flex", alignItems: "flex-end", justifyContent: "right", paddingRight: "10px"}}>
-                                                <Button className="small light">
-                                                    <VscRedo/>
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tbody>
+                                        {eventHistory.map((obj)=>{
+                                            return <tr style={{borderBottom:"1px solid #f4f4f4"}}>
+                                                <td title={obj.node.type} style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                                    {obj.node.type}
+                                                </td>
+                                                <td title={obj.node.source} style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                                    {obj.node.source}
+                                                </td>
+                                                <td>
+                                                    {dayjs.utc(obj.node.receivedAt).local().format("HH:mm a")}
+                                                </td>
+                                                <td style={{textAlign:'center', justifyContent:"center"}}>
+                                                    <div onClick={async ()=>{
+                                                        await replayEvent(obj.node.id)
+                                                    }} style={{display: "flex", alignItems: "flex-end", justifyContent: "center", paddingRight: "10px"}}>
+                                                        <Button className="small light">
+                                                            <VscRedo/>
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        })}
+                                    </tbody>: ""}
                                 </table>
                             </div>
                         </ContentPanelBody>
@@ -100,7 +113,7 @@ function EventsPage(props) {
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>
-                                <table>
+                                <table className="event-listeners-table" style={{width: "100%"}}>
                                     <thead>
                                         <tr>
                                             <th>
@@ -110,21 +123,38 @@ function EventsPage(props) {
                                                 Type
                                             </th>
                                             <th>
-                                                Source
+                                                Mode
+                                            </th>
+                                            <th>
+                                                Event Types
                                             </th>
                                         </tr>
                                     </thead>
+                                    {eventListeners !== null ?
                                     <tbody>
-                                        <td>
-                                            /workflows/my-test-workflow
-                                        </td>
-                                        <td>
-                                            azure.example
-                                        </td>
-                                        <td>
-                                            Azure
-                                        </td>
-                                    </tbody>
+                                        {eventListeners.map((obj)=>{
+                                            return(
+                                                <tr  style={{borderBottom:"1px solid #f4f4f4"}}>
+                                                    <td style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer${obj.node.workflow}`}>
+                                                            {obj.node.workflow}
+                                                        </Link> 
+                                                    </td>
+                                                    <td style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                                        {obj.node.instance !== "" ? <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.node.instance}`}>{obj.node.instance.split("-")[0]}</Link> : "start"}
+                                                    </td>
+                                                    <td style={{textOverflow:"ellipsis", overflow:"hidden"}}>
+                                                        {obj.node.mode}
+                                                    </td>
+                                                    <td className="event-split">
+                                                        {obj.node.events.map((obj)=>{
+                                                            return <span>{obj.type}</span>
+                                                        })}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>:""}
                                 </table>
                             </div>
                         </ContentPanelBody>
@@ -137,6 +167,7 @@ function EventsPage(props) {
 
 function SendEventModal(props) {
 
+    const {sendEvent} = props
     let [eventData, setEventData] = useState(`{
     "specversion" : "1.0",
     "type" : "com.github.pull.create",
@@ -147,7 +178,7 @@ function SendEventModal(props) {
     "comexampleextension1" : "value",
     "comexampleothervalue" : 5,
     "datacontenttype" : "text/xml",
-    "data" : "<much wow=\"xml\"/>"
+    "data" : "<much wow=\\"xml\\"/>"
 }`);
 
     return (<>
@@ -161,18 +192,27 @@ function SendEventModal(props) {
                 </ContentPanelHeaderButton>
             )}
             actionButtons={[
-                ButtonDefinition("Send", () => {}, "small", true, false),
+                ButtonDefinition("Send", async () => {
+                    let err = await sendEvent(eventData)
+                    if (err) return err
+                }, "small", true, false),
                 ButtonDefinition("Cancel", () => {}, "small light", true, false)
             ]}
             noPadding
         >
             <FlexBox className="col gap" style={{overflow: "hidden"}}>
-                <FlexBox style={{ minHeight: "40vh", minWidth: "80vw" }}>
-                    <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
-                        options={{
-                            autoLayout: true
-                        }} 
-                    />
+                <FlexBox style={{ minHeight: "40vh", minWidth: "70vw" }}>
+                    <AutoSizer>
+                        {({height, width})=>(
+                        <DirektivEditor noBorderRadius value={eventData} setDValue={setEventData} dlang="json" 
+                            options={{
+                                autoLayout: true
+                            }} 
+                            width={width}
+                            height={height}
+                        />
+                        )}
+                    </AutoSizer>
                 </FlexBox>
             </FlexBox>
         </Modal>
