@@ -33,7 +33,9 @@
 .secret-tuple:hover {
     background-color: rgba(0,0,0,0.1);
 }
-
+.secret-tuple.empty-content:hover {
+    background-color: white;
+}
 .secret-tuple > .key {
     /* min-width: 40%; */
     /* max-width: 40%; */

@@ -114,7 +114,7 @@ export default function WorkflowPod(props) {
         </div>
         {pods !== null && pods.length > 0 ?
         <FlexBox>
-            <PodLogs namespace={namespace} service={service} revision={revision} pods={pods} />
+            <PodLogs  namespace={namespace} service={service} revision={revision} pods={pods} />
         </FlexBox>:<></>}
     </FlexBox>
     )

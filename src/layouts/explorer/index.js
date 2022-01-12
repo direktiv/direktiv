@@ -162,15 +162,19 @@ function ExplorerList(props) {
                                 ButtonDefinition("Add", async () => {
                                     let err = await createNode(name, "workflow", wfData)
                                     if (err) return err
-                                }, "small blue", true, false),
+                                }, `small blue ${(name.trim() && wfTemplate) ? "" : "disabled"}`, true, false),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", true, false)
                             ]}
 
                             keyDownActions={[
                                 KeyDownDefinition("Enter", async () => {
-                                    let err = await createNode(name, "workflow", wfData)
+                                    if(name.trim() && wfTemplate) {
+                                        let err = await createNode(name, "workflow", wfData)
                                     if (err) return err
+                                    } else {
+                                        return "Please fill in name and choose template"
+                                    }
                                 }, true, "workflow-name")
                             ]}
                         >
@@ -224,15 +228,19 @@ function ExplorerList(props) {
                                     ButtonDefinition("Add", async () => {
                                         let err = await createNode(name, "directory")
                                         if(err) return err
-                                    }, "small blue", true, false),
+                                    }, `small blue ${name.trim() ? "" : "disabled"}`, true, false),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", true, false)
                                 ]}
 
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                        let err = await createNode(name, "directory")
+                                        if(name.trim()) {
+                                            let err = await createNode(name, "directory")
                                         if(err) return err
+                                        } else {
+                                            return "Please enter directory name"
+                                        }
                                         setName("")
                                     }, true)
                                 ]}

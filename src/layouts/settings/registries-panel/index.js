@@ -260,7 +260,7 @@ export function Registries(props) {
         <>
             <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
             {registries.length === 0 ? 
-                     <FlexBox className="secret-tuple">
+                     <FlexBox className="secret-tuple empty-content">
                      <FlexBox className="key">No registries are stored...</FlexBox>
                      <FlexBox className="val"></FlexBox>
                      <FlexBox className="val"></FlexBox>

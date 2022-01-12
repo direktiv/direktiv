@@ -10,6 +10,7 @@ import 'react-virtualized/styles.css'; // only needs to be imported once
 import { ServiceStatus } from "."
 import { copyTextToClipboard} from '../../util'
 import * as dayjs from 'dayjs'
+import { useSearchParams } from "react-router-dom"
 
 export default function PodPanel(props) {
     const {namespace} = props
@@ -147,6 +148,8 @@ export function PodLogs(props){
     const [width, setWidth] = useState(window.innerWidth);
     const [tab, setTab] = useState(pods[0] ? pods[0].name: "")
     const [clipData, setClipData] = useState(null)
+    const params = useParams()
+    const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
     useEffect(()=>{
         const handleWindowResize = () => setWidth(window.innerWidth)
@@ -155,7 +158,7 @@ export function PodLogs(props){
         // Return a function from the effect that removes the event listener
         return () => window.removeEventListener("resize", handleWindowResize);
     },[])
-
+    let version = searchParams.get('version')
 
     return (
         <ContentPanel style={{width:"100%"}}>
@@ -175,6 +178,9 @@ export function PodLogs(props){
                                 if(namespace){
                                     name = `namespace-${namespace}-${service}-${revision}-deployment-`
                                 }
+                                if(version){
+                                    name = `workflow-${version}-${service}-${revision}-deployment-`
+                                }
 
                                 return(
                                     <div onClick={()=>setTab(obj.name)} style={{color: tab === obj.name ? "white": "#b5b5b5", display:"flex", alignItems:"center", cursor:"pointer", backgroundColor: tab === obj.name ? "#223848":"#355166", padding:"5px", maxWidth:"150px", gap:"3px"}}>
@@ -188,18 +194,24 @@ export function PodLogs(props){
                             <Logs setClipData={setClipData} clipData={clipData} follow={follow} pod={tab} setFollow={setFollow}/>
                         </FlexBox>
                         <FlexBox style={{height:"40px", maxHeight:"40px", paddingRight:"10px", paddingLeft:"10px", boxShadow:"0px 0px 3px 0px #fcfdfe", alignItems:'center'}}>
-                            <FlexBox>
-                                <div className="pod-label">
-                                    {tab}
-                                </div>
-                            </FlexBox>
+                            <div title={tab} style={{whiteSpace:"nowrap",textOverflow:"ellipsis", overflow:"hidden", maxWidth:"300px"}}>
+                                {version ? 
+                                tab.split(`workflow-${version}-${service}-${revision}-deployment-`)
+                                :""
+                                }
+                                {namespace ? 
+                                 tab.split(`${namespace}-${service}-${revision}-deployment-`)[1]
+                                :
+                                 tab.split(`global-${service}-${revision}-deployment-`)
+                                }
+                            </div>
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 
-                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
+                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
                                         <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
                                     </div>
                                     :
-                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex"}}>
+                                    <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
                                         <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
                                     </div>
                                 }

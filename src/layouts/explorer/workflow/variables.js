@@ -14,6 +14,7 @@ import Tabs from '../../../components/tabs';
 import { Config } from '../../../util';
 import { VariableFilePicker } from '../../settings/variables-panel';
 import { AutoSizer } from 'react-virtualized';
+import HelpIcon from "../../../components/help";
 
 
 function AddWorkflowVariablePanel(props) {
@@ -44,7 +45,12 @@ function AddWorkflowVariablePanel(props) {
                 <ContentPanelTitleIcon>
                     <IoMdLock/>
                 </ContentPanelTitleIcon>
-                Variables
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Variables
+                    </div>
+                    <HelpIcon msg={"List of variables for that workflow."} />
+                </FlexBox>
                     <Modal title="New variable" 
                         escapeToCancel
                         button={(
