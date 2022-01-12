@@ -26,7 +26,7 @@ function ScarySettings(props) {
                             <Scary namespace={namespace} deleteErr={deleteErr} deleteNamespace={deleteNamespace}/>
                         </FlexBox>
                         <FlexBox>
-                            <Alert className="critical">These settings are super dangerous! Use at your own risk!</Alert>
+                            <Alert style={{width: "100%"}} className="critical">These settings are super dangerous! Use at your own risk!</Alert>
                         </FlexBox>
                     </FlexBox>
                 </ContentPanelBody>
