@@ -285,7 +285,7 @@
   .input-tag input {
     /* border: none !important; */
     width: 150px;
-    height: 22px;
+    line-height: 42px;
     /* max-height: 20; */
     /* margin-top: 4px; */
     /* max-width: 120px; */
@@ -317,7 +317,7 @@
     /* margin-bottom: 5px;
     margin-right: 5px; */
     padding: 2.5px 5px;
-    max-height: 20px;
+    line-height: 42px;
   }
   
   .input-tag__tags li button {
