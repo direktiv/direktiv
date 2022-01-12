@@ -323,7 +323,7 @@ export default function DirektivEditor(props) {
             defaultValue={dvalue}
             value={value}
             theme={"cobalt"}
-            loading={"This shows when component is loading"}
+            loading={"Loading component..."}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
             />
