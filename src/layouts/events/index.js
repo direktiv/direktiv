@@ -8,6 +8,7 @@ import {useEvents} from 'direktiv-react-hooks'
 import Modal, { ButtonDefinition } from '../../components/modal';
 import DirektivEditor from '../../components/editor';
 import { AutoSizer } from 'react-virtualized';
+import HelpIcon from "../../components/help";
 
 
 function EventsPageWrapper(props) {
@@ -43,9 +44,12 @@ function EventsPage(props) {
                             <ContentPanelTitleIcon>
                                 <VscCloud/>
                             </ContentPanelTitleIcon>
-                            <div>
-                                Cloud Events History
-                            </div>
+                            <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                                <div>
+                                    Cloud Events History
+                                </div>
+                                <HelpIcon msg={"A history of events that have hit this specific namespace."} />
+                            </FlexBox>
                             <SendEventModal sendEvent={sendEvent}/>
                         </ContentPanelTitle>
                         <ContentPanelBody>
@@ -98,7 +102,12 @@ function EventsPage(props) {
                             <ContentPanelTitleIcon>
                                 <VscSymbolEvent/>
                             </ContentPanelTitleIcon>
-                            <div>Active Event Listeners</div>
+                            <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                                <div>
+                                    Active Event Listeners
+                                </div>
+                                <HelpIcon msg={"Current listeners in a namespace that are listening for a cloud a event."} />
+                            </FlexBox>
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <div style={{maxHeight: "40vh", overflowY: "auto", fontSize: "12px"}}>

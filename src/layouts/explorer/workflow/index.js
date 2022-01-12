@@ -29,6 +29,7 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 
 
 import {PieChart} from 'react-minimal-pie-chart'
+import HelpIcon from "../../../components/help";
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -171,9 +172,12 @@ function WorkflowDependencies(props) {
                     <ContentPanelTitleIcon>
                         <BsCodeSquare />
                     </ContentPanelTitleIcon>
-                    <div>
-                        Dependency Graph
-                    </div>
+                    <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                        <div>
+                            Dependency Graph
+                        </div>
+                        <HelpIcon msg={"Shows the dependencies the workflow requires in a graph format."} />
+                    </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody>
                     <DependencyDiagram dependencies={dependencies} workflow={workflow} type={"workflow"}/>
@@ -280,9 +284,12 @@ function WorkingRevision(props) {
                     <ContentPanelTitleIcon>
                         <BsCodeSquare />
                     </ContentPanelTitleIcon>
-                    <div>
-                        Active Revision
-                    </div>
+                    <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                        <div>
+                            Active Revision
+                        </div>
+                        <HelpIcon msg={"Latest revision where you can edit and create new revisions."} />
+                    </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody style={{padding: "0px"}}>
                     <FlexBox className="col" style={{ overflow: "hidden" }}>
@@ -526,9 +533,12 @@ function OverviewTab(props) {
                                 <ContentPanelTitleIcon>
                                     <BsCodeSquare />
                                 </ContentPanelTitleIcon>
-                                <div>
-                                    Instances
-                                </div>
+                                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                                    <div>
+                                        Instances
+                                    </div>
+                                    <HelpIcon msg={"List of instances for this workflow."} />
+                                </FlexBox>
                             </ContentPanelTitle>
                             <WorkflowInstances instances={instances} namespace={namespace} />
                         </ContentPanel>
@@ -539,9 +549,12 @@ function OverviewTab(props) {
                                 <ContentPanelTitleIcon>
                                     <BsCodeSquare />
                                 </ContentPanelTitleIcon>
-                                <div>
-                                    Success/Failure Rate
-                                </div>
+                                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                                    <div>
+                                        Success/Failure Rate
+                                    </div>
+                                    <HelpIcon msg={"Success and failure of the workflow being run."} />
+                                </FlexBox>
                             </ContentPanelTitle>
                             <ContentPanelBody>
                                 <SuccessFailureGraph getSuccessFailedMetrics={getSuccessFailedMetrics} />
@@ -556,9 +569,12 @@ function OverviewTab(props) {
                         <ContentPanelTitleIcon>
                             <BsCodeSquare />
                         </ContentPanelTitleIcon>
-                        <div>
-                            Traffic Distribution
-                        </div>
+                        <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                            <div>
+                                Traffic Distribution
+                            </div>
+                            <HelpIcon msg={"Distributed traffic between different workflow revisions."} />
+                        </FlexBox>
                     </ContentPanelTitle>
                     <TrafficDistribution routes={router.routes}/>
                 </ContentPanel>
@@ -569,9 +585,12 @@ function OverviewTab(props) {
                         <ContentPanelTitleIcon>
                             <BsCodeSquare />
                         </ContentPanelTitleIcon>
-                        <div>
-                            Workflow Services
-                        </div>
+                        <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                            <div>
+                                Workflow Services
+                            </div>
+                            <HelpIcon msg={"A List of services for this workflow."} />
+                        </FlexBox>
                     </ContentPanelTitle>
                     <WorkflowServices namespace={namespace} filepath={filepath} />
                 </ContentPanel>
@@ -872,7 +891,12 @@ function SettingsTab(props) {
                                     <ContentPanelTitleIcon>
                                         <IoMdLock/>
                                     </ContentPanelTitleIcon>
-                                    Log to Event
+                                    <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                                        <div>
+                                            Log to Event
+                                        </div>
+                                        <HelpIcon msg={"Ability to trigger cloud event logging for that workflow."} />
+                                    </FlexBox>
                                 </ContentPanelTitle>
                                 <ContentPanelBody className="col" style={{
                                     alignItems: "center"
@@ -904,7 +928,12 @@ function SettingsTab(props) {
                                     <ContentPanelTitleIcon>
                                         <IoMdLock/>
                                     </ContentPanelTitleIcon>
-                                    Add Attributes
+                                    <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                                        <div>
+                                            Add Attributes
+                                        </div>
+                                        <HelpIcon msg={"Attributes to define the workflow."} />
+                                    </FlexBox>
                                     {/* <ContentPanelHeaderButton>
                                         + Add
                                     </ContentPanelHeaderButton> */}

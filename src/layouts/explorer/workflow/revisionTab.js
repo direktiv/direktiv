@@ -16,6 +16,7 @@ import { IoSettings } from 'react-icons/io5';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
+import HelpIcon from "../../../components/help";
 function RevisionTab(props) {
 
     const navigate = useNavigate()
@@ -245,9 +246,12 @@ export function RevisionSelectorTab(props) {
                         <ContentPanelTitleIcon>
                             <BsCodeSquare/>
                         </ContentPanelTitleIcon>
-                        <div>
-                            All Revisions
-                        </div>
+                        <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                            <div>
+                                All Revisions
+                            </div>
+                            <HelpIcon msg={"A list of all revisions for that workflow."} />
+                        </FlexBox>
                     </ContentPanelTitle>
                     <ContentPanelBody style={{flexDirection: "column"}}>
                         {revisions.map((obj) => {
@@ -556,9 +560,12 @@ export function RevisionTrafficShaper(props) {
                 <ContentPanelTitleIcon>
                     <IoSettings />
                 </ContentPanelTitleIcon>
-                <div>
-                    Traffic Shaping
-                </div>
+                <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
+                    <div>
+                        Traffic Shaping
+                    </div>
+                    <HelpIcon msg={"Change the way the traffic is distributed for revisions of this workflow."} />
+                </FlexBox>
             </ContentPanelTitle>
             <ContentPanelBody style={{flexDirection:"column"}}>
                 <FlexBox className="gap wrap" style={{justifyContent: "space-between"}}>
