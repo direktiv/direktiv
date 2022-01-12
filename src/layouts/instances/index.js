@@ -34,8 +34,10 @@ export default InstancesPage;
 function InstancesTable(props) {
     const {namespace} = props
     const [load, setLoad] = useState(true)
+    const [qParams, setQParams] = useState(["first=1"])
 
-    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"))
+    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
+    console.log(pageInfo)
 
     useEffect(()=>{
         if(data !== null || err !== null) {
@@ -107,6 +109,7 @@ function InstancesTable(props) {
         </table>}</>
         </ContentPanelBody>
     </ContentPanel>
+
     </Loader>
         
     );
