@@ -16,7 +16,6 @@ import Tabs from '../../../components/tabs'
 function SecretsPanel(props){
     const {namespace} = props
 
-
     const [keyValue, setKeyValue] = useState("")
     const [file, setFile] = useState(null)
     const [vValue, setVValue] = useState("")
