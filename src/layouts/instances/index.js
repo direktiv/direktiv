@@ -44,7 +44,7 @@ function InstancesTable(props) {
     },[data, err])
 
     return(
-        <Loader load={load} timer={1000}>
+        <Loader load={load} timer={3000}>
 
         <ContentPanel>
         <ContentPanelTitle>
