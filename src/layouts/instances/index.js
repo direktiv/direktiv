@@ -137,6 +137,10 @@ export function InstanceRow(props) {
     let wfStr = name.split(':')[0]
     let revStr = name.split(':')[1]
 
+    let pathwf = wfStr.split("/")
+    let wfname = pathwf[pathwf.length-1]
+    pathwf.splice(pathwf.length-1, pathwf.length-1)
+
     return(
     
     <tr onClick={()=>{
@@ -146,10 +150,15 @@ export function InstanceRow(props) {
             {label}
         </td>
         {!wf ? 
-        <td className="center-align" style={{fontSize: "12px", lineHeight: "20px"}}>
-            {wfStr}
+        <td title={wfStr} className="center-align" style={{ fontSize: "12px", lineHeight: "20px", display:"flex", marginTop:"12px"}}>
+            <div style={{marginLeft:"10px", textOverflow:"ellipsis", overflow:"hidden"}}>
+                /{pathwf.join("/")}
+            </div>
+            <div >
+                /{wfname}
+            </div>
         </td>: ""}
-        <td style={{ fontSize: "12px", lineHeight: "20px" }} className="center-align">
+        <td title={revStr} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden" }} className="center-align">
             {revStr}
         </td>
         <td className="center-align">
