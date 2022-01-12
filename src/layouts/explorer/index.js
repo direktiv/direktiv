@@ -171,7 +171,7 @@ function ExplorerList(props) {
                                         let err = await createNode(name, "workflow", wfData)
                                     if (err) return err
                                     } else {
-                                        return "Please fill all data"
+                                        return "Please fill all datas"
                                     }
                                 }, true, "workflow-name")
                             ]}
