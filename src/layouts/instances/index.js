@@ -153,7 +153,7 @@ export function InstanceRow(props) {
             {label}
         </td>
         {!wf ? 
-        <td title={wfStr} className="center-align" style={{ fontSize: "12px", lineHeight: "20px", display:"flex", marginTop:"12px"}}>
+        <td title={wfStr} className="center-align" style={{ fontSize: "12px", lineHeight: "20px", display:"flex", justifyContent:"center", marginTop:"12px"}}>
             <div style={{marginLeft:"10px", textOverflow:"ellipsis", overflow:"hidden"}}>
                 /{pathwf.join("/")}
             </div>
