@@ -15,17 +15,17 @@ export default function JQPlayground() {
 
     const [filter, setFilter] = useState(".")
     const [input, setInput] = useState(JSON.stringify({}, null, 2))
+    const [error, setError] = useState(null)
 
     const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url, localStorage.getItem("apikey"))
 
-    if(err){
-        // jq query went busted
-        console.log(err, "jq err")
-    }
+    useEffect(() => {
+        setError(err)
+    }, [err])
 
     return(
         <FlexBox id="jq-page" className="col gap" style={{paddingRight:"8px"}}>
-            <JQFilter data={input} query={filter} setFilter={setFilter} executeJQ={executeJQ}/>
+            <JQFilter data={input} query={filter} error={error} setFilter={setFilter} executeJQ={executeJQ} setError={setError}/>
             <FlexBox className="gap col" >
                 <FlexBox className="gap wrap">
                     <FlexBox style={{minWidth:"380px"}}>
@@ -239,10 +239,17 @@ function JQInput(props) {
 }
 
 function JQFilter(props) {
-    const {data, setFilter, executeJQ, query} = props
+    const {data, setFilter, setError, executeJQ, query, error} = props
+    
+    async function execute() {
+        setError(null)
+        setFilter(".")
+        await executeJQ(query, btoa(data))
+    }
+
 
     return(
-        <FlexBox style={{ maxHeight:"105px"}}>
+        <FlexBox style={{ maxHeight:"205px" }}>
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
@@ -262,12 +269,15 @@ function JQFilter(props) {
                         </FlexBox>
                         <FlexBox style={{maxWidth:"65px"}}>
                              
-                            <Button className="small" onClick={()=>executeJQ(query, btoa(data))}>
+                            <Button className="small" onClick={()=>execute()}>
                                 Execute
                             </Button>
                         </FlexBox>
                     </FlexBox>
                 </ContentPanelBody>
+                <FlexBox>
+                    {error ? <div className='error-message'>{error.replace("execute jq: ", "")}</div> : null}
+                </FlexBox>
             </ContentPanel>
         </FlexBox>
     )
