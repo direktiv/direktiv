@@ -99,7 +99,7 @@ function Secrets(props) {
         <>
             <FlexBox className="col gap" style={{ maxHeight: "236px", overflowY: "auto" }}>
                     {secrets.length === 0 ?
-                             <FlexBox className="secret-tuple" >
+                             <FlexBox className="secret-tuple empty-content" >
                              <FlexBox className="key">No secrets are stored...</FlexBox>
                              <FlexBox className="val"></FlexBox>
                              <FlexBox className="actions">
