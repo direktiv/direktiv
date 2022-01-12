@@ -69,7 +69,7 @@ function SecretsPanel(props){
                                         return "Secret key name needs to be provided."
                                     }
                                     if(!file) {
-                                        return "Please add or selecr file"
+                                        return "Please add or select file"
                                     }
                                     let err = await createSecret(keyValue, file)
                                     if (err) {
