@@ -856,7 +856,7 @@ function WorkflowAttributes(props) {
 
     return(
             // <FlexBox>
-                <div className="input-tag" style={{width: "100%", padding:"7px"}}>
+                <div className="input-tag" style={{width: "100%", padding:"2px"}}>
                     <ul className="input-tag__tags">
                         {attris.map((tag, i) => (
                             <li key={tag}>
