@@ -113,3 +113,16 @@
     -webkit-animation-timing-function: steps(1, end);
             animation-timing-function: steps(1, end);
 }
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1; 
+    width:100vw; 
+    height: 100vh; 
+    padding: 8px; 
+    position: fixed;
+    background: rgba(0,0,0,0.4);
+    top: 0;
+    left: 0
+}

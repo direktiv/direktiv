@@ -186,7 +186,7 @@ function MainLayout(props) {
                     Left col: navigation
                     Right : page contents 
                 */}
-                <Loader load={load} timer={1000}>
+                <Loader load={load} timer={3000} >
                     <BrowserRouter>
                         <FlexBox className="navigation-col">
                         <NavBar akeyReq={akeyReq} footer={footer} extraNavigation={extraNavigation}  toggleResponsive={toggleResponsive} setToggleResponsive={setToggleResponsive} setNamespace={setNamespace} namespace={namespace} createNamespace={createNamespace} deleteNamespace={deleteNamespace} namespaces={data} />
