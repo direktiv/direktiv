@@ -434,6 +434,8 @@ respond:
 		return nil, err
 	}
 
+	resp.Revision.Name = d.rev().ID.String()
+
 	return &resp, nil
 
 }
