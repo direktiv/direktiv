@@ -258,7 +258,6 @@ function InstancePage(props) {
 function InstanceLogs(props) {
 
     let {noPadding, namespace, setClipData, instanceID, follow, setFollow, width, clipData} = props;
-    console.log(clipData)
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
