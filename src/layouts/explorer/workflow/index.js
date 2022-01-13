@@ -663,7 +663,7 @@ function SuccessFailureGraph(props){
     if(err !== "") {
         return(
             <FlexBox style={{justifyContent:"center", alignItems:'center', color:"red", fontSize:"10pt"}}>
-                {err}
+                <div className="error-message-metrics">{err.replace("get failed metrics:", "")}</div>
             </FlexBox>
         )
     }

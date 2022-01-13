@@ -347,3 +347,17 @@
   .run-workflow-modal {
       color: var(--theme-dark-gray-text);
   }
+
+  .error-message-metrics {
+    padding: 0px 20px;
+    min-height: 50px;
+    font-weight: 600;
+    color: #566875;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-radius: 5px;
+    background-color: #FFC0C5;
+    margin: 0px auto 10px;
+   }
