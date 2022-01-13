@@ -1,4 +1,4 @@
-FROM node:alpine as gui-build
+FROM node:17 as gui-build
 
 ARG FULL_VERSION
 
@@ -14,6 +14,7 @@ COPY package.json ./
 COPY yarn.lock ./
 
 RUN yarn install
+# If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
 RUN NODE_OPTIONS=--openssl-legacy-provider REACT_APP_VERSION=$FULL_VERSION yarn build
 
 FROM golang:1.16-buster as server-build
