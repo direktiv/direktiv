@@ -612,37 +612,44 @@ function SuccessFailureGraph(props){
 
     useEffect(()=>{
         async function get() {
-            if(load){
-                let ms = metrics
-                let mets = await getSuccessFailedMetrics()
-                let t = 0
-                if(mets.success && mets.failure) {
-                    if(mets.success[0]){
-                        ms[0].value = mets.success[0].value[1]
-                        t = t + parseInt(mets.success[0].value[1])
-                    }
-                    if(mets.failure[0]){
-                        ms[1].value = mets.failure[0].value[1]
-                        t = t + parseInt(mets.failure[0].value[1])
-                    }
-
-                    if(mets.success[0]) {
-                        ms[0].percentage = (ms[0].value / t * 100).toFixed(2)
-                    }
-                    if(mets.failure[0]){
-                        ms[1].percentage = (ms[1].value / t * 100).toFixed(2)
-                    }
-
-                    if(t > 0) {
-                        setMetrics(ms)
-                        setTotal(t)
+            try {
+                if(load){
+                    let ms = metrics
+                    let mets = await getSuccessFailedMetrics()
+                    let t = 0
+                    if(mets.success && mets.failure) {
+                        if(mets.success[0]){
+                            ms[0].value = mets.success[0].value[1]
+                            t = t + parseInt(mets.success[0].value[1])
+                        }
+                        if(mets.failure[0]){
+                            ms[1].value = mets.failure[0].value[1]
+                            t = t + parseInt(mets.failure[0].value[1])
+                        }
+    
+                        if(mets.success[0]) {
+                            ms[0].percentage = (ms[0].value / t * 100).toFixed(2)
+                        }
+                        if(mets.failure[0]){
+                            ms[1].percentage = (ms[1].value / t * 100).toFixed(2)
+                        }
+    
+                        if(t > 0) {
+                            setMetrics(ms)
+                            setTotal(t)
+                        } else {
+                            setErr("No metrics have been found.")
+                        }
+                        
                     } else {
-                        setErr("No metrics have been found.")
+                        setErr(mets)
                     }
-                    
-                } else {
-                    setErr(mets)
+                    setLoad(false)
                 }
+            } catch(e){
+
+                console.log(e.message)
+                setErr(e.message)
                 setLoad(false)
             }
         }
@@ -652,10 +659,10 @@ function SuccessFailureGraph(props){
     if(load){
         return ""
     }
-
+    console.log(err, "ERROR")
     if(err !== "") {
         return(
-            <FlexBox style={{justifyContent:"center", alignItems:'center'}}>
+            <FlexBox style={{justifyContent:"center", alignItems:'center', color:"red", fontSize:"10pt"}}>
                 {err}
             </FlexBox>
         )
