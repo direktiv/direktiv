@@ -22,7 +22,7 @@ export default function JQPlayground() {
     useEffect(() => {
         setError(err)
     }, [err])
-
+ 
     return(
         <FlexBox id="jq-page" className="col gap" style={{paddingRight:"8px"}}>
             <JQFilter data={input} query={filter} error={error} setFilter={setFilter} executeJQ={executeJQ} setError={setError}/>
@@ -246,6 +246,7 @@ function JQFilter(props) {
         setFilter(".")
         await executeJQ(query, btoa(data))
     }
+    
 
 
     return(
@@ -276,7 +277,7 @@ function JQFilter(props) {
                     </FlexBox>
                 </ContentPanelBody>
                 <FlexBox>
-                    {error ? <div className='error-message'>{error.replace("execute jq: ", "")}</div> : null}
+                    {error ? <div className='error-message'><span>error executing JQ command:</span>{error.replace("execute jq: error executing JQ command:", "")}</div> : null}
                 </FlexBox>
             </ContentPanel>
         </FlexBox>
