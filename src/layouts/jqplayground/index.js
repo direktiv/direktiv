@@ -37,7 +37,7 @@ export default function JQPlayground() {
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap col" >
-                <FlexBox className="gap wrap">
+                <FlexBox className="gap box-wrap">
                     <HowToJQ />
                     <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/>
                 </FlexBox>
@@ -48,7 +48,7 @@ export default function JQPlayground() {
 
 function HowToJQ(){
     return(
-        <FlexBox style={{ maxWidth: "380px"}}>
+        <FlexBox className="how-to-jq">
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -106,7 +106,7 @@ function ExamplesJQ(props){
 
     return(
         <FlexBox style={{flex: 2}}>
-            <ContentPanel style={{minHeight:"280px"}}>
+            <ContentPanel style={{minHeight:"280px", width: "100%"}}>
                 <ContentPanelTitle>
                         <ContentPanelTitleIcon>
                             <VscFileCode/>
@@ -120,18 +120,18 @@ function ExamplesJQ(props){
                     </ContentPanelTitle>
                     <ContentPanelBody >
 
-                        <table >
+                        <table style={{ width: "50%", fontSize:"10pt"}}>
                             <tbody>
                                 {firstHalf.map((obj)=>{
                                     return(
                                         <tr>
-                                            <td className="jq-example">
+                                            <td className="jq-example" style={{ width: "25%"}}>
                                                 {obj.example}
                                             </td>
                                             <td>
                                                 {obj.tip}
                                             </td>
-                                            <td onClick={()=>loadJQ(obj.filter, obj.json)}>
+                                            <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
                                                 <Button className="reveal-btn small shadow">
                                                     <FlexBox className="gap">
                                                         <IoReload className="auto-margin" />
@@ -147,18 +147,18 @@ function ExamplesJQ(props){
                             </tbody>
                             
                         </table>
-                        <table>
+                        <table style={{ width: "50%", fontSize:"10pt"}}>
          <tbody>
                                 {secondHalf.map((obj)=>{
                                     return(
                                         <tr>
-                                            <td className="jq-example">
+                                            <td style={{ width: "25%"}} className="jq-example">
                                                 {obj.example}
                                             </td>
                                             <td>
                                                 {obj.tip}
                                             </td>
-                                            <td onClick={()=>loadJQ(obj.filter, obj.json)}>
+                                            <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
                                                 <Button className="reveal-btn small shadow">
                                                     <FlexBox className="gap">
                                                         <IoReload className="auto-margin" />
@@ -246,7 +246,6 @@ function JQFilter(props) {
         setFilter(".")
         await executeJQ(query, btoa(data))
     }
-    
 
 
     return(
@@ -277,7 +276,7 @@ function JQFilter(props) {
                     </FlexBox>
                 </ContentPanelBody>
                 <FlexBox>
-                    {error ? <div className='error-message'><span>error executing JQ command:</span>{error.replace("execute jq: error executing JQ command:", "")}</div> : null}
+                    {error ? <div className='error-message'>{error.replace("execute jq: ", "")}</div> : null}
                 </FlexBox>
             </ContentPanel>
         </FlexBox>
