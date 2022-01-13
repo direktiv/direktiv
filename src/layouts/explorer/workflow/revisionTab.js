@@ -448,18 +448,34 @@ export function RevisionSelectorTab(props) {
                                                     </FlexBox>
                                                 </Modal>
                                             }
+                                            {obj.node.name !== "latest" ? 
+                                            <>
                                             <Button className="small light bold" onClick={async()=>{
                                                 let data = await getWorkflowRevisionData(obj.node.name)
                                                 await updateWorkflow(atob(data.revision.source))
                                                 navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
                                             }}>
-                                                Use Revision
+                                                Revert To
                                             </Button>
                                             <Button className="small light bold" onClick={()=>{
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
                                                 Open Revision
+                                            </Button></>: <><div style={{visibility:"hidden"}}>
+                                            <Button className="small light bold" onClick={async()=>{
+                                                let data = await getWorkflowRevisionData(obj.node.name)
+                                                await updateWorkflow(atob(data.revision.source))
+                                                navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
+                                            }}>
+                                                Revert To
                                             </Button>
+                                            </div>
+                                            <div style={{visibility:"hidden"}}>
+                                            <Button className="small light bold" onClick={()=>{
+                                                setSearchParams({tab: 1, revision: obj.node.name})
+                                            }}>
+                                                Open Revision
+                                            </Button></div></>}
                                         </FlexBox>
                                     </div>
                                 </FlexBox>
