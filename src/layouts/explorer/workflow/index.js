@@ -665,7 +665,7 @@ function SuccessFailureGraph(props){
         <FlexBox className="col" style={{maxHeight:"250px", marginTop:"20px"}}>
             <PieChart
                 totalValue={total}
-                label={({ dataEntry }) => dataEntry.value}
+                label=""
                 labelStyle={{
                     fontSize:"6pt",
                     fontWeight: "bold",
