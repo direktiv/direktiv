@@ -647,8 +647,6 @@ function SuccessFailureGraph(props){
                     setLoad(false)
                 }
             } catch(e){
-
-                console.log(e.message)
                 setErr(e.message)
                 setLoad(false)
             }
@@ -659,7 +657,6 @@ function SuccessFailureGraph(props){
     if(load){
         return ""
     }
-    console.log(err, "ERROR")
     if(err !== "") {
         return(
             <FlexBox style={{justifyContent:"center", alignItems:'center', color:"red", fontSize:"10pt"}}>
@@ -770,7 +767,6 @@ function WorkflowServices(props) {
     const {namespace, filepath} = props
 
     const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
-    console.log(data, "DATA")
 
     if (data === null) {
         return     <div className="col">
