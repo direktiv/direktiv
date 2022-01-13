@@ -1,5 +1,5 @@
 export const Config = {
-    url: process.env.REACT_APP_API
+    url: process.env.REACT_APP_API ? process.env.REACT_APP_API : "/api/" 
 }
 
 function fallbackCopyTextToClipboard(text) {
