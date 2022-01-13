@@ -47,7 +47,7 @@ function InstancePage(props) {
     let instanceID = params["id"];
 
     let {data, err, cancelInstance, getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
-    
+
 
     useEffect(()=>{
         if(load && data !== null) {
@@ -134,12 +134,12 @@ function InstancePage(props) {
                                         ButtonDefinition("Close", () => {}, "small light", true, false)
                                     ]}
                                 >
-                                    <InstanceLogs noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
+                                    <InstanceLogs setClipData={setClipData} clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
                                 </Modal>
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelTitle>
-                        <InstanceLogs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
+                        <InstanceLogs setClipData={setClipData} clipData={clipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox className="gap wrap" style={{minHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
@@ -257,8 +257,8 @@ function InstancePage(props) {
 
 function InstanceLogs(props) {
 
-    let {noPadding, namespace, instanceID, follow, setFollow, width, clipData} = props;
-
+    let {noPadding, namespace, setClipData, instanceID, follow, setFollow, width, clipData} = props;
+    console.log(clipData)
     let paddingStyle = { padding: "12px" }
     if (noPadding) {
         paddingStyle = { padding: "0px" }
@@ -268,7 +268,7 @@ function InstanceLogs(props) {
         <>
             <FlexBox className="col" style={{...paddingStyle}}>
                 <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden", padding: "8px" }}>
-                    <Logs namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
+                    <Logs clipData={clipData} setClipData={setClipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} />
                 </FlexBox>
                 <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
                     <FlexBox className="gap" style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
@@ -447,11 +447,29 @@ function Logs(props){
         defaultHeight: 20
     })
 
-    let {namespace, instanceID, follow} = props;
+    let {namespace, instanceID, follow, setClipData, clipData} = props;
     // const [load, setLoad] = useState(true)
     // const [logs, setLogs] = useState([])
     let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
-    
+    useEffect(()=>{
+        if(data !== null) {
+            if(clipData === null) {
+                let cd = ""
+                for(let i=0; i < data.length; i++) {
+                    cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
+                }
+                setClipData(cd)
+            }
+            if(clipData !== data){
+                let cd = ""
+                for(let i=0; i < data.length; i++) {
+                    cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
+
+                }
+                setClipData(cd)
+            }
+        }
+    },[data, clipData, setClipData])
     // useEffect(()=>{
     //     if(load && data !== null){
     //         setLogs(data)
