@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -375,19 +376,37 @@ func instancesFilter(p *pagination) ent.InstancePaginateOption {
 		case "AS":
 
 			ftype := p.filter.Type
-			if ftype == "" {
-				return query, nil
-			}
 
 			switch ftype {
 			case "WORKFLOW":
 				return query.Where(entinst.AsHasPrefix(filter + ":")), nil
+			case "":
+				fallthrough
 			case "CONTAINS":
 				return query.Where(entinst.AsContains(filter)), nil
+			default:
+				return nil, fmt.Errorf("unexpected filter type")
 			}
-		}
 
-		return query, nil
+		case "STATUS":
+
+			ftype := p.filter.Type
+
+			switch ftype {
+			case "MATCH":
+				return query.Where(entinst.StatusEQ(filter)), nil
+			case "":
+				fallthrough
+			case "CONTAINS":
+				return query.Where(entinst.StatusContains(filter)), nil
+			default:
+				return nil, fmt.Errorf("unexpected filter type")
+			}
+
+		default:
+			return nil, fmt.Errorf("bad filter field")
+
+		}
 
 	})
 
