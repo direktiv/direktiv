@@ -201,7 +201,7 @@ function MonitoringPage(props) {
 
 function FailedExecutions(props) {
     const {namespace} = props
-    const [qParams, setQParams] = useState(["first=10"])
+    const [qParams, setQParams] = useState(["first=10", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
 
     const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), qParams)
     console.log(data, err)
