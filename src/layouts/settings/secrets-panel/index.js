@@ -70,7 +70,7 @@ function SecretsPanel(props){
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
-                                    if(keyValue === "") {
+                                    if(keyValue.trim() === "") {
                                         return "Secret key name needs to be provided."
                                     }
                                     if(!file) {
@@ -82,8 +82,11 @@ function SecretsPanel(props){
                                         return err
                                     }
                                 } else {
-                                    if(keyValue === "") {
+                                    if(keyValue.trim() === "") {
                                         return "Secret key name needs to be provided."
+                                    }
+                                    if(vValue.trim() === "") {
+                                        return "Secret value needs to be provided."
                                     }
                                     try { 
                                         await createSecret(keyValue, vValue)
@@ -246,9 +249,7 @@ function AddSecretPanel(props) {
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap">
-                <FlexBox style={{overflow:"hidden"}}>
-                    <DirektivEditor dValue={vValue} setDValue={setVValue}  width={600} height={180}/>
-                    </FlexBox>
+                <FlexBox><input type="password"  value={vValue} onChange={(e)=>setVValue(e.target.value)} placeholder="Enter value" /></FlexBox>
             </FlexBox>
         </FlexBox>
     );

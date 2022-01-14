@@ -283,7 +283,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
             let e = await btn.onClick()
             if (e) {
                 // handle error
-                setAlertMessage(e.message)
+                setAlertMessage(e)
                 setDisplayAlert(true)
             } else if (btn.closesModal) {
                 closeModal()
