@@ -292,7 +292,7 @@ function InstanceLogs(props) {
     )
 }
 
-function TerminalButton(props) {
+export function TerminalButton(props) {
 
     let {children, onClick} = props;
     return (

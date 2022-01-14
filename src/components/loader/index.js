@@ -36,6 +36,8 @@ export default function Loader(props) {
                 setShow(true)
             }, 0) 
     }, [load])
+
+    
     if(show) {
         // return a loader
         return (
