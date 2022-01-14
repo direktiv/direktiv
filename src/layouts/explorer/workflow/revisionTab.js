@@ -430,9 +430,12 @@ export function RevisionSelectorTab(props) {
                                                     actionButtons={
                                                         [
                                                             ButtonDefinition("Delete", async () => {
-                                                                let err = await deleteRevision(obj.node.name)
-                                                                if (err) return err
-                                                                setRevisions(await getRevisions())
+                                                                try { 
+                                                                    await deleteRevision(obj.node.name)
+                                                                    setRevisions(await getRevisions())
+                                                                } catch(err) {
+                                                                    return err
+                                                                }
                                                             }, "small red", true, false),
                                                             ButtonDefinition("Cancel", () => {
                                                             }, "small light", true, false)

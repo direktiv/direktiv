@@ -119,12 +119,14 @@ function ModalOverlay(props) {
                     }
 
                     if (e.code === action.code) {
-                        let err = await action.fn()
-                        if (err) {
+                        try { 
+                            await action.fn() 
+                            if (action.closeModal) {
+                                callback(false)
+                            }
+                        } catch(err) {
                             setAlertMessage(err)
                             setDisplayAlert(true)
-                        } else if (action.closeModal) {
-                            callback(false)
                         }
                     }
                 }
@@ -278,11 +280,10 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
 
         let btn = actionButtons[i];
         let onClick =  async () => {
-            
             let e = await btn.onClick()
             if (e) {
                 // handle error
-                setAlertMessage(e)
+                setAlertMessage(e.message)
                 setDisplayAlert(true)
             } else if (btn.closesModal) {
                 closeModal()

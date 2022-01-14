@@ -202,8 +202,11 @@ function SendEventModal(props) {
             )}
             actionButtons={[
                 ButtonDefinition("Send", async () => {
-                    let err = await sendEvent(eventData)
-                    if (err) return err
+                    try { 
+                      await sendEvent(eventData)
+                    } catch(err) {
+                      return err
+                    }
                 }, "small", true, false),
                 ButtonDefinition("Cancel", () => {}, "small light", true, false)
             ]}
