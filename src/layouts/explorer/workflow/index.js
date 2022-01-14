@@ -911,9 +911,13 @@ function SettingsTab(props) {
                                         <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
                                         <FlexBox style={{justifyContent:"flex-end", width:"100%"}}>
                                             <Button onClick={async()=>{
-                                                let err = await setWorkflowLogToEvent(logToEvent)
-                                                // todo err
-                                                console.log(err, "NOTIFY IF ERR")
+                                                try { 
+                                                    await setWorkflowLogToEvent(logToEvent)
+                                                } catch(err) {
+                                                    // todo err
+                                                    console.log(err, "NOTIFY IF ERR")
+                                                    return err
+                                                }
                                             }} className="small">
                                                 Save
                                             </Button>

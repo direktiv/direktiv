@@ -47,7 +47,7 @@ export default function WorkflowRevisions(props) {
                             ]}
                             actionButtons={[
                                 ButtonDefinition("Add", async () => {
-                                    let err = await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
+                                    try { await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
                                     if (err) return err
                                 }, "small blue", true, false),
                                 ButtonDefinition("Cancel", () => {
