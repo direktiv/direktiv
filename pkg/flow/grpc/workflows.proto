@@ -14,6 +14,7 @@ message Revision {
 	google.protobuf.Timestamp created_at = 1;
 	string hash = 2;
 	bytes source = 3;
+	string name = 4;
 }
 
 message NodeRequest {
