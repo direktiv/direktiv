@@ -351,12 +351,12 @@ function DirListItem(props) {
                 {
                     rename ? 
                     <FlexBox className="explorer-item-name">
-                        <input type="text" value={renameValue} onKeyPress={async (e)=>{
+                        <input onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
                                 try { 
-                                    await renameNode("", path, renameValue)
+                                    await renameNode("/", path, renameValue)
                                 } catch(err) {
-                                    setErr(err)
+                                    setErr(err.message)
                                 }
                                 setRename(!rename)
                             }
@@ -459,7 +459,8 @@ function WorkflowListItem(props) {
                                 try { 
                                     await renameNode("/", path, renameValue)
                                 } catch(err) {
-                                    setErr(err)
+                                    console.log("err ==", err)
+                                    setErr(err.message)
                                 }
                                 setRename(!rename)
                             }
