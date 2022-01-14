@@ -459,7 +459,6 @@ function WorkflowListItem(props) {
                                 try { 
                                     await renameNode("/", path, renameValue)
                                 } catch(err) {
-                                    console.log("err ==", err)
                                     setErr(err.message)
                                 }
                                 setRename(!rename)
