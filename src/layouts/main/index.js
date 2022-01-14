@@ -25,6 +25,7 @@ import Login from '../login';
 import InstancePageWrapper from '../instance';
 // import PermissionsPageWrapper from '../permissions';
 import EventsPageWrapper from '../events';
+import Monitoring from '../monitoring';
 
 
 function NamespaceNavigation(props){
@@ -109,7 +110,7 @@ function NamespaceNavigation(props){
                    
                 
 
-                    <Route path="/n/:namespace/monitoring" element={<div>monitor</div>}/>
+                    <Route path="/n/:namespace/monitoring" element={<Monitoring namespace={namespace}/>}/>
                     {/* <Route path="/n/:namespace/builder" element={<WorkflowBuilder namespace={namespace}/>}/> */}
                     <Route path="/n/:namespace/instances" element={<InstancesPage namespace={namespace} />}/>
                     <Route path="/n/:namespace/instances/:id" element={<InstancePageWrapper namespace={namespace} />} />
