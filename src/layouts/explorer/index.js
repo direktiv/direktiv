@@ -438,9 +438,9 @@ function WorkflowListItem(props) {
                 {
                     rename ? 
                     <FlexBox className="explorer-item-name">
-                        <input type="text" value={renameValue} onKeyPress={async (e)=>{
+                        <input onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
-                                let err = await renameNode("", path, renameValue)
+                                let err = await renameNode("/", path, renameValue)
                                 if(err){
                                     setErr(err)
                                     return

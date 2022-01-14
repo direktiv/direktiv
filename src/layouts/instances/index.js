@@ -13,6 +13,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
+import { path } from 'd3-path';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -135,7 +136,7 @@ export function InstanceRow(props) {
     let pathwf = wfStr.split("/")
     let wfname = pathwf[pathwf.length-1]
     pathwf.splice(pathwf.length-1, pathwf.length-1)
-
+    
     return(
     
     <tr onClick={()=>{
@@ -149,9 +150,10 @@ export function InstanceRow(props) {
             <div style={{marginLeft:"10px", textOverflow:"ellipsis", overflow:"hidden"}}>
                 /{pathwf.join("/")}
             </div>
-            <div >
+            {pathwf.length != 1 ?
+            <div>
                 /{wfname}
-            </div>
+            </div>:""}
         </td>: ""}
         <td title={revStr} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden" }} className="center-align">
             {revStr}

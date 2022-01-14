@@ -6,7 +6,7 @@
     font-size: 12px;
     line-height: 18px;
     flex-shrink: 1;
-    flex-grow: 0;
+    flex-grow: 1;
 }
 
 .alert.critical {

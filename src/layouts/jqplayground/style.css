@@ -1,3 +1,36 @@
 .jq-example{
     color: var(--theme-brand-blue);
 }
+
+.error-message {
+    padding: 0px 30px;
+    min-height: 50px;
+    font-weight: 600;
+    color: #566875;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-radius: 5px;
+    background-color: #FFC0C5;
+    margin: 0px 7px 10px;
+}
+
+.how-to-jq {
+    max-width: 480px;
+}
+
+.error-message span {
+    padding: 0px 5px 0px 0px;
+    color: black;
+    font-size: 16px;
+}
+
+@media screen and (max-width: 1450px) {
+    .box-wrap {
+        flex-direction: column;
+    }
+    .how-to-jq {
+        max-width: 100%;
+    }
+}

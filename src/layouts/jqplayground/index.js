@@ -15,17 +15,17 @@ export default function JQPlayground() {
 
     const [filter, setFilter] = useState(".")
     const [input, setInput] = useState(JSON.stringify({}, null, 2))
+    const [error, setError] = useState(null)
 
     const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url, localStorage.getItem("apikey"))
 
-    if(err){
-        // jq query went busted
-        console.log(err, "jq err")
-    }
-
+    useEffect(() => {
+        setError(err)
+    }, [err])
+ 
     return(
         <FlexBox id="jq-page" className="col gap" style={{paddingRight:"8px"}}>
-            <JQFilter data={input} query={filter} setFilter={setFilter} executeJQ={executeJQ}/>
+            <JQFilter data={input} query={filter} error={error} setFilter={setFilter} executeJQ={executeJQ} setError={setError}/>
             <FlexBox className="gap col" >
                 <FlexBox className="gap wrap">
                     <FlexBox style={{minWidth:"380px"}}>
@@ -37,7 +37,7 @@ export default function JQPlayground() {
                 </FlexBox>
             </FlexBox>
             <FlexBox className="gap col" >
-                <FlexBox className="gap wrap">
+                <FlexBox className="gap box-wrap">
                     <HowToJQ />
                     <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/>
                 </FlexBox>
@@ -48,7 +48,7 @@ export default function JQPlayground() {
 
 function HowToJQ(){
     return(
-        <FlexBox style={{ maxWidth: "380px"}}>
+        <FlexBox className="how-to-jq">
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -106,7 +106,7 @@ function ExamplesJQ(props){
 
     return(
         <FlexBox style={{flex: 2}}>
-            <ContentPanel style={{minHeight:"280px"}}>
+            <ContentPanel style={{minHeight:"280px", width: "100%"}}>
                 <ContentPanelTitle>
                         <ContentPanelTitleIcon>
                             <VscFileCode/>
@@ -120,18 +120,18 @@ function ExamplesJQ(props){
                     </ContentPanelTitle>
                     <ContentPanelBody >
 
-                        <table >
+                        <table style={{ width: "50%", fontSize:"10pt"}}>
                             <tbody>
                                 {firstHalf.map((obj)=>{
                                     return(
                                         <tr>
-                                            <td className="jq-example">
+                                            <td className="jq-example" style={{ width: "25%"}}>
                                                 {obj.example}
                                             </td>
                                             <td>
                                                 {obj.tip}
                                             </td>
-                                            <td onClick={()=>loadJQ(obj.filter, obj.json)}>
+                                            <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
                                                 <Button className="reveal-btn small shadow">
                                                     <FlexBox className="gap">
                                                         <IoReload className="auto-margin" />
@@ -147,18 +147,18 @@ function ExamplesJQ(props){
                             </tbody>
                             
                         </table>
-                        <table>
+                        <table style={{ width: "50%", fontSize:"10pt"}}>
          <tbody>
                                 {secondHalf.map((obj)=>{
                                     return(
                                         <tr>
-                                            <td className="jq-example">
+                                            <td style={{ width: "25%"}} className="jq-example">
                                                 {obj.example}
                                             </td>
                                             <td>
                                                 {obj.tip}
                                             </td>
-                                            <td onClick={()=>loadJQ(obj.filter, obj.json)}>
+                                            <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
                                                 <Button className="reveal-btn small shadow">
                                                     <FlexBox className="gap">
                                                         <IoReload className="auto-margin" />
@@ -239,10 +239,17 @@ function JQInput(props) {
 }
 
 function JQFilter(props) {
-    const {data, setFilter, executeJQ, query} = props
+    const {data, setFilter, setError, executeJQ, query, error} = props
+    
+    async function execute() {
+        setError(null)
+        setFilter(".")
+        await executeJQ(query, btoa(data))
+    }
+
 
     return(
-        <FlexBox style={{ maxHeight:"105px"}}>
+        <FlexBox style={{ maxHeight:"205px" }}>
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
@@ -262,12 +269,15 @@ function JQFilter(props) {
                         </FlexBox>
                         <FlexBox style={{maxWidth:"65px"}}>
                              
-                            <Button className="small" onClick={()=>executeJQ(query, btoa(data))}>
+                            <Button className="small" onClick={()=>execute()}>
                                 Execute
                             </Button>
                         </FlexBox>
                     </FlexBox>
                 </ContentPanelBody>
+                <FlexBox>
+                    {error ? <div className='error-message'>{error.replace("execute jq: ", "")}</div> : null}
+                </FlexBox>
             </ContentPanel>
         </FlexBox>
     )
