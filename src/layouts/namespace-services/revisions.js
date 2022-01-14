@@ -126,8 +126,11 @@ function NamespaceRevisions(props) {
                                 ]}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
-                                        let err = await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                        if (err) return err
+                                        try { 
+                                            await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
+                                        } catch(err) {
+                                            return err
+                                        }
                                     }, "small blue", true, false),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", true, false)
@@ -296,11 +299,11 @@ export function UpdateTraffic(props){
                         <ContentPanelFooter>
                             <FlexBox className="col" style={{alignItems:"flex-end"}}>
                                 <Button className="small" onClick={async ()=>{
-                                    let err = await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
-                                    if (err) {
-                                        setErrMsg(err)
-                                    } else {
+                                    try { 
+                                        await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
                                         setErrMsg("")
+                                    } catch(err) {
+                                        setErrMsg(err)
                                     }
                                 }}>
                                     Save

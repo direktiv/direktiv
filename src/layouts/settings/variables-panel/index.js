@@ -73,8 +73,10 @@ function VariablesPanel(props){
                                         setUploading(false)
                                         return "Variable key name needs to be provided."
                                     }
-                                    let err = await setNamespaceVariable(keyValue, file, mimeType)
-                                    if (err) {
+                                    try { 
+                                        await setNamespaceVariable(keyValue, file, mimeType)
+                                        setUploading(false)
+                                    } catch(err) {
                                         setUploading(false)
                                         return err
                                     }
@@ -83,8 +85,11 @@ function VariablesPanel(props){
                                         setUploading(false)
                                         return "Variable key name needs to be provided."
                                     }
-                                    let err = await setNamespaceVariable(keyValue, dValue, mimeType)
-                                    if (err) return err
+                                    try { 
+                                        await setNamespaceVariable(keyValue, dValue, mimeType)
+                                    } catch(err) {
+                                        return err
+                                    }
                                 }
                             }, uploadingBtn, true, false),
                             ButtonDefinition("Cancel", () => {
@@ -295,8 +300,9 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Save", async () => {
-                                let err = await setNamespaceVariable(obj.node.name, val , mimeType)
-                                if (err) {
+                                try { 
+                                    await setNamespaceVariable(obj.node.name, val , mimeType)
+                                } catch(err) {
                                     return err
                                 }
                             }, "small blue", true, false),
@@ -383,12 +389,13 @@ function Variable(props) {
                         [
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
-                                let err = await setNamespaceVariable(obj.node.name, file, mimeType)
-                                if (err) {
+                                try { 
+                                    await setNamespaceVariable(obj.node.name, file, mimeType)
+                                    setUploading(false)
+                                } catch(err) {
                                     setUploading(false)
                                     return err
                                 }
-                                setUploading(false)
                             }, uploadingBtn, true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
@@ -411,8 +418,11 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Delete", async () => {
-                                let err = await deleteNamespaceVariable(obj.node.name)
-                                if (err) return err
+                                try { 
+                                    await deleteNamespaceVariable(obj.node.name)
+                                } catch(err) {
+                                    return err
+                                }
                             }, "small red", true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
@@ -447,7 +457,7 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Upload", async () => {
-                                let err = await setNamespaceVariable(obj.node.name, file, mimeType)
+                                try { await setNamespaceVariable(obj.node.name, file, mimeType)
                                 if (err) return err
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
@@ -471,7 +481,7 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Delete", async () => {
-                                let err = await deleteNamespaceVariable(obj.node.name)
+                                try { await deleteNamespaceVariable(obj.node.name)
                                 if (err) return err
                             }, "small red", true, false),
                             ButtonDefinition("Cancel", () => {

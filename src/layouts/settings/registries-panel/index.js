@@ -83,9 +83,13 @@ function RegistriesPanel(props){
                                     filledOut = false
                                 }
                                 if(!filledOut) return "all fields must be filled out"
-                                let err = await createRegistry(url, `${username}:${token}`)
-                                if(err) return err
-                                await getRegistries()
+                                try { 
+                                    await createRegistry(url, `${username}:${token}`)
+                                    await getRegistries()
+                                } catch(err) {
+                                    await getRegistries()
+                                    return err
+                                }
                             }, true)
                         ]}
                         actionButtons={[
@@ -107,9 +111,13 @@ function RegistriesPanel(props){
                                     filledOut = false
                                 }
                                 if(!filledOut) return "all fields must be filled out"
-                                let err = await createRegistry(url, `${username}:${token}`)
-                                if(err) return err
-                                await  getRegistries()
+                                try { 
+                                    await createRegistry(url, `${username}:${token}`)
+                                    await  getRegistries()
+                                } catch(err) {
+                                    await  getRegistries()
+                                    return err
+                                }                              
                             }, "small blue", true, false),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
@@ -130,14 +138,15 @@ function RegistriesPanel(props){
                                 }
                                 if(!filledOut) return "all fields must be filled out"
                                 setTestConnLoading(true)
-                                let err = await TestRegistry(url, username, token)
-                                if(err) {
+                                try { 
+                                    await TestRegistry(url, username, token)
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(true)
+                                } catch(err) {
                                     setTestConnLoading(false)
                                     setSuccessFeedback(false)
                                     return err
                                 }
-                                setTestConnLoading(false)
-                                setSuccessFeedback(true)
                             }, testConnBtnClasses, false, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
@@ -291,9 +300,13 @@ export function Registries(props) {
                                         [
                                             // label, onClick, classList, closesModal, async
                                             ButtonDefinition("Delete", async () => {
-                                                let err = await deleteRegistry(obj.name)
-                                                if (err) return err
-                                                await getRegistries()
+                                                try { 
+                                                    await deleteRegistry(obj.name)
+                                                    await getRegistries()
+                                                } catch(err) {
+                                                    await getRegistries()
+                                                    return err
+                                                }
                                             }, "small red", true, false),
                                             ButtonDefinition("Cancel", () => {
                                             }, "small light", true, false)

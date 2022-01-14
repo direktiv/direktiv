@@ -57,9 +57,13 @@ function SecretsPanel(props){
                         
                         keyDownActions={[
                             KeyDownDefinition("Enter", async () => {
-                                let err = await createSecret(keyValue, vValue)
-                                if(err) return err
-                                await getSecrets()
+                                try { 
+                                    await createSecret(keyValue, vValue)
+                                    await getSecrets()
+                                } catch(err) {
+                                    await getSecrets()
+                                    return err
+                                }
                             }, true)
                         ]}
                         
@@ -72,16 +76,20 @@ function SecretsPanel(props){
                                     if(!file) {
                                         return "Please add or select file"
                                     }
-                                    let err = await createSecret(keyValue, file)
-                                    if (err) {
+                                    try { 
+                                        await createSecret(keyValue, file)
+                                    } catch(err) {
                                         return err
                                     }
                                 } else {
                                     if(keyValue === "") {
                                         return "Secret key name needs to be provided."
                                     }
-                                    let err = await createSecret(keyValue, vValue)
-                                    if(err) return err
+                                    try { 
+                                        await createSecret(keyValue, vValue)
+                                    } catch(err) {
+                                        return err
+                                    }
                                 }
                                 await  getSecrets()
                             }, "small blue", true, false),
@@ -189,9 +197,13 @@ function Secrets(props) {
                                             [
                                                 // label, onClick, classList, closesModal, async
                                                 ButtonDefinition("Delete", async () => {
-                                                    let err = await deleteSecret(obj.node.name)
-                                                    if (err) return err
-                                                    await getSecrets()
+                                                    try { 
+                                                        await deleteSecret(obj.node.name)
+                                                        await getSecrets()
+                                                    } catch(err) {
+                                                        await getSecrets()
+                                                        return err
+                                                    }
                                                 }, "small red", true, false),
                                                 ButtonDefinition("Cancel", () => {
                                                 }, "small light", true, false)
