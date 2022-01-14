@@ -74,7 +74,6 @@ function AddWorkflowVariablePanel(props) {
                                     try { 
                                         await setWorkflowVariable(keyValue, file, mimeType)
                                     } catch(err) {
-                                        console.log("err", err)
                                         setUploading(false)
                                         return err
                                     }
@@ -86,7 +85,6 @@ function AddWorkflowVariablePanel(props) {
                                     try { 
                                         await setWorkflowVariable(keyValue, dValue, mimeType)
                                     } catch(err) {
-                                        console.log("err", err)
                                         return err
                                     }
                                 }
