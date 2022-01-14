@@ -355,10 +355,10 @@ function DirListItem(props) {
                             if(e.key === "Enter"){
                                 try { 
                                     await renameNode("/", path, renameValue)
+                                    setRename(!rename)
                                 } catch(err) {
                                     setErr(err.message)
                                 }
-                                setRename(!rename)
                             }
                         }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{maxWidth:"300px", height:"38px"}}/>
                         {err !== "" ? 
@@ -458,10 +458,10 @@ function WorkflowListItem(props) {
                             if(e.key === "Enter"){
                                 try { 
                                     await renameNode("/", path, renameValue)
+                                    setRename(!rename)
                                 } catch(err) {
                                     setErr(err.message)
                                 }
-                                setRename(!rename)
                             }
                         }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{maxWidth:"300px", height:"38px"}}/>
                         {err !== "" ? 
