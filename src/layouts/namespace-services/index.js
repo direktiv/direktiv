@@ -9,7 +9,7 @@ import FlexBox from "../../components/flexbox";
 import { Config } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import HelpIcon from "../../components/help"
 
 export default function ServicesPanel(props) {

@@ -4,10 +4,12 @@ import FlexBox from "../../../components/flexbox"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../../components/content-panel"
 import { IoPlay } from "react-icons/io5"
 import { Service } from "../../namespace-services"
+import { useNavigate } from "react-router"
 
 export default function WorkflowRevisions(props) {
     const {namespace, service, version, filepath} = props
-    const {revisions, err} = useWorkflowService(Config.url, namespace, filepath, service, version)
+    const navigate = useNavigate()
+    const {revisions, err} = useWorkflowService(Config.url, namespace, filepath, service, version, navigate, localStorage.getItem("apikey"))
 
     if(revisions === null) {
         return <></>
