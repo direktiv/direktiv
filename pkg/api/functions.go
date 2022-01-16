@@ -819,7 +819,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got services list"
 	pathHandlerPair(r, RN_ListWorkflowServices, "services", h.listWorkflowServices, h.listWorkflowServicesSSE)
 
-	// swagger:operation DELETE /api/functions/namespaces/{namespace}/tree/{workflow}?op=services deleteWorkflowService
+	// swagger:operation DELETE /api/functions/namespaces/{namespace}/tree/{workflow}?op=delete-service deleteWorkflowService
 	// ---
 	// description: |
 	//   Deletes workflow scoped knative service.
@@ -859,7 +859,7 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully deleted service"
-	pathHandler(r, http.MethodDelete, RN_DeleteNamespaceServices, "delete-service", h.deleteWorkflowServices)
+	pathHandler(r, http.MethodDelete, RN_DeleteWorkflowServices, "delete-service", h.deleteWorkflowServices)
 
 	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods listWorkflowServiceRevisionPods
 	// ---
