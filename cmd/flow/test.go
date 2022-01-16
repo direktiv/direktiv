@@ -82,8 +82,10 @@ var testsCmd = &cobra.Command{
 		registerTest("InstanceParallelRetry", []string{"instances", "retry", "long"}, testInstanceParallelRetry)
 
 		registerTest("InstanceSubflowSecrets", []string{"instances", "jq", "secrets", "actions", "subflows"}, testInstanceSubflowSecrets)
+		registerTest("NamespaceVariablesEmpty", []string{"variables"}, testNamespaceVariablesEmpty)
 		registerTest("NamespaceVariablesSmall", []string{"variables"}, testNamespaceVariablesSmall)
 		registerTest("NamespaceVariablesLarge", []string{"variables", "long"}, testNamespaceVariablesLarge)
+		registerTest("WorkflowVariablesEmpty", []string{"variables"}, testWorkflowVariablesEmpty)
 		registerTest("WorkflowVariablesSmall", []string{"variables"}, testWorkflowVariablesSmall)
 		registerTest("WorkflowVariablesLarge", []string{"variables", "long"}, testWorkflowVariablesLarge)
 		registerTest("InstanceNamespaceVariables", []string{"instances", "jq", "variables"}, testInstanceNamespaceVariables)
