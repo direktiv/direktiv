@@ -3890,11 +3890,17 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 	if total <= 0 {
 		data, err := loadRawBody(r)
 		if err != nil {
-			respond(w, nil, err)
-			return
+			if err == io.EOF {
+				total = 0
+				rdr = bytes.NewReader([]byte(""))
+			} else {
+				respond(w, nil, err)
+				return
+			}
+		} else {
+			total = int64(len(data))
+			rdr = bytes.NewReader(data)
 		}
-		total = int64(len(data))
-		rdr = bytes.NewReader(data)
 	}
 
 	rdr = io.LimitReader(rdr, total)
@@ -3907,23 +3913,13 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 
 	ctype := r.Header.Get("Content-Type")
 
-	var done int64
-
-	for done < total {
-
-		buf := new(bytes.Buffer)
-		k, err := io.CopyN(buf, rdr, 2*1024*1024)
-		done += k
-		if err != nil && done < total {
-			respond(w, nil, err)
-			return
-		}
+	if total == 0 {
 
 		err = client.Send(&grpc.SetNamespaceVariableRequest{
 			Namespace: namespace,
 			Key:       key,
-			TotalSize: total,
-			Data:      buf.Bytes(),
+			TotalSize: 0,
+			Data:      []byte{},
 			MimeType:  ctype,
 		})
 		if err != nil {
@@ -3931,6 +3927,30 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
+	} else {
+		var done int64
+
+		for done < total {
+			buf := new(bytes.Buffer)
+			k, err := io.CopyN(buf, rdr, 2*1024*1024)
+			done += k
+			if err != nil && done < total {
+				respond(w, nil, err)
+				return
+			}
+
+			err = client.Send(&grpc.SetNamespaceVariableRequest{
+				Namespace: namespace,
+				Key:       key,
+				TotalSize: total,
+				Data:      buf.Bytes(),
+				MimeType:  ctype,
+			})
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+		}
 	}
 
 	resp, err := client.CloseAndRecv()
@@ -4128,24 +4148,14 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 
 	ctype := r.Header.Get("Content-Type")
 
-	var done int64
-
-	for done < total {
-
-		buf := new(bytes.Buffer)
-		k, err := io.CopyN(buf, rdr, 2*1024*1024)
-		done += k
-		if err != nil && done < total {
-			respond(w, nil, err)
-			return
-		}
+	if total == 0 {
 
 		err = client.Send(&grpc.SetInstanceVariableRequest{
 			Namespace: namespace,
 			Instance:  instance,
 			Key:       key,
-			TotalSize: total,
-			Data:      buf.Bytes(),
+			TotalSize: 0,
+			Data:      []byte{},
 			MimeType:  ctype,
 		})
 		if err != nil {
@@ -4153,6 +4163,33 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 			return
 		}
 
+	} else {
+		var done int64
+
+		for done < total {
+
+			buf := new(bytes.Buffer)
+			k, err := io.CopyN(buf, rdr, 2*1024*1024)
+			done += k
+			if err != nil && done < total {
+				respond(w, nil, err)
+				return
+			}
+
+			err = client.Send(&grpc.SetInstanceVariableRequest{
+				Namespace: namespace,
+				Instance:  instance,
+				Key:       key,
+				TotalSize: total,
+				Data:      buf.Bytes(),
+				MimeType:  ctype,
+			})
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+		}
 	}
 
 	resp, err := client.CloseAndRecv()
@@ -4352,24 +4389,14 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 
 	ctype := r.Header.Get("Content-Type")
 
-	var done int64
-
-	for done < total {
-
-		buf := new(bytes.Buffer)
-		k, err := io.CopyN(buf, rdr, 2*1024*1024)
-		done += k
-		if err != nil && done < total {
-			respond(w, nil, err)
-			return
-		}
+	if total == 0 {
 
 		err = client.Send(&grpc.SetWorkflowVariableRequest{
 			Namespace: namespace,
 			Path:      path,
 			Key:       key,
-			TotalSize: total,
-			Data:      buf.Bytes(),
+			TotalSize: 0,
+			Data:      []byte{},
 			MimeType:  ctype,
 		})
 		if err != nil {
@@ -4377,6 +4404,33 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 			return
 		}
 
+	} else {
+		var done int64
+
+		for done < total {
+
+			buf := new(bytes.Buffer)
+			k, err := io.CopyN(buf, rdr, 2*1024*1024)
+			done += k
+			if err != nil && done < total {
+				respond(w, nil, err)
+				return
+			}
+
+			err = client.Send(&grpc.SetWorkflowVariableRequest{
+				Namespace: namespace,
+				Path:      path,
+				Key:       key,
+				TotalSize: total,
+				Data:      buf.Bytes(),
+				MimeType:  ctype,
+			})
+			if err != nil {
+				respond(w, nil, err)
+				return
+			}
+
+		}
 	}
 
 	resp, err := client.CloseAndRecv()
