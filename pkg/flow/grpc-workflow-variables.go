@@ -171,6 +171,13 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 			}
 
 			if err == nil && k == 0 {
+				if resp.TotalSize == 0 {
+					resp.Data = buf.Bytes()
+					err = srv.Send(resp)
+					if err != nil {
+						return err
+					}
+				}
 				return nil
 			}
 

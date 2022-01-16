@@ -162,6 +162,13 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 			}
 
 			if err == nil && k == 0 {
+				if resp.TotalSize == 0 {
+					resp.Data = buf.Bytes()
+					err = srv.Send(resp)
+					if err != nil {
+						return err
+					}
+				}
 				return nil
 			}
 
