@@ -15,6 +15,107 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func testNamespaceVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	vars, err := c.NamespaceVariables(ctx, &grpc.NamespaceVariablesRequest{
+		Namespace: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(vars.Variables.Edges) != 0 {
+		return errors.New("unexpected variables already exist in the namespace")
+	}
+
+	client, err := c.NamespaceVariablesStream(ctx, &grpc.NamespaceVariablesRequest{
+		Namespace: namespace,
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	vars, err = client.Recv()
+	if err != nil {
+		return err
+	}
+	if len(vars.Variables.Edges) != 0 {
+		return errors.New("unexpected variables already exist in the namespace")
+	}
+
+	_, err = c.SetNamespaceVariable(ctx, &grpc.SetNamespaceVariableRequest{
+		Namespace: namespace,
+		Key:       "testvar",
+		Data:      []byte(""),
+	})
+	if err != nil {
+		return err
+	}
+
+	vars, err = client.Recv()
+	if err != nil {
+		return err
+	}
+	if len(vars.Variables.Edges) != 1 {
+		return errors.New("incorrect number of variables returned by server")
+	}
+
+	v, err := c.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
+		Namespace: namespace,
+		Key:       "testvar",
+	})
+	if err != nil {
+		return err
+	}
+
+	if string(v.Data) != "" {
+		return errors.New("unexpected variable data")
+	}
+
+	_, err = c.DeleteNamespaceVariable(ctx, &grpc.DeleteNamespaceVariableRequest{
+		Namespace: namespace,
+		Key:       "testvar",
+	})
+	if err != nil {
+		return err
+	}
+
+	vars, err = client.Recv()
+	if err != nil {
+		return err
+	}
+	if len(vars.Variables.Edges) != 0 {
+		return errors.New("unexpected variables still exist in the namespace")
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	v, err = c.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
+		Namespace: namespace,
+		Key:       "testvar",
+	})
+	if err == nil {
+		return errors.New("server returned non-existent variable without error")
+	}
+	if status.Code(err) != codes.NotFound {
+		return fmt.Errorf("incorrect error from server: %w", err)
+	}
+
+	return nil
+
+}
+
 func testNamespaceVariablesSmall(ctx context.Context, c grpc.FlowClient, namespace string) error {
 
 	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
@@ -241,6 +342,122 @@ func testNamespaceVariablesLarge(ctx context.Context, c grpc.FlowClient, namespa
 
 	if checksum != returnedChecksum {
 		return errors.New("server returned different data than what was sent")
+	}
+
+	return nil
+
+}
+
+func testWorkflowVariablesEmpty(ctx context.Context, c grpc.FlowClient, namespace string) error {
+
+	_, err := c.CreateNamespace(ctx, &grpc.CreateNamespaceRequest{
+		Name: namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.CreateWorkflow(ctx, &grpc.CreateWorkflowRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Source:    []byte(simpleWorkflow),
+	})
+	if err != nil {
+		return err
+	}
+
+	vars, err := c.WorkflowVariables(ctx, &grpc.WorkflowVariablesRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(vars.Variables.Edges) != 0 {
+		return errors.New("unexpected variables already exist in the workflow")
+	}
+
+	client, err := c.WorkflowVariablesStream(ctx, &grpc.WorkflowVariablesRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+	})
+	if err != nil {
+		return err
+	}
+	defer client.CloseSend()
+
+	vars, err = client.Recv()
+	if err != nil {
+		return err
+	}
+	if len(vars.Variables.Edges) != 0 {
+		return errors.New("unexpected variables already exist in the workflow")
+	}
+
+	_, err = c.SetWorkflowVariable(ctx, &grpc.SetWorkflowVariableRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Key:       "testvar",
+		Data:      []byte(""),
+	})
+	if err != nil {
+		return err
+	}
+
+	vars, err = client.Recv()
+	if err != nil {
+		return err
+	}
+	if len(vars.Variables.Edges) != 1 {
+		return errors.New("incorrect number of variables returned by server")
+	}
+
+	v, err := c.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Key:       "testvar",
+	})
+	if err != nil {
+		return err
+	}
+
+	if string(v.Data) != "" {
+		return errors.New("unexpected variable data")
+	}
+
+	_, err = c.DeleteWorkflowVariable(ctx, &grpc.DeleteWorkflowVariableRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Key:       "testvar",
+	})
+	if err != nil {
+		return err
+	}
+
+	vars, err = client.Recv()
+	if err != nil {
+		return err
+	}
+	if len(vars.Variables.Edges) != 0 {
+		return errors.New("unexpected variables still exist in the workflow")
+	}
+
+	err = client.CloseSend()
+	if err != nil {
+		return err
+	}
+
+	v, err = c.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
+		Namespace: namespace,
+		Path:      "/testwf",
+		Key:       "testvar",
+	})
+	if err == nil {
+		return errors.New("server returned non-existent variable without error")
+	}
+	if status.Code(err) != codes.NotFound {
+		return fmt.Errorf("incorrect error from server: %w", err)
 	}
 
 	return nil
