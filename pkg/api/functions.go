@@ -819,6 +819,48 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got services list"
 	pathHandlerPair(r, RN_ListWorkflowServices, "services", h.listWorkflowServices, h.listWorkflowServicesSSE)
 
+	// swagger:operation DELETE /api/functions/namespaces/{namespace}/tree/{workflow}?op=delete-service deleteWorkflowService
+	// ---
+	// description: |
+	//   Deletes workflow scoped knative service.
+	// summary: Delete Namespace Service
+	// tags:
+	// - "Workflow Services"
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: workflow
+	//   type: string
+	//   required: true
+	//   description: 'path to target workflow'
+	// - in: body
+	//   name: Service Payload
+	//   required: true
+	//   description: Payload that contains target service info
+	//   schema:
+	//     type: object
+	//     example:
+	//       name: "get"
+	//       revision: "5682557321920089479"
+	//     required:
+	//       - name
+	//       - revision
+	//     properties:
+	//       name:
+	//         type: string
+	//         description: "name of service to be deleted"
+	//       revision:
+	//         type: string
+	//         description: "revision of service to be deleted"
+	// responses:
+	//   '200':
+	//     "description": "successfully deleted service"
+	pathHandler(r, http.MethodDelete, RN_DeleteWorkflowServices, "delete-service", h.deleteWorkflowServices)
+
 	// swagger:operation GET /api/functions/namespaces/{namespace}/tree/{workflow}?op=pods listWorkflowServiceRevisionPods
 	// ---
 	// description: |
@@ -1951,6 +1993,57 @@ func (h *functionHandler) listServices(
 }
 
 // sse
+
+type deleteWorkflowServicesRequest struct {
+	Name     *string `json:"name,omitempty"`
+	Revision *string `json:"revision,omitempty"`
+}
+
+func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	path, _ := pathAndRef(r)
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	body := new(deleteWorkflowServicesRequest)
+
+	err = json.Unmarshal(data, &body)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	if body.Name == nil {
+		respond(w, nil, errors.New("name is missing in body"))
+		return
+	} else if body.Revision == nil {
+		respond(w, nil, errors.New("revision is missing in body"))
+		return
+	}
+
+	resp, err := h.srv.flowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+		Namespace: mux.Vars(r)["ns"],
+		Path:      path,
+	})
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
+	annotations[functions.ServiceHeaderName] = *body.Name
+	annotations[functions.ServiceHeaderRevision] = *body.Revision
+
+	h.deleteService(annotations, w, r)
+}
 
 func (h *functionHandler) deleteGlobalService(w http.ResponseWriter, r *http.Request) {
 
