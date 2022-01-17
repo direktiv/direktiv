@@ -67,6 +67,7 @@ func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
 		metrics.And(
 			metrics.NamespaceEQ(args.Namespace),
 			metrics.WorkflowEQ(args.Workflow),
+			metrics.RevisionEQ(args.Revision),
 			metrics.TimestampGT(args.Since),
 		),
 	).All(ctx)
