@@ -54,7 +54,7 @@ function WorkflowPage(props) {
     let filepath = "/"
 
     if(!namespace) {
-        return <></>
+        return <> </>
     }
 
     if(params["*"] !== undefined){
