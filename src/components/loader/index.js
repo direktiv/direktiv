@@ -1,49 +1,73 @@
 import { useEffect, useState } from "react"
 import './style.css'
-let timeout = null
+
+
 export default function Loader(props) {
 
     const {load, children, timer} = props
-    
     const [display, setDisplay] = useState(false)
-    const [ show, setShow ] = useState(true)
-    useEffect(()=>{
-        if(timer){
-            setTimeout(()=>{
-                setDisplay(true)
-            },timer)
-        }
-    },[timer])
+    const [timeoutTimer, setTimeoutTimer] = useState(null)
 
-    // when children change reset the timer
+    console.log(load, children, timer, display)
+
+    // show loader if timer is hit set timeout to set display to true
     useEffect(()=>{
-        if(display){
-            setDisplay(false)
-            clearTimeout(timeout)
-            timeout = setTimeout(()=>{
+        if(timer !== null && load) {
+            let t = setTimeout(()=>{
                 setDisplay(true)
-            },timer)
+            }, timer)
+            setTimeoutTimer(t)
         }
-    },[children])
-    
+    },[timer, load])
+
+    // check if load has been changed to true
     useEffect(()=>{
-        if(load === false)
-            setTimeout(()=>{
-                setShow(false)
-            }, 1000)
-        if(load === true)
-            setTimeout(()=>{
-                setShow(true)
-            }, 0) 
-    }, [load])
-    if(show) {
+        // if its finished loading and timeoutTimer isn't null show children
+        if(!load && timeoutTimer !== null){
+            clearTimeout(timeoutTimer)
+            setDisplay(false)
+        }
+    },[load, timeoutTimer])
+
+
+    // useEffect(()=>{
+    //     if(timer){
+    //         let t = setTimeout(()=>{
+    //             setDisplay(true)
+    //         },timer)
+    //     }
+    // },[timer])
+
+    // useEffect(()=>{
+    //     return () => {
+    //         if(TimeoutTimer) {
+    //             clearTimeout
+    //         }
+    //     }
+    // },[])
+
+    // useEffect(()=>{
+    //     if(display){
+    //         setDisplay(false)
+    //         setTimeout(()=>{
+    //             setDisplay(true)
+    //         },timer)
+    //     }
+    // },[children, display, timer])
+
+
+    if(display && load) {
         // return a loader
         return (
-            <div className="container" style={{display: display ? "none": "flex"}}>
+            <div className="container" style={{display:'flex'}}>
                 <div className="loader" >
                 </div>
             </div>
         )
+    }
+    
+    if(load){
+        return ""
     }
 
     return(
