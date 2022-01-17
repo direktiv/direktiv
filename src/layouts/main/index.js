@@ -21,7 +21,6 @@ import GlobalPodPanel from '../global-services/pod'
 import Loader from '../../components/loader';
 import Button from '../../components/button';
 import { IoMenu } from 'react-icons/io5';
-import Login from '../login';
 import InstancePageWrapper from '../instance';
 // import PermissionsPageWrapper from '../permissions';
 import EventsPageWrapper from '../events';
@@ -29,7 +28,7 @@ import Monitoring from '../monitoring';
 
 
 function NamespaceNavigation(props){
-    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr, extraRoutes, akey} = props
+    const {namespaces, namespace, setNamespace, deleteNamespace, deleteErr, extraRoutes} = props
 
     const [load, setLoad] = useState(true)
     const navigate = useNavigate()

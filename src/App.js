@@ -16,7 +16,8 @@ function App() {
     const [akey, setAKey] = useState(localStorage.getItem('apikey'))
     const [login, setLogin] = useState(false)
     const [akeyReq, setAKeyReq] = useState(false)
-    const [err ,setErr] = useState("")
+    // Todo find nice way to handle error
+    const [,setErr] = useState("")
 
     useEffect(()=>{
         async function fetchVersion() {

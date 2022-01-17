@@ -494,7 +494,7 @@ export function RevisionSelectorTab(props) {
 
 function TagRevisionBtn(props) {
 
-    let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags, isTag} = props;
+    let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags} = props;
     const [tag, setTag] = useState("")
 
     return(

@@ -148,7 +148,6 @@ export function PodLogs(props){
     const [width, setWidth] = useState(window.innerWidth);
     const [tab, setTab] = useState(pods[0] ? pods[0].name: "")
     const [clipData, setClipData] = useState(null)
-    const params = useParams()
     const [searchParams] = useSearchParams() // removed 'setSearchParams' from square brackets (this should not affect anything: search 'destructuring assignment')
 
     useEffect(()=>{

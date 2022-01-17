@@ -13,7 +13,7 @@ export default function WorkflowDiagram(props) {
     const [ostatus, setOStatus] = useState(instanceStatus)
 
     useEffect(()=>{
-        if(load && workflow !== null || instanceStatus !== ostatus) {
+        if(load && (workflow !== null || instanceStatus !== ostatus)) {
             // initialize the dagre graph
             const dagreGraph = new dagre.graphlib.Graph()
             dagreGraph.setDefaultEdgeLabel(() => ({}))
@@ -67,7 +67,7 @@ export default function WorkflowDiagram(props) {
             setLoad(false)
         }
         
-    },[load, workflow,flow, instanceStatus])
+    },[load, workflow,flow, instanceStatus, ostatus])
 
     if(load) {
         return <></>

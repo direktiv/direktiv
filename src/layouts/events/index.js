@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Config } from '../../util';
 import {  VscCloud, VscRedo, VscSymbolEvent } from 'react-icons/vsc';
 import Button from '../../components/button';
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {useEvents} from 'direktiv-react-hooks'
 import Modal, { ButtonDefinition } from '../../components/modal';
@@ -39,7 +39,8 @@ function EventsPage(props) {
 
     let {namespace} = props;
 
-    let {errHistory, errListeners, eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"))
+    // errHistory and errListeners TODO show error if one
+    let {eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     return(
         <>

@@ -3,9 +3,9 @@ import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import { VscTriangleDown, VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
+import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
 import { Config, GenerateRandomKey } from '../../util';
-import { FiEdit, FiFolder } from 'react-icons/fi';
+import { FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
 import { HiOutlineTrash } from 'react-icons/hi';
 import { useNodes } from 'direktiv-react-hooks';

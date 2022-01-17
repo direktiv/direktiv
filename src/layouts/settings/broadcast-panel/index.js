@@ -1,7 +1,6 @@
 import React from 'react';
 import './style.css';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
-import { BsSliders } from 'react-icons/bs';
 import FlexBox from '../../../components/flexbox';
 import {Config, GenerateRandomKey} from '../../../util';
 import { useBroadcastConfiguration } from 'direktiv-react-hooks';
