@@ -8,7 +8,6 @@ export default function Loader(props) {
     const [display, setDisplay] = useState(false)
     const [timeoutTimer, setTimeoutTimer] = useState(null)
 
-    console.log(load, children, timer, display)
 
     // show loader if timer is hit set timeout to set display to true
     useEffect(()=>{
