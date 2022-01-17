@@ -115,6 +115,8 @@ resend:
 		return err
 	}
 
+	resp.Revision.Name = d.rev().ID.String()
+
 	nhash = checksum(resp)
 	if nhash != phash {
 		err = srv.Send(resp)
