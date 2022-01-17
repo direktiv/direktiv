@@ -75,8 +75,11 @@ export default function GlobalServicesPanel(props) {
                         ]}
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
-                                let err = await createGlobalService(serviceName, image, parseInt(scale), parseInt(size), cmd)
-                                if(err) return err
+                                try { 
+                                    await createGlobalService(serviceName, image, parseInt(scale), parseInt(size), cmd)
+                                } catch(err) {
+                                    return err
+                                }
                             }, "small blue", true, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", true, false)
