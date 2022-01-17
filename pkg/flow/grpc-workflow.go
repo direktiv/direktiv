@@ -72,6 +72,8 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
+	resp.Revision.Name = d.rev().ID.String()
+
 	return &resp, nil
 
 }
@@ -230,6 +232,8 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	resp.Revision.Name = rev.ID.String()
+
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{
 			Name:   resp.Node.Name,
@@ -342,6 +346,8 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	resp.Revision.Name = rev.ID.String()
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
 		broadcastWorkflowInput{
@@ -532,6 +538,8 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	resp.Revision.Name = rev.ID.String()
 
 	return &resp, nil
 
