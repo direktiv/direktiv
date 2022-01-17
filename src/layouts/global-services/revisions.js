@@ -24,13 +24,11 @@ export default function GlobalRevisionsPanel(props){
 
 
     useEffect(()=>{
-        if(revisions !== null) {
-            if(revisions.length > 0) {
-                setScale(revisions[0].minScale)
-                setSize(revisions[0].size)
-                setImage(revisions[0].image)
-                setCmd(revisions[0].cmd)
-            }
+        if(revisions !== null && revisions.length > 0) {
+            setScale(revisions[0].minScale)
+            setSize(revisions[0].size)
+            setImage(revisions[0].image)
+            setCmd(revisions[0].cmd)
         }
     },[revisions])
 
@@ -107,7 +105,6 @@ export default function GlobalRevisionsPanel(props){
                                     <FlexBox className="col gap">
                                         {revisions.map((obj)=>{
                                             let dontDelete = false
-                                            console.log(revisions)
                                             if(revisions.length === 1) {
                                                 dontDelete = true
                                             }

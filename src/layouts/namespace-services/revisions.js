@@ -74,13 +74,11 @@ function NamespaceRevisions(props) {
 
     
     useEffect(()=>{
-        if(revisions !== null) {
-            if(revisions.length > 0) {
-                setScale(revisions[0].minScale)
-                setSize(revisions[0].size)
-                setImage(revisions[0].image)
-                setCmd(revisions[0].cmd)
-            }
+        if(revisions !== null && revisions.length > 0) {
+            setScale(revisions[0].minScale)
+            setSize(revisions[0].size)
+            setImage(revisions[0].image)
+            setCmd(revisions[0].cmd)
         }
     },[revisions])
 
