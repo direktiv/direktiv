@@ -307,6 +307,12 @@ function WorkingRevision(props) {
                         <FlexBox>
                             <DirektivEditor saveFn={() => {
                                 console.log("HELLO WORLD");
+                                console.log(workflow, oldWf);
+
+                                if (workflow === oldWf) {
+                                    console.log("no changes to save");
+                                }
+
                                 setErrors([])
                                 pushOpLoadingState("Save", true)
                                 updateWorkflow(workflow).then(()=>{
@@ -370,6 +376,7 @@ function WorkingRevision(props) {
                             </div>
                             <div style={{ display: "flex", flex: 1, gap: "3px", justifyContent: "flex-end", paddingRight: "10px"}}>
                                 <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${workflow === oldWf ? "terminal-disabled" : ""}`} title={"Save workflow to latest"} onClick={async () => {
+                                    console.log(workflow, oldWf);
                                     setErrors([])
                                     pushOpLoadingState("Save", true)
                                     updateWorkflow(workflow).then(()=>{

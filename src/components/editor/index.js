@@ -267,9 +267,7 @@ export default function DirektivEditor(props) {
 
     useEffect(()=>{
         // console.log(monaco)
-        if(monaco !== null) {
-            console.log(monaco.editor, monaco)
-           
+        if(monaco !== null) {           
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
             if (monaco.languages[dlang]) {
@@ -278,10 +276,6 @@ export default function DirektivEditor(props) {
               })
             } else {
               console.warn(`editor warning: ${dlang} is not a supported language`)
-            }
-
-            if (saveFn) {
-              monaco.editor.registerCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
             }
 
             // let messageContribution = monaco.getContribution('editor.contrib.messageController');
@@ -329,10 +323,9 @@ export default function DirektivEditor(props) {
     }
 
     let handleEditorDidMount = function(editor, monaco) {
-        console.log(editor.addCommand, "ON MOUNT")
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function() {
-            alert('SAVE pressed!');
-        });
+        if (saveFn) {
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
+        }
     }
 
     if (readonly) {
