@@ -30,6 +30,7 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 
 import {PieChart} from 'react-minimal-pie-chart'
 import HelpIcon from "../../../components/help";
+import Loader from '../../../components/loader';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -39,13 +40,16 @@ function WorkflowPage(props) {
     const {namespace} = props
     const [searchParams, setSearchParams] = useSearchParams()
     const params = useParams()
+    const [load, setLoad] = useState(true);
 
     // set tab query param on load
     useEffect(()=>{
         if(searchParams.get('tab') === null) {
             setSearchParams({tab: 0}, {replace:true})
         }
-    },[searchParams, setSearchParams])
+
+        setLoad(false)
+    },[searchParams, setSearchParams, setLoad])
     
     let filepath = "/"
 
@@ -58,7 +62,9 @@ function WorkflowPage(props) {
     }
 
     return(
-        <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
+        <Loader load={load} timer={3000}>
+            <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
+        </Loader>
     )
 }
 
