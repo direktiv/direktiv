@@ -8,7 +8,6 @@ export default function Loader(props) {
     const [display, setDisplay] = useState(false)
     const [timeoutTimer, setTimeoutTimer] = useState(null)
 
-
     // show loader if timer is hit set timeout to set display to true
     useEffect(()=>{
         if(timer !== null && load) {
@@ -27,33 +26,6 @@ export default function Loader(props) {
             setDisplay(false)
         }
     },[load, timeoutTimer])
-
-
-    // useEffect(()=>{
-    //     if(timer){
-    //         let t = setTimeout(()=>{
-    //             setDisplay(true)
-    //         },timer)
-    //     }
-    // },[timer])
-
-    // useEffect(()=>{
-    //     return () => {
-    //         if(TimeoutTimer) {
-    //             clearTimeout
-    //         }
-    //     }
-    // },[])
-
-    // useEffect(()=>{
-    //     if(display){
-    //         setDisplay(false)
-    //         setTimeout(()=>{
-    //             setDisplay(true)
-    //         },timer)
-    //     }
-    // },[children, display, timer])
-
 
     if(display && load) {
         // return a loader
