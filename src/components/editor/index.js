@@ -268,6 +268,8 @@ export default function DirektivEditor(props) {
     useEffect(()=>{
         // console.log(monaco)
         if(monaco !== null) {
+            console.log(monaco.editor, monaco)
+           
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
             if (monaco.languages[dlang]) {
@@ -277,7 +279,9 @@ export default function DirektivEditor(props) {
             } else {
               console.warn(`editor warning: ${dlang} is not a supported language`)
             }
-              
+            monaco.editor.registerCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function() {
+                alert('SAVE pressed!');
+            })
 
             // let messageContribution = monaco.getContribution('editor.contrib.messageController');
             // monaco.editor.onDidAttemptReadOnlyEdit(() => {
@@ -287,36 +291,36 @@ export default function DirektivEditor(props) {
         // monaco.editor.layout()
     },[monaco, dlang, validate])
 
-    if (monaco) {
-      let {actions} = props;
-      if (actions) {
-        for (let i = 0; i < actions.length; i++) {
-          let action = actions[i];
+    // if (monaco) {
+    //   let {actions} = props;
+    //   if (actions) {
+    //     for (let i = 0; i < actions.length; i++) {
+    //       let action = actions[i];
           
-          let keybinding;
-          let letterBind;
+    //       let keybinding;
+    //       let letterBind;
   
-          switch (action.letter) {
-            case 's':
-              letterBind = monaco.KeyCode.KeyS
-              break
-          }
+    //       switch (action.letter) {
+    //         case 's':
+    //           letterBind = monaco.KeyCode.KeyS
+    //           break
+    //       }
   
-          if (action.ctrl) {
-            keybinding = monaco.KeyMod.chord(
-              monaco.KeyMod.CtrlCmd | letterBind
-            )
-          }
+    //       if (action.ctrl) {
+    //         keybinding = monaco.KeyMod.chord(
+    //           monaco.KeyMod.CtrlCmd | letterBind
+    //         )
+    //       }
   
-          monaco.editor.addAction({
-            id: `action-${i}`,
-            label: action.label,
-            keybindings: [keybinding],
-            run: action.function
-          })
-        }
-      }
-    }
+    //       monaco.editor.addAction({
+    //         id: `action-${i}`,
+    //         label: action.label,
+    //         keybindings: [keybinding],
+    //         run: action.function
+    //       })
+    //     }
+    //   }
+    // }
 
 
     function handleEditorChange(value, event) {
@@ -324,6 +328,10 @@ export default function DirektivEditor(props) {
     }
 
     let handleEditorDidMount = function(editor, monaco) {
+        console.log(editor.addCommand, "ON MOUNT")
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function() {
+            alert('SAVE pressed!');
+        });
     }
 
     if (readonly) {
@@ -338,6 +346,7 @@ export default function DirektivEditor(props) {
     return (
       <div className={"monaco-editor monaco-wrapper"} style={{ borderRadius: !noBorderRadius ? "8px" : "0px", width: width, height: height ? height-18 : height, ...style}}>
         <Editor
+        
             options={{
                 ...options,
                 readOnly: readonly,
@@ -356,7 +365,7 @@ export default function DirektivEditor(props) {
             loading={"Loading component..."}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
-            />
+        />
       </div>
     )
 }
