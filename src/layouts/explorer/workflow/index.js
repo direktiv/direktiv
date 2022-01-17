@@ -305,7 +305,14 @@ function WorkingRevision(props) {
                 <ContentPanelBody style={{padding: "0px"}}>
                     <FlexBox className="col" style={{ overflow: "hidden" }}>
                         <FlexBox>
-                            <DirektivEditor style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
+                            <DirektivEditor actions={[{
+                                label: 'Save revision',
+                                ctrl: true,
+                                letter: 's',
+                                function: () => {
+                                    console.log("hit!!");
+                                }
+                            }]} style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
                         </FlexBox>
                         <FlexBox className="gap" style={{ backgroundColor: "#223848", color: "white", height: "44px", maxHeight: "44px", paddingLeft: "10px", minHeight: "44px", alignItems: 'center', position: "relative", borderRadius: "0px 0px 8px 8px" }}>
                             <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>

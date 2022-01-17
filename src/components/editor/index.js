@@ -263,37 +263,7 @@ const cobalt = {
 // TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
     const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
-    
     const monaco = useMonaco()
-
-    let {actions} = props;
-    if (actions) {
-      for (let i = 0; i < actions.length; i++) {
-        let action = actions[i];
-        
-        let keybinding;
-        let letterBind;
-
-        switch (action.letter) {
-          case 's':
-            letterBind = monaco.KeyCode.KeyS
-            break
-        }
-
-        if (action.ctrl) {
-          keybinding = monaco.KeyMod.chord(
-            monaco.KeyMod.CtrlCmd | letterBind
-          )
-        }
-
-        monaco.editor.addAction({
-          id: `action-${i}`,
-          label: action.label,
-          keybindings: [keybinding],
-          run: action.function
-        })
-      }
-    }
 
     useEffect(()=>{
         // console.log(monaco)
@@ -316,6 +286,38 @@ export default function DirektivEditor(props) {
         }
         // monaco.editor.layout()
     },[monaco, dlang, validate])
+
+    if (monaco) {
+      let {actions} = props;
+      if (actions) {
+        for (let i = 0; i < actions.length; i++) {
+          let action = actions[i];
+          
+          let keybinding;
+          let letterBind;
+  
+          switch (action.letter) {
+            case 's':
+              letterBind = monaco.KeyCode.KeyS
+              break
+          }
+  
+          if (action.ctrl) {
+            keybinding = monaco.KeyMod.chord(
+              monaco.KeyMod.CtrlCmd | letterBind
+            )
+          }
+  
+          monaco.editor.addAction({
+            id: `action-${i}`,
+            label: action.label,
+            keybindings: [keybinding],
+            run: action.function
+          })
+        }
+      }
+    }
+
 
     function handleEditorChange(value, event) {
         setDValue(value)
