@@ -59,11 +59,35 @@ func NewGetInstanceListParamsWithHTTPClient(client *http.Client) *GetInstanceLis
 */
 type GetInstanceListParams struct {
 
+	/* FilterField.
+
+	   field to filter
+	*/
+	PageFilterField *string
+
+	/* FilterType.
+
+	   filter behaviour
+	*/
+	PageFilterType *string
+
 	/* Namespace.
 
 	   target namespace
 	*/
 	Namespace string
+
+	/* OrderDirection.
+
+	   order direction
+	*/
+	PageOrderDirection *string
+
+	/* OrderField.
+
+	   field to order by
+	*/
+	PageOrderField *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -118,6 +142,28 @@ func (o *GetInstanceListParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithPageFilterField adds the filterField to the get instance list params
+func (o *GetInstanceListParams) WithPageFilterField(filterField *string) *GetInstanceListParams {
+	o.SetPageFilterField(filterField)
+	return o
+}
+
+// SetPageFilterField adds the filterField to the get instance list params
+func (o *GetInstanceListParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
+}
+
+// WithPageFilterType adds the filterType to the get instance list params
+func (o *GetInstanceListParams) WithPageFilterType(filterType *string) *GetInstanceListParams {
+	o.SetPageFilterType(filterType)
+	return o
+}
+
+// SetPageFilterType adds the filterType to the get instance list params
+func (o *GetInstanceListParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
+}
+
 // WithNamespace adds the namespace to the get instance list params
 func (o *GetInstanceListParams) WithNamespace(namespace string) *GetInstanceListParams {
 	o.SetNamespace(namespace)
@@ -129,6 +175,28 @@ func (o *GetInstanceListParams) SetNamespace(namespace string) {
 	o.Namespace = namespace
 }
 
+// WithPageOrderDirection adds the orderDirection to the get instance list params
+func (o *GetInstanceListParams) WithPageOrderDirection(orderDirection *string) *GetInstanceListParams {
+	o.SetPageOrderDirection(orderDirection)
+	return o
+}
+
+// SetPageOrderDirection adds the orderDirection to the get instance list params
+func (o *GetInstanceListParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
+}
+
+// WithPageOrderField adds the orderField to the get instance list params
+func (o *GetInstanceListParams) WithPageOrderField(orderField *string) *GetInstanceListParams {
+	o.SetPageOrderField(orderField)
+	return o
+}
+
+// SetPageOrderField adds the orderField to the get instance list params
+func (o *GetInstanceListParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GetInstanceListParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -137,9 +205,77 @@ func (o *GetInstanceListParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
+	if o.PageFilterField != nil {
+
+		// query param filter.field
+		var qrFilterField string
+
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
+		}
+		qFilterField := qrFilterField
+		if qFilterField != "" {
+
+			if err := r.SetQueryParam("filter.field", qFilterField); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PageFilterType != nil {
+
+		// query param filter.type
+		var qrFilterType string
+
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
+		}
+		qFilterType := qrFilterType
+		if qFilterType != "" {
+
+			if err := r.SetQueryParam("filter.type", qFilterType); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param namespace
 	if err := r.SetPathParam("namespace", o.Namespace); err != nil {
 		return err
+	}
+
+	if o.PageOrderDirection != nil {
+
+		// query param order.direction
+		var qrOrderDirection string
+
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
+		}
+		qOrderDirection := qrOrderDirection
+		if qOrderDirection != "" {
+
+			if err := r.SetQueryParam("order.direction", qOrderDirection); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PageOrderField != nil {
+
+		// query param order.field
+		var qrOrderField string
+
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
+		}
+		qOrderField := qrOrderField
+		if qOrderField != "" {
+
+			if err := r.SetQueryParam("order.field", qOrderField); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

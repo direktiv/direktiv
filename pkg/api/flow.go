@@ -69,6 +69,11 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// ---
 	// description: |
 	//   Gets the list of namespaces.
+	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// summary: Gets the list of namespaces
 	// responses:
 	//   '200':
@@ -231,6 +236,11 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// description: |
 	//   Gets Direktiv Server Logs.
 	// summary: Get Direktiv Server Logs
+	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// responses:
 	//   200:
 	//     produces: application/json
@@ -250,6 +260,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets Namespace Level Logs.
 	// summary: Gets Namespace Level Logs
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -266,6 +280,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets the logs of an executed instance.
 	// summary: Gets Instance Logs
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -934,6 +952,10 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Gets a list of instances in a namespace.
 	// summary: Get List Instances
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string
@@ -1037,6 +1059,13 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   Get workflow level logs.
 	// summary: Get Workflow Level Logs
 	// parameters:
+	// - "": "#/parameters/PaginationQuery/order.field"
+	//   enum:
+	//     - CREATED
+	//     - UPDATED
+	// - "": "#/parameters/PaginationQuery/order.direction"
+	// - "": "#/parameters/PaginationQuery/filter.field"
+	// - "": "#/parameters/PaginationQuery/filter.type"
 	// - in: path
 	//   name: namespace
 	//   type: string

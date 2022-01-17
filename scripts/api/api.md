@@ -1615,6 +1615,10 @@ Gets a list of instances in a namespace.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| filter.field | `query` | string | `string` |  |  |  | field to filter |
+| filter.type | `query` | string | `string` |  |  |  | filter behaviour |
+| order.direction | `query` | string | `string` |  |  |  | order direction |
+| order.field | `query` | string | `string` |  |  |  | field to order by |
 
 #### All responses
 
@@ -1877,6 +1881,15 @@ GET /api/namespaces
 Gets the list of namespaces.
 
 
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filter.field | `query` | string | `string` |  |  |  | field to filter |
+| filter.type | `query` | string | `string` |  |  |  | filter behaviour |
+| order.direction | `query` | string | `string` |  |  |  | order direction |
+| order.field | `query` | string | `string` |  |  |  | field to order by |
+
 #### All responses
 
 | Code | Status | Description | Has headers | Schema |
@@ -2022,6 +2035,10 @@ Get workflow level logs.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
 | workflow | `path` | string | `string` |  | ✓ |  | path to target workflow |
+| filter.field | `query` | string | `string` |  |  |  | field to filter |
+| filter.type | `query` | string | `string` |  |  |  | filter behaviour |
+| order.direction | `query` | string | `string` |  |  |  | order direction |
+| order.field | `query` | string | `string` |  |  |  | field to order by |
 
 #### All responses
 
@@ -2213,6 +2230,10 @@ Gets the logs of an executed instance.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | instance | `path` | string | `string` |  | ✓ |  | target instance id |
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| filter.field | `query` | string | `string` |  |  |  | field to filter |
+| filter.type | `query` | string | `string` |  |  |  | filter behaviour |
+| order.direction | `query` | string | `string` |  |  |  | order direction |
+| order.field | `query` | string | `string` |  |  |  | field to order by |
 
 #### All responses
 
@@ -2444,6 +2465,10 @@ Gets Namespace Level Logs.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | namespace | `path` | string | `string` |  | ✓ |  | target namespace |
+| filter.field | `query` | string | `string` |  |  |  | field to filter |
+| filter.type | `query` | string | `string` |  |  |  | filter behaviour |
+| order.direction | `query` | string | `string` |  |  |  | order direction |
+| order.field | `query` | string | `string` |  |  |  | field to order by |
 
 #### All responses
 
@@ -2613,6 +2638,15 @@ GET /api/logs
 
 Gets Direktiv Server Logs.
 
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| filter.field | `query` | string | `string` |  |  |  | field to filter |
+| filter.type | `query` | string | `string` |  |  |  | filter behaviour |
+| order.direction | `query` | string | `string` |  |  |  | order direction |
+| order.field | `query` | string | `string` |  |  |  | field to order by |
 
 #### All responses
 
