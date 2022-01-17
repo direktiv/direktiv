@@ -765,8 +765,7 @@ function TrafficDistribution(props) {
 
 function WorkflowServices(props) {
     const {namespace, filepath} = props
-
-    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
+    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
 
     if (data === null) {
         return     <div className="col">
