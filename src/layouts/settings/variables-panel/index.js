@@ -9,9 +9,7 @@ import { Config } from '../../../util';
 import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
-import {BsUpload} from 'react-icons/bs';
 import Tabs from '../../../components/tabs';
-import { RiDeleteBin2Line } from 'react-icons/ri';
 import HelpIcon from '../../../components/help';
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';

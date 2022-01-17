@@ -73,12 +73,14 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
+    // todo handle err from hook below
+    const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
     const [router, setRouter] = useState(null)
 
-    // const [tags, setTags] = useState(null)
+
     const [revisions, setRevisions] = useState(null)
-    const [revsErr, setRevsErr] = useState("")
+    // todo handle revsErr
+    const [, setRevsErr] = useState("")
 
     // fetch revisions using the workflow hook from above
     useEffect(()=>{
@@ -118,7 +120,10 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 1 ?
                         <>
-                        <RevisionSelectorTab tagWorkflow={tagWorkflow} namespace={namespace} filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} getTags={getTags} removeTag={removeTag} filepath={filepath} />
+                        <RevisionSelectorTab 
+                        tagWorkflow={tagWorkflow}
+                         namespace={namespace}
+                          filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag}  />
                         </>
                     :<></>}
                     { activeTab === 2 ?
@@ -492,9 +497,9 @@ function WorkflowInstances(props) {
                             state={obj.node.status} 
                             name={obj.node.as} 
                             id={obj.node.id}
-                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
                             startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm:ss a")}
                             finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
                         />
                     )
@@ -778,8 +783,7 @@ function TrafficDistribution(props) {
 
 function WorkflowServices(props) {
     const {namespace, filepath} = props
-
-    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
+    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
 
     if (data === null) {
         return     <div className="col">
