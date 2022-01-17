@@ -78,7 +78,8 @@ const orderFieldKeys = Object.keys(orderFieldDictionary)
 
 function ExplorerList(props) {
     const {namespace, path} = props
-
+    const navigate= useNavigate()
+    
     const [currPath, setCurrPath] = useState("")
     
     const [name, setName] = useState("")
@@ -161,7 +162,10 @@ function ExplorerList(props) {
                             actionButtons={[
                                 ButtonDefinition("Add", async () => {
                                     try { 
-                                        await createNode(name, "workflow", wfData)
+                                        const result = await createNode(name, "workflow", wfData)
+                                        if(result.node && result.namespace){
+                                            navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
+                                        }
                                     } catch(err) {
                                         return err
                                     }
