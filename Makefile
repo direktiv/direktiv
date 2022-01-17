@@ -19,7 +19,7 @@ server:
 	if [ ! -d ${mkfile_dir_main}reactjs-embed ]; then \
 		git clone https://github.com/direktiv/reactjs-embed.git; \
 	fi	
-	DOCKER_BUILDKIT=1 docker build . --tag ${docker_repo}/${docker_image}${RELEASE_TAG} --build-arg FULL_VERSION=${FULL_VERSION}
+	docker build . --tag ${docker_repo}/${docker_image}${RELEASE_TAG} --build-arg FULL_VERSION=${FULL_VERSION}
 	docker push ${docker_repo}/${docker_image}${RELEASE_TAG}
 
 # Updates remote containers
@@ -28,7 +28,7 @@ update-containers:
 	if [ ! -d ${mkfile_dir_main}reactjs-embed ]; then \
                 git clone https://github.com/direktiv/reactjs-embed.git; \
     fi 
-	DOCKER_BUILDKIT=1 docker build . --tag direktiv/ui --build-arg FULL_VERSION=${FULL_VERSION}
+	docker build . --tag direktiv/ui --build-arg FULL_VERSION=${FULL_VERSION}
 	docker tag direktiv/ui:latest direktiv/ui${RELEASE_TAG}
 	docker push direktiv/ui
 	docker push direktiv/ui${RELEASE_TAG}
