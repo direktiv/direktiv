@@ -120,9 +120,13 @@ function ModalOverlay(props) {
 
                     if (e.code === action.code) {
                         try { 
-                            await action.fn() 
-                            if (action.closeModal) {
+                            const result = await action.fn() 
+                            if (!result?.error && action.closeModal) {
                                 callback(false)
+                            }
+                            if(result?.error){
+                                setAlertMessage(result?.msg)
+                                setDisplayAlert(true)
                             }
                         } catch(err) {
                             setAlertMessage(err)

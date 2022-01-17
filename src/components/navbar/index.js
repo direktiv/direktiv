@@ -101,7 +101,10 @@ function NewNamespaceBtn(props) {
                             },200)
                             setNs("")
                         } catch(err) {
-                            return err
+                            return {
+                                error: true,
+                                msg: err.toString()
+                            }
                         }
                    }, true)
                ]}
