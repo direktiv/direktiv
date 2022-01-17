@@ -113,8 +113,8 @@ function ExplorerList(props) {
     
 
     return(
-        <FlexBox className="col gap" style={{paddingRight: "8px"}}>
-        <Loader load={load} timer={3000}>
+        <FlexBox className="col gap"  style={{paddingRight: "8px"}}>
+        <Loader load={load} timer={1000}>
         <FlexBox className="gap" style={{maxHeight: "32px"}}>
             <FlexBox>
                 <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
