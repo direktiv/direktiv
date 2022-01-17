@@ -134,7 +134,23 @@ func init() {
 	// namespaceDescName is the schema descriptor for name field.
 	namespaceDescName := namespaceFields[4].Descriptor()
 	// namespace.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	namespace.NameValidator = namespaceDescName.Validators[0].(func(string) error)
+	namespace.NameValidator = func() func(string) error {
+		validators := namespaceDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+			validators[3].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// namespaceDescID is the schema descriptor for id field.
 	namespaceDescID := namespaceFields[0].Descriptor()
 	// namespace.DefaultID holds the default value on creation for the id field.
