@@ -1,6 +1,6 @@
 import { useNamespaceLogs } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
-import { VscGraph, VscTerminal } from "react-icons/vsc"
+import {  VscTerminal } from "react-icons/vsc"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import HelpIcon from "../../components/help"

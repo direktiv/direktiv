@@ -1,5 +1,4 @@
 import Editor, {useMonaco} from "@monaco-editor/react";
-import { linkHorizontal } from "d3-shape";
 import { useEffect } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
@@ -287,7 +286,7 @@ export default function DirektivEditor(props) {
             // })
         }
         // monaco.editor.layout()
-    },[monaco])
+    },[monaco, dlang, validate])
 
     function handleEditorChange(value, event) {
         setDValue(value)
