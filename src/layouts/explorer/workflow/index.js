@@ -348,7 +348,14 @@ function WorkingRevision(props) {
                                     )}
                                 >
                                     <FlexBox style={{overflow:"hidden"}}>
-                                        <DirektivEditor height="200" width="300" dlang="json" dvalue={input} setDValue={setInput}/>
+                                        <DirektivEditor actions={[{
+                                            label: 'Save revision',
+                                            ctrl: true,
+                                            letter: 's',
+                                            function: () => {
+                                                console.log("hit!!");
+                                            }
+                                        }]} height="200" width="300" dlang="json" dvalue={input} setDValue={setInput}/>
                                     </FlexBox>
                                 </Modal>
                             </div>
