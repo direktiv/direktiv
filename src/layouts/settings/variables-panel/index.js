@@ -5,7 +5,7 @@ import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';
 import { useNamespaceVariables } from 'direktiv-react-hooks';
-import { Config } from '../../../util';
+import { Config, CanPreviewMimeType } from '../../../util';
 import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
@@ -312,11 +312,19 @@ function Variable(props) {
                     <FlexBox className="col gap" style={{fontSize: "12px", width: "580px", minHeight: "500px"}}>
                         <FlexBox className="gap" style={{flexGrow: 1}}>
                             <FlexBox style={{overflow:"hidden"}}>
+                                {CanPreviewMimeType(mimeType) ?                                
                                 <AutoSizer>
                                     {({height, width})=>(
                                     <DirektivEditor dlang={lang} width={width} dvalue={val} setDValue={setValue} height={height}/>
                                     )}
                                 </AutoSizer>
+                                :
+                                <div style={{width: "100%", display:"flex", justifyContent: "center", alignItems:"center"}}>
+                                    <p style={{fontSize:"11pt"}}>
+                                        Cannot preview variable with mime-type: {mimeType}
+                                    </p>
+                                </div>
+                                }
                             </FlexBox>
                         </FlexBox>
                         <FlexBox className="gap" style={{flexGrow: 0, flexShrink: 1}}>
