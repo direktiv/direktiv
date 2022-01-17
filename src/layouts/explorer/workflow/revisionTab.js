@@ -724,7 +724,7 @@ export function RevisionTrafficShaper(props) {
                         }
                         await editWorkflowRouter(arr, router.live)
                         setRouter(await getWorkflowRouter())
-                    }} className="small">
+                    }} className={`small ${rev2 && rev1 ? "" : "disabled"}`}>
                         Save
                     </Button>
                 </FlexBox>
