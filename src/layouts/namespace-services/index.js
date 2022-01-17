@@ -6,7 +6,7 @@ import { RiDeleteBin2Line } from "react-icons/ri";
 import { FaCircle} from "react-icons/fa"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel";
 import FlexBox from "../../components/flexbox";
-import { Config } from "../../util";
+import { Config, GenerateRandomKey } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
 import {Link} from 'react-router-dom'
@@ -224,7 +224,7 @@ export function Service(props) {
                             ButtonDefinition("Delete", async () => {
                                 if(revision !== undefined) {
                                     let err = await deleteService(revision)
-                                    if (err) return err
+                                    if (err) return err            
                                 }else {
                                     let err = await deleteService(name)
                                     if (err) return err
@@ -265,11 +265,11 @@ function ServiceDetails(props) {
             {conditions.map((obj)=>{
                 if(obj.name === 'Active' && obj.reason === 'NoTraffic' && obj.message === "The target is not receiving traffic."){
                     return(
-                        <Condition status={"True"} name={obj.name} reason={""} message={""} />
+                        <Condition key={GenerateRandomKey('service-condition-')} status={"True"} name={obj.name} reason={""} message={""} />
                     )
                 }
                 return(
-                    <Condition status={obj.status} name={obj.name} reason={obj.reason} message={obj.message}/>
+                    <Condition key={GenerateRandomKey('service-condition-')} status={obj.status} name={obj.name} reason={obj.reason} message={obj.message}/>
                 )
             })}
 

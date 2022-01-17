@@ -36,8 +36,18 @@ function InstancesTable(props) {
     const {namespace} = props
     const [load, setLoad] = useState(true)
     const [iQueryParams, setIQueryParams] = useState([])
-    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
+    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
 
+    // this useEffect part was deleted, I don't know why
+    useEffect(()=>{
+        if(data !== null) {
+            setLoad(false)
+        }
+        if(err !== null) {
+            setLoad(false)
+        }
+    },[data, err])
+    
     return(
         <Loader load={load} timer={3000}>
 

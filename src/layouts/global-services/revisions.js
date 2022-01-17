@@ -99,16 +99,18 @@ export default function GlobalRevisionsPanel(props){
                             <ContentPanelBody className="secrets-panel">
                                 <FlexBox className="gap col">
                                     <FlexBox className="col gap">
-                                        {revisions.map((obj)=>{
+                                        {revisions.map((obj, key)=>{
                                             let dontDelete = false
-                                            for(var i=0; i < traffic.length; i++) {
-                                                if(traffic[i].revisionName === obj.name){
-                                                    dontDelete= true
-                                                    break
-                                                }
+                                            if( traffic && typeof traffic === typeof [])
+                                                for(var i=0; i < traffic.length; i++) {
+                                                    if(traffic[i].revisionName === obj.name){
+                                                        dontDelete= true
+                                                        break
+                                                    }
                                             }
                                             return(
                                                 <Service 
+                                                    key={key}
                                                     dontDelete={dontDelete}
                                                     revision={obj.rev}
                                                     deleteService={deleteGlobalServiceRevision}
@@ -124,7 +126,10 @@ export default function GlobalRevisionsPanel(props){
                             </ContentPanelBody>
                         </ContentPanel>
                     </FlexBox>
-                    <UpdateTraffic setNamespaceServiceRevisionTraffic={setGlobalServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
+                    {
+                        traffic &&
+                        <UpdateTraffic setNamespaceServiceRevisionTraffic={setGlobalServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
+                    }
                     </FlexBox>
         </FlexBox>
     )
