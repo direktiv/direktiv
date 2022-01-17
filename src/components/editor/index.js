@@ -262,7 +262,7 @@ const cobalt = {
 // Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
 // TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
-    const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
+    const {saveFn, style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
     const monaco = useMonaco()
 
     useEffect(()=>{
@@ -279,17 +279,18 @@ export default function DirektivEditor(props) {
             } else {
               console.warn(`editor warning: ${dlang} is not a supported language`)
             }
-            monaco.editor.registerCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function() {
-                alert('SAVE pressed!');
-            })
+
+            if (saveFn) {
+              monaco.editor.registerCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
+            }
 
             // let messageContribution = monaco.getContribution('editor.contrib.messageController');
             // monaco.editor.onDidAttemptReadOnlyEdit(() => {
             //   monaco.editor.messageContribution.closeMessage();
             // })
         }
-        // monaco.editor.layout()
-    },[monaco, dlang, validate])
+        // monaco.editor.layout() 
+    },[monaco, dlang, validate, saveFn])
 
     // if (monaco) {
     //   let {actions} = props;
