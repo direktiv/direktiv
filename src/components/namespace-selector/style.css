@@ -31,10 +31,8 @@
     color: var(--theme-dark-text);
     font-weight: 700;
 
-    font-size: 12px;
-    line-height: 12px;
-    max-height: 12px;
-    padding-top: 8px;
+    font-size: 14px;
+    line-height: 17px;
 }
 
 .namespace-selector-label-value > span {
