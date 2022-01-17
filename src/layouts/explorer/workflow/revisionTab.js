@@ -141,7 +141,7 @@ function RevisionTab(props) {
 
 export default RevisionTab;
 
-function TabbedButtons(props) {
+export function TabbedButtons(props) {
 
     let {tabBtn, setTabBtn, searchParams, setSearchParams, revision} = props;
 
