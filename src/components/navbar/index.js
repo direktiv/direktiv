@@ -94,23 +94,29 @@ function NewNamespaceBtn(props) {
 
                keyDownActions={[
                    KeyDownDefinition("Enter", async () => {
-                       let err = await createNamespace(ns)
-                       if(err) return err
-                       setTimeout(()=>{
-                           navigate(`/n/${ns}`)
-                       },200)
-                       setNs("")
+                       try { 
+                            await createNamespace(ns)
+                            setTimeout(()=>{
+                                navigate(`/n/${ns}`)
+                            },200)
+                            setNs("")
+                        } catch(err) {
+                            return err
+                        }
                    }, true)
                ]}
 
                actionButtons={[
                    ButtonDefinition("Add", async () => {
-                       let err = await createNamespace(ns)
-                       if(err) return err
-                       setTimeout(()=>{
-                           navigate(`/n/${ns}`)
-                       },200)
-                       setNs("")
+                        try { 
+                          await createNamespace(ns)
+                          setTimeout(()=>{
+                            navigate(`/n/${ns}`)
+                          },200)
+                          setNs("")
+                        } catch(err) {
+                          return err
+                        }
                    }, "small blue", true, false),
                    ButtonDefinition("Cancel", () => {
                        setNs("")

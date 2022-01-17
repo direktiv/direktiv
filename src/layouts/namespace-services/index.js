@@ -9,7 +9,7 @@ import FlexBox from "../../components/flexbox";
 import { Config, GenerateRandomKey } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import HelpIcon from "../../components/help"
 
 export default function ServicesPanel(props) {
@@ -131,8 +131,11 @@ function NamespaceServices(props) {
                     ]}
                     actionButtons={[
                         ButtonDefinition("Add", async () => {
-                            let err = await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
-                            if(err) return err
+                            try { 
+                                await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
+                            } catch(err) {
+                                return err
+                            }
                         }, "small blue", true, false),
                         ButtonDefinition("Cancel", () => {
                         }, "small light", true, false)
@@ -223,11 +226,17 @@ export function Service(props) {
                         actionButtons={[
                             ButtonDefinition("Delete", async () => {
                                 if(revision !== undefined) {
-                                    let err = await deleteService(revision)
-                                    if (err) return err            
+                                    try { 
+                                        await deleteService(revision)
+                                    } catch(err) {
+                                        return err
+                                    }
                                 }else {
-                                    let err = await deleteService(name)
-                                    if (err) return err
+                                    try { 
+                                        await deleteService(name)
+                                    } catch(err) {
+                                        return err
+                                    }
                                 }
                              
                             }, "small red", true, false),

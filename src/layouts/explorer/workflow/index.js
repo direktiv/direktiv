@@ -30,6 +30,7 @@ import Modal, { ButtonDefinition } from '../../../components/modal';
 
 import {PieChart} from 'react-minimal-pie-chart'
 import HelpIcon from "../../../components/help";
+import Loader from '../../../components/loader';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -39,18 +40,21 @@ function WorkflowPage(props) {
     const {namespace} = props
     const [searchParams, setSearchParams] = useSearchParams()
     const params = useParams()
+    const [load, setLoad] = useState(true);
 
     // set tab query param on load
     useEffect(()=>{
         if(searchParams.get('tab') === null) {
             setSearchParams({tab: 0}, {replace:true})
         }
-    },[searchParams, setSearchParams])
+
+        setLoad(false)
+    },[searchParams, setSearchParams, setLoad])
     
     let filepath = "/"
 
     if(!namespace) {
-        return <></>
+        return <> </>
     }
 
     if(params["*"] !== undefined){
@@ -58,7 +62,9 @@ function WorkflowPage(props) {
     }
 
     return(
-        <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
+        <Loader load={load} timer={3000}>
+            <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
+        </Loader>
     )
 }
 
@@ -765,8 +771,7 @@ function TrafficDistribution(props) {
 
 function WorkflowServices(props) {
     const {namespace, filepath} = props
-
-    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
+    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
 
     if (data === null) {
         return     <div className="col">
@@ -911,9 +916,13 @@ function SettingsTab(props) {
                                         <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
                                         <FlexBox style={{justifyContent:"flex-end", width:"100%"}}>
                                             <Button onClick={async()=>{
-                                                let err = await setWorkflowLogToEvent(logToEvent)
-                                                // todo err
-                                                console.log(err, "NOTIFY IF ERR")
+                                                try { 
+                                                    await setWorkflowLogToEvent(logToEvent)
+                                                } catch(err) {
+                                                    // todo err
+                                                    console.log(err, "NOTIFY IF ERR")
+                                                    return err
+                                                }
                                             }} className="small">
                                                 Save
                                             </Button>
