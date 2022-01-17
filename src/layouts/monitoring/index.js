@@ -1,15 +1,22 @@
 import { useInstances, useNamespaceLogs } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
-import { VscGraph, VscTerminal } from "react-icons/vsc"
+import { VscCheck, VscChromeClose, VscGraph, VscTerminal } from "react-icons/vsc"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import HelpIcon from "../../components/help"
 import Loader from "../../components/loader"
 import { Config, copyTextToClipboard } from "../../util"
-import * as dayjs from "dayjs"
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache, WindowScroller } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from "react-icons/io5"
 import {TerminalButton} from '../instance'
+import * as dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc"
+import { Link } from "react-router-dom"
+
+dayjs.extend(utc)
+dayjs.extend(relativeTime);
+
 
 export default function Monitoring(props) {
     const {namespace} = props
@@ -99,8 +106,8 @@ function MonitoringPage(props) {
 
     return (
         <Loader load={load} timer={3000}>
-            <FlexBox className="gap" style={{paddingRight:"8px", height:"100%"}}>
-                <FlexBox style={{width:"600px"}}>
+            <FlexBox className="wrap gap" style={{paddingRight:"8px", height:"100%"}}>
+                <FlexBox style={{width:"600px", flex: 2}}>
                     <ContentPanel style={{width:"100%"}}>
                         <ContentPanelTitle>
                             <FlexBox className="gap" style={{alignItems:"center"}}>
@@ -160,14 +167,14 @@ function MonitoringPage(props) {
                         </ContentPanelBody>
                     </ContentPanel>
                 </FlexBox>
-                <FlexBox className="gap" style={{flexDirection: "column"}}>
+                <FlexBox className="gap" style={{flexDirection: "column", flex:1}}>
                     <FlexBox>
                         <ContentPanel style={{width:"100%"}}>
                             <ContentPanelTitle>
                                 <FlexBox className="gap" style={{alignItems:"center"}}>
-                                    <VscTerminal/>
+                                    <VscCheck fill={"var(--theme-green)"}/>
                                     <div>
-                                        Successful Executions
+                                        Successful <span className="hide-on-med">Executions</span>
                                     </div>
                                     <HelpIcon msg={"A list of the latest successful executions"} />
                                 </FlexBox>
@@ -181,9 +188,9 @@ function MonitoringPage(props) {
                         <ContentPanel style={{width:"100%"}}>
                             <ContentPanelTitle>
                                 <FlexBox className="gap" style={{alignItems:"center"}}>
-                                    <VscTerminal/>
+                                    <VscChromeClose fill={"var(--theme-red)"}/>
                                     <div>
-                                        Failed Executions
+                                        Failed <span className="hide-on-med">Executions</span>
                                     </div>
                                     <HelpIcon msg={"A list of the latest failed executions"} />
                                 </FlexBox>
@@ -203,11 +210,49 @@ function FailedExecutions(props) {
     const {namespace} = props
     const [qParams, setQParams] = useState(["first=10", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
 
-    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), qParams)
-    console.log(data, err)
+    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     
+    // todo implement loading
+    if(data === null) {
+        return ""
+    }
+
     return (
-        ""
+        <FlexBox style={{width:"100%"}}>
+            <table style={{width:"100%", height:"fit-content"}}>
+                <thead>
+                    <tr>
+                        <th>Workflow</th>
+                        <th>Instance</th>
+                        {/* <th>Updated</th> */}
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        data.map((obj)=>{
+                            let split = obj.node.as.split(":")
+                            let wf = split[0]
+                            let revision = split[1]
+                            if(!revision){
+                                revision = "latest"
+                            }
+                            return(
+                                <tr className="instance-row">
+                                    <td title={obj.node.as} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer/${wf}?tab=1&revision=${revision}&revtab=0`}>{obj.node.as}</Link></td>
+                                    <td title={obj.node.id} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.node.id}`}>
+                                            {obj.node.id.split("-")[0]}
+                                        </Link>
+                                    </td>
+                                    {/* <td>{dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}</td> */}
+                                </tr>
+                            )
+                        })
+                    }
+                </tbody>
+            </table>
+        </FlexBox>
     )
 }
 
@@ -216,9 +261,46 @@ function SuccessfulExecutions(props) {
     const [qParams, setQParams] = useState(["first=10", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
 
     const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
-    console.log(data, err)
+    // todo implement loading
+    if(data === null) {
+        return ""
+    }
 
     return (
-        ""
+        <FlexBox style={{width:"100%"}}>
+            <table style={{width:"100%", height:"fit-content"}}>
+                <thead>
+                    <tr>
+                        <th>Workflow</th>
+                        <th>Instance</th>
+                        {/* <th>Updated</th> */}
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        data.map((obj)=>{
+                            let split = obj.node.as.split(":")
+                            let wf = split[0]
+                            let revision = split[1]
+                            if(!revision){
+                                revision = "latest"
+                            }
+                            return(
+                                <tr className="instance-row">
+                                    <td title={obj.node.as} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/explorer/${wf}?tab=1&revision=${revision}&revtab=0`}>{obj.node.as}</Link></td>
+                                    <td title={obj.node.id} style={{overflow:"hidden", textOverflow:"ellipsis"}}>
+                                        <Link style={{color:"#2396d8"}} to={`/n/${namespace}/instances/${obj.node.id}`}>
+                                            {obj.node.id.split("-")[0]}
+                                        </Link>
+                                    </td>
+                                    {/* <td>{dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}</td> */}
+                                </tr>
+                            )
+                        })
+                    }
+                </tbody>
+            </table>
+        </FlexBox>
     )
 }
