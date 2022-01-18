@@ -770,6 +770,7 @@ function TrafficDistribution(props) {
         )
     }
 
+
     return(
         <ContentPanelBody>
             <FlexBox className="col gap" style={{justifyContent:'center'}}>
@@ -783,11 +784,11 @@ function TrafficDistribution(props) {
                         <span title={routes[1].ref}>{routes[1].ref.substr(0,8)}</span>
                     </FlexBox>:""}
                 </FlexBox>
-                <Slider value={routes[0] ? routes[0].weight : 0} className="traffic-distribution" disabled={true}/>
+                <Slider value={routes[0] ? routes.length === 2 ? `${routes[0].weight}`: `100` : 0} className="traffic-distribution" disabled={true}/>
                 <FlexBox style={{fontSize:"10pt", marginTop:"5px", maxHeight:"50px", color: "#C1C5C8"}}>
                     {routes[0] ? 
                     <FlexBox className="col">
-                        <span>{routes[0].weight}%</span>
+                        <span>{routes.length === 2 ? `${routes[0].weight}%`: `100%`}</span>
                     </FlexBox>:""}
                     {routes[1] ? 
                     <FlexBox className="col" style={{ textAlign:'right'}}>
