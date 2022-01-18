@@ -1,5 +1,5 @@
 import Editor, {useMonaco} from "@monaco-editor/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
 
@@ -262,13 +262,14 @@ const cobalt = {
 // Note: width and height must not have unit suffix. e.g. 400=acceptable, 400% will not work
 // TODO: Support multiple width/height unit
 export default function DirektivEditor(props) {
-    const {style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
-    
+    const {saveFn, style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
     const monaco = useMonaco()
+
+    const [ed, setEditor] = useState(null);
 
     useEffect(()=>{
         // console.log(monaco)
-        if(monaco !== null) {
+        if(monaco !== null) {           
             monaco.editor.defineTheme('cobalt', cobalt)
             monaco.editor.setTheme('cobalt')
             if (monaco.languages[dlang]) {
@@ -278,21 +279,22 @@ export default function DirektivEditor(props) {
             } else {
               console.warn(`editor warning: ${dlang} is not a supported language`)
             }
-              
 
             // let messageContribution = monaco.getContribution('editor.contrib.messageController');
             // monaco.editor.onDidAttemptReadOnlyEdit(() => {
             //   monaco.editor.messageContribution.closeMessage();
             // })
         }
-        // monaco.editor.layout()
-    },[monaco, dlang, validate])
+        // monaco.editor.layout() 
+    },[monaco, dlang, validate, saveFn])
 
     function handleEditorChange(value, event) {
         setDValue(value)
     }
 
+
     let handleEditorDidMount = function(editor, monaco) {
+      setEditor(editor)
     }
 
     if (readonly) {
@@ -304,9 +306,16 @@ export default function DirektivEditor(props) {
       }
     }
 
+    if (ed) { 
+      if (saveFn) {
+        ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
+      }
+    }
+
     return (
       <div className={"monaco-editor monaco-wrapper"} style={{ borderRadius: !noBorderRadius ? "8px" : "0px", width: width, height: height ? height-18 : height, ...style}}>
         <Editor
+        
             options={{
                 ...options,
                 readOnly: readonly,
@@ -325,7 +334,7 @@ export default function DirektivEditor(props) {
             loading={"Loading component..."}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
-            />
+        />
       </div>
     )
 }

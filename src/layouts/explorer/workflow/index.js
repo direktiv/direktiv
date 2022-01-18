@@ -133,6 +133,9 @@ function InitialWorkflowHook(props){
                             saveWorkflow={saveWorkflow} 
                             updateWorkflow={updateWorkflow} 
                             discardWorkflow={discardWorkflow} 
+                            updateRevisions={() => {
+                                setRevisions(null)
+                            }}
                             wf={atob(data.revision.source)} 
                         />
                     :<></>}
@@ -242,7 +245,7 @@ function WorkingRevisionErrorBar(props) {
 }
 
 function WorkingRevision(props) {
-    const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
+    const {updateRevisions, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
 
     const navigate = useNavigate()
     const [load, setLoad] = useState(true)
@@ -288,6 +291,27 @@ function WorkingRevision(props) {
         }
     },[oldWf, wf, pushOpLoadingState])
 
+    let saveFn = (newWf, oldWf) => {
+
+        return () => {
+            if (newWf === oldWf) {
+                setErrors(["Can't save - no changes have been made."])
+                setShowErrors(true)
+                pushOpLoadingState("Save", false)
+                return
+            }
+            setErrors([])
+            pushOpLoadingState("Save", true)
+            updateWorkflow(newWf).then(()=>{
+                setShowErrors(false)
+            }).catch((opError) => {
+                setErrors([opError.message])
+                setShowErrors(true)
+                pushOpLoadingState("Save", false)
+            })
+        }
+    }
+
     return(
         <FlexBox style={{width:"100%"}}>
             <ContentPanel style={{width:"100%"}}>
@@ -305,7 +329,7 @@ function WorkingRevision(props) {
                 <ContentPanelBody style={{padding: "0px"}}>
                     <FlexBox className="col" style={{ overflow: "hidden" }}>
                         <FlexBox>
-                            <DirektivEditor style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
+                            <DirektivEditor saveFn={saveFn(workflow, oldWf)} style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
                         </FlexBox>
                         <FlexBox className="gap" style={{ backgroundColor: "#223848", color: "white", height: "44px", maxHeight: "44px", paddingLeft: "10px", minHeight: "44px", alignItems: 'center', position: "relative", borderRadius: "0px 0px 8px 8px" }}>
                             <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>
@@ -374,6 +398,7 @@ function WorkingRevision(props) {
                                 <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
                                     await saveWorkflow()
+                                    updateRevisions()
                                     setShowErrors(false)
                                 }}>
                                     Save as new revision
