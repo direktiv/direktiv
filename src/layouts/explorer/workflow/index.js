@@ -407,11 +407,25 @@ function WorkingRevision(props) {
                                 </div>
                                 <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
-                                    await saveWorkflow()
-                                    updateRevisions()
-                                    setShowErrors(false)
+                                    try{
+                                        const result = await saveWorkflow()
+                                        if(result?.node?.name)
+                                        {
+                                            updateRevisions()
+                                            setShowErrors(false)
+                                            // navigate(`/n/${namespace}/explorer/${result.node.name}?tab=1&revision=${result.revision.name}&revtab=0`)
+                                            window.location.href=`/n/${namespace}/explorer/${result.node.name}?tab=1&revision=${result.revision.name}&revtab=0`
+                                        }else{
+                                            setErrors("Something went wrong")
+                                            setShowErrors(true)
+                                        }
+                                    }catch(e){
+                                        setErrors(e.toString())
+                                        setShowErrors(true)
+                                    }
+                                    
                                 }}>
-                                    Save as new revision
+                                    Make Revision
                                 </div>
                                 <div className={"btn-terminal editor-info"} title={`${showErrors ? "Hide Problems": "Show Problems"}`} onClick={async () => {
                                     setShowErrors(!showErrors)
