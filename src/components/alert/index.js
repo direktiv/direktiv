@@ -7,6 +7,8 @@ function Alert(props){
 
     let {children, style, className} = props;
     
+
+
     if (!className) {
         className = ""
     }

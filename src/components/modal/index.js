@@ -229,7 +229,7 @@ function ModalOverlay(props) {
                                 <ContentPanelBody style={{...contentBodyStyle, flex: "auto"}}>
                                     <FlexBox className="col gap">
                                         { displayAlert ?
-                                        <Alert className="critical">{alertMessage}</Alert>
+                                        <Alert style={{flex: 0}} className="critical">{alertMessage}</Alert>
                                         : <></> }
                                         {children}
                                     </FlexBox>
@@ -286,6 +286,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
         let onClick =  async () => {
             try {
                 let json = await btn.onClick()
+                console.log(json)
                 if(btn.closesModal){
                     closeModal()
                 } else {

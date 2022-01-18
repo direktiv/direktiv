@@ -162,13 +162,9 @@ function ExplorerList(props) {
                             }}
                             actionButtons={[
                                 ButtonDefinition("Add", async () => {
-                                    try { 
-                                        const result = await createNode(name, "workflow", wfData)
-                                        if(result.node && result.namespace){
-                                            navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
-                                        }
-                                    } catch(err) {
-                                        return err
+                                    const result = await createNode(name, "workflow", wfData)
+                                    if(result.node && result.namespace){
+                                        navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
                                 }, `small blue ${(name.trim() && wfTemplate) ? "" : "disabled"}`, true, false),
                                 ButtonDefinition("Cancel", () => {
@@ -178,11 +174,7 @@ function ExplorerList(props) {
                             keyDownActions={[
                                 KeyDownDefinition("Enter", async () => {
                                     if(name.trim() && wfTemplate) {
-                                        try {
-                                            await createNode(name, "workflow", wfData)
-                                        } catch(err) {
-                                            return err
-                                        }
+                                        await createNode(name, "workflow", wfData)
                                     } else {
                                         return "Please fill in name and choose template"
                                     }
