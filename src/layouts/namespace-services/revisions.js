@@ -65,8 +65,8 @@ export function RevisionCreatePanel(props){
                             <input type="range" style={{paddingLeft:"0px"}} min={"0"} max="100" value={traffic.toString()} onChange={(e)=>setTraffic(e.target.value)} />
                         </Tippy>
                         <datalist style={{display:"flex", alignItems:'center'}} id="sizeMarks">
-                            <option style={{flex:"auto", textAlign:"left", lineHeight:"10px"}} value="0" label="0%"/>
-                            <option style={{flex:"auto", textAlign:"right", lineHeight:"10px" }} value="2" label="100%"/>
+                            <option style={{flex:"auto", textAlign:"left", lineHeight:"10px"}} value={0} label="0%"/>
+                            <option style={{flex:"auto", textAlign:"right", lineHeight:"10px" }} value={100} label="100%"/>
                         </datalist>
                     </FlexBox>
             </FlexBox>
