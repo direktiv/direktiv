@@ -144,28 +144,22 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 	}
 	defer rollback(tx)
 
-	fmt.Println("A")
-
 	nsc := tx.Namespace
 	d, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), req.GetRevision())
 	if err != nil {
-		fmt.Println("B")
 		return nil, err
 	}
 
 	if d.ref.Immutable != true {
-		fmt.Println("C")
 		return nil, errors.New("not a revision")
 	}
 
 	xrefs, err := d.rev().QueryRefs().Where(entref.ImmutableEQ(false)).All(ctx)
 	if err != nil {
-		fmt.Println("D")
 		return nil, err
 	}
 
 	if len(xrefs) > 1 || (len(xrefs) == 1 && xrefs[0].Name != "latest") {
-		fmt.Println("E")
 		return nil, errors.New("cannot delete revision while refs to it exist")
 	}
 
@@ -173,16 +167,11 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 			func() error {
 
-				fmt.Println("G1")
-
 				refc := tx.Ref
 				err := refc.DeleteOne(d.ref).Exec(ctx)
 				if err != nil {
-					fmt.Println("H1")
 					return err
 				}
-
-				fmt.Println("I1")
 
 				return nil
 
@@ -190,23 +179,17 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 			tx.Commit,
 		)
 		if err != nil {
-			fmt.Println("J1")
 			return nil, err
 		}
 	} else {
 		err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
 			func() error {
 
-				fmt.Println("G2")
-
 				revc := tx.Revision
 				err := revc.DeleteOne(d.rev()).Exec(ctx)
 				if err != nil {
-					fmt.Println("H2")
 					return err
 				}
-
-				fmt.Println("I2")
 
 				return nil
 
@@ -214,7 +197,6 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 			tx.Commit,
 		)
 		if err != nil {
-			fmt.Println("J2")
 			return nil, err
 		}
 	}
