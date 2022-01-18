@@ -23,6 +23,7 @@ function RevisionTab(props) {
     const {searchParams, setSearchParams, revision, setRevision, getWorkflowRevisionData, getWorkflowSankeyMetrics, executeWorkflow, namespace} = props
     const [load, setLoad] = useState(true)
     const [workflow, setWorkflowData] = useState(null)
+    const [revisionID, setRevisionID] = useState(null)
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
     const [input, setInput] = useState("{\n\t\n}")
 
@@ -41,6 +42,7 @@ function RevisionTab(props) {
             if(load && searchParams.get('revtab') !== null) {
                 let wfdata = await getWorkflowRevisionData(revision)
                 setWorkflowData(atob(wfdata.revision.source))
+                setRevisionID(wfdata.revision.name)
                 setLoad(false)
             }
         }
@@ -70,7 +72,7 @@ function RevisionTab(props) {
                             <BsCodeSquare />
                         </ContentPanelTitleIcon>
                         <div>
-                        {revision}
+                        {revision === revisionID ? revision : `${revision} => ${revisionID}`}
                         </div>
                         <TabbedButtons revision={revision} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
                     </ContentPanelTitle>
