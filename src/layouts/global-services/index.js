@@ -3,7 +3,7 @@ import { Service, ServiceCreatePanel } from "../namespace-services"
 import {useEffect, useState} from "react"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel";
 import FlexBox from "../../components/flexbox";
-import { Config } from "../../util";
+import { Config, GenerateRandomKey } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
 import { IoPlay } from "react-icons/io5";
@@ -112,8 +112,9 @@ export default function GlobalServicesPanel(props) {
                                 data.map((obj)=>{
                                     return(
                                         <Service 
+                                            key={GenerateRandomKey('global-service-')}
                                             url={`/g/services/${obj.info.name}`} 
-                                            deleteService={deleteGlobalService} 
+                                            deleteService={deleteGlobalService}
                                             conditions={obj.conditions} 
                                             name={obj.info.name} 
                                             status={obj.status} 
