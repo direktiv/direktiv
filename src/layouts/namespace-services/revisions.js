@@ -156,7 +156,7 @@ function NamespaceRevisions(props) {
                                     size={size} setSize={setSize}
                                     cmd={cmd} setCmd={setCmd}
                                     traffic={trafficPercent} setTraffic={setTrafficPercent}
-                                    maxscale={3}
+                                    maxscale={config.maxscale}
                                 />:""}
                             </Modal>
                         </div>
