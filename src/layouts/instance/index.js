@@ -3,14 +3,14 @@ import './style.css'
 import { Config, copyTextToClipboard } from '../../util';
 import Button from '../../components/button';
 import { useParams } from 'react-router';
-import ContentPanel, { ContentPanelBody, ContentPanelFooter, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {AiFillCode} from 'react-icons/ai';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
 import { Link } from 'react-router-dom';
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache, WindowScroller } from 'react-virtualized';
+import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
 import * as dayjs from "dayjs"
 import YAML from 'js-yaml'
@@ -40,13 +40,14 @@ function InstancePage(props) {
     const [wfpath, setWFPath] = useState("")
     const [rev, setRev] = useState("")
     const [follow, setFollow] = useState(true)
-    const [width, setWidth] = useState(window.innerWidth);
+    const [width,] = useState(window.innerWidth);
     const [clipData, setClipData] = useState(null)
     const params = useParams()
 
     let instanceID = params["id"];
 
-    let {data, err, cancelInstance, getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
+    // todo implement cancelInstance
+    let {data, err,  getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
 
 
     useEffect(()=>{
@@ -134,12 +135,12 @@ function InstancePage(props) {
                                         ButtonDefinition("Close", () => {}, "small light", true, false)
                                     ]}
                                 >
-                                    <InstanceLogs setClipData={setClipData} clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
+                                    <InstanceLogs setClipData={setClipData} clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width}/>
                                 </Modal>
                                 </FlexBox>
                             </FlexBox>
                         </ContentPanelTitle>
-                        <InstanceLogs setClipData={setClipData} clipData={clipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} clipData={clipData} />
+                        <InstanceLogs setClipData={setClipData} clipData={clipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} />
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox className="gap wrap" style={{minHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
@@ -417,28 +418,6 @@ function Output(props){
     )
 }
 
-function InstanceTuple(props) {
-    
-    let {label, value, linkTo} = props;
-
-    let x = value;
-    if (linkTo) {
-        x = (
-            <Link to={linkTo}>{value}</Link>
-        )
-    }
-
-    return (<>
-        <FlexBox className="instance-details-tuple col" style={{minWidth: "150px", flex: "1"}}>
-            <div>
-                <b>{label}</b>
-            </div>
-            <div title={value} style={{fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-                {x}
-            </div>
-        </FlexBox>
-    </>)
-}
 
 function Logs(props){ 
     const cache = new CellMeasurerCache({

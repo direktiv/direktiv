@@ -5,7 +5,6 @@ import * as d3 from 'd3'
 import { sankeyCircular, sankeyJustify } from 'd3-sankey-circular'
 import {GenerateRandomKey} from '../../util';
 
-import objectHash from 'object-hash';
 
 export default function Sankey(props) {
     const {getWorkflowSankeyMetrics, revision} = props

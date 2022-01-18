@@ -19,17 +19,20 @@ import {VscChevronDown, VscChevronUp} from 'react-icons/vsc'
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
-import { RevisionSelectorTab } from './revisionTab';
+import { RevisionSelectorTab, TabbedButtons } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
+import YAML from 'js-yaml'
+import WorkflowDiagram from '../../../components/diagram';
 
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 
-
+import SankeyDiagram from '../../../components/sankey';
 import {PieChart} from 'react-minimal-pie-chart'
 import HelpIcon from "../../../components/help";
+import Loader from '../../../components/loader';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -39,18 +42,21 @@ function WorkflowPage(props) {
     const {namespace} = props
     const [searchParams, setSearchParams] = useSearchParams()
     const params = useParams()
+    const [load, setLoad] = useState(true);
 
     // set tab query param on load
     useEffect(()=>{
         if(searchParams.get('tab') === null) {
             setSearchParams({tab: 0}, {replace:true})
         }
-    },[searchParams, setSearchParams])
+
+        setLoad(false)
+    },[searchParams, setSearchParams, setLoad])
     
     let filepath = "/"
 
     if(!namespace) {
-        return <></>
+        return <> </>
     }
 
     if(params["*"] !== undefined){
@@ -58,7 +64,9 @@ function WorkflowPage(props) {
     }
 
     return(
-        <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
+        <Loader load={load} timer={3000}>
+            <InitialWorkflowHook setSearchParams={setSearchParams} searchParams={searchParams} namespace={namespace} filepath={filepath}/>
+        </Loader>
     )
 }
 
@@ -67,12 +75,14 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
-    const {data, err, getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
+    // todo handle err from hook below
+    const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
     const [router, setRouter] = useState(null)
 
-    // const [tags, setTags] = useState(null)
+
     const [revisions, setRevisions] = useState(null)
-    const [revsErr, setRevsErr] = useState("")
+    // todo handle revsErr
+    const [, setRevsErr] = useState("")
 
     // fetch revisions using the workflow hook from above
     useEffect(()=>{
@@ -112,16 +122,25 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 1 ?
                         <>
-                        <RevisionSelectorTab tagWorkflow={tagWorkflow} namespace={namespace} filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision} namespace={namespace} getRevisions={getRevisions} getTags={getTags} removeTag={removeTag} filepath={filepath} />
+                        <RevisionSelectorTab 
+                        tagWorkflow={tagWorkflow}
+                         namespace={namespace}
+                          filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag}  />
                         </>
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 
+                            getWorkflowSankeyMetrics={getWorkflowSankeyMetrics}
+                            searchParams={searchParams}
+                            setSearchParams={setSearchParams}
                             namespace={namespace}
                             executeWorkflow={executeWorkflow}
                             saveWorkflow={saveWorkflow} 
                             updateWorkflow={updateWorkflow} 
                             discardWorkflow={discardWorkflow} 
+                            updateRevisions={() => {
+                                setRevisions(null)
+                            }}
                             wf={atob(data.revision.source)} 
                         />
                     :<></>}
@@ -231,13 +250,16 @@ function WorkingRevisionErrorBar(props) {
 }
 
 function WorkingRevision(props) {
-    const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
+    const {updateRevisions, searchParams, setSearchParams, getWorkflowSankeyMetrics, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
 
     const navigate = useNavigate()
     const [load, setLoad] = useState(true)
     const [oldWf, setOldWf] = useState("")
     const [workflow, setWorkflow] = useState("")
     const [input, setInput] = useState("{\n\t\n}")
+
+    const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
+
 
     // Error States
     const [errors, setErrors] = useState([])
@@ -277,6 +299,27 @@ function WorkingRevision(props) {
         }
     },[oldWf, wf, pushOpLoadingState])
 
+    let saveFn = (newWf, oldWf) => {
+
+        return () => {
+            if (newWf === oldWf) {
+                setErrors(["Can't save - no changes have been made."])
+                setShowErrors(true)
+                pushOpLoadingState("Save", false)
+                return
+            }
+            setErrors([])
+            pushOpLoadingState("Save", true)
+            updateWorkflow(newWf).then(()=>{
+                setShowErrors(false)
+            }).catch((opError) => {
+                setErrors([opError.message])
+                setShowErrors(true)
+                pushOpLoadingState("Save", false)
+            })
+        }
+    }
+
     return(
         <FlexBox style={{width:"100%"}}>
             <ContentPanel style={{width:"100%"}}>
@@ -289,12 +332,14 @@ function WorkingRevision(props) {
                             Active Revision
                         </div>
                         <HelpIcon msg={"Latest revision where you can edit and create new revisions."} />
+                        <TabbedButtons revision={"latest"} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody style={{padding: "0px"}}>
+                {tabBtn === 0 ?
                     <FlexBox className="col" style={{ overflow: "hidden" }}>
                         <FlexBox>
-                            <DirektivEditor style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
+                            <DirektivEditor saveFn={saveFn(workflow, oldWf)} style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
                         </FlexBox>
                         <FlexBox className="gap" style={{ backgroundColor: "#223848", color: "white", height: "44px", maxHeight: "44px", paddingLeft: "10px", minHeight: "44px", alignItems: 'center', position: "relative", borderRadius: "0px 0px 8px 8px" }}>
                             <WorkingRevisionErrorBar errors={errors} showErrors={showErrors}/>
@@ -363,6 +408,7 @@ function WorkingRevision(props) {
                                 <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
                                     await saveWorkflow()
+                                    updateRevisions()
                                     setShowErrors(false)
                                 }}>
                                     Save as new revision
@@ -378,7 +424,9 @@ function WorkingRevision(props) {
                                 </div>
                             </div>
                         </FlexBox>
-                    </FlexBox>
+                    </FlexBox>:""}
+                    {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                    {tabBtn === 2 ? <SankeyDiagram revision={"latest"} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                 </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
@@ -479,9 +527,9 @@ function WorkflowInstances(props) {
                             state={obj.node.status} 
                             name={obj.node.as} 
                             id={obj.node.id}
-                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
                             startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm:ss a")}
                             finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
                         />
                     )
@@ -734,6 +782,7 @@ function TrafficDistribution(props) {
         )
     }
 
+
     return(
         <ContentPanelBody>
             <FlexBox className="col gap" style={{justifyContent:'center'}}>
@@ -747,11 +796,11 @@ function TrafficDistribution(props) {
                         <span title={routes[1].ref}>{routes[1].ref.substr(0,8)}</span>
                     </FlexBox>:""}
                 </FlexBox>
-                <Slider value={routes[0] ? routes[0].weight : 0} className="traffic-distribution" disabled={true}/>
+                <Slider value={routes[0] ? routes.length === 2 ? `${routes[0].weight}`: `100` : 0} className="traffic-distribution" disabled={true}/>
                 <FlexBox style={{fontSize:"10pt", marginTop:"5px", maxHeight:"50px", color: "#C1C5C8"}}>
                     {routes[0] ? 
                     <FlexBox className="col">
-                        <span>{routes[0].weight}%</span>
+                        <span>{routes.length === 2 ? `${routes[0].weight}%`: `100%`}</span>
                     </FlexBox>:""}
                     {routes[1] ? 
                     <FlexBox className="col" style={{ textAlign:'right'}}>
@@ -765,8 +814,7 @@ function TrafficDistribution(props) {
 
 function WorkflowServices(props) {
     const {namespace, filepath} = props
-
-    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1))
+    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
 
     if (data === null) {
         return     <div className="col">
