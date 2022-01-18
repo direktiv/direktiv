@@ -153,31 +153,51 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, errors.New("not a revision")
 	}
 
-	dl, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), "")
+	xrefs, err := d.rev().QueryRefs().Where(entref.ImmutableEQ(false)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if dl.rev().ID == d.rev().ID {
-		return nil, errors.New("cannot delete latest")
+	if len(xrefs) > 1 || (len(xrefs) == 1 && xrefs[0].Name != "latest") {
+		return nil, errors.New("cannot delete revision while refs to it exist")
 	}
 
-	err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
-		func() error {
+	if len(xrefs) == 1 && xrefs[0].Name == "latest" {
+		err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
+			func() error {
 
-			revc := tx.Revision
-			err := revc.DeleteOne(d.rev()).Exec(ctx)
-			if err != nil {
-				return err
-			}
+				refc := tx.Ref
+				err := refc.DeleteOne(d.ref).Exec(ctx)
+				if err != nil {
+					return err
+				}
 
-			return nil
+				return nil
 
-		},
-		tx.Commit,
-	)
-	if err != nil {
-		return nil, err
+			},
+			tx.Commit,
+		)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = flow.configureRouter(ctx, tx.Events, &d.wf, rcfBreaking,
+			func() error {
+
+				revc := tx.Revision
+				err := revc.DeleteOne(d.rev()).Exec(ctx)
+				if err != nil {
+					return err
+				}
+
+				return nil
+
+			},
+			tx.Commit,
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow revision: %s.", d.rev().ID.String())
