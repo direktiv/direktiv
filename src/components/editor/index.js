@@ -1,5 +1,5 @@
 import Editor, {useMonaco} from "@monaco-editor/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
 
@@ -265,6 +265,8 @@ export default function DirektivEditor(props) {
     const {saveFn, style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
     const monaco = useMonaco()
 
+    const [ed, setEditor] = useState(null);
+
     useEffect(()=>{
         // console.log(monaco)
         if(monaco !== null) {           
@@ -322,10 +324,9 @@ export default function DirektivEditor(props) {
         setDValue(value)
     }
 
+
     let handleEditorDidMount = function(editor, monaco) {
-        if (saveFn) {
-          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
-        }
+      setEditor(editor)
     }
 
     if (readonly) {
@@ -334,6 +335,12 @@ export default function DirektivEditor(props) {
         editor.onDidAttemptReadOnlyEdit(() => {
           messageContribution.dispose();
         })
+      }
+    }
+
+    if (ed) { 
+      if (saveFn) {
+        ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
       }
     }
 
