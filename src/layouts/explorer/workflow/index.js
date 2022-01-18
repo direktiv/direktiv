@@ -133,6 +133,9 @@ function InitialWorkflowHook(props){
                             saveWorkflow={saveWorkflow} 
                             updateWorkflow={updateWorkflow} 
                             discardWorkflow={discardWorkflow} 
+                            updateRevisions={() => {
+                                setRevisions(null)
+                            }}
                             wf={atob(data.revision.source)} 
                         />
                     :<></>}
@@ -242,7 +245,7 @@ function WorkingRevisionErrorBar(props) {
 }
 
 function WorkingRevision(props) {
-    const {wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
+    const {updateRevisions, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
 
     const navigate = useNavigate()
     const [load, setLoad] = useState(true)
@@ -392,6 +395,7 @@ function WorkingRevision(props) {
                                 <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
                                     await saveWorkflow()
+                                    updateRevisions()
                                     setShowErrors(false)
                                 }}>
                                     Save as new revision
