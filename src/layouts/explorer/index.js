@@ -84,13 +84,14 @@ function ExplorerList(props) {
     
     const [name, setName] = useState("")
     const [load, setLoad] = useState(true)
+
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
 
-    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), orderFieldDictionary[orderFieldKey])
+    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`)
 
     // control loading icon todo work out how to display this error
     useEffect(()=>{
