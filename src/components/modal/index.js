@@ -114,15 +114,19 @@ function ModalOverlay(props) {
                 const action = keyDownActions[i];
 
                 let fn = async (e) => {
-                    if (action.id != undefined && action.id !== e.target.id){
+                    if (action.id !== undefined && action.id !== e.target.id){
                         return
                     }
 
                     if (e.code === action.code) {
                         try { 
-                            await action.fn() 
-                            if (action.closeModal) {
+                            const result = await action.fn() 
+                            if (!result?.error && action.closeModal) {
                                 callback(false)
+                            }
+                            if(result?.error){
+                                setAlertMessage(result?.msg)
+                                setDisplayAlert(true)
                             }
                         } catch(err) {
                             setAlertMessage(err)
@@ -283,7 +287,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
             let e = await btn.onClick()
             if (e) {
                 // handle error
-                setAlertMessage(e.message)
+                setAlertMessage(e)
                 setDisplayAlert(true)
             } else if (btn.closesModal) {
                 closeModal()

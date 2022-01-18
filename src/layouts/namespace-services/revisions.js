@@ -1,7 +1,7 @@
 import { useNamespaceService } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
 import { IoPlay } from "react-icons/io5"
-import { useParams } from "react-router"
+import { useNavigate, useParams } from "react-router"
 import { Service } from "."
 import AddValueButton from "../../components/add-button"
 import Alert from "../../components/alert"
@@ -62,8 +62,8 @@ export function RevisionCreatePanel(props){
 
 function NamespaceRevisions(props) {
     const {namespace, service} = props
-
-    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service,localStorage.getItem("apikey"))
+    const navigate = useNavigate()
+    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
@@ -74,7 +74,7 @@ function NamespaceRevisions(props) {
 
     
     useEffect(()=>{
-        if(revisions !== null) {
+        if(revisions !== null && revisions.length > 0) {
             setScale(revisions[0].minScale)
             setSize(revisions[0].size)
             setImage(revisions[0].image)
@@ -235,10 +235,10 @@ export function UpdateTraffic(props){
                                             setRevOne(e.target.value)
                                         }}>
                                             <option value="">No revision selected</option>
-                                            {revisions.map((obj)=>{
+                                            {revisions.map((obj, key)=>{
                                                 if(obj.name !== revTwo) {
                                                     return(
-                                                        <option value={obj.name}>{obj.name}</option>
+                                                        <option key={`option-rev-update-traffic-1-${key}`} value={obj.name}>{obj.name}</option>
                                                     )
                                                 } else {
                                                     return <></>
@@ -255,10 +255,10 @@ export function UpdateTraffic(props){
                                             setRevTwo(e.target.value)
                                         }}>
                                             <option value="">No revision selected</option>
-                                            {revisions.map((obj)=>{
+                                            {revisions.map((obj, key)=>{
                                                 if(obj.name !== revOne) {
                                                     return(
-                                                        <option value={obj.name}>{obj.name}</option>
+                                                        <option key={`option-rev-update-traffic-2-${key}`} value={obj.name}>{obj.name}</option>
                                                     )
                                                 } else {
                                                     return <></>

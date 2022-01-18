@@ -6,14 +6,14 @@ import NamespaceSelector from '../namespace-selector';
 
 import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
-import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscLock, VscServer, VscSettings, VscSettingsGear, VscSignOut, VscSymbolEvent, VscVmRunning} from 'react-icons/vsc';
+import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscServer,  VscSettingsGear,  VscSymbolEvent, VscVmRunning} from 'react-icons/vsc';
 
 import {IoExtensionPuzzleOutline} from 'react-icons/io5';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
 
-    let {onClick, style, footer, akeyReq, className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
+    let {onClick, style, footer,  className, createNamespace, namespace, namespaces, createErr, toggleResponsive, setToggleResponsive, extraNavigation} = props;
     if (!className) {
         className = ""
     }
@@ -101,7 +101,10 @@ function NewNamespaceBtn(props) {
                             },200)
                             setNs("")
                         } catch(err) {
-                            return err
+                            return {
+                                error: true,
+                                msg: err.toString()
+                            }
                         }
                    }, true)
                ]}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { IoPlay } from "react-icons/io5"
-import { useParams } from "react-router"
+import { useNavigate, useParams } from "react-router"
 import { Service } from "../namespace-services"
 import { RevisionCreatePanel, UpdateTraffic } from "../namespace-services/revisions"
 import AddValueButton from "../../components/add-button"
@@ -12,7 +12,8 @@ import { useGlobalService } from "direktiv-react-hooks"
 
 export default function GlobalRevisionsPanel(props){
     const {service} = useParams()
-    const {revisions, config, traffic, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, localStorage.getItem("apikey"))
+    const navigate = useNavigate()
+    const {revisions, config, traffic, createGlobalServiceRevision, deleteGlobalServiceRevision, setGlobalServiceRevisionTraffic, getServiceConfig} = useGlobalService(Config.url, service, navigate, localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
@@ -23,7 +24,7 @@ export default function GlobalRevisionsPanel(props){
 
 
     useEffect(()=>{
-        if(revisions !== null) {
+        if(revisions !== null && revisions.length > 0) {
             setScale(revisions[0].minScale)
             setSize(revisions[0].size)
             setImage(revisions[0].image)
@@ -102,16 +103,21 @@ export default function GlobalRevisionsPanel(props){
                             <ContentPanelBody className="secrets-panel">
                                 <FlexBox className="gap col">
                                     <FlexBox className="col gap">
-                                        {revisions.map((obj)=>{
+                                        {revisions.map((obj, key)=>{
                                             let dontDelete = false
-                                            for(var i=0; i < traffic.length; i++) {
-                                                if(traffic[i].revisionName === obj.name){
-                                                    dontDelete= true
-                                                    break
-                                                }
+                                            if(revisions.length === 1) {
+                                                dontDelete = true
                                             }
+                                            if(traffic && typeof traffic == typeof [])
+                                                for(var i=0; i < traffic.length; i++) {
+                                                    if(traffic[i].revisionName === obj.name){
+                                                        dontDelete= true
+                                                        break
+                                                    }
+                                                }
                                             return(
                                                 <Service 
+                                                    key={key}
                                                     dontDelete={dontDelete}
                                                     revision={obj.rev}
                                                     deleteService={deleteGlobalServiceRevision}
@@ -127,7 +133,10 @@ export default function GlobalRevisionsPanel(props){
                             </ContentPanelBody>
                         </ContentPanel>
                     </FlexBox>
-                    <UpdateTraffic setNamespaceServiceRevisionTraffic={setGlobalServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
+                    {
+                        traffic &&
+                        <UpdateTraffic setNamespaceServiceRevisionTraffic={setGlobalServiceRevisionTraffic} service={service} revisions={revisions} traffic={traffic}/>
+                    }
                     </FlexBox>
         </FlexBox>
     )

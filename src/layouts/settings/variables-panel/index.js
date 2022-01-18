@@ -5,13 +5,11 @@ import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';
 import { useNamespaceVariables } from 'direktiv-react-hooks';
-import { Config } from '../../../util';
+import { Config, CanPreviewMimeType } from '../../../util';
 import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
-import {BsUpload} from 'react-icons/bs';
 import Tabs from '../../../components/tabs';
-import { RiDeleteBin2Line } from 'react-icons/ri';
 import HelpIcon from '../../../components/help';
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';
@@ -69,9 +67,13 @@ function VariablesPanel(props){
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
                                     setUploading(true)
-                                    if(keyValue === "") {
+                                    if(keyValue.trim() === "") {
                                         setUploading(false)
                                         return "Variable key name needs to be provided."
+                                    }
+                                    if(!file) {
+                                        setUploading(false)
+                                        return "Please add or select file"
                                     }
                                     try { 
                                         await setNamespaceVariable(keyValue, file, mimeType)
@@ -81,9 +83,13 @@ function VariablesPanel(props){
                                         return err
                                     }
                                 } else {
-                                    if(keyValue === "") {
+                                    if(keyValue.trim() === "") {
                                         setUploading(false)
                                         return "Variable key name needs to be provided."
+                                    }
+                                    if(dValue.trim() === "") {
+                                        setUploading(false)
+                                        return "Variable minetype needs to be provided."
                                     }
                                     try { 
                                         await setNamespaceVariable(keyValue, dValue, mimeType)
@@ -314,11 +320,19 @@ function Variable(props) {
                     <FlexBox className="col gap" style={{fontSize: "12px", width: "580px", minHeight: "500px"}}>
                         <FlexBox className="gap" style={{flexGrow: 1}}>
                             <FlexBox style={{overflow:"hidden"}}>
+                                {CanPreviewMimeType(mimeType) ?                                
                                 <AutoSizer>
                                     {({height, width})=>(
                                     <DirektivEditor dlang={lang} width={width} dvalue={val} setDValue={setValue} height={height}/>
                                     )}
                                 </AutoSizer>
+                                :
+                                <div style={{width: "100%", display:"flex", justifyContent: "center", alignItems:"center"}}>
+                                    <p style={{fontSize:"11pt"}}>
+                                        Cannot preview variable with mime-type: {mimeType}
+                                    </p>
+                                </div>
+                                }
                             </FlexBox>
                         </FlexBox>
                         <FlexBox className="gap" style={{flexGrow: 0, flexShrink: 1}}>

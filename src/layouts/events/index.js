@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Config } from '../../util';
 import {  VscCloud, VscRedo, VscSymbolEvent } from 'react-icons/vsc';
 import Button from '../../components/button';
-import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {useEvents} from 'direktiv-react-hooks'
 import Modal, { ButtonDefinition } from '../../components/modal';
@@ -39,8 +39,9 @@ function EventsPage(props) {
 
     let {namespace} = props;
 
-    let {errHistory, errListeners, eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"))
-
+    // errHistory and errListeners TODO show error if one
+    let {eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"))
+    console.log(eventHistory, eventListeners)
     return(
         <>
             <FlexBox className="gap col" style={{paddingRight: "8px"}}>
@@ -88,16 +89,39 @@ function EventsPage(props) {
                                                     {obj.node.source}
                                                 </td>
                                                 <td>
-                                                    {dayjs.utc(obj.node.receivedAt).local().format("HH:mm a")}
+                                                    {dayjs.utc(obj.node.receivedAt).local().format("HH:mm:ss a")}
                                                 </td>
                                                 <td style={{textAlign:'center', justifyContent:"center"}}>
-                                                    <div onClick={async ()=>{
-                                                        await replayEvent(obj.node.id)
+                                                <Modal 
+                                                    style={{ justifyContent: "center" }}
+                                                    className="run-workflow-modal"
+                                                    modalStyle={{color: "black"}}
+                                                    title="Retrigger Event"
+                                                    onClose={()=>{
+                                                    }}
+                                                    button={     <div onClick={async ()=>{
                                                     }} style={{display: "flex", alignItems: "flex-end", justifyContent: "center", paddingRight: "10px"}}>
                                                         <Button className="small light">
                                                             <VscRedo/>
                                                         </Button>
-                                                    </div>
+                                                    </div>}
+                                                    actionButtons={[
+                                                        ButtonDefinition("Retrigger", async () => {
+                                                            try{
+                                                                 await replayEvent(obj.node.id)  
+                                                            } catch(e){
+                                                                return e
+                                                            }
+                                                        }, "small blue", true, true),
+                                                        ButtonDefinition("Cancel", async () => {
+                                                        }, "small light", true, false)
+                                                    ]}
+                                                >
+                                                    <FlexBox style={{overflow:"hidden"}}>
+                                                        Are you sure you want to retrigger {obj.node.id}?
+                                                    </FlexBox>
+                                                </Modal>
+                                               
                                                 </td>
                                             </tr>
                                         })}
@@ -135,6 +159,9 @@ function EventsPage(props) {
                                                 Mode
                                             </th>
                                             <th>
+                                                Updated
+                                            </th>
+                                            <th>
                                                 Event Types
                                             </th>
                                         </tr>
@@ -154,6 +181,9 @@ function EventsPage(props) {
                                                     </td>
                                                     <td style={{textOverflow:"ellipsis", overflow:"hidden"}}>
                                                         {obj.node.mode}
+                                                    </td>
+                                                    <td>
+                                                        {dayjs.utc(obj.node.receivedAt).local().format("HH:mm:ss a")}
                                                     </td>
                                                     <td className="event-split">
                                                         {obj.node.events.map((obj)=>{

@@ -13,7 +13,6 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
-import { path } from 'd3-path';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -35,8 +34,8 @@ export default InstancesPage;
 function InstancesTable(props) {
     const {namespace} = props
     const [load, setLoad] = useState(true)
-    const [iQueryParams, setIQueryParams] = useState([])
-    const {data, err, pageInfo} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
+    const [iQueryParams, ] = useState([])
+    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
 
     useEffect(()=>{
         if(data !== null || err !== null) {
@@ -94,9 +93,9 @@ function InstancesTable(props) {
                             state={obj.node.status} 
                             name={obj.node.as} 
                             id={obj.node.id}
-                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
                             startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm:ss a")}
                             finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
                         />
                     )
@@ -121,7 +120,7 @@ const cancelled = "cancelled";
 const running = "pending";
 
 export function InstanceRow(props) {
-    let {state, name, wf, started, startedFrom, finished, finishedFrom, id, namespace} = props;
+    let {state, name, wf, started,  finished,  id, namespace} = props;
     const navigate = useNavigate()
 
     let label;
@@ -155,7 +154,7 @@ export function InstanceRow(props) {
             <div style={{marginLeft:"10px", textOverflow:"ellipsis", overflow:"hidden"}}>
                 /{pathwf.join("/")}
             </div>
-            {pathwf.length != 1 ?
+            {pathwf.length !== 1 ?
             <div>
                 /{wfname}
             </div>:""}

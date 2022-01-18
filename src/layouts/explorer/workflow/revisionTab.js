@@ -141,7 +141,7 @@ function RevisionTab(props) {
 
 export default RevisionTab;
 
-function TabbedButtons(props) {
+export function TabbedButtons(props) {
 
     let {tabBtn, setTabBtn, searchParams, setSearchParams, revision} = props;
 
@@ -315,9 +315,9 @@ export function RevisionSelectorTab(props) {
                                                         Traffic amount
                                                     </div>
                                                     <div style={{width:'100%'}}>
-                                                        <Slider defaultValue={router.routes[0].weight} className="traffic-mini-distribution" disabled={true}/>
+                                                        <Slider defaultValue={router.routes.length === 2 ? router.routes[0].weight: 100} className="traffic-mini-distribution" disabled={true}/>
                                                         <div>
-                                                           {router.routes[0].weight}%
+                                                            {router.routes.length === 2 ? `${router.routes[0].weight}%`: "100%" }
                                                         </div>
                                                     </div>
                                                 </FlexBox>
@@ -378,7 +378,7 @@ export function RevisionSelectorTab(props) {
                                     }}>
                                         
                                     </FlexBox> */}
-                                    <div>
+                                    <div style={obj.node.name === "latest" ? {visibility: "hidden"} : null}>
                                         <FlexBox className="gap">
                                             {tags !== null && tags[obj.node.name] ? 
                                                 <Modal
@@ -433,6 +433,7 @@ export function RevisionSelectorTab(props) {
                                                                 try { 
                                                                     await deleteRevision(obj.node.name)
                                                                     setRevisions(await getRevisions())
+                                                                    setRouter(await getWorkflowRouter())
                                                                 } catch(err) {
                                                                     return err
                                                                 }
@@ -473,7 +474,7 @@ export function RevisionSelectorTab(props) {
                                                 Revert To
                                             </Button>
                                             </div>
-                                            <div style={{visibility:"hidden"}}>
+                                            <div>
                                             <Button className="small light bold" onClick={()=>{
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
@@ -494,7 +495,7 @@ export function RevisionSelectorTab(props) {
 
 function TagRevisionBtn(props) {
 
-    let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags, isTag} = props;
+    let {tagWorkflow, obj, getRevisions, setRevisions, updateTags, getTags} = props;
     const [tag, setTag] = useState("")
 
     return(
@@ -548,10 +549,22 @@ export function RevisionTrafficShaper(props) {
     const [traffic, setTraffic] = useState(router.routes.length === 0 ? 100 : 0)
 
     useEffect(()=>{
+
+        if (router.routes[0]){
+            setRev1(router.routes[0].ref)
+            setTraffic(router.routes[1] ? router.routes[0].weight: 100)
+        }
+
+        if(router.routes[1]){
+            setRev2(router.routes[1].ref)
+        } else {setRev2("")}
+    },[router, setRev1, setRev2])
+
+    useEffect(()=>{
         if(load){
             if (router.routes[0]){
                 setRev1(router.routes[0].ref)
-                setTraffic(router.routes[0].weight)
+                setTraffic(router.routes[1] ? router.routes[0].weight: 100)
             }
 
             if(router.routes[1]){
@@ -724,7 +737,7 @@ export function RevisionTrafficShaper(props) {
                         }
                         await editWorkflowRouter(arr, router.live)
                         setRouter(await getWorkflowRouter())
-                    }} className="small">
+                    }} className={`small ${rev2 && rev1 ? "" : "disabled"}`}>
                         Save
                     </Button>
                 </FlexBox>
