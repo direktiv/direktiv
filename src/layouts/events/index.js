@@ -89,16 +89,39 @@ function EventsPage(props) {
                                                     {obj.node.source}
                                                 </td>
                                                 <td>
-                                                    {dayjs.utc(obj.node.receivedAt).local().format("HH:mm a")}
+                                                    {dayjs.utc(obj.node.receivedAt).local().format("HH:mm:ss a")}
                                                 </td>
                                                 <td style={{textAlign:'center', justifyContent:"center"}}>
-                                                    <div onClick={async ()=>{
-                                                        await replayEvent(obj.node.id)
+                                                <Modal 
+                                                    style={{ justifyContent: "center" }}
+                                                    className="run-workflow-modal"
+                                                    modalStyle={{color: "black"}}
+                                                    title="Retrigger Event"
+                                                    onClose={()=>{
+                                                    }}
+                                                    button={     <div onClick={async ()=>{
                                                     }} style={{display: "flex", alignItems: "flex-end", justifyContent: "center", paddingRight: "10px"}}>
                                                         <Button className="small light">
                                                             <VscRedo/>
                                                         </Button>
-                                                    </div>
+                                                    </div>}
+                                                    actionButtons={[
+                                                        ButtonDefinition("Retrigger", async () => {
+                                                            try{
+                                                                 await replayEvent(obj.node.id)  
+                                                            } catch(e){
+                                                                return e
+                                                            }
+                                                        }, "small blue", true, true),
+                                                        ButtonDefinition("Cancel", async () => {
+                                                        }, "small light", true, false)
+                                                    ]}
+                                                >
+                                                    <FlexBox style={{overflow:"hidden"}}>
+                                                        Are you sure you want to retrigger {obj.node.id}?
+                                                    </FlexBox>
+                                                </Modal>
+                                               
                                                 </td>
                                             </tr>
                                         })}
