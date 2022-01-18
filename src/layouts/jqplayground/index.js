@@ -244,7 +244,20 @@ function JQFilter(props) {
     async function execute() {
         setError(null)
         setFilter(".")
-        await executeJQ(query, btoa(data))
+        try{
+            const result = await executeJQ(query, btoa(data))
+            return {
+                error: false,
+                data: result
+            }
+        }catch(e){
+            setError(e.toString())
+            return {
+                error: true,
+                msg: e.toString()
+            }
+        }
+        
     }
 
 
