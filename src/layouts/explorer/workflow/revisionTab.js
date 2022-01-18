@@ -473,7 +473,7 @@ export function RevisionSelectorTab(props) {
                                                 Revert To
                                             </Button>
                                             </div>
-                                            <div style={{visibility:"hidden"}}>
+                                            <div>
                                             <Button className="small light bold" onClick={()=>{
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
