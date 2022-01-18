@@ -1,12 +1,12 @@
 import { useInstances, useNamespaceLogs } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
-import { VscCheck, VscChromeClose, VscGraph, VscTerminal } from "react-icons/vsc"
+import { VscCheck, VscChromeClose, VscTerminal } from "react-icons/vsc"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle } from "../../components/content-panel"
 import FlexBox from "../../components/flexbox"
 import HelpIcon from "../../components/help"
 import Loader from "../../components/loader"
 import { Config, copyTextToClipboard } from "../../util"
-import { AutoSizer, List, CellMeasurer, CellMeasurerCache, WindowScroller } from 'react-virtualized';
+import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import { IoCopy, IoEye, IoEyeOff } from "react-icons/io5"
 import {TerminalButton} from '../instance'
 import * as dayjs from "dayjs"
@@ -39,7 +39,7 @@ function MonitoringPage(props) {
     const {namespace, noPadding} = props
     const [follow, setFollow] = useState(true)
     const [load, setLoad] = useState(true)
-    const [width, setWidth] = useState(window.innerWidth);
+    const [width,] = useState(window.innerWidth);
 
     const [clipData, setClipData] = useState(null)
     const {data, err} = useNamespaceLogs(Config.url, true, namespace, localStorage.getItem('apikey'))
@@ -208,9 +208,9 @@ function MonitoringPage(props) {
 
 function FailedExecutions(props) {
     const {namespace} = props
-    const [qParams, setQParams] = useState(["first=10", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
+    const [qParams] = useState(["first=10", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
 
-    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
+    const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     
     // todo implement loading
     if(data === null) {
@@ -258,9 +258,9 @@ function FailedExecutions(props) {
 
 function SuccessfulExecutions(props) {
     const {namespace} = props
-    const [qParams, setQParams] = useState(["first=10", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
+    const [qParams] = useState(["first=10", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
 
-    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
+    const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     // todo implement loading
     if(data === null) {
         return ""
