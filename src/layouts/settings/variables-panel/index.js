@@ -67,9 +67,13 @@ function VariablesPanel(props){
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
                                     setUploading(true)
-                                    if(keyValue === "") {
+                                    if(keyValue.trim() === "") {
                                         setUploading(false)
                                         return "Variable key name needs to be provided."
+                                    }
+                                    if(!file) {
+                                        setUploading(false)
+                                        return "Please add or select file"
                                     }
                                     try { 
                                         await setNamespaceVariable(keyValue, file, mimeType)
@@ -79,9 +83,13 @@ function VariablesPanel(props){
                                         return err
                                     }
                                 } else {
-                                    if(keyValue === "") {
+                                    if(keyValue.trim() === "") {
                                         setUploading(false)
                                         return "Variable key name needs to be provided."
+                                    }
+                                    if(dValue.trim() === "") {
+                                        setUploading(false)
+                                        return "Variable minetype needs to be provided."
                                     }
                                     try { 
                                         await setNamespaceVariable(keyValue, dValue, mimeType)
