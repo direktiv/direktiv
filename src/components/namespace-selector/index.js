@@ -116,7 +116,7 @@ function NamespaceListItem(props) {
                         </div>
                     </FlexBox>
                     <FlexBox className="col">
-                        <div className="auto-margin" style={{marginLeft: "8px"}}>
+                        <div className="auto-margin" style={{marginLeft: "8px"}} title={namespace.length > 15 ? namespace : null}>
                             <FlexBox className="namespace-selector-label-header">
                                 {label}
                             </FlexBox>
