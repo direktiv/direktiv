@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -200,19 +199,6 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 			return nil, err
 		}
 	}
-
-	// dl, err := flow.traverseToRef(ctx, nsc, req.GetNamespace(), req.GetPath(), "")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if dl.rev().ID == d.rev().ID {
-	// 	return nil, errors.New("cannot delete latest")
-	// }
-
-	fmt.Println("F")
-
-	fmt.Println("K")
 
 	flow.logToWorkflow(ctx, time.Now(), d.wfData, "Deleted workflow revision: %s.", d.rev().ID.String())
 	flow.pubsub.NotifyWorkflow(d.wf)
