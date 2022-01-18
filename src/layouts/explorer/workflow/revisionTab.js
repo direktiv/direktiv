@@ -378,7 +378,7 @@ export function RevisionSelectorTab(props) {
                                     }}>
                                         
                                     </FlexBox> */}
-                                    <div>
+                                    <div style={obj.node.name === "latest" ? {visibility: "hidden"} : null}>
                                         <FlexBox className="gap">
                                             {tags !== null && tags[obj.node.name] ? 
                                                 <Modal
