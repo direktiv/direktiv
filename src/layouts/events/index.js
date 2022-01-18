@@ -41,7 +41,7 @@ function EventsPage(props) {
 
     // errHistory and errListeners TODO show error if one
     let {eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"))
-
+    console.log(eventHistory, eventListeners)
     return(
         <>
             <FlexBox className="gap col" style={{paddingRight: "8px"}}>
@@ -136,6 +136,9 @@ function EventsPage(props) {
                                                 Mode
                                             </th>
                                             <th>
+                                                Updated
+                                            </th>
+                                            <th>
                                                 Event Types
                                             </th>
                                         </tr>
@@ -155,6 +158,9 @@ function EventsPage(props) {
                                                     </td>
                                                     <td style={{textOverflow:"ellipsis", overflow:"hidden"}}>
                                                         {obj.node.mode}
+                                                    </td>
+                                                    <td>
+                                                        {dayjs.utc(obj.node.receivedAt).local().format("HH:mm:ss a")}
                                                     </td>
                                                     <td className="event-split">
                                                         {obj.node.events.map((obj)=>{
