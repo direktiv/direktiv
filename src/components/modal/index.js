@@ -114,7 +114,7 @@ function ModalOverlay(props) {
                 const action = keyDownActions[i];
 
                 let fn = async (e) => {
-                    if (action.id != undefined && action.id !== e.target.id){
+                    if (action.id !== undefined && action.id !== e.target.id){
                         return
                     }
 

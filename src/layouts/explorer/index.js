@@ -3,9 +3,9 @@ import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import { VscTriangleDown, VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
+import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
 import { Config, GenerateRandomKey } from '../../util';
-import { FiEdit, FiFolder } from 'react-icons/fi';
+import { FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
 import { HiOutlineTrash } from 'react-icons/hi';
 import { useNodes } from 'direktiv-react-hooks';
@@ -113,8 +113,8 @@ function ExplorerList(props) {
     
 
     return(
-        <FlexBox className="col gap" style={{paddingRight: "8px"}}>
-        <Loader load={load} timer={3000}>
+        <FlexBox className="col gap"  style={{paddingRight: "8px"}}>
+        <Loader load={load} timer={1000}>
         <FlexBox className="gap" style={{maxHeight: "32px"}}>
             <FlexBox>
                 <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
