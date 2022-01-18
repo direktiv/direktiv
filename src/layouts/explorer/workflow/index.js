@@ -966,7 +966,6 @@ function SettingsTab(props) {
                                                 try { 
                                                     await setWorkflowLogToEvent(logToEvent)
                                                 } catch(err) {
-                                                    // todo err
                                                     setLTEStatus("failed")
                                                     setLTEStatusMessage(err.message)
                                                     return err
