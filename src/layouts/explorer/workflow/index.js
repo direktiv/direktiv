@@ -372,13 +372,13 @@ function WorkingRevision(props) {
                                             }
                                             if(r.includes("execute workflow")){
                                                 // is an error
-                                                return r
+                                                throw new Error(r)
                                             } else {
                                                 navigate(`/n/${namespace}/instances/${r}`)
                                             }
-                                        }, "small blue", true, false),
+                                        }, "small blue", ()=>{}, true, false),
                                         ButtonDefinition("Cancel", async () => {
-                                        }, "small light", true, false)
+                                        }, "small light", ()=>{}, true, false)
                                     ]}
                                     button={(
                                         <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>

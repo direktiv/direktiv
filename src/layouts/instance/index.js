@@ -133,7 +133,7 @@ function InstancePage(props) {
                                         </ContentPanelHeaderButton>
                                     )}
                                     actionButtons={[
-                                        ButtonDefinition("Close", () => {}, "small light", true, false)
+                                        ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
                                     ]}
                                 >
                                     <InstanceLogs setClipData={setClipData} clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width}/>
@@ -177,7 +177,7 @@ function InstancePage(props) {
                                     </ContentPanelHeaderButton>
                                 )}
                                 actionButtons={[
-                                    ButtonDefinition("Close", () => {}, "small light", true, false)
+                                    ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
                                 ]}
                             >
                                 <Input getInput={getInput}/>
@@ -240,7 +240,7 @@ function InstancePage(props) {
                                     </ContentPanelHeaderButton>
                                 )}
                                 actionButtons={[
-                                    ButtonDefinition("Close", () => {}, "small light", true, false)
+                                    ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
                                 ]}
                             >
                                 <Output getOutput={getOutput} status={data.status}/>

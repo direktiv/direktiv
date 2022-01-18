@@ -229,7 +229,7 @@ function ModalOverlay(props) {
                                 <ContentPanelBody style={{...contentBodyStyle, flex: "auto"}}>
                                     <FlexBox className="col gap">
                                         { displayAlert ?
-                                        <Alert style={{flex: 0}} className="critical">{alertMessage}</Alert>
+                                        <Alert  className="critical">{alertMessage}</Alert>
                                         : <></> }
                                         {children}
                                     </FlexBox>
@@ -252,11 +252,12 @@ function ModalOverlay(props) {
     )
 }
 
-export function ButtonDefinition(label, onClick, classList, closesModal, async) {
+export function ButtonDefinition(label, onClick, classList, errFunc, closesModal, async) {
     return {
         label: label,
         onClick: onClick,
         classList: classList,
+        errFunc: errFunc,
         closesModal: closesModal,
         async: async
     }
@@ -266,10 +267,11 @@ export function ButtonDefinition(label, onClick, classList, closesModal, async) 
 // fn : callback function
 // closeModal : Whether to close modal after fn()
 // id : target element id to listen on. If undefined listener is global
-export function KeyDownDefinition(code, fn, closeModal, targetElementID) {
+export function KeyDownDefinition(code, fn, errFunc, closeModal, targetElementID) {
     return {
         code: code,
         fn: fn,
+        errFunc: errFunc,
         closeModal: closeModal,
         id: targetElementID,
     }
@@ -294,6 +296,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
                     setDisplayAlert(false)
                 }
             } catch(e){
+                btn.errFunc()
                 // handle error
                 if(e.message){
                     setAlertMessage(e.message)

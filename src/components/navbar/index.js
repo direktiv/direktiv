@@ -99,7 +99,7 @@ function NewNamespaceBtn(props) {
                             navigate(`/n/${ns}`)
                         },200)
                         setNs("")
-                   }, true)
+                   }, ()=>{}, true)
                ]}
 
                actionButtons={[
@@ -109,10 +109,10 @@ function NewNamespaceBtn(props) {
                             navigate(`/n/${ns}`)
                           },200)
                           setNs("")
-                   }, "small blue", true, false),
+                   }, "small blue", ()=>{}, true, false),
                    ButtonDefinition("Cancel", () => {
                        setNs("")
-                   }, "small light", true, false)
+                   }, "small light", ()=>{}, true, false)
                ]}
         >
             <FlexBox>

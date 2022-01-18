@@ -122,18 +122,14 @@ function NamespaceRevisions(props) {
                                 )}  
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                    }, true)
+                                    }, ()=>{}, true)
                                 ]}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
-                                        try { 
-                                            await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                        } catch(err) {
-                                            return err
-                                        }
-                                    }, "small blue", true, false),
+                                        await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
+                                    }, "small blue", ()=>{}, true, false),
                                     ButtonDefinition("Cancel", () => {
-                                    }, "small light", true, false)
+                                    }, "small light", ()=>{}, true, false)
                                 ]}
                             >
                                 {config !== null ? 
