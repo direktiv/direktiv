@@ -33,6 +33,7 @@ import SankeyDiagram from '../../../components/sankey';
 import {PieChart} from 'react-minimal-pie-chart'
 import HelpIcon from "../../../components/help";
 import Loader from '../../../components/loader';
+import Alert from '../../../components/alert';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -925,8 +926,10 @@ function WorkflowAttributes(props) {
 function SettingsTab(props) {
 
     const {namespace, workflow, addAttributes, deleteAttributes, workflowData, setWorkflowLogToEvent} = props
-
     const [logToEvent, setLogToEvent] = useState(workflowData.eventLogging)
+
+    const [lteStatus, setLTEStatus] = useState(null);
+    const [lteStatusMessage, setLTEStatusMessage] = useState(null);
 
     return (
         <>
@@ -957,15 +960,21 @@ function SettingsTab(props) {
                                             <input value={logToEvent} onChange={(e)=>setLogToEvent(e.target.value)} type="text" placeholder="Enter the 'event' type to send logs to" />
                                         </FlexBox>
                                         <div style={{width:"99.5%", margin:"auto", background: "#E9ECEF", height:"1px"}}/>
-                                        <FlexBox style={{justifyContent:"flex-end", width:"100%"}}>
+                                        <FlexBox className="gap" style={{justifyContent:"flex-end", width:"100%"}}>
+                                            { lteStatus ? <Alert className={`${lteStatus} small`}>{lteStatusMessage}</Alert> : <></> }
                                             <Button onClick={async()=>{
                                                 try { 
                                                     await setWorkflowLogToEvent(logToEvent)
                                                 } catch(err) {
                                                     // todo err
                                                     console.log(err, "NOTIFY IF ERR")
+                                                    setLTEStatus("failed")
+                                                    setLTEStatusMessage(err.message)
                                                     return err
                                                 }
+
+                                                setLTEStatus("success")
+                                                setLTEStatusMessage("'Log to Event' value set!")
                                             }} className="small">
                                                 Save
                                             </Button>

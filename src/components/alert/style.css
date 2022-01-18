@@ -7,6 +7,13 @@
     line-height: 18px;
 }
 
+.alert.small {
+    max-height: 31px;
+    min-height: 31px;
+    font-size: 12px;
+    line-height: 9px;
+}
+
 .alert.critical {
     background-color: var(--theme-red);
 }
