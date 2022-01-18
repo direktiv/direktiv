@@ -19,15 +19,17 @@ import {VscChevronDown, VscChevronUp} from 'react-icons/vsc'
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
-import { RevisionSelectorTab } from './revisionTab';
+import { RevisionSelectorTab, TabbedButtons } from './revisionTab';
 import DependencyDiagram from '../../../components/dependency-diagram';
+import YAML from 'js-yaml'
+import WorkflowDiagram from '../../../components/diagram';
 
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import Button from '../../../components/button';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 
-
+import SankeyDiagram from '../../../components/sankey';
 import {PieChart} from 'react-minimal-pie-chart'
 import HelpIcon from "../../../components/help";
 import Loader from '../../../components/loader';
@@ -128,6 +130,9 @@ function InitialWorkflowHook(props){
                     :<></>}
                     { activeTab === 2 ?
                         <WorkingRevision 
+                            getWorkflowSankeyMetrics={getWorkflowSankeyMetrics}
+                            searchParams={searchParams}
+                            setSearchParams={setSearchParams}
                             namespace={namespace}
                             executeWorkflow={executeWorkflow}
                             saveWorkflow={saveWorkflow} 
@@ -245,13 +250,16 @@ function WorkingRevisionErrorBar(props) {
 }
 
 function WorkingRevision(props) {
-    const {updateRevisions, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
+    const {updateRevisions, searchParams, setSearchParams, getWorkflowSankeyMetrics, wf, updateWorkflow, discardWorkflow, saveWorkflow, executeWorkflow,namespace} = props
 
     const navigate = useNavigate()
     const [load, setLoad] = useState(true)
     const [oldWf, setOldWf] = useState("")
     const [workflow, setWorkflow] = useState("")
     const [input, setInput] = useState("{\n\t\n}")
+
+    const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
+
 
     // Error States
     const [errors, setErrors] = useState([])
@@ -324,9 +332,11 @@ function WorkingRevision(props) {
                             Active Revision
                         </div>
                         <HelpIcon msg={"Latest revision where you can edit and create new revisions."} />
+                        <TabbedButtons revision={"latest"} setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
                     </FlexBox>
                 </ContentPanelTitle>
                 <ContentPanelBody style={{padding: "0px"}}>
+                {tabBtn === 0 ?
                     <FlexBox className="col" style={{ overflow: "hidden" }}>
                         <FlexBox>
                             <DirektivEditor saveFn={saveFn(workflow, oldWf)} style={{borderRadius: "0px"}} dlang="yaml" value={workflow} dvalue={oldWf} setDValue={setWorkflow} disableBottomRadius={true} />
@@ -414,7 +424,9 @@ function WorkingRevision(props) {
                                 </div>
                             </div>
                         </FlexBox>
-                    </FlexBox>
+                    </FlexBox>:""}
+                    {tabBtn === 1 ? <WorkflowDiagram disabled={true} workflow={YAML.load(workflow)}/>:""}
+                    {tabBtn === 2 ? <SankeyDiagram revision={"latest"} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} />:""}
                 </ContentPanelBody>
             </ContentPanel>
         </FlexBox>
