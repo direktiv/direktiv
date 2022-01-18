@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
@@ -40,9 +41,11 @@ func NewClient() (*Client, error) {
 // InsertRecord inserts a metric record into the database
 func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 
+	wf := strings.Split(args.Workflow, ":")[0]
+
 	r := c.db.Metrics.Create()
 	r = r.SetNamespace(args.Namespace)
-	r = r.SetWorkflow(args.Workflow)
+	r = r.SetWorkflow(wf)
 	r = r.SetRevision(args.Revision)
 	r = r.SetInstance(args.Instance)
 	r = r.SetState(args.State)
