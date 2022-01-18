@@ -19,4 +19,8 @@
 .log-timestamp {
     display: flex;
 }
+.instance-input-banner {
+    max-height: 20px;
+    margin: 0 0 5px 0;
+}
 
