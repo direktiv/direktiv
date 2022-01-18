@@ -11,6 +11,8 @@ import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/mod
 import AddValueButton from "../../components/add-button";
 import {Link} from 'react-router-dom'
 import HelpIcon from "../../components/help"
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
 
 export default function ServicesPanel(props) {
     const {namespace} = props
@@ -26,7 +28,7 @@ export default function ServicesPanel(props) {
 }
 
 export function ServiceCreatePanel(props) {
-    const {name, setName, image, setImage, scale, setScale, size, setSize, cmd, setCmd, maxscale} = props
+    const {name, setName, image, setImage, scale, setScale, size, setSize, cmd, setCmd, maxScale} = props
 
     return(
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
@@ -41,7 +43,13 @@ export function ServiceCreatePanel(props) {
                     </FlexBox>
                     <FlexBox className="col" style={{paddingRight:"10px"}}>
                         Scale
-                        <input type="range" style={{paddingLeft:"0px"}} min={"0"} max={maxscale.toString()} value={scale.toString()} onChange={(e)=>setScale(e.target.value)} />
+                        <Tippy content={scale} trigger={"mouseenter click"}>
+                            <input type="range" style={{paddingLeft:"0px"}} min={"0"} max={maxScale.toString()} value={scale.toString()} onChange={(e)=>setScale(e.target.value)} />
+                        </Tippy>
+                        <datalist style={{display:"flex", alignItems:'center'}} id="sizeMarks">
+                            <option style={{flex:"auto", textAlign:"left", lineHeight:"10px", paddingLeft:"8px"}} value="0" label="0"/>
+                            <option style={{flex:"auto", textAlign:"right", lineHeight:"10px", paddingRight:"5px" }} value={maxScale} label={maxScale}/>
+                        </datalist>
                     </FlexBox>
                     <FlexBox className="col" style={{paddingRight:"10px"}}>
                         Size

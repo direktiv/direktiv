@@ -10,6 +10,8 @@ import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIco
 import FlexBox from "../../components/flexbox"
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal"
 import { Config } from "../../util"
+import Tippy from '@tippyjs/react'
+import 'tippy.js/dist/tippy.css'
 
 export default function NamespaceRevisionsPanel(props) {
     const {namespace} = props
@@ -25,7 +27,7 @@ export default function NamespaceRevisionsPanel(props) {
 }
 
 export function RevisionCreatePanel(props){
-    const {image, setImage, scale, setScale, size, setSize, cmd, setCmd, traffic, setTraffic, maxscale} = props
+    const {image, setImage, scale, setScale, size, setSize, cmd, setCmd, traffic, setTraffic, maxScale} = props
 
     return(
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
@@ -36,7 +38,13 @@ export function RevisionCreatePanel(props){
                     </FlexBox>
                     <FlexBox className="col" style={{paddingRight:"10px"}}>
                         Scale
-                        <input type="range" style={{paddingLeft:"0px"}} min={"0"} max={maxscale.toString()} value={scale.toString()} onChange={(e)=>setScale(e.target.value)} />
+                        <Tippy content={scale} trigger={"mouseenter click"}>
+                            <input type="range" style={{paddingLeft:"0px"}} min={"0"} max={maxScale.toString()} value={scale.toString()} onChange={(e)=>setScale(e.target.value)} />
+                        </Tippy>
+                        <datalist style={{display:"flex", alignItems:'center'}} id="sizeMarks">
+                            <option style={{flex:"auto", textAlign:"left", lineHeight:"10px", paddingLeft:"8px"}} value="0" label="0"/>
+                            <option style={{flex:"auto", textAlign:"right", lineHeight:"10px", paddingRight:"5px" }} value={maxScale} label={maxScale}/>
+                        </datalist>
                     </FlexBox>
                     <FlexBox className="col" style={{paddingRight:"10px"}}>
                         Size
@@ -53,7 +61,13 @@ export function RevisionCreatePanel(props){
                     </FlexBox>
                     <FlexBox className="col" style={{paddingRight:"10px"}}>
                         Traffic
-                        <input type="range" style={{paddingLeft:"0px"}} min={"0"} max="100" value={traffic.toString()} onChange={(e)=>setTraffic(e.target.value)} />
+                        <Tippy content={`${traffic}%`} trigger={"mouseenter click"}>
+                            <input type="range" style={{paddingLeft:"0px"}} min={"0"} max="100" value={traffic.toString()} onChange={(e)=>setTraffic(e.target.value)} />
+                        </Tippy>
+                        <datalist style={{display:"flex", alignItems:'center'}} id="sizeMarks">
+                            <option style={{flex:"auto", textAlign:"left", lineHeight:"10px"}} value="0" label="0%"/>
+                            <option style={{flex:"auto", textAlign:"right", lineHeight:"10px" }} value="2" label="100%"/>
+                        </datalist>
                     </FlexBox>
             </FlexBox>
         </FlexBox>
@@ -71,7 +85,6 @@ function NamespaceRevisions(props) {
     const [size, setSize] = useState(0)
     const [trafficPercent, setTrafficPercent] = useState(100)
     const [cmd, setCmd] = useState("")
-
     
     useEffect(()=>{
         if(revisions !== null && revisions.length > 0) {
@@ -84,7 +97,7 @@ function NamespaceRevisions(props) {
 
     useEffect(()=>{
         async function cfgGet() {
-            await getNamespaceServiceConfig()
+            await getNamespaceServiceConfig();
         }
         if(load && config === null) {
             cfgGet()
@@ -143,7 +156,7 @@ function NamespaceRevisions(props) {
                                     size={size} setSize={setSize}
                                     cmd={cmd} setCmd={setCmd}
                                     traffic={trafficPercent} setTraffic={setTrafficPercent}
-                                    maxscale={config.maxscale}
+                                    maxscale={3}
                                 />:""}
                             </Modal>
                         </div>
