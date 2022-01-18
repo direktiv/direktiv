@@ -284,18 +284,24 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
 
         let btn = actionButtons[i];
         let onClick =  async () => {
-            let e = await btn.onClick()
-            if (e) {
+            try {
+                let json = await btn.onClick()
+                if(btn.closesModal){
+                    closeModal()
+                } else {
+                    setAlertMessage("")
+                    setDisplayAlert(false)
+                }
+            } catch(e){
                 // handle error
-                setAlertMessage(e)
+                if(e.message){
+                    setAlertMessage(e.message)
+                } else {
+                    setAlertMessage(e)
+                }
                 setDisplayAlert(true)
-            } else if (btn.closesModal) {
-                closeModal()
-            } else {
-                setAlertMessage("")
-                setDisplayAlert(false)
             }
-
+   
         }
 
         out.push(
