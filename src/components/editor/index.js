@@ -286,7 +286,7 @@ export default function DirektivEditor(props) {
             // })
         }
         // monaco.editor.layout() 
-    },[monaco, dlang, validate, saveFn])
+    },[monaco, dlang, validate])
 
     function handleEditorChange(value, event) {
         setDValue(value)
