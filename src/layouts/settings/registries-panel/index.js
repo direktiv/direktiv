@@ -267,7 +267,7 @@ export function Registries(props) {
             {registries.map((obj)=>{
                     return (
                         <FlexBox key={obj.name} className="secret-tuple">
-                            <FlexBox className="key">{obj.name}</FlexBox>
+                            <FlexBox className="key">{obj.name} <span className="muted-text" style={{ marginLeft: "8px" }}>({obj.user})</span></FlexBox>
                             <FlexBox className="val"></FlexBox>
                             <FlexBox className="val"></FlexBox>
                             <FlexBox className="actions">
