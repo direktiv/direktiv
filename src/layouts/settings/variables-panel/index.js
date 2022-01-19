@@ -73,7 +73,7 @@ function VariablesPanel(props){
                                     if(!file) {
                                         throw new Error("Variable key name needs to be provided.")
                                     }
-                                    await setNamespaceVariable(keyValue, file, mimeType)
+                                    await setNamespaceVariable(encodeURIComponent(keyValue), file, mimeType)
                                 } else {
                                     if(keyValue.trim() === "") {
                                         throw new Error("Variable key name needs to be provided.")
