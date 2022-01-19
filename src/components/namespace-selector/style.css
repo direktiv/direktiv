@@ -156,6 +156,7 @@
     color: #FFFFFF;
     box-sizing: border-box;
     border-radius: 4px;
+    word-break: break-word;
 }
 
 .tippy-arrow:before {
