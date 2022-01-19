@@ -129,7 +129,7 @@ function ModalOverlay(props) {
                                 setDisplayAlert(true)
                             }
                         } catch(err) {
-                            setAlertMessage(err)
+                            setAlertMessage(err.toString())
                             setDisplayAlert(true)
                         }
                     }
@@ -301,7 +301,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
                 if(e.message){
                     setAlertMessage(e.message)
                 } else {
-                    setAlertMessage(e)
+                    setAlertMessage(e.toString())
                 }
                 setDisplayAlert(true)
             }
