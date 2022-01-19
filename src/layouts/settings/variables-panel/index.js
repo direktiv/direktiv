@@ -81,7 +81,8 @@ function VariablesPanel(props){
                                     if(dValue.trim() === "") {
                                         throw new Error("Variable mimetype needs to be provided.")
                                     }
-                                    await setNamespaceVariable(keyValue, dValue, mimeType)
+
+                                    await setNamespaceVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
                             }, uploadingBtn, ()=>{setUploading(false)}, true, false),
                             ButtonDefinition("Cancel", () => {
