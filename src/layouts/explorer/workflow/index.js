@@ -75,6 +75,9 @@ function InitialWorkflowHook(props){
 
     const [activeTab, setActiveTab] = useState(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
 
+    useEffect(()=>{
+        setActiveTab(searchParams.get("tab") !== null ? parseInt(searchParams.get('tab')): 0)
+    }, [searchParams])
     // todo handle err from hook below
     const {data,  getSuccessFailedMetrics, tagWorkflow, addAttributes, deleteAttributes, setWorkflowLogToEvent, editWorkflowRouter, getWorkflowSankeyMetrics, getWorkflowRevisionData, getWorkflowRouter, toggleWorkflow, executeWorkflow, getInstancesForWorkflow, getRevisions, getTags, deleteRevision, saveWorkflow, updateWorkflow, discardWorkflow, removeTag} = useWorkflow(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
     const [router, setRouter] = useState(null)
@@ -260,6 +263,9 @@ function WorkingRevision(props) {
 
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
 
+    useEffect(()=>{
+        setTabBtn(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0)
+    }, [searchParams])
 
     // Error States
     const [errors, setErrors] = useState([])
@@ -413,8 +419,7 @@ function WorkingRevision(props) {
                                         {
                                             updateRevisions()
                                             setShowErrors(false)
-                                            // navigate(`/n/${namespace}/explorer/${result.node.name}?tab=1&revision=${result.revision.name}&revtab=0`)
-                                            window.location.href=`/n/${namespace}/explorer/${result.node.name}?tab=1&revision=${result.revision.name}&revtab=0`
+                                            navigate(`/n/${namespace}/explorer/${result.node.name}?tab=1&revision=${result.revision.name}&revtab=0`)
                                         }else{
                                             setErrors("Something went wrong")
                                             setShowErrors(true)
