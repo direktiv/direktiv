@@ -1,7 +1,7 @@
 import React from 'react';
 import { VscInfo } from 'react-icons/vsc';
 import Tippy from '@tippyjs/react';
-import 'tippy.js/dist/tippy.css';
+import 'tippy.js/dist/tippy.css'
 import './style.css';
 
 function HelpIcon(props) {

@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
+import '../../components/help/style.css'
 import FlexBox from '../flexbox';
 import {VscChevronDown} from 'react-icons/vsc';
 

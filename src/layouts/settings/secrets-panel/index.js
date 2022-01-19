@@ -10,10 +10,7 @@ import Alert from '../../../components/alert';
 import {useSecrets} from 'direktiv-react-hooks'
 import {Config, GenerateRandomKey} from '../../../util'
 import HelpIcon from '../../../components/help';
-import Tabs from '../../../components/tabs'
-import DirektivEditor from '../../../components/editor';
-
-
+import Tabs from '../../../components/tabs';
 
 function SecretsPanel(props){
     const {namespace} = props

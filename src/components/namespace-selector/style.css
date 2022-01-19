@@ -148,18 +148,3 @@
 .ns-hover:hover {
     filter: brightness(0.95);
 }
-
-.tippy-box {
-    font-size: 14px;
-    background: rgba(8, 32, 50, 0.92);
-    border: 1px solid #082032;
-    color: #FFFFFF;
-    box-sizing: border-box;
-    border-radius: 4px;
-    word-break: break-word;
-}
-
-.tippy-arrow:before {
-    color: rgba(8, 32, 50, 0.95);
-    transform: translateY(1px);
-}
