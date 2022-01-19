@@ -144,7 +144,6 @@ function ExplorerList(props) {
                 <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
                     <ContentPanelHeaderButton className="explorer-action-btn">
                         <Modal title="New Workflow" 
-                            modalStyle={{height: "90vh"}}
                             escapeToCancel
                             button={(
                                 <div style={{display:"flex"}}>
@@ -166,22 +165,22 @@ function ExplorerList(props) {
                                     if(result.node && result.namespace){
                                         navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
-                                }, `small blue ${(name.trim() && wfTemplate) ? "" : "disabled"}`, ()=>{}, true, false),
+                                }, `small blue ${(name.trim()) ? "" : "disabled"}`, ()=>{}, true, false),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", ()=>{}, true, false)
                             ]}
 
                             keyDownActions={[
                                 KeyDownDefinition("Enter", async () => {
-                                    if(name.trim() && wfTemplate) {
+                                    if(name.trim()) {
                                         await createNode(name, "workflow", wfData)
                                     } else {
-                                        throw new Error("Please fill in name and choose template")
+                                        throw new Error("Please fill in name")
                                     }
                                 }, ()=>{}, true, "workflow-name")
                             ]}
                         >
-                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "550px"}}>
+                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "500px", minWidth: "550px"}}>
                                 <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                                     <input id={"workflow-name"} value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name"/>
                                 </div>
