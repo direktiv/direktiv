@@ -236,7 +236,7 @@ export function RevisionSelectorTab(props) {
     }
 
   
-
+    if(!revisions) return null
     return (
         <FlexBox className="col gap">
             <div>
