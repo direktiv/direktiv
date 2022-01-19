@@ -44,10 +44,6 @@ function NamespaceSelector(props) {
         namespaceSelectorClass += " loading"
         chevronClass += " hidden"
     }
-    console.log(showSelector);
-
-    // let x = useParams("namespace");
-    // console.log(x);
 
     return (
         <>
