@@ -68,29 +68,18 @@ function AddWorkflowVariablePanel(props) {
                                 if(document.getElementById("file-picker")){
                                     setUploading(true)
                                     if(keyValue === "") {
-                                        setUploading(false)
-                                        return "Variable key name needs to be provided."
+                                        throw new Error("Variable key name needs to be provided.")
                                     }
-                                    try { 
-                                        await setWorkflowVariable(keyValue, file, mimeType)
-                                    } catch(err) {
-                                        setUploading(false)
-                                        return err
-                                    }
+                                    await setWorkflowVariable(keyValue, file, mimeType)
                                 } else {
                                     if(keyValue === "") {
-                                        setUploading(false)
-                                        return "Variable key name needs to be provided."
+                                        throw new Error("Variable key name needs to be provided.")
                                     }
-                                    try { 
-                                        await setWorkflowVariable(keyValue, dValue, mimeType)
-                                    } catch(err) {
-                                        return err
-                                    }
+                                    await setWorkflowVariable(keyValue, dValue, mimeType)
                                 }
-                            }, uploadingBtn, true, false),
+                            }, uploadingBtn, ()=>{setUploading(false)}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light",()=>{}, true, false)
                         ]}
                     >
                         <AddVariablePanel mimeType={mimeType} setMimeType={setMimeType} file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
@@ -263,14 +252,10 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Save", async () => {
-                                try { 
-                                    await setWorkflowVariable(obj.node.name, val , mimeType)
-                                } catch(err) {
-                                    return err
-                                }
-                            }, "small blue", true, false),
+                                await setWorkflowVariable(obj.node.name, val , mimeType)
+                            }, "small blue", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]
                     } 
                 >
@@ -351,16 +336,10 @@ function Variable(props) {
                         [
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
-                                try {
-                                    await setWorkflowVariable(obj.node.name, file, mimeType)
-                                    setUploading(false)
-                                } catch(err) {
-                                    setUploading(false)
-                                    return err
-                                }
-                            }, uploadingBtn, true, false),
+                                await setWorkflowVariable(obj.node.name, file, mimeType)
+                            }, uploadingBtn, ()=>{setUploading(false)}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light",()=>{}, true, false)
                         ]
                     } 
                 >
@@ -380,14 +359,10 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Delete", async () => {
-                                try { 
                                     await deleteWorkflowVariable(obj.node.name)
-                                } catch(err) {
-                                    return err
-                                }
-                            }, "small red", true, false),
+                            }, "small red", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]
                     } 
                 >

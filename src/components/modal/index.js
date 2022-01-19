@@ -129,7 +129,7 @@ function ModalOverlay(props) {
                                 setDisplayAlert(true)
                             }
                         } catch(err) {
-                            setAlertMessage(err)
+                            setAlertMessage(err.toString())
                             setDisplayAlert(true)
                         }
                     }
@@ -229,7 +229,7 @@ function ModalOverlay(props) {
                                 <ContentPanelBody style={{...contentBodyStyle, flex: "auto"}}>
                                     <FlexBox className="col gap">
                                         { displayAlert ?
-                                        <Alert className="critical">{alertMessage}</Alert>
+                                        <Alert  className="critical">{alertMessage}</Alert>
                                         : <></> }
                                         {children}
                                     </FlexBox>
@@ -252,11 +252,12 @@ function ModalOverlay(props) {
     )
 }
 
-export function ButtonDefinition(label, onClick, classList, closesModal, async) {
+export function ButtonDefinition(label, onClick, classList, errFunc, closesModal, async) {
     return {
         label: label,
         onClick: onClick,
         classList: classList,
+        errFunc: errFunc,
         closesModal: closesModal,
         async: async
     }
@@ -266,10 +267,11 @@ export function ButtonDefinition(label, onClick, classList, closesModal, async) 
 // fn : callback function
 // closeModal : Whether to close modal after fn()
 // id : target element id to listen on. If undefined listener is global
-export function KeyDownDefinition(code, fn, closeModal, targetElementID) {
+export function KeyDownDefinition(code, fn, errFunc, closeModal, targetElementID) {
     return {
         code: code,
         fn: fn,
+        errFunc: errFunc,
         closeModal: closeModal,
         id: targetElementID,
     }
@@ -284,18 +286,26 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
 
         let btn = actionButtons[i];
         let onClick =  async () => {
-            let e = await btn.onClick()
-            if (e) {
+            try {
+                let json = await btn.onClick()
+                console.log(json)
+                if(btn.closesModal){
+                    closeModal()
+                } else {
+                    setAlertMessage("")
+                    setDisplayAlert(false)
+                }
+            } catch(e){
+                btn.errFunc()
                 // handle error
-                setAlertMessage(e)
+                if(e.message){
+                    setAlertMessage(e.message)
+                } else {
+                    setAlertMessage(e.toString())
+                }
                 setDisplayAlert(true)
-            } else if (btn.closesModal) {
-                closeModal()
-            } else {
-                setAlertMessage("")
-                setDisplayAlert(false)
             }
-
+   
         }
 
         out.push(

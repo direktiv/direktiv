@@ -6,7 +6,7 @@ import { VscWarning } from 'react-icons/vsc';
 function Alert(props){
 
     let {children, style, className} = props;
-    
+
     if (!className) {
         className = ""
     }

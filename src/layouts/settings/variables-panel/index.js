@@ -68,38 +68,24 @@ function VariablesPanel(props){
                                 if(document.getElementById("file-picker")){
                                     setUploading(true)
                                     if(keyValue.trim() === "") {
-                                        setUploading(false)
-                                        return "Variable key name needs to be provided."
+                                        throw new Error("Variable key name needs to be provided.")
                                     }
                                     if(!file) {
-                                        setUploading(false)
-                                        return "Please add or select file"
+                                        throw new Error("Variable key name needs to be provided.")
                                     }
-                                    try { 
-                                        await setNamespaceVariable(keyValue, file, mimeType)
-                                        setUploading(false)
-                                    } catch(err) {
-                                        setUploading(false)
-                                        return err
-                                    }
+                                    await setNamespaceVariable(keyValue, file, mimeType)
                                 } else {
                                     if(keyValue.trim() === "") {
-                                        setUploading(false)
-                                        return "Variable key name needs to be provided."
+                                        throw new Error("Variable key name needs to be provided.")
                                     }
                                     if(dValue.trim() === "") {
-                                        setUploading(false)
-                                        return "Variable minetype needs to be provided."
+                                        throw new Error("Variable mimetype needs to be provided.")
                                     }
-                                    try { 
-                                        await setNamespaceVariable(keyValue, dValue, mimeType)
-                                    } catch(err) {
-                                        return err
-                                    }
+                                    await setNamespaceVariable(keyValue, dValue, mimeType)
                                 }
-                            }, uploadingBtn, true, false),
+                            }, uploadingBtn, ()=>{setUploading(false)}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]}
                     >
                         <AddVariablePanel mimeType={mimeType} setMimeType={setMimeType} file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
@@ -306,14 +292,10 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Save", async () => {
-                                try { 
                                     await setNamespaceVariable(obj.node.name, val , mimeType)
-                                } catch(err) {
-                                    return err
-                                }
-                            }, "small blue", true, false),
+                            }, "small blue",()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light",()=>{}, true, false)
                         ]
                     } 
                 >
@@ -394,6 +376,7 @@ function Variable(props) {
                     }}
                     onClose={()=>{
                         setFile(null)
+                        setUploading(false)
                     }}
                     title="Replace variable" 
                     button={(
@@ -403,16 +386,10 @@ function Variable(props) {
                         [
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
-                                try { 
-                                    await setNamespaceVariable(obj.node.name, file, mimeType)
-                                    setUploading(false)
-                                } catch(err) {
-                                    setUploading(false)
-                                    return err
-                                }
-                            }, uploadingBtn, true, false),
+                                await setNamespaceVariable(obj.node.name, file, mimeType)
+                            }, uploadingBtn,()=>{setUploading(false)}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]
                     } 
                 >
@@ -432,14 +409,10 @@ function Variable(props) {
                     actionButtons={
                         [
                             ButtonDefinition("Delete", async () => {
-                                try { 
-                                    await deleteNamespaceVariable(obj.node.name)
-                                } catch(err) {
-                                    return err
-                                }
-                            }, "small red", true, false),
+                                await deleteNamespaceVariable(obj.node.name)
+                            }, "small red", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]
                     } 
                 >
@@ -452,66 +425,7 @@ function Variable(props) {
                 </FlexBox>
                 </Modal>
             </FlexBox>
-            {/* <FlexBox style={{justifyContent:"center"}} >
-                <FlexBox>
-                    <VariablesDownloadButton /> 
-                </FlexBox>
-                <Modal
-                    escapeToCancel
-                    style={{
-                        flexDirection: "row-reverse",
-                    }}
-                    onClose={()=>{
-                        setFile(null)
-                    }}
-                    title="Upload to a variable" 
-                    button={(
-                        <VariablesUploadButton />
-                    )}
-                    actionButtons={
-                        [
-                            ButtonDefinition("Upload", async () => {
-                                try { await setNamespaceVariable(obj.node.name, file, mimeType)
-                                if (err) return err
-                            }, "small blue", true, false),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
-                        ]
-                    } 
-                >
-                    <FlexBox className="col gap">
-                        <VariableFilePicker file={file} setFile={setFile} />
-                    </FlexBox>
-                </Modal>
-                <Modal
-                    escapeToCancel
-                    style={{
-                        flexDirection: "row-reverse",
-                    }}
-                    title="Delete a variable" 
-                    button={(
-                        <SecretsDeleteButton/>
-                    )}
-                    actionButtons={
-                        [
-                            ButtonDefinition("Delete", async () => {
-                                try { await deleteNamespaceVariable(obj.node.name)
-                                if (err) return err
-                            }, "small red", true, false),
-                            ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
-                        ]
-                    } 
-                >
-                        <FlexBox className="col gap">
-                    <FlexBox >
-                        Are you sure you want to delete '{obj.node.name}'?
-                        <br/>
-                        This action cannot be undone.
-                    </FlexBox>
-                </FlexBox>
-                </Modal>
-            </FlexBox> */}
+        
         </td>
     </tr>
     )

@@ -73,18 +73,14 @@ export default function GlobalRevisionsPanel(props){
                                 )}  
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                    }, true)
+                                    },()=>{}, true)
                                 ]}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
-                                        try {
-                                            await createGlobalServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                        } catch(err) {
-                                            return err
-                                        }
-                                    }, "small blue", true, false),
+                                        await createGlobalServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
+                                    }, "small blue", ()=>{}, true, false),
                                     ButtonDefinition("Cancel", () => {
-                                    }, "small light", true, false)
+                                    }, "small light", ()=>{}, true, false)
                                 ]}
                             >
                                 {config !== null ? 
@@ -107,15 +103,18 @@ export default function GlobalRevisionsPanel(props){
                                             if(revisions.length === 1) {
                                                 dontDelete = true
                                             }
+                                            let t = 0
                                             if(traffic && typeof traffic == typeof [])
                                                 for(var i=0; i < traffic.length; i++) {
                                                     if(traffic[i].revisionName === obj.name){
                                                         dontDelete= true
+                                                        t= traffic[i].traffic
                                                         break
                                                     }
                                                 }
                                             return(
                                                 <Service 
+                                                    traffic={t}
                                                     key={key}
                                                     dontDelete={dontDelete}
                                                     revision={obj.rev}

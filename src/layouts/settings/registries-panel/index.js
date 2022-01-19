@@ -82,15 +82,10 @@ function RegistriesPanel(props){
                                     setTokenErr("token must be filled out")
                                     filledOut = false
                                 }
-                                if(!filledOut) return "all fields must be filled out"
-                                try { 
-                                    await createRegistry(url, `${username}:${token}`)
-                                    await getRegistries()
-                                } catch(err) {
-                                    await getRegistries()
-                                    return err
-                                }
-                            }, true)
+                                if(!filledOut) throw new Error("all fields must be filled out")
+                                await createRegistry(url, `${username}:${token}`)
+                                await getRegistries()
+                            }, ()=>{}, true)
                         ]}
                         actionButtons={[
                             ButtonDefinition("Add", async() => {
@@ -110,15 +105,10 @@ function RegistriesPanel(props){
                                     setTokenErr("Please enter a token...")
                                     filledOut = false
                                 }
-                                if(!filledOut) return "all fields must be filled out"
-                                try { 
-                                    await createRegistry(url, `${username}:${token}`)
-                                    await  getRegistries()
-                                } catch(err) {
-                                    await  getRegistries()
-                                    return err
-                                }                              
-                            }, "small blue", true, false),
+                                if(!filledOut) throw new Error("all fields must be filled out")
+                                await createRegistry(url, `${username}:${token}`)
+                                await  getRegistries()
+                            }, "small blue", ()=>{}, true, false),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -136,20 +126,16 @@ function RegistriesPanel(props){
                                     setTokenErr("Please enter a token...")
                                     filledOut = false
                                 }
-                                if(!filledOut) return "all fields must be filled out"
+                                if(!filledOut) throw new Error("all fields must be filled out")
                                 setTestConnLoading(true)
-                                try { 
-                                    await TestRegistry(url, username, token)
-                                    setTestConnLoading(false)
-                                    setSuccessFeedback(true)
-                                } catch(err) {
-                                    setTestConnLoading(false)
-                                    setSuccessFeedback(false)
-                                    return err
-                                }
-                            }, testConnBtnClasses, false, false),
+                                await TestRegistry(url, username, token)
+                                setTestConnLoading(false)
+                                setSuccessFeedback(true)
+                           
+                            }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
+                                setSuccessFeedback(false)}, false, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]}
                     >
                         <AddRegistryPanel urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} successMsg={successFeedback} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
@@ -281,7 +267,7 @@ export function Registries(props) {
             {registries.map((obj)=>{
                     return (
                         <FlexBox key={obj.name} className="secret-tuple">
-                            <FlexBox className="key">{obj.name}</FlexBox>
+                            <FlexBox className="key">{obj.name} <span className="muted-text" style={{ marginLeft: "8px" }}>({obj.user})</span></FlexBox>
                             <FlexBox className="val"></FlexBox>
                             <FlexBox className="val"></FlexBox>
                             <FlexBox className="actions">
@@ -300,16 +286,11 @@ export function Registries(props) {
                                         [
                                             // label, onClick, classList, closesModal, async
                                             ButtonDefinition("Delete", async () => {
-                                                try { 
                                                     await deleteRegistry(obj.name)
                                                     await getRegistries()
-                                                } catch(err) {
-                                                    await getRegistries()
-                                                    return err
-                                                }
-                                            }, "small red", true, false),
+                                            }, "small red",()=>{}, true, false),
                                             ButtonDefinition("Cancel", () => {
-                                            }, "small light", true, false)
+                                            }, "small light",()=>{}, true, false)
                                         ]
                                     }   
                                 >
