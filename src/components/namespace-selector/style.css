@@ -148,3 +148,17 @@
 .ns-hover:hover {
     filter: brightness(0.95);
 }
+
+.tippy-box {
+    font-size: 14px;
+    background-color: #f6f7f9;
+    border: 1px solid #e9ecef;
+    color: #082032;
+    box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
+    padding: 3px;
+}
+
+.tippy-arrow:before {
+    color: #edf0f2;
+    transform: translateY(1px);
+}
