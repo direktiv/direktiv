@@ -299,7 +299,11 @@ export function UpdateTraffic(props){
                                         await setNamespaceServiceRevisionTraffic(revOne, parseInt(tpercent), revTwo, parseInt(100-tpercent))
                                         setErrMsg("")
                                     } catch(err) {
-                                        setErrMsg(err)
+                                        if(err.message){
+                                            setErrMsg(err.message)
+                                        } else {
+                                            setErrMsg(err)
+                                        }
                                     }
                                 }}>
                                     Save
