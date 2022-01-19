@@ -74,18 +74,14 @@ export default function GlobalRevisionsPanel(props){
                                 )}  
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                    }, true)
+                                    },()=>{}, true)
                                 ]}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
-                                        try { 
                                             await createGlobalServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                        } catch(err) {
-                                            return err
-                                        }
-                                    }, "small blue", true, false),
+                                    }, "small blue", ()=>{}, true, false),
                                     ButtonDefinition("Cancel", () => {
-                                    }, "small light", true, false)
+                                    }, "small light", ()=>{}, true, false)
                                 ]}
                             >
                                 {config !== null ? 

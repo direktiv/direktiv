@@ -107,14 +107,10 @@ function EventsPage(props) {
                                                     </div>}
                                                     actionButtons={[
                                                         ButtonDefinition("Retrigger", async () => {
-                                                            try{
-                                                                 await replayEvent(obj.node.id)  
-                                                            } catch(e){
-                                                                return e
-                                                            }
-                                                        }, "small blue", true, true),
+                                                            await replayEvent(obj.node.id)  
+                                                        }, "small blue", ()=>{}, true, true),
                                                         ButtonDefinition("Cancel", async () => {
-                                                        }, "small light", true, false)
+                                                        }, "small light", ()=>{}, true, false)
                                                     ]}
                                                 >
                                                     <FlexBox style={{overflow:"hidden"}}>
@@ -232,13 +228,9 @@ function SendEventModal(props) {
             )}
             actionButtons={[
                 ButtonDefinition("Send", async () => {
-                    try { 
-                      await sendEvent(eventData)
-                    } catch(err) {
-                      return err
-                    }
-                }, "small", true, false),
-                ButtonDefinition("Cancel", () => {}, "small light", true, false)
+                    await sendEvent(eventData)
+                }, "small", ()=>{}, true, false),
+                ButtonDefinition("Cancel", () => {}, "small light", ()=>{}, true, false)
             ]}
             noPadding
         >

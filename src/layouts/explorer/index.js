@@ -84,13 +84,14 @@ function ExplorerList(props) {
     
     const [name, setName] = useState("")
     const [load, setLoad] = useState(true)
+
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     const [wfData, setWfData] = useState("")
     const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
 
-    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), orderFieldDictionary[orderFieldKey])
+    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`)
 
     // control loading icon todo work out how to display this error
     useEffect(()=>{
@@ -161,31 +162,23 @@ function ExplorerList(props) {
                             }}
                             actionButtons={[
                                 ButtonDefinition("Add", async () => {
-                                    try { 
-                                        const result = await createNode(name, "workflow", wfData)
-                                        if(result.node && result.namespace){
-                                            navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
-                                        }
-                                    } catch(err) {
-                                        return err
+                                    const result = await createNode(name, "workflow", wfData)
+                                    if(result.node && result.namespace){
+                                        navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
-                                }, `small blue ${(name.trim() && wfTemplate) ? "" : "disabled"}`, true, false),
+                                }, `small blue ${(name.trim() && wfTemplate) ? "" : "disabled"}`, ()=>{}, true, false),
                                 ButtonDefinition("Cancel", () => {
-                                }, "small light", true, false)
+                                }, "small light", ()=>{}, true, false)
                             ]}
 
                             keyDownActions={[
                                 KeyDownDefinition("Enter", async () => {
                                     if(name.trim() && wfTemplate) {
-                                        try {
-                                            await createNode(name, "workflow", wfData)
-                                        } catch(err) {
-                                            return err
-                                        }
+                                        await createNode(name, "workflow", wfData)
                                     } else {
-                                        return "Please fill in name and choose template"
+                                        throw new Error("Please fill in name and choose template")
                                     }
-                                }, true, "workflow-name")
+                                }, ()=>{}, true, "workflow-name")
                             ]}
                         >
                             <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "550px"}}>
@@ -236,30 +229,21 @@ function ExplorerList(props) {
                                 }}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
-                                        try {
-                                            await createNode(name, "directory")
-                                        } catch(err) {
-                                            return err
-                                        }
-                                        if(err) return err
-                                    }, `small blue ${name.trim() ? "" : "disabled"}`, true, false),
+                                        await createNode(name, "directory")
+                                    }, `small blue ${name.trim() ? "" : "disabled"}`, ()=>{}, true, false),
                                     ButtonDefinition("Cancel", () => {
-                                    }, "small light", true, false)
+                                    }, "small light", ()=>{}, true, false)
                                 ]}
 
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
                                         if(name.trim()) {
-                                            try {
-                                                await createNode(name, "directory")
-                                            } catch(err) {
-                                                return err
-                                            }
+                                            await createNode(name, "directory")
                                         } else {
-                                            return "Please enter directory name"
+                                            throw new Error("Please enter directory name")
                                         }
                                         setName("")
-                                    }, true)
+                                    }, ()=>{}, true)
                                 ]}
 
                             >
@@ -411,14 +395,10 @@ function DirListItem(props) {
                                     ButtonDefinition("Delete", async () => {
                                         let p = path.split('/', -1);
                                         let pLast = p[p.length-1];
-                                        try { 
-                                            await deleteNode(pLast)
-                                        } catch(err) {
-                                            return err
-                                        }
-                                    }, "small red", true, false),
+                                        await deleteNode(pLast)
+                                    }, "small red", ()=>{}, true, false),
                                     ButtonDefinition("Cancel", () => {
-                                    }, "small light", true, false)
+                                    }, "small light", ()=>{}, true, false)
                                 ]
                             } 
                         >
@@ -512,17 +492,12 @@ function WorkflowListItem(props) {
                                 actionButtons={
                                     [
                                         ButtonDefinition("Delete", async () => {
-                                        let p = path.split('/', -1);
-                                        let pLast = p[p.length-1];
-
-                                        try { 
+                                            let p = path.split('/', -1);
+                                            let pLast = p[p.length-1];
                                             await deleteNode(pLast)
-                                        } catch(err) {
-                                            return err
-                                        }
-                                        }, "small red", true, false),
+                                        }, "small red", ()=>{}, true, false),
                                         ButtonDefinition("Cancel", () => {
-                                        }, "small light", true, false)
+                                        }, "small light", ()=>{}, true, false)
                                     ]
                                 } 
                             >

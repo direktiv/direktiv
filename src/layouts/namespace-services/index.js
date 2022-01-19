@@ -127,18 +127,14 @@ function NamespaceServices(props) {
                     )}  
                     keyDownActions={[
                         KeyDownDefinition("Enter", async () => {
-                        }, true)
+                        }, ()=>{}, true)
                     ]}
                     actionButtons={[
                         ButtonDefinition("Add", async () => {
-                            try { 
-                                await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
-                            } catch(err) {
-                                return err
-                            }
-                        }, "small blue", true, false),
+                            await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
+                        }, "small blue", ()=>{}, true, false),
                         ButtonDefinition("Cancel", () => {
-                        }, "small light", true, false)
+                        }, "small light", ()=>{}, true, false)
                     ]}
                 >
                     {config !== null ? 
@@ -226,22 +222,14 @@ export function Service(props) {
                         actionButtons={[
                             ButtonDefinition("Delete", async () => {
                                 if(revision !== undefined) {
-                                    try { 
-                                        await deleteService(revision)
-                                    } catch(err) {
-                                        return err
-                                    }
+                                    await deleteService(revision)
                                 }else {
-                                    try { 
-                                        await deleteService(name)
-                                    } catch(err) {
-                                        return err
-                                    }
+                                    await deleteService(name)
                                 }
                              
-                            }, "small red", true, false),
+                            }, "small red", ()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light", ()=>{}, true, false)
                         ]}
                     >
                         <FlexBox className="col gap">

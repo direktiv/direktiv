@@ -57,47 +57,34 @@ function SecretsPanel(props){
                         
                         keyDownActions={[
                             KeyDownDefinition("Enter", async () => {
-                                try { 
                                     await createSecret(keyValue, vValue)
                                     await getSecrets()
-                                } catch(err) {
-                                    await getSecrets()
-                                    return err
-                                }
-                            }, true)
+                            }, ()=>{}, true)
                         ]}
                         
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
                                     if(keyValue.trim() === "") {
-                                        return "Secret key name needs to be provided."
+                                        throw new Error("Secret key name needs to be provided.")
                                     }
                                     if(!file) {
-                                        return "Please add or select file"
+                                        throw new Error("Please add or select file")
                                     }
-                                    try { 
-                                        await createSecret(keyValue, file)
-                                    } catch(err) {
-                                        return err
-                                    }
+                                    await createSecret(keyValue, file)
                                 } else {
                                     if(keyValue.trim() === "") {
-                                        return "Secret key name needs to be provided."
+                                        throw new Error("Secret key name needs to be provided.")
                                     }
                                     if(vValue.trim() === "") {
-                                        return "Secret value needs to be provided."
+                                        throw new Error("Secret value needs to be provided.")
                                     }
-                                    try { 
-                                        await createSecret(keyValue, vValue)
-                                    } catch(err) {
-                                        return err
-                                    }
+                                    await createSecret(keyValue, vValue)
                                 }
                                 await  getSecrets()
-                            }, "small blue", true, false),
+                            }, "small blue",()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light",()=>{}, true, false)
                         ]}
                     >
                          <Tabs 
@@ -200,16 +187,11 @@ function Secrets(props) {
                                             [
                                                 // label, onClick, classList, closesModal, async
                                                 ButtonDefinition("Delete", async () => {
-                                                    try { 
-                                                        await deleteSecret(obj.node.name)
-                                                        await getSecrets()
-                                                    } catch(err) {
-                                                        await getSecrets()
-                                                        return err
-                                                    }
-                                                }, "small red", true, false),
+                                                    await deleteSecret(obj.node.name)
+                                                    await getSecrets()
+                                                }, "small red",()=>{}, true, false),
                                                 ButtonDefinition("Cancel", () => {
-                                                }, "small light", true, false)
+                                                }, "small light",()=>{}, true, false)
                                             ]
                                         }   
                                     >
