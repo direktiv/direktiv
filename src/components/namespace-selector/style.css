@@ -151,14 +151,14 @@
 
 .tippy-box {
     font-size: 14px;
-    background-color: #f6f7f9;
-    border: 1px solid #e9ecef;
-    color: #082032;
-    box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
-    padding: 3px;
+    background: rgba(8, 32, 50, 0.92);
+    border: 1px solid #082032;
+    color: #FFFFFF;
+    box-sizing: border-box;
+    border-radius: 4px;
 }
 
 .tippy-arrow:before {
-    color: #edf0f2;
+    color: rgba(8, 32, 50, 0.95);
     transform: translateY(1px);
 }
