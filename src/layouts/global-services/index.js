@@ -18,11 +18,12 @@ export default function GlobalServicesPanel(props) {
     const [scale, setScale] = useState(0)
     const [size, setSize] = useState(0)
     const [cmd, setCmd] = useState("")
+    const [maxScale, setMaxScale] = useState(0)
 
     useEffect(()=>{
         async function getcfg() {
-            await getConfig()
-            await getGlobalServices()
+            await getConfig().then(response => setMaxScale(response.maxscale));
+            await getGlobalServices();
         }
         if(load && config === null && data === null) {
             getcfg()
@@ -82,7 +83,7 @@ export default function GlobalServicesPanel(props) {
                         ]}
                     >
                         {config !== null ? 
-                            <ServiceCreatePanel cmd={cmd} setCmd={setCmd} size={size} setSize={setSize} name={serviceName} setName={setServiceName} image={image} setImage={setImage} scale={scale} setScale={setScale} maxscale={config.maxscale} />
+                            <ServiceCreatePanel maxScale={maxScale} cmd={cmd} setCmd={setCmd} size={size} setSize={setSize} name={serviceName} setName={setServiceName} image={image} setImage={setImage} scale={scale} setScale={setScale} />
                             :
                             ""
                         }
