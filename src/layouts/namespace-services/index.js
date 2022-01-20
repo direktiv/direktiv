@@ -78,13 +78,14 @@ function NamespaceServices(props) {
     const [scale, setScale] = useState(0)
     const [size, setSize] = useState(0)
     const [cmd, setCmd] = useState("")
+    const [maxScale, setMaxScale] = useState(0)
 
     const {data, err, config, getNamespaceConfig, getNamespaceServices, createNamespaceService, deleteNamespaceService} = useNamespaceServices(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     useEffect(()=>{
         async function getcfg() {
-            await getNamespaceConfig()
-            await getNamespaceServices()
+            await getNamespaceConfig().then(response => setMaxScale(response.maxscale));
+            await getNamespaceServices();
         }
         if(load && config === null && data === null) {
             getcfg()
@@ -150,7 +151,7 @@ function NamespaceServices(props) {
                     ]}
                 >
                     {config !== null ? 
-                        <ServiceCreatePanel cmd={cmd} setCmd={setCmd} size={size} setSize={setSize} name={serviceName} setName={setServiceName} image={image} setImage={setImage} scale={scale} setScale={setScale} maxscale={config.maxscale} />
+                        <ServiceCreatePanel cmd={cmd} setCmd={setCmd} size={size} setSize={setSize} name={serviceName} setName={setServiceName} image={image} setImage={setImage} scale={scale} setScale={setScale} maxScale={maxScale} />
                         :
                         ""
                     }

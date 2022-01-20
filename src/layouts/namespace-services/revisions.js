@@ -85,6 +85,7 @@ function NamespaceRevisions(props) {
     const [size, setSize] = useState(0)
     const [trafficPercent, setTrafficPercent] = useState(100)
     const [cmd, setCmd] = useState("")
+    const [maxScale, setMaxScale] = useState(0)
     
     useEffect(()=>{
         if(revisions !== null && revisions.length > 0) {
@@ -97,7 +98,7 @@ function NamespaceRevisions(props) {
 
     useEffect(()=>{
         async function cfgGet() {
-            await getNamespaceServiceConfig();
+            await getNamespaceServiceConfig().then(response => setMaxScale(response.maxscale));
         }
         if(load && config === null) {
             cfgGet()
@@ -156,7 +157,7 @@ function NamespaceRevisions(props) {
                                     size={size} setSize={setSize}
                                     cmd={cmd} setCmd={setCmd}
                                     traffic={trafficPercent} setTraffic={setTrafficPercent}
-                                    maxscale={config.maxscale}
+                                    maxScale={maxScale}
                                 />:""}
                             </Modal>
                         </div>
