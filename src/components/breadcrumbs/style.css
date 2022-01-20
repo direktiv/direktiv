@@ -1,6 +1,7 @@
 .breadcrumbs-row ul {
     list-style-type: none;
     padding-left: 1px;
+    white-space: nowrap;
 }
 
 .breadcrumbs-row ul li {
