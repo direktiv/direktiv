@@ -3,7 +3,7 @@ import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened } from 'react-icons/vsc';
+import { VscAdd, VscClose,  VscSearch, VscEdit, VscTrash, VscFolderOpened, VscCode } from 'react-icons/vsc';
 import { Config, GenerateRandomKey } from '../../util';
 import { FiFolder } from 'react-icons/fi';
 import { FcWorkflow } from 'react-icons/fc';
@@ -21,7 +21,103 @@ import { useSearchParams } from 'react-router-dom';
 import WorkflowRevisions from './workflow/revision';
 import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
+import { FaAppStoreIos } from 'react-icons/fa';
+import Editor from '@monaco-editor/react';
 
+const apiHelps = (namespace) => {
+    let url = window.location.origin
+    return(
+        [
+            {
+                method: "GET",
+                url: `${url}/api/namespaces/${namespace}/tree`,
+                description: `List nodes`,
+            },
+            {
+                method: "PUT",
+                description: `Create a directory`,
+                url: `${url}/api/namespaces/${namespace}/tree/NODE_NAME?op=create-directory`,
+                body: `{
+  "type": "directory"
+}`,
+                type: "json"
+            },
+            {
+                method: "PUT",
+                description: `Create a workflow `,
+                url: `${url}/api/namespaces/${namespace}/tree/NODE_NAME?op=create-workflow`,
+                body: `description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+type: noop
+transform:
+    result: Hello world!`,
+                type: "yaml"
+            },
+            {
+                method: "POST",
+                description: "Rename a node",
+                url: `${url}/api/namespaces/${namespace}/tree/NODE_NAME?op=rename-node`,
+                body:`{
+  "new": "NEW_NODE_NAME"
+}`,
+                type: "json"
+            },
+            {
+                method: "DEL",
+                description: `Delete a node`,
+                url: `${url}/api/namespaces/${namespace}/tree/NODE_NAME?op=delete-node`,
+            }
+        ]
+    )
+}
+
+// const apiHelps = [
+//     {
+//         method: "get",
+//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+//         description: "List Nodes at: /directive",
+//         body: `function toCelsiu (fahrenheit) { 
+//             return (5/9)* (fahrenheit-32); 
+// } 
+// document.getElementByID(“demo”).innerHTML = toCelsus(77);
+//         `,
+//         type: "javascript"
+//     },
+//     {
+//         method: "put",
+//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+//         description: "List Nodes at: /directive",
+//         body: `function toCelsiu (fahrenheit) { 
+//             return (5/9)* (fahrenheit-32); 
+// } 
+// document.getElementByID(“demo”).innerHTML = toCelsus(77);
+//         `,
+//         type: "javascript"
+//     },
+//     {
+//         method: "post",
+//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+//         description: "List Nodes at: /directive",
+//         body: `function toCelsiu (fahrenheit) { 
+//             return (5/9)* (fahrenheit-32); 
+// } 
+// document.getElementByID(“demo”).innerHTML = toCelsus(77);
+//         `,
+//         type: "javascript"
+//     },
+//     {
+//         method: "delete",
+//         url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+//         description: "List Nodes at: /directive",
+//         body: `function toCelsiu (fahrenheit) { 
+//             return (5/9)* (fahrenheit-32); 
+// } 
+// document.getElementByID(“demo”).innerHTML = toCelsus(77);
+//         `,
+//         type: "javascript"
+//     },
+// ]
 
 function Explorer(props) {
     const params = useParams()
@@ -80,6 +176,9 @@ function ExplorerList(props) {
     const {namespace, path} = props
     const navigate= useNavigate()
     
+    //api helper modal
+    const [showApiHelper, setShowApiHelper] = useState(false)
+
     const [currPath, setCurrPath] = useState("")
     
     const [name, setName] = useState("")
@@ -119,12 +218,36 @@ function ExplorerList(props) {
         <Loader load={load} timer={1000}>
         <FlexBox className="gap" style={{maxHeight: "32px"}}>
             <FlexBox>
-                <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
-                    <ContentPanelHeaderButtonIcon>
-                        <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
-                    </ContentPanelHeaderButtonIcon>
-                    API Commands
-                </Button>
+                <div>
+                    <Modal
+                        titleIcon={<VscCode/>}
+                        button={
+                            <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
+                                <ContentPanelHeaderButtonIcon>
+                                    <VscCode style={{ maxHeight: "12px", marginRight: "4px" }} />
+                                </ContentPanelHeaderButtonIcon>
+                                API Commands
+                            </Button>
+                        }
+                        escapeToCancel
+                        withCloseButton
+                        maximised
+                        title={"Namespace API Interactions"}
+                    >
+                        {
+                            apiHelps(namespace).map((help)=>(
+                                <ApiFragment
+                                    description={help.description}
+                                    url={help.url}
+                                    method={help.method}
+                                    body={help.body}
+                                    type={help.type}
+                                />
+                            ))
+                        }
+                    </Modal>
+                </div>
+                
             </FlexBox>
             <FlexBox style={{flexDirection: "row-reverse"}}>
                 <SearchBar />
@@ -513,5 +636,26 @@ function WorkflowListItem(props) {
                 </FlexBox>
             </FlexBox>
         </div>
+    )
+}
+
+function ApiFragment(props) {
+    const { url, method, body, type, description } = props
+    return (
+        <FlexBox className='helper-wrap col'>
+            <FlexBox className='helper-title row'>
+                <FlexBox className='row vertical-center'>
+                    <Button className={`btn-method ${method}`}>{method}</Button>
+                    <div className='url'>{url}</div>
+                </FlexBox>
+                <div className='description' style={{textAlign:"right"}}>{description}</div>
+            </FlexBox>
+            {body ? 
+            <FlexBox>    
+                <DirektivEditor 
+                    height={150}
+                    value={props.body} readonly dlang={props.type}/>
+            </FlexBox>:""}
+        </FlexBox>
     )
 }

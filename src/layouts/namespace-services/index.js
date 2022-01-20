@@ -13,6 +13,7 @@ import {Link} from 'react-router-dom'
 import HelpIcon from "../../components/help"
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
+import { VscInfo } from "react-icons/vsc";
 
 export default function ServicesPanel(props) {
     const {namespace} = props
@@ -193,8 +194,7 @@ function NamespaceServices(props) {
 }
 
 export function Service(props) {
-    const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic} = props
-
+    const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic, latest} = props
     return(
         <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>
@@ -214,7 +214,14 @@ export function Service(props) {
                         </div> */}
                     </FlexBox>
                 </Link>
-                {!dontDelete ? 
+                {!dontDelete && !traffic ? 
+                <>
+                        {latest ? 
+                         <div style={{height: "100%", display: "flex", paddingRight: "26px" }}>
+                         <HelpIcon msg={"Unable to delete latest revision"} />
+
+                         </div>
+                    :
                 <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto"}}>
                     <Modal  title="Delete namespace service" 
                         escapeToCancel
@@ -249,12 +256,16 @@ export function Service(props) {
                             </FlexBox>
                         </FlexBox>
                     </Modal>
-                </div>: 
-                <>     
-                {traffic ?     
-                <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto", fontSize:"10pt", fontWeight:"bold"}}>
-                    {traffic}%
-                </div>:""}</>}
+                </div>}
+                </>
+                : 
+                    <>
+                    {traffic ?     
+                    <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto", fontSize:"10pt", fontWeight:"bold"}}>
+                        {traffic}%
+                    </div>:""}
+                    </>
+                }
             </FlexBox>
             <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                 <ServiceDetails conditions={conditions} />

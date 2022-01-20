@@ -5,6 +5,7 @@ import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon
 import { IoLockClosedOutline, IoCloseCircleSharp } from 'react-icons/io5';
 import FlexBox from '../flexbox';
 import Alert from '../alert';
+import { VscClose } from 'react-icons/vsc';
 
 
 function Modal(props) {
@@ -155,13 +156,9 @@ function ModalOverlay(props) {
         closeButton = (
             <FlexBox className="modal-buttons" style={{ flexDirection: "column-reverse" }}>
                 <div>
-                    <IoCloseCircleSharp 
-                        className="red-text auto-margin" 
-                        style={{ marginRight: "8px" }}
-                        onClick={() => {
-                            callback()
-                        }}
-                    />
+                    <VscClose onClick={()=>{
+                        callback()
+                    }} className="auto-margin" style={{marginRight:"8px"}} />
                 </div>
             </FlexBox>
         )
@@ -288,7 +285,6 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
         let onClick =  async () => {
             try {
                 let json = await btn.onClick()
-                console.log(json)
                 if(btn.closesModal){
                     closeModal()
                 } else {

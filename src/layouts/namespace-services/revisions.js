@@ -162,7 +162,8 @@ function NamespaceRevisions(props) {
 
                         <FlexBox className="gap col">
                             <FlexBox className="gap col">
-                                {revisions.map((obj) => {
+                                {revisions.sort((a, b)=> (a.created > b.created) ? -1 : 1).map((obj, i) => {
+
                                     let dontDelete = false
                                     let t = 0
                                     for (let i=0; i < traffic.length; i++) {
@@ -175,8 +176,9 @@ function NamespaceRevisions(props) {
 
                                     return (
                                         <Service 
+                                            latest={i===0}
                                             traffic={t}
-                                            dontDelete={dontDelete}
+                                            dontDelete={dontDelete && i !== 0} 
                                             revision={obj.rev}
                                             deleteService={deleteNamespaceServiceRevision}
                                             url={`/n/${namespace}/services/${service}/${obj.rev}`}

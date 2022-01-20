@@ -74,3 +74,43 @@
 .disabled {
     cursor: not-allowed;
 }
+.helper-wrap {
+    background-color: #37556A;
+    padding: 8px 16px;
+}
+.helper-title {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: white;
+    align-items: center;
+    justify-content: space-between;
+}
+.helper-title .vertical-center{
+    align-items: center;
+}
+.helper-title .url{
+    font-size: 15px;
+    font-weight: 500;
+}
+.btn-method {
+    height: 24px;
+    color: white;
+    font-size: 13px;
+    line-height: 24px;
+    font-weight: 900;
+    margin-right: 16px;
+    padding : 4px 12px;
+    text-transform: capitalize;
+}
+.btn-method.GET{
+    background-color: #3E94C5;
+}
+.btn-method.PUT{
+    background-color: #F7C94F;
+}
+.btn-method.POST{
+    background-color: #55BA86;
+}
+.btn-method.DEL{
+    background-color: #EC4F79;
+}

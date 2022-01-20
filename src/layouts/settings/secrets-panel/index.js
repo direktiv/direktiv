@@ -12,6 +12,7 @@ import {Config, GenerateRandomKey} from '../../../util'
 import HelpIcon from '../../../components/help';
 import Tabs from '../../../components/tabs'
 import DirektivEditor from '../../../components/editor';
+import { AutoSizer } from 'react-virtualized';
 
 
 
@@ -53,15 +54,7 @@ function SecretsPanel(props){
                         
                         button={(
                             <AddValueButton label=" " />
-                        )}  
-                        
-                        keyDownActions={[
-                            KeyDownDefinition("Enter", async () => {
-                                    await createSecret(keyValue, vValue)
-                                    await getSecrets()
-                            }, ()=>{}, true)
-                        ]}
-                        
+                        )}                         
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
@@ -230,9 +223,15 @@ function AddSecretPanel(props) {
                     <input value={keyValue} onChange={(e)=>setKeyValue(e.target.value)} autoFocus placeholder="Enter key" />
                 </FlexBox>
             </FlexBox>
-            <FlexBox className="gap">
-                <FlexBox><input type="password"  value={vValue} onChange={(e)=>setVValue(e.target.value)} placeholder="Enter value" /></FlexBox>
+            <FlexBox className="gap" style={{minHeight:"250px"}}>
+                <FlexBox style={{overflow:"hidden"}}>
+                    <AutoSizer>
+                        {({height, width})=>(
+                            <DirektivEditor width={width} dValue={vValue} setDValue={setVValue} height={height}/>
+                        )}
+                        </AutoSizer>
+                    </FlexBox>
+                </FlexBox>
             </FlexBox>
-        </FlexBox>
     );
 }

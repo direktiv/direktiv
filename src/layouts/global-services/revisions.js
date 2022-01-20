@@ -98,7 +98,8 @@ export default function GlobalRevisionsPanel(props){
                             <ContentPanelBody className="secrets-panel">
                                 <FlexBox className="gap col">
                                     <FlexBox className="col gap">
-                                        {revisions.map((obj, key)=>{
+                                        {
+                                            revisions.sort((a, b)=> (a.created > b.created) ? -1 : 1).map((obj, key)=>{
                                             let dontDelete = false
                                             if(revisions.length === 1) {
                                                 dontDelete = true
@@ -114,9 +115,10 @@ export default function GlobalRevisionsPanel(props){
                                                 }
                                             return(
                                                 <Service 
+                                                    latest={key===0}
                                                     traffic={t}
                                                     key={key}
-                                                    dontDelete={dontDelete}
+                                                    dontDelete={dontDelete && key !== 0}
                                                     revision={obj.rev}
                                                     deleteService={deleteGlobalServiceRevision}
                                                     url={`/g/services/${service}/${obj.rev}`}

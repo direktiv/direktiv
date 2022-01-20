@@ -207,8 +207,8 @@ export function RevisionSelectorTab(props) {
             if(tags === null){
                 // get workflow tags
                 let resp = await getTags()
-                if(Array.isArray(resp)){
-                    updateTags(resp)
+                if(Array.isArray(resp.edges)){
+                    updateTags(resp.edges)
                 } else {
                     // FIXME: find location for this error
                     console.error("could not retrive tags", resp)
@@ -236,7 +236,7 @@ export function RevisionSelectorTab(props) {
     }
 
   
-
+    if(!revisions) return null
     return (
         <FlexBox className="col gap">
             <div>
@@ -398,8 +398,10 @@ export function RevisionSelectorTab(props) {
                                                         [
                                                             ButtonDefinition("Remove", async () => {
                                                                 await removeTag(obj.node.name)
-                                                                setRevisions(await getRevisions())
-                                                                updateTags(await getTags())
+                                                                let tagsResp = await getTags()
+                                                                let revResp = await getRevisions()
+                                                                setRevisions(revResp.edges)
+                                                                updateTags(tagsResp.edges)
                                                             }, "small red", ()=>{}, true, false),
                                                             ButtonDefinition("Cancel", () => {
                                                             }, "small light", ()=>{}, true, false)
@@ -515,8 +517,10 @@ function TagRevisionBtn(props) {
                 [
                     ButtonDefinition("Tag", async () => {
                             await tagWorkflow(obj.node.name, tag)
-                            setRevisions(await getRevisions())
-                            updateTags(await getTags())
+                            let tagsResp = await getTags()
+                            let revResp = await getRevisions()
+                            setRevisions(revResp.edges)
+                            updateTags(tagsResp.edges)
                     }, "small blue", ()=>{}, true, false),
                     ButtonDefinition("Cancel", () => {
                     }, "small light", ()=>{}, true, false)
@@ -630,47 +634,6 @@ export function RevisionTrafficShaper(props) {
                             </FlexBox>
                         </FlexBox>
                     </FlexBox>
-                    {/* <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
-                        <FlexBox className="gap col">
-                            <div>
-                                <b>Revision 1</b>
-                            </div>
-                            <FlexBox style={{alignItems:"center"}}>
-                                <select onChange={(e)=>setRev1(e.target.value)} value={rev1}>
-                                    <option value="">Select a workflow revision</option>
-                                    {revisions.map((obj)=>{
-                                        if(rev2 === obj.node.name){
-                                            return ""
-                                        }
-                                        return(
-                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
-                                        )
-                                    })}
-                                </select>
-                            </FlexBox>
-                 
-                        </FlexBox>
-                    </FlexBox>
-                    <FlexBox style={{ maxWidth: "300px", justifyContent: "center"}}>
-                        <FlexBox className="gap col">
-                            <div>
-                                <b>Revision 2</b>
-                            </div>
-                            <FlexBox style={{alignItems:"center"}}>
-                                <select onChange={(e)=>setRev2(e.target.value)} value={rev2}>
-                                    <option value="">Select a workflow revision</option>
-                                    {revisions.map((obj)=>{
-                                        if(rev1 === obj.node.name){
-                                            return ""
-                                        }
-                                        return(
-                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
-                                        )
-                                    })}
-                                </select>
-                            </FlexBox>
-                        </FlexBox>
-                    </FlexBox> */}
                     <FlexBox style={{maxWidth: "350px", justifyContent: "center", paddingRight:"15px"}}>
                         <FlexBox className="col">
                             <div>

@@ -1,11 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import './style.css';
+import '../../components/help/style.css'
 import FlexBox from '../flexbox';
 import {VscChevronDown} from 'react-icons/vsc';
 
 import { GenerateRandomKey } from '../../util';
 import { Link } from 'react-router-dom';
 import Identicon from 'react-identicons';
+
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
 
 function NamespaceSelector(props) {
     let {style, className, namespaces, namespace, toggleResponsive} = props;
@@ -41,19 +45,6 @@ function NamespaceSelector(props) {
         chevronClass += " hidden"
     }
 
-    useEffect(()=>{
-        function resetSelector() {
-            setShowSelector(!showSelector)
-            window.removeEventListener('click', resetSelector)
-        }
-        if(showSelector) {
-            window.addEventListener('click', resetSelector)
-        }
-    },[showSelector])
-
-    // let x = useParams("namespace");
-    // console.log(x);
-
     return (
         <>
             {(!!namespace) &&
@@ -72,10 +63,12 @@ function NamespaceSelector(props) {
                         </FlexBox>
                     </FlexBox>
                     <FlexBox className={selectorBorderClass}>
+                     <Tippy content="fasf" trigger={'mouseenter focus click'} zIndex={0}>
                         <FlexBox className={selectorClass}>
                             {namespaces !== null ?
                             <NamespaceList toggleResponsive={toggleResponsive} setShowSelector={setShowSelector} namespaces={namespaces}/>:""}
                         </FlexBox>
+                     </Tippy>
                     </FlexBox>
                 </FlexBox>
             }
@@ -115,15 +108,27 @@ function NamespaceListItem(props) {
                             <Identicon string={namespace} size={39} />
                         </div>
                     </FlexBox>
+                    
                     <FlexBox className="col">
-                        <div className="auto-margin" style={{marginLeft: "8px"}}>
-                            <FlexBox className="namespace-selector-label-header">
-                                {label}
-                            </FlexBox>
-                            <FlexBox className="namespace-selector-label-value">
-                            <span>{namespace}</span>
-                            </FlexBox>
-                        </div>
+                     {namespace.length > 15 ? 
+                     <Tippy content={namespace} followCursor={true}>
+                     <div className="auto-margin" style={{marginLeft: "8px"}}>
+                         <FlexBox className="namespace-selector-label-header">
+                             {label}
+                         </FlexBox>
+                         <FlexBox className="namespace-selector-label-value">
+                         <span>{namespace}</span>
+                         </FlexBox>
+                     </div>
+                     </Tippy> :
+                     <div className="auto-margin" style={{marginLeft: "8px"}}>
+                         <FlexBox className="namespace-selector-label-header">
+                             {label}
+                         </FlexBox>
+                         <FlexBox className="namespace-selector-label-value">
+                         <span>{namespace}</span>
+                         </FlexBox>
+                     </div>}
                     </FlexBox>
                 </FlexBox>
             </FlexBox>
