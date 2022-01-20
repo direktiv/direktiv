@@ -120,7 +120,7 @@ function RevisionTab(props) {
                                                 </div>
                                             )}
                                         >
-                                            <FlexBox style={{height: "40vh", width: "30vw"}}>
+                                            <FlexBox style={{height: "40vh", width: "30vw", minWidth: "250px", minHeight: "200px"}}>
                                                 <FlexBox style={{overflow:"hidden"}}>
                                                     <AutoSizer>
                                                         {({height, width})=>(
