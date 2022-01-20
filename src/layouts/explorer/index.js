@@ -21,7 +21,55 @@ import { useSearchParams } from 'react-router-dom';
 import WorkflowRevisions from './workflow/revision';
 import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
+import { FaAppStoreIos } from 'react-icons/fa';
+import Editor from '@monaco-editor/react';
 
+const apiHelps = [
+    {
+        method: "get",
+        url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+        description: "List Nodes at: /directive",
+        body: `function toCelsiu (fahrenheit) { 
+            return (5/9)* (fahrenheit-32); 
+} 
+document.getElementByID(“demo”).innerHTML = toCelsus(77);
+        `,
+        type: "javascript"
+    },
+    {
+        method: "put",
+        url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+        description: "List Nodes at: /directive",
+        body: `function toCelsiu (fahrenheit) { 
+            return (5/9)* (fahrenheit-32); 
+} 
+document.getElementByID(“demo”).innerHTML = toCelsus(77);
+        `,
+        type: "javascript"
+    },
+    {
+        method: "post",
+        url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+        description: "List Nodes at: /directive",
+        body: `function toCelsiu (fahrenheit) { 
+            return (5/9)* (fahrenheit-32); 
+} 
+document.getElementByID(“demo”).innerHTML = toCelsus(77);
+        `,
+        type: "javascript"
+    },
+    {
+        method: "delete",
+        url: "https:awsdev.direktiv.io/api/anmespaces/direktiv/tree/",
+        description: "List Nodes at: /directive",
+        body: `function toCelsiu (fahrenheit) { 
+            return (5/9)* (fahrenheit-32); 
+} 
+document.getElementByID(“demo”).innerHTML = toCelsus(77);
+        `,
+        type: "javascript"
+    },
+]
 
 function Explorer(props) {
     const params = useParams()
@@ -80,6 +128,9 @@ function ExplorerList(props) {
     const {namespace, path} = props
     const navigate= useNavigate()
     
+    //api helper modal
+    const [showApiHelper, setShowApiHelper] = useState(false)
+
     const [currPath, setCurrPath] = useState("")
     
     const [name, setName] = useState("")
@@ -119,12 +170,35 @@ function ExplorerList(props) {
         <Loader load={load} timer={1000}>
         <FlexBox className="gap" style={{maxHeight: "32px"}}>
             <FlexBox>
-                <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
-                    <ContentPanelHeaderButtonIcon>
-                        <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
-                    </ContentPanelHeaderButtonIcon>
-                    API Commands
-                </Button>
+                <div>
+                    <Modal
+                        button={
+                            <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
+                                <ContentPanelHeaderButtonIcon>
+                                    <BsCodeSlash style={{ maxHeight: "12px", marginRight: "4px" }} />
+                                </ContentPanelHeaderButtonIcon>
+                                API Commands
+                            </Button>
+                        }
+                        escapeToCancel
+                        withCloseButton
+                        maximised
+                        title={"Namespace API Interactions"}
+                    >
+                        {
+                            apiHelps.map((help)=>(
+                                <ApiFragment
+                                    description={help.description}
+                                    url={help.url}
+                                    method={help.method}
+                                    body={help.body}
+                                    type={'json'}
+                                />
+                            ))
+                        }
+                    </Modal>
+                </div>
+                
             </FlexBox>
             <FlexBox style={{flexDirection: "row-reverse"}}>
                 <SearchBar />
@@ -513,5 +587,25 @@ function WorkflowListItem(props) {
                 </FlexBox>
             </FlexBox>
         </div>
+    )
+}
+
+function ApiFragment(props) {
+    const { url, method, body, type, description } = props
+    return (
+        <FlexBox className='helper-wrap col'>
+            <FlexBox className='helper-title row'>
+                <FlexBox className='row vertical-center'>
+                    <Button className={`btn-method ${method}`}>{method}</Button>
+                    <div className='url'>{url}</div>
+                </FlexBox>
+                <div className='description'>{description}</div>
+            </FlexBox>
+            <FlexBox>    
+                <DirektivEditor 
+                    height={300}
+                    value={props.body} readonly dlang={props.type}/>
+            </FlexBox>
+        </FlexBox>
     )
 }
