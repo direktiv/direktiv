@@ -20,7 +20,7 @@
 
 .content-panel-body {
     padding: 8px;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     flex: auto;
     display: flex;
 }
