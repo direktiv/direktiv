@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -351,6 +352,27 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 
 }
 
+func (is *functionsServer) validateCreateFunction(info *igrpc.BaseInfo) error {
+
+	if info == nil {
+		return fmt.Errorf("info can not be nil")
+	}
+
+	regex := "^[a-z]([-a-z0-9]{0,62}[a-z0-9])?$"
+
+	matched, err := regexp.MatchString(regex, info.GetName())
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return fmt.Errorf("invalid service name (must conform to regex: '%s')", regex)
+	}
+
+	return nil
+
+}
+
 // StoreFunctions saves or updates functions which means creating knative services
 // based on the provided configuration
 func (is *functionsServer) CreateFunction(ctx context.Context,
@@ -358,8 +380,10 @@ func (is *functionsServer) CreateFunction(ctx context.Context,
 
 	logger.Infof("storing functions %s", in.GetInfo().GetName())
 
-	if in.GetInfo() == nil {
-		return &empty, fmt.Errorf("info can not be nil")
+	err := is.validateCreateFunction(in.GetInfo())
+	if err != nil {
+		logger.Errorf("can not create knative service: %v", err)
+		return &empty, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// create ksvc service
