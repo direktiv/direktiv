@@ -23,6 +23,7 @@ import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
 import { FaAppStoreIos } from 'react-icons/fa';
 import Editor from '@monaco-editor/react';
+import Alert from '../../components/alert';
 
 const apiHelps = (namespace) => {
     let url = window.location.origin
@@ -455,10 +456,15 @@ function DirListItem(props) {
         <div style={{cursor:"pointer"}} onClick={(e)=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className="explorer-item">
-            <FlexBox className="explorer-item-container">
-                <FlexBox className="explorer-item-icon">
-                    <FiFolder className="auto-margin" />
-                </FlexBox>
+            <FlexBox style={{flexDirection:"column"}}>
+                {err !== "" ? 
+                <Alert className="rename-error critical">{err}</Alert>
+                :""
+                }
+                <FlexBox className="explorer-item-container">
+                    <FlexBox className="explorer-item-icon">
+                        <FiFolder className="auto-margin" />
+                    </FlexBox>
                 {
                     rename ? 
                     <FlexBox className="explorer-item-name">
@@ -472,10 +478,6 @@ function DirListItem(props) {
                                 }
                             }
                         }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{maxWidth:"300px", height:"38px"}}/>
-                        {err !== "" ? 
-                        <span>{err}</span>
-                        :""
-                        }
                      </FlexBox>
                     :
                     <FlexBox className="explorer-item-name">
@@ -536,6 +538,7 @@ function DirListItem(props) {
                     </FlexBox>
 
                 </FlexBox>
+                </FlexBox>
             </FlexBox>
         </div>
     )
@@ -554,10 +557,15 @@ function WorkflowListItem(props) {
         <div style={{cursor:"pointer"}} onClick={()=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className="explorer-item">
-            <FlexBox className="explorer-item-container">
-                <FlexBox className="explorer-item-icon">
-                    <FcWorkflow className="auto-margin" />
-                </FlexBox>
+            <FlexBox style={{flexDirection:"column"}}>
+                {err !== "" ? 
+                <Alert className="rename-error critical">{err}</Alert>
+                :""
+                }
+                <FlexBox className="explorer-item-container">
+                    <FlexBox className="explorer-item-icon">
+                        <FcWorkflow className="auto-margin" />
+                    </FlexBox>
                 {
                     rename ? 
                     <FlexBox className="explorer-item-name">
@@ -571,10 +579,6 @@ function WorkflowListItem(props) {
                                 }
                             }
                         }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{maxWidth:"300px", height:"38px"}}/>
-                        {err !== "" ? 
-                        <span>{err}</span>
-                        :""
-                        }
                      </FlexBox>
                     :
                     <FlexBox className="explorer-item-name">
@@ -632,6 +636,7 @@ function WorkflowListItem(props) {
                                 </FlexBox>
                             </FlexBox>
                             </Modal>
+                </FlexBox>
                 </FlexBox>
                 </FlexBox>
             </FlexBox>

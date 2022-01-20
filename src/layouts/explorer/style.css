@@ -102,6 +102,12 @@
     padding : 4px 12px;
     text-transform: capitalize;
 }
+
+.rename-error {
+    min-width: 300px;
+    margin: 5px auto;
+}
+
 .btn-method.GET{
     background-color: #3E94C5;
 }
