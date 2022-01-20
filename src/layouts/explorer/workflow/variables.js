@@ -70,12 +70,12 @@ function AddWorkflowVariablePanel(props) {
                                     if(keyValue === "") {
                                         throw new Error("Variable key name needs to be provided.")
                                     }
-                                    await setWorkflowVariable(keyValue, file, mimeType)
+                                    await setWorkflowVariable(encodeURIComponent(keyValue), file, mimeType)
                                 } else {
                                     if(keyValue === "") {
                                         throw new Error("Variable key name needs to be provided.")
                                     }
-                                    await setWorkflowVariable(keyValue, dValue, mimeType)
+                                    await setWorkflowVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
                             }, uploadingBtn, ()=>{setUploading(false)}, true, false),
                             ButtonDefinition("Cancel", () => {
