@@ -208,11 +208,10 @@ export function Service(props) {
                 {!dontDelete && !traffic ? 
                 <>
                         {latest ? 
-                     <FlexBox className="col" style={{color:"#2396d8", height: "100%", textAlign:"right"}}>
-                        <div  title="Unable to delete latest revision"  style={{height: "100%", display: "flex", paddingRight: "8px", alignItems:"center" }}>
-                           <VscInfo />
-                        </div>
-                    </FlexBox>
+                         <div style={{height: "100%", display: "flex", paddingRight: "26px" }}>
+                         <HelpIcon msg={"Unable to delete latest revision"} />
+
+                         </div>
                     :
                 <div style={{paddingRight:"25px", maxWidth:"20px", margin: "auto"}}>
                     <Modal  title="Delete namespace service" 
