@@ -186,12 +186,10 @@ function ExplorerList(props) {
 
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
-    const [wfData, setWfData] = useState("")
-    const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
-
     const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`)
-
+    const [wfTemplate, setWfTemplate] = useState("noop")
+    const [wfData, setWfData] = useState(templates["noop"])
     // control loading icon todo work out how to display this error
     useEffect(()=>{
         if(data !== null || err !== null) {
@@ -267,7 +265,6 @@ function ExplorerList(props) {
                 <FlexBox className="gap" style={{flexDirection: "row-reverse"}}>
                     <ContentPanelHeaderButton className="explorer-action-btn">
                         <Modal title="New Workflow" 
-                            modalStyle={{height: "90vh"}}
                             escapeToCancel
                             button={(
                                 <div style={{display:"flex"}}>
@@ -279,8 +276,8 @@ function ExplorerList(props) {
                                 </div>
                             )}  
                             onClose={()=>{
-                                setWfData("")
-                                setWfTemplate("")
+                                setWfData(templates["noop"])
+                                setWfTemplate("noop")
                                 setName("")
                             }}
                             actionButtons={[
@@ -289,22 +286,22 @@ function ExplorerList(props) {
                                     if(result.node && result.namespace){
                                         navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
-                                }, `small blue ${(name.trim() && wfTemplate) ? "" : "disabled"}`, ()=>{}, true, false),
+                                }, `small blue ${(name.trim()) ? "" : "disabled"}`, ()=>{}, true, false),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", ()=>{}, true, false)
                             ]}
 
                             keyDownActions={[
                                 KeyDownDefinition("Enter", async () => {
-                                    if(name.trim() && wfTemplate) {
+                                    if(name.trim()) {
                                         await createNode(name, "workflow", wfData)
                                     } else {
-                                        throw new Error("Please fill in name and choose template")
+                                        throw new Error("Please fill in name")
                                     }
                                 }, ()=>{}, true, "workflow-name")
                             ]}
                         >
-                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "300px", minWidth: "550px"}}>
+                            <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "500px", minWidth: "550px"}}>
                                 <div style={{width: "100%", paddingRight: "12px", display: "flex"}}>
                                     <input id={"workflow-name"} value={name} onChange={(e)=>setName(e.target.value)} autoFocus placeholder="Enter workflow name"/>
                                 </div>
@@ -313,7 +310,6 @@ function ExplorerList(props) {
                                     // todo set wfdata to template on change
                                     setWfData(templates[e.target.value])
                                 }}>
-                                    <option value="" >Choose a workflow template...</option>
                                     {Object.keys(templates).map((obj)=>{
                                         let key = GenerateRandomKey("")
                                         return(
