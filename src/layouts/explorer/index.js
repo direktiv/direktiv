@@ -456,18 +456,14 @@ function DirListItem(props) {
         <div style={{cursor:"pointer"}} onClick={(e)=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className="explorer-item">
-            <FlexBox style={{flexDirection:"column"}}>
-                {err !== "" ? 
-                <Alert className="rename-error critical">{err}</Alert>
-                :""
-                }
-                <FlexBox className="explorer-item-container">
+            <FlexBox className="col">
+                <FlexBox className="explorer-item-container gap wrap">
                     <FlexBox className="explorer-item-icon">
                         <FiFolder className="auto-margin" />
                     </FlexBox>
                 {
                     rename ? 
-                    <FlexBox className="explorer-item-name">
+                    <FlexBox className="explorer-item-name" style={{alignItems: "center", maxWidth: "300px", minWidth: "300px"}}>
                         <input onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
                                 try { 
@@ -484,7 +480,12 @@ function DirListItem(props) {
                         {name}
                     </FlexBox>
                 }
-                
+                {err !== "" ? 
+                <FlexBox>
+                    <Alert className="rename-error critical">{err}</Alert>
+                </FlexBox>
+                :<FlexBox />
+                }
                 <FlexBox className="explorer-item-actions gap">
                 {rename ? 
                     <FlexBox onClick={(ev)=>{
@@ -557,18 +558,14 @@ function WorkflowListItem(props) {
         <div style={{cursor:"pointer"}} onClick={()=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className="explorer-item">
-            <FlexBox style={{flexDirection:"column"}}>
-                {err !== "" ? 
-                <Alert className="rename-error critical">{err}</Alert>
-                :""
-                }
-                <FlexBox className="explorer-item-container">
+            <FlexBox className="col">
+                <FlexBox className="explorer-item-container gap wrap">
                     <FlexBox className="explorer-item-icon">
                         <FcWorkflow className="auto-margin" />
                     </FlexBox>
                 {
                     rename ? 
-                    <FlexBox className="explorer-item-name">
+                    <FlexBox className="explorer-item-name" style={{alignItems: "center", maxWidth: "300px", minWidth: "300px"}}>
                         <input onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
                                 try { 
@@ -585,7 +582,12 @@ function WorkflowListItem(props) {
                         {name}
                     </FlexBox>
                 }
-                
+                {err !== "" ? 
+                <FlexBox>
+                    <Alert className="rename-error critical">{err}</Alert>
+                </FlexBox>
+                :<FlexBox />
+                }
                 <FlexBox className="explorer-item-actions gap">
                     {rename ? 
                     <FlexBox onClick={(ev)=>{
