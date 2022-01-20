@@ -634,47 +634,6 @@ export function RevisionTrafficShaper(props) {
                             </FlexBox>
                         </FlexBox>
                     </FlexBox>
-                    {/* <FlexBox style={{maxWidth: "300px", justifyContent: "center"}}>
-                        <FlexBox className="gap col">
-                            <div>
-                                <b>Revision 1</b>
-                            </div>
-                            <FlexBox style={{alignItems:"center"}}>
-                                <select onChange={(e)=>setRev1(e.target.value)} value={rev1}>
-                                    <option value="">Select a workflow revision</option>
-                                    {revisions.map((obj)=>{
-                                        if(rev2 === obj.node.name){
-                                            return ""
-                                        }
-                                        return(
-                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
-                                        )
-                                    })}
-                                </select>
-                            </FlexBox>
-                 
-                        </FlexBox>
-                    </FlexBox>
-                    <FlexBox style={{ maxWidth: "300px", justifyContent: "center"}}>
-                        <FlexBox className="gap col">
-                            <div>
-                                <b>Revision 2</b>
-                            </div>
-                            <FlexBox style={{alignItems:"center"}}>
-                                <select onChange={(e)=>setRev2(e.target.value)} value={rev2}>
-                                    <option value="">Select a workflow revision</option>
-                                    {revisions.map((obj)=>{
-                                        if(rev1 === obj.node.name){
-                                            return ""
-                                        }
-                                        return(
-                                            <option key={GenerateRandomKey()} value={obj.node.name}>{obj.node.name}</option>
-                                        )
-                                    })}
-                                </select>
-                            </FlexBox>
-                        </FlexBox>
-                    </FlexBox> */}
                     <FlexBox style={{maxWidth: "350px", justifyContent: "center", paddingRight:"15px"}}>
                         <FlexBox className="col">
                             <div>
