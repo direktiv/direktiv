@@ -3,46 +3,54 @@
 # k3s download
 
 rm k3s
-wget https://github.com/k3s-io/k3s/releases/download/v1.22.2-rc1%2Bk3s1/k3s
+wget https://github.com/k3s-io/k3s/releases/download/v1.23.1-rc1%2Bk3s1/k3s
+
+rm *.tar
+rm *.tar.gz
 
 # knative
-VERSION=1.0.0
+VERSION=1.0.1
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:6b642967b884ae8971c6fa1f0d3a436c06ccf90ec03da81f85e74768773eb290
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:6b642967b884ae8971c6fa1f0d3a436c06ccf90ec03da81f85e74768773eb290 gcr.io/knative-releases/knative.dev/serving/cmd/queue:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:48a1753de35ecbe060611aea9e95751e3e4851183c4373e65aa1b9410ea6e263
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:48a1753de35ecbe060611aea9e95751e3e4851183c4373e65aa1b9410ea6e263 gcr.io/knative-releases/knative.dev/serving/cmd/queue:$VERSION
 docker save --output=queue.tar gcr.io/knative-releases/knative.dev/serving/cmd/queue:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:c54682f20c4758aabd9e9a45805ae382ef9de8a953026a308273fb94b71719d5
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:c54682f20c4758aabd9e9a45805ae382ef9de8a953026a308273fb94b71719d5 gcr.io/knative-releases/knative.dev/serving/cmd/activator:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:ba1485ded12049525afb9856c2fa10d613dbc2b2da90556116bf257f2128eaae
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:ba1485ded12049525afb9856c2fa10d613dbc2b2da90556116bf257f2128eaae gcr.io/knative-releases/knative.dev/serving/cmd/activator:$VERSION
 docker save --output=activator.tar gcr.io/knative-releases/knative.dev/serving/cmd/activator:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:a2938d3c0e913b74b96f69845cdc09d4674a465a0895f71db9afe76d805db853
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:a2938d3c0e913b74b96f69845cdc09d4674a465a0895f71db9afe76d805db853 gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:dca8258a46dd225b8a72dfe63e8971b23876458f6f64b4ad82792c4d6e470bdc
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:dca8258a46dd225b8a72dfe63e8971b23876458f6f64b4ad82792c4d6e470bdc gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:$VERSION
 docker save --output=autoscaler.tar gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:d903707ec8c20f7a0a36852a0cf70062fbd23015d820f4ef085855de02e293ec
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:d903707ec8c20f7a0a36852a0cf70062fbd23015d820f4ef085855de02e293ec gcr.io/knative-releases/knative.dev/serving/cmd/controller:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:2765feeaa3958827388e6f5119010ee08c0eec9ad7518bb38ac4b9a4355d87fb
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:2765feeaa3958827388e6f5119010ee08c0eec9ad7518bb38ac4b9a4355d87fb gcr.io/knative-releases/knative.dev/serving/cmd/controller:$VERSION
 docker save --output=controller.tar gcr.io/knative-releases/knative.dev/serving/cmd/controller:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:d8754f853daefe201785ee4e3f71626bd5c010456259debe520ea0da78f04673
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:d8754f853daefe201785ee4e3f71626bd5c010456259debe520ea0da78f04673 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:25df5b854d28dac69c6293db4db50d8fa819c96ad2f2a30bdde6aad467de1b17
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:25df5b854d28dac69c6293db4db50d8fa819c96ad2f2a30bdde6aad467de1b17 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping:$VERSION
 docker save --output=domain-mapping.tar gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:0b8fe2e03c4ce979d9f98df542ce48884b46cda098006fafa7db45b7f90ccfdb
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:0b8fe2e03c4ce979d9f98df542ce48884b46cda098006fafa7db45b7f90ccfdb gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:6ccc1f6ac07d27e97d96c502b4c6e928d5fb3abd165ae7670e94a57788416c75
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:6ccc1f6ac07d27e97d96c502b4c6e928d5fb3abd165ae7670e94a57788416c75 gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook:$VERSION
 docker save --output=domain-mapping-webhook.tar gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook:$VERSION
 
-docker pull gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:86a5b8bb6cc0bd8cc9f02bf7035cff840c3543055578286013d59e8b4c313308
-docker tag gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:86a5b8bb6cc0bd8cc9f02bf7035cff840c3543055578286013d59e8b4c313308 gcr.io/knative-releases/knative.dev/serving/cmd/webhook:$VERSION
+docker pull gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:9f3c83def9d0d5de0e8e1d1f4c10f262e283fe12d21dcbb91de06b65d3bd08ad
+docker tag gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:9f3c83def9d0d5de0e8e1d1f4c10f262e283fe12d21dcbb91de06b65d3bd08ad gcr.io/knative-releases/knative.dev/serving/cmd/webhook:$VERSION
 docker save --output=webhook.tar gcr.io/knative-releases/knative.dev/serving/cmd/webhook:$VERSION
 
-# kong
+# contour
 
-docker pull docker.io/kong/kubernetes-ingress-controller:1.3
-docker save --output=kongig.tar docker.io/kong/kubernetes-ingress-controller:1.3
+docker pull gcr.io/knative-releases/github.com/projectcontour/contour/cmd/contour@sha256:5f726d901a2852197447b5d0ca43d7d0b3bb0756290fbd7984371ab5a49db853
+docker tag gcr.io/knative-releases/github.com/projectcontour/contour/cmd/contour@sha256:5f726d901a2852197447b5d0ca43d7d0b3bb0756290fbd7984371ab5a49db853  gcr.io/knative-releases/github.com/projectcontour/contour/cmd/contour:$VERSION
+docker save --output=contour.tar gcr.io/knative-releases/github.com/projectcontour/contour/cmd/contour:$VERSION
 
-docker pull docker.io/library/kong:2.5
-docker save --output=konglib.tar docker.io/library/kong:2.5
+docker pull gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:922ce3f28a1dc618e4ebd62cfdf10216f06543bb70e280277107c4ec3d2e4eac
+docker tag gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:922ce3f28a1dc618e4ebd62cfdf10216f06543bb70e280277107c4ec3d2e4eac  gcr.io/knative-releases/github.com/projectcontour/contour/cmd/controller:$VERSION
+docker save --output=contour-controller.tar gcr.io/knative-releases/github.com/projectcontour/contour/cmd/controller:$VERSION
+
+docker pull docker.io/envoyproxy/envoy:v1.19.1
+docker save --output=envoy.tar docker.io/envoyproxy/envoy:v1.19.1
 
 # docker registry
 
@@ -53,6 +61,16 @@ docker save --output=registry.tar registry:2.7.1
 
 docker pull postgres:13.4
 docker save --output=postgres.tar postgres:13.4
+
+# nginx (k3s crictl inspecti <IMAGEID>)
+
+docker pull k8s.gcr.io/ingress-nginx/controller@sha256:f766669fdcf3dc26347ed273a55e754b427eb4411ee075a53f30718b4499076a
+docker tag k8s.gcr.io/ingress-nginx/controller@sha256:f766669fdcf3dc26347ed273a55e754b427eb4411ee075a53f30718b4499076a  k8s.gcr.io/ingress-nginx/controller:$VERSION
+docker save --output=nginx-controller.tar k8s.gcr.io/ingress-nginx/controller:$VERSION
+
+docker pull k8s.gcr.io/ingress-nginx/kube-webhook-certgen@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
+docker tag k8s.gcr.io/ingress-nginx/kube-webhook-certgen@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660  k8s.gcr.io/ingress-nginx/kube-webhook-certgen:$VERSION
+docker save --output=nginx-webhook.tar k8s.gcr.io/ingress-nginx/kube-webhook-certgen:$VERSION
 
 # direktiv
 

@@ -70,6 +70,8 @@ database:
   host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "?,_o]GD,txFwzc[|ie1)E-;,"
+  password: "BTr*8>lZRDRlw}>{t2OUZQOs"
   name: "direktiv"
   sslmode: require
+
+
