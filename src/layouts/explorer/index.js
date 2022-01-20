@@ -87,12 +87,10 @@ function ExplorerList(props) {
 
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
-    const [wfData, setWfData] = useState("")
-    const [wfTemplate, setWfTemplate] = useState("")
     // const [pageNo, setPageNo] = useState(1);
-
     const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`)
-
+    const [wfTemplate, setWfTemplate] = useState("noop")
+    const [wfData, setWfData] = useState(templates["noop"])
     // control loading icon todo work out how to display this error
     useEffect(()=>{
         if(data !== null || err !== null) {
@@ -155,8 +153,8 @@ function ExplorerList(props) {
                                 </div>
                             )}  
                             onClose={()=>{
-                                setWfData("")
-                                setWfTemplate("")
+                                setWfData(templates["noop"])
+                                setWfTemplate("noop")
                                 setName("")
                             }}
                             actionButtons={[
@@ -189,7 +187,6 @@ function ExplorerList(props) {
                                     // todo set wfdata to template on change
                                     setWfData(templates[e.target.value])
                                 }}>
-                                    <option value="" >Choose a workflow template...</option>
                                     {Object.keys(templates).map((obj)=>{
                                         let key = GenerateRandomKey("")
                                         return(
