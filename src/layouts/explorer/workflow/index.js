@@ -34,6 +34,7 @@ import {PieChart} from 'react-minimal-pie-chart'
 import HelpIcon from "../../../components/help";
 import Loader from '../../../components/loader';
 import Alert from '../../../components/alert';
+import {AutoSizer} from "react-virtualized";
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -387,8 +388,14 @@ function WorkingRevision(props) {
                                         </div>
                                     )}
                                 >
-                                    <FlexBox style={{overflow:"hidden"}}>
-                                        <DirektivEditor height={400} width={600} dlang="json" dvalue={input} setDValue={setInput}/>
+                                    <FlexBox style={{height: "40vh", width: "30vw"}}>
+                                        <FlexBox style={{overflow:"hidden"}}>
+                                            <AutoSizer>
+                                                {({height, width})=>(
+                                                    <DirektivEditor height={height} width={width} dlang="json" dvalue={input} setDValue={setInput}/>
+                                                )}
+                                            </AutoSizer>
+                                        </FlexBox>
                                     </FlexBox>
                                 </Modal>
                             </div>

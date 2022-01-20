@@ -17,6 +17,8 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
 import HelpIcon from "../../../components/help";
+import { AutoSizer } from 'react-virtualized';
+
 function RevisionTab(props) {
 
     const navigate = useNavigate()
@@ -118,8 +120,14 @@ function RevisionTab(props) {
                                                 </div>
                                             )}
                                         >
-                                            <FlexBox style={{overflow:"hidden"}}>
-                                                <DirektivEditor height={400} width={600} dlang="json" dvalue={input} setDValue={setInput}/>
+                                            <FlexBox style={{height: "40vh", width: "30vw"}}>
+                                                <FlexBox style={{overflow:"hidden"}}>
+                                                    <AutoSizer>
+                                                        {({height, width})=>(
+                                                            <DirektivEditor height={height} width={width} dlang="json" dvalue={input} setDValue={setInput}/>
+                                                        )}
+                                                    </AutoSizer>
+                                                </FlexBox>
                                             </FlexBox>
                                         </Modal>
                                     </div>
