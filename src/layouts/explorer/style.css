@@ -102,15 +102,15 @@
     padding : 4px 12px;
     text-transform: capitalize;
 }
-.btn-method.get{
+.btn-method.GET{
     background-color: #3E94C5;
 }
-.btn-method.put{
+.btn-method.PUT{
     background-color: #F7C94F;
 }
-.btn-method.post{
+.btn-method.POST{
     background-color: #55BA86;
 }
-.btn-method.delete{
+.btn-method.DEL{
     background-color: #EC4F79;
 }
