@@ -94,8 +94,8 @@ function InitialWorkflowHook(props){
             if(revisions === null){
                 // get workflow revisions
                 let resp = await getRevisions()
-                if(Array.isArray(resp)){
-                    setRevisions(resp)
+                if(Array.isArray(resp.edges)){
+                    setRevisions(resp.edges)
                 } else {
                     setRevsErr(resp)
                 }

@@ -207,8 +207,8 @@ export function RevisionSelectorTab(props) {
             if(tags === null){
                 // get workflow tags
                 let resp = await getTags()
-                if(Array.isArray(resp)){
-                    updateTags(resp)
+                if(Array.isArray(resp.edges)){
+                    updateTags(resp.edges)
                 } else {
                     // FIXME: find location for this error
                     console.error("could not retrive tags", resp)
@@ -398,8 +398,10 @@ export function RevisionSelectorTab(props) {
                                                         [
                                                             ButtonDefinition("Remove", async () => {
                                                                 await removeTag(obj.node.name)
-                                                                setRevisions(await getRevisions())
-                                                                updateTags(await getTags())
+                                                                let tagsResp = await getTags()
+                                                                let revResp = await getRevisions()
+                                                                setRevisions(revResp.edges)
+                                                                updateTags(tagsResp.edges)
                                                             }, "small red", ()=>{}, true, false),
                                                             ButtonDefinition("Cancel", () => {
                                                             }, "small light", ()=>{}, true, false)
@@ -515,8 +517,10 @@ function TagRevisionBtn(props) {
                 [
                     ButtonDefinition("Tag", async () => {
                             await tagWorkflow(obj.node.name, tag)
-                            setRevisions(await getRevisions())
-                            updateTags(await getTags())
+                            let tagsResp = await getTags()
+                            let revResp = await getRevisions()
+                            setRevisions(revResp.edges)
+                            updateTags(tagsResp.edges)
                     }, "small blue", ()=>{}, true, false),
                     ButtonDefinition("Cancel", () => {
                     }, "small light", ()=>{}, true, false)
