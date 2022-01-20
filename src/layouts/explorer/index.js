@@ -463,8 +463,8 @@ function DirListItem(props) {
                     </FlexBox>
                 {
                     rename ? 
-                    <FlexBox className="explorer-item-name" style={{alignItems: "center", maxWidth: "300px", minWidth: "300px"}}>
-                        <input onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
+                    <FlexBox className="explorer-item-name" style={{alignItems: "center"}}>
+                        <input style={{ width: "100%" }} onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
                                 try { 
                                     await renameNode("/", path, renameValue)
@@ -473,71 +473,73 @@ function DirListItem(props) {
                                     setErr(err.message)
                                 }
                             }
-                        }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{maxWidth:"300px", height:"38px"}}/>
+                        }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{height:"38px"}}/>
                      </FlexBox>
                     :
                     <FlexBox className="explorer-item-name">
                         {name}
                     </FlexBox>
                 }
-                {err !== "" ? 
-                <FlexBox>
-                    <Alert className="rename-error critical">{err}</Alert>
-                </FlexBox>
-                :<FlexBox />
-                }
-                <FlexBox className="explorer-item-actions gap">
-                {rename ? 
-                    <FlexBox onClick={(ev)=>{
-                        setRename(!rename)
-                        setErr("")
-                        ev.stopPropagation()
-                    }}>
-                        <VscClose className="auto-margin" />
+                <FlexBox >
+                    {err !== "" ? 
+                    <FlexBox>
+                        <Alert className="rename-error critical">{err}</Alert>
                     </FlexBox>
-                    :
-                    <FlexBox onClick={(ev)=>{
-                        setRename(!rename)
-                        setErr("")
-                        ev.stopPropagation()
-                    }}>
-                        <VscEdit className="auto-margin" />
-                    </FlexBox>}
-                    <FlexBox onClick={(ev)=>ev.stopPropagation()}>
-
-                    <Modal
-                            escapeToCancel
-                            style={{
-                                flexDirection: "row-reverse",
-                            }}
-                            title="Delete a directory" 
-                            button={(
-                                <FlexBox>
-                                    <VscTrash className="auto-margin red-text" />
-                                </FlexBox>
-                            )}
-                            actionButtons={
-                                [
-                                    ButtonDefinition("Delete", async () => {
-                                        let p = path.split('/', -1);
-                                        let pLast = p[p.length-1];
-                                        await deleteNode(pLast)
-                                    }, "small red", ()=>{}, true, false),
-                                    ButtonDefinition("Cancel", () => {
-                                    }, "small light", ()=>{}, true, false)
-                                ]
-                            } 
-                        >
-                                <FlexBox className="col gap">
-                            <FlexBox >
-                                Are you sure you want to delete '{name}'?
-                                <br/>
-                                This action cannot be undone.
-                            </FlexBox>
+                    :<FlexBox />
+                    }
+                    <FlexBox className="explorer-item-actions gap">
+                    {rename ? 
+                        <FlexBox onClick={(ev)=>{
+                            setRename(!rename)
+                            setErr("")
+                            ev.stopPropagation()
+                        }}>
+                            <VscClose className="auto-margin" />
                         </FlexBox>
-                    </Modal>
-                    </FlexBox>
+                        :
+                        <FlexBox onClick={(ev)=>{
+                            setRename(!rename)
+                            setErr("")
+                            ev.stopPropagation()
+                        }}>
+                            <VscEdit className="auto-margin" />
+                        </FlexBox>}
+                        <FlexBox onClick={(ev)=>ev.stopPropagation()}>
 
+                        <Modal
+                                escapeToCancel
+                                style={{
+                                    flexDirection: "row-reverse",
+                                }}
+                                title="Delete a directory" 
+                                button={(
+                                    <FlexBox>
+                                        <VscTrash className="auto-margin red-text" />
+                                    </FlexBox>
+                                )}
+                                actionButtons={
+                                    [
+                                        ButtonDefinition("Delete", async () => {
+                                            let p = path.split('/', -1);
+                                            let pLast = p[p.length-1];
+                                            await deleteNode(pLast)
+                                        }, "small red", ()=>{}, true, false),
+                                        ButtonDefinition("Cancel", () => {
+                                        }, "small light", ()=>{}, true, false)
+                                    ]
+                                } 
+                            >
+                                    <FlexBox className="col gap">
+                                <FlexBox >
+                                    Are you sure you want to delete '{name}'?
+                                    <br/>
+                                    This action cannot be undone.
+                                </FlexBox>
+                            </FlexBox>
+                        </Modal>
+                        </FlexBox>
+
+                    </FlexBox>
                 </FlexBox>
                 </FlexBox>
             </FlexBox>
@@ -582,63 +584,65 @@ function WorkflowListItem(props) {
                         {name}
                     </FlexBox>
                 }
-                {err !== "" ? 
-                <FlexBox>
-                    <Alert className="rename-error critical">{err}</Alert>
-                </FlexBox>
-                :<FlexBox />
-                }
-                <FlexBox className="explorer-item-actions gap">
-                    {rename ? 
-                    <FlexBox onClick={(ev)=>{
-                        setRename(!rename)
-                        setErr("")
-                        ev.stopPropagation()
-                    }}>
-                        <VscClose className="auto-margin" />
-                    </FlexBox>
-                    :
-                    <FlexBox onClick={(ev)=>{
-                        setRename(!rename)
-                        setErr("")
-                        ev.stopPropagation()
-                    }}>
-                        <VscEdit className="auto-margin" />
-                    </FlexBox>}
-                    <FlexBox onClick={(ev)=>ev.stopPropagation()}>
-
-                        <Modal
-                                escapeToCancel
-                                style={{
-                                    flexDirection: "row-reverse",
-                                }}
-                                title="Delete a workflow" 
-                                button={(
-                                    <FlexBox style={{alignItems:'center'}}>
-                                        <HiOutlineTrash className="auto-margin red-text" />
-                                    </FlexBox>
-                                )}
-                                actionButtons={
-                                    [
-                                        ButtonDefinition("Delete", async () => {
-                                            let p = path.split('/', -1);
-                                            let pLast = p[p.length-1];
-                                            await deleteNode(pLast)
-                                        }, "small red", ()=>{}, true, false),
-                                        ButtonDefinition("Cancel", () => {
-                                        }, "small light", ()=>{}, true, false)
-                                    ]
-                                } 
-                            >
-                                    <FlexBox className="col gap">
-                                <FlexBox >
-                                    Are you sure you want to delete '{name}'?
-                                    <br/>
-                                    This action cannot be undone.
-                                </FlexBox>
+                    <FlexBox>
+                        {err !== "" ? 
+                        <FlexBox>
+                            <Alert className="rename-error critical">{err}</Alert>
+                        </FlexBox>
+                        :<FlexBox />
+                        }
+                        <FlexBox className="explorer-item-actions gap">
+                            {rename ? 
+                            <FlexBox onClick={(ev)=>{
+                                setRename(!rename)
+                                setErr("")
+                                ev.stopPropagation()
+                            }}>
+                                <VscClose className="auto-margin" />
                             </FlexBox>
-                            </Modal>
-                </FlexBox>
+                            :
+                            <FlexBox onClick={(ev)=>{
+                                setRename(!rename)
+                                setErr("")
+                                ev.stopPropagation()
+                            }}>
+                                <VscEdit className="auto-margin" />
+                            </FlexBox>}
+                            <FlexBox onClick={(ev)=>ev.stopPropagation()}>
+
+                                <Modal
+                                        escapeToCancel
+                                        style={{
+                                            flexDirection: "row-reverse",
+                                        }}
+                                        title="Delete a workflow" 
+                                        button={(
+                                            <FlexBox style={{alignItems:'center'}}>
+                                                <HiOutlineTrash className="auto-margin red-text" />
+                                            </FlexBox>
+                                        )}
+                                        actionButtons={
+                                            [
+                                                ButtonDefinition("Delete", async () => {
+                                                    let p = path.split('/', -1);
+                                                    let pLast = p[p.length-1];
+                                                    await deleteNode(pLast)
+                                                }, "small red", ()=>{}, true, false),
+                                                ButtonDefinition("Cancel", () => {
+                                                }, "small light", ()=>{}, true, false)
+                                            ]
+                                        } 
+                                    >
+                                            <FlexBox className="col gap">
+                                        <FlexBox >
+                                            Are you sure you want to delete '{name}'?
+                                            <br/>
+                                            This action cannot be undone.
+                                        </FlexBox>
+                                    </FlexBox>
+                                    </Modal>
+                        </FlexBox>
+                    </FlexBox>
                 </FlexBox>
                 </FlexBox>
             </FlexBox>
