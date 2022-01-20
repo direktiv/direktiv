@@ -30,43 +30,6 @@ export default function WorkflowRevisions(props) {
                     <FlexBox>
                         Service '{service}' Revisions
                     </FlexBox>
-                    {/* <div>
-                        <Modal title={`New '${service}' revision`} 
-                            escapeToCancel
-                            modalStyle={{
-                                maxWidth: "300px"
-                            }}
-                            onOpen={() => {
-                            }}
-                            onClose={()=>{
-                            }}
-                            button={(
-                                <AddValueButton  label=" " />
-                            )}  
-                            keyDownActions={[
-                                KeyDownDefinition("Enter", async () => {
-                                }, true)
-                            ]}
-                            actionButtons={[
-                                ButtonDefinition("Add", async () => {
-                                    try { await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                    if (err) return err
-                                }, "small blue", true, false),
-                                ButtonDefinition("Cancel", () => {
-                                }, "small light", true, false)
-                            ]}
-                        >
-                            {config !== null ? 
-                            <RevisionCreatePanel 
-                                image={image} setImage={setImage}
-                                scale={scale} setScale={setScale}
-                                size={size} setSize={setSize}
-                                cmd={cmd} setCmd={setCmd}
-                                traffic={trafficPercent} setTraffic={setTrafficPercent}
-                                maxscale={config.maxscale}
-                            />:""}
-                        </Modal>
-                    </div> */}
                 </ContentPanelTitle>
                 <ContentPanelBody>
 

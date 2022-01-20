@@ -66,11 +66,11 @@ function Scary(props) {
                             </Button>
                         )}  
                         actionButtons={[
-                            ButtonDefinition("Delete", () => {
-                                deleteNamespace(namespace)
-                            }, delBtnClasses, true, false),
+                            ButtonDefinition("Delete", async () => {
+                                await deleteNamespace(namespace)
+                            }, delBtnClasses,()=>{}, true, false),
                             ButtonDefinition("Cancel", () => {
-                            }, "small light", true, false)
+                            }, "small light",()=>{}, true, false)
                         ]}
                     >
                         <DeleteNamespaceConfirmationPanel namespace={namespace} setDelButtonEnabled={setDelButtonEnabled} />

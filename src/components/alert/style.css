@@ -5,8 +5,13 @@
     min-height: 42px;
     font-size: 12px;
     line-height: 18px;
-    flex-shrink: 1;
-    flex-grow: 1;
+}
+
+.alert.small {
+    max-height: 31px;
+    min-height: 31px;
+    font-size: 12px;
+    line-height: 9px;
 }
 
 .alert.critical {
@@ -41,7 +46,6 @@
 }
 
 .alert-body {
-    flex: 5;
     margin-top: 8px;
     margin-bottom: 8px;;
     padding-right: 8px;
