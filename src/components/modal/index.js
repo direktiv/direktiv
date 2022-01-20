@@ -288,7 +288,6 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
         let onClick =  async () => {
             try {
                 let json = await btn.onClick()
-                console.log(json)
                 if(btn.closesModal){
                     closeModal()
                 } else {
