@@ -388,22 +388,24 @@ function Output(props){
         async function get() {
             if (load && status !== "pending"){
                 let data = await getOutput()
-                setOutput(data)
+                let x = JSON.stringify(JSON.parse(data),null,2)
+                setOutput(x)
                 setLoad(false)
             }
         }
         get()
-    },[output, load, getOutput, status])
+    },[output, load, getOutput, status, setOutput])
 
     useEffect(()=>{
         async function reGetOutput() {
             if(status !== "pending"){
                 let data = await getOutput()
-                setOutput(data)
+                let x = JSON.stringify(JSON.parse(data),null,2)
+                setOutput(x)
             }
         }
        reGetOutput()
-    },[status, getOutput])
+    },[status, getOutput, setOutput])
 
     return(
         <FlexBox style={{flexDirection:"column"}}>
