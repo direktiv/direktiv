@@ -5,7 +5,7 @@ import Button from '../../components/button';
 import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import {AiFillCode} from 'react-icons/ai';
+import {AiFillCode, AiOutlineDelete} from 'react-icons/ai';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
@@ -48,7 +48,7 @@ function InstancePage(props) {
     let instanceID = params["id"];
 
     // todo implement cancelInstance
-    let {data, err,  getInput, getOutput} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
+    let {data, err,  getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
 
 
     useEffect(()=>{
@@ -104,6 +104,16 @@ function InstancePage(props) {
                                 </div>
                                 {label} 
                                 <FlexBox style={{flex: "auto", justifyContent: "right", paddingRight: "6px", alignItems: "center"}}>
+                                    { data.status === "running" || data.status === "pending" ? 
+                                    <Button className="small light" style={{marginRight: "8px"}} onClick={() => {
+                                        cancelInstance()
+                                        setLoad(true)
+                                    }}>
+                                        <span className="red-text">
+                                            Cancel
+                                        </span>
+                                    </Button>
+                                    :<></>}
                                     <Link to={linkURL}>
                                         <Button className="small light">
                                             <span className="hide-on-small">View</span> Workflow
