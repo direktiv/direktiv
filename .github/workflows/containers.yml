@@ -30,7 +30,5 @@ jobs:
           echo "RV set to $RV"
           if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
           echo "RV set to $RV"
-          make docker-ui DOCKER_REPO=direktiv RELEASE=$RV
-          make docker-ui DOCKER_REPO=direktiv RELEASE=latest
           make push DOCKER_REPO=direktiv RELEASE=$RV
           make push DOCKER_REPO=direktiv RELEASE=latest
