@@ -89,8 +89,6 @@ function InstancePage(props) {
     }
     linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
 
-    console.log(data.status);
-
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
             <FlexBox className="gap wrap" style={{minHeight: "50%", flex: "1"}}>
