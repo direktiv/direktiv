@@ -5,7 +5,7 @@ import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import AddValueButton from '../../../components/add-button';
 import { useNamespaceVariables } from 'direktiv-react-hooks';
-import { Config, CanPreviewMimeType } from '../../../util';
+import { Config, CanPreviewMimeType, MimeTypeFileExtension } from '../../../util';
 import DirektivEditor from '../../../components/editor';
 import Button from '../../../components/button';
 import {useDropzone} from 'react-dropzone'
@@ -13,8 +13,7 @@ import Tabs from '../../../components/tabs';
 import HelpIcon from '../../../components/help';
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';
-
-
+import {ExtractQueryString} from "direktiv-react-hooks/src/util";
 
 function VariablesPanel(props){
 
@@ -25,7 +24,7 @@ function VariablesPanel(props){
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
 
-    const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
+    const {data, err, setNamespaceVariable, getNamespaceVariable, getNamespaceVariableBuffer, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     // something went wrong with error listing for variables
     if(err !== null){
@@ -96,7 +95,7 @@ function VariablesPanel(props){
             <ContentPanelBody style={{minHeight:"180px"}}>
                 {data !== null ?
                 <div>
-                    <Variables namespace={namespace} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data}/>
+                    <Variables namespace={namespace} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} getNamespaceVariableBuffer={getNamespaceVariableBuffer} variables={data}/>
                 </div>:""}
             </ContentPanelBody>
         </ContentPanel>
@@ -136,27 +135,30 @@ export function VariableFilePicker(props) {
 function AddVariablePanel(props) {
     const {keyValue, setKeyValue, dValue, setDValue, file, setFile, mimeType, setMimeType} = props
 
-    let lang = ""
-
-    switch(mimeType){
-    case "application/json":
-        lang = "json"
-        break
-    case "application/x-sh":
-        lang = "shell"
-        break
-    case "text/html":
-        lang = "html"
-        break
-    case "text/css":
-        lang = "css"
-        break
-    case "application/yaml":
-        lang = "yaml"
-        break
-    default:
-        lang = "plain"
+    const getLangByMimeType = (mimeType) => {
+        switch(mimeType){
+            case "text/plain":
+                return "txt"
+            case "application/json":
+                return "json"
+            case "application/x-sh":
+                return "shell"
+            case "text/html":
+                return "html"
+            case "text/css":
+                return "css"
+            case "application/yaml":
+                return "yaml"
+            case "image/jpeg":
+                return "jpg"
+            case "image/gif":
+                return "gif"
+            case "image/png":
+                return "png"
+        }
     }
+
+    let lang = getLangByMimeType(mimeType)
 
     return(
         <Tabs 
@@ -203,11 +205,7 @@ function AddVariablePanel(props) {
 }
 
 function Variables(props) {
-    const {variables, namespace, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable} = props
-
- 
-    
-
+    const {variables, namespace, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBuffer} = props
 
     return(
         <FlexBox>
@@ -217,7 +215,7 @@ function Variables(props) {
                  
                     {variables.map((obj)=>{
                         return(
-                            <Variable namespace={namespace} obj={obj} getNamespaceVariable={getNamespaceVariable} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable}/>
+                            <Variable namespace={namespace} obj={obj} getNamespaceVariable={getNamespaceVariable} getNamespaceVariableBuffer={getNamespaceVariableBuffer} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable}/>
                         )
                     })}
                 </tbody>
@@ -227,36 +225,16 @@ function Variables(props) {
 }
 
 function Variable(props) {
-    const {obj, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable} = props
+    const {obj, getNamespaceVariable, getNamespaceVariableBuffer, setNamespaceVariable, deleteNamespaceVariable, namespace} = props
     const [val, setValue] = useState("")
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)
     const [downloading, setDownloading] = useState(false)
     const [uploading, setUploading] = useState(false)
     let uploadingBtn = "small green"
-    if (uploading) {
-        uploadingBtn += " btn-loading"
-    }
-    let lang = ""
-    switch(mimeType){
-        case "application/json":
-            lang = "json"
-            break
-        case "application/x-sh":
-            lang = "shell"
-            break
-        case "text/html":
-            lang = "html"
-            break
-        case "text/css":
-            lang = "css"
-            break
-        case "application/yaml":
-            lang = "yaml"
-            break
-        default:
-            lang = "plain"
-        }
+    if (uploading) { uploadingBtn += " btn-loading" }
+
+    let lang = MimeTypeFileExtension(mimeType)
 
     return(
         <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
@@ -340,35 +318,21 @@ function Variable(props) {
         <td style={{ width: "120px", maxWidth: "120px", paddingLeft: "12px" }}> 
             <FlexBox style={{gap: "2px"}}>
                 <FlexBox>
-                    
-                    {!downloading? 
+                    {!downloading?
                     <VariablesDownloadButton onClick={async()=>{
                         setDownloading(true)
-                        let resp = await getNamespaceVariable(obj.node.name)
-                        let b = new Blob([resp.data], {type:resp.contentType})
-                        let url = URL.createObjectURL(b)
-                        const a = document.createElement('a');
-                        a.href = url
-                        a.download = obj.node.name
 
-                        const clickHandler = () => {
-                            setTimeout(() => {
-                                URL.revokeObjectURL(url);
-                                a.removeEventListener('click', clickHandler);
-                            }, 150);
-                        };
+                        const variableData = await getNamespaceVariableBuffer(obj.node.name)
+                        const extension = MimeTypeFileExtension(variableData.contentType)
+                        const bitArray = btoa(String.fromCharCode.apply(null, new Uint8Array(variableData.data)))
 
-                        a.addEventListener('click', clickHandler, false);
-                        a.click();
+                        const a = document.createElement('a')
+                        a.href = `data:${variableData.contentType};base64,` + bitArray
+                        a.download = obj.node.name + `${extension ? `.${extension}`: ""}`
+                        a.click()
+
                         setDownloading(false)
                     }}/>:<VariablesDownloadingButton />}
-                    
-                     {
-                         // this logic could work on ee as keycloak isn't handle by me
-                         // but sending an apikey via a link is impossible
-                     /* <a download href={`${Config.url}/namespaces/${namespace}/vars/${obj.node.name}`}>
-                        <VariablesDownloadButton/>
-                     </a> */}
                 </FlexBox>
                 <Modal
                     escapeToCancel
