@@ -24,7 +24,12 @@ function App() {
             try {
                 let resp = await fetch(`${Config.url}version`,{
                     method: "GET",
-                    headers: !akey ? {} : {"apikey":akey}
+                    headers: {
+                        apikey: akey
+                    }
+                })
+                let respNoKey = await fetch(`${Config.url}version`,{
+                    method: "GET"
                 })
                 if(resp.ok){
                     let json = await resp.json()
@@ -34,7 +39,7 @@ function App() {
 
                     // TODO if the akey is provided but not needed as authentication isn't required.
                     // Might need to make an api to check if apikeys are required.
-                    if(akey !== "null") {
+                    if(akey !== "null" && respNoKey.status === 401) {
                         setAKeyReq(true)
                     }
                 } else {
