@@ -590,11 +590,13 @@ function OverviewTab(props) {
         async function listData() {
             if(load){
                 // get the instances
-                let resp = await getInstancesForWorkflow()
-                if(Array.isArray(resp)){
-                    setInstances(resp)
-                } else {
-                    setErr(resp)
+                try {
+                    let resp = await getInstancesForWorkflow()
+                    if (resp.instances.edges) {
+                        setInstances(resp.instances.edges)
+                    }
+                } catch (e) {
+                    setErr(e)
                 }
             }
             setLoad(false)

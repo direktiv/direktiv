@@ -35,8 +35,8 @@ function InstancesTable(props) {
     const {namespace} = props
     const [load, setLoad] = useState(true)
     const [iQueryParams, ] = useState([])
-    const {data, err} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
-
+    const {data, err, totalCount} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
+    console.log(totalCount)
     useEffect(()=>{
         if(data !== null || err !== null) {
             setLoad(false)
