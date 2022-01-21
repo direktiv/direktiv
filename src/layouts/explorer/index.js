@@ -644,7 +644,7 @@ function WorkflowListItem(props) {
     )
 }
 
-function ApiFragment(props) {
+export function ApiFragment(props) {
     const { url, method, body, description } = props
     return (
         <FlexBox className='helper-wrap col'>

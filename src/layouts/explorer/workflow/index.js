@@ -128,6 +128,7 @@ function InitialWorkflowHook(props){
                     { activeTab === 1 ?
                         <>
                         <RevisionSelectorTab 
+                        workflowName={filepath.substring(1)}
                         tagWorkflow={tagWorkflow}
                          namespace={namespace}
                           filepath={filepath} updateWorkflow={updateWorkflow} setRouter={setRouter} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} setRevisions={setRevisions} revisions={revisions} router={router} getWorkflowSankeyMetrics={getWorkflowSankeyMetrics} executeWorkflow={executeWorkflow} getWorkflowRevisionData={getWorkflowRevisionData} searchParams={searchParams} setSearchParams={setSearchParams} deleteRevision={deleteRevision}  getRevisions={getRevisions} getTags={getTags} removeTag={removeTag}  />
