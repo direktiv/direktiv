@@ -6,6 +6,7 @@ require (
 	entgo.io/contrib v0.1.0
 	entgo.io/ent v0.9.1
 	github.com/99designs/gqlgen v0.13.0
+	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/TwinProduction/go-away v1.1.4
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go v1.2.0

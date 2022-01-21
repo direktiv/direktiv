@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/model"
@@ -72,7 +73,17 @@ func (sl *errorStateLogic) Run(ctx context.Context, engine *engine, im *instance
 		a[i] = x
 	}
 
-	err = engine.InstanceRaise(ctx, im, NewCatchableError(sl.state.Error, sl.state.Message, a...))
+	x, err := jqOne(im.data, sl.state.Message)
+	if err != nil {
+		return
+	}
+
+	msg, ok := x.(string)
+	if !ok {
+		msg = fmt.Sprintf("%v", x)
+	}
+
+	err = engine.InstanceRaise(ctx, im, NewCatchableError(sl.state.Error, msg, a...))
 	if err != nil {
 		return
 	}

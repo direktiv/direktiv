@@ -48,7 +48,7 @@ func (Namespace) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("config").Default(DefaultNamespaceConfig),
-		field.String("name").Match(NameRegex).Annotations(entgql.OrderField("NAME")).Unique(),
+		field.String("name").Match(NameRegex).Annotations(entgql.OrderField("NAME")).Unique().NotEmpty().MaxLen(64).MinLen(1),
 	}
 }
 

@@ -8,6 +8,7 @@ secrets:
 
 flow:
   image: "flow"
+  dbimage: "flow-dbinit"
   tag: "latest"
 
 ui:
@@ -22,8 +23,8 @@ functions:
   namespace: direktiv-services-direktiv
   image: "functions"
   tag: "latest"
-  sidecar: "localhost:5000/sidecar"
-  initPodImage: "localhost:5000/init-pod"
+  sidecar: "sidecar"
+  initPodImage: "init-pod"
 
 # opentelemetry:
 #   enabled: true
@@ -70,8 +71,7 @@ database:
   host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "BTr*8>lZRDRlw}>{t2OUZQOs"
+  password: "bo*BzUu+bnoeF*+/msNY8SP="
   name: "direktiv"
   sslmode: require
-
 

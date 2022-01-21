@@ -58,6 +58,31 @@ func NewServerLogsParamsWithHTTPClient(client *http.Client) *ServerLogsParams {
    Typically these are written to a http.Request.
 */
 type ServerLogsParams struct {
+
+	/* FilterField.
+
+	   field to filter
+	*/
+	PageFilterField *string
+
+	/* FilterType.
+
+	   filter behaviour
+	*/
+	PageFilterType *string
+
+	/* OrderDirection.
+
+	   order direction
+	*/
+	PageOrderDirection *string
+
+	/* OrderField.
+
+	   field to order by
+	*/
+	PageOrderField *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -111,6 +136,50 @@ func (o *ServerLogsParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithPageFilterField adds the filterField to the server logs params
+func (o *ServerLogsParams) WithPageFilterField(filterField *string) *ServerLogsParams {
+	o.SetPageFilterField(filterField)
+	return o
+}
+
+// SetPageFilterField adds the filterField to the server logs params
+func (o *ServerLogsParams) SetPageFilterField(filterField *string) {
+	o.PageFilterField = filterField
+}
+
+// WithPageFilterType adds the filterType to the server logs params
+func (o *ServerLogsParams) WithPageFilterType(filterType *string) *ServerLogsParams {
+	o.SetPageFilterType(filterType)
+	return o
+}
+
+// SetPageFilterType adds the filterType to the server logs params
+func (o *ServerLogsParams) SetPageFilterType(filterType *string) {
+	o.PageFilterType = filterType
+}
+
+// WithPageOrderDirection adds the orderDirection to the server logs params
+func (o *ServerLogsParams) WithPageOrderDirection(orderDirection *string) *ServerLogsParams {
+	o.SetPageOrderDirection(orderDirection)
+	return o
+}
+
+// SetPageOrderDirection adds the orderDirection to the server logs params
+func (o *ServerLogsParams) SetPageOrderDirection(orderDirection *string) {
+	o.PageOrderDirection = orderDirection
+}
+
+// WithPageOrderField adds the orderField to the server logs params
+func (o *ServerLogsParams) WithPageOrderField(orderField *string) *ServerLogsParams {
+	o.SetPageOrderField(orderField)
+	return o
+}
+
+// SetPageOrderField adds the orderField to the server logs params
+func (o *ServerLogsParams) SetPageOrderField(orderField *string) {
+	o.PageOrderField = orderField
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *ServerLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -118,6 +187,74 @@ func (o *ServerLogsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		return err
 	}
 	var res []error
+
+	if o.PageFilterField != nil {
+
+		// query param filter.field
+		var qrFilterField string
+
+		if o.PageFilterField != nil {
+			qrFilterField = *o.PageFilterField
+		}
+		qFilterField := qrFilterField
+		if qFilterField != "" {
+
+			if err := r.SetQueryParam("filter.field", qFilterField); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PageFilterType != nil {
+
+		// query param filter.type
+		var qrFilterType string
+
+		if o.PageFilterType != nil {
+			qrFilterType = *o.PageFilterType
+		}
+		qFilterType := qrFilterType
+		if qFilterType != "" {
+
+			if err := r.SetQueryParam("filter.type", qFilterType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PageOrderDirection != nil {
+
+		// query param order.direction
+		var qrOrderDirection string
+
+		if o.PageOrderDirection != nil {
+			qrOrderDirection = *o.PageOrderDirection
+		}
+		qOrderDirection := qrOrderDirection
+		if qOrderDirection != "" {
+
+			if err := r.SetQueryParam("order.direction", qOrderDirection); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PageOrderField != nil {
+
+		// query param order.field
+		var qrOrderField string
+
+		if o.PageOrderField != nil {
+			qrOrderField = *o.PageOrderField
+		}
+		qOrderField := qrOrderField
+		if qOrderField != "" {
+
+			if err := r.SetQueryParam("order.field", qOrderField); err != nil {
+				return err
+			}
+		}
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

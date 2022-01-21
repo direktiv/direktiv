@@ -72,6 +72,8 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
+	resp.Revision.Name = d.rev().ID.String()
+
 	return &resp, nil
 
 }
@@ -106,11 +108,14 @@ resend:
 	resp.Node.Parent = d.dir
 	resp.Node.Path = d.path
 	resp.Oid = d.wf.ID.String()
+	resp.EventLogging = d.wf.LogToEvents
 
 	err = atob(d.rev(), &resp.Revision)
 	if err != nil {
 		return err
 	}
+
+	resp.Revision.Name = d.rev().ID.String()
 
 	nhash = checksum(resp)
 	if nhash != phash {
@@ -229,6 +234,8 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	resp.Revision.Name = rev.ID.String()
+
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{
 			Name:   resp.Node.Name,
@@ -342,6 +349,8 @@ respond:
 		return nil, err
 	}
 
+	resp.Revision.Name = rev.ID.String()
+
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeUpdate,
 		broadcastWorkflowInput{
 			Name:   resp.Node.Name,
@@ -432,6 +441,8 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	resp.Revision.Name = d.rev().ID.String()
 
 	return &resp, nil
 
@@ -529,6 +540,8 @@ respond:
 	if err != nil {
 		return nil, err
 	}
+
+	resp.Revision.Name = rev.ID.String()
 
 	return &resp, nil
 
@@ -630,7 +643,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	}
 
 	flow.logToWorkflow(ctx, time.Now(), d, "Workflow now logging to cloudevents: %s", req.GetLogger())
-
+	flow.pubsub.NotifyWorkflow(d.wf)
 	var resp emptypb.Empty
 
 	return &resp, nil
