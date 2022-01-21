@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Button from '../../../components/button';
 import { BsCodeSquare } from 'react-icons/bs';
 import {HiOutlineTrash} from 'react-icons/hi';
-import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
+import ContentPanel, { ContentPanelBody, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
 import {GenerateRandomKey} from '../../../util';
 import {BiChevronLeft} from 'react-icons/bi';
@@ -18,6 +18,8 @@ import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
 import HelpIcon from "../../../components/help";
 import { AutoSizer } from 'react-virtualized';
+import { VscCode } from 'react-icons/vsc';
+import { ApiFragment } from '..';
 
 function RevisionTab(props) {
 
@@ -188,6 +190,44 @@ export function TabbedButtons(props) {
     )
 }
 
+const apiHelps = (namespace, workflow) => {
+    let url = window.location.origin
+    return(
+        [
+            {
+                method: "GET",
+                url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
+                description: `Execute a Workflow`,
+            },
+            {
+                method: "POST",
+                description: `Execute a Workflow With Body`,
+                url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
+                body: `{}`,
+                type: "json"
+            },
+            {
+                method: "POST",
+                description: `Update a workflow `,
+                url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=update-workflow`,
+                body: `description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+type: noop
+transform:
+    result: Hello world!`,
+                type: "yaml"
+            },
+            {
+                method: "POST",
+                description: "Execute a workflow",
+                url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=execute`,
+                body:`{}`,
+                type: "json"
+            }
+        ]
+    )
+}
 
 export function RevisionSelectorTab(props) {
     const {setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
@@ -248,6 +288,35 @@ export function RevisionSelectorTab(props) {
 
     return (
         <FlexBox className="col gap">
+            <div style={{maxWidth: "142px"}}>
+                <Modal
+                    titleIcon={<VscCode/>}
+                    button={
+                        <Button className="small light" style={{ display: "flex", minWidth: "120px" }}>
+                            <ContentPanelHeaderButtonIcon>
+                                <VscCode style={{ maxHeight: "12px", marginRight: "4px" }} />
+                            </ContentPanelHeaderButtonIcon>
+                            API Commands
+                        </Button>
+                    }
+                    escapeToCancel
+                    withCloseButton
+                    maximised
+                    title={"Namespace API Interactions"}
+                >
+                    {
+                        apiHelps(namespace).map((help)=>(
+                            <ApiFragment
+                                description={help.description}
+                                url={help.url}
+                                method={help.method}
+                                body={help.body}
+                                type={help.type}
+                            />
+                        ))
+                    }
+                </Modal>
+            </div>
             <div>
                 <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
             </div>
