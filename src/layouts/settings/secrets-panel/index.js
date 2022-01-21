@@ -3,7 +3,7 @@ import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
 import {VscLock, VscTrash} from 'react-icons/vsc'
-import Modal, {ButtonDefinition, KeyDownDefinition} from '../../../components/modal';
+import Modal, {ButtonDefinition} from '../../../components/modal';
 import {useDropzone} from 'react-dropzone'
 import FlexBox from '../../../components/flexbox';
 import Alert from '../../../components/alert';

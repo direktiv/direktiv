@@ -13,7 +13,6 @@ import {Link} from 'react-router-dom'
 import HelpIcon from "../../components/help"
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-import { VscInfo } from "react-icons/vsc";
 
 export default function ServicesPanel(props) {
     const {namespace} = props

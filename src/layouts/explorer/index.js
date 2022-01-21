@@ -12,7 +12,6 @@ import { useNodes } from 'direktiv-react-hooks';
 import { useNavigate, useParams } from 'react-router';
 import Modal, {ButtonDefinition, KeyDownDefinition} from '../../components/modal'
 import DirektivEditor from '../../components/editor';
-import { BsCodeSlash } from 'react-icons/bs';
 import Button from '../../components/button';
 import HelpIcon from "../../components/help"
 import Loader from '../../components/loader';
@@ -21,8 +20,6 @@ import { useSearchParams } from 'react-router-dom';
 import WorkflowRevisions from './workflow/revision';
 import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
-import { FaAppStoreIos } from 'react-icons/fa';
-import Editor from '@monaco-editor/react';
 import Alert from '../../components/alert';
 
 const apiHelps = (namespace) => {
@@ -179,7 +176,6 @@ function ExplorerList(props) {
     const navigate= useNavigate()
     
     //api helper modal
-    const [showApiHelper, setShowApiHelper] = useState(false)
     const [search, setSearch] = useState("")
 
     const [currPath, setCurrPath] = useState("")
@@ -190,7 +186,7 @@ function ExplorerList(props) {
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     // const [pageNo, setPageNo] = useState(1);
-    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
+    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
     const [wfTemplate, setWfTemplate] = useState("noop")
     const [wfData, setWfData] = useState(templates["noop"])
     // control loading icon todo work out how to display this error
@@ -462,7 +458,7 @@ function DirListItem(props) {
                 {
                     rename ? 
                     <FlexBox className="explorer-item-name" style={{alignItems: "center"}}>
-                        <input style={{ width: "100%" }} onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
+                        <input style={{ width: "100%", height:"38px" }} onClick={(ev)=>ev.stopPropagation()} type="text" value={renameValue} onKeyPress={async (e)=>{
                             if(e.key === "Enter"){
                                 try { 
                                     await renameNode("/", path, renameValue)
@@ -471,7 +467,7 @@ function DirListItem(props) {
                                     setErr(err.message)
                                 }
                             }
-                        }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus style={{height:"38px"}}/>
+                        }} onChange={(e)=>setRenameValue(e.target.value)} autoFocus/>
                      </FlexBox>
                     :
                     <FlexBox className="explorer-item-name">
@@ -649,7 +645,7 @@ function WorkflowListItem(props) {
 }
 
 function ApiFragment(props) {
-    const { url, method, body, type, description } = props
+    const { url, method, body, description } = props
     return (
         <FlexBox className='helper-wrap col'>
             <FlexBox className='helper-title row'>

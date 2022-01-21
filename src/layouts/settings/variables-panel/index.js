@@ -13,7 +13,6 @@ import Tabs from '../../../components/tabs';
 import HelpIcon from '../../../components/help';
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';
-import {ExtractQueryString} from "direktiv-react-hooks/src/util";
 
 function VariablesPanel(props){
 
@@ -155,6 +154,8 @@ function AddVariablePanel(props) {
                 return "gif"
             case "image/png":
                 return "png"
+            default:
+                return "txt"
         }
     }
 
@@ -225,7 +226,7 @@ function Variables(props) {
 }
 
 function Variable(props) {
-    const {obj, getNamespaceVariable, getNamespaceVariableBuffer, setNamespaceVariable, deleteNamespaceVariable, namespace} = props
+    const {obj, getNamespaceVariable, getNamespaceVariableBuffer, setNamespaceVariable, deleteNamespaceVariable} = props
     const [val, setValue] = useState("")
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)

@@ -40,7 +40,7 @@ function EventsPage(props) {
     let {namespace} = props;
 
     // errHistory and errListeners TODO show error if one
-    let {eventHistory, eventListeners, eventListenersPageInfo, eventHistoryPageInfo, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"), {listners: [], history: []})
+    let {eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"), {listners: [], history: []})
     console.log(eventHistory, eventListeners)
     return(
         <>

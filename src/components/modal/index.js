@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import './style.css';
 import Button from '../button';
 import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon, ContentPanelFooter} from '../../components/content-panel';
-import { IoLockClosedOutline, IoCloseCircleSharp } from 'react-icons/io5';
+import { IoLockClosedOutline } from 'react-icons/io5';
 import FlexBox from '../flexbox';
 import Alert from '../alert';
 import { VscClose } from 'react-icons/vsc';
@@ -284,7 +284,7 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
         let btn = actionButtons[i];
         let onClick =  async () => {
             try {
-                let json = await btn.onClick()
+                await btn.onClick()
                 if(btn.closesModal){
                     closeModal()
                 } else {
