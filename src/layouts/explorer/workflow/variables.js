@@ -11,7 +11,7 @@ import DirektivEditor from '../../../components/editor';
 import FlexBox from '../../../components/flexbox';
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import Tabs from '../../../components/tabs';
-import { Config, CanPreviewMimeType } from '../../../util';
+import { Config, CanPreviewMimeType, MimeTypeFileExtension } from '../../../util';
 import { VariableFilePicker } from '../../settings/variables-panel';
 import { AutoSizer } from 'react-virtualized';
 import HelpIcon from "../../../components/help";
@@ -28,7 +28,7 @@ function AddWorkflowVariablePanel(props) {
 
     let wfVar = workflow.substring(1)
 
-    const {data, setWorkflowVariable, getWorkflowVariable, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
+    const {data, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBuffer, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
 
     if (data === null) {
         return <></>
@@ -86,7 +86,7 @@ function AddWorkflowVariablePanel(props) {
                     </Modal>
             </ContentPanelTitle>
             <ContentPanelBody>
-            <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} variables={data}/>
+            <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} getWorkflowVariableBuffer={getWorkflowVariableBuffer} variables={data}/>
             </ContentPanelBody>
         </ContentPanel>
     )
@@ -165,7 +165,7 @@ function AddVariablePanel(props) {
 
 function Variables(props) {
 
-    const {variables, namespace, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable} = props;
+    const {variables, namespace, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable, getWorkflowVariableBuffer} = props;
 
     return(
         <FlexBox>
@@ -175,7 +175,7 @@ function Variables(props) {
                     <tbody>
                         {variables.map((obj)=>{
                             return(
-                                <Variable namespace={namespace} obj={obj} getWorkflowVariable={getWorkflowVariable} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable}/>
+                                <Variable namespace={namespace} obj={obj} getWorkflowVariableBuffer={getWorkflowVariableBuffer} getWorkflowVariable={getWorkflowVariable} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable}/>
                             )
                         })}
                     </tbody>
@@ -187,7 +187,7 @@ function Variables(props) {
 }
 
 function Variable(props) {
-    const {obj, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable} = props
+    const {obj, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable, getWorkflowVariableBuffer} = props
     const [val, setValue] = useState("")
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)
@@ -197,26 +197,8 @@ function Variable(props) {
     if (uploading) {
         uploadingBtn += " btn-loading"
     }
-    let lang = ""
-    switch(mimeType){
-        case "application/json":
-            lang = "json"
-            break
-        case "application/x-sh":
-            lang = "shell"
-            break
-        case "text/html":
-            lang = "html"
-            break
-        case "text/css":
-            lang = "css"
-            break
-        case "application/yaml":
-            lang = "yaml"
-            break
-        default:
-            lang = "plain"
-        }
+
+    let lang = MimeTypeFileExtension(mimeType)
 
     return(
         <tr className="body-row" key={`${obj.node.name}${obj.node.size}`}>
@@ -301,22 +283,15 @@ function Variable(props) {
                     {!downloading? 
                     <VariablesDownloadButton onClick={async()=>{
                         setDownloading(true)
-                        let resp = await getWorkflowVariable(obj.node.name)
-                        let b = new Blob([resp.data], {type:resp.contentType})
-                        let url = URL.createObjectURL(b)
-                        const a = document.createElement('a');
-                        a.href = url
-                        a.download = obj.node.name
 
-                        const clickHandler = () => {
-                            setTimeout(() => {
-                                URL.revokeObjectURL(url);
-                                a.removeEventListener('click', clickHandler);
-                            }, 150);
-                        };
+                        const variableData = await getWorkflowVariableBuffer(obj.node.name)
+                        const extension = MimeTypeFileExtension(variableData.contentType)
+                        const bitArray = btoa(String.fromCharCode.apply(null, new Uint8Array(variableData.data)))
 
-                        a.addEventListener('click', clickHandler, false);
-                        a.click();
+                        const a = document.createElement('a')
+                        a.href = `data:${variableData.contentType};base64,` + bitArray
+                        a.download = obj.node.name + `${extension ? `.${extension}`: ""}`
+                        a.click()
                         setDownloading(false)
                     }}/>:<VariablesDownloadingButton />}
                 </FlexBox>

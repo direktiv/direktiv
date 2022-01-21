@@ -53,12 +53,34 @@ export function CanPreviewMimeType(mime) {
 
   for (let index = 0; index < PreviewableMimeTypes.length; index++) {
       const pmt = PreviewableMimeTypes[index];
-      if (mime == pmt) {
+      if (mime.includes(pmt)) {
           return true
       }
   }
 
   return false
+}
+
+const MimeTypeExtensionsMap = {
+  "text/plain": "txt",
+  "application/json": "json",
+  "application/x-sh": "shell",
+  "text/html": "html",
+  "text/css": "css",
+  "application/yaml": "yaml",
+  "image/jpeg": "jpg",
+  "image/gif": "gif",
+  "image/png": "png"
+}
+
+// best effort getting file extension from mimetype
+export function MimeTypeFileExtension(mime) {
+  for (const [mimeType, extension] of Object.entries(MimeTypeExtensionsMap)) {
+    if (mime.includes(mimeType)) {
+      return extension
+    }
+  }
+  return null
 }
 
 
