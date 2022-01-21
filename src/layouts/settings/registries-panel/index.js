@@ -205,9 +205,16 @@ export function AddRegistryPanel(props) {
                 <Alert className="success">Connection seems good!</Alert>
             </FlexBox>
             :<></>}
-            <FlexBox className="col gap">
-            <FlexBox >
-            <input value={url} onChange={(e)=>setURL(e.target.value)} autoFocus placeholder="Enter URL" />
+            <FlexBox className="col">
+            <FlexBox style={{flexDirection:"column"}}>
+                <FlexBox className="gap">
+                Registry URL <HelpIcon msg={`An example of url for Docker is https://index.docker.io or for Google https://gcr.io`}/>
+                </FlexBox>
+                <FlexBox style={{paddingRight:"8px"}}>
+                <input value={url} onChange={(e)=>setURL(e.target.value)} autoFocus placeholder={`Enter URL`} />
+
+
+                </FlexBox>
 
                 </FlexBox>
                 {urlErr !== "" ?
@@ -219,9 +226,16 @@ export function AddRegistryPanel(props) {
                 }
           
             </FlexBox>
-            <FlexBox className="col gap">
-                <FlexBox>
-                    <input value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="Enter username" />     
+            <FlexBox className="col">
+                <FlexBox style={{flexDirection:"column"}}>
+                <FlexBox className="gap">
+                Username 
+                </FlexBox>
+                <FlexBox style={{paddingRight:"8px"}}>
+                <input value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="Enter username" />     
+
+
+                </FlexBox>
                 </FlexBox>
                 {userErr !== "" ?
                 <FlexBox>
@@ -232,8 +246,14 @@ export function AddRegistryPanel(props) {
                 }
             </FlexBox>
             <FlexBox className="col gap">
-                <FlexBox >
+                <FlexBox style={{flexDirection:"column"}}>
+                <FlexBox className="gap">
+                Password
+                </FlexBox>
+                <FlexBox style={{paddingRight:"8px"}}>
                 <input value={token} onChange={(e)=>setToken(e.target.value)} type="password" placeholder="Enter token" />
+
+                </FlexBox>
 
                 </FlexBox>
                 {tokenErr !== "" ?

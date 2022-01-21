@@ -13,7 +13,7 @@ function HelpIcon(props) {
 
     return (
         <>
-            <Tippy content={msg} trigger={'mouseenter focus click'} zIndex={0}>
+            <Tippy content={msg} trigger={'mouseenter focus click'} zIndex={10}>
                 <div className={"iconWrapper"}>
                     <VscInfo className="grey-text"/>
                 </div>

@@ -155,11 +155,12 @@ function Explorer(props) {
 export default Explorer;
 
 function SearchBar(props) {
+    const {search, setSearch} = props
     return(
         <div className="explorer-searchbar">
             <FlexBox className="" style={{height: "29px"}}>
                 <VscSearch className="auto-margin" />
-                <input placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
+                <input search={search} onChange={(e)=>{setSearch(e.target.value)}} placeholder={"Search items"} style={{ boxSizing: "border-box" }}></input>
             </FlexBox>
         </div>
     );
@@ -178,6 +179,7 @@ function ExplorerList(props) {
     
     //api helper modal
     const [showApiHelper, setShowApiHelper] = useState(false)
+    const [search, setSearch] = useState("")
 
     const [currPath, setCurrPath] = useState("")
     
@@ -187,7 +189,7 @@ function ExplorerList(props) {
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
     // const [pageNo, setPageNo] = useState(1);
-    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`)
+    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
     const [wfTemplate, setWfTemplate] = useState("noop")
     const [wfData, setWfData] = useState(templates["noop"])
     // control loading icon todo work out how to display this error
@@ -248,7 +250,7 @@ function ExplorerList(props) {
                 
             </FlexBox>
             <FlexBox style={{flexDirection: "row-reverse"}}>
-                <SearchBar />
+                <SearchBar search={search} setSearch={setSearch}/>
             </FlexBox>
         </FlexBox>
         <ContentPanel>
