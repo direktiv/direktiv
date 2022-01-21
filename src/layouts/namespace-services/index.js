@@ -195,6 +195,7 @@ function NamespaceServices(props) {
 
 export function Service(props) {
     const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic, latest} = props
+    console.log(url)
     return(
         <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>

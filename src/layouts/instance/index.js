@@ -343,8 +343,6 @@ function InstanceDiagram(props) {
         return <></>
     }
     
-    console.log(status, "STATUS OF INSTANCE")
-
     return(
         <WorkflowDiagram instanceStatus={status} disabled={true} flow={flow} workflow={YAML.load(wfdata)}/>
     )

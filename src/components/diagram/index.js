@@ -5,6 +5,10 @@ import React, { useEffect, useState } from "react"
 import './style.css'
 export const position = { x: 0, y: 0}
 
+
+    // initialize the dagre graph
+    const dagreGraph = new dagre.graphlib.Graph()
+    dagreGraph.setDefaultEdgeLabel(() => ({}))
 export default function WorkflowDiagram(props) {
     const {workflow, flow, instanceStatus, disabled} = props
 
@@ -12,59 +16,66 @@ export default function WorkflowDiagram(props) {
     const [elements, setElements] = useState([])
     const [ostatus, setOStatus] = useState(instanceStatus)
 
-    useEffect(()=>{
-        if(load && (workflow !== null || instanceStatus !== ostatus)) {
-            // initialize the dagre graph
-            const dagreGraph = new dagre.graphlib.Graph()
-            dagreGraph.setDefaultEdgeLabel(() => ({}))
-            
-            const getLayoutedElements = (incomingEles, direction = 'TB') => {
-                const isHorizontal = direction === 'LR'
-                dagreGraph.setGraph({rankdir: 'lr'})
-            
-                incomingEles.forEach((el)=>{
-                    if(isNode(el)){
-                        if(el.id === "startNode"|| el.id === "endNode"){
-                            dagreGraph.setNode(el.id, {width: 40, height:40})
-                        } else {
-                            dagreGraph.setNode(el.id, {width: 100, height:40})
-                        }
-                    } else {
-                        if(el.source === "startNode") {
-                            dagreGraph.setEdge(el.source, el.target, {width: 0, height: 20})
-                        } else if(el.source === "endNode"){
-                            dagreGraph.setEdge(el.source, el.target, {width: 30, height: 20})
-                        } else {
-                            dagreGraph.setEdge(el.source, el.target, {width: 60, height: 60})
-                        }
-                    }
-                })
-            
-                dagre.layout(dagreGraph)
-                
-                return incomingEles.map((el)=>{
-                    if(isNode(el)){
-                        const nodeWithPosition = dagreGraph.node(el.id)
-                        el.targetPosition = isHorizontal ? 'left' : 'top'
-                        el.sourcePosition = isHorizontal ? 'right' : 'bottom'
-            
-                        //hack to trigger refresh
-                        el.position = {
-                            x: nodeWithPosition.x + Math.random()/1000,
-                            y: nodeWithPosition.y,
-                        }
-                    }
-                    return el
-                })
-            }
 
-            // generate elements for workflow diagram
+    useEffect(()=>{
+    
+                   
+        const getLayoutedElements = (incomingEles, direction = 'TB') => {
+            const isHorizontal = direction === 'LR'
+            dagreGraph.setGraph({rankdir: 'lr'})
+        
+            incomingEles.forEach((el)=>{
+                if(isNode(el)){
+                    if(el.id === "startNode"|| el.id === "endNode"){
+                        dagreGraph.setNode(el.id, {width: 40, height:40})
+                    } else {
+                        dagreGraph.setNode(el.id, {width: 100, height:40})
+                    }
+                } else {
+                    if(el.source === "startNode") {
+                        dagreGraph.setEdge(el.source, el.target, {width: 0, height: 20})
+                    } else if(el.source === "endNode"){
+                        dagreGraph.setEdge(el.source, el.target, {width: 30, height: 20})
+                    } else {
+                        dagreGraph.setEdge(el.source, el.target, {width: 60, height: 60})
+                    }
+                }
+            })
+        
+            dagre.layout(dagreGraph)
+            
+            return incomingEles.map((el)=>{
+                if(isNode(el)){
+                    const nodeWithPosition = dagreGraph.node(el.id)
+                    el.targetPosition = isHorizontal ? 'left' : 'top'
+                    el.sourcePosition = isHorizontal ? 'right' : 'bottom'
+        
+                    //hack to trigger refresh
+                    el.position = {
+                        x: nodeWithPosition.x + Math.random()/1000,
+                        y: nodeWithPosition.y,
+                    }
+                }
+                return el
+            })
+        }
+
+        if(load && (workflow !== null || instanceStatus !== ostatus)) {
             let saveElements = generateElements(getLayoutedElements, workflow, flow, instanceStatus)
             if(saveElements !== null) {
                 setElements(saveElements)
             }
             setOStatus(instanceStatus)
             setLoad(false)
+        }
+
+        // if status changes make sure to redraw
+        if(instanceStatus !== ostatus) {
+            let saveElements = generateElements(getLayoutedElements, workflow, flow, instanceStatus)
+            if(saveElements !== null) {
+                setElements(saveElements)
+            }
+            setOStatus(instanceStatus)
         }
         
     },[load, workflow,flow, instanceStatus, ostatus])
@@ -159,6 +170,7 @@ function End() {
 }
 
 function generateElements(getLayoutedElements, value, flow, status) {
+    console.log(flow, "FLOW CHECK")
     let newElements = []
 
     if(value.states) {
