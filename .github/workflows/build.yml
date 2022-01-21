@@ -31,39 +31,3 @@ jobs:
           release_name: Direktiv Release ${{ steps.get_version.outputs.VERSION }}
           draft: true
           prerelease: false
-      # - name: upload direktiv image
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./direktiv.direktiv
-      #     asset_name: direktiv.direktiv
-      #     asset_content_type: application/octet-stream
-      #- name: upload direktiv cli
-      #  uses: actions/upload-release-asset@v1
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #    asset_path: ./direkcli-linux
-      #    asset_name: direkcli-linux
-      #    asset_content_type: application/octet-stream
-      #- name: upload direktiv cli
-      #  uses: actions/upload-release-asset@v1
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #    asset_path: ./direkcli-darwin
-      #    asset_name: direkcli-darwin
-      #    asset_content_type: application/octet-stream
-      #- name: upload direktiv cli
-      #  uses: actions/upload-release-asset@v1
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #    asset_path: ./direkcli-windows.exe
-      #    asset_name: direkcli-windows.exe
-      #   asset_content_type: application/octet-stream
