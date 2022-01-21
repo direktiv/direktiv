@@ -387,10 +387,14 @@ function Output(props){
     useEffect(()=>{
         async function get() {
             if (load && status !== "pending"){
-                let data = await getOutput()
-                let x = JSON.stringify(JSON.parse(data),null,2)
-                setOutput(x)
-                setLoad(false)
+                try {
+                    let data = await getOutput()
+                    let x = JSON.stringify(JSON.parse(data),null,2)
+                    setOutput(x)
+                    setLoad(false)
+                } catch(e) {
+                    console.log(e);
+                }
             }
         }
         get()
@@ -399,9 +403,13 @@ function Output(props){
     useEffect(()=>{
         async function reGetOutput() {
             if(status !== "pending"){
-                let data = await getOutput()
-                let x = JSON.stringify(JSON.parse(data),null,2)
-                setOutput(x)
+                try {
+                    let data = await getOutput()
+                    let x = JSON.stringify(JSON.parse(data),null,2)
+                    setOutput(x)
+                } catch(e) {
+                    console.log(e);
+                }
             }
         }
        reGetOutput()
