@@ -245,12 +245,13 @@ export function RevisionSelectorTab(props) {
 
   
     if(!revisions) return null
+
     return (
         <FlexBox className="col gap">
             <div>
                 <RevisionTrafficShaper rev1={rev1} rev2={rev2} setRev1={setRev1} setRev2={setRev2} setRouter={setRouter} revisions={revisions}  router={router} editWorkflowRouter={editWorkflowRouter} getWorkflowRouter={getWorkflowRouter} />
             </div>
-            <div>
+            <div>   
                 <ContentPanel style={{width: "100%", minWidth: "300px"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
@@ -438,7 +439,8 @@ export function RevisionSelectorTab(props) {
                                                         [
                                                             ButtonDefinition("Delete", async () => {
                                                                     await deleteRevision(obj.node.name)
-                                                                    setRevisions(await getRevisions())
+                                                                    let x = await getRevisions()
+                                                                    setRevisions(x.edges)
                                                                     setRouter(await getWorkflowRouter())
                                                             }, "small red", ()=>{}, true, false),
                                                             ButtonDefinition("Cancel", () => {
