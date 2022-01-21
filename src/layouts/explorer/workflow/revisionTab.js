@@ -230,7 +230,7 @@ transform:
 }
 
 export function RevisionSelectorTab(props) {
-    const {setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
+    const {workflowName, setRouter, namespace, tagWorkflow, filepath, updateWorkflow, editWorkflowRouter, getWorkflowRouter, getRevisions, setRevisions, err, revisions, router, deleteRevision, getWorkflowSankeyMetrics, executeWorkflow, searchParams, setSearchParams, getWorkflowRevisionData, getTags, removeTag} = props
     
     const navigate = useNavigate()
     // const [load, setLoad] = useState(true)
@@ -305,7 +305,7 @@ export function RevisionSelectorTab(props) {
                     title={"Namespace API Interactions"}
                 >
                     {
-                        apiHelps(namespace).map((help)=>(
+                        apiHelps(namespace, workflowName).map((help)=>(
                             <ApiFragment
                                 description={help.description}
                                 url={help.url}
