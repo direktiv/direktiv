@@ -389,9 +389,17 @@ function WorkingRevision(props) {
                                         }, "small light", ()=>{}, true, false)
                                     ]}
                                     button={(
-                                        <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
-                                            Run
-                                        </div>
+                                        <>
+                                            { workflow !== oldWf ?
+                                            <div className='btn-terminal disabled' >
+                                                Run (requires save)
+                                            </div>
+                                            :
+                                            <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
+                                                Run
+                                            </div>
+                                            }                                        
+                                        </>
                                     )}
                                 >
                                     <FlexBox style={{height: "40vh", width: "30vw", minWidth: "250px", minHeight: "200px"}}>
