@@ -313,6 +313,14 @@ func (engine *engine) InstanceWorkflow(ctx context.Context, im *instanceMemory) 
 	im.in.Edges.Workflow = wf
 
 out:
+
+	ns, err := engine.InstanceNamespace(ctx, im)
+	if err != nil {
+		return nil, err
+	}
+
+	im.in.Edges.Workflow.Edges.Namespace = ns
+
 	return im.in.Edges.Workflow, nil
 
 }
