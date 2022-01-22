@@ -164,7 +164,7 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	fmt.Println("direktiv ready at http://<HOST-IP>:8080")
+	fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
 
 	select {}
 
