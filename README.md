@@ -65,6 +65,12 @@ Getting a local playground environment can be easily done with Docker. The follo
 docker run --privileged -p 8080:80 -ti direktiv/direktiv-kube
 ```
 
+> If the upper limit for inotify instances is too low the pods might be stuck in *pending*. Increase that limit if necessary: 
+
+```console
+sudo sysctl fs.inotify.max_user_instances=4096
+```
+
 ***Testing Installation:***
 
 Browse the UI: http://localhost:8080

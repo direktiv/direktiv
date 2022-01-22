@@ -4,10 +4,6 @@ debug: "true"
 eventing:
   enabled: true
 
-functions:
-  sidecar: "direktiv/sidecar:v0.6.0"
-  initPodImage: "direktiv/direktiv-init-pod:v0.6.0"
-
 database:
   # -- database host
   host: "postgres"

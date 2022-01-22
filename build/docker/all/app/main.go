@@ -26,11 +26,6 @@ func main() {
 
 	log.Println("all-in-one version of direktiv")
 
-	// if err := cgrouputil.EvacuateCgroup2("init"); err != nil {
-	// 	fmt.Printf(">> ERR %v", err)
-	// }
-
-	// time.Sleep(10 * time.Minute)
 	kc, err := exec.LookPath("kubectl")
 	if err != nil {
 		panic(err.Error())
@@ -74,14 +69,21 @@ func main() {
 	cmd.Stderr = os.Stderr
 	cmd.Run()
 
-	imgs := []string{"/activator.tar", "/autoscaler.tar", "/controller.tar", "/domain-mapping.tar",
-		"/domain-mapping-webhook.tar", "/webhook.tar", "/queue.tar", "/kongig.tar",
-		"/konglib.tar", "/registry.tar", "/postgres.tar", "/ui.tar", "/api.tar",
-		"/flow.tar", "/init-pod.tar", "/secrets.tar", "/sidecar.tar", "/functions.tar"}
+	// delete because we import all tars as images
+	os.Remove("/images.tar")
+
+	ff, err := os.ReadDir("/")
+	if err != nil {
+		log.Fatalf("error reading dir")
+	}
 
 	log.Println("importing images")
-	for i := range imgs {
-		importImage(imgs[i])
+	for i := range ff {
+		f := ff[i]
+		if strings.HasSuffix(f.Name(), ".tar") {
+			log.Printf("importing %v", f.Name())
+			importImage(f.Name())
+		}
 	}
 
 	installKnative(kc)
@@ -162,7 +164,7 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	fmt.Println("direktiv ready at http://<HOST-IP>:8080")
+	fmt.Println("direktiv ready at http://localhost:8080 or http://<HOST-IP>:8080")
 
 	select {}
 
@@ -222,7 +224,7 @@ func runHelm(kc string) {
 
 	log.Printf("running direktiv helm\n")
 	cmd = exec.Command("/helm", "install", "-f", "/debug.yaml", "direktiv", ".")
-	cmd.Dir = "/direktiv/kubernetes/charts/direktiv"
+	cmd.Dir = "/direktiv-charts/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Run()
 
@@ -276,7 +278,7 @@ func installKnative(kc string) {
 	addProxy(f)
 
 	cmd := exec.Command("/helm", "install", "-n", "knative-serving", "--create-namespace", "-f", "/tmp/knative.yaml", "knative", ".")
-	cmd.Dir = "/direktiv/kubernetes/charts/knative"
+	cmd.Dir = "/direktiv-charts/charts/knative"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -293,14 +295,6 @@ func installKnative(kc string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
-
-	// apply config-deployment for registry
-	log.Printf("applying config-deployment.yaml\n")
-	/* #nosec */
-	cmd = exec.Command(kc, "apply", "-f", "/config-deployment.yaml")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
 
 	if os.Getenv("EVENTING") != "" {
 		log.Printf("installing knative eventing")
