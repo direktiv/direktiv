@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Config } from '../../util';
-import {  VscCloud, VscRedo, VscSymbolEvent } from 'react-icons/vsc';
+import {  VscCloud, VscPlay, VscDebugStepInto } from 'react-icons/vsc';
 import Button from '../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
@@ -102,7 +102,7 @@ function EventsPage(props) {
                                                     button={     <div onClick={async ()=>{
                                                     }} style={{display: "flex", alignItems: "flex-end", justifyContent: "center", paddingRight: "10px"}}>
                                                         <Button className="small light">
-                                                            <VscRedo/>
+                                                            <VscPlay/>
                                                         </Button>
                                                     </div>}
                                                     actionButtons={[
@@ -131,7 +131,7 @@ function EventsPage(props) {
                     <ContentPanel style={{ width: "100%" }}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
-                                <VscSymbolEvent/>
+                                <VscDebugStepInto/>
                             </ContentPanelTitleIcon>
                             <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                                 <div>

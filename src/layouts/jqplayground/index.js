@@ -1,7 +1,6 @@
 import { useJQPlayground } from 'direktiv-react-hooks';
 import { useEffect, useState } from 'react';
-import { IoLink, IoReload } from 'react-icons/io5';
-import { VscFileCode } from 'react-icons/vsc';
+import { VscFileCode, VscArrowRight } from 'react-icons/vsc';
 import Button from '../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import DirektivEditor from '../../components/editor';
@@ -78,7 +77,7 @@ function HowToJQ(){
                             </div>
                             <Button className="reveal-btn small shadow">
                                 <FlexBox className="gap">
-                                    <IoLink className="auto-margin" />
+                                    <VscArrowRight className="auto-margin" />
                                     <a href="https://stedolan.github.io/jq/manual/">
                                         View JQ Manual
                                     </a>
@@ -135,7 +134,7 @@ function ExamplesJQ(props){
                                             <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
                                                 <Button className="reveal-btn small shadow">
                                                     <FlexBox className="gap">
-                                                        <IoReload className="auto-margin" />
+                                                        <VscFileCode className="auto-margin" />
                                                         <div>
                                                             Load
                                                         </div>
@@ -162,7 +161,7 @@ function ExamplesJQ(props){
                                             <td style={{ width: "20%"}} onClick={()=>loadJQ(obj.filter, obj.json)}>
                                                 <Button className="reveal-btn small shadow">
                                                     <FlexBox className="gap">
-                                                        <IoReload className="auto-margin" />
+                                                        <VscFileCode className="auto-margin" />
                                                         <div>
                                                             Load
                                                         </div>

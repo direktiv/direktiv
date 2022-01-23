@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { IoPlay } from "react-icons/io5"
+import { VscLayers } from 'react-icons/vsc';
 import { useNavigate, useParams } from "react-router"
 import { Service } from "../namespace-services"
 import { RevisionCreatePanel, UpdateTraffic } from "../namespace-services/revisions"
@@ -53,7 +53,7 @@ export default function GlobalRevisionsPanel(props){
                         <ContentPanel style={{width:"100%"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
-                                <IoPlay/>
+                                <VscLayers/>
                             </ContentPanelTitleIcon>
                             <FlexBox>
                                 Service '{service}' Revisions

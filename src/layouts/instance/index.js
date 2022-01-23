@@ -5,19 +5,19 @@ import Button from '../../components/button';
 import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import {AiFillCode} from 'react-icons/ai';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
 import { Link } from 'react-router-dom';
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { IoCopy, IoEye, IoEyeOff } from 'react-icons/io5';
+import { VscCopy, VscEye, VscEyeClosed, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
+
 import * as dayjs from "dayjs"
 import YAML from 'js-yaml'
 
 import DirektivEditor from '../../components/editor';
 import WorkflowDiagram from '../../components/diagram';
-import { HiOutlineArrowsExpand } from 'react-icons/hi';
+
 import Modal, { ButtonDefinition } from '../../components/modal';
 import Alert from '../../components/alert';
 
@@ -96,7 +96,7 @@ function InstancePage(props) {
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
-                                <AiFillCode />
+                                <VscTerminal />
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap" style={{alignItems:"center"}}>
                                 <div>
@@ -126,7 +126,7 @@ function InstancePage(props) {
                                     noPadding
                                     title="Instance Details"
                                     titleIcon={
-                                        <AiFillCode />
+                                        <VscTerminal />
                                     }
                                     style={{
                                         maxWidth: "50px"
@@ -138,7 +138,7 @@ function InstancePage(props) {
                                     button={(
                                         <ContentPanelHeaderButton hackyStyle={{ marginBottom: "8px", height: "29px" }}>
                                             <ContentPanelHeaderButtonIcon>
-                                                <HiOutlineArrowsExpand />
+                                                <VscScreenFull />
                                             </ContentPanelHeaderButtonIcon>
                                         </ContentPanelHeaderButton>
                                     )}
@@ -154,12 +154,12 @@ function InstancePage(props) {
                         <InstanceLogs setClipData={setClipData} clipData={clipData} namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width} />
                     </ContentPanel>
                 </FlexBox>
-                <FlexBox className="gap wrap" style={{minHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
+                <FlexBox className="gap wrap" style={{minIoCopyHeight: "40%", minWidth: "300px", flex: "2", flexWrap: "wrap-reverse"}}>
                     <FlexBox style={{minWidth: "300px"}}>
                         <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
-                                <AiFillCode />
+                                <VscTerminal />
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap">
                                 <div>
@@ -173,7 +173,7 @@ function InstancePage(props) {
                                 noPadding
                                 title="Input"
                                 titleIcon={
-                                    <AiFillCode />
+                                    <VscTerminal />
                                 }
                                 modalStyle={{
                                     overflow: "hidden",
@@ -182,7 +182,7 @@ function InstancePage(props) {
                                 button={(
                                     <ContentPanelHeaderButton>
                                         <ContentPanelHeaderButtonIcon>
-                                            <HiOutlineArrowsExpand />
+                                            <VscScreenFull />
                                         </ContentPanelHeaderButtonIcon>
                                     </ContentPanelHeaderButton>
                                 )}
@@ -205,7 +205,7 @@ function InstancePage(props) {
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
-                                <AiFillCode />
+                                <VscSourceControl />
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap" style={{alignItems:"center"}}>
                                 <div>
@@ -222,7 +222,7 @@ function InstancePage(props) {
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
-                                <AiFillCode />
+                                <VscTerminal />
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap">
                                 <div>
@@ -236,7 +236,7 @@ function InstancePage(props) {
                                 noPadding
                                 title="Output"
                                 titleIcon={
-                                    <AiFillCode />
+                                    <VscTerminal />
                                 }
                                 modalStyle={{
                                     overflow: "hidden",
@@ -245,7 +245,7 @@ function InstancePage(props) {
                                 button={(
                                     <ContentPanelHeaderButton>
                                         <ContentPanelHeaderButtonIcon>
-                                            <HiOutlineArrowsExpand />
+                                            <VscScreenFull />
                                         </ContentPanelHeaderButtonIcon>
                                     </ContentPanelHeaderButton>
                                 )}
@@ -286,15 +286,15 @@ function InstanceLogs(props) {
                         <TerminalButton onClick={()=>{
                             copyTextToClipboard(clipData)
                         }}>
-                                <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
+                                <VscCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
                         </TerminalButton>
                         {follow ?
                             <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"}>
-                                <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
+                                <VscEyeClosed/> Stop {width > 999 ? <span>watching</span>: ""}
                             </TerminalButton>
                             :
                             <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} >
-                                    <IoEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
+                                <VscEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
                             </TerminalButton>
                         }
                     </FlexBox>

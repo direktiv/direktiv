@@ -2,7 +2,9 @@ import React, {useEffect, useState} from 'react';
 import './style.css';
 import Button from '../button';
 import ContentPanel, {ContentPanelTitle, ContentPanelBody, ContentPanelTitleIcon, ContentPanelFooter} from '../../components/content-panel';
-import { IoLockClosedOutline } from 'react-icons/io5';
+
+import { VscDiffAdded } from 'react-icons/vsc';
+
 import FlexBox from '../flexbox';
 import Alert from '../alert';
 import { VscClose } from 'react-icons/vsc';
@@ -211,7 +213,7 @@ function ModalOverlay(props) {
                                             ? 
                                             [titleIcon]
                                             :
-                                            <IoLockClosedOutline />
+                                            <VscDiffAdded />
                                         }
                                     </ContentPanelTitleIcon>
                                 </FlexBox>

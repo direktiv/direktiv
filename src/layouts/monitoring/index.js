@@ -7,7 +7,7 @@ import HelpIcon from "../../components/help"
 import Loader from "../../components/loader"
 import { Config, copyTextToClipboard } from "../../util"
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
-import { IoCopy, IoEye, IoEyeOff } from "react-icons/io5"
+import { VscCopy, VscEye, VscEyeClosed } from 'react-icons/vsc';
 import {TerminalButton} from '../instance'
 import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -149,15 +149,15 @@ function MonitoringPage(props) {
                                             <TerminalButton onClick={()=>{
                                                 copyTextToClipboard(clipData)
                                             }}>
-                                                    <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
+                                                    <VscCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
                                             </TerminalButton>
                                             {follow ?
                                                 <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"}>
-                                                    <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
+                                                    <VscEyeClosed/> Stop {width > 999 ? <span>watching</span>: ""}
                                                 </TerminalButton>
                                                 :
                                                 <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} >
-                                                        <IoEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
+                                                    <VscEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
                                                 </TerminalButton>
                                             }
                                         </FlexBox>

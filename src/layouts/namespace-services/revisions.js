@@ -1,6 +1,6 @@
 import { useNamespaceService } from "direktiv-react-hooks"
 import { useEffect, useState } from "react"
-import { IoPlay } from "react-icons/io5"
+import { VscLayers } from 'react-icons/vsc';
 import { useNavigate, useParams } from "react-router"
 import { Service } from "."
 import AddValueButton from "../../components/add-button"
@@ -116,7 +116,7 @@ function NamespaceRevisions(props) {
                 <ContentPanel style={{width: "100%"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <IoPlay/>
+                            <VscLayers/>
                         </ContentPanelTitleIcon>
                         <FlexBox>
                             Service '{service}' Revisions
@@ -229,7 +229,7 @@ export function UpdateTraffic(props){
                 <ContentPanel style={{width:"100%", height:"fit-content"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <IoPlay/>
+                            <VscLayers/>
                         </ContentPanelTitleIcon>
                         <FlexBox>
                             Update '{service}' traffic

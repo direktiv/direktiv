@@ -1,9 +1,8 @@
 import { useWorkflowVariables } from 'direktiv-react-hooks';
 import React, { useState } from 'react';
-import { BsUpload } from 'react-icons/bs';
-import { IoMdLock } from 'react-icons/io';
-import { IoCloudDownloadOutline, IoEyeOutline, IoRefresh } from 'react-icons/io5';
-import { RiDeleteBin2Line } from 'react-icons/ri';
+
+import { VscVariableGroup, VscCloudDownload, VscCloudUpload,  VscEye, VscTrash } from 'react-icons/vsc';
+
 import AddValueButton from '../../../components/add-button';
 import Button from '../../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
@@ -43,7 +42,7 @@ function AddWorkflowVariablePanel(props) {
         <ContentPanel style={{width: "100%", height: "100%"}}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoMdLock/>
+                    <VscVariableGroup/>
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>
@@ -224,7 +223,7 @@ function Variable(props) {
                     button={(
                         <Button className="reveal-btn small shadow">
                             <FlexBox className="gap">
-                                <IoEyeOutline className="auto-margin" />
+                                <VscEye className="auto-margin" />
                                 <div>
                                     Show <span className="hide-on-small">value</span>
                                 </div>
@@ -358,7 +357,7 @@ function Variable(props) {
 function VariablesUploadButton() {
     return (
         <div className="secrets-delete-btn grey-text auto-margin" style={{display: "flex", alignItems: "center", height: "100%"}}>
-            <BsUpload className="auto-margin"/>
+            <VscCloudUpload className="auto-margin"/>
         </div>
     )
 }
@@ -368,7 +367,7 @@ function VariablesDownloadButton(props) {
 
     return (
         <div onClick={onClick} className="secrets-delete-btn grey-text auto-margin" style={{display: "flex", alignItems: "center", height: "100%"}}>
-            <IoCloudDownloadOutline/>
+            <VscCloudDownload/>
         </div>
     )
 }
@@ -377,7 +376,7 @@ function VariablesDownloadingButton(props) {
 
     return (
         <div className="secrets-delete-btn grey-text auto-margin" style={{display: "flex", alignItems: "center", height: "100%"}}>
-            <IoRefresh style={{animation: "spin 2s linear infinite"}}/>
+            <VscCloudUpload style={{animation: "spin 2s linear infinite"}}/>
         </div>
     )
 }
@@ -386,7 +385,7 @@ function VariablesDownloadingButton(props) {
 function VariablesDeleteButton() {
     return (
         <div className="secrets-delete-btn grey-text auto-margin red-text" style={{display: "flex", alignItems: "center", height: "100%"}}>
-            <RiDeleteBin2Line className="auto-margin"/>
+            <VscTrash className="auto-margin"/>
         </div>
     )
 }
