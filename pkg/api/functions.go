@@ -837,25 +837,16 @@ func (h *functionHandler) initRoutes(r *mux.Router) {
 	//   type: string
 	//   required: true
 	//   description: 'path to target workflow'
-	// - in: body
-	//   name: Service Payload
+	// - in: query
+	//   name: svn
+	//   type: string
 	//   required: true
-	//   description: Payload that contains target service info
-	//   schema:
-	//     type: object
-	//     example:
-	//       name: "get"
-	//       revision: "5682557321920089479"
-	//     required:
-	//       - name
-	//       - revision
-	//     properties:
-	//       name:
-	//         type: string
-	//         description: "name of service to be deleted"
-	//       revision:
-	//         type: string
-	//         description: "revision of service to be deleted"
+	//   description: 'target service name'
+	// - in: query
+	//   name: version
+	//   type: string
+	//   required: true
+	//   description: 'target service version'
 	// responses:
 	//   '200':
 	//     "description": "successfully deleted service"
@@ -1920,11 +1911,6 @@ func (h *functionHandler) listServices(
 
 // sse
 
-type deleteWorkflowServicesRequest struct {
-	Name     *string `json:"name,omitempty"`
-	Revision *string `json:"revision,omitempty"`
-}
-
 func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debugf("Handling request: %s", this())
@@ -1932,25 +1918,14 @@ func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.
 	ctx := r.Context()
 	path, _ := pathAndRef(r)
 
-	data, err := loadRawBody(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
+	ver := r.URL.Query().Get("version")
+	svn := r.URL.Query().Get("svn")
 
-	body := new(deleteWorkflowServicesRequest)
-
-	err = json.Unmarshal(data, &body)
-	if err != nil {
-		respond(w, nil, err)
+	if ver == "" {
+		respond(w, nil, errors.New("version is missing in queries"))
 		return
-	}
-
-	if body.Name == nil {
-		respond(w, nil, errors.New("name is missing in body"))
-		return
-	} else if body.Revision == nil {
-		respond(w, nil, errors.New("revision is missing in body"))
+	} else if svn == "" {
+		respond(w, nil, errors.New("svn is missing in queries"))
 		return
 	}
 
@@ -1965,8 +1940,8 @@ func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.
 
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
-	annotations[functions.ServiceHeaderName] = *body.Name
-	annotations[functions.ServiceHeaderRevision] = *body.Revision
+	annotations[functions.ServiceHeaderName] = svn
+	annotations[functions.ServiceHeaderRevision] = ver
 
 	h.deleteService(annotations, w, r)
 }
