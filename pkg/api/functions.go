@@ -32,10 +32,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
@@ -45,6 +43,8 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/heroku/docker-registry-client/registry"
 )
 
 type functionHandler struct {
@@ -1353,89 +1353,15 @@ func (h *functionHandler) testRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if d["url"] == "https://registry.hub.docker.com" {
-		// double request one for the token the other to see if its a valid connection
-		req, err := http.NewRequest("POST", fmt.Sprintf("%s/v2/users/login", d["url"]), strings.NewReader(fmt.Sprintf("{\n\"username\":\"%s\",\n\"password\":\"%s\"}", d["username"], d["password"])))
-		if err != nil {
-			respond(w, nil, err)
-			return
-		}
+	_, err = registry.New(d["url"], d["username"], d["password"])
 
-		req.Header.Add("content-type", "application/json")
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-		defer resp.Body.Close()
-
-		t := make(map[string]string)
-		err = json.NewDecoder(resp.Body).Decode(&t)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-
-		if t["token"] == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("credentials provided are incorrect"))
-			return
-		}
-
-		checkReq, err := http.NewRequest("GET", fmt.Sprintf("%s/v2/repositories/namespaces", d["url"]), nil)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-
-		checkReq.Header.Add("Authorization", fmt.Sprintf("JWT %s", t["token"]))
-
-		resp, err = http.DefaultClient.Do(checkReq)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-		defer resp.Body.Close()
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-
-		w.WriteHeader(resp.StatusCode)
-		w.Write(data)
-	} else {
-		checkReq, err := http.NewRequest("GET", fmt.Sprintf("%s/v2/_catalog", d["url"]), nil)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-		checkReq.SetBasicAuth(d["username"], d["password"])
-
-		resp, err := http.DefaultClient.Do(checkReq)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-		defer resp.Body.Close()
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			respond(w, nil, err)
-			return
-
-		}
-
-		w.WriteHeader(resp.StatusCode)
-		w.Write(data)
+	if err != nil {
+		respond(w, nil, err)
+		return
 	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("{}"))
 
 }
 
