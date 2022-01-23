@@ -5,7 +5,7 @@ import AddValueButton from '../../components/add-button';
 import FlexBox from '../../components/flexbox';
 import Alert from '../../components/alert';
 import { useGlobalRegistries, useGlobalPrivateRegistries } from 'direktiv-react-hooks';
-import {AddRegistryPanel, Registries} from '../settings/registries-panel'
+import {AddRegistryPanel, Registries, TestRegistry} from '../settings/registries-panel'
 import { Config } from '../../util';
 import HelpIcon from '../../components/help';
 import { VscAdd, VscServer } from 'react-icons/vsc';
@@ -31,6 +31,20 @@ export function GlobalRegistries(){
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")
     const [token, setToken] = useState("")
+
+    // err handling
+    const [err, setErr] = useState("")
+    const [urlErr, setURLErr] = useState("")
+    const [userErr, setUserErr] = useState("")
+    const [tokenErr, setTokenErr] = useState("")
+
+    const [testConnLoading, setTestConnLoading] = useState(false)
+    const [successFeedback, setSuccessFeedback] = useState("")
+    
+    let testConnBtnClasses = "small green"
+    if (testConnLoading) {
+        testConnBtnClasses += " btn-loading"
+    }
 
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
@@ -59,6 +73,11 @@ export function GlobalRegistries(){
                             setURL("")
                             setToken("")
                             setUsername("")
+                            setURLErr("")
+                            setTokenErr("")
+                            setUserErr("")
+                            setSuccessFeedback(false)
+                            setTestConnLoading(false)
                         }}
                         keyDownActions={[
                             KeyDownDefinition("Enter", async () => {
@@ -71,11 +90,42 @@ export function GlobalRegistries(){
                                     await createRegistry(url, `${username}:${token}`)
                                     await  getRegistries()
                             }, "small blue", ()=>{}, true, false),
+                            ButtonDefinition("Test Connection", async () => {
+                                setURLErr("")
+                                setTokenErr("")
+                                setUserErr("")
+                                let filledOut = true
+                                if(url === ""){
+                                    setURLErr("Please enter a URL...")
+                                    filledOut = false
+                                }
+                                if(username === "") {
+                                    setUserErr("Please enter a username...")
+                                    filledOut = false
+                                }
+                                if(token === "") {
+                                    setTokenErr("Please enter a token...")
+                                    filledOut = false
+                                }
+                                if(!filledOut) throw new Error("all fields must be filled out")
+                                setTestConnLoading(true)
+                                let resp = await TestRegistry(url, username, token)
+                                if (resp.success) {
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(true)
+                                } else {
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(false)
+                                    setErr(resp.message)                                
+                                }
+                           
+                            }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
+                                setSuccessFeedback(false)}, false, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{},true, false)
                         ]}
                     >
-                        <AddRegistryPanel token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
+                        <AddRegistryPanel err={err} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL} successMsg={successFeedback} urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} />    
                     </Modal> 
                 </div>
             </ContentPanelTitle>
@@ -102,6 +152,24 @@ export function GlobalPrivateRegistries(){
     const [url, setURL] = useState("")
     const [username, setUsername] = useState("")
     const [token, setToken] = useState("")
+
+    // err handling
+    const [err, setErr] = useState("")
+    const [urlErr, setURLErr] = useState("")
+    const [userErr, setUserErr] = useState("")
+    const [tokenErr, setTokenErr] = useState("")
+
+    const [testConnLoading, setTestConnLoading] = useState(false)
+    const [successFeedback, setSuccessFeedback] = useState("")
+    
+    if (successFeedback) {
+        console.log(successFeedback);
+    }
+
+    let testConnBtnClasses = "small green"
+    if (testConnLoading) {
+        testConnBtnClasses += " btn-loading"
+    }
 
     return (
         <ContentPanel style={{width: "100%", minHeight: "180px"}}>
@@ -141,11 +209,42 @@ export function GlobalPrivateRegistries(){
                                     await createRegistry(url, `${username}:${token}`)
                                     await  getRegistries()
                             }, "small blue", ()=>{}, true, false),
+                            ButtonDefinition("Test Connection", async () => {
+                                setURLErr("")
+                                setTokenErr("")
+                                setUserErr("")
+                                let filledOut = true
+                                if(url === ""){
+                                    setURLErr("Please enter a URL...")
+                                    filledOut = false
+                                }
+                                if(username === "") {
+                                    setUserErr("Please enter a username...")
+                                    filledOut = false
+                                }
+                                if(token === "") {
+                                    setTokenErr("Please enter a token...")
+                                    filledOut = false
+                                }
+                                if(!filledOut) throw new Error("all fields must be filled out")
+                                setTestConnLoading(true)
+                                let resp = await TestRegistry(url, username, token)
+                                if (resp.success) {
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(true)
+                                } else {
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(false)
+                                    setErr(resp.message)                                
+                                }
+                           
+                            }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
+                                setSuccessFeedback(false)}, false, false),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]}
                     >
-                        <AddRegistryPanel token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
+                        <AddRegistryPanel err={err} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL} successMsg={successFeedback} urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} />    
                     </Modal> 
                 </div>
             </ContentPanelTitle>

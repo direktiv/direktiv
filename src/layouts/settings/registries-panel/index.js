@@ -23,6 +23,7 @@ function RegistriesPanel(props){
     const [token, setToken] = useState("")
 
     // err handling
+    const [err, setErr] = useState("")
     const [urlErr, setURLErr] = useState("")
     const [userErr, setUserErr] = useState("")
     const [tokenErr, setTokenErr] = useState("")
@@ -128,9 +129,15 @@ function RegistriesPanel(props){
                                 }
                                 if(!filledOut) throw new Error("all fields must be filled out")
                                 setTestConnLoading(true)
-                                await TestRegistry(url, username, token)
-                                setTestConnLoading(false)
-                                setSuccessFeedback(true)
+                                let resp = await TestRegistry(url, username, token)
+                                if (resp.success) {
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(true)
+                                } else {
+                                    setTestConnLoading(false)
+                                    setSuccessFeedback(false)
+                                    setErr(resp.message)                                
+                                }
                            
                             }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
                                 setSuccessFeedback(false)}, false, false),
@@ -138,7 +145,7 @@ function RegistriesPanel(props){
                             }, "small light", ()=>{}, true, false)
                         ]}
                     >
-                        <AddRegistryPanel urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} successMsg={successFeedback} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
+                        <AddRegistryPanel err={err} urlErr={urlErr} userErr={userErr} tokenErr={tokenErr} successMsg={successFeedback} token={token} setToken={setToken} username={username} setUsername={setUsername} url={url} setURL={setURL}/>    
                     </Modal> 
                 </div>
             </ContentPanelTitle>
@@ -160,34 +167,53 @@ function RegistriesPanel(props){
 
 export default RegistriesPanel;
 
-async function TestRegistry(url, username, token) {
+export async function TestRegistry(url, username, token) {
 
-    let resp = await fetch(`${Config.url}functions/registries/test`, {
-        method: "POST",
-        body: JSON.stringify({
-            username,
-            password: token,
-            url
+    try {
+        let resp = await fetch(`${Config.url}functions/registries/test`, {
+            method: "POST",
+            body: JSON.stringify({
+                username,
+                password: token,
+                url
+            })
         })
-    })
-
-    // if response is ok the the connection is valid
-    if(resp.ok) {
-        return
-    }
-
-    if(resp.status === 500) {
-        let json = await resp.json()
-        return json.message
-    }
-
-    if(resp.status === 401) {
-        if(url === "https://registry.hub.docker.com") {
-            let text = await resp.text()
-            return text
-        } else {
+    
+        // if response is ok the the connection is valid
+        if(resp.ok) {
+            return {
+                success: true,
+                message: "Success!"
+            }
+        }
+    
+        if(resp.status === 500) {
             let json = await resp.json()
-            return json.errors[0].message
+            return { 
+                success: false,
+                message: json.message
+            }
+        }
+    
+        if(resp.status === 401) {
+            if(url === "https://registry.hub.docker.com") {
+                let text = await resp.text()
+                return {
+                    success: false,
+                    message: text
+                }
+            } else {
+                let json = await resp.json()
+                return {
+                    success: false,
+                    message: json.errors[0].message
+                }
+            }
+        }
+    } catch(e) {
+        return {
+            success: false,
+            message: e.message
         }
     }
     
@@ -196,7 +222,7 @@ async function TestRegistry(url, username, token) {
 // const registries = ["https://docker.io", "https://gcr.io", "https://us.gcr.io"]
 
 export function AddRegistryPanel(props) {
-    const {successMsg, url, setURL, token, setToken, username, setUsername, urlErr, userErr, tokenErr} = props
+    const {err, successMsg, url, setURL, token, setToken, username, setUsername, urlErr, userErr, tokenErr} = props
 
     return (
         <FlexBox className="col gap" style={{fontSize: "12px"}}>
@@ -205,6 +231,11 @@ export function AddRegistryPanel(props) {
                 <Alert className="success">Connection seems good!</Alert>
             </FlexBox>
             :<></>}
+            { err ?
+            <FlexBox>
+            <Alert className="critical">{err}</Alert>
+            </FlexBox>
+            : <></> }
             <FlexBox className="col">
             <FlexBox style={{flexDirection:"column"}}>
                 <FlexBox className="gap">
