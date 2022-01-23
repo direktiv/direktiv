@@ -241,18 +241,18 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 	sa.Labels[annotationNamespace] = in.GetNamespace()
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeNamespaceValue
 
-	var un string
-	ut := userToken[0]
-	switch len(ut) {
-	case 1, 2, 3:
-		un = fmt.Sprintf("%s***", string(ut[0]))
-	case 4, 5:
-		un = fmt.Sprintf("%s***%s", string(ut[0]), string(ut[len(ut)-1]))
-	default:
-		un = fmt.Sprintf("%s***%s", ut[:2], ut[len(ut)-2:])
-	}
+	// var un string
+	// ut := userToken[0]
+	// switch len(ut) {
+	// case 1, 2, 3:
+	// 	un = fmt.Sprintf("%s***", string(ut[0]))
+	// case 4, 5:
+	// 	un = fmt.Sprintf("%s***%s", string(ut[0]), string(ut[len(ut)-1]))
+	// default:
+	// 	un = fmt.Sprintf("%s***%s", ut[:2], ut[len(ut)-2:])
+	// }
 
-	sa.Annotations[annotationRegistryObfuscatedUser] = un
+	sa.Annotations[annotationRegistryObfuscatedUser] = obfuscateUser(userToken[0])
 
 	_, err = clientset.CoreV1().Secrets(functionsConfig.Namespace).Create(context.Background(),
 		&sa, metav1.CreateOptions{})
@@ -300,6 +300,21 @@ func (is *functionsServer) DeleteGlobalRegistry(ctx context.Context, in *igrpc.D
 	return &resp, kubernetesDeleteGlobalRegistry(ctx, in.GetName(), annotationRegistryTypeGlobalValue)
 }
 
+func obfuscateUser(user string) string {
+
+	switch len(user) {
+	case 1, 2, 3:
+		user = fmt.Sprintf("%s***", string(user[0]))
+	case 4, 5:
+		user = fmt.Sprintf("%s***%s", string(user[0]), string(user[len(user)-1]))
+	default:
+		user = fmt.Sprintf("%s***%s", user[:2], user[len(user)-2:])
+	}
+
+	return user
+
+}
+
 func (is *functionsServer) StoreGlobalRegistry(ctx context.Context, in *igrpc.StoreGlobalRegistryRequest) (*emptypb.Empty, error) {
 
 	// create secret data, needs to be attached to service account
@@ -342,6 +357,8 @@ func (is *functionsServer) StoreGlobalRegistry(ctx context.Context, in *igrpc.St
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeGlobalValue
 
+	sa.Annotations[annotationRegistryObfuscatedUser] = obfuscateUser(userToken[0])
+
 	_, err = clientset.CoreV1().Secrets(functionsConfig.Namespace).Create(context.Background(),
 		&sa, metav1.CreateOptions{})
 
@@ -370,9 +387,11 @@ func (is *functionsServer) GetGlobalRegistries(ctx context.Context, in *emptypb.
 	for _, s := range secrets.Items {
 		u := s.Annotations[annotationURL]
 		h := s.Annotations[annotationURLHash]
+		user := s.Annotations[annotationRegistryObfuscatedUser]
 		resp.Registries = append(resp.Registries, &igrpc.Registry{
 			Name: &u,
 			Id:   &h,
+			User: &user,
 		})
 	}
 
@@ -429,6 +448,8 @@ func (is *functionsServer) StoreGlobalPrivateRegistry(ctx context.Context, in *i
 	sa := prepareNewRegistrySecret(secretName, in.GetName(), auth)
 	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeGlobalPrivateValue
 
+	sa.Annotations[annotationRegistryObfuscatedUser] = obfuscateUser(userToken[0])
+
 	_, err = clientset.CoreV1().Secrets(functionsConfig.Namespace).Create(context.Background(),
 		&sa, metav1.CreateOptions{})
 
@@ -457,9 +478,11 @@ func (is *functionsServer) GetGlobalPrivateRegistries(ctx context.Context, in *e
 	for _, s := range secrets.Items {
 		u := s.Annotations[annotationURL]
 		h := s.Annotations[annotationURLHash]
+		user := s.Annotations[annotationRegistryObfuscatedUser]
 		resp.Registries = append(resp.Registries, &igrpc.Registry{
 			Name: &u,
 			Id:   &h,
+			User: &user,
 		})
 	}
 
