@@ -6,9 +6,8 @@ import NamespaceSelector from '../namespace-selector';
 
 import Modal, { KeyDownDefinition } from '../modal';
 import { ButtonDefinition } from '../modal';
-import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscServer,  VscSettingsGear,  VscSymbolEvent, VscVmRunning} from 'react-icons/vsc';
+import {VscAdd,  VscFolderOpened, VscGraph, VscLayers, VscServer,  VscSettingsGear,  VscSymbolEvent, VscVmRunning, VscPlayCircle} from 'react-icons/vsc';
 
-import {IoExtensionPuzzleOutline} from 'react-icons/io5';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 function NavBar(props) {
@@ -276,7 +275,7 @@ function GlobalNavItems({namespace}) {
                 <li className={`${!namespace ? "disabled-nav-item":""}`} style={{marginTop: "0px"}}>
                     <Link to={!!namespace && "/jq"}>
                         <NavItem className={jq ? "active":""} label="jq Playground">
-                            <IoExtensionPuzzleOutline/>
+                            <VscPlayCircle/>
                         </NavItem>
                     </Link>
                 </li>

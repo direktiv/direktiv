@@ -2,7 +2,8 @@ import { useWorkflowService } from "direktiv-react-hooks"
 import { Config } from "../../../util"
 import FlexBox from "../../../components/flexbox"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../../components/content-panel"
-import { IoPlay } from "react-icons/io5"
+import { VscLayers } from 'react-icons/vsc';
+
 import { Service } from "../../namespace-services"
 import { useNavigate } from "react-router"
 
@@ -25,7 +26,7 @@ export default function WorkflowRevisions(props) {
             <ContentPanel style={{width: "100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
-                        <IoPlay/>
+                        <VscLayers/>
                     </ContentPanelTitleIcon>
                     <FlexBox>
                         Service '{service}' Revisions

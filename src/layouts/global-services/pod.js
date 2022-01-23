@@ -3,7 +3,7 @@ import FlexBox from "../../components/flexbox";
 import { Config } from "../../util";
 import { useParams } from "react-router"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
-import {  IoPlay } from "react-icons/io5"
+import { VscLayers } from 'react-icons/vsc';
 import 'react-virtualized/styles.css'; // only needs to be imported once
 import { ServiceStatus } from "../namespace-services"
 import { PodLogs } from "../namespace-services/pod"
@@ -36,7 +36,7 @@ export default function GlobalPodPanel(props) {
                             <ContentPanel style={{width:"100%"}}>
                                 <ContentPanelTitle>
                                     <ContentPanelTitleIcon>
-                                        <IoPlay/>
+                                        <VscLayers/>
                                     </ContentPanelTitleIcon>
                                     <FlexBox>
                                         Details for {revision}

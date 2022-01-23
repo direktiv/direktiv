@@ -1,5 +1,5 @@
 import { useWorkflowServiceRevision } from "direktiv-react-hooks"
-import { IoPlay } from "react-icons/io5"
+import { VscLayers } from 'react-icons/vsc';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../../components/content-panel"
 import FlexBox from "../../../components/flexbox"
 import { Config } from "../../../util"
@@ -33,7 +33,7 @@ export default function WorkflowPod(props) {
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
-                        <IoPlay/>
+                        <VscLayers/>
                     </ContentPanelTitleIcon>
                     <FlexBox>
                         Details for {revision}

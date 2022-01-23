@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Button from '../../../components/button';
-import { BsCodeSquare } from 'react-icons/bs';
 import {HiOutlineTrash} from 'react-icons/hi';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
 import FlexBox from '../../../components/flexbox';
@@ -11,8 +10,7 @@ import WorkflowDiagram from '../../../components/diagram';
 import YAML from 'js-yaml'
 import Modal, { ButtonDefinition } from '../../../components/modal';
 import SankeyDiagram from '../../../components/sankey';
-import { IoSettings } from 'react-icons/io5';
-
+import { VscVersions, VscTypeHierarchySub } from 'react-icons/vsc'
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useNavigate } from 'react-router';
@@ -73,7 +71,7 @@ function RevisionTab(props) {
                 <ContentPanel style={{ width: "100%", minWidth: "300px", flex: 1}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <BsCodeSquare />
+                            <VscVersions />
                         </ContentPanelTitleIcon>
                         <div>
                         {revision === revisionID ? revision : `${revision} => ${revisionID}`}
@@ -324,7 +322,7 @@ export function RevisionSelectorTab(props) {
                 <ContentPanel style={{width: "100%", minWidth: "300px"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <BsCodeSquare/>
+                            <VscVersions/>
                         </ContentPanelTitleIcon>
                         <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                             <div>
@@ -662,7 +660,7 @@ export function RevisionTrafficShaper(props) {
         <ContentPanel>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoSettings />
+                    <VscTypeHierarchySub />
                 </ContentPanelTitleIcon>
                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                     <div>

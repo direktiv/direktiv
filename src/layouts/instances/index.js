@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './style.css';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
-import {VscFileCode} from 'react-icons/vsc';
+import { VscVmRunning } from 'react-icons/vsc';
 import { BsDot } from 'react-icons/bs';
 import HelpIcon from '../../components/help';
 import { useInstances } from 'direktiv-react-hooks';
@@ -48,7 +48,7 @@ function InstancesTable(props) {
         <ContentPanel>
         <ContentPanelTitle>
             <ContentPanelTitleIcon>
-                <VscFileCode/>
+                <VscVmRunning/>
             </ContentPanelTitleIcon>
             <FlexBox className="gap" style={{ alignItems: "center" }}>
                 <div>

@@ -3,7 +3,7 @@ import './style.css';
 import FlexBox from '../../../components/flexbox';
 import {useSearchParams} from 'react-router-dom'
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../../components/content-panel';
-import {BsCodeSquare} from 'react-icons/bs'
+import { VscFileCode, VscExtensions } from 'react-icons/vsc'
 import { useNamespaceDependencies, useWorkflow, useWorkflowServices } from 'direktiv-react-hooks';
 import { Config } from '../../../util';
 import { useNavigate, useParams } from 'react-router';
@@ -13,9 +13,9 @@ import * as dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { InstanceRow } from '../../instances';
-import { IoMdLock } from 'react-icons/io';
-import {IoCloseCircleOutline, IoCheckmarkCircleOutline} from 'react-icons/io5'
-import {VscChevronDown, VscChevronUp} from 'react-icons/vsc'
+
+import {VscTag, VscNote, VscError, VscPass, VscChevronDown, VscChevronUp, VscTypeHierarchySub, VscVmRunning, VscLayers, VscPieChart} from 'react-icons/vsc'
+
 import { Service } from '../../namespace-services';
 import DirektivEditor from '../../../components/editor';
 import AddWorkflowVariablePanel from './variables';
@@ -195,7 +195,7 @@ function WorkflowDependencies(props) {
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
-                        <BsCodeSquare />
+                        <VscExtensions />
                     </ContentPanelTitleIcon>
                     <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                         <div>
@@ -232,7 +232,7 @@ function WorkingRevisionErrorBar(props) {
                             {errors.map((err) => {
                                 return (
                                     <FlexBox className="row" style={{ justifyContent: "flex-start", alignItems: "center", paddingBottom: "4px" }}>
-                                        <IoCloseCircleOutline style={{ paddingRight: "6px", color: "#ec4f79" }} />
+                                        <VscError style={{ paddingRight: "6px", color: "#ec4f79" }} />
                                         <div>
                                             {err}
                                         </div>
@@ -243,7 +243,7 @@ function WorkingRevisionErrorBar(props) {
                         </>
                         :
                         <FlexBox className="row" style={{ justifyContent: "flex-start", alignItems: "center" }}>
-                            <IoCheckmarkCircleOutline style={{ paddingRight: "6px", color: "#28a745" }} />
+                            <VscPass style={{ paddingRight: "6px", color: "#28a745" }} />
                             <div>
                                 No Errors
                             </div>
@@ -334,7 +334,7 @@ function WorkingRevision(props) {
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
-                        <BsCodeSquare />
+                        <VscFileCode />
                     </ContentPanelTitleIcon>
                     <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                         <div>
@@ -617,7 +617,7 @@ function OverviewTab(props) {
                         <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
-                                    <BsCodeSquare />
+                                    <VscVmRunning />
                                 </ContentPanelTitleIcon>
                                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                                     <div>
@@ -633,7 +633,7 @@ function OverviewTab(props) {
                         <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
-                                    <BsCodeSquare />
+                                    <VscPieChart />
                                 </ContentPanelTitleIcon>
                                 <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                                     <div>
@@ -653,7 +653,7 @@ function OverviewTab(props) {
                 <ContentPanel style={{ width: "100%", minWidth: "300px" }}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <BsCodeSquare />
+                            <VscTypeHierarchySub />
                         </ContentPanelTitleIcon>
                         <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                             <div>
@@ -669,7 +669,7 @@ function OverviewTab(props) {
                 <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <BsCodeSquare />
+                            <VscLayers />
                         </ContentPanelTitleIcon>
                         <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                             <div>
@@ -980,7 +980,7 @@ function SettingsTab(props) {
                             <ContentPanel style={{width: "100%", height: "100%"}}>
                                 <ContentPanelTitle>
                                     <ContentPanelTitleIcon>
-                                        <IoMdLock/>
+                                        <VscNote/>
                                     </ContentPanelTitleIcon>
                                     <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                                         <div>
@@ -1025,7 +1025,7 @@ function SettingsTab(props) {
                             <ContentPanel style={{width: "100%"}}>
                                 <ContentPanelTitle>
                                     <ContentPanelTitleIcon>
-                                        <IoMdLock/>
+                                        <VscTag/>
                                     </ContentPanelTitleIcon>
                                     <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                                         <div>

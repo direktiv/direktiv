@@ -6,7 +6,7 @@ import FlexBox from "../../components/flexbox";
 import { Config, GenerateRandomKey } from "../../util";
 import Modal, { ButtonDefinition, KeyDownDefinition } from "../../components/modal";
 import AddValueButton from "../../components/add-button";
-import { IoPlay } from "react-icons/io5";
+import { VscLayers } from 'react-icons/vsc';
 import HelpIcon from "../../components/help"
 
 export default function GlobalServicesPanel(props) {
@@ -44,7 +44,7 @@ export default function GlobalServicesPanel(props) {
             <ContentPanel style={{width:"100%"}}>
                 <ContentPanelTitle>
                     <ContentPanelTitleIcon>
-                        <IoPlay/>
+                        <VscLayers/>
                     </ContentPanelTitleIcon>
                     <FlexBox style={{display:"flex", alignItems:"center"}} className="gap">
                         <div>

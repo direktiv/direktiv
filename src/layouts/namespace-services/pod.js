@@ -1,7 +1,7 @@
 import { useParams } from "react-router"
 import FlexBox from "../../components/flexbox"
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from "../../components/content-panel"
-import { IoCopy, IoDesktop, IoEye, IoEyeOff, IoPlay } from "react-icons/io5"
+import { VscLayers, VscCopy, VscEye, VscEyeClosed, VscTerminal, VscServerEnvironment } from 'react-icons/vsc';
 import { useNamespaceServiceRevision, usePodLogs } from "direktiv-react-hooks"
 import { Config } from "../../util"
 import { useEffect, useState } from "react"
@@ -54,7 +54,7 @@ function NamespaceRevisionDetails(props){
                 <ContentPanel style={{width:"100%"}}>
                     <ContentPanelTitle>
                         <ContentPanelTitleIcon>
-                            <IoPlay/>
+                            <VscLayers/>
                         </ContentPanelTitleIcon>
                         <FlexBox>
                             Details for {revision}
@@ -163,7 +163,7 @@ export function PodLogs(props){
         <ContentPanel style={{width:"100%"}}>
             <ContentPanelTitle>
                 <ContentPanelTitleIcon>
-                    <IoPlay/>
+                    <VscTerminal/>
                 </ContentPanelTitleIcon>
                 <FlexBox>
                     Pods
@@ -183,7 +183,7 @@ export function PodLogs(props){
 
                                 return(
                                     <div onClick={()=>setTab(obj.name)} style={{color: tab === obj.name ? "white": "#b5b5b5", display:"flex", alignItems:"center", cursor:"pointer", backgroundColor: tab === obj.name ? "#223848":"#355166", padding:"5px", maxWidth:"150px", gap:"3px"}}>
-                                        <IoDesktop style={{fill: tab === obj.name ? "white": "#b5b5b5"}}/> 
+                                        <VscServerEnvironment style={{fill: tab === obj.name ? "white": "#b5b5b5"}}/> 
                                         <span style={{textOverflow: "ellipsis", whiteSpace:"nowrap", overflow:"hidden"}}>{obj.name.split(name)[1]}</span>
                                     </div>
                                 )
@@ -207,17 +207,17 @@ export function PodLogs(props){
                             <FlexBox className="gap" style={{justifyContent:"flex-end"}}>
                                 {follow ? 
                                     <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
-                                        <IoEyeOff/> Stop {width > 999 ? <span>watching</span>: ""}
+                                        <VscEyeClosed /> Stop {width > 999 ? <span>watching</span>: ""}
                                     </div>
                                     :
                                     <div onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} style={{display:"flex", alignItems:'center'}}>
-                                        <IoEye/> Follow {width > 999 ? <span>logs</span>: ""}
+                                        <VscEye /> Follow {width > 999 ? <span>logs</span>: ""}
                                     </div>
                                 }
                                 <div onClick={()=>{
                                     copyTextToClipboard(clipData)
                                 }} style={{display:"flex", alignItems:"center", gap:"3px", backgroundColor:"#355166",paddingTop:"3px", paddingBottom:"3px",  paddingLeft:"6px", paddingRight:"6px", cursor:"pointer", borderRadius:"3px"}}>
-                                    <IoCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
+                                    <VscCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
                                 </div>
                             </FlexBox>
                         </FlexBox>
