@@ -31,6 +31,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930 // indirect
 	github.com/itchyny/gojq v0.12.1
 	github.com/jinzhu/copier v0.2.4
 	github.com/kr/pretty v0.3.0 // indirect
