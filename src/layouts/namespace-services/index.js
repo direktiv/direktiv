@@ -308,7 +308,7 @@ export function Service(props) {
                                     This will delete the pods running to support this service.
                                 </div>
                                 <div>
-                                    The pods will subsequently be recreated the next time they're executed from an action.
+                                    The pods will be recreated the next time an action is executed that requires this service.
                                 </div>
                                 <br/>
                                 <div>
