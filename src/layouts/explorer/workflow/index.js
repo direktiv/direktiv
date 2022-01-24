@@ -362,7 +362,11 @@ function WorkingRevision(props) {
                                 </div>
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
-                                <Modal 
+                                { workflow !== oldWf ?
+                                <div className='btn-terminal disabled' style={{ userSelect: "none" }} onClick={(e) => {
+                                    e.stopPropagation()
+                                }}> Run (requires save) </div>
+                                : <Modal 
                                     style={{ justifyContent: "center" }}
                                     className="run-workflow-modal"
                                     modalStyle={{color: "black"}}
@@ -390,17 +394,9 @@ function WorkingRevision(props) {
                                         }, "small light", ()=>{}, true, false)
                                     ]}
                                     button={(
-                                        <>
-                                            { workflow !== oldWf ?
-                                            <div className='btn-terminal disabled' >
-                                                Run (requires save)
-                                            </div>
-                                            :
                                             <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
                                                 Run
                                             </div>
-                                            }                                        
-                                        </>
                                     )}
                                 >
                                     <FlexBox style={{height: "40vh", width: "30vw", minWidth: "250px", minHeight: "200px"}}>
@@ -412,7 +408,7 @@ function WorkingRevision(props) {
                                             </AutoSizer>
                                         </FlexBox>
                                     </FlexBox>
-                                </Modal>
+                                </Modal>}
                             </div>
                             <div style={{ display: "flex", flex: 1, gap: "3px", justifyContent: "flex-end", paddingRight: "10px"}}>
                                 <div className={`btn-terminal ${opLoadingStates["Save"] ? "terminal-loading" : ""} ${workflow === oldWf ? "terminal-disabled" : ""}`} title={"Save workflow to latest"} onClick={async () => {
