@@ -149,6 +149,12 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 			for i := range req.Route {
 
 				route := req.Route[i]
+
+				// if the api sends a 0 we don't add it at all
+				if route.Weight == 0 {
+					continue
+				}
+
 				ref, err := flow.getRef(ctx, d.wf, route.Ref)
 				if err != nil {
 					return err
