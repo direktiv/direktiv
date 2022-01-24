@@ -35,6 +35,7 @@ import HelpIcon from "../../../components/help";
 import Loader from '../../../components/loader';
 import Alert from '../../../components/alert';
 import {AutoSizer} from "react-virtualized";
+import Tippy from '@tippyjs/react';
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -363,9 +364,11 @@ function WorkingRevision(props) {
                             </div>
                             <div style={{display:"flex", flex:1, justifyContent:"center"}}>
                                 { workflow !== oldWf ?
-                                <div className='btn-terminal disabled' style={{ userSelect: "none" }} onClick={(e) => {
-                                    e.stopPropagation()
-                                }}> Run (requires save) </div>
+                                <Tippy content={"Requires save"} trigger={'mouseenter focus click'} zIndex={10}>
+                                <div>
+                                    <div className='btn-terminal disabled' style={{ userSelect: "none" }}> Run </div>
+                                </div>
+                                </Tippy>
                                 : <Modal 
                                     style={{ justifyContent: "center" }}
                                     className="run-workflow-modal"
@@ -424,6 +427,7 @@ function WorkingRevision(props) {
                                 }}>
                                     Save
                                 </div>
+                                { workflow === oldWf ?
                                 <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`} title={"Save latest workflow as new revision"} onClick={async () => {
                                     setErrors([])
                                     try{
@@ -445,6 +449,15 @@ function WorkingRevision(props) {
                                 }}>
                                     Make Revision
                                 </div>
+                                :
+                                <Tippy content={"Requires save"} trigger={'mouseenter focus click'} zIndex={10}>
+                                    <div>
+                                        <div className="btn-terminal disabled" title={"Save latest workflow as new revision"}>
+                                            Make Revision
+                                        </div>
+                                    </div>
+                                </Tippy>
+                                }
                                 <div className={"btn-terminal editor-info"} title={`${showErrors ? "Hide Problems": "Show Problems"}`} onClick={async () => {
                                     setShowErrors(!showErrors)
                                 }}>
