@@ -868,7 +868,7 @@ function TrafficDistribution(props) {
 
 function WorkflowServices(props) {
     const {namespace, filepath} = props
-    const {data, err} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
+    const {data, err, deleteWorkflowService} = useWorkflowServices(Config.url, true, namespace, filepath.substring(1), localStorage.getItem("apikey"))
 
     if (data === null) {
         return     <div className="col">
@@ -907,10 +907,11 @@ function WorkflowServices(props) {
                             dontDelete={true}
                             url={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}
                             name={obj.info.name}
-                            version={obj.info.revision}
+                            revision={obj.info.revision}
                             status={obj.status}
                             image={obj.info.image}
                             conditions={obj.conditions}
+                            deleteService={deleteWorkflowService}
                         />
       
                     )

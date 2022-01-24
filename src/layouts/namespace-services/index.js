@@ -283,8 +283,8 @@ export function Service(props) {
                             actionButtons={[
                                 ButtonDefinition(
                                     "Yes", 
-                                    (name, revision) => {
-                                        console.log(`redeploy ${name} - ${revision}`);
+                                    async () => {
+                                        await deleteService(name, revision)
                                     },
                                     "small",
                                     () => {
@@ -306,7 +306,9 @@ export function Service(props) {
                             <div style={{ textAlign: "center" }}>
                                 <div>
                                     This will delete the pods running to support this service.
-                                    The pods will subsequently be recreated.
+                                </div>
+                                <div>
+                                    The pods will subsequently be recreated the next time they're executed from an action.
                                 </div>
                                 <br/>
                                 <div>
