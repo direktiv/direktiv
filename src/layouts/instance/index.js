@@ -72,12 +72,12 @@ function InstancePage(props) {
     let label = <></>;
     if (data.status === "complete") {
         label = <SuccessState />
+    } else if (data.status === "cancelled" || data.errorCode === "direktiv.cancels.api") {
+        label = <CancelledState />
     } else if (data.status === "failed" || data.status === "crashed") {
         label = <FailState />
     }  else  if (data.status === "running") {
         label = <RunningState />
-    } else if (data.status === "cancelled") {
-        label = <CancelledState />
     }
 
     let wfName = data.as.split(":")[0]

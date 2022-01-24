@@ -86,11 +86,17 @@ function InstancesTable(props) {
                 <>
                     <>
                     {data.map((obj)=>{
+
+                    let state = obj.node.status
+                    if (obj.node.errorCode === "direktiv.cancels.api") {
+                        state = cancelled
+                    }
+
                     return(
                         <InstanceRow 
                             key={GenerateRandomKey()}
                             namespace={namespace}
-                            state={obj.node.status} 
+                            state={state} 
                             name={obj.node.as} 
                             id={obj.node.id}
                             started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
@@ -126,12 +132,12 @@ export function InstanceRow(props) {
     let label;
     if (state === success) {
         label = <SuccessState />
+    } else if (state === cancelled) {
+        label = <CancelledState />
     } else if (state === fail || state === crashed) {
         label = <FailState />
     }  else  if (state === running) {
         label = <RunningState />
-    } else if (state === cancelled) {
-        label = <CancelledState />
     }
 
     let wfStr = name.split(':')[0]
