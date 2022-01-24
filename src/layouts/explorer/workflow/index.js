@@ -903,9 +903,11 @@ function WorkflowServices(props) {
                 {data.map((obj)=>{
                     return(
                         <Service
+                            allowRedeploy={true}
                             dontDelete={true}
                             url={`/n/${namespace}/explorer/${filepath.substring(1)}?function=${obj.info.name}&version=${obj.info.revision}`}
                             name={obj.info.name}
+                            version={obj.info.revision}
                             status={obj.status}
                             image={obj.info.image}
                             conditions={obj.conditions}

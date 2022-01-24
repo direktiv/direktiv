@@ -195,7 +195,7 @@ function NamespaceServices(props) {
 }
 
 export function Service(props) {
-    const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic, latest} = props
+    const {allowRedeploy, name, image, status, conditions, deleteService, url, revision, dontDelete, traffic, latest} = props
     return(
         <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>
@@ -267,6 +267,7 @@ export function Service(props) {
                     </div>:""}
                     </>
                 }
+                { allowRedeploy ? 
                 <div>
                     <FlexBox style={{ alignItems: "center", justifyContent: "center", height: "100%", paddingRight: "6px" }}>
                         <Modal
@@ -315,6 +316,7 @@ export function Service(props) {
                         </Modal>
                     </FlexBox>
                 </div>
+                :<></>}
             </FlexBox>
             <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                 <ServiceDetails conditions={conditions} />
