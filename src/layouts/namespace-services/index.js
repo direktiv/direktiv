@@ -1,5 +1,5 @@
 import { useNamespaceServices } from "direktiv-react-hooks";
-import {VscLayers, VscChevronDown, VscChevronRight} from 'react-icons/vsc';
+import {VscLayers, VscChevronDown, VscChevronRight, VscRefresh} from 'react-icons/vsc';
 
 import "./style.css"
 import {useEffect, useState} from "react"
@@ -14,6 +14,7 @@ import {Link} from 'react-router-dom'
 import HelpIcon from "../../components/help"
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
+import Button from "../../components/button";
 
 export default function ServicesPanel(props) {
     const {namespace} = props
@@ -195,7 +196,6 @@ function NamespaceServices(props) {
 
 export function Service(props) {
     const {name, image, status, conditions, deleteService, url, revision, dontDelete, traffic, latest} = props
-    console.log(url)
     return(
         <div className="col" style={{minWidth: "300px"}}>
             <FlexBox style={{ height:"40px", border:"1px solid #f4f4f4", backgroundColor:"#fcfdfe"}}>
@@ -267,6 +267,54 @@ export function Service(props) {
                     </div>:""}
                     </>
                 }
+                <div>
+                    <FlexBox style={{ alignItems: "center", justifyContent: "center", height: "100%", paddingRight: "6px" }}>
+                        <Modal
+                            title="Redeploy service"
+                            titleIcon={(
+                                <VscRefresh />
+                            )}
+                            button={(
+                                <Button className="light small">
+                                    <VscRefresh className="grey-text" style={{ fontSize: "16px" }} />
+                                </Button>
+                            )}
+                            actionButtons={[
+                                ButtonDefinition(
+                                    "Yes", 
+                                    (name, revision) => {
+                                        console.log(`redeploy ${name} - ${revision}`);
+                                    },
+                                    "small",
+                                    () => {
+                                        console.log("err func")
+                                    },
+                                    true,
+                                    true
+                                ),
+                                ButtonDefinition(
+                                    "Cancel", 
+                                    () => {},
+                                    "small light",
+                                    () => {},
+                                    true,
+                                    false
+                                )
+                            ]}
+                        >
+                            <div style={{ textAlign: "center" }}>
+                                <div>
+                                    This will delete the pods running to support this service.
+                                    The pods will subsequently be recreated.
+                                </div>
+                                <br/>
+                                <div>
+                                    Do you wish to continue?
+                                </div>
+                            </div>
+                        </Modal>
+                    </FlexBox>
+                </div>
             </FlexBox>
             <FlexBox style={{border:"1px solid #f4f4f4", borderTop:"none"}}>
                 <ServiceDetails conditions={conditions} />
