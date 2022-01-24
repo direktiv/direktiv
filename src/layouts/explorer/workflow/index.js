@@ -550,13 +550,20 @@ function WorkflowInstances(props) {
                 <>
                     <>
                     {instances.map((obj)=>{
+
+                    console.log(obj);
+                    let state = obj.node.status;
+                    if (obj.node.errorCode === "direktiv.cancels.api") {
+                        state = "cancelled"
+                    }
+
                     let key = GenerateRandomKey("instance-")
                     return(
                         <InstanceRow
                             wf={true}
                             key={key}
                             namespace={namespace}
-                            state={obj.node.status} 
+                            state={state} 
                             name={obj.node.as} 
                             id={obj.node.id}
                             started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
