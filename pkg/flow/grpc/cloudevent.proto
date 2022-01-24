@@ -31,6 +31,7 @@ message EventListener {
 	string mode = 4;
 	repeated EventDef events = 5;
 	// correlations 
+	google.protobuf.Timestamp created_at = 6;
 }
 
 message EventListenersEdge {
