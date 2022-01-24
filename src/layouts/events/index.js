@@ -41,7 +41,7 @@ function EventsPage(props) {
 
     // errHistory and errListeners TODO show error if one
     let {eventHistory, eventListeners, sendEvent, replayEvent} = useEvents(Config.url, true, namespace, localStorage.getItem("apikey"), {listners: [], history: []})
-    console.log(eventHistory, eventListeners)
+    console.log(eventListeners)
     return(
         <>
             <FlexBox className="gap col" style={{paddingRight: "8px"}}>
@@ -78,7 +78,7 @@ function EventsPage(props) {
                                             </th>
                                         </tr>
                                     </thead>
-                                    {eventHistory !== null ?
+                                    {eventHistory !== null && typeof eventHistory === typeof [] && eventHistory.length > 0?
                                     <tbody>
                                         {eventHistory.map((obj)=>{
                                             return <tr style={{borderBottom:"1px solid #f4f4f4"}}>
@@ -121,7 +121,11 @@ function EventsPage(props) {
                                                 </td>
                                             </tr>
                                         })}
-                                    </tbody>: ""}
+                                    </tbody>: 
+                                    <FlexBox className='table-no-content'>
+                                        No cloud events history
+                                    </FlexBox>
+                                }
                                 </table>
                             </div>
                         </ContentPanelBody>
@@ -162,7 +166,7 @@ function EventsPage(props) {
                                             </th>
                                         </tr>
                                     </thead>
-                                    {eventListeners !== null ?
+                                    {eventListeners !== null && typeof eventListeners === typeof [] && eventListeners?.length > 0 ?
                                     <tbody>
                                         {eventListeners.map((obj)=>{
                                             return(
@@ -189,7 +193,11 @@ function EventsPage(props) {
                                                 </tr>
                                             )
                                         })}
-                                    </tbody>:""}
+                                    </tbody>:
+                                        <FlexBox className='table-no-content'>
+                                            No active event listeners
+                                        </FlexBox>
+                                    }
                                 </table>
                             </div>
                         </ContentPanelBody>
