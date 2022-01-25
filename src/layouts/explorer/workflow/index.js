@@ -630,7 +630,7 @@ function OverviewTab(props) {
             <div className="gap">
                 <FlexBox className="gap wrap">
                     <FlexBox style={{ minWidth: "370px", width:"60%", maxHeight: "342px"}}>
-                        <ContentPanel style={{ width: "100%", minWidth: "300px"}}>
+                        <ContentPanel style={{ width: "100%", minWidth: "300px", overflowY: "auto"}}>
                             <ContentPanelTitle>
                                 <ContentPanelTitleIcon>
                                     <VscVmRunning />
