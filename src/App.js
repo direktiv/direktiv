@@ -77,7 +77,7 @@ function App() {
         <div>
             <FlexBox className="col navbar-userinfo">
                 <FlexBox className="navbar-version">
-                    {process.env.REACT_APP_VERSION} 
+                    <b style={{marginRight: "8px"}}>Version:</b> {version} 
                 </FlexBox>
             </FlexBox>
         </div>
