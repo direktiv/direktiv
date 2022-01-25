@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Config } from '../../util';
 import {  VscCloud, VscPlay, VscDebugStepInto } from 'react-icons/vsc';
 import Button from '../../components/button';
