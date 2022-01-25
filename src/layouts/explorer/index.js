@@ -285,7 +285,7 @@ function ExplorerList(props) {
                                     if(result.node && result.namespace){
                                         navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
-                                }, `small blue ${(name.trim()) ? "" : "disabled"}`, ()=>{}, true, false),
+                                }, `small blue`, ()=>{}, true, false, true),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", ()=>{}, true, false)
                             ]}
@@ -298,6 +298,11 @@ function ExplorerList(props) {
                                         throw new Error("Please fill in name")
                                     }
                                 }, ()=>{}, true, "workflow-name")
+                            ]}
+
+                            requiredFields={[
+                                {tip: "workflow name is required", value: name},
+                                {tip: "workflow cannot be empty", value: wfData}
                             ]}
                         >
                             <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "500px", minWidth: "550px"}}>
