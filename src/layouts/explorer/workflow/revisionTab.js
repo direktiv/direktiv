@@ -406,16 +406,20 @@ export function RevisionSelectorTab(props) {
                                                 flex: "1",
                                                 maxWidth: "150px"
                                             }}>
-                                            <FlexBox className="col revision-label-tuple">
-                                                    <div>
-                                                        Traffic amount
-                                                    </div>
-                                                    <div style={{width:'100%'}}>
-                                                        <Slider defaultValue={router.routes[1].weight} className="traffic-mini2-distribution" disabled={true}/>
+                                                <FlexBox className="col revision-label-tuple">
+                                                    { router.routes[1].weight !== 0 ?
+                                                    <>
                                                         <div>
-                                                            {router.routes[1].weight}%
+                                                            Traffic amount
                                                         </div>
-                                                    </div>
+                                                        <div style={{width:'100%'}}>
+                                                            <Slider defaultValue={router.routes[1].weight} className="traffic-mini2-distribution" disabled={true}/>
+                                                            <div>
+                                                                {router.routes[1].weight}%
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                    :<></>}
                                                 </FlexBox>
                                             </FlexBox>
                                         :""}
