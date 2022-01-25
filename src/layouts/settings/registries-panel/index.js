@@ -88,6 +88,11 @@ function RegistriesPanel(props){
                                 await getRegistries()
                             }, ()=>{}, true)
                         ]}
+                        requiredFields={[
+                            {tip: "url is required", value: url},
+                            {tip: "username is required", value: username},
+                            {tip: "token is required", value: token}
+                        ]}
                         actionButtons={[
                             ButtonDefinition("Add", async() => {
                                 setURLErr("")
@@ -109,7 +114,7 @@ function RegistriesPanel(props){
                                 if(!filledOut) throw new Error("all fields must be filled out")
                                 await createRegistry(url, `${username}:${token}`)
                                 await  getRegistries()
-                            }, "small blue", ()=>{}, true, false),
+                            }, "small blue", ()=>{}, true, false, true),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -140,7 +145,7 @@ function RegistriesPanel(props){
                                 }
                            
                             }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
-                                setSuccessFeedback(false)}, false, false),
+                                setSuccessFeedback(false)}, false, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]}

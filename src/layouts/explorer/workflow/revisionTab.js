@@ -602,11 +602,15 @@ function TagRevisionBtn(props) {
                             let revResp = await getRevisions()
                             setRevisions(revResp.edges)
                             updateTags(tagsResp.edges)
-                    }, "small blue", ()=>{}, true, false),
+                    }, "small blue", ()=>{}, true, false, true),
                     ButtonDefinition("Cancel", () => {
                     }, "small light", ()=>{}, true, false)
                 ]
             } 
+
+            requiredFields={[
+                {tip: "tag is required", value: tag}
+            ]}
         >
             <FlexBox>
                 <input autoFocus value={tag} onChange={(e)=>setTag(e.target.value)} placeholder="Enter Tag" />

@@ -353,20 +353,20 @@ function ExplorerList(props) {
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
                                         await createNode(name, "directory")
-                                    }, `small blue ${name.trim() ? "" : "disabled"}`, ()=>{}, true, false),
+                                    }, `small blue ${name.trim() ? "" : "disabled"}`, ()=>{}, true, false, true),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", ()=>{}, true, false)
                                 ]}
 
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                        if(name.trim()) {
-                                            await createNode(name, "directory")
-                                        } else {
-                                            throw new Error("Please enter directory name")
-                                        }
+                                        await createNode(name, "directory")
                                         setName("")
                                     }, ()=>{}, true)
+                                ]}
+
+                                requiredFields={[
+                                    {tip: "directory name is required", value: name}
                                 ]}
 
                             >

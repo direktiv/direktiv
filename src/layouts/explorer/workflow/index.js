@@ -564,7 +564,6 @@ function WorkflowInstances(props) {
                     <>
                     {instances.map((obj)=>{
 
-                    console.log(obj);
                     let state = obj.node.status;
                     if (obj.node.errorCode === "direktiv.cancels.api") {
                         state = "cancelled"

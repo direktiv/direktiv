@@ -61,6 +61,9 @@ function VariablesPanel(props){
                             setUploading(false)
                             setMimeType("application/json")
                         }}
+                        requiredFields={[
+                            {tip: "variable key name is required", value: keyValue}
+                        ]}
                         actionButtons={[
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
@@ -82,7 +85,7 @@ function VariablesPanel(props){
 
                                     await setNamespaceVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
-                            }, uploadingBtn, ()=>{setUploading(false)}, true, false),
+                            }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]}
@@ -353,11 +356,15 @@ function Variable(props) {
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
                                 await setNamespaceVariable(obj.node.name, file, mimeType)
-                            }, uploadingBtn,()=>{setUploading(false)}, true, false),
+                            }, uploadingBtn,()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]
                     } 
+
+                    requiredFields={[
+                        {tip: "file is required", value: file}
+                    ]}
                 >
                     <FlexBox className="col gap">
                         <VariableFilePicker setMimeType={setType} id="modal-file-picker" file={file} setFile={setFile} />

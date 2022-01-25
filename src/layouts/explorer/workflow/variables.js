@@ -1,5 +1,5 @@
 import { useWorkflowVariables } from 'direktiv-react-hooks';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { VscVariableGroup, VscCloudDownload, VscCloudUpload,  VscEye, VscTrash } from 'react-icons/vsc';
 
@@ -66,19 +66,17 @@ function AddWorkflowVariablePanel(props) {
                             ButtonDefinition("Add", async () => {
                                 if(document.getElementById("file-picker")){
                                     setUploading(true)
-                                    if(keyValue === "") {
-                                        throw new Error("Variable key name needs to be provided.")
-                                    }
                                     await setWorkflowVariable(encodeURIComponent(keyValue), file, mimeType)
                                 } else {
-                                    if(keyValue === "") {
-                                        throw new Error("Variable key name needs to be provided.")
-                                    }
                                     await setWorkflowVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
-                            }, uploadingBtn, ()=>{setUploading(false)}, true, false),
+                            }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
+                        ]}
+
+                        requiredFields={[
+                            {tip: "variable key name is required", value: keyValue}
                         ]}
                     >
                         <AddVariablePanel mimeType={mimeType} setMimeType={setMimeType} file={file} setFile={setFile} setKeyValue={setKeyValue} keyValue={keyValue} dValue={dValue} setDValue={setDValue}/>
@@ -311,11 +309,15 @@ function Variable(props) {
                             ButtonDefinition("Upload", async () => {
                                 setUploading(true)
                                 await setWorkflowVariable(obj.node.name, file, mimeType)
-                            }, uploadingBtn, ()=>{setUploading(false)}, true, false),
+                            }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
                         ]
                     } 
+
+                    requiredFields={[
+                        {tip: "file is required", value: file}
+                    ]}
                 >
                     <FlexBox className="col gap">
                         <VariableFilePicker setMimeType={setType} id="modal-file-picker" file={file} setFile={setFile} />

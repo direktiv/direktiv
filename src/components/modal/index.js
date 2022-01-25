@@ -106,7 +106,7 @@ function ModalOverlay(props) {
 
         for (let i = 0; i < requiredFields.length; i++) {
             const rField = requiredFields[i];
-            if (rField.value === "") {
+            if (rField.value === null || rField.value === "") {
                 tipMessages.push(rField.tip)
             }
         }

@@ -85,11 +85,18 @@ export function GlobalRegistries(){
                                     await  getRegistries()
                             }, ()=>{}, true)
                         ]}
+
+                        requiredFields={[
+                            {tip: "url is required", value: url},
+                            {tip: "username is required", value: username},
+                            {tip: "token is required", value: token}
+                        ]}
+
                         actionButtons={[
                             ButtonDefinition("Add", async() => {
                                     await createRegistry(url, `${username}:${token}`)
                                     await  getRegistries()
-                            }, "small blue", ()=>{}, true, false),
+                            }, "small blue", ()=>{}, true, false, true),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -120,7 +127,7 @@ export function GlobalRegistries(){
                                 }
                            
                             }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
-                                setSuccessFeedback(false)}, false, false),
+                                setSuccessFeedback(false)}, false, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{},true, false)
                         ]}
@@ -204,11 +211,18 @@ export function GlobalPrivateRegistries(){
                                     await getRegistries()
                             }, ()=>{}, true)
                         ]}
+
+                        requiredFields={[
+                            {tip: "url is required", value: url},
+                            {tip: "username is required", value: username},
+                            {tip: "token is required", value: token}
+                        ]}
+
                         actionButtons={[
                             ButtonDefinition("Add", async() => {
                                     await createRegistry(url, `${username}:${token}`)
                                     await  getRegistries()
-                            }, "small blue", ()=>{}, true, false),
+                            }, "small blue", ()=>{}, true, false, true),
                             ButtonDefinition("Test Connection", async () => {
                                 setURLErr("")
                                 setTokenErr("")
@@ -239,7 +253,7 @@ export function GlobalPrivateRegistries(){
                                 }
                            
                             }, testConnBtnClasses, ()=>{   setTestConnLoading(false)
-                                setSuccessFeedback(false)}, false, false),
+                                setSuccessFeedback(false)}, false, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light", ()=>{}, true, false)
                         ]}
