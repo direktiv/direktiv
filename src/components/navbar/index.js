@@ -108,10 +108,14 @@ function NewNamespaceBtn(props) {
                             navigate(`/n/${ns}`)
                           },200)
                           setNs("")
-                   }, "small blue", ()=>{}, true, false),
+                   }, "small blue", ()=>{}, true, false, true),
                    ButtonDefinition("Cancel", () => {
                        setNs("")
                    }, "small light", ()=>{}, true, false)
+               ]}
+
+               requiredFields={[
+                   {tip: "namespace is required", value: ns}
                ]}
         >
             <FlexBox>

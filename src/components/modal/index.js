@@ -9,11 +9,14 @@ import FlexBox from '../flexbox';
 import Alert from '../alert';
 import { VscClose } from 'react-icons/vsc';
 
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css'
+
 
 function Modal(props) {
 
     let {maximised, noPadding, titleIcon, title, children, button, withCloseButton, activeOverlay, label, buttonDisabled} = props;
-    let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen } = props;
+    let {modalStyle, style, actionButtons, keyDownActions, escapeToCancel, onClose, onOpen, requiredFields } = props;
     const [visible, setVisible] = useState(false);
 
     if (!title) {
@@ -49,6 +52,7 @@ function Modal(props) {
                         callback={callback} 
                         onOpen={onOpen}
                         actionButtons={actionButtons}
+                        requiredFields={requiredFields}
                         escapeToCancel={escapeToCancel}
                         keyDownActions={keyDownActions}
                         titleIcon={titleIcon}
@@ -90,12 +94,32 @@ function Modal(props) {
 
 export default Modal;
 
+
+
 function ModalOverlay(props) {
+    function validateFields(requiredFields) {
+        let tipMessages = []
+        
+        if (!requiredFields) {
+            return {tips: tipMessages, valid: tipMessages.length===0}
+        }
+
+        for (let i = 0; i < requiredFields.length; i++) {
+            const rField = requiredFields[i];
+            if (rField.value === null || rField.value === "") {
+                tipMessages.push(rField.tip)
+            }
+        }
+    
+        return {tips: tipMessages, valid: tipMessages.length===0}
+    }
 
     let {maximised, noPadding, titleIcon, modalStyle, title, children, callback, activeOverlay, withCloseButton} = props;
-    let {actionButtons, escapeToCancel, keyDownActions} = props;
+    let {actionButtons, escapeToCancel, keyDownActions, requiredFields} = props;
     const [displayAlert, setDisplayAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+
+    const validateResults = validateFields(requiredFields)
 
     
     useEffect(()=>{
@@ -172,7 +196,7 @@ function ModalOverlay(props) {
 
     let buttons
     if (actionButtons){
-       buttons = generateButtons(callback, setDisplayAlert, setAlertMessage, actionButtons);
+       buttons = generateButtons(callback, setDisplayAlert, setAlertMessage, actionButtons, validateResults);
     } 
 
     let contentBodyStyle = {}
@@ -251,14 +275,15 @@ function ModalOverlay(props) {
     )
 }
 
-export function ButtonDefinition(label, onClick, classList, errFunc, closesModal, async) {
+export function ButtonDefinition(label, onClick, classList, errFunc, closesModal, async, validate) {
     return {
         label: label,
         onClick: onClick,
         classList: classList,
         errFunc: errFunc,
         closesModal: closesModal,
-        async: async
+        async: async,
+        validate: validate
     }
 }
 // KeyDownDefinition :
@@ -276,14 +301,16 @@ export function KeyDownDefinition(code, fn, errFunc, closeModal, targetElementID
     }
 }
 
-function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionButtons) {
+function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionButtons, validateResults) {
 
     // label, onClick, classList, closesModal, async
+
 
     let out = [];
     for (let i = 0; i < actionButtons.length; i++) {
 
         let btn = actionButtons[i];
+
         let onClick =  async () => {
             try {
                 await btn.onClick()
@@ -307,8 +334,17 @@ function generateButtons(closeModal, setDisplayAlert, setAlertMessage, actionBut
         }
 
         out.push(
-            <Button key={Array(5).fill().map(()=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(Math.random()*62)).join("")} className={btn.classList} onClick={onClick}>
-                <div>{btn.label}</div>
+            !validateResults.valid && btn.validate ? 
+            <Tippy content={`${validateResults.tips.join(", ")}`} trigger={'mouseenter focus click'} zIndex={10}>
+                <div>
+                <Button key={Array(5).fill().map(()=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(Math.random()*62)).join("")} className={`disabled ${btn.classList}`} onClick={onClick}>
+                    <div>{btn.label}</div>
+                </Button>
+                </div>
+            </Tippy>
+            :
+            <Button key={Array(5).fill().map(()=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(Math.random()*62)).join("")} className={`${btn.classList}`} onClick={onClick}>
+                    <div>{btn.label}</div>
             </Button>
         )
     }

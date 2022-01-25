@@ -75,10 +75,13 @@ export default function GlobalRevisionsPanel(props){
                                     KeyDownDefinition("Enter", async () => {
                                     },()=>{}, true)
                                 ]}
+                                requiredFields={[
+                                    {tip: "image is required", value: image}
+                                ]}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
                                         await createGlobalServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                    }, "small blue", ()=>{}, true, false),
+                                    }, "small blue", ()=>{}, true, false, true),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", ()=>{}, true, false)
                                 ]}

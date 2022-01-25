@@ -285,7 +285,7 @@ function ExplorerList(props) {
                                     if(result.node && result.namespace){
                                         navigate(`/n/${result.namespace}/explorer/${result.node.path.substring(1)}`)
                                     }
-                                }, `small blue ${(name.trim()) ? "" : "disabled"}`, ()=>{}, true, false),
+                                }, `small blue`, ()=>{}, true, false, true),
                                 ButtonDefinition("Cancel", () => {
                                 }, "small light", ()=>{}, true, false)
                             ]}
@@ -298,6 +298,11 @@ function ExplorerList(props) {
                                         throw new Error("Please fill in name")
                                     }
                                 }, ()=>{}, true, "workflow-name")
+                            ]}
+
+                            requiredFields={[
+                                {tip: "workflow name is required", value: name},
+                                {tip: "workflow cannot be empty", value: wfData}
                             ]}
                         >
                             <FlexBox className="col gap" style={{fontSize: "12px", minHeight: "500px", minWidth: "550px"}}>
@@ -348,20 +353,20 @@ function ExplorerList(props) {
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
                                         await createNode(name, "directory")
-                                    }, `small blue ${name.trim() ? "" : "disabled"}`, ()=>{}, true, false),
+                                    }, `small blue ${name.trim() ? "" : "disabled"}`, ()=>{}, true, false, true),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", ()=>{}, true, false)
                                 ]}
 
                                 keyDownActions={[
                                     KeyDownDefinition("Enter", async () => {
-                                        if(name.trim()) {
-                                            await createNode(name, "directory")
-                                        } else {
-                                            throw new Error("Please enter directory name")
-                                        }
+                                        await createNode(name, "directory")
                                         setName("")
                                     }, ()=>{}, true)
+                                ]}
+
+                                requiredFields={[
+                                    {tip: "directory name is required", value: name}
                                 ]}
 
                             >

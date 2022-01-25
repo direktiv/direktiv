@@ -143,9 +143,13 @@ function NamespaceServices(props) {
                     actionButtons={[
                         ButtonDefinition("Add", async () => {
                             await createNamespaceService(serviceName, image, parseInt(scale), parseInt(size), cmd)
-                        }, "small blue", ()=>{}, true, false),
+                        }, "small blue", ()=>{}, true, false, true),
                         ButtonDefinition("Cancel", () => {
                         }, "small light", ()=>{}, true, false)
+                    ]}
+                    requiredFields={[
+                        {tip: "service name is required", value: serviceName},
+                        {tip: "image is required", value: image}
                     ]}
                 >
                     {config !== null ? 

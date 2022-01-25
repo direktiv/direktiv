@@ -1,10 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './style.css'
 import FlexBox from '../flexbox'
 
 function Tabs(props) {
 
+    const {callback} = props
     const [activeTab, setActiveTab] = useState(0)
+
+    useEffect(()=>{
+        if (callback) {
+            callback(activeTab)
+        }
+    }, callback, activeTab)
 
     let {style, headers, tabs} = props;
     if (!headers || !tabs) {

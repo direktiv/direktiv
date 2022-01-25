@@ -138,10 +138,13 @@ function NamespaceRevisions(props) {
                                     KeyDownDefinition("Enter", async () => {
                                     }, ()=>{}, true)
                                 ]}
+                                requiredFields={[
+                                    {tip: "image is required", value: image}
+                                ]}
                                 actionButtons={[
                                     ButtonDefinition("Add", async () => {
                                         await createNamespaceServiceRevision(image, parseInt(scale), parseInt(size), cmd, parseInt(trafficPercent))
-                                    }, "small blue", ()=>{}, true, false),
+                                    }, "small blue", ()=>{}, true, false, true),
                                     ButtonDefinition("Cancel", () => {
                                     }, "small light", ()=>{}, true, false)
                                 ]}

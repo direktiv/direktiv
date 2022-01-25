@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import './style.css';
 import AddValueButton from '../../../components/add-button';
 import ContentPanel, {ContentPanelTitle, ContentPanelTitleIcon, ContentPanelBody } from '../../../components/content-panel';
@@ -23,8 +23,6 @@ function SecretsPanel(props){
     const [file, setFile] = useState(null)
     const [vValue, setVValue] = useState("")
     const {data, createSecret, deleteSecret, getSecrets} = useSecrets(Config.url, namespace, localStorage.getItem("apikey"))
-   
-    // createErr is the error when creating a secret
 
     return (
         <ContentPanel style={{ height: "100%", minHeight: "180px", width: "100%" }}>
@@ -75,12 +73,15 @@ function SecretsPanel(props){
                                     await createSecret(keyValue, vValue)
                                 }
                                 await  getSecrets()
-                            }, "small blue",()=>{}, true, false),
+                            }, "small blue",()=>{}, true, false, true),
                             ButtonDefinition("Cancel", () => {
                             }, "small light",()=>{}, true, false)
                         ]}
+                        requiredFields={[
+                            { tip: "secret key is required", value: keyValue }
+                        ]}
                     >
-                         <Tabs 
+                         <Tabs
             style={{minHeight: "100px", minWidth: "400px"}}
             headers={["Manual", "Upload"]}
             tabs={[(     
