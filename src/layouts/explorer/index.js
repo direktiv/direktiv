@@ -23,7 +23,7 @@ import { AutoSizer } from 'react-virtualized';
 import Pagination from '../../components/pagination';
 import Alert from '../../components/alert';
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 10
 const apiHelps = (namespace) => {
     let url = window.location.origin
     return(
@@ -446,7 +446,7 @@ function ExplorerList(props) {
                     </FlexBox>
             </ContentPanelBody>
             <FlexBox>
-                { !!totalCount && <Pagination pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
+                { !!totalCount && <Pagination pageSize={PAGE_SIZE} pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
             </FlexBox>
         </ContentPanel>
     </Loader>

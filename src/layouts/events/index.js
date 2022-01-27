@@ -36,7 +36,7 @@ function EventsPageWrapper(props) {
 
 export default EventsPageWrapper;
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 8;
 
 function EventsPage(props) {
 

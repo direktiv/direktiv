@@ -208,7 +208,7 @@ function MonitoringPage(props) {
 
 function FailedExecutions(props) {
     const {namespace} = props
-    const [qParams] = useState(["first=10", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
+    const [qParams] = useState(["first=5", "filter.field=STATUS", "filter-type=MATCH", "filter.val=failed"])
 
     const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     
@@ -258,7 +258,7 @@ function FailedExecutions(props) {
 
 function SuccessfulExecutions(props) {
     const {namespace} = props
-    const [qParams] = useState(["first=10", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
+    const [qParams] = useState(["first=5", "filter.field=STATUS", "filter.type=MATCH", "filter.val=complete"])
 
     const {data} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...qParams)
     // todo implement loading

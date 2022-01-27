@@ -15,7 +15,7 @@ import utc from "dayjs/plugin/utc"
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 10
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -119,7 +119,7 @@ function InstancesTable(props) {
         </ContentPanelBody>
     </ContentPanel>
     <FlexBox>
-        {!!totalCount && <Pagination pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
+        {!!totalCount && <Pagination pageSize={PAGE_SIZE} pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
     </FlexBox>
     </Loader>
         
