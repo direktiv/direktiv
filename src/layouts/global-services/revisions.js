@@ -34,7 +34,13 @@ export default function GlobalRevisionsPanel(props){
 
     useEffect(()=>{
         async function cfgGet() {
-            await getServiceConfig().then(response => setMaxScale(response.maxscale));
+            try {
+                await getServiceConfig().then(response => setMaxScale(response.maxscale));
+            } catch(e) {
+                if(e.message === "get global service: not found"){
+                    navigate(`/not-found`)
+                }
+            }
         }
         if(load && config === null) {
             cfgGet()

@@ -8,7 +8,7 @@ import FlexBox from '../../components/flexbox';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
 import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import { VscCopy, VscEye, VscEyeClosed, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
 
@@ -45,6 +45,8 @@ function InstancePage(props) {
     const [width,] = useState(window.innerWidth);
     const [clipData, setClipData] = useState(null)
     const params = useParams()
+    const navigate = useNavigate()
+
 
     let instanceID = params["id"];
 
@@ -61,6 +63,12 @@ function InstancePage(props) {
         }
 
     },[load, data, workflow])
+
+    useEffect(()=>{      
+        if(err === "Not Found" || (err !== null && err.indexOf("invalid UUID") >= 0)) {
+            navigate(`/not-found`)
+        }
+    },[err])
 
     if (data === null) {
         return <></>
@@ -332,12 +340,8 @@ function InstanceDiagram(props) {
     const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, localStorage.getItem("apikey"))
 
     useEffect(()=>{
-        console.log("rev = ", rev)
-        console.log("ref = ", instRef)
         async function getwf() {
             if(wfpath !== "" && instRef != "" && rev !== null && rev !== "" && load){
-                console.log("fetching")
-
                 let refWF = await getWorkflowRevisionData(instRef === "latest" ? instRef : rev)
                 setWFData(atob(refWF.revision.source))
                 setLoad(false)
