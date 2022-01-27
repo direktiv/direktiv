@@ -39,7 +39,8 @@ function InstancePage(props) {
     let {namespace} = props;
     const [load, setLoad] = useState(true)
     const [wfpath, setWFPath] = useState("")
-    const [rev, setRev] = useState("")
+    const [ref, setRef] = useState("")
+    const [rev, setRev] = useState(null)
     const [follow, setFollow] = useState(true)
     const [width,] = useState(window.innerWidth);
     const [clipData, setClipData] = useState(null)
@@ -47,18 +48,19 @@ function InstancePage(props) {
 
     let instanceID = params["id"];
 
-    // todo implement cancelInstance
-    let {data, err,  getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
+    let {data, err, workflow, getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
 
 
     useEffect(()=>{
-        if(load && data !== null) {
+        if(load && data !== null && workflow != null) {
             let split = data.as.split(":")
             setWFPath(split[0])
-            setRev(split[1])
+            setRef(split[1])
+            setRev(workflow.revision)
             setLoad(false)
         }
-    },[load, data])
+
+    },[load, data, workflow])
 
     if (data === null) {
         return <></>
@@ -82,12 +84,6 @@ function InstancePage(props) {
 
     let wfName = data.as.split(":")[0]
     let revName = data.as.split(":")[1]
-
-    let linkURL = "";
-    if (!revName) {
-        revName = "latest"
-    }
-    linkURL = `/n/${namespace}/explorer/${wfName}?tab=1&revision=${revName}&revtab=0`;
 
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
@@ -114,11 +110,18 @@ function InstancePage(props) {
                                         </span>
                                     </Button>
                                     :<></>}
-                                    <Link to={linkURL}>
+                                    {rev === null || rev === ""
+                                    ?
+                                    <>
+                                    </>
+                                    :
+                                    <Link to={`/n/${namespace}/explorer/${wfName}?tab=1&revision=${ref==="latest" ? ref : rev}&revtab=0`}>
                                         <Button className="small light">
                                             <span className="hide-on-small">View</span> Workflow
                                         </Button>
                                     </Link>
+                                    }
+                                    
                                     <Modal
                                     escapeToCancel
                                     activeOverlay
@@ -214,7 +217,7 @@ function InstancePage(props) {
                             </FlexBox>
                         </ContentPanelTitle>
                         <ContentPanelBody>
-                            <InstanceDiagram status={data.status} namespace={namespace} wfpath={wfpath} rev={rev} flow={data.flow}/>
+                            <InstanceDiagram status={data.status} namespace={namespace} wfpath={wfpath} rev={rev} instRef={ref} flow={data.flow}/>
                         </ContentPanelBody>
                     </ContentPanel>
                 </FlexBox>
@@ -320,24 +323,39 @@ export function TerminalButton(props) {
 }
 
 function InstanceDiagram(props) {
-    const {wfpath, rev, flow, namespace, status} = props
+    const {wfpath, rev, instRef, flow, namespace, status} = props
 
     const [load, setLoad] = useState(true)
+    const [workflowMissing, setWorkflowMissing] = useState(false)
     const [wfdata, setWFData] = useState("")
 
     const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, localStorage.getItem("apikey"))
 
     useEffect(()=>{
+        console.log("rev = ", rev)
+        console.log("ref = ", instRef)
         async function getwf() {
-            if(wfpath !== "" && rev !== "" && load){
-                let ref = await getWorkflowRevisionData(rev)
-                setWFData(atob(ref.revision.source))
+            if(wfpath !== "" && instRef != "" && rev !== null && rev !== "" && load){
+                console.log("fetching")
+
+                let refWF = await getWorkflowRevisionData(instRef === "latest" ? instRef : rev)
+                setWFData(atob(refWF.revision.source))
                 setLoad(false)
+            } else if(rev === ""){
+                setWorkflowMissing(true)
             }
         }
         
         getwf()
-    },[wfpath, rev, load, getWorkflowRevisionData])
+    },[wfpath, rev, load, instRef, getWorkflowRevisionData])
+
+    if (workflowMissing) {
+        return  (
+            <div style={{display: "flex", justifyContent:"center", alignItems: "center", width: "100%", color: "#566874", fontSize:"16px", fontStyle:"italic"}}>
+                Workflow revision that executed instance no longer exists
+            </div>
+            )
+    }
 
     if(load){
         return <></>

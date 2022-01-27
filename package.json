@@ -13,7 +13,7 @@
     "d3-sankey-circular": "^0.34.0",
     "dagre": "^0.8.5",
     "dayjs": "^1.10.7",
-    "direktiv-react-hooks": "^0.0.216",
+    "direktiv-react-hooks": "^0.0.217",
     "js-yaml": "^4.1.0",
     "monaco": "^1.201704190613.0",
     "object-hash": "^2.2.0",
