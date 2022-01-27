@@ -186,12 +186,12 @@ function ExplorerList(props) {
     const [load, setLoad] = useState(true)
 
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
-
-    const [wfData, setWfData] = useState("")
-    const [wfTemplate, setWfTemplate] = useState("")
      
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
     const {data, err, templates, pageInfo, createNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`)
+
+    const [wfData, setWfData] = useState(templates["noop"])
+    const [wfTemplate, setWfTemplate] = useState("noop")
 
     function resetQueryParams() {
         setQueryParams([`first=${PAGE_SIZE}`])
