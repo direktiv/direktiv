@@ -1,4 +1,4 @@
-FROM alpine:3.13.2
+FROM alpine:3.15.0
 
 COPY flow-dbinit /bin/flow-dbinit
 RUN chmod 755 /bin/flow-dbinit
