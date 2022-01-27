@@ -1,110 +1,76 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import './style.css';
 import FlexBox from '../flexbox';
-import {VscChevronLeft, VscChevronRight} from 'react-icons/vsc'
+import {BsChevronBarLeft, BsChevronBarRight, BsChevronLeft, BsChevronRight} from 'react-icons/bs'
+
+
 
 function Pagination(props) {
 
-    let {max, currentIndex, pageNoSetter} = props;
-    let min = currentIndex-1;
-    if (min < 1) {
-        min = 1
-    }
+    const { pageInfo, updatePage, pageSize=5, total=1 } = props;
 
-    if (max === currentIndex) {
-        min = max-4;
-        if (min < 1) {
-            min = 1;
-        }
-    }
-
-    let rangeMin = min;
-    if (max - rangeMin < 5) {
-        rangeMin = max - 5;
-    } 
-
-    let count = 0;
-
-    let pageBtns = [];
-    for (let i = rangeMin; i < min+5; i++) {
-        if (i > 0) {
-            if (i > max) {
+    const handlePageChange = useCallback((direction)=>{
+        switch(direction){
+            case 'next':
+                if(pageInfo?.hasNextPage){
+                    const after = `after=${pageInfo?.endCursor}`
+                    const first = `first=${pageSize}`
+                    updatePage([first, after])
+                }
                 break
-            }
-    
-            if ((i === min+4) && (i !== max)) {
-                count += 2;
-                pageBtns.push(
-                    <PaginationButton label="..."/>
-                )
-                pageBtns.push(
-                    <PaginationButton currentIndex={i === currentIndex} label={max} onClick={() => {
-                        pageNoSetter(max)
-                    }}/>
-                )
-    
+            case 'prev':
+                if(pageInfo?.hasPreviousPage){
+                    const before = `before=${pageInfo?.startCursor}`
+                    const first = `last=${pageSize}`
+                    updatePage([before, first])
+                }
+                break
+            case 'first': 
+                updatePage([`first=${pageSize}`])
                 break;
-            } else {
-                count++;
-                pageBtns.push(
-                    <PaginationButton currentIndex={i === currentIndex} label={i} onClick={() => {
-                        pageNoSetter(i)
-                    }}/>
-                )
-            }
+            case 'last':
+                const rest = total%pageSize
+                updatePage([`last=${(rest === 0)? pageSize: rest}`])
+                break;
+            default:   
+                return    
         }
-    }
-
-    let leftPaginationBtnClasses = "pagination-btn";
-    let leftChevronClasses = "auto-margin"
-    if (currentIndex === 1) {
-        leftChevronClasses += " hidden"
-        leftPaginationBtnClasses += " disabled"
-    }
-
-    let rightPaginationBtnClasses = "pagination-btn";
-    let rightChevronClasses = "auto-margin"
-    if (currentIndex === max) {
-        rightChevronClasses += " hidden"
-        rightPaginationBtnClasses += " disabled"
-    }
+    }, [pageInfo, total, pageSize, updatePage])
+    
+    const hasNext = pageInfo?.hasNextPage? 'arrow active': 'arrow'
+    const hasPrev = pageInfo?.hasPreviousPage? 'arrow active': 'arrow'
 
     return(
-        <FlexBox className="pagination-container auto-margin" style={{ maxWidth: ((count + 2) * 24) + (count-1 * 8) + "px" }}>
-            <FlexBox className={leftPaginationBtnClasses} style={{ maxWidth: "24px" }} onClick={() => {
-                pageNoSetter(currentIndex-1)
+        <FlexBox style={{justifyContent: "flex-end"}}>
+        <FlexBox className="pagination-container" style={{}}>
+            <FlexBox className={'pagination-btn'} style={{ maxWidth: "24px" }} onClick={() => {
+                handlePageChange('first')
             }}>
-                <VscChevronLeft className={leftChevronClasses} />
+                <BsChevronBarLeft className={'arrow active'} />
             </FlexBox>
-            {pageBtns}
-            <FlexBox className={rightPaginationBtnClasses} onClick={() => {
-                pageNoSetter(currentIndex+1)
+            
+            <FlexBox className={'pagination-btn'} style={{ maxWidth: "24px" }} onClick={() => {
+                handlePageChange('prev')
             }}>
-                <VscChevronRight className={rightChevronClasses} />
+                <BsChevronLeft className={hasPrev} />
             </FlexBox>
+            <FlexBox style={{width: "40px"}}>
+
+            </FlexBox>
+            <FlexBox className={'pagination-btn'} style={{ maxWidth: "24px" }} onClick={() => {
+                handlePageChange('next')
+            }}>
+                <BsChevronRight className={hasNext} />
+            </FlexBox>
+
+            <FlexBox className={'pagination-btn'} onClick={() => {
+                handlePageChange('last')
+            }}>
+                <BsChevronBarRight className={'arrow active'} />
+            </FlexBox>
+        </FlexBox>
         </FlexBox>
     )
 }
 
 export default Pagination;
-
-function PaginationButton(props) {
-
-    let {label, onClick, currentIndex} = props;
-    let classes = "pagination-btn auto-margin";
-    if (!onClick) {
-        classes += " disabled"
-    }
-
-    if (currentIndex) {
-        classes += " active-pagination-btn"
-    }
-
-    return(
-        <FlexBox className={classes} onClick={onClick}>
-            <div style={{textAlign: "center"}}>
-                {label}
-            </div>
-        </FlexBox>
-    )
-}

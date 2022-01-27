@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import './style.css';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
+import Pagination from '../../components/pagination';
 import FlexBox from '../../components/flexbox';
 import { VscVmRunning } from 'react-icons/vsc';
 import { BsDot } from 'react-icons/bs';
@@ -13,6 +14,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
+
+const PAGE_SIZE = 5
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -34,9 +37,14 @@ export default InstancesPage;
 function InstancesTable(props) {
     const {namespace} = props
     const [load, setLoad] = useState(true)
-    const [iQueryParams, ] = useState([])
-    const {data, err, totalCount} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...iQueryParams)
-    console.log(totalCount)
+    
+    const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
+    const {data, err, getInstances, pageInfo, totalCount} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...queryParams)
+
+    const updatePage = useCallback((newParam)=>{
+        setQueryParams(newParam)
+    }, [])
+
     useEffect(()=>{
         if(data !== null || err !== null) {
             setLoad(false)
@@ -60,59 +68,59 @@ function InstancesTable(props) {
         <ContentPanelBody>
         <>
         {
-            data !== null && data.length === 0 ? <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>:
-            <table className="instances-table" style={{width: "100%"}}>
-            <thead>
-                <tr>
-                    <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>
-                        State
-                    </th>
-                    <th className="center-align">
-                        Name
-                    </th>
-                    <th className="center-align">
-                        Revision ID
-                    </th>
-                    <th className="center-align">
-                        Started <span className="hide-on-med">at</span>
-                    </th>
-                    <th className="center-align">
-                        <span className="hide-on-med">Last</span> Updated
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {data !== null ? 
-                <>
-                    <>
-                    {data.map((obj)=>{
-
-                    let state = obj.node.status
-                    if (obj.node.errorCode === "direktiv.cancels.api") {
-                        state = cancelled
-                    }
-
-                    return(
-                        <InstanceRow 
-                            key={GenerateRandomKey()}
-                            namespace={namespace}
-                            state={state} 
-                            name={obj.node.as} 
-                            id={obj.node.id}
-                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
-                            startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm:ss a")}
-                            finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
-                        />
-                    )
-                    })}</>
-                </>
-                :""}
-            </tbody>
-        </table>}</>
+            data !== null && data.length === 0 ? 
+                <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>
+            :
+                <table className="instances-table" style={{width: "100%"}}>
+                    <thead>
+                        <tr>
+                            <th className="center-align" style={{maxWidth: "120px", minWidth: "120px", width: "120px"}}>
+                                State
+                            </th>
+                            <th className="center-align">
+                                Name
+                            </th>
+                            <th className="center-align">
+                                Revision ID
+                            </th>
+                            <th className="center-align">
+                                Started <span className="hide-on-med">at</span>
+                            </th>
+                            <th className="center-align">
+                                <span className="hide-on-med">Last</span> Updated
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data !== null ? 
+                        <>
+                            <>
+                            {data.map((obj)=>{
+                            return(
+                                <InstanceRow 
+                                    key={GenerateRandomKey()}
+                                    namespace={namespace}
+                                    state={obj.node.status} 
+                                    name={obj.node.as} 
+                                    id={obj.node.id}
+                                    started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                                    startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
+                                    finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
+                                    finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
+                                />
+                            )
+                            })}</>
+                        </>
+                        :""}
+                    </tbody>
+                </table>
+        }
+        </>
         </ContentPanelBody>
     </ContentPanel>
-
+    <FlexBox>
+        {!!totalCount && <Pagination pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
+    </FlexBox>
     </Loader>
         
     );

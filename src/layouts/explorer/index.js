@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import './style.css';
 
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -20,8 +20,10 @@ import { useSearchParams } from 'react-router-dom';
 import WorkflowRevisions from './workflow/revision';
 import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
+import Pagination from '../../components/pagination';
 import Alert from '../../components/alert';
 
+const PAGE_SIZE = 5
 const apiHelps = (namespace) => {
     let url = window.location.origin
     return(
@@ -185,10 +187,16 @@ function ExplorerList(props) {
 
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
 
-    // const [pageNo, setPageNo] = useState(1);
-    const {data, err, templates, createNode, deleteNode, renameNode } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
-    const [wfTemplate, setWfTemplate] = useState("noop")
-    const [wfData, setWfData] = useState(templates["noop"])
+    const [wfData, setWfData] = useState("")
+    const [wfTemplate, setWfTemplate] = useState("")
+     
+    const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
+    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`)
+
+    function resetQueryParams() {
+        setQueryParams([`first=${PAGE_SIZE}`])
+    }
+
     // control loading icon todo work out how to display this error
     useEffect(()=>{
         if(data !== null || err !== null) {
@@ -203,11 +211,17 @@ function ExplorerList(props) {
         }
     },[path, currPath])
 
+    //pagination
+    const updatePage = useCallback((newParam)=>{
+        setQueryParams(newParam)
+    }, [])
+
     if(data !== null) {
         if(data.node.type === "workflow") {
             return <WorkflowPage namespace={namespace}/>
         }
     }
+    
     
 
     return(
@@ -423,7 +437,7 @@ function ExplorerList(props) {
                         <>
                         {data.children.edges.map((obj) => {
                             if (obj.node.type === "directory") {
-                                return (<DirListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
+                                return (<DirListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} resetQueryParams={resetQueryParams}/>)
                             } else if (obj.node.type === "workflow") {
                                 return (<WorkflowListItem namespace={namespace} renameNode={renameNode} deleteNode={deleteNode} path={obj.node.path} key={GenerateRandomKey("explorer-item-")} name={obj.node.name} />)
                             }
@@ -431,10 +445,10 @@ function ExplorerList(props) {
                         })}</>}</>: <></>}
                     </FlexBox>
             </ContentPanelBody>
+            <FlexBox>
+                { !!totalCount && <Pagination pageInfo={pageInfo} updatePage={updatePage} total={totalCount}/>}
+            </FlexBox>
         </ContentPanel>
-    {/* <FlexBox>
-        <Pagination max={10} currentIndex={pageNo} pageNoSetter={setPageNo} />
-    </FlexBox> */}
     </Loader>
   
     </FlexBox>
@@ -443,7 +457,7 @@ function ExplorerList(props) {
 
 function DirListItem(props) {
 
-    let {name, path, deleteNode, renameNode, namespace} = props;
+    let {name, path, deleteNode, renameNode, namespace, resetQueryParams} = props;
 
     const navigate = useNavigate()
     const [renameValue, setRenameValue] = useState(path)
@@ -454,6 +468,7 @@ function DirListItem(props) {
     return(
         <div style={{cursor:"pointer"}} onClick={(e)=>{
             navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
+            resetQueryParams()
         }} className="explorer-item">
             <FlexBox className="col">
                 <FlexBox className="explorer-item-container gap wrap">

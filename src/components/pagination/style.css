@@ -1,21 +1,30 @@
 .pagination-container {
     color: var(--theme-dark-gray-text);
-    /* max-width: 216px; */
+    padding: 10px;
+    align-self: flex-end;
+    max-width: 150px;
 }
 
 .pagination-btn {
-    cursor: pointer;
-    border-radius: 4px;
-    max-width: 20px;
     user-select: none;
+    color: #8797AD;
+    width: 20px;
 }
 
 .pagination-btn > div {
     width: 100%;
 }
 
-.pagination-btn:hover {
+.arrow.active:hover {
+    cursor: pointer;
     background-color: rgba(0,0,0,0.1);
+}
+
+.arrow {
+    color: #8797AD
+}
+.arrow.active {
+    color: #3E94C5
 }
 
 .active-pagination-btn {
