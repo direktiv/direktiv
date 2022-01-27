@@ -77,7 +77,7 @@ export function RevisionCreatePanel(props){
 function NamespaceRevisions(props) {
     const {namespace, service} = props
     const navigate = useNavigate()
-    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, localStorage.getItem("apikey"))
+    const {revisions, config, traffic, err, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
@@ -98,7 +98,13 @@ function NamespaceRevisions(props) {
 
     useEffect(()=>{
         async function cfgGet() {
-            await getNamespaceServiceConfig().then(response => setMaxScale(response.maxscale));
+            try {
+                await getNamespaceServiceConfig().then(response => setMaxScale(response.maxscale));
+            } catch(e) {
+                if(e.message === "get namespace service: not found"){
+                    navigate(`/not-found`)
+                }
+            }
         }
         if(load && config === null) {
             cfgGet()

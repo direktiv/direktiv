@@ -22,6 +22,7 @@ import WorkflowPod from './workflow/pod'
 import { AutoSizer } from 'react-virtualized';
 import Pagination from '../../components/pagination';
 import Alert from '../../components/alert';
+import NotFound from '../notfound';
 
 const PAGE_SIZE = 5
 const apiHelps = (namespace) => {
@@ -215,6 +216,10 @@ function ExplorerList(props) {
     const updatePage = useCallback((newParam)=>{
         setQueryParams(newParam)
     }, [])
+
+    if (err === "Not Found") {
+        return <NotFound/>
+    }
 
     if(data !== null) {
         if(data.node.type === "workflow") {
