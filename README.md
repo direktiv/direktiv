@@ -31,19 +31,19 @@ Additional resources to get started:
 
 <table>
   <tr>
-    <th>Dashboard</th>
-    <th>Flow Builder</th>
+    <th>Knative Services</th>
+    <th>Orchestration Flow</th>
   </tr>
   <tr>
-    <td><img src="assets/images/direktiv-ui.png" alt="direktiv ui"></td>
-    <td><img src="assets/images/workflow-builder.png" alt="direktiv ui"></td>
+    <td><img src="assets/images/readme.png" alt="direktiv ui"></td>
+    <td><img src="assets/images/readme1.png" alt="direktiv ui"></td>
   </tr>
   <tr>
     <th>YAML definition</th>
     <th>OpenTelemetry Integration</th>
   </tr>
   <tr>
-    <td><img src="assets/images/yaml.png" alt="direktiv ui"></td>
+    <td><img src="assets/images/readme2.png" alt="direktiv ui"></td>
     <td><img src="assets/images/grafana-tempo.png" alt="direktiv ui"></td>
   </tr>  
 </table>
@@ -177,7 +177,7 @@ $ curl -X POST  "http://localhost:8080/api/namespaces/demo/tree/get-bitcoin?op=w
 The UI displays the log output and state of the workflow from start to completion.
 
 <p align="center">
-  <img src="assets/images/bitcoin_ui.png" alt="direktiv ui">
+  <img src="assets/images/btc.png" alt="direktiv ui">
 </p>
 
 # Documentation
