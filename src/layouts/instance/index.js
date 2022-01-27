@@ -340,12 +340,8 @@ function InstanceDiagram(props) {
     const {getWorkflowRevisionData} = useWorkflow(Config.url, false, namespace, wfpath, localStorage.getItem("apikey"))
 
     useEffect(()=>{
-        console.log("rev = ", rev)
-        console.log("ref = ", instRef)
         async function getwf() {
             if(wfpath !== "" && instRef != "" && rev !== null && rev !== "" && load){
-                console.log("fetching")
-
                 let refWF = await getWorkflowRevisionData(instRef === "latest" ? instRef : rev)
                 setWFData(atob(refWF.revision.source))
                 setLoad(false)
