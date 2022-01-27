@@ -72,7 +72,7 @@ function VariablesPanel(props){
                                         throw new Error("Variable key name needs to be provided.")
                                     }
                                     if(!file) {
-                                        throw new Error("Variable key name needs to be provided.")
+                                        throw new Error("Variable file needs to be provided.")
                                     }
                                     await setNamespaceVariable(encodeURIComponent(keyValue), file, mimeType)
                                 } else {
@@ -80,9 +80,11 @@ function VariablesPanel(props){
                                         throw new Error("Variable key name needs to be provided.")
                                     }
                                     if(dValue.trim() === "") {
+                                        throw new Error("Variable value needs to be provided.")
+                                    }
+                                    if (mimeType === "") {
                                         throw new Error("Variable mimetype needs to be provided.")
                                     }
-
                                     await setNamespaceVariable(encodeURIComponent(keyValue), dValue, mimeType)
                                 }
                             }, uploadingBtn, ()=>{setUploading(false)}, true, false, true),
@@ -441,6 +443,9 @@ function VariablesDeleteButton() {
 }
 
 function fileSize(size) {
+    if (size <= 0) {
+        return "0 B"
+    }
     var i = Math.floor(Math.log(size) / Math.log(1024));
     return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 }
