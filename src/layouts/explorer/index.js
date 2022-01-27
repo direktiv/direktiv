@@ -196,6 +196,7 @@ function ExplorerList(props) {
 
     function resetQueryParams() {
         setQueryParams([`first=${PAGE_SIZE}`])
+        setSearch("")
     }
 
     // control loading icon todo work out how to display this error
@@ -207,7 +208,7 @@ function ExplorerList(props) {
 
     // Reset pagination queries when searching
     useEffect(()=>{
-        resetQueryParams()
+        setQueryParams([`first=${PAGE_SIZE}`])
     },[search])
 
     useEffect(()=>{
