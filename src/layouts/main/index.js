@@ -4,6 +4,7 @@ import SmallLogo from '../../assets/small-logo.jpeg';
 import Breadcrumbs from '../../components/breadcrumbs';
 import Settings from '../settings';
 import Explorer from '../explorer';
+import NotFound from '../notfound';
 import FlexBox from '../../components/flexbox';
 import NavBar from '../../components/navbar';
 import { useNamespaces } from 'direktiv-react-hooks' 
@@ -139,6 +140,7 @@ function NamespaceNavigation(props){
                     <Route path="/g/services/:service/:revision" element={<GlobalPodPanel/>} />
 
                     <Route path="/g/registries" element={<GlobalRegistriesPanel />} />
+                    <Route path='*' exact={true} element={<NotFound/>} />
                 </Routes>:""}
             </FlexBox>
         </FlexBox>
