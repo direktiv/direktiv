@@ -77,7 +77,7 @@ export function RevisionCreatePanel(props){
 function NamespaceRevisions(props) {
     const {namespace, service} = props
     const navigate = useNavigate()
-    const {revisions, config, traffic, err, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, localStorage.getItem("apikey"))
+    const {revisions, config, traffic, setNamespaceServiceRevisionTraffic, deleteNamespaceServiceRevision, getNamespaceServiceConfig, createNamespaceServiceRevision} = useNamespaceService(Config.url, namespace, service, navigate, localStorage.getItem("apikey"))
 
     const [load, setLoad] = useState(true)
     const [image, setImage] = useState("")
@@ -110,7 +110,7 @@ function NamespaceRevisions(props) {
             cfgGet()
             setLoad(false)
         }
-    },[config, getNamespaceServiceConfig, load])
+    },[config, getNamespaceServiceConfig, load, navigate])
 
     if(revisions === null || traffic === null) {
         return <></>

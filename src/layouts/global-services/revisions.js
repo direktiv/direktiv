@@ -46,7 +46,7 @@ export default function GlobalRevisionsPanel(props){
             cfgGet()
             setLoad(false)
         }
-    },[config, getServiceConfig, load])
+    },[config, getServiceConfig, load, navigate])
 
     if(revisions === null) {
         return <></>

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom'
 import FlexBox from '../../components/flexbox';
 import './style.css';

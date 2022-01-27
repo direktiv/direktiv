@@ -11,7 +11,7 @@ function Tabs(props) {
         if (callback) {
             callback(activeTab)
         }
-    }, callback, activeTab)
+    }, [callback, activeTab])
 
     let {style, headers, tabs} = props;
     if (!headers || !tabs) {

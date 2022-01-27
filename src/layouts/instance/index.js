@@ -68,7 +68,7 @@ function InstancePage(props) {
         if(err === "Not Found" || (err !== null && err.indexOf("invalid UUID") >= 0)) {
             navigate(`/not-found`)
         }
-    },[err])
+    },[err, navigate])
 
     if (data === null) {
         return <></>
@@ -91,7 +91,7 @@ function InstancePage(props) {
     }
 
     let wfName = data.as.split(":")[0]
-    let revName = data.as.split(":")[1]
+    // let revName = data.as.split(":")[1]
 
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
@@ -341,7 +341,7 @@ function InstanceDiagram(props) {
 
     useEffect(()=>{
         async function getwf() {
-            if(wfpath !== "" && instRef != "" && rev !== null && rev !== "" && load){
+            if(wfpath !== "" && instRef !== "" && rev !== null && rev !== "" && load){
                 let refWF = await getWorkflowRevisionData(instRef === "latest" ? instRef : rev)
                 setWFData(atob(refWF.revision.source))
                 setLoad(false)

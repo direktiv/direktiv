@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './style.css';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import Pagination from '../../components/pagination';
@@ -39,7 +39,7 @@ function InstancesTable(props) {
     const [load, setLoad] = useState(true)
     
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
-    const {data, err, getInstances, pageInfo, totalCount} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...queryParams)
+    const {data, err, pageInfo, totalCount} = useInstances(Config.url, true, namespace, localStorage.getItem("apikey"), ...queryParams)
 
     const updatePage = useCallback((newParam)=>{
         setQueryParams(newParam)
