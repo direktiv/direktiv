@@ -189,7 +189,7 @@ function ExplorerList(props) {
     const [orderFieldKey, setOrderFieldKey] = useState(orderFieldKeys[0])
      
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
-    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`)
+    const {data, err, templates, pageInfo, createNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
     const [wfData, setWfData] = useState(templates["noop"])
     const [wfTemplate, setWfTemplate] = useState("noop")
@@ -204,6 +204,11 @@ function ExplorerList(props) {
             setLoad(false)
         }
     },[data, err])
+
+    // Reset pagination queries when searching
+    useEffect(()=>{
+        resetQueryParams()
+    },[search])
 
     useEffect(()=>{
         if(path !== currPath) {
