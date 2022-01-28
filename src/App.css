@@ -50,7 +50,7 @@ body {
   color: var(--theme-dark-text);
   background-color: #F8F8F9;
 
-  font-family: var(--font-family);
+  font-family: var(--font-family) !important;
   font-size: 15px;
   font-style: normal;
   font-weight: 400;
