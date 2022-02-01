@@ -144,6 +144,8 @@ func (s *Server) prepareHelperRoutes() {
 
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
+		// https://github.com/cloudevents/spec/blob/v1.0/http-webhook.md#4-abuse-protection
+		w.Header().Add("WebHook-Allowed-Rate", "120")
 		w.Header().Add("Webhook-Allowed-Origin", "eventgrid.azure.net")
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodOptions).Name(RN_Preflight)
