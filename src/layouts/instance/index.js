@@ -96,7 +96,7 @@ function InstancePage(props) {
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
             <FlexBox className="gap wrap" style={{minHeight: "50%", flex: "1"}}>
-                <FlexBox style={{minWidth: "340px", flex: "5"}}>
+                <FlexBox style={{minWidth: "340px", flex: "5", }}>
                     <ContentPanel style={{width: "100%", minHeight: "40vh"}}>
                         <ContentPanelTitle>
                             <ContentPanelTitleIcon>
@@ -157,7 +157,7 @@ function InstancePage(props) {
                                         ButtonDefinition("Close", () => {}, "small light", ()=>{}, true, false)
                                     ]}
                                 >
-                                    <InstanceLogs setClipData={setClipData} clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width}/>
+                                    <InstanceLogs clipData={clipData} noPadding namespace={namespace} instanceID={instanceID} follow={follow} setFollow={setFollow} width={width}/>
                                 </Modal>
                                 </FlexBox>
                             </FlexBox>
@@ -373,15 +373,20 @@ function InstanceDiagram(props) {
 function Input(props) {
     const {getInput} = props
     
-    const [input, setInput] = useState("")
+    const [input, setInput] = useState(null)
+    const [load, setLoad] = useState(true)
 
     useEffect(()=>{
         async function get() {
-                let data = await getInput()
-                setInput(data)
+            let data = await getInput()
+            setInput(data)
         }
-        get()
-    },[input, getInput])
+
+        if (load && input === null && getInput) {
+            setLoad(false)
+            get()
+        }
+    },[input, getInput, load])
 
     return(
         <FlexBox style={{flexDirection:"column"}}>
@@ -404,38 +409,23 @@ function Output(props){
     const {getOutput, status} = props
 
     const [load, setLoad] = useState(true)
-    const [output, setOutput] = useState("")
+    const [output, setOutput] = useState(null)
 
     useEffect(()=>{
         async function get() {
-            if (load && status !== "pending"){
+            if (load && status !== "pending" && output === null && getOutput){
+                setLoad(false)
                 try {
                     let data = await getOutput()
                     let x = JSON.stringify(JSON.parse(data),null,2)
                     setOutput(x)
-                    setLoad(false)
                 } catch(e) {
                     console.log(e);
                 }
             }
         }
         get()
-    },[output, load, getOutput, status, setOutput])
-
-    useEffect(()=>{
-        async function reGetOutput() {
-            if(status !== "pending"){
-                try {
-                    let data = await getOutput()
-                    let x = JSON.stringify(JSON.parse(data),null,2)
-                    setOutput(x)
-                } catch(e) {
-                    console.log(e);
-                }
-            }
-        }
-       reGetOutput()
-    },[status, getOutput, setOutput])
+    },[output, load, getOutput, status])
 
     return(
         <FlexBox style={{flexDirection:"column"}}>
@@ -455,45 +445,40 @@ function Output(props){
 
 function Logs(props){ 
     const cache = new CellMeasurerCache({
-        fixedWidth: false,
-        defaultHeight: 20
+        fixedWidth: true,
+        fixedHeight: false
     })
 
     let {namespace, instanceID, follow, setClipData, clipData} = props;
-    // const [load, setLoad] = useState(true)
-    // const [logs, setLogs] = useState([])
+    const [logLength, setLogLength] = useState(0)
     let {data, err} = useInstanceLogs(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"))
     useEffect(()=>{
+        if (!setClipData) {
+            // Skip ClipData if unset
+            return 
+        }
+
         if(data !== null) {
+            // console.log("clipData = ", clipData)
             if(clipData === null) {
+
                 let cd = ""
                 for(let i=0; i < data.length; i++) {
                     cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
                 }
                 setClipData(cd)
-            }
-            if(clipData !== data){
-                let cd = ""
-                for(let i=0; i < data.length; i++) {
+                setLogLength(data.length)
+            } else if (data.length !== logLength) {
+                let cd = clipData
+                for(let i=logLength-1; i < data.length; i++) {
                     cd += `[${dayjs.utc(data[i].node.t).local().format("HH:mm:ss.SSS")}] ${data[i].node.msg}\n`
 
                 }
                 setClipData(cd)
+                setLogLength(data.length)
             }
         }
-    },[data, clipData, setClipData])
-    // useEffect(()=>{
-    //     if(load && data !== null){
-    //         setLogs(data)
-    //         setLoad(false)
-    //     }
-    // },[load])
-
-    // useEffect(()=>{
-    //     if(data !== null) {
-    //         setLogs(logs + data)
-    //     }
-    // },[data, logs])
+    },[data, clipData, setClipData, logLength])
 
 
     if (!data) {
@@ -517,7 +502,7 @@ function Logs(props){
             columnIndex={0}
             rowIndex={index}
         >
-          <div style={style}>
+          <div style={{...style, minWidth:"800px", width:"800px"}}>
             <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
                 <div className="log-timestamp">
                     <div>[</div>
@@ -525,7 +510,7 @@ function Logs(props){
                     <div>]</div>
                 </div>
             </div> 
-            <span style={{marginLeft:"5px"}}>
+            <span style={{marginLeft:"5px", whiteSpace:"pre-wrap"}}>
                 {data[index].node.msg}
             </span>
             <div style={{height: `fit-content`}}></div>
@@ -535,48 +520,20 @@ function Logs(props){
     }
       
 
-    // return (
-    //     <WindowScroller>
-    //         {({height, isScrolling, registerChild, scrollTop}) => {
-    //             return (
-    //                 <AutoSizer disableHeight>
-    //                     {({ width }) => {
-    //                         return (
-    //                             <List 
-    //                                 autoHeight
-    //                                 height={height}
-    //                                 isScrolling={isScrolling}
-    //                                 rowCount={data.length}
-    //                                 rowHeight={20}
-    //                                 rowRenderer={rowRenderer}
-    //                                 scrollTop={scrollTop}
-    //                                 width={width}
-    //                             />
-    //                         )
-    //                     }}
-    //                 </AutoSizer>
-    //             )
-    //         }}
-    //     </WindowScroller>
-    // )
-
-    return(
-        <div style={{flex:"1 1 auto", lineHeight: "20px"}}>
+    return (
+        <div style={{ flex: "1 1 auto", lineHeight: "20px" }}>
             <AutoSizer>
-                {({height, width})=>(
-                    <div style={{height: "100%", minHeight: "100%"}}>
-                    <List
-                    width={width}
-                    height={height}
-                        // style={{
-                        //     minHeight: "100%"
-                        //     // maxHeight: "100%"
-                        // }}
-                        rowRenderer={rowRenderer}
-                        deferredMeasurementCache={cache}
-                        scrollToIndex={follow ? data.length - 1: 0}
-                        rowCount={data.length}
-                        rowHeight={cache.rowHeight}
+                {({ height, width }) => (
+                    <div style={{ height: "100%", minHeight: "100%" }}>
+                        <List
+                            width={width}
+                            height={height}
+                            rowRenderer={rowRenderer}
+                            deferredMeasurementCache={cache}
+                            scrollToIndex={follow ? data.length - 1 : 0}
+                            rowCount={data.length}
+                            rowHeight={cache.rowHeight}
+                            scrollToAlignment={"start"}
                         />
                     </div>
                 )}

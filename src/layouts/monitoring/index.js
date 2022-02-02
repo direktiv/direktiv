@@ -33,9 +33,10 @@ export default function Monitoring(props) {
 
 function MonitoringPage(props) {
     const cache = new CellMeasurerCache({
-        fixedWidth: false,
-        defaultHeight: 20
+        fixedWidth: true,
+        fixedHeight: false
     })
+
     const {namespace, noPadding} = props
     const [follow, setFollow] = useState(true)
     const [load, setLoad] = useState(true)
@@ -87,7 +88,7 @@ function MonitoringPage(props) {
             columnIndex={0}
             rowIndex={index}
         >
-          <div style={style}>
+          <div style={{...style, minWidth:"880px", width:"880px"}}>
             <div style={{display:"inline-block",minWidth:"112px", color:"#b5b5b5"}}>
                 <div className="log-timestamp">
                     <div>[</div>
@@ -95,7 +96,7 @@ function MonitoringPage(props) {
                     <div>]</div>
                 </div>
             </div> 
-            <span style={{marginLeft:"5px"}}>
+            <span style={{marginLeft:"5px", whiteSpace:"pre-wrap"}}>
                 {data[index].node.msg}
             </span>
             <div style={{height: `fit-content`}}></div>
@@ -124,20 +125,16 @@ function MonitoringPage(props) {
                                     <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden", padding: "8px" }}>
                                         <div style={{flex:"1 1 auto", lineHeight: "20px"}}>
                                             <AutoSizer>
-                                                {({height, width})=>(
-                                                    <div style={{height: "100%", minHeight: "100%"}}>
-                                                    <List
-                                                    width={width}
-                                                    height={height}
-                                                        // style={{
-                                                        //     minHeight: "100%"
-                                                        //     // maxHeight: "100%"
-                                                        // }}
-                                                        rowRenderer={rowRenderer}
-                                                        deferredMeasurementCache={cache}
-                                                        scrollToIndex={follow ? data.length - 1: 0}
-                                                        rowCount={data.length}
-                                                        rowHeight={cache.rowHeight}
+                                                {({ height, width }) => (
+                                                    <div style={{ height: "100%", minHeight: "100%" }}>
+                                                        <List
+                                                            width={width}
+                                                            height={height}
+                                                            rowRenderer={rowRenderer}
+                                                            deferredMeasurementCache={cache}
+                                                            scrollToIndex={follow ? data.length - 1 : 0}
+                                                            rowCount={data.length}
+                                                            rowHeight={cache.rowHeight}
                                                         />
                                                     </div>
                                                 )}

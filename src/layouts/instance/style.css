@@ -24,3 +24,11 @@
     margin: 0 0 5px 0;
 }
 
+.ReactVirtualized__Grid__innerScrollContainer{
+    overflow: unset !important;
+}
+
+.ReactVirtualized__Grid.ReactVirtualized__List{
+    padding: 0px 0px 3px 0px;
+}
+
