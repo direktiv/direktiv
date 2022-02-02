@@ -1,7 +1,9 @@
-import Editor, {useMonaco} from "@monaco-editor/react";
+import Editor, {useMonaco, loader } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
+
+loader.config({ paths: { vs: "/monaco-0.28.1-min/vs" } });
 
 const cobalt = {
     "base": "vs-dark",
@@ -289,7 +291,7 @@ export default function DirektivEditor(props) {
     },[monaco, dlang, validate])
 
     function handleEditorChange(value, event) {
-        setDValue(value)
+      setDValue(value)
     }
 
 
