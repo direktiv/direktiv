@@ -173,8 +173,8 @@ export function InstanceRow(props) {
                 /{wfname}
             </div>:""}
         </td>: ""}
-        <td title={revStr} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden" }} className="center-align">
-            {revStr}
+        <td title={revStr} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden", color: revStr !== undefined ? "" : "var(--theme-dark-gray-text)" }} className="center-align">
+            {revStr !== undefined ? revStr : "ROUTER"}
         </td>
         <td className="center-align">
             {started}

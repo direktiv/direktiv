@@ -50,19 +50,22 @@ function InstancePage(props) {
 
     let instanceID = params["id"];
 
-    let {data, err, workflow, getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
-
+    let {data, err, workflow, latestRevision, getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
 
     useEffect(()=>{
-        if(load && data !== null && workflow != null) {
+        if(load && data !== null && workflow != null && latestRevision != null) {
             let split = data.as.split(":")
             setWFPath(split[0])
-            setRef(split[1])
+            if (workflow.revision === latestRevision) {
+                setRef("latest")
+            } else {
+                setRef(split[1])
+            }
             setRev(workflow.revision)
             setLoad(false)
         }
 
-    },[load, data, workflow])
+    },[load, data, workflow, latestRevision])
 
     useEffect(()=>{      
         if(err === "Not Found" || (err !== null && err.indexOf("invalid UUID") >= 0)) {
@@ -91,7 +94,6 @@ function InstancePage(props) {
     }
 
     let wfName = data.as.split(":")[0]
-    // let revName = data.as.split(":")[1]
 
     return (<>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
