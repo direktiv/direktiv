@@ -14,6 +14,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc"
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/loader';
+import Tippy from '@tippyjs/react';
 
 const PAGE_SIZE = 10
 
@@ -153,7 +154,7 @@ export function InstanceRow(props) {
 
     let pathwf = wfStr.split("/")
     let wfname = pathwf[pathwf.length-1]
-    pathwf.splice(pathwf.length-1, pathwf.length-1)
+    pathwf.pop()
     
     return(
     
@@ -164,15 +165,20 @@ export function InstanceRow(props) {
             {label}
         </td>
         {!wf ? 
-        <td title={wfStr} className="center-align" style={{ fontSize: "12px", lineHeight: "20px", display:"flex", justifyContent:"center", marginTop:"12px"}}>
+        <Tippy content={`/${wfStr}`} trigger={'mouseenter focus'} zIndex={10}>
+        <td className="center-align" style={{ fontSize: "12px", lineHeight: "20px", display:"flex", justifyContent:"center", marginTop:"12px", whiteSpace: "nowrap"}}>
+            {pathwf.length > 0 ?
             <div style={{marginLeft:"10px", textOverflow:"ellipsis", overflow:"hidden"}}>
                 /{pathwf.join("/")}
-            </div>
-            {pathwf.length !== 1 ?
+            </div> :
+            <></>
+            }
             <div>
                 /{wfname}
-            </div>:""}
-        </td>: ""}
+            </div>
+            
+        </td>
+        </Tippy>: ""}
         <td title={revStr} style={{ fontSize: "12px", lineHeight: "20px", textOverflow:"ellipsis", overflow:"hidden", color: revStr !== undefined ? "" : "var(--theme-dark-gray-text)" }} className="center-align">
             {revStr !== undefined ? revStr : "ROUTER"}
         </td>
