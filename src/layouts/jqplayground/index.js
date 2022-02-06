@@ -1,5 +1,5 @@
 import { useJQPlayground } from 'direktiv-react-hooks';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { VscFileCode, VscArrowRight } from 'react-icons/vsc';
 import Button from '../../components/button';
 import ContentPanel, { ContentPanelBody, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
@@ -13,11 +13,36 @@ import './style.css';
 
 export default function JQPlayground() {
 
-    const [filter, setFilter] = useState(".")
-    const [input, setInput] = useState(JSON.stringify({}, null, 2))
+    const [filter, setFilter] = useState(localStorage.getItem('jqFilter') ? localStorage.getItem('jqFilter') : ".")
+    const [input, setInput] = useState(localStorage.getItem('jqInput') ? localStorage.getItem('jqInput') : JSON.stringify({}, null, 2))
     const [error, setError] = useState(null)
 
+
+
     const {data, err, executeJQ, cheatSheet} = useJQPlayground(Config.url, localStorage.getItem("apikey"))
+
+    const executeAndSave = useCallback((...args)=>{
+        localStorage.setItem('jqInput', input)
+        localStorage.setItem('jqFilter', filter)
+        executeJQ(...args)
+    }, [executeJQ, filter, input])
+
+    // Save state every 2 seconds
+    useEffect(()=>{
+        if (filter == null || input == null ) {
+            return
+        }
+        
+        let timer = setInterval(async ()=>{
+            localStorage.setItem('jqInput', input)
+            localStorage.setItem('jqFilter', filter)
+        }, 2000)
+
+        return function cleanup() {
+            clearInterval(timer)
+        }
+    },[filter,input])
+
 
     useEffect(() => {
         setError(err)
@@ -25,7 +50,7 @@ export default function JQPlayground() {
  
     return(
         <FlexBox id="jq-page" className="col gap" style={{paddingRight:"8px"}}>
-            <JQFilter data={input} query={filter} error={error} setFilter={setFilter} executeJQ={executeJQ} setError={setError}/>
+            <JQFilter data={input} query={filter} error={error} setFilter={setFilter} executeJQ={executeAndSave} setError={setError}/>
             <FlexBox className="gap col" >
                 <FlexBox className="gap wrap">
                     <FlexBox style={{minWidth:"380px"}}>
@@ -39,7 +64,7 @@ export default function JQPlayground() {
             <FlexBox className="gap col" >
                 <FlexBox className="gap box-wrap">
                     <HowToJQ />
-                    <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeJQ}/>
+                    <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeAndSave}/>
                 </FlexBox>
             </FlexBox>
         </FlexBox>
