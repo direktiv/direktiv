@@ -379,7 +379,7 @@ func instancesFilter(p *pagination) ent.InstancePaginateOption {
 
 			switch ftype {
 			case "WORKFLOW":
-				return query.Where(entinst.AsHasPrefix(filter + ":")), nil
+				return query.Where(entinst.AsHasPrefix(filter)), nil
 			case "":
 				fallthrough
 			case "CONTAINS":
