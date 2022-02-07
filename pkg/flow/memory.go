@@ -173,10 +173,16 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		return nil, err
 	}
 
+	im := new(instanceMemory)
+	im.in = in
+
 	if in.Edges.Namespace == nil {
 		err = &NotFoundError{
 			Label: fmt.Sprintf("namespace not found"),
 		}
+		engine.CrashInstance(ctx, im, &UncatchableError{
+			Message: err.Error(),
+		})
 		return nil, err
 	}
 
@@ -184,6 +190,9 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		err = &NotFoundError{
 			Label: fmt.Sprintf("workflow not found"),
 		}
+		engine.CrashInstance(ctx, im, &UncatchableError{
+			Message: err.Error(),
+		})
 		return nil, err
 	}
 
@@ -191,6 +200,9 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		err = &NotFoundError{
 			Label: fmt.Sprintf("revision not found"),
 		}
+		engine.CrashInstance(ctx, im, &UncatchableError{
+			Message: err.Error(),
+		})
 		return nil, err
 	}
 
@@ -198,19 +210,25 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 		err = &NotFoundError{
 			Label: fmt.Sprintf("instance runtime data not found"),
 		}
+		engine.CrashInstance(ctx, im, &UncatchableError{
+			Message: err.Error(),
+		})
 		return nil, err
 	}
 
-	im := new(instanceMemory)
-	im.in = in
-
 	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Data), &im.data)
 	if err != nil {
+		engine.CrashInstance(ctx, im, &UncatchableError{
+			Message: err.Error(),
+		})
 		return nil, err
 	}
 
 	err = json.Unmarshal([]byte(im.in.Edges.Runtime.Memory), &im.memory)
 	if err != nil {
+		engine.CrashInstance(ctx, im, &UncatchableError{
+			Message: err.Error(),
+		})
 		return nil, err
 	}
 
@@ -219,6 +237,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, inc *ent.InstanceCl
 
 	err = engine.loadStateLogic(im, stateID)
 	if err != nil {
+		engine.CrashInstance(ctx, im, err)
 		return nil, err
 	}
 

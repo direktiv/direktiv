@@ -106,8 +106,6 @@ func (engine *engine) sleepWakeup(data []byte) {
 		return
 	}
 
-	engine.sugar.Debugf("Waking up from sleep: %s", im.ID().String())
-
 	go engine.runState(ctx, im, []byte(sleepWakedata), nil)
 
 }
