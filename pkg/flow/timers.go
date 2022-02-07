@@ -203,6 +203,11 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 
 func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 
+	timers.deleteCronForWorkflow(name)
+	name = fmt.Sprintf("cron:%s", name)
+
+	timers.pubsub.log.Debugf("Adding cron %s: %s", name, pattern)
+
 	// check if cron pattern matches
 	c := cron.NewParser(cron.Minute | cron.Hour | cron.Dom |
 		cron.Month | cron.DowOptional | cron.Descriptor)

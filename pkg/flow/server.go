@@ -404,8 +404,7 @@ func (srv *server) cronPollerWorkflow(wf *ent.Workflow) {
 	}
 
 	if ms.Cron != "" && ms.Enabled {
-
-		err = srv.timers.addCron(fmt.Sprintf("cron:%s", wf.ID.String()), wfCron, ms.Cron, []byte(wf.ID.String()))
+		err = srv.timers.addCron(wf.ID.String(), wfCron, ms.Cron, []byte(wf.ID.String()))
 		if err != nil {
 			srv.sugar.Error(err)
 			return
