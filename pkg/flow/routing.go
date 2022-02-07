@@ -331,7 +331,7 @@ func (flow *flow) configureRouterHandler(req *PubsubUpdate) {
 	}
 
 	if msg.Cron != "" && msg.Enabled {
-		err = flow.timers.addCron(fmt.Sprintf("cron:%s", msg.ID), wfCron, msg.Cron, []byte(msg.ID))
+		err = flow.timers.addCron(msg.ID, wfCron, msg.Cron, []byte(msg.ID))
 		if err != nil {
 			flow.sugar.Error(err)
 			return
