@@ -147,9 +147,19 @@ func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.In
 	span := trace.SpanFromContext(ctx)
 	tid := span.SpanContext().TraceID()
 
-	ns := in.Edges.Namespace
-	wf := in.Edges.Workflow
-	srv.sugar.Infow(msg, "trace", tid, "namespace", ns.Name, "namespace-id", ns.ID.String(), "workflow-id", wf.ID.String(), "workflow", GetInodePath(in.As), "instance", in.ID.String())
+	nsid := ""
+	nsname := ""
+	if in.Edges.Namespace != nil {
+		nsid = in.Edges.Namespace.ID.String()
+		nsname = in.Edges.Namespace.Name
+	}
+
+	wfid := ""
+	if in.Edges.Workflow != nil {
+		wfid = in.Edges.Workflow.ID.String()
+	}
+
+	srv.sugar.Infow(msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", GetInodePath(in.As), "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
 }
