@@ -166,9 +166,31 @@ func (irc *InstanceRuntimeCreate) SetNillableStateContext(s *string) *InstanceRu
 	return irc
 }
 
+// SetMetadata sets the "metadata" field.
+func (irc *InstanceRuntimeCreate) SetMetadata(s string) *InstanceRuntimeCreate {
+	irc.mutation.SetMetadata(s)
+	return irc
+}
+
+// SetNillableMetadata sets the "metadata" field if the given value is not nil.
+func (irc *InstanceRuntimeCreate) SetNillableMetadata(s *string) *InstanceRuntimeCreate {
+	if s != nil {
+		irc.SetMetadata(*s)
+	}
+	return irc
+}
+
 // SetID sets the "id" field.
 func (irc *InstanceRuntimeCreate) SetID(u uuid.UUID) *InstanceRuntimeCreate {
 	irc.mutation.SetID(u)
+	return irc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (irc *InstanceRuntimeCreate) SetNillableID(u *uuid.UUID) *InstanceRuntimeCreate {
+	if u != nil {
+		irc.SetID(*u)
+	}
 	return irc
 }
 
@@ -290,10 +312,10 @@ func (irc *InstanceRuntimeCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (irc *InstanceRuntimeCreate) check() error {
 	if _, ok := irc.mutation.Input(); !ok {
-		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "input"`)}
+		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "InstanceRuntime.input"`)}
 	}
 	if _, ok := irc.mutation.Data(); !ok {
-		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "data"`)}
+		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "InstanceRuntime.data"`)}
 	}
 	return nil
 }
@@ -307,7 +329,11 @@ func (irc *InstanceRuntimeCreate) sqlSave(ctx context.Context) (*InstanceRuntime
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -325,7 +351,7 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 	)
 	if id, ok := irc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := irc.mutation.Input(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -422,6 +448,14 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 			Column: instanceruntime.FieldStateContext,
 		})
 		_node.StateContext = value
+	}
+	if value, ok := irc.mutation.Metadata(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldMetadata,
+		})
+		_node.Metadata = value
 	}
 	if nodes := irc.mutation.InstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

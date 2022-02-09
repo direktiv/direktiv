@@ -614,6 +614,10 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context) ([]*VarRef, error) {
 
 func (vrq *VarRefQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vrq.querySpec()
+	_spec.Node.Columns = vrq.fields
+	if len(vrq.fields) > 0 {
+		_spec.Unique = vrq.unique != nil && *vrq.unique
+	}
 	return sqlgraph.CountNodes(ctx, vrq.driver, _spec)
 }
 
@@ -684,6 +688,9 @@ func (vrq *VarRefQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vrq.sql != nil {
 		selector = vrq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if vrq.unique != nil && *vrq.unique {
+		selector.Distinct()
 	}
 	for _, p := range vrq.predicates {
 		p(selector)
@@ -963,9 +970,7 @@ func (vrgb *VarRefGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range vrgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(vrgb.fields...)...)

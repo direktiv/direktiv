@@ -250,11 +250,11 @@ func (iu *InodeUpdate) defaults() {
 func (iu *InodeUpdate) check() error {
 	if v, ok := iu.mutation.Name(); ok {
 		if err := inode.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Inode.name": %w`, err)}
 		}
 	}
 	if _, ok := iu.mutation.NamespaceID(); iu.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Inode.namespace"`)
 	}
 	return nil
 }
@@ -714,11 +714,11 @@ func (iuo *InodeUpdateOne) defaults() {
 func (iuo *InodeUpdateOne) check() error {
 	if v, ok := iuo.mutation.Name(); ok {
 		if err := inode.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Inode.name": %w`, err)}
 		}
 	}
 	if _, ok := iuo.mutation.NamespaceID(); iuo.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Inode.namespace"`)
 	}
 	return nil
 }
@@ -736,7 +736,7 @@ func (iuo *InodeUpdateOne) sqlSave(ctx context.Context) (_node *Inode, err error
 	}
 	id, ok := iuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Inode.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Inode.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := iuo.fields; len(fields) > 0 {

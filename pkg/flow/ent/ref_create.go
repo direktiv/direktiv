@@ -64,6 +64,14 @@ func (rc *RefCreate) SetID(u uuid.UUID) *RefCreate {
 	return rc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (rc *RefCreate) SetNillableID(u *uuid.UUID) *RefCreate {
+	if u != nil {
+		rc.SetID(*u)
+	}
+	return rc
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (rc *RefCreate) SetWorkflowID(id uuid.UUID) *RefCreate {
 	rc.mutation.SetWorkflowID(id)
@@ -189,24 +197,24 @@ func (rc *RefCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (rc *RefCreate) check() error {
 	if _, ok := rc.mutation.Immutable(); !ok {
-		return &ValidationError{Name: "immutable", err: errors.New(`ent: missing required field "immutable"`)}
+		return &ValidationError{Name: "immutable", err: errors.New(`ent: missing required field "Ref.immutable"`)}
 	}
 	if _, ok := rc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Ref.name"`)}
 	}
 	if v, ok := rc.mutation.Name(); ok {
 		if err := ref.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "name": %w`, err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Ref.name": %w`, err)}
 		}
 	}
 	if _, ok := rc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Ref.created_at"`)}
 	}
 	if _, ok := rc.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Ref.workflow"`)}
 	}
 	if _, ok := rc.mutation.RevisionID(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required edge \"revision\"")}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required edge "Ref.revision"`)}
 	}
 	return nil
 }
@@ -220,7 +228,11 @@ func (rc *RefCreate) sqlSave(ctx context.Context) (*Ref, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -238,7 +250,7 @@ func (rc *RefCreate) createSpec() (*Ref, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := rc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := rc.mutation.Immutable(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

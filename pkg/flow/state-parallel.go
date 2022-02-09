@@ -223,6 +223,10 @@ func (sl *parallelStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *parallelStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {

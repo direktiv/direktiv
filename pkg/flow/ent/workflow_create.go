@@ -63,6 +63,14 @@ func (wc *WorkflowCreate) SetID(u uuid.UUID) *WorkflowCreate {
 	return wc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (wc *WorkflowCreate) SetNillableID(u *uuid.UUID) *WorkflowCreate {
+	if u != nil {
+		wc.SetID(*u)
+	}
+	return wc
+}
+
 // SetInodeID sets the "inode" edge to the Inode entity by ID.
 func (wc *WorkflowCreate) SetInodeID(id uuid.UUID) *WorkflowCreate {
 	wc.mutation.SetInodeID(id)
@@ -282,10 +290,10 @@ func (wc *WorkflowCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (wc *WorkflowCreate) check() error {
 	if _, ok := wc.mutation.Live(); !ok {
-		return &ValidationError{Name: "live", err: errors.New(`ent: missing required field "live"`)}
+		return &ValidationError{Name: "live", err: errors.New(`ent: missing required field "Workflow.live"`)}
 	}
 	if _, ok := wc.mutation.NamespaceID(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Workflow.namespace"`)}
 	}
 	return nil
 }
@@ -299,7 +307,11 @@ func (wc *WorkflowCreate) sqlSave(ctx context.Context) (*Workflow, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -317,7 +329,7 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := wc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := wc.mutation.Live(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

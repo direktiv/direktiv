@@ -248,10 +248,10 @@ func (eu *EventsUpdate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (eu *EventsUpdate) check() error {
 	if _, ok := eu.mutation.WorkflowID(); eu.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Events.workflow"`)
 	}
 	if _, ok := eu.mutation.NamespaceID(); eu.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Events.namespace"`)
 	}
 	return nil
 }
@@ -722,10 +722,10 @@ func (euo *EventsUpdateOne) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (euo *EventsUpdateOne) check() error {
 	if _, ok := euo.mutation.WorkflowID(); euo.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Events.workflow"`)
 	}
 	if _, ok := euo.mutation.NamespaceID(); euo.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Events.namespace"`)
 	}
 	return nil
 }
@@ -743,7 +743,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 	}
 	id, ok := euo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Events.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Events.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := euo.fields; len(fields) > 0 {

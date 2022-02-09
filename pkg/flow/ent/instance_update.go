@@ -397,16 +397,16 @@ func (iu *InstanceUpdate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (iu *InstanceUpdate) check() error {
 	if _, ok := iu.mutation.NamespaceID(); iu.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
 	}
 	if _, ok := iu.mutation.WorkflowID(); iu.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.workflow"`)
 	}
 	if _, ok := iu.mutation.RevisionID(); iu.mutation.RevisionCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"revision\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.revision"`)
 	}
 	if _, ok := iu.mutation.RuntimeID(); iu.mutation.RuntimeCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"runtime\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
 	return nil
 }
@@ -1225,16 +1225,16 @@ func (iuo *InstanceUpdateOne) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (iuo *InstanceUpdateOne) check() error {
 	if _, ok := iuo.mutation.NamespaceID(); iuo.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
 	}
 	if _, ok := iuo.mutation.WorkflowID(); iuo.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.workflow"`)
 	}
 	if _, ok := iuo.mutation.RevisionID(); iuo.mutation.RevisionCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"revision\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.revision"`)
 	}
 	if _, ok := iuo.mutation.RuntimeID(); iuo.mutation.RuntimeCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"runtime\"")
+		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
 	return nil
 }
@@ -1252,7 +1252,7 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 	}
 	id, ok := iuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Instance.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Instance.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := iuo.fields; len(fields) > 0 {

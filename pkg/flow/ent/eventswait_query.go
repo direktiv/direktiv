@@ -416,6 +416,10 @@ func (ewq *EventsWaitQuery) sqlAll(ctx context.Context) ([]*EventsWait, error) {
 
 func (ewq *EventsWaitQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ewq.querySpec()
+	_spec.Node.Columns = ewq.fields
+	if len(ewq.fields) > 0 {
+		_spec.Unique = ewq.unique != nil && *ewq.unique
+	}
 	return sqlgraph.CountNodes(ctx, ewq.driver, _spec)
 }
 
@@ -486,6 +490,9 @@ func (ewq *EventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ewq.sql != nil {
 		selector = ewq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if ewq.unique != nil && *ewq.unique {
+		selector.Distinct()
 	}
 	for _, p := range ewq.predicates {
 		p(selector)
@@ -765,9 +772,7 @@ func (ewgb *EventsWaitGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range ewgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(ewgb.fields...)...)

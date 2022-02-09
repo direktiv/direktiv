@@ -124,6 +124,10 @@ func (sl *actionStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *actionStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 type actionStateSavedata struct {
 	Op       string
 	Id       string

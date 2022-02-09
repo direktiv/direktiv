@@ -416,6 +416,10 @@ func (ceq *CloudEventsQuery) sqlAll(ctx context.Context) ([]*CloudEvents, error)
 
 func (ceq *CloudEventsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ceq.querySpec()
+	_spec.Node.Columns = ceq.fields
+	if len(ceq.fields) > 0 {
+		_spec.Unique = ceq.unique != nil && *ceq.unique
+	}
 	return sqlgraph.CountNodes(ctx, ceq.driver, _spec)
 }
 
@@ -486,6 +490,9 @@ func (ceq *CloudEventsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ceq.sql != nil {
 		selector = ceq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if ceq.unique != nil && *ceq.unique {
+		selector.Distinct()
 	}
 	for _, p := range ceq.predicates {
 		p(selector)
@@ -765,9 +772,7 @@ func (cegb *CloudEventsGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range cegb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(cegb.fields...)...)

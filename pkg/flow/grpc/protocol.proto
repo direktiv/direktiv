@@ -166,6 +166,8 @@ service Flow {
 
 	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
 
+	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
+
 }
 
 service Internal {

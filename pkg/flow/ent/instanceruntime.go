@@ -43,6 +43,8 @@ type InstanceRuntime struct {
 	InstanceContext string `json:"instanceContext,omitempty"`
 	// StateContext holds the value of the "stateContext" field.
 	StateContext string `json:"stateContext,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata string `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceRuntimeQuery when eager-loading is set.
 	Edges             InstanceRuntimeEdges `json:"edges"`
@@ -98,7 +100,7 @@ func (*InstanceRuntime) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case instanceruntime.FieldAttempts:
 			values[i] = new(sql.NullInt64)
-		case instanceruntime.FieldData, instanceruntime.FieldController, instanceruntime.FieldMemory, instanceruntime.FieldOutput, instanceruntime.FieldCallerData, instanceruntime.FieldInstanceContext, instanceruntime.FieldStateContext:
+		case instanceruntime.FieldData, instanceruntime.FieldController, instanceruntime.FieldMemory, instanceruntime.FieldOutput, instanceruntime.FieldCallerData, instanceruntime.FieldInstanceContext, instanceruntime.FieldStateContext, instanceruntime.FieldMetadata:
 			values[i] = new(sql.NullString)
 		case instanceruntime.FieldStateBeginTime, instanceruntime.FieldDeadline:
 			values[i] = new(sql.NullTime)
@@ -203,6 +205,12 @@ func (ir *InstanceRuntime) assignValues(columns []string, values []interface{}) 
 			} else if value.Valid {
 				ir.StateContext = value.String
 			}
+		case instanceruntime.FieldMetadata:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value.Valid {
+				ir.Metadata = value.String
+			}
 		case instanceruntime.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field instance_runtime", values[i])
@@ -279,6 +287,8 @@ func (ir *InstanceRuntime) String() string {
 	builder.WriteString(ir.InstanceContext)
 	builder.WriteString(", stateContext=")
 	builder.WriteString(ir.StateContext)
+	builder.WriteString(", metadata=")
+	builder.WriteString(ir.Metadata)
 	builder.WriteByte(')')
 	return builder.String()
 }

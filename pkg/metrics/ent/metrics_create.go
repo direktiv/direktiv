@@ -179,68 +179,68 @@ func (mc *MetricsCreate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (mc *MetricsCreate) check() error {
 	if _, ok := mc.mutation.Namespace(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required field "namespace"`)}
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required field "Metrics.namespace"`)}
 	}
 	if v, ok := mc.mutation.Namespace(); ok {
 		if err := metrics.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf(`ent: validator failed for field "namespace": %w`, err)}
+			return &ValidationError{Name: "namespace", err: fmt.Errorf(`ent: validator failed for field "Metrics.namespace": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Workflow(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required field "workflow"`)}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required field "Metrics.workflow"`)}
 	}
 	if v, ok := mc.mutation.Workflow(); ok {
 		if err := metrics.WorkflowValidator(v); err != nil {
-			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "workflow": %w`, err)}
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "Metrics.workflow": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "revision"`)}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "Metrics.revision"`)}
 	}
 	if _, ok := mc.mutation.Instance(); !ok {
-		return &ValidationError{Name: "instance", err: errors.New(`ent: missing required field "instance"`)}
+		return &ValidationError{Name: "instance", err: errors.New(`ent: missing required field "Metrics.instance"`)}
 	}
 	if v, ok := mc.mutation.Instance(); ok {
 		if err := metrics.InstanceValidator(v); err != nil {
-			return &ValidationError{Name: "instance", err: fmt.Errorf(`ent: validator failed for field "instance": %w`, err)}
+			return &ValidationError{Name: "instance", err: fmt.Errorf(`ent: validator failed for field "Metrics.instance": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.State(); !ok {
-		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "state"`)}
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Metrics.state"`)}
 	}
 	if v, ok := mc.mutation.State(); ok {
 		if err := metrics.StateValidator(v); err != nil {
-			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "state": %w`, err)}
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Metrics.state": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Timestamp(); !ok {
-		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "timestamp"`)}
+		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "Metrics.timestamp"`)}
 	}
 	if _, ok := mc.mutation.WorkflowMs(); !ok {
-		return &ValidationError{Name: "workflow_ms", err: errors.New(`ent: missing required field "workflow_ms"`)}
+		return &ValidationError{Name: "workflow_ms", err: errors.New(`ent: missing required field "Metrics.workflow_ms"`)}
 	}
 	if v, ok := mc.mutation.WorkflowMs(); ok {
 		if err := metrics.WorkflowMsValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf(`ent: validator failed for field "workflow_ms": %w`, err)}
+			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf(`ent: validator failed for field "Metrics.workflow_ms": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.IsolateMs(); !ok {
-		return &ValidationError{Name: "isolate_ms", err: errors.New(`ent: missing required field "isolate_ms"`)}
+		return &ValidationError{Name: "isolate_ms", err: errors.New(`ent: missing required field "Metrics.isolate_ms"`)}
 	}
 	if v, ok := mc.mutation.IsolateMs(); ok {
 		if err := metrics.IsolateMsValidator(v); err != nil {
-			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf(`ent: validator failed for field "isolate_ms": %w`, err)}
+			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf(`ent: validator failed for field "Metrics.isolate_ms": %w`, err)}
 		}
 	}
 	if _, ok := mc.mutation.Invoker(); !ok {
-		return &ValidationError{Name: "invoker", err: errors.New(`ent: missing required field "invoker"`)}
+		return &ValidationError{Name: "invoker", err: errors.New(`ent: missing required field "Metrics.invoker"`)}
 	}
 	if _, ok := mc.mutation.Next(); !ok {
-		return &ValidationError{Name: "next", err: errors.New(`ent: missing required field "next"`)}
+		return &ValidationError{Name: "next", err: errors.New(`ent: missing required field "Metrics.next"`)}
 	}
 	if v, ok := mc.mutation.Next(); ok {
 		if err := metrics.NextValidator(v); err != nil {
-			return &ValidationError{Name: "next", err: fmt.Errorf(`ent: validator failed for field "next": %w`, err)}
+			return &ValidationError{Name: "next", err: fmt.Errorf(`ent: validator failed for field "Metrics.next": %w`, err)}
 		}
 	}
 	return nil

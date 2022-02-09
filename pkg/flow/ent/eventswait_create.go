@@ -33,6 +33,14 @@ func (ewc *EventsWaitCreate) SetID(u uuid.UUID) *EventsWaitCreate {
 	return ewc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ewc *EventsWaitCreate) SetNillableID(u *uuid.UUID) *EventsWaitCreate {
+	if u != nil {
+		ewc.SetID(*u)
+	}
+	return ewc
+}
+
 // SetWorkfloweventID sets the "workflowevent" edge to the Events entity by ID.
 func (ewc *EventsWaitCreate) SetWorkfloweventID(id uuid.UUID) *EventsWaitCreate {
 	ewc.mutation.SetWorkfloweventID(id)
@@ -124,10 +132,10 @@ func (ewc *EventsWaitCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ewc *EventsWaitCreate) check() error {
 	if _, ok := ewc.mutation.Events(); !ok {
-		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "events"`)}
+		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "EventsWait.events"`)}
 	}
 	if _, ok := ewc.mutation.WorkfloweventID(); !ok {
-		return &ValidationError{Name: "workflowevent", err: errors.New("ent: missing required edge \"workflowevent\"")}
+		return &ValidationError{Name: "workflowevent", err: errors.New(`ent: missing required edge "EventsWait.workflowevent"`)}
 	}
 	return nil
 }
@@ -141,7 +149,11 @@ func (ewc *EventsWaitCreate) sqlSave(ctx context.Context) (*EventsWait, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -159,7 +171,7 @@ func (ewc *EventsWaitCreate) createSpec() (*EventsWait, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := ewc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := ewc.mutation.Events(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

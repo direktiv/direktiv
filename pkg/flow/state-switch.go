@@ -50,6 +50,10 @@ func (sl *switchStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *switchStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 func (sl *switchStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if im.GetMemory() != nil {

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -217,37 +218,37 @@ func (mu *MetricsUpdate) ExecX(ctx context.Context) {
 func (mu *MetricsUpdate) check() error {
 	if v, ok := mu.mutation.Namespace(); ok {
 		if err := metrics.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf("ent: validator failed for field \"namespace\": %w", err)}
+			return &ValidationError{Name: "namespace", err: fmt.Errorf(`ent: validator failed for field "Metrics.namespace": %w`, err)}
 		}
 	}
 	if v, ok := mu.mutation.Workflow(); ok {
 		if err := metrics.WorkflowValidator(v); err != nil {
-			return &ValidationError{Name: "workflow", err: fmt.Errorf("ent: validator failed for field \"workflow\": %w", err)}
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "Metrics.workflow": %w`, err)}
 		}
 	}
 	if v, ok := mu.mutation.Instance(); ok {
 		if err := metrics.InstanceValidator(v); err != nil {
-			return &ValidationError{Name: "instance", err: fmt.Errorf("ent: validator failed for field \"instance\": %w", err)}
+			return &ValidationError{Name: "instance", err: fmt.Errorf(`ent: validator failed for field "Metrics.instance": %w`, err)}
 		}
 	}
 	if v, ok := mu.mutation.State(); ok {
 		if err := metrics.StateValidator(v); err != nil {
-			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Metrics.state": %w`, err)}
 		}
 	}
 	if v, ok := mu.mutation.WorkflowMs(); ok {
 		if err := metrics.WorkflowMsValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf("ent: validator failed for field \"workflow_ms\": %w", err)}
+			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf(`ent: validator failed for field "Metrics.workflow_ms": %w`, err)}
 		}
 	}
 	if v, ok := mu.mutation.IsolateMs(); ok {
 		if err := metrics.IsolateMsValidator(v); err != nil {
-			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf("ent: validator failed for field \"isolate_ms\": %w", err)}
+			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf(`ent: validator failed for field "Metrics.isolate_ms": %w`, err)}
 		}
 	}
 	if v, ok := mu.mutation.Next(); ok {
 		if err := metrics.NextValidator(v); err != nil {
-			return &ValidationError{Name: "next", err: fmt.Errorf("ent: validator failed for field \"next\": %w", err)}
+			return &ValidationError{Name: "next", err: fmt.Errorf(`ent: validator failed for field "Metrics.next": %w`, err)}
 		}
 	}
 	return nil
@@ -604,37 +605,37 @@ func (muo *MetricsUpdateOne) ExecX(ctx context.Context) {
 func (muo *MetricsUpdateOne) check() error {
 	if v, ok := muo.mutation.Namespace(); ok {
 		if err := metrics.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf("ent: validator failed for field \"namespace\": %w", err)}
+			return &ValidationError{Name: "namespace", err: fmt.Errorf(`ent: validator failed for field "Metrics.namespace": %w`, err)}
 		}
 	}
 	if v, ok := muo.mutation.Workflow(); ok {
 		if err := metrics.WorkflowValidator(v); err != nil {
-			return &ValidationError{Name: "workflow", err: fmt.Errorf("ent: validator failed for field \"workflow\": %w", err)}
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "Metrics.workflow": %w`, err)}
 		}
 	}
 	if v, ok := muo.mutation.Instance(); ok {
 		if err := metrics.InstanceValidator(v); err != nil {
-			return &ValidationError{Name: "instance", err: fmt.Errorf("ent: validator failed for field \"instance\": %w", err)}
+			return &ValidationError{Name: "instance", err: fmt.Errorf(`ent: validator failed for field "Metrics.instance": %w`, err)}
 		}
 	}
 	if v, ok := muo.mutation.State(); ok {
 		if err := metrics.StateValidator(v); err != nil {
-			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Metrics.state": %w`, err)}
 		}
 	}
 	if v, ok := muo.mutation.WorkflowMs(); ok {
 		if err := metrics.WorkflowMsValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf("ent: validator failed for field \"workflow_ms\": %w", err)}
+			return &ValidationError{Name: "workflow_ms", err: fmt.Errorf(`ent: validator failed for field "Metrics.workflow_ms": %w`, err)}
 		}
 	}
 	if v, ok := muo.mutation.IsolateMs(); ok {
 		if err := metrics.IsolateMsValidator(v); err != nil {
-			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf("ent: validator failed for field \"isolate_ms\": %w", err)}
+			return &ValidationError{Name: "isolate_ms", err: fmt.Errorf(`ent: validator failed for field "Metrics.isolate_ms": %w`, err)}
 		}
 	}
 	if v, ok := muo.mutation.Next(); ok {
 		if err := metrics.NextValidator(v); err != nil {
-			return &ValidationError{Name: "next", err: fmt.Errorf("ent: validator failed for field \"next\": %w", err)}
+			return &ValidationError{Name: "next", err: fmt.Errorf(`ent: validator failed for field "Metrics.next": %w`, err)}
 		}
 	}
 	return nil
@@ -653,7 +654,7 @@ func (muo *MetricsUpdateOne) sqlSave(ctx context.Context) (_node *Metrics, err e
 	}
 	id, ok := muo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Metrics.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Metrics.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := muo.fields; len(fields) > 0 {

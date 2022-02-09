@@ -123,6 +123,7 @@ type FlowClient interface {
 	SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error)
 	GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error)
 	Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
+	InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error)
 }
 
 type flowClient struct {
@@ -1619,6 +1620,15 @@ func (c *flowClient) Build(ctx context.Context, in *empty.Empty, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *flowClient) InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error) {
+	out := new(InstanceMetadataResponse)
+	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/InstanceMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -1727,6 +1737,7 @@ type FlowServer interface {
 	SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error)
 	GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error)
 	Build(context.Context, *empty.Empty) (*BuildResponse, error)
+	InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -2027,6 +2038,9 @@ func (UnimplementedFlowServer) GetNamespaceConfig(context.Context, *GetNamespace
 }
 func (UnimplementedFlowServer) Build(context.Context, *empty.Empty) (*BuildResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
+}
+func (UnimplementedFlowServer) InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InstanceMetadata not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -3898,6 +3912,24 @@ func _Flow_Build_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_InstanceMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstanceMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).InstanceMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/direktiv_flow.Flow/InstanceMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).InstanceMetadata(ctx, req.(*InstanceMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4192,6 +4224,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Build",
 			Handler:    _Flow_Build_Handler,
+		},
+		{
+			MethodName: "InstanceMetadata",
+			Handler:    _Flow_InstanceMetadata_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

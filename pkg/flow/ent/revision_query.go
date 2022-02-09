@@ -549,6 +549,10 @@ func (rq *RevisionQuery) sqlAll(ctx context.Context) ([]*Revision, error) {
 
 func (rq *RevisionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	_spec.Node.Columns = rq.fields
+	if len(rq.fields) > 0 {
+		_spec.Unique = rq.unique != nil && *rq.unique
+	}
 	return sqlgraph.CountNodes(ctx, rq.driver, _spec)
 }
 
@@ -619,6 +623,9 @@ func (rq *RevisionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if rq.sql != nil {
 		selector = rq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if rq.unique != nil && *rq.unique {
+		selector.Distinct()
 	}
 	for _, p := range rq.predicates {
 		p(selector)
@@ -898,9 +905,7 @@ func (rgb *RevisionGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range rgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(rgb.fields...)...)

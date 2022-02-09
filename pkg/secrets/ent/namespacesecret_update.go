@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -56,12 +57,18 @@ func (nsu *NamespaceSecretUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(nsu.hooks) == 0 {
+		if err = nsu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = nsu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*NamespaceSecretMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = nsu.check(); err != nil {
+				return 0, err
 			}
 			nsu.mutation = mutation
 			affected, err = nsu.sqlSave(ctx)
@@ -101,6 +108,16 @@ func (nsu *NamespaceSecretUpdate) ExecX(ctx context.Context) {
 	if err := nsu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (nsu *NamespaceSecretUpdate) check() error {
+	if v, ok := nsu.mutation.Secret(); ok {
+		if err := namespacesecret.SecretValidator(v); err != nil {
+			return &ValidationError{Name: "secret", err: fmt.Errorf(`ent: validator failed for field "NamespaceSecret.secret": %w`, err)}
+		}
+	}
+	return nil
 }
 
 func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -198,12 +215,18 @@ func (nsuo *NamespaceSecretUpdateOne) Save(ctx context.Context) (*NamespaceSecre
 		node *NamespaceSecret
 	)
 	if len(nsuo.hooks) == 0 {
+		if err = nsuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = nsuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*NamespaceSecretMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = nsuo.check(); err != nil {
+				return nil, err
 			}
 			nsuo.mutation = mutation
 			node, err = nsuo.sqlSave(ctx)
@@ -245,6 +268,16 @@ func (nsuo *NamespaceSecretUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (nsuo *NamespaceSecretUpdateOne) check() error {
+	if v, ok := nsuo.mutation.Secret(); ok {
+		if err := namespacesecret.SecretValidator(v); err != nil {
+			return &ValidationError{Name: "secret", err: fmt.Errorf(`ent: validator failed for field "NamespaceSecret.secret": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *NamespaceSecret, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -258,7 +291,7 @@ func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *Names
 	}
 	id, ok := nsuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing NamespaceSecret.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "NamespaceSecret.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := nsuo.fields; len(fields) > 0 {

@@ -88,6 +88,14 @@ func (vdc *VarDataCreate) SetID(u uuid.UUID) *VarDataCreate {
 	return vdc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (vdc *VarDataCreate) SetNillableID(u *uuid.UUID) *VarDataCreate {
+	if u != nil {
+		vdc.SetID(*u)
+	}
+	return vdc
+}
+
 // AddVarrefIDs adds the "varrefs" edge to the VarRef entity by IDs.
 func (vdc *VarDataCreate) AddVarrefIDs(ids ...uuid.UUID) *VarDataCreate {
 	vdc.mutation.AddVarrefIDs(ids...)
@@ -195,22 +203,22 @@ func (vdc *VarDataCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (vdc *VarDataCreate) check() error {
 	if _, ok := vdc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "VarData.created_at"`)}
 	}
 	if _, ok := vdc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "VarData.updated_at"`)}
 	}
 	if _, ok := vdc.mutation.Size(); !ok {
-		return &ValidationError{Name: "size", err: errors.New(`ent: missing required field "size"`)}
+		return &ValidationError{Name: "size", err: errors.New(`ent: missing required field "VarData.size"`)}
 	}
 	if _, ok := vdc.mutation.Hash(); !ok {
-		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "hash"`)}
+		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "VarData.hash"`)}
 	}
 	if _, ok := vdc.mutation.Data(); !ok {
-		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "data"`)}
+		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "VarData.data"`)}
 	}
 	if _, ok := vdc.mutation.MimeType(); !ok {
-		return &ValidationError{Name: "mime_type", err: errors.New(`ent: missing required field "mime_type"`)}
+		return &ValidationError{Name: "mime_type", err: errors.New(`ent: missing required field "VarData.mime_type"`)}
 	}
 	return nil
 }
@@ -224,7 +232,11 @@ func (vdc *VarDataCreate) sqlSave(ctx context.Context) (*VarData, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -242,7 +254,7 @@ func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := vdc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := vdc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

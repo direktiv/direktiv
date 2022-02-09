@@ -548,6 +548,10 @@ func (lmq *LogMsgQuery) sqlAll(ctx context.Context) ([]*LogMsg, error) {
 
 func (lmq *LogMsgQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := lmq.querySpec()
+	_spec.Node.Columns = lmq.fields
+	if len(lmq.fields) > 0 {
+		_spec.Unique = lmq.unique != nil && *lmq.unique
+	}
 	return sqlgraph.CountNodes(ctx, lmq.driver, _spec)
 }
 
@@ -618,6 +622,9 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if lmq.sql != nil {
 		selector = lmq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if lmq.unique != nil && *lmq.unique {
+		selector.Distinct()
 	}
 	for _, p := range lmq.predicates {
 		p(selector)
@@ -897,9 +904,7 @@ func (lmgb *LogMsgGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range lmgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(lmgb.fields...)...)

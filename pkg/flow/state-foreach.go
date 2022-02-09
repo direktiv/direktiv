@@ -79,6 +79,10 @@ func (sl *foreachStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *foreachStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, inputSource interface{}, attempt int) (logic multiactionTuple, err error) {
 
 	action := sl.state.Action

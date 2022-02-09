@@ -62,6 +62,14 @@ func (rc *RevisionCreate) SetID(u uuid.UUID) *RevisionCreate {
 	return rc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (rc *RevisionCreate) SetNillableID(u *uuid.UUID) *RevisionCreate {
+	if u != nil {
+		rc.SetID(*u)
+	}
+	return rc
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (rc *RevisionCreate) SetWorkflowID(id uuid.UUID) *RevisionCreate {
 	rc.mutation.SetWorkflowID(id)
@@ -187,19 +195,19 @@ func (rc *RevisionCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (rc *RevisionCreate) check() error {
 	if _, ok := rc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Revision.created_at"`)}
 	}
 	if _, ok := rc.mutation.Hash(); !ok {
-		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "hash"`)}
+		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "Revision.hash"`)}
 	}
 	if _, ok := rc.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "source"`)}
+		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "Revision.source"`)}
 	}
 	if _, ok := rc.mutation.Metadata(); !ok {
-		return &ValidationError{Name: "metadata", err: errors.New(`ent: missing required field "metadata"`)}
+		return &ValidationError{Name: "metadata", err: errors.New(`ent: missing required field "Revision.metadata"`)}
 	}
 	if _, ok := rc.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Revision.workflow"`)}
 	}
 	return nil
 }
@@ -213,7 +221,11 @@ func (rc *RevisionCreate) sqlSave(ctx context.Context) (*Revision, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -231,7 +243,7 @@ func (rc *RevisionCreate) createSpec() (*Revision, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := rc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := rc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

@@ -34,6 +34,14 @@ func (rc *RouteCreate) SetID(u uuid.UUID) *RouteCreate {
 	return rc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (rc *RouteCreate) SetNillableID(u *uuid.UUID) *RouteCreate {
+	if u != nil {
+		rc.SetID(*u)
+	}
+	return rc
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (rc *RouteCreate) SetWorkflowID(id uuid.UUID) *RouteCreate {
 	rc.mutation.SetWorkflowID(id)
@@ -136,13 +144,13 @@ func (rc *RouteCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (rc *RouteCreate) check() error {
 	if _, ok := rc.mutation.Weight(); !ok {
-		return &ValidationError{Name: "weight", err: errors.New(`ent: missing required field "weight"`)}
+		return &ValidationError{Name: "weight", err: errors.New(`ent: missing required field "Route.weight"`)}
 	}
 	if _, ok := rc.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Route.workflow"`)}
 	}
 	if _, ok := rc.mutation.RefID(); !ok {
-		return &ValidationError{Name: "ref", err: errors.New("ent: missing required edge \"ref\"")}
+		return &ValidationError{Name: "ref", err: errors.New(`ent: missing required edge "Route.ref"`)}
 	}
 	return nil
 }
@@ -156,7 +164,11 @@ func (rc *RouteCreate) sqlSave(ctx context.Context) (*Route, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -174,7 +186,7 @@ func (rc *RouteCreate) createSpec() (*Route, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := rc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := rc.mutation.Weight(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

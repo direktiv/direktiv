@@ -71,6 +71,17 @@ message InstanceOutputResponse {
 	bytes data = 3;
 }
 
+message InstanceMetadataRequest {
+	string namespace = 1;
+	string instance = 2;
+}
+
+message InstanceMetadataResponse {
+	string namespace = 1;
+	Instance instance = 2;
+	bytes data = 3;
+}
+
 message InstancesRequest {
 	string namespace = 1;
 	Pagination pagination = 2;

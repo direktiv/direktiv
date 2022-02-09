@@ -336,6 +336,10 @@ func (mq *MetricsQuery) sqlAll(ctx context.Context) ([]*Metrics, error) {
 
 func (mq *MetricsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
+	_spec.Node.Columns = mq.fields
+	if len(mq.fields) > 0 {
+		_spec.Unique = mq.unique != nil && *mq.unique
+	}
 	return sqlgraph.CountNodes(ctx, mq.driver, _spec)
 }
 
@@ -406,6 +410,9 @@ func (mq *MetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if mq.sql != nil {
 		selector = mq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if mq.unique != nil && *mq.unique {
+		selector.Distinct()
 	}
 	for _, p := range mq.predicates {
 		p(selector)
@@ -685,9 +692,7 @@ func (mgb *MetricsGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range mgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(mgb.fields...)...)

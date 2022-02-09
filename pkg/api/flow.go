@@ -1008,6 +1008,27 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got instance output"
 	r.HandleFunc("/namespaces/{ns}/instances/{instance}/output", h.InstanceOutput).Name(RN_GetInstance).Methods(http.MethodGet)
 
+	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/metadata Instances getInstanceMetadata
+	// ---
+	// description: |
+	//   Gets the metadata of an instance.
+	// summary: Get a Instance Metadata
+	// parameters:
+	// - in: path
+	//   name: namespace
+	//   type: string
+	//   required: true
+	//   description: 'target namespace'
+	// - in: path
+	//   name: instance
+	//   type: string
+	//   required: true
+	//   description: 'target instance'
+	// responses:
+	//   '200':
+	//     "description": "successfully got instance metadata"
+	r.HandleFunc("/namespaces/{ns}/instances/{instance}/metadata", h.InstanceMetadata).Name(RN_GetInstance).Methods(http.MethodGet)
+
 	// swagger:operation POST /api/namespaces/{namespace}/instances/{instance}/cancel Instances cancelInstance
 	// ---
 	// description: |
@@ -3429,6 +3450,24 @@ func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.InstanceOutput(ctx, in)
+	respond(w, resp, err)
+
+}
+
+func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	instance := mux.Vars(r)["instance"]
+
+	in := &grpc.InstanceMetadataRequest{
+		Namespace: namespace,
+		Instance:  instance,
+	}
+
+	resp, err := h.client.InstanceMetadata(ctx, in)
 	respond(w, resp, err)
 
 }
