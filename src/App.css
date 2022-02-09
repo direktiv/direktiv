@@ -398,6 +398,17 @@ select:focus-visible{
   outline: none
 }
 
+.container-alert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  color: rgb(86, 104, 116);
+  font-size: 16px;
+  font-style: italic;
+}
+
+
 
 /* Disabled as this interferes with firfox dropdown options */
 /* .dropdown-select:hover{

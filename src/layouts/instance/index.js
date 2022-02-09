@@ -357,7 +357,7 @@ function InstanceDiagram(props) {
 
     if (workflowMissing) {
         return  (
-            <div style={{display: "flex", justifyContent:"center", alignItems: "center", width: "100%", color: "#566874", fontSize:"16px", fontStyle:"italic"}}>
+            <div className='container-alert'>
                 Workflow revision that executed instance no longer exists
             </div>
             )

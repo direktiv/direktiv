@@ -121,45 +121,47 @@ function MonitoringPage(props) {
                         </ContentPanelTitle>
                         <ContentPanelBody>
                             <>
-                                <FlexBox className="col" style={{...paddingStyle}}>
-                                    <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden", padding: "8px" }}>
-                                        <div style={{flex:"1 1 auto", lineHeight: "20px"}}>
-                                            <AutoSizer>
-                                                {({ height, width }) => (
-                                                    <div style={{ height: "100%", minHeight: "100%" }}>
-                                                        <List
-                                                            width={width}
-                                                            height={height}
-                                                            rowRenderer={rowRenderer}
-                                                            deferredMeasurementCache={cache}
-                                                            scrollToIndex={follow ? data.length - 1 : 0}
-                                                            rowCount={data.length}
-                                                            rowHeight={cache.rowHeight}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </AutoSizer>
+                                {data !== null ?
+                                    <FlexBox className="col" style={{ ...paddingStyle }}>
+                                        <FlexBox style={{ backgroundColor: "#002240", color: "white", borderRadius: "8px 8px 0px 0px", overflow: "hidden", padding: "8px" }}>
+                                            <div style={{ flex: "1 1 auto", lineHeight: "20px" }}>
+                                                <AutoSizer>
+                                                    {({ height, width }) => (
+                                                        <div style={{ height: "100%", minHeight: "100%" }}>
+                                                            <List
+                                                                width={width}
+                                                                height={height}
+                                                                rowRenderer={rowRenderer}
+                                                                deferredMeasurementCache={cache}
+                                                                scrollToIndex={follow ? data.length - 1 : 0}
+                                                                rowCount={data.length}
+                                                                rowHeight={cache.rowHeight}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </AutoSizer>
+                                            </div>
+                                        </FlexBox>
+                                        <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems: 'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
+                                            <FlexBox className="gap" style={{ width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center" }}>
+                                                <TerminalButton onClick={() => {
+                                                    copyTextToClipboard(clipData)
+                                                }}>
+                                                    <VscCopy /> Copy {width > 999 ? <span>to Clipboard</span> : ""}
+                                                </TerminalButton>
+                                                {follow ?
+                                                    <TerminalButton onClick={(e) => setFollow(!follow)} className={"btn-terminal"}>
+                                                        <VscEyeClosed /> Stop {width > 999 ? <span>watching</span> : ""}
+                                                    </TerminalButton>
+                                                    :
+                                                    <TerminalButton onClick={(e) => setFollow(!follow)} className={"btn-terminal"} >
+                                                        <VscEye /> <div>Follow {width > 999 ? <span>logs</span> : ""}</div>
+                                                    </TerminalButton>
+                                                }
+                                            </FlexBox>
                                         </div>
                                     </FlexBox>
-                                    <div style={{ height: "40px", backgroundColor: "#223848", color: "white", maxHeight: "40px", minHeight: "40px", padding: "0px 10px 0px 10px", boxShadow: "0px 0px 3px 0px #fcfdfe", alignItems:'center', borderRadius: " 0px 0px 8px 8px", overflow: "hidden" }}>
-                                        <FlexBox className="gap" style={{width: "100%", flexDirection: "row-reverse", height: "100%", alignItems: "center"}}>
-                                            <TerminalButton onClick={()=>{
-                                                copyTextToClipboard(clipData)
-                                            }}>
-                                                    <VscCopy/> Copy {width > 999 ? <span>to Clipboard</span>:""}
-                                            </TerminalButton>
-                                            {follow ?
-                                                <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"}>
-                                                    <VscEyeClosed/> Stop {width > 999 ? <span>watching</span>: ""}
-                                                </TerminalButton>
-                                                :
-                                                <TerminalButton onClick={(e)=>setFollow(!follow)} className={"btn-terminal"} >
-                                                    <VscEye/> <div>Follow {width > 999 ? <span>logs</span>: ""}</div>
-                                                </TerminalButton>
-                                            }
-                                        </FlexBox>
-                                    </div>
-                                </FlexBox>
+                                    : <div className="container-alert">Failed to get logs{err ? `: ${err}` : ``}</div>}
                             </>
                         </ContentPanelBody>
                     </ContentPanel>
