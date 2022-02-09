@@ -15,7 +15,8 @@ countdown() {
 echo "stopping k3s"
 service k3s stop
 
-rm -Rf /etc/rancher/k3s
+# delete all except the registries
+find /etc/rancher/k3s -mindepth 1 ! -regex '/etc/rancher/k3s/registries.yaml' -delete
 rm -Rf /var/lib/rancher/k3s
 rm -Rf /var/lib/cni/networks/cbr0
 
