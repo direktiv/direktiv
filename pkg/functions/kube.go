@@ -1837,11 +1837,16 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 	}
 
 	// Set Registry Secrets
+	var secrets []corev1.LocalObjectReference
+
 	if scope == PrefixGlobal {
-		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = createGlobalPrivatePullSecrets()
+		secrets = createGlobalPrivatePullSecrets()
 	} else {
-		svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = createPullSecrets(info.GetNamespaceName())
+		secrets = createPullSecrets(info.GetNamespaceName())
 	}
+
+	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = secrets
+	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = secrets
 
 	// Manually Keep track of revision on our side to more easily generate names in the future.
 	svc.Spec.ConfigurationSpec.Template.ObjectMeta.Labels[ServiceTemplateGeneration] = "1"
