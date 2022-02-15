@@ -415,6 +415,7 @@ function WorkingRevision(props) {
                                         let wfObj =  YAML.load(oldWf)
                                         if (wfObj && wfObj.states && wfObj.states.length > 0 && wfObj.states[0].type === "validate") {
                                             setWorkflowJSONSchema(  wfObj.states[0].schema)
+                                            setTabIndex(1)
                                         }
                                     }}
                                     button={(

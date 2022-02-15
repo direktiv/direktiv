@@ -6,17 +6,22 @@ function Tabs(props) {
 
     const {callback, tabIndex, id} = props
     const [activeTab, setActiveTab] = useState(0)
+    const [init, setInit] = useState(false)
 
     useEffect(()=>{
+        if (!init) {
+            return
+        }
         if (callback) {
             callback(activeTab)
         }
-    }, [callback, activeTab])
+    }, [callback, activeTab, init])
 
     useEffect(()=>{
         if (tabIndex !== null && tabIndex !== undefined && tabIndex >= 0) {
             setActiveTab(tabIndex)
         }
+        setInit(true)
     }, [tabIndex])
 
     let {style, headers, tabs} = props;
