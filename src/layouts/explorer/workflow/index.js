@@ -38,6 +38,9 @@ import Pagination from '../../../components/pagination';
 import {AutoSizer} from "react-virtualized";
 import Tippy from '@tippyjs/react';
 
+import JSONSchemaForm from "react-jsonschema-form";
+import  Tabs  from '../../../components/tabs';
+
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
 
@@ -267,6 +270,10 @@ function WorkingRevision(props) {
     const [workflow, setWorkflow] = useState("")
     const [input, setInput] = useState("{\n\t\n}")
 
+    const [tabIndex, setTabIndex] = useState(0)
+    const [workflowJSONSchema, setWorkflowJSONSchema] = useState(null)
+    const [inputFormSubmitRef, setInputFormSubmitRef] = useState(null)
+
     const [tabBtn, setTabBtn] = useState(searchParams.get('revtab') !== null ? parseInt(searchParams.get('revtab')): 0);
 
     useEffect(()=>{
@@ -375,13 +382,19 @@ function WorkingRevision(props) {
                                     style={{ justifyContent: "center" }}
                                     className="run-workflow-modal"
                                     modalStyle={{color: "black"}}
-                                    title="Run Workflow"
+                                    title={`Run Workflow`}
                                     buttonDisabled={opLoadingStates["IsLoading"]}
                                     onClose={()=>{
                                         setInput("{\n\t\n}")
+                                        setTabIndex(0)
+                                        setWorkflowJSONSchema(null)
                                     }}
                                     actionButtons={[
-                                        ButtonDefinition("Run", async () => {
+                                        ButtonDefinition(`${tabIndex === 0 ? "Run": "Generate JSON"}`, async () => {
+                                            if (tabIndex === 1) {
+                                                inputFormSubmitRef.click()
+                                                return
+                                            }
                                             let r = ""
                                             if(input === "{\n\t\n}"){
                                                 r = await executeWorkflow()
@@ -394,24 +407,54 @@ function WorkingRevision(props) {
                                             } else {
                                                 navigate(`/n/${namespace}/instances/${r}`)
                                             }
-                                        }, "small blue", ()=>{}, true, false),
+                                        }, `small blue ${tabIndex === 1 && workflowJSONSchema === null ? "disabled" : ""}`, ()=>{}, tabIndex === 0, false),
                                         ButtonDefinition("Cancel", async () => {
                                         }, "small light", ()=>{}, true, false)
                                     ]}
+                                    onOpen={()=>{
+                                        let wfObj =  YAML.load(oldWf)
+                                        if (wfObj && wfObj.states && wfObj.states.length > 0 && wfObj.states[0].type === "validate") {
+                                            setWorkflowJSONSchema(  wfObj.states[0].schema)
+                                        }
+                                    }}
                                     button={(
                                             <div className={`btn-terminal ${opLoadingStates["IsLoading"] ? "terminal-disabled" : ""}`}>
                                                 Run
                                             </div>
                                     )}
                                 >
-                                    <FlexBox style={{height: "40vh", width: "30vw", minWidth: "250px", minHeight: "200px"}}>
-                                        <FlexBox style={{overflow:"hidden"}}>
-                                            <AutoSizer>
-                                                {({height, width})=>(
-                                                    <DirektivEditor height={height} width={width} dlang="json" dvalue={input} setDValue={setInput}/>
-                                                )}
-                                            </AutoSizer>
-                                        </FlexBox>
+                                    <FlexBox style={{ height: "40vh", width: "30vw", minWidth: "250px", minHeight: "200px" }}>
+                                        <Tabs
+                                            id={"wf-execute-input"}
+                                            key={"inputForm"}
+                                            callback={setTabIndex}
+                                            tabIndex={tabIndex}
+                                            style={tabIndex === 1 ? { overflowY: "auto", paddingTop: "1px" } : { paddingTop: "1px" }}
+                                            headers={["JSON", "Form"]}
+                                            tabs={[(
+                                                <FlexBox>
+                                                    <AutoSizer>
+                                                        {({ height, width }) => (
+                                                            <DirektivEditor height={height} width={width} dlang="json" dvalue={input} setDValue={setInput} />
+                                                        )}
+                                                    </AutoSizer>
+                                                </FlexBox>
+                                            ), (<FlexBox className="col" style={{ overflow: "hidden" }}>
+                                                {workflowJSONSchema === null ?
+                                                    <div className='container-alert' style={{ textAlign: "center", height: "80%" }}>
+                                                        Workflow first state must be a validate state to generate form.
+                                                    </div> : <></>
+                                                }
+                                                <div className="formContainer">
+                                                    <JSONSchemaForm onSubmit={(form) => {
+                                                        setInput(JSON.stringify(form.formData, null, 2))
+                                                        setTabIndex(0)
+                                                    }}
+                                                        schema={workflowJSONSchema ? workflowJSONSchema : {}} >
+                                                        <button ref={setInputFormSubmitRef} style={{ display: "none" }} />
+                                                    </JSONSchemaForm>
+                                                </div>
+                                            </FlexBox>)]} />
                                     </FlexBox>
                                 </Modal>}
                             </div>

@@ -361,3 +361,39 @@
     background-color: #FFC0C5;
     margin: 0px auto 10px;
    }
+
+/* INPUT FORM */
+
+fieldset{
+    outline: none;
+    border: none;
+    padding: 0;
+}
+
+.form-group.field{
+    padding-bottom: 3pt;
+
+}
+
+.control-label{
+    color: var(--theme-dark-text);
+    font-family: var(--font-family) !important;
+    font-size: 15px;
+    font-style: normal;
+    line-height: 30px;
+    font-weight: 700;
+    letter-spacing: 0em;
+    text-align: left;
+}
+
+.formContainer{
+    width: calc(100% - 16px);
+}
+
+#wf-execute-input .tabs-row .tab-header{
+    height: 100%;
+}
+
+#wf-execute-input .tabs-row {
+    min-height: 32px;
+}

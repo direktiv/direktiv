@@ -4,7 +4,7 @@ import FlexBox from '../flexbox'
 
 function Tabs(props) {
 
-    const {callback} = props
+    const {callback, tabIndex, id} = props
     const [activeTab, setActiveTab] = useState(0)
 
     useEffect(()=>{
@@ -12,6 +12,12 @@ function Tabs(props) {
             callback(activeTab)
         }
     }, [callback, activeTab])
+
+    useEffect(()=>{
+        if (tabIndex !== null && tabIndex !== undefined && tabIndex >= 0) {
+            setActiveTab(tabIndex)
+        }
+    }, [tabIndex])
 
     let {style, headers, tabs} = props;
     if (!headers || !tabs) {
@@ -40,7 +46,7 @@ function Tabs(props) {
     }
     
     return(
-        <FlexBox className="col gap" style={{...style}}>
+        < FlexBox id={id} className="col gap" style={{...style}}>
             <div className="tabs-row">
                 {headerDOMs}
             </div>
