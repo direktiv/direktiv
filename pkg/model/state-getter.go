@@ -20,6 +20,7 @@ type GetterState struct {
 type GetterDefinition struct {
 	Scope string `yaml:"scope,omitempty"`
 	Key   string `yaml:"key"`
+	As    string `yaml:"as"`
 }
 
 // Validate validates against the getter definition
@@ -30,6 +31,7 @@ func (o *GetterDefinition) Validate() error {
 	case "workflow":
 	case "namespace":
 	case "thread":
+	case "system":
 	default:
 		return ErrVarScope
 	}

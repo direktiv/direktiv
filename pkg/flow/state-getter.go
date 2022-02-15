@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/google/uuid"
 )
 
 type getterStateLogic struct {
@@ -74,6 +75,11 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 		var ref *ent.VarRef
 
+		storeKey := v.Key
+		if v.As != "" {
+			storeKey = v.As
+		}
+
 		switch v.Scope {
 
 		case "":
@@ -118,6 +124,16 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 
 			ref, err = ns.QueryVars().Where(entvar.NameEQ(v.Key)).WithVardata().Only(ctx)
 
+		case "system":
+
+			value, err := valueForSystem(v.Key, im)
+			if err != nil {
+				return nil, NewInternalError(err)
+			}
+
+			m[storeKey] = value
+			continue
+
 		default:
 
 			err = NewInternalError(errors.New("invalid scope"))
@@ -155,7 +171,7 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			}
 		}
 
-		m[v.Key] = x
+		m[storeKey] = x
 
 	}
 
@@ -171,5 +187,24 @@ func (sl *getterStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	}
 
 	return
+
+}
+
+func valueForSystem(key string, im *instanceMemory) (interface{}, error) {
+
+	var ret interface{}
+
+	switch key {
+	case "instance":
+		ret = im.ID()
+	case "uuid":
+		ret = uuid.New().String()
+	case "epoch":
+		ret = time.Now().Unix()
+	default:
+		return nil, fmt.Errorf("unknown system key %s", key)
+	}
+
+	return ret, nil
 
 }
