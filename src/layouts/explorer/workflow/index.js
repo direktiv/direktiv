@@ -38,8 +38,8 @@ import Pagination from '../../../components/pagination';
 import {AutoSizer} from "react-virtualized";
 import Tippy from '@tippyjs/react';
 
-import JSONSchemaForm from "react-jsonschema-form";
 import  Tabs  from '../../../components/tabs';
+import Form from "@rjsf/core";
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime);
@@ -446,13 +446,13 @@ function WorkingRevision(props) {
                                                     </div> : <></>
                                                 }
                                                 <div className="formContainer">
-                                                    <JSONSchemaForm onSubmit={(form) => {
+                                                    <Form onSubmit={(form) => {
                                                         setInput(JSON.stringify(form.formData, null, 2))
                                                         setTabIndex(0)
                                                     }}
                                                         schema={workflowJSONSchema ? workflowJSONSchema : {}} >
                                                         <button ref={setInputFormSubmitRef} style={{ display: "none" }} />
-                                                    </JSONSchemaForm>
+                                                    </Form>
                                                 </div>
                                             </FlexBox>)]} />
                                     </FlexBox>

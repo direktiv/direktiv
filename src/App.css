@@ -305,6 +305,9 @@ select {
   border-radius: 4px;
   cursor: pointer;
   padding: 8px;
+  
+  width: 100%;
+  height: auto;
 }
 
 .hidden {

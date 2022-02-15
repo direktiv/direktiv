@@ -19,7 +19,7 @@ import { AutoSizer } from 'react-virtualized';
 import { VscCode } from 'react-icons/vsc';
 import { ApiFragment } from '..';
 
-import JSONSchemaForm from "react-jsonschema-form";
+import Form from "@rjsf/core";
 import  Tabs  from '../../../components/tabs';
 
 function RevisionTab(props) {
@@ -162,13 +162,13 @@ function RevisionTab(props) {
                                                         </div> : <></>
                                                     }
                                                     <div className="formContainer">
-                                                        <JSONSchemaForm onSubmit={(form) => {
+                                                        <Form onSubmit={(form) => {
                                                             setInput(JSON.stringify(form.formData, null, 2))
                                                             setTabIndex(0)
                                                         }}
                                                             schema={workflowJSONSchema ? workflowJSONSchema : {}} >
                                                             <button ref={setInputFormSubmitRef} style={{ display: "none" }} />
-                                                        </JSONSchemaForm>
+                                                        </Form>
                                                     </div>
                                                 </FlexBox>)]} />
                                         </FlexBox>

@@ -364,7 +364,7 @@
 
 /* INPUT FORM */
 
-fieldset{
+.rjsf fieldset{
     outline: none;
     border: none;
     padding: 0;
@@ -372,10 +372,12 @@ fieldset{
 
 .form-group.field{
     padding-bottom: 3pt;
+    display: flex;
+    flex-direction: column;
 
 }
 
-.control-label{
+.rjsf .control-label{
     color: var(--theme-dark-text);
     font-family: var(--font-family) !important;
     font-size: 15px;
@@ -387,7 +389,7 @@ fieldset{
 }
 
 .formContainer{
-    width: calc(100% - 16px);
+    width: calc(100% - 6px);
 }
 
 #wf-execute-input .tabs-row .tab-header{
@@ -396,4 +398,137 @@ fieldset{
 
 #wf-execute-input .tabs-row {
     min-height: 32px;
+}
+
+.rjsf button {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 4px;
+
+    padding-top: 0px;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+.rjsf button.btn-danger{
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
+.rjsf button.btn-default{
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+
+.rjsf button.btn[disabled]{
+    cursor: not-allowed;
+    filter: alpha(opacity=65);
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    opacity: .65;
+}
+
+.rjsf input[type="checkbox"] {
+    width: auto;
+}
+
+.rjsf .checkbox label {
+    color: var(--theme-dark-text);
+    font-family: var(--font-family) !important;
+    font-size: 15px;
+    font-style: normal;
+    line-height: 30px;
+    font-weight: 700;
+    letter-spacing: 0em;
+    text-align: left;
+
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rjsf legend{
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin-top: 10px;
+    margin-bottom: 3px;
+    font-size: 21px;
+    line-height: inherit;
+    color: #333;
+    border: 0;
+    border-bottom-color: currentcolor;
+    border-bottom-style: none;
+    border-bottom-width: 0px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.rjsf .text-danger{
+    color: #a94442;
+}
+
+.rjsf .panel-danger {
+    color: #a94442;
+}
+
+.rjsf .has-error label{
+    color: #a94442;
+}
+
+.rjsf .glyphicon {
+    color: white;
+    line-height: 0px;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.rjsf .glyphicon-remove::before{
+    content: "Remove";
+}
+
+.rjsf .glyphicon-arrow-up::before{
+    color: var(--theme-dark-text);
+    content: "Move Up";
+}
+
+.rjsf .glyphicon-arrow-down::before{
+    color: var(--theme-dark-text);
+    content: "Move Down";
+}
+
+.rjsf .glyphicon-plus::before{
+    content: "Add Item";
+}
+
+.rjsf .field-description {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+.rjsf input {
+    width: unset;
 }
