@@ -423,7 +423,7 @@ function WorkingRevision(props) {
                                             </div>
                                     )}
                                 >
-                                    <FlexBox style={{ height: "40vh", width: "30vw", minWidth: "250px", minHeight: "200px" }}>
+                                    <FlexBox style={{ height: "45vh", width: "35vw", minWidth: "250px", minHeight: "200px" }}>
                                         <Tabs
                                             id={"wf-execute-input"}
                                             key={"inputForm"}
