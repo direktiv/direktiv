@@ -1344,7 +1344,7 @@ func (h *functionHandler) testRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = registry.New(d["url"], d["username"], d["password"])
+	_, err = registry.NewInsecure(d["url"], d["username"], d["password"])
 
 	if err != nil {
 		respond(w, nil, err)

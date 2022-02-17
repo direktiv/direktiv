@@ -41,7 +41,16 @@ if [ ! -d "$dir/direktiv-charts" ]; then
 fi
 
 helm dependency update $dir/direktiv-charts/charts/knative
-helm install -n knative-serving knative $dir/direktiv-charts/charts/knative
+
+CACERT=$dir/registry/share/out/ca.cert.pem
+echo "checking for ca $CACERT"
+if test -f "$CACERT"; then
+  echo "using ca-cert"
+  helm install --set-file=controller.ca=$CACERT -n knative-serving knative $dir/direktiv-charts/charts/knative
+else
+  echo "not using ca-cert"
+  helm install -n knative-serving knative $dir/direktiv-charts/charts/knative
+fi
 
 kubectl delete --all -n postgres persistentvolumeclaims
 kubectl delete --all -n default persistentvolumeclaims
