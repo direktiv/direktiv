@@ -140,7 +140,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, sl.state.Action.Files)
 		if err != nil {
 			return
 		}
@@ -160,7 +160,7 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, sl.state.Action.Files)
 		if err != nil {
 			return
 		}

@@ -199,8 +199,8 @@ var stateTypeStrings []string = []string{
 	"action",
 	"consumeEvent",
 	"delay",
-	"eventAnd",
-	"eventXor",
+	"eventsAnd",
+	"eventsXor",
 	"error",
 	"foreach",
 	"generateEvent",
@@ -224,6 +224,14 @@ func ParseStateType(s string) (StateType, error) {
 		if str == s {
 			return StateType(i), nil
 		}
+	}
+
+	if s == "eventAnd" {
+		return StateTypeEventsAnd, nil
+	}
+
+	if s == "eventXor" {
+		return StateTypeEventsXor, nil
 	}
 
 	return 0, fmt.Errorf("unknown type '%s' (must be one of %v)", s, stateTypeStrings)

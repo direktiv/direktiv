@@ -164,8 +164,12 @@ func getStateFromType(stype string) (State, error) {
 		s = new(ConsumeEventState)
 	case StateTypeDelay.String():
 		s = new(DelayState)
+	case "eventAnd":
+		fallthrough
 	case StateTypeEventsAnd.String():
 		s = new(EventsAndState)
+	case "eventXor":
+		fallthrough
 	case StateTypeEventsXor.String():
 		s = new(EventsXorState)
 	case StateTypeError.String():

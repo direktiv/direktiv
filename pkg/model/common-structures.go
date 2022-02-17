@@ -32,10 +32,11 @@ func (o *TimeoutDefinition) Validate() error {
 }
 
 type ActionDefinition struct {
-	Function string           `yaml:"function,omitempty"`
-	Input    interface{}      `yaml:"input,omitempty"`
-	Secrets  []string         `yaml:"secrets,omitempty"`
-	Retries  *RetryDefinition `yaml:"retries,omitempty"`
+	Function string                   `yaml:"function,omitempty"`
+	Input    interface{}              `yaml:"input,omitempty"`
+	Secrets  []string                 `yaml:"secrets,omitempty"`
+	Retries  *RetryDefinition         `yaml:"retries,omitempty"`
+	Files    []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 func (o *ActionDefinition) Validate() error {
@@ -51,6 +52,13 @@ func (o *ActionDefinition) Validate() error {
 		err := o.Retries.Validate()
 		if err != nil {
 			return err
+		}
+	}
+
+	for i, f := range o.Files {
+		err := f.Validate()
+		if err != nil {
+			return fmt.Errorf("function file %d: %v", i, err)
 		}
 	}
 

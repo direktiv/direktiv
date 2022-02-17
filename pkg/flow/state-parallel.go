@@ -127,7 +127,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, action.Files)
 		if err != nil {
 			return
 		}
@@ -147,7 +147,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, action.Files)
 		if err != nil {
 			return
 		}

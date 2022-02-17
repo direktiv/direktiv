@@ -9,10 +9,10 @@ import (
 
 // GlobalFunctionDefinition defines the object required for a global function
 type GlobalFunctionDefinition struct {
-	Type           FunctionType             `yaml:"type" json:"type"`
-	ID             string                   `yaml:"id" json:"id"`
-	KnativeService string                   `yaml:"service" json:"service"`
-	Files          []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
+	Type           FunctionType `yaml:"type" json:"type"`
+	ID             string       `yaml:"id" json:"id"`
+	KnativeService string       `yaml:"service" json:"service"`
+	// Files          []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 // GetID returns the id of a global function
@@ -43,12 +43,12 @@ func (o *GlobalFunctionDefinition) Validate() error {
 		return errors.New("service required")
 	}
 
-	for i, f := range o.Files {
-		err := f.Validate()
-		if err != nil {
-			return fmt.Errorf("function file %d: %v", i, err)
-		}
-	}
+	// for i, f := range o.Files {
+	// 	err := f.Validate()
+	// 	if err != nil {
+	// 		return fmt.Errorf("function file %d: %v", i, err)
+	// 	}
+	// }
 
 	return nil
 

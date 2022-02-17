@@ -133,44 +133,26 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 
 				for _, fn := range wf.Functions {
 
-					files := make([]model.FunctionFileDefinition, 0)
-
 					switch fn.(type) {
 					case *model.SubflowFunctionDefinition:
 						sfd := fn.(*model.SubflowFunctionDefinition)
 						wdg.Subflows[GetInodePath(sfd.Workflow)] = false
 					case *model.ReusableFunctionDefinition:
-						rfd := fn.(*model.ReusableFunctionDefinition)
-						files = rfd.Files
+						// rfd := fn.(*model.ReusableFunctionDefinition)
 						// TODO
 					case *model.NamespacedFunctionDefinition:
 						nfd := fn.(*model.NamespacedFunctionDefinition)
 						wdg.NSFunctions[nfd.KnativeService] = false
-						files = nfd.Files
 					case *model.IsolatedFunctionDefinition:
-						ifd := fn.(*model.IsolatedFunctionDefinition)
-						files = ifd.Files
+						// ifd := fn.(*model.IsolatedFunctionDefinition)
 						// TODO
 					case *model.GlobalFunctionDefinition:
 						gfd := fn.(*model.GlobalFunctionDefinition)
 						wdg.GlobalFunctions[gfd.KnativeService] = false
-						files = gfd.Files
 					default:
 						srv.sugar.Error("Dependency graph update error: wrong type %v", reflect.TypeOf(fn))
 					}
 
-					for _, file := range files {
-						switch file.Scope {
-						case "namespace":
-							wdg.NSVars[file.Key] = false
-						case "workflow":
-						case "":
-							fallthrough
-						case "instance":
-						default:
-							srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
-						}
-					}
 				}
 
 				for _, state := range wf.States {
@@ -196,18 +178,60 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 						for _, secret := range as.Action.Secrets {
 							wdg.Secrets[secret] = false
 						}
+
+						for _, file := range as.Action.Files {
+							switch file.Scope {
+							case "namespace":
+								wdg.NSVars[file.Key] = false
+							case "workflow":
+							case "":
+								fallthrough
+							case "instance":
+							default:
+								srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
+							}
+						}
+
 					case *model.ParallelState:
 						ps := state.(*model.ParallelState)
 						for _, action := range ps.Actions {
 							for _, secret := range action.Secrets {
 								wdg.Secrets[secret] = false
 							}
+
+							for _, file := range action.Files {
+								switch file.Scope {
+								case "namespace":
+									wdg.NSVars[file.Key] = false
+								case "workflow":
+								case "":
+									fallthrough
+								case "instance":
+								default:
+									srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
+								}
+							}
 						}
+
 					case *model.ForEachState:
 						fs := state.(*model.ForEachState)
 						for _, secret := range fs.Action.Secrets {
 							wdg.Secrets[secret] = false
 						}
+
+						for _, file := range fs.Action.Files {
+							switch file.Scope {
+							case "namespace":
+								wdg.NSVars[file.Key] = false
+							case "workflow":
+							case "":
+								fallthrough
+							case "instance":
+							default:
+								srv.sugar.Error("Dependency graph update error: wrong scope %v", file.Scope)
+							}
+						}
+
 					default:
 					}
 

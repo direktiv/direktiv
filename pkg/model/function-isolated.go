@@ -9,12 +9,12 @@ import (
 
 // IsolatedFunctionDefinition defines what an isolated function is.
 type IsolatedFunctionDefinition struct {
-	Type  FunctionType             `yaml:"type" json:"type"`
-	ID    string                   `yaml:"id" json:"id"`
-	Image string                   `yaml:"image" json:"image"`
-	Size  Size                     `yaml:"size,omitempty" json:"size,omitempty"`
-	Cmd   string                   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
-	Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
+	Type  FunctionType `yaml:"type" json:"type"`
+	ID    string       `yaml:"id" json:"id"`
+	Image string       `yaml:"image" json:"image"`
+	Size  Size         `yaml:"size,omitempty" json:"size,omitempty"`
+	Cmd   string       `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	// Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 // GetID returns the id of a isolated function
@@ -45,12 +45,12 @@ func (o *IsolatedFunctionDefinition) Validate() error {
 		return errors.New("image required")
 	}
 
-	for i, f := range o.Files {
-		err := f.Validate()
-		if err != nil {
-			return fmt.Errorf("function file %d: %v", i, err)
-		}
-	}
+	// for i, f := range o.Files {
+	// 	err := f.Validate()
+	// 	if err != nil {
+	// 		return fmt.Errorf("function file %d: %v", i, err)
+	// 	}
+	// }
 
 	return nil
 

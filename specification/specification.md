@@ -1,526 +1,797 @@
-# Direktiv
+# Direktiv Workflow Definition
 
-### Workflow Definition
+This document describes the rules for Direktiv workflow definition files. These files are written in YAML and dictate the behaviour of a workflow running on Direktiv. 
 
-| Parameter   | Description                      | Type                                        | Required |
-| ----------- | -------------------------------- | ------------------------------------------- | -------- |
-| id          | Workflow unique identifier.      | string                                      | yes      |
-| name        | Workflow name (metadata).        | string                                      | no       |
-| description | Workflow description (metadata). | string                                      | no       |
-| functions   | Workflow function definitions.   | [[]FunctionDefinition](#FunctionDefinition) | no       |
-| states      | Workflow states.                 | [[]StateDefinition](#States)                | no       |
-| timeouts    | Workflow global timeouts.        | [TimeoutDefinition](#TimeoutDefinition)     | no       |
-| start       | Workflow start configuration.    | [Start](#Start)                             | no       |
-
-## Start
-
-### ScheduledStartDefinition
-
-| Parameter | Description                                | Type   | Required |
-| --------- | ------------------------------------------ | ------ | -------- |
-| type      | Start type ("scheduled").                  | string | yes      |
-| state     | ID of the state to use as the start state. | string | no       |
-| cron      | Cron expression to schedule workflow.      | string | no       |
-
-### EventStartDefinition
-
-| Parameter | Description                                          | Type                                            | Required |
-| --------- | ---------------------------------------------------- | ----------------------------------------------- | -------- |
-| type      | Start type ("event").                                | string                                          | yes      |
-| state     | ID of the state to use as the start state.           | string                                          | no       |
-| event     | Event to listen for, which can trigger the workflow. | [StartEventDefinition](#ConsumeEventDefinition) | yes      |
-
-#### StartEventDefinition
-
-| Parameter | Description                                                          | Type   | Required |
-| --------- | -------------------------------------------------------------------- | ------ | -------- |
-| type      | CloudEvent type.                                                     | string | yes      |
-| filters   | Key-value regex pairs for CloudEvent context values that must match. | object | no       |
-
-### EventsXorStartDefinition
-
-| Parameter | Description                                          | Type                                            | Required |
-| --------- | ---------------------------------------------------- | ----------------------------------------------- | -------- |
-| type      | Start type ("eventsXor").                            | string                                          | yes      |
-| state     | ID of the state to use as the start state.           | string                                          | no       |
-| events    | Event to listen for, which can trigger the workflow. | [[]StartEventDefinition](#StartEventDefinition) | yes      |
-
-### EventsAndStartDefinition
-
-| Parameter | Description                                                                                              | Type                                            | Required |
-| --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | -------- |
-| type      | Start type ("eventsAnd").                                                                                | string                                          | yes      |
-| state     | ID of the state to use as the start state.                                                               | string                                          | no       |
-| events    | Event to listen for, which can trigger the workflow.                                                     | [[]StartEventDefinition](#StartEventDefinition) | yes      |
-| lifespan  | Maximum duration an event can be stored before being discarded while waiting for other events (ISO8601). | string                                          | no       |
-| correlate | Context keys that must exist on every event and have matching values to be grouped together.             | []string                                        | no       |
-
-### TimeoutDefinition
-
-| Parameter | Description                                                                   | Type   | Required |
-| --------- | ----------------------------------------------------------------------------- | ------ | -------- |
-| interrupt | Duration to wait before triggering a timeout error in the workflow (ISO8601). | string | no       |
-| kill      | Duration to wait before killing the workflow (ISO8601).                       | string | no       |
-
-### FunctionDefinition
-
-| Parameter | Description                            | Type   | Required |
-| --------- | -------------------------------------- | ------ | -------- |
-| id        | Function definition unique identifier. | string | yes      |
-| image     | Image URI                              | string | yes      |
-| cmd       | Command to run in container            | string | no       |
-| size      | Size of virtual machine                | enum   | no       |
-
-A function can be defined in three different sizes: "**small**"(default), "**medium**", and "**large**". These sizes control how much storage a virtual machine is given for a function when their virtual machine is created.
-
-## States
-
-### Common Fields
-
-| Parameter  | Description                                         | Type                                  | Required |
-| ---------- | --------------------------------------------------- | ------------------------------------- | -------- |
-| id         | State unique identifier.                            | string                                | yes      |
-| transform  | `jq` command to transform the state's data output.  | string                                | no       |
-| transition | State to transition to next.                        | string                                | no       |
-| log        | `jq` command to generate data for instance-logging. | string                                | no       |
-| retries    | Retry policy.                                       | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                     | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-The `id` field must be unique amongst all states in the workflow, and may consist of only alphanumeric characters as well as periods, dashes, and underscores.
-
-The `transform` field can be a `jq` command string applied to the state information in order to enrich, filter, or change it. Whatever the command resolves to will completely replace the state's information. The `transform` will be applied immediately before the `transition`, so it won't change the state information before the main function of the state is performed.
-
-The `transition`, if provided, must be set to the `id` of a state within the workflow. If left unspecified, reaching this transition will end the workflow without raising an error.
-
-#### ErrorDefinition
-
-| Parameter  | Description                                     | Type   | Required |
-| ---------- | ----------------------------------------------- | ------ | -------- |
-| error      | A glob pattern to test error codes for a match. | string | yes      |
-| transition | State to transition to next.                    | string | no       |
-
-The `error` parameter can be a glob pattern to match multiple types of errors. When an error is thrown it will be compared against each ErrorDefinition in order until it finds a match. If no matches are found the workflow will immediately abort and escalate the error to any caller, unless the retry policy is ready to take over.
-
-#### RetryDefinition
-
-| Parameter   | Description                                                               | Type   | Required |
-| ----------- | ------------------------------------------------------------------------- | ------ | -------- |
-| maxAttempts | Maximum number of retry attempts.                                         | int    | yes      |
-| delay       | Time delay between retry attempts (ISO8601).                              | string | no       |
-| multiplier  | Value by which the delay is multiplied after each attempt.                | float  | no       |
-| throw       | Error code to throw if the number of failed attempts exceeds maxAttempts. | string | no       |
-
-If a `retry` strategy is defined the state will be retried on an uncaught failure. If the state fails `maxAttempts` times and `throw` is defined the error catchers will be checked one last time using the error code defined in `throw`, otherwise the workflow will end with a failure.
-
-### GetterState
-
-| Parameter  | Description                                        | Type                                                    | Required |
-| ---------- | -------------------------------------------------- | ------------------------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                                  | yes      |
-| type       | State type ("getter").                             | string                                                  | yes      |
-| variables  | Variables to fetch.                                | [[]VariableGetterDefinition](#VariableGetterDefinition) | yes      |
-| transform  | `jq` command to transform the state's data output. | string                                                  | no       |
-| transition | State to transition to next.                       | string                                                  | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)                     | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)                   | no       |
-
-#### VariableGetterDefinition 
-
-| Parameter | Description                                              | Type   | Required |
-| --------- | -------------------------------------------------------- | ------ | -------- |
-| key       | Variable name.                                           | string | yes      |
-| scope     | Variable scope ("instance", "workflow", or "namespace"). | string | yes      |
-
-### SetterState
-
-| Parameter  | Description                                        | Type                                                    | Required |
-| ---------- | -------------------------------------------------- | ------------------------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                                  | yes      |
-| type       | State type ("setter").                             | string                                                  | yes      |
-| variables  | Variables to push.                                 | [[]VariableSetterDefinition](#VariableSetterDefinition) | yes      |
-| transform  | `jq` command to transform the state's data output. | string                                                  | no       |
-| transition | State to transition to next.                       | string                                                  | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)                     | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)                   | no       |
-
-#### VariableSetterDefinition 
-
-| Parameter | Description                                              | Type   | Required |
-| --------- | -------------------------------------------------------- | ------ | -------- |
-| key       | Variable name.                                           | string | yes      |
-| scope     | Variable scope ("instance", "workflow", or "namespace"). | string | yes      |
-| value     | `jq` command to generate variable value.                 | string | yes      |
-
-### ActionState
-
-| Parameter  | Description                                                                  | Type                                  | Required |
-| ---------- | ---------------------------------------------------------------------------- | ------------------------------------- | -------- |
-| id         | State unique identifier.                                                     | string                                | yes      |
-| type       | State type ("action").                                                       | string                                | yes      |
-| action     | Action to perform.                                                           | [ActionDefinition](#ActionDefinition) | yes      |
-| async      | If workflow execution can continue without waiting for the action to return. | boolean                               | no       |
-| timeout    | Duration to wait for action to complete (ISO8601).                           | string                                | no       |
-| transform  | `jq` command to transform the state's data output.                           | string                                | no       |
-| transition | State to transition to next.                                                 | string                                | no       |
-| retries    | Retry policy.                                                                | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                                              | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-#### ActionDefinition
-
-| Parameter | Description                                                                                                  | Type     | Required                      |
-| --------- | ------------------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
-| function  | Name of the referenced function.                                                                             | string   | yes (if workflow not defined) |
-| workflow  | Name of the referenced workflow.                                                                             | string   | yes (if function not defined) |
-| input     | `jq` command to generate the input for the action.                                                           | string   | no                            |
-| secrets   | List of secrets to temporarily add to the state data under `.secrets` before running the input `jq` command. | []string | no                            |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
+**Workflow**
 ```yaml
-- id: insertIntoDatabase
-  type: action
-  action:
-    function: insertIntoDatabaseFunction
-    input: '{ customer: .customer }'
-```
-
-</details>
-
-The Action State runs another workflow as a subflow, or a function as defined in the `functions` section of the workflow definition.
-
-The input for the action is determined by an optional `jq` command in the `input` field. If unspecified, the default command is `"."`, which duplicates the entire state data.
-
-After the action has returned, whatever the results were will be stored in the state information under `return`. If an error occurred, it will be automatically raised, and can be handled using `catch`, or ignored if the desired behaviour is to abort the workflow.
-
-If `async` is `true`, the workflow will not wait for it to return before transitioning to the next state. The action will be fire-and-forget, and considered completely detached from the calling workflow. In this case, the Action State will not set the `return` value.
-
-### ConsumeEventState
-
-| Parameter  | Description                                        | Type                                              | Required |
-| ---------- | -------------------------------------------------- | ------------------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                            | yes      |
-| type       | State type ("consumeEvent").                       | string                                            | yes      |
-| event      | Event to consume.                                  | [ConsumeEventDefinition](#ConsumeEventDefinition) | yes      |
-| timeout    | Duration to wait to receive event (ISO8601).       | string                                            | no       |
-| transform  | `jq` command to transform the state's data output. | string                                            | no       |
-| transition | State to transition to next.                       | string                                            | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)               | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)             | no       |
-
-#### ConsumeEventDefinition
-
-| Parameter | Description                                                    | Type   | Required |
-| --------- | -------------------------------------------------------------- | ------ | -------- |
-| type      | CloudEvent type.                                               | string | yes      |
-| context   | Key-value pairs for CloudEvent context values that must match. | object | no       |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
-```yaml
-- id: waitForBooking
-  type: consumeEvent
-  event:
-    type: guestbooking
-    context:
-      source: 'bookings.*'
-      customerId: '{{ .customerId }}'
-      venue: Sydney
-  timeout: PT1H
-  transform: '.customer'
-  transition: addBookingToDatabase
-```
-
-</details>
-
-The ConsumeEvent State is the simplest state you can use to listen for CloudEvents in the middle of a workflow (for triggering a workflow when receiving an event, see [Start](#Start)). More complex event consumers include the [Callback State](#CallbackState), the [EventXor State](#EventXorState), and the [EventAnd State](#EventAndState).
-
-When a workflow reaches a ConsumeEvent State it will halt its execution until it receives a matching event, where matches are determined according to the `type` and `context` parameters. While `type` is a required string constant, `context` can include any number of key-value pairs that will be used to filter for a match. The keys for this context field will be checked within the CloudEvent's Context metadata fields for matches. By default any context value will be treated as a standard JavaScript Regex pattern, but if the value begins with `{{` and ends with `}}` it will instead be treated as a `jq` command to generate a JavaScript Regex pattern.
-
-If the `timeout` is reached without receiving a matching event a `direktiv.stateTimeout` error will be thrown, which may be caught and handled via `catch`.
-
-The event payload will stored at a variable with the same name as the event's `type`. If the payload is not valid JSON it will be base64 encoded as a string first.
-
-### DelayState
-
-| Parameter  | Description                                        | Type                                  | Required |
-| ---------- | -------------------------------------------------- | ------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                | yes      |
-| type       | State type ("delay").                              | string                                | yes      |
-| duration   | Duration to delay (ISO8601).                       | string                                | yes      |
-| transform  | `jq` command to transform the state's data output. | string                                | no       |
-| transition | State to transition to next.                       | string                                | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
-```yaml
-- id: Sleep
-  type: delay
-  duration: PT1H
-  transition: fetchData
-```
-
-</details>
-
-The Delay State pauses execution of the workflow for a predefined length of time.
-
-### ErrorState
-
-| Parameter  | Description                                                                                    | Type                                  | Required |
-| ---------- | ---------------------------------------------------------------------------------------------- | ------------------------------------- | -------- |
-| id         | State unique identifier.                                                                       | string                                | yes      |
-| type       | State type ("error").                                                                          | string                                | yes      |
-| error      | Error code, catchable on a calling workflow.                                                   | string                                | yes      |
-| message    | Format string to provide more context to the error.                                            | string                                | yes      |
-| args       | A list of `jq` commands to generate arguments for substitution in the `message` format string. | []string                              | no       |
-| transform  | `jq` command to transform the state's data output.                                             | string                                | no       |
-| transition | State to transition to next.                                                                   | string                                | no       |
-| retries    | Retry policy.                                                                                  | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                                                                | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
-```yaml
-- id: ErrorOutOfDate
-  type: error
-  error: validation.outOfDate
-  message: "food item %s is out of date"
-  args:
-  - '.item.name'
-```
-
-</details>
-
-The Error State allows a subflow to throw an error, catchable by the calling workflow.
-
-The first transition to an Error State anywhere within the workflow means that a waiting caller -- if one exists -- will receive that error after this subflow returns. This doesn't prevent the Error State from transitioning to other states, which might be necessary to clean up or undo actions performed by the workflow. Subsequent transitions into Error States after the first have no effect.
-
-An error consists of two parts: an error code, and an error message. The code should be a short string can can contain alphanumeric characters, periods, dashes, and underscores. It is good practice to structure error codes similar to domain names, to make them easier to handle. The message allows you to provide extra context, and can be formatted like a `printf` string where each entry in `args` will be substituted. The `args` must be `jq` commands, allowing the state to insert state information into the error message.
-
-### EventAndState
-
-| Parameter  | Description                                        | Type                                                | Required |
-| ---------- | -------------------------------------------------- | --------------------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                              | yes      |
-| type       | State type ("eventAnd").                           | string                                              | yes      |
-| events     | Events to consume.                                 | [[]ConsumeEventDefinition](#ConsumeEventDefinition) | yes      |
-| timeout    | Duration to wait to receive all events (ISO8601).  | string                                              | no       |
-| transform  | `jq` command to transform the state's data output. | string                                              | no       |
-| transition | State to transition to next.                       | string                                              | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)                 | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)               | no       |
-
-When a workflow reaches an EventAnd State it will halt its execution until it receives a matching event for every event in its `events` list, where matches are determined according to the `type` and `context` parameters. While `type` is a required string constant, `context` can include any number of key-value pairs that will be used to filter for a match. The keys for this context field will be checked within the CloudEvent's Context metadata fields for matches. By default any context value will be treated as a standard JavaScript Regex pattern, but if the value begins with `{{` and ends with `}}` it will instead be treated as a `jq` command to generate a JavaScript Regex pattern.
-
-If the `timeout` is reached without receiving matches for all required events a `direktiv.stateTimeout` error will be thrown, which may be caught and handled via `catch`.
-
-The event payloads will stored in variables with the same names as each event's `type`. If a payload is not valid JSON it will be base64 encoded as a string first.
-
-### EventXorState
-
-| Parameter | Description                                                          | Type                                                    | Required |
-| --------- | -------------------------------------------------------------------- | ------------------------------------------------------- | -------- |
-| id        | State unique identifier.                                             | string                                                  | yes      |
-| type      | State type ("eventXor").                                             | string                                                  | yes      |
-| events    | Events to consume, and what to do based on which event was received. | [[]EventConditionDefinition](#EventConditionDefinition) | yes      |
-| timeout   | Duration to wait to receive event (ISO8601).                         | string                                                  | no       |
-| retries   | Retry policy.                                                        | [RetryDefinition](#RetryDefinition)                     | no       |
-| catch     | Error handling.                                                      | [[]ErrorDefinition](#ErrorDefinition)                   | no       |
-
-#### EventConditionDefinition
-
-| Parameter  | Description                                        | Type                                              | Required |
-| ---------- | -------------------------------------------------- | ------------------------------------------------- | -------- |
-| event      | Event to consume.                                  | [ConsumeEventDefinition](#ConsumeEventDefinition) | yes      |
-| transition | State to transition to if this branch is selected. | string                                            | no       |
-| transform  | `jq` command to transform the state's data output. | string                                            | no       |
-
-When a workflow reaches an EventXor State it will halt its execution until it receives any matching event in its `events` list, where matches are determined according to the `type` and `context` parameters. While `type` is a required string constant, `context` can include any number of key-value pairs that will be used to filter for a match. The keys for this context field will be checked within the CloudEvent's Context metadata fields for matches. By default any context value will be treated as a standard JavaScript Regex pattern, but if the value begins with `{{` and ends with `}}` it will instead be treated as a `jq` command to generate a JavaScript Regex pattern.
-
-If the `timeout` is reached without receiving matches for any required event a `direktiv.stateTimeout` error will be thrown, which may be caught and handled via `catch`.
-
-The received event payload will stored in a variable with the same name as its event `type`. If a payload is not valid JSON it will be base64 encoded as a string first.
-
-### ForeachState
-
-| Parameter  | Description                                                  | Type                                  | Required |
-| ---------- | ------------------------------------------------------------ | ------------------------------------- | -------- |
-| id         | State unique identifier.                                     | string                                | yes      |
-| type       | State type ("foreach").                                      | string                                | yes      |
-| array      | `jq` command to produce an array of objects to loop through. | string                                | yes      |
-| action     | Action to perform.                                           | [ActionDefinition](#ActionDefinition) | yes      |
-| timeout    | Duration to wait for all actions to complete (ISO8601).      | string                                | no       |
-| transform  | `jq` command to transform the state's data output.           | string                                | no       |
-| transition | State to transition to next.                                 | string                                | no       |
-| retries    | Retry policy.                                                | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                              | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-The ForeachState can be used to split up state data into an array and then perform an action on each element in parallel.
-
-The `jq` command provided in the `array` must produce an array or a `direktiv.foreachInput` error will be thrown. The `jq` command used to generate the `input` for the `action` will be applied to a single element from that array.
-
-The return values of each action will be included in an array stored at `.return` at the same index from which its input was generated.
-
-### GenerateEventState
-
-| Parameter  | Description                                        | Type                                                | Required |
-| ---------- | -------------------------------------------------- | --------------------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                              | yes      |
-| type       | State type ("generateEvent").                      | string                                              | yes      |
-| event      | Event to generate.                                 | [GenerateEventDefinition](#GenerateEventDefinition) | yes      |
-| transform  | `jq` command to transform the state's data output. | string                                              | no       |
-| transition | State to transition to next.                       | string                                              | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)                 | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition)               | no       |
-
-### GenerateEventDefinition
-
-| Parameter       | Description                                                           | Type   | Required |
-| --------------- | --------------------------------------------------------------------- | ------ | -------- |
-| type            | CloudEvent type.                                                      | string | yes      |
-| source          | CloudEvent source.                                                    | string | yes      |
-| data            | A `jq` command to generate the data (payload) for the produced event. | string | no       |
-| datacontenttype | An RFC 2046 string specifying the payload content type.               | string | no       |
-| context         | Add additional event extension context attributes (key-value).        | object | no       |
-
-The GenerateEvent State will produce an event that other workflows could listen for.
-
-If the optional `datacontenttype` is defined and set to something other than `application/json`, and the `jq` command defined in `data` produces a base64 encoded string, it will be decoded before being used as the event payload.
-
-### NoopState
-
-| Parameter  | Description                                        | Type                                  | Required |
-| ---------- | -------------------------------------------------- | ------------------------------------- | -------- |
-| id         | State unique identifier.                           | string                                | yes      |
-| type       | State type ("noop").                               | string                                | yes      |
-| transform  | `jq` command to transform the state's data output. | string                                | no       |
-| transition | State to transition to next.                       | string                                | no       |
-| retries    | Retry policy.                                      | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                    | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
-```yaml
-- id: Hello
+description: |
+  A simple "Hello, world" demonstration.
+states:
+- id: hello
   type: noop
-  transform: '{ message: "Hello" }'
-  transition: World
+  transform: 'jq({ msg: "Hello, world!" })'
 ```
 
-</details>
-
-The No-op State exists for when nothing more than generic state functionality is required. A common use-case would be to perform a `jq` operation on the state data without performing another operation.
-
-### ParallelState
-
-| Parameter  | Description                                                                 | Type                                    | Required |
-| ---------- | --------------------------------------------------------------------------- | --------------------------------------- | -------- |
-| id         | State unique identifier.                                                    | string                                  | yes      |
-| type       | State type ("parallel").                                                    | string                                  | yes      |
-| actions    | Actions to perform.                                                         | [[]ActionDefinition](#ActionDefinition) | yes      |
-| mode       | Option types on how to complete branch execution: "and" (default), or "or". | enum                                    | no       |
-| timeout    | Duration to wait for all actions to complete (ISO8601).                     | string                                  | no       |
-| transform  | `jq` command to transform the state's data output.                          | string                                  | no       |
-| transition | State to transition to next.                                                | string                                  | no       |
-| retries    | Retry policy.                                                               | [RetryDefinition](#RetryDefinition)     | no       |
-| catch      | Error handling.                                                             | [[]ErrorDefinition](#ErrorDefinition)   | no       |
-
-The Parallel State is an expansion on the [Action State](#ActionState), used for running multiple actions in parallel.
-
-The state can operate in two different modes: `and` and `or`. In `and` mode all actions must return successfully before completing. In `or` mode the state can complete as soon as any one action returns without error.
-
-Return values from each of the actions will be stored in an array at `.return` in the order that each action is defined. If an action doesn't return but the state can still complete without errors any missing return values will be `null` in the array.
-
-If the `timeout` is reached before the state can transition a `direktiv.stateTimeout` error will be thrown, which may be caught and handled via `catch`. Any actions still running when the state transitions will be cancelled with "best effort" attempts.
-
-### SwitchState
-
-| Parameter         | Description                                                             | Type                                                      | Required |
-| ----------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- | -------- |
-| id                | State unique identifier.                                                | string                                                    | yes      |
-| type              | State type ("switch").                                                  | string                                                    | yes      |
-| conditions        | Conditions to evaluate and determine which state to transition to next. | [[]SwitchConditionDefinition](#SwitchConditionDefinition) | yes      |
-| defaultTransition | State to transition to next if no conditions are matched.               | string                                                    | no       |
-| defaultTransform  | `jq` command to transform the state's data output.                      | string                                                    | no       |
-| retries           | Retry policy.                                                           | [RetryDefinition](#RetryDefinition)                       | no       |
-| catch             | Error handling.                                                         | [[]ErrorDefinition](#ErrorDefinition)                     | no       |
-
-#### SwitchConditionDefinition
-
-| Parameter  | Description                                                               | Type   | Required |
-| ---------- | ------------------------------------------------------------------------- | ------ | -------- |
-| condition  | `jq` command evaluated against state data. True if results are not empty. | string | yes      |
-| transition | State to transition to if this branch is selected.                        | string | no       |
-| transform  | `jq` command to transform the state's data output.                        | string | no       |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
-```yaml
-- id: Decision
-  type: switch
-  conditions:
-  - condition: '.patient.contactInfo.mobile'
-    transition: SMS
-    transform: '. + { phone: .contact.mobile }'
-  - condition: '.patient.contactInfo.landline'
-    transition: Call
-    transform: '. + { phone: .contact.landline }'
-  defaultTransition: Email
+**Input**
+```json
+{}
 ```
 
-</details>
-
-The Switch State is used to perform conditional transitions based on the current state information. A `condition` can be any `jq` command. The command will be run on the current state information and a result of anything other than `null`, `false`, `{}`, `[]`, `""`, or `0` will cause the condition to be considered a match.
-
-The list of conditions is evaluated in-order and the first match determines what happens next. If no conditions are matched the `defaultTransition` will be used.
-
-### ValidateState
-
-| Parameter  | Description                                                                                  | Type                                  | Required |
-| ---------- | -------------------------------------------------------------------------------------------- | ------------------------------------- | -------- |
-| id         | State unique identifier.                                                                     | string                                | yes      |
-| type       | State type ("validate").                                                                     | string                                | yes      |
-| subject    | `jq` command to select the subject of the schema validation. Defaults to '.' if unspecified. | no                                    | string   |
-| schema     | Name of the referenced state data schema.                                                    | string                                | yes      |
-| transform  | `jq` command to transform the state's data output.                                           | string                                | no       |
-| transition | State to transition to next.                                                                 | string                                | no       |
-| retries    | Retry policy.                                                                                | [RetryDefinition](#RetryDefinition)   | no       |
-| catch      | Error handling.                                                                              | [[]ErrorDefinition](#ErrorDefinition) | no       |
-
-<details><summary><strong>Click to view example definition</strong></summary>
-
-```yaml
-- id: ValidateInput
-  type: validate
-  schema:
-    type: object
-    required:
-    - name
-    properties:
-      name:
-	type: string
-    additionalProperties: false
-  transition: processRequest
-```
-
-This schema is based off the following JSON Schema:
-
+**Output**
 ```json
 {
-   "type":"object",
-   "required":[
-      "name"
-   ],
-   "properties":{
-      "name":{
-         "type":"string"
-      }
-   },
-   "additionalProperties":false
+	"msg": "Hello, world!"
 }
 ```
 
-</details>
+Workflows have inputs and outputs, usually in JSON. Where examples appear in this document they will often be accompanied by inputs and outputs as seen above.
 
-The Validate State can be used to validate the structure of the state's data. The schema field takes a yaml-ified representation of a JSON Schema document.
+### WorkflowDefinition
+
+This is the top-level structure of a Direktiv workflow definition. All workflows must have one.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `url` | Link to further information. | string | no |
+| `description` | Short description of the workflow.  | string | no |
+| `functions` | List of function definitions for use by function-based `states`. | [[]FunctionDefinition](#FunctionDefinition) | no |
+| `start` | Configuration for how the workflow should start. | [StartDefinition](#StartDefinition) | no |
+| `states` | List of all possible workflow states. | [[]StateDefinition](#StateDefinition) | yes | 
+| `timeouts` | Configuration of workflow-level timeouts. | [TimeoutsDefinition](#TimeoutsDefinition) | no |
+
+## FunctionDefinition
+
+Functions refer to anything executable by Direktiv as a unit of logic within a subflow that isn't otherwise part of basic state functionality. Usually this means either a purpose-built container or another workflow executed as a subflow. In some cases functions can be extensively configured, and they are often reused repeatedly within a workflow. To manage the size of Direktiv workflow definitions functions are predefined as much as possible and referenced when called.
+
+These are the currently available function types:
+
+* [`knative-global`](#GlobalKnativeFunctionDefinition)
+* [`knative-namespace`](#NamespaceKnativeFunctionDefinition)
+* [`knative-workflow`](#WorkflowKnativeFunctionDefinition)
+* [`subflow`](#SubflowFunctionDefinition)
+* [`kubernetes-job`](#KubernetesJobFunctionDefinition)
+
+The following example demonstrate how to define and reference a function within a workflow:
+
+**Workflow**
+```yaml
+description: |
+  A basic demonstration of functions.
+functions:
+- type: knative-workflow
+  id: request
+  image: direktiv/request:latest
+  size: small
+states:
+- id: getter
+  type: action
+  action:
+    function: request
+    input:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+```
+
+**Input**
+```json
+{}
+```
+
+**Output**
+```json
+{
+  "return": {
+    "userId": 1,
+    "id": 1,
+    "title": "delectus aut autem",
+    "completed": false
+  }
+}
+```
+
+### GlobalKnativeFunctionDefinition
+
+A `knative-global` refers to a function that is implemented according to the [requirements](#TODO) for a direktiv knative service. Specifically, in this case referring to a service configured to be available "globally" (to all namespaces on the Direktiv servers).
+
+This function type supports [`files`](#FunctionFileDefinition).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [FunctionDefinition](#FunctionDefintion) is being used. In this case it must be set to `knative-global`. | string | yes | 
+| `id` | A unique identifier for the function within the workflow definition. | string | yes |
+| `service` | URI to a globally accessible function on the Direktiv servers. | string | yes |
+
+### NamespacedKnativeFunctionDefinition
+
+A `knative-namespace` refers to a function that is implemented according to the [requirements](#TODO) for a direktiv knative service. Specifically, in this case referring to a service configured to be available on the namespace.
+
+This function type supports [`files`](#FunctionFileDefinition).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [FunctionDefinition](#FunctionDefintion) is being used. In this case it must be set to `knative-namespace`. | string | yes | 
+| `id` | A unique identifier for the function within the workflow definition. | string | yes |
+| `service` | URI to a function on the namespace. | string | yes |
+
+### WorkflowKnativeFunctionDefinition
+
+A `knative-workflow` refers to a function that is implemented according to the [requirements](#TODO) for a direktiv knative service. Specifically, in this case referring to a service that Direktiv can create on-demand for the exclusive use by this workflow.
+
+> Historically this was called `reusable`, but this keyword has been deprecated.
+
+This function type supports [`files`](#FunctionFileDefinition).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [FunctionDefinition](#FunctionDefintion) is being used. In this case it must be set to `knative-workflow`. | string | yes | 
+| `id` | A unique identifier for the function within the workflow definition. | string | yes |
+| `image` | URI to a `knative-workflow` compliant container. | string | yes |
+| `size` | Specifies the container size. | [ContainerSizeDefinition](#ContainerSizeDefinition) | no |
+| `cmd` | Custom command to execute within the container. | string | no |
+| `scale` | Used as a suggestion to Direktiv for a minimum number of pods to keep running. Direktiv is not required to adhere to this minimum. The default value is zero, which may result in higher latency if a service goes unused for a while, but saves on resources. | integer | no |
+
+#### ContainerSizeDefinition
+
+When functions use containers you may be able to specify what size the container should be. This is done using one of three keywords, each representing a different [size preset](#TODO):
+
+* `small`
+* `medium`
+* `large`
+
+### SubflowFunctionDefinition
+
+A `subflow` refers to a function that is actually another workflow. The other workflow is called with some input and its output is returned to this workflow.
+
+This function type does not support [`files`](#FunctionFileDefinition).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [FunctionDefinition](#FunctionDefintion) is being used. In this case it must be set to `subflow`. | string | yes | 
+| `id` | A unique identifier for the function within the workflow definition. | string | yes |
+| `workflow` | URI to a workflow within the same namespace. | string | yes |
+
+### KubernetesJobFunctionDefinition
+
+A `kubernetes-job` refers to a function that uses a container created to operate according to the requirements outlined [here](#TODO). 
+
+> Historically this was called `isolated`, but this keyword has been deprecated.
+
+This function type supports [`files`](#FunctionFileDefinition).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [FunctionDefinition](#FunctionDefintion) is being used. In this case it must be set to `kubernetes-job`. | string | yes | 
+| `id` | A unique identifier for the function within the workflow definition. | string | yes |
+| `image` | URI to a `kubernetes-job` compliant container. | string | yes |
+| `size` | Specifies the container size. | [ContainerSizeDefinition](#ContainerSizeDefinition) | no |
+| `cmd` | Custom command to execute within the container. | string | no |
+
+## StartDefinition
+
+A `StartDefinition` may be defined using one of the following, depending on the desired behaviour:
+
+* [`default`](#DefaultStartDefinition)
+* [`scheduled`](#ScheduledStartDefinition)
+* [`event`](#EventStartDefinition)
+* [`eventsXor`](#EventsXorStartDefinition)
+* [`eventsAnd`](#EventsAndStartDefinition)
+
+If omitted from the workflow definition the [DefaultStartDefinition](#DefaultStartDefinition) will be used, which means the workflow will only be executed when called.
+
+Regardless of which start definiton is used, all workflows can be called like a [DefaultStartDefinition](#DefaultStartDefinition). This is to make testing and debugging easier. To test properly the caller will need to simulate the start type's input data.
+
+### DefaultStartDefinition
+
+The default start definition is used for workflows that should only execute when called. This means subflows, workflows triggered by scripts, and workflows triggered manually by humans.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `default`. | string | yes | 
+| `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
+
+### ScheduledStartDefinition
+
+The scheduled start definition is used for workflows that should execute at regularly defined times. 
+
+Scheduled workflows never have input data, so accurate testing should use `{}` as input. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `scheduled`. | string | yes | 
+| `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
+| `cron` | Defines the time(s) when the workflow should execute using a CRON expression. | string | yes |
+
+**Example** (snippet)
+```yaml
+start:
+  type: scheduled
+  cron: '* * * * *' # Trigger a new instance every minute.
+```
+
+### EventStartDefinition 
+
+The event start definition is used for workflows that should be executed whenever a relevant CloudEvents event is received. 
+
+See [StartEventDefinition](#StartEventDefinition) for an explanation of the input data of event-triggered workflows.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `event`. | string | yes | 
+| `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
+| `event` | Defines what events can trigger the workflow. | [StartEventDefinition](#StartEventDefinition) | yes |
+
+### EventsXorStartDefinition 
+
+The event "xor" start definition is used for workflows that should be executed whenever one of multiple possible CloudEvents events is received. 
+
+See [StartEventDefinition](#StartEventDefinition) for an explanation of the input data of event-triggered workflows.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `eventsXor`. | string | yes | 
+| `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
+| `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#StartEventDefinition) | yes |
+
+### EventsAndStartDefinition 
+
+The event "and" start definition is used for workflows that should be executed when multiple matching CloudEvents events are received. 
+
+See [StartEventDefinition](#StartEventDefinition) for an explanation of the input data of event-triggered workflows.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `eventsAnd`. | string | yes | 
+| `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
+| `lifespan` | An ISO8601 duration string. Sets the maximum duration an event can be stored before being discarded while waiting for other events. | string | no |
+| `correlate` | CloudEvents event context keys can must exist on every event and have matching values to be grouped together. | []string | no |
+| `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#StartEventDefinition) | yes |
+
+### StartEventDefinition
+
+The StartEventDefinition is a structure shared by various start definitions involving events. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which CloudEvents events can trigger the workflow by requiring an exact match to the event's own `type` context value. | string | yes | 
+| `filters` | Optional key-value pairs to further restrict what events can trigger the workflow. For each pair, incoming CloudEvents context values will be checked for a match. All pairs must find a match for the event to be accepted. The "keys" are strings that match exactly to specific context keys, but the "values" can be "glob" patterns allowing them to match a range of possible context values. | object | no |
+
+The input data of an event-triggered workflow is a JSON representation of all the received events stored under keys matching the events' respective type. For example, this CloudEvents event will result in the following input data in a workflow triggered by a single event:
+
+**CloudEvents Event**
+```json
+{
+    "specversion" : "1.0",
+    "type" : "com.github.pull.create",
+    "source" : "https://github.com/cloudevents/spec/pull",
+    "subject" : "123",
+    "id" : "A234-1234-1234",
+    "time" : "2018-04-05T17:31:00Z",
+    "comexampleextension1" : "value",
+    "comexampleothervalue" : 5,
+    "datacontenttype" : "text/xml",
+    "data" : "<much wow=\"xml\"/>"
+}
+```
+
+**Input Data**
+```json
+{
+	"com.github.pull.create": {
+		"specversion" : "1.0",
+		"type" : "com.github.pull.create",
+		"source" : "https://github.com/cloudevents/spec/pull",
+		"subject" : "123",
+		"id" : "A234-1234-1234",
+		"time" : "2018-04-05T17:31:00Z",
+		"comexampleextension1" : "value",
+		"comexampleothervalue" : 5,
+		"datacontenttype" : "text/xml",
+		"data" : "<much wow=\"xml\"/>"
+	}
+}
+```
+
+## StateDefinition
+
+A `StateDefinition` may be defined using one of the following, depending on the desired behaviour:
+
+* [`action`](#ActionStateDefinition)
+* [`consumeEvent`](#ConsumeEventStateDefinition)
+* [`delay`](#DelayStateDefinition)
+* [`error`](#ErrorStateDefinition)
+* [`eventsAnd`](#EventsAndStateDefinition)
+* [`eventsXor`](#EventsXorStateDefinition)
+* [`foreach`](#ForeachStateDefinition)
+* [`generateEvent`](#GenerateEventStateDefinition)
+* [`getter`](#GetterStateDefinition)
+* [`noop`](#NoopStateDefinition)
+* [`parallel`](#ParallelStateDefinition)
+* [`setter`](#SetterStateDefinition)
+* [`switch`](#SwitchStateDefinition)
+* [`validate`](#ValidateStateDefinition)
+
+Many fields and concepts appear across multiple states. These topics are covered in more depth within their own sections:
+
+* [Structured JQ](#StructuredJQ)
+* [Error Handling](#StateErrorCatchers)
+* [Logging](#StateLogging)
+* [Metadata](#InstanceMetadata)
+* [Transforms](#StateTransforms)
+
+### ActionStateDefinition 
+
+The `action` state is the simplest and most common way to call a function or invoke a workflow to act as a subflow. See [Actions](#TODO). 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `action`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `timeout` | ISO8601 duration string to set a non-default timeout. | string | no | 
+| `aync` | If set to `true`, the workflow execution will continue without waiting for the action to return.  | boolean | no | 
+| `action` | Defines the action to perform. | [ActionDefinition](#ActionDefinition) | yes |
+
+### ActionDefinition 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `function` | Name of the referenced function. See [FunctionDefinition](#FunctionDefinition). | string | yes |
+| `input` | Selects or generates the data to send as input to the function. | [Structured JQ](#StructuredJQ) | no |
+| `secrets` | Defines a list of secrets to temporarily add to the instance data under `.secrets`, before evaluating the `input`. | []string | no |
+| `retries` | | [[]RetryPolicyDefinition](#RetryPolicyDefinition) | no |
+| `files` | Determines a list of files to load onto the function's file-system from variables. Only valid if the referenced function supports it. | [[]FunctionFileDefinition](#FunctionFileDefinition) | no |
+
+### FunctionFileDefinition
+
+Some function types support loading variable directly from storage onto their file-systems. This object defines what variable to load and what to save it as.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `key` | Identifies which variable to load into a file. | string | yes | 
+| `scope` | Specifies the scope from which to load the variable. | [VariableScopeDefinition](#VariableScopeDefinition) | no |
+| `as` | Names the resulting file. If left unspecified, the `key` will be used instead. | string | no |
+
+### VariableScopeDefinition
+
+Every variable exists within a single scope. The scope dictates what can access it and how persistent it is. There are three defined [scopes](#Variables):
+
+* `instance`
+* `workflow`
+* `namespace`
+
+### RetryPolicyDefinition 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| codes | A list of "glob" patterns that will be compared to catchable error codes returned by the function to determine if this retry policy applies. | []string | yes |
+| max_attempts | Maximum number of retry attempts. If the function has been retried this many times or more when this policy is invoked the retry will be skipped, and instead the error will be escalated to the state's error handling logic. See [StateErrorCatchers](#StateErrorCatchers) | integer | yes |
+| delay | ISO8601 duration string giving a time delay between retry attempts. | string | no |
+| multiplier | Value by which the delay is multiplied after each attempt. | float | no |
+
+### ConsumeEventStateDefinition
+
+To pause the workflow and wait until a CloudEvents event is received before proceeding, the `consumeEvent` is the simplest state that can be used. It is one of three states that can do so, along with `eventsAnd` and `eventsXor`.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `consumeEvent`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `timeout` | An ISO8601 duration string. | string | no |
+| `event` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](#ConsumeEventDefinition) | yes |
+
+### ConsumeEventDefinition
+
+The StartEventDefinition is a structure shared by various event-consuming states. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which CloudEvents events can trigger the workflow by requiring an exact match to the event's own `type` context value. | string | yes | 
+| `context` | Optional key-value pairs to further restrict what events can trigger the workflow. For each pair, incoming CloudEvents context values will be checked for a match. All pairs must find a match for the event to be accepted. The "keys" must be strings that match exactly to specific context keys, but the "values" can be "glob" patterns allowing them to match a range of possible context values. | [Structured JQ](#StructuredJQ) | no |
+
+The received data of an event-triggered workflow is a JSON representation of all the received events stored under keys matching the events' respective type. For example, this CloudEvents event will result in the following data:
+
+**CloudEvents Event**
+```json
+{
+    "specversion" : "1.0",
+    "type" : "com.github.pull.create",
+    "source" : "https://github.com/cloudevents/spec/pull",
+    "subject" : "123",
+    "id" : "A234-1234-1234",
+    "time" : "2018-04-05T17:31:00Z",
+    "comexampleextension1" : "value",
+    "comexampleothervalue" : 5,
+    "datacontenttype" : "text/xml",
+    "data" : "<much wow=\"xml\"/>"
+}
+```
+
+**Input Data**
+```json
+{
+	"com.github.pull.create": {
+		"specversion" : "1.0",
+		"type" : "com.github.pull.create",
+		"source" : "https://github.com/cloudevents/spec/pull",
+		"subject" : "123",
+		"id" : "A234-1234-1234",
+		"time" : "2018-04-05T17:31:00Z",
+		"comexampleextension1" : "value",
+		"comexampleothervalue" : 5,
+		"datacontenttype" : "text/xml",
+		"data" : "<much wow=\"xml\"/>"
+	}
+}
+```
+
+### DelayStateDefinition
+
+If the workflow needs to pause for a specific length of time, the delay state is usually the simplest way to do that.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `delay`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `duration` | An ISO8601 duration string. | string | yes |
+
+### ErrorStateDefinition 
+
+When workflow logic end up in a failure mode, the `error` state can be used to mark the instance as failed. This allows the instance to report what went wrong to the caller, which may then be handled or reported appropriately.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `error`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `error` | A short descriptive error code that can be caught by a parent workflow. | string | yes |
+| `message` | Generates a more detailed message or object that can contain instance data, to provide more information for users. | [Structured JQ](#StructuredJQ) | yes |
+
+### EventsAndStateDefinition 
+
+To pause the workflow and wait until multiple CloudEvents events are received before proceeding, the `eventsAnd` is used. Every listed event must be received for the state to complete.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `eventsAnd`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `timeout` | An ISO8601 duration string. | string | no |
+| `events` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](#ConsumeEventDefinition) | yes |
+
+### EventsXorStateDefinition 
+
+To pause the workflow and wait until one of multiple CloudEvents events is received before proceeding, the `eventsXor` state might be used. Any event match received will cause this state to complete.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `eventsXor`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `timeout` | An ISO8601 duration string. | string | no |
+| `events` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](#ConsumeEventDefinition) | yes |
+
+### ForeachStateDefinition
+
+The `foreach` state is a convenient way to divide some data and then perform an action on each element in parallel. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `foreach`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `timeout` | ISO8601 duration string to set a non-default timeout. | string | no | 
+| `array` | Selects or generates an array, from which each element will be separately acted upon. The `action.input` will be evaluated against each element in this array, rather than the usual instance data. | [Structured JQ](#StructuredJQ) | yes | 
+| `action` | Defines the action to perform. | [ActionDefinition](#ActionDefinition) | yes |
+
+### GenerateEventStateDefinition 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `generateEvent`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `delay` | ISO8601 duration string defining how long to hold the event before broadcasting it. | string | no |
+| `event` | Defines the event to generate. | [GenerateEventDefinition](#GenerateEventDefinition) | yes |
+
+### GenerateEventDefinition
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Sets the CloudEvents event type. | string | yes |
+| `source` | Sets the CloudEvents event source. | string | yes |
+| `data` | Defines the content of the payload for the CloudEvents event. | [Structured JQ](#StructuredJQ) | no |
+| `datacontenttype` | An RFC2046 string specifying the payload content type. | string | no |
+| `context` | If defined, must evaluate to an object of key-value pairs. These will be used to define CloudEvents event context data. | [Structured JQ](#StructuredJQ) | no |
+
+### GetterStateDefinition 
+
+To load variables, use the `getter` state. See [Variables](#Variables).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `getter`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `variables` | Defines variables to load. | [[]VariableSetterDefinition](#VariableGetterDefinition) | yes |
+
+### VariableGetterDefinition
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `key` | Variable name. | string | yes |
+| `scope` | Selects the scope to which the variable belongs. If undefined, defaults to `instance`. See [Variables](#Variables). | yes | no |
+| `as` | Names the resulting data. If left unspecified, the `key` will be used instead. | string | no |
+
+### NoopStateDefinition
+
+Often workflows need to do something that can be achieved using logic built into most state types. For example, to log something, or to transform the instance data by running a `jq` command. In many cases this can be done by an existing state within the workflow, but sometimes it's necessary to split it out into a separate state. The `noop` state exists for this purpose.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `noop`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+
+### ParallelStateDefinition 
+
+The `parallel` state is an alternative to the `action` state when a workflow can perform multiple threads of logic simultaneously. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `parallel`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `timeout` | ISO8601 duration string to set a non-default timeout. | string | no | 
+| `mode` | If defined, must be either `and` or `or`. The default is `and`. This setting determines whether the state is considered successfully completed only if all threads have returned without error (`and`) or as soon as any single thread returns without error (`or`). | string | no | 
+| `actions` | Defines the action to perform. | [[]ActionDefinition](#ActionDefinition) | yes |
+
+### SetterStateDefinition 
+
+To create or change variables, use the `setter` state. See [Variables](#Variables).
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `setter`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `variables` | Defines variables to push. | [[]VariableSetterDefinition](#VariableSetterDefinition) | yes |
+
+### VariableSetterDefinition
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `key` | Variable name. | string | yes |
+| `scope` | Selects the scope to which the variable belongs. If undefined, defaults to `instance`. See [Variables](#Variables). | yes | no |
+| `mimeType` | Store a MIME type with the variable. If left undefined, it will default to `application/json`. Two specific MIME types cause this state to behave differently: `text/plain` and `application/octet-stream`. If the `value` evaluates to a JSON string the MIME type is `text/plain`, that string will be stored in plaintext (without JSON quotes and escapes). If if the `value` is a JSON string containing base64 encoded data and the MIME type is `application/octet-stream`, the base64 data will be decoded and stored as binary data. | string | no |
+| `value` | Select or generate the data to store.  | [Structured JQ](#StructuredJQ) | yes |
+
+### SwitchStateDefinition
+
+To change the behaviour of a workflow based on the instance data, use a `switch` state. This state does nothing except choose between any number of different possible state transitions.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `switch`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `defaultTransform` | If defined, modifies the instance's data upon completing the state logic. But only if none of the `conditions` are met. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `defaultTransition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. But only if none of the `conditions` are met. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `conditions` | List of conditions, which are evaluated in-order until a match is found. | [[]SwitchConditionDefinition](#SwitchConditionDefinition) | yes |
+
+### SwitchConditionDefinition 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `condition` | Selects or generates the data used to determine if condition is met. The condition is considered met if the result is anything other than `null`, `false`, `{}`, `[]`, `""`, or `0`. | [Structured JQ](#StructuredJQ) | yes | 
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no | 
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, matching this condition terminates the workflow. | string | no | 
+
+### ValidateStateDefinition
+
+Since workflows receive external input it may be necessary to check that instance data is valid. The `validate` state exists for this purpose. 
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `type` | Identifies which kind of [StateDefinition](#StateDefinition) is being used. In this case it must be set to `validate`. | string | yes | 
+| `id` | An identifier unique within the workflow to this one state. | string | yes |
+| `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](#StateLogging). | [Structured JQ](#StructuredJQ) | no |
+| `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](#InstanceMetadata). | [Structured JQ](#StructuredJQ) | no |
+| `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](#StateTransforms). | [Structured JQ](#StructuredJQ) | no |
+| `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
+| `catch` | Defines behaviour for handling of catchable errors. See [StateErrorCatchers](#StateErrorCatchers). | [[]ErrorCatchDefinition](#ErrorCatchDefinition) | no |
+| `subject` | Selects or generates the data that will be compared to the `schema`. If undefined, it will be default to `'jq(.)'`. | [Structured JQ](#StructuredJQ) | no |
+| `schema` | A YAMLified representation of a JSON Schema that defines whether the `subject` is considered valid. | object | yes |
+
+### TimeoutsDefinition
+
+In addition to any timeouts applied on a state-by-state basis, every workflow has two global timeouts that begin ticking from the moment the workflow starts. This is where you can configure these timeouts differently to their defaults.
+
+| Parameter | Description | Type | Required |
+| --- | --- | --- | --- |
+| `interrupt` | An ISO8601 duration string. Sets the time to wait before throwing a catchable `direktiv.cancels.timeout.soft` error. Consider this a soft timeout. | string | no |
+| `kill` | An ISO8601 duration string. Sets the time to wait before throwing an uncatchable `direktiv.cancels.timeout.hard` error. This is a hard timeout. | string | no |
+
+### StructuredJQ
+
+To make Direktiv powerful and flexible we use `jq` in many places. Wherever a type called Structured JQ appears you can input generic data in any form you like, and it will be converted from YAML to JSON. For example, this log field will output the following JSON:
+
+**YAML**
+```yaml
+log: 
+  a: 5
+```
+
+**JSON**
+```json
+{
+  "a": 5
+}
+```
+
+Structured JQ also inspects all strings in the YAML searching for embedded queries, executing them and inserting the results into the data. Embeddeed queries are wrapped within the brackets of `jq()`, as in the following example:
+
+**Instance Data**
+```json
+{
+  "x": 5
+}
+```
+
+**YAML**
+```yaml
+log: 
+  a: 'jq(.x)'
+```
+
+**JSON**
+```json
+{
+  "a": 5
+}
+```
+
+If the JQ brackets the entire string the entire field will be replaced with the results of the query, as in the above example where `a` is represented as a JSON integer. Otherwise the results will be marshalled into JSON and be inserted as a string into the parent string. 
+
+**Instance Data**
+```json
+{
+  "x": 5
+}
+```
+
+**YAML**
+```yaml
+log: 
+  a: 'x = jq(.x)'
+```
+
+**JSON**
+```json
+{
+  "a": "x = 5"
+}
+```
+
+These JQ substitutions are not limited to primitive types. Entire objects or arrays, or anything else is all supported. 
+
+**Instance Data**
+```json
+{
+  "x": 5
+}
+```
+
+**YAML**
+```yaml
+log: 'jq(.)'
+```
+
+**JSON**
+```json
+{
+  "x": 5
+}
+```
+
+### StateErrorCatchers
+
+TODO
+
+### StateLogging
+
+The most common type to use is a string, which may contain structured `jq`, but any types are valid since the generated logs are JSON.
+
+TODO 
+
+### InstanceMetadata 
+
+The workflow will replace the instance's metadata with the provided value. Can be any type, and supports structured `jq`.
+
+TODO 
+
+### StateTransforms
+
+The workflow will modify its memory just before it completes the state. The evaluated result of the transform must be an object.
+
+TODO 
+
+### Variables
+
+Most workflows can get by with their instance data, but in some cases that may be insufficient. Instance data has a limited maximum size, and on its own it cannot be used to persist data long-term. Variables are stored on Direktiv as a means of storing and retrieving data between functions, instances, or workflows. 
+
+All variables belong to a `scope`. The scopes are `instance`, `workflow`, and `namespace`. Instance scoped variables are only accessible to the singular instance that created them. Workflow scoped variables can be used and shared between multiple instances of the same workflow. Namespace scoped variables are available to all instances of all workflows on the namespace. 
+
+All variables are identified by a name, and each name is unique within its scope. The main ways for workflows to interact with variables is through [`getter`](#GetterStateDefinition) and [`setter`](#SetterStateDefinition) states, though other methods are also possible. 
+
+In addition to the scopes outlined above, there is a special `system` scope. This scope is a utility to make miscellaneous information accessible to an instance. The following special variables exist in the system scope:
+
+| Key | Description |
+| --- | --- |
+| `instance` | Returns the instance ID of the running instance. |
+| `uuid` | Returns a randomly generated UUID. |
+| `epoch` | Returns the current time in unix/epoch format. |
+
+# TODO
+
+* Add `url` field to workflow definition.
+* What happened to Exclusive / Singular field?
+* Check if states use `eventAnd` or `eventsAnd`. Consider changing for consistency?
+* Links to container specs.
+* Links to isolated specs.
+* Rename `isolated` and `reusable` to be consistent with other function types.
+* Link to size presets documentation.
+* Explain function files.
+* Function file type (plain/base64/tar/tar.gz) needs revisiting
+* Explain secrets.
