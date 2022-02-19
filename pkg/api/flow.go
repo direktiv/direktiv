@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gabriel-vasile/mimetype"
-	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
@@ -3634,13 +3633,9 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
+func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-
+	var events []cloudevents.Event
 	ct := r.Header.Get("Content-type")
 
 	// if batch mode we need to parse the body to multiple events
@@ -3649,88 +3644,85 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 		// load body
 		data, err := loadRawBody(r)
 		if err != nil {
-			respond(w, nil, err)
-			return
+			return nil, err
 		}
 
-		// gat all events in body, if it fails body is not a list of cloudevents
-		var events []cloudevents.Event
 		err = json.Unmarshal(data, &events)
 		if err != nil {
-			respond(w, nil, err)
-			return
+			return nil, err
 		}
 
-		var resp *empty.Empty
-
-		// send individual events
 		for i := range events {
 
-			err = events[i].Validate()
+			ev := events[i]
+			if ev.ID() == "" {
+				ev.SetID(uuid.New().String())
+			}
+			err = ev.Validate()
 			if err != nil {
-				respond(w, nil, err)
-				return
+				return nil, err
 			}
-
-			d, err := json.Marshal(events[i])
-			if err != nil {
-				respond(w, nil, err)
-				return
-			}
-
-			in := &grpc.BroadcastCloudeventRequest{
-				Namespace:  namespace,
-				Cloudevent: d,
-			}
-
-			resp, err = h.client.BroadcastCloudevent(ctx, in)
-			if err != nil {
-				respond(w, nil, err)
-				return
-			}
-
 		}
 
-		respond(w, resp, err)
-		return
+		return events, nil
 
 	}
 
 	m := protocol.NewMessageFromHttpRequest(r)
 	ev, err := binding.ToEvent(context.Background(), m)
 	if err != nil {
-		respond(w, nil, err)
-		return
+		return events, err
 	}
 
-validate:
+	// validate:
+	if ev.ID() == "" {
+		ev.SetID(uuid.New().String())
+	}
 	err = ev.Validate()
 
 	// azure hack for dataschema '#' which is an invalid cloudevent
 	if err != nil && strings.HasPrefix(err.Error(), "dataschema: if present") {
 		ev.Context.SetDataSchema("")
-	} else if err != nil && ev.ID() == "" {
-		ev.SetID(uuid.New().String())
-		goto validate
 	} else if err != nil {
-		// all other validation errors
-		respond(w, nil, err)
-		return
+		return nil, err
 	}
 
-	data, err := json.Marshal(ev)
+	events = append(events, *ev)
+
+	return events, nil
+
+}
+
+func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
+
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	ces, err := ToGRPCCloudEvents(r)
 	if err != nil {
 		respond(w, nil, err)
 		return
 	}
 
-	in := &grpc.BroadcastCloudeventRequest{
-		Namespace:  namespace,
-		Cloudevent: data,
-	}
+	for i := range ces {
 
-	resp, err := h.client.BroadcastCloudevent(ctx, in)
-	respond(w, resp, err)
+		d, err := json.Marshal(ces[i])
+		if err != nil {
+			respond(w, nil, err)
+			return
+		}
+
+		in := &grpc.BroadcastCloudeventRequest{
+			Namespace:  namespace,
+			Cloudevent: d,
+		}
+
+		resp, err := h.client.BroadcastCloudevent(ctx, in)
+		respond(w, resp, err)
+
+	}
 
 }
 
