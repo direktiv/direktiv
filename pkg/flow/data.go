@@ -298,17 +298,13 @@ func (srv *server) initJQ() {
 
 	jqer.StringQueryRequiresWrappings = true
 	jqer.TrimWhitespaceOnQueryStrings = true
-	jqer.SearchInStrings = true
-	jqer.WrappingBegin = "jq"
-	jqer.WrappingIncrement = "("
-	jqer.WrappingDecrement = ")"
 
 }
 
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
 	out, err := jqer.Evaluate(input, command)
 	if err != nil {
-		return nil, NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq: %v", err)
+		return nil, NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
 	}
 	return out, nil
 }
@@ -321,7 +317,7 @@ func jqOne(input interface{}, command interface{}) (interface{}, error) {
 	}
 
 	if len(output) != 1 {
-		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced multiple outputs")
+		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
 	}
 
 	return output[0], nil
@@ -337,7 +333,7 @@ func jqObject(input interface{}, command interface{}) (map[string]interface{}, e
 
 	m, ok := x.(map[string]interface{})
 	if !ok {
-		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` command produced a non-object output")
+		return nil, NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced a non-object output")
 	}
 
 	return m, nil
