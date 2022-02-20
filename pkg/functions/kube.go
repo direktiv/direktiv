@@ -1808,6 +1808,22 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 		return nil, err
 	}
 
+	n := functionsConfig.knativeAffinity.DeepCopy()
+	reqAffinity := n.RequiredDuringSchedulingIgnoredDuringExecution
+	if reqAffinity != nil {
+		terms := &reqAffinity.NodeSelectorTerms
+		if len(*terms) > 0 {
+			expressions := &(*terms)[0].MatchExpressions
+			if len(*expressions) > 0 {
+				expression := &(*expressions)[0]
+				if expression.Key == "direktiv.io/namespace" {
+					expression.Operator = corev1.NodeSelectorOpIn
+					expression.Values = []string{*info.NamespaceName}
+				}
+			}
+		}
+	}
+
 	svc := v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -1827,6 +1843,9 @@ func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
 							ServiceAccountName: functionsConfig.ServiceAccount,
 							Containers:         containers,
 							Volumes:            createVolumes(),
+							Affinity: &corev1.Affinity{
+								NodeAffinity: n,
+							},
 						},
 						ContainerConcurrency: &concurrency,
 						TimeoutSeconds:       &timeoutSec,

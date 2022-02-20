@@ -9,9 +9,6 @@ import (
 	kyaml "sigs.k8s.io/yaml"
 )
 
-type configReader struct {
-}
-
 type config struct {
 	Logging              string `yaml:"logging"`
 	IngressClass         string `yaml:"ingress-class"`
@@ -49,13 +46,15 @@ type config struct {
 		HTTP  string `yaml:"http"`
 	} `yaml:"proxy"`
 
-	extraContainers []v1.Container `yaml:"-"`
-	extraVolumes    []v1.Volume    `yaml:"-"`
+	knativeAffinity v1.NodeAffinity `yaml:"-"`
+	extraContainers []v1.Container  `yaml:"-"`
+	extraVolumes    []v1.Volume     `yaml:"-"`
 }
 
 type subConfig struct {
-	ExtraContainers []v1.Container `yaml:"extraContainers"`
-	ExtraVolumes    []v1.Volume    `yaml:"extraVolumes"`
+	ExtraContainers []v1.Container  `yaml:"extraContainers"`
+	ExtraVolumes    []v1.Volume     `yaml:"extraVolumes"`
+	KnativeAffinity v1.NodeAffinity `yaml:"knativeAffinity"`
 }
 
 func readConfig(path string, c *config) {
@@ -96,9 +95,6 @@ func readConfig(path string, c *config) {
 
 	c.extraVolumes = sc.ExtraVolumes
 	c.extraContainers = sc.ExtraContainers
+	c.knativeAffinity = sc.KnativeAffinity
 
 }
-
-// func (cr *configReader) readConfig(path string, target interface{}) {
-// 	readAndSet(path, target)
-// }
