@@ -191,7 +191,7 @@ function ExplorerList(props) {
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
     const {data, err, templates, pageInfo, createNode, deleteNode, renameNode, totalCount } = useNodes(Config.url, true, namespace, path, localStorage.getItem("apikey"), ...queryParams, `order.field=${orderFieldDictionary[orderFieldKey]}`, `filter.field=NAME`, `filter.val=${search}`, `filter.type=CONTAINS`)
 
-    const [wfData, setWfData] = useState(templates["noop"])
+    const [wfData, setWfData] = useState(templates["noop"].data)
     const [wfTemplate, setWfTemplate] = useState("noop")
 
     function resetQueryParams() {
@@ -300,7 +300,7 @@ function ExplorerList(props) {
                                 </div>
                             )}  
                             onClose={()=>{
-                                setWfData(templates["noop"])
+                                setWfData(templates["noop"].data)
                                 setWfTemplate("noop")
                                 setName("")
                             }}
@@ -337,12 +337,12 @@ function ExplorerList(props) {
                                 <select value={wfTemplate} onChange={(e)=>{
                                     setWfTemplate(e.target.value)
                                     // todo set wfdata to template on change
-                                    setWfData(templates[e.target.value])
+                                    setWfData(templates[e.target.value].data)
                                 }}>
                                     {Object.keys(templates).map((obj)=>{
                                         let key = GenerateRandomKey("")
                                         return(
-                                            <option key={key} value={obj}>{obj}</option>
+                                            <option key={key} value={obj}>{templates[obj].name}</option>
                                         )
                                     })}
                                 </select>
