@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -103,6 +104,10 @@ func (s *Server) StoreSecret(ctx context.Context, in *secretsgrpc.SecretsStoreRe
 	n := in.GetName()
 	if ok := util.MatchesVarRegex(n); !ok {
 		return &resp, fmt.Errorf("secret name must match the regex pattern `%s`", util.RegexPattern)
+	}
+
+	if len(n) > 32 {
+		return &resp, errors.New("secret name must not exceed 32 characters")
 	}
 
 	err := s.handler.AddSecret(in.GetNamespace(), n, in.GetData())
