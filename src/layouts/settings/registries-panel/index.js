@@ -62,6 +62,7 @@ function RegistriesPanel(props){
                             setURLErr("")
                             setTokenErr("")
                             setUserErr("")
+                            setErr("")
                             setSuccessFeedback(false)
                             setTestConnLoading(false)
                         }}
@@ -70,6 +71,7 @@ function RegistriesPanel(props){
                                 setURLErr("")
                                 setTokenErr("")
                                 setUserErr("")
+                                setErr("")
                                 let filledOut = true
                                 if(url === ""){
                                     setURLErr("url must be filled out")
@@ -98,6 +100,7 @@ function RegistriesPanel(props){
                                 setURLErr("")
                                 setTokenErr("")
                                 setUserErr("")
+                                setErr("")
                                 let filledOut = true
                                 if(url === ""){
                                     setURLErr("Please enter a URL...")
@@ -119,6 +122,7 @@ function RegistriesPanel(props){
                                 setURLErr("")
                                 setTokenErr("")
                                 setUserErr("")
+                                setErr("")
                                 let filledOut = true
                                 if(url === ""){
                                     setURLErr("Please enter a URL...")

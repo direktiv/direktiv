@@ -76,6 +76,7 @@ export function GlobalRegistries(){
                             setURLErr("")
                             setTokenErr("")
                             setUserErr("")
+                            setErr("")
                             setSuccessFeedback(false)
                             setTestConnLoading(false)
                         }}
@@ -101,6 +102,7 @@ export function GlobalRegistries(){
                                 setURLErr("")
                                 setTokenErr("")
                                 setUserErr("")
+                                setErr("")
                                 let filledOut = true
                                 if(url === ""){
                                     setURLErr("Please enter a URL...")
@@ -227,6 +229,7 @@ export function GlobalPrivateRegistries(){
                                 setURLErr("")
                                 setTokenErr("")
                                 setUserErr("")
+                                setErr("")
                                 let filledOut = true
                                 if(url === ""){
                                     setURLErr("Please enter a URL...")
