@@ -146,25 +146,6 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 			return
 		}
 
-	case model.IsolatedContainerFunctionType:
-
-		uid := uuid.New()
-		logic = multiactionTuple{
-			ID:       uid.String(),
-			Type:     "isolate",
-			Attempts: attempt,
-		}
-
-		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false)
-		if err != nil {
-			return
-		}
-
-		err = engine.doActionRequest(ctx, ar)
-		if err != nil {
-			return
-		}
 	default:
 		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
 		return
