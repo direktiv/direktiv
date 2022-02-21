@@ -17,6 +17,11 @@ import (
 var (
 	StringQueryRequiresWrappings bool
 	TrimWhitespaceOnQueryStrings bool
+
+	SearchInStrings   bool
+	WrappingBegin     = ""
+	WrappingIncrement = "{{"
+	WrappingDecrement = "}}"
 )
 
 /*
@@ -202,13 +207,10 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			break
 		}
 
-		// log.Printf("%v %v\n", tok.Type, tok.Value)
-
 		switch tok.Type {
 		case ErrorToken:
 			return nil, fmt.Errorf("jq/js script missing bracket")
 		case JqStartToken:
-
 			x, err := jq(data, tok.Value)
 			if err != nil {
 				return nil, fmt.Errorf("error executing jq query %s: %v", tok.Value, err)
@@ -218,7 +220,12 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 				return nil, fmt.Errorf("error in jq query %s: no results", tok.Value)
 			}
 
-			out = append(out, x[0])
+			if len(x) == 1 {
+				out = append(out, x[0])
+			} else {
+				out = append(out, x)
+			}
+
 		case JsStartToken:
 
 			vm := goja.New()
@@ -268,7 +275,6 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			out = append(out, ret)
 
 		default:
-
 			out = append(out, tok.Value)
 		}
 

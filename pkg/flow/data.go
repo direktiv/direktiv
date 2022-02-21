@@ -299,6 +299,11 @@ func (srv *server) initJQ() {
 	jqer.StringQueryRequiresWrappings = true
 	jqer.TrimWhitespaceOnQueryStrings = true
 
+	jqer.SearchInStrings = true
+	jqer.WrappingBegin = "jq"
+	jqer.WrappingIncrement = "("
+	jqer.WrappingDecrement = ")"
+
 }
 
 func jq(input interface{}, command interface{}) ([]interface{}, error) {
