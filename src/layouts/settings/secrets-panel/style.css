@@ -28,6 +28,8 @@
 .secret-tuple .actions {
     max-width: 20px;
     margin-top: 2px;
+    flex: 1;
+    flex-basis: 0;
 }
 
 .secret-tuple:hover {
@@ -41,6 +43,15 @@
     /* max-width: 40%; */
 
     padding-left: 8px;
+    flex: 3;
+    flex-basis: 0;
+    overflow: hidden;
+    min-width: 30px;
+}
+
+.secret-tuple .val{
+    flex: 1;
+    flex-basis: 0;
 }
 
 .secret-tuple > .val > span {
@@ -49,6 +60,10 @@
 
 .secrets-panel {
     overflow-y: auto;
+}
+
+.secrets-panel > .flex-box {
+    width: 100%;
 }
 
 .secrets-delete-btn {
