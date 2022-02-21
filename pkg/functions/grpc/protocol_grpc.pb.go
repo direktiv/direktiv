@@ -36,8 +36,6 @@ type FunctionsServiceClient interface {
 	GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error)
 	DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error)
-	CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
 	WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error)
@@ -202,24 +200,6 @@ func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunc
 func (c *functionsServiceClient) SetFunctionsTraffic(ctx context.Context, in *SetTrafficRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/SetFunctionsTraffic", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *functionsServiceClient) CreateFunctionsPod(ctx context.Context, in *CreatePodRequest, opts ...grpc.CallOption) (*CreatePodResponse, error) {
-	out := new(CreatePodResponse)
-	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/CreateFunctionsPod", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *functionsServiceClient) CancelFunctionsPod(ctx context.Context, in *CancelPodRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/direktiv_functions.FunctionsService/CancelFunctionsPod", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -402,8 +382,6 @@ type FunctionsServiceServer interface {
 	GetFunction(context.Context, *GetFunctionRequest) (*GetFunctionResponse, error)
 	DeleteFunction(context.Context, *GetFunctionRequest) (*empty.Empty, error)
 	SetFunctionsTraffic(context.Context, *SetTrafficRequest) (*empty.Empty, error)
-	CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error)
-	CancelFunctionsPod(context.Context, *CancelPodRequest) (*empty.Empty, error)
 	DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error)
 	WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error
 	WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error
@@ -468,12 +446,6 @@ func (UnimplementedFunctionsServiceServer) DeleteFunction(context.Context, *GetF
 }
 func (UnimplementedFunctionsServiceServer) SetFunctionsTraffic(context.Context, *SetTrafficRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetFunctionsTraffic not implemented")
-}
-func (UnimplementedFunctionsServiceServer) CreateFunctionsPod(context.Context, *CreatePodRequest) (*CreatePodResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateFunctionsPod not implemented")
-}
-func (UnimplementedFunctionsServiceServer) CancelFunctionsPod(context.Context, *CancelPodRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelFunctionsPod not implemented")
 }
 func (UnimplementedFunctionsServiceServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRevision not implemented")
@@ -815,42 +787,6 @@ func _FunctionsService_SetFunctionsTraffic_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _FunctionsService_CreateFunctionsPod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreatePodRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FunctionsServiceServer).CreateFunctionsPod(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/direktiv_functions.FunctionsService/CreateFunctionsPod",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).CreateFunctionsPod(ctx, req.(*CreatePodRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _FunctionsService_CancelFunctionsPod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelPodRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FunctionsServiceServer).CancelFunctionsPod(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/direktiv_functions.FunctionsService/CancelFunctionsPod",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).CancelFunctionsPod(ctx, req.(*CancelPodRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _FunctionsService_DeleteRevision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRevisionRequest)
 	if err := dec(in); err != nil {
@@ -1063,14 +999,6 @@ var FunctionsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetFunctionsTraffic",
 			Handler:    _FunctionsService_SetFunctionsTraffic_Handler,
-		},
-		{
-			MethodName: "CreateFunctionsPod",
-			Handler:    _FunctionsService_CreateFunctionsPod_Handler,
-		},
-		{
-			MethodName: "CancelFunctionsPod",
-			Handler:    _FunctionsService_CancelFunctionsPod_Handler,
 		},
 		{
 			MethodName: "DeleteRevision",

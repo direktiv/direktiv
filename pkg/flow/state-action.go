@@ -192,13 +192,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 			panic(err)
 		}
 		ar.Container.Files = con.Files
-	case model.IsolatedContainerFunctionType:
-		con := fn.(*model.IsolatedFunctionDefinition)
-		ar.Container.Image = con.Image
-		ar.Container.Cmd = con.Cmd
-		ar.Container.Size = con.Size
-		ar.Container.ID = con.ID
-		ar.Container.Files = con.Files
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = con.Files
@@ -344,46 +337,6 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			return
 		}
 
-	case model.IsolatedContainerFunctionType:
-
-		uid := uuid.New()
-
-		sd := &actionStateSavedata{
-			Op:       "do",
-			Id:       uid.String(),
-			Attempts: attempt,
-		}
-
-		err = engine.SetMemory(ctx, im, sd)
-		if err != nil {
-			return
-		}
-
-		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async)
-		if err != nil {
-			return
-		}
-
-		if sl.state.Async {
-			engine.logToInstance(ctx, time.Now(), im.in, "Running function '%s' in fire-and-forget mode (async).", fn.GetID())
-			go func(ctx context.Context, im *instanceMemory, ar *functionRequest) {
-				err = engine.doActionRequest(ctx, ar)
-				if err != nil {
-					return
-				}
-			}(ctx, im, ar)
-			transition = &stateTransition{
-				Transform: sl.state.Transform,
-				NextState: sl.state.Transition,
-			}
-			return
-		}
-		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns.", fn.GetID())
-		err = engine.doActionRequest(ctx, ar)
-		if err != nil {
-			return
-		}
 	default:
 		err = NewInternalError(fmt.Errorf("unsupported function type: %v", fnt))
 		return
@@ -451,8 +404,6 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 		}
 		engine.logToInstance(ctx, time.Now(), im.in, "Subflow '%s' returned.", id)
 	case model.ReusableContainerFunctionType:
-		fallthrough
-	case model.IsolatedContainerFunctionType:
 		fallthrough
 	case model.NamespacedKnativeFunctionType:
 		fallthrough

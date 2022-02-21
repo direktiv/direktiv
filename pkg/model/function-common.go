@@ -16,7 +16,6 @@ type FunctionType int
 const (
 	DefaultFunctionType           FunctionType = iota
 	ReusableContainerFunctionType              // Old school knative
-	IsolatedContainerFunctionType              // isolated (scale field not needed)
 	NamespacedKnativeFunctionType
 	GlobalKnativeFunctionType
 	SubflowFunctionType
@@ -151,8 +150,6 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	switch ftype {
 	case ReusableContainerFunctionType.String():
 		f = new(ReusableFunctionDefinition)
-	case IsolatedContainerFunctionType.String():
-		f = new(IsolatedFunctionDefinition)
 	case NamespacedKnativeFunctionType.String():
 		f = new(NamespacedFunctionDefinition)
 	case GlobalKnativeFunctionType.String():
