@@ -38,6 +38,15 @@
     display: inline;
 }
 
+.explorer-item:hover{
+    background-color: rgba(0,0,0,0.04);
+}
+
+.explorer-item{
+    border-radius: 4px;
+    transition: background-color 0.1s;
+}
+
 .explorer-item-icon {
     min-width: 42px;
     max-width: 42px;
