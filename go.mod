@@ -8,9 +8,11 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
+	github.com/bbuck/go-lexer v1.0.0 // indirect
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1
 	github.com/cloudevents/sdk-go/v2 v2.6.1
+	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f // indirect
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-openapi/analysis v0.20.1 // indirect

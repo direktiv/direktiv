@@ -9,15 +9,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bbuck/go-lexer"
+	"github.com/dop251/goja"
 	"github.com/itchyny/gojq"
 )
 
 var (
-	// StringQueryRequiresWrappings whether the string needs to be wrapped
 	StringQueryRequiresWrappings bool
-	// TrimWhitespaceOnQueryStrings whether we need to trim whitespace on query strings
 	TrimWhitespaceOnQueryStrings bool
-	// SearchInStrings to search in strings
+
 	SearchInStrings   bool
 	WrappingBegin     = ""
 	WrappingIncrement = "{{"
@@ -53,10 +53,6 @@ func Evaluate(data, query interface{}) ([]interface{}, error) {
 		return out, nil
 	}
 
-	if s, ok := query.(string); ok && !StringQueryRequiresWrappings {
-		return jq(data, s)
-	}
-
 	return recursiveEvaluate(data, query)
 
 }
@@ -90,129 +86,207 @@ func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
 
 }
 
+const (
+	JqStartToken lexer.TokenType = iota
+	JsStartToken
+	StringToken
+	ErrorToken
+	NoToken
+)
+
+func JqState(l *lexer.L) lexer.StateFunc {
+
+	src := make([]string, 3)
+	var jdxJ int
+
+	mover := func(rewind int, forward bool) {
+		for a := 0; a < rewind; a++ {
+			if forward {
+				l.Next()
+			} else {
+				l.Rewind()
+			}
+		}
+	}
+
+	for i := 0; i < 3; i++ {
+		r := l.Next()
+		if r == lexer.EOFRune {
+			// emit string token if there is content in it
+			if len(l.Current()) > 0 {
+				l.Emit(StringToken)
+			}
+			return nil
+		}
+		src[i] = string(r)
+
+		// if one of the strings has a j we store the index for rewind
+		// this is only to save scanning
+		if src[i] == "j" && i > 0 {
+			jdxJ = i
+		}
+	}
+
+	isJX := strings.Join(src, "")
+
+	token := NoToken
+	if isJX == "jq(" {
+		token = JqStartToken
+	} else if isJX == "js(" {
+		token = JsStartToken
+	}
+
+	if token != NoToken {
+
+		// this cuts out the 'jX(' bit
+		mover(3, false)
+
+		// emit string token if there is content in it
+		if len(l.Current()) > 0 {
+			l.Emit(StringToken)
+		}
+		mover(3, true)
+
+		// counting the '()'
+		var open int
+		l.Ignore()
+		for {
+			n := l.Next()
+			if n == lexer.EOFRune {
+				l.Emit(ErrorToken)
+				return nil
+			}
+
+			switch n {
+			case '(':
+				open++
+			case ')':
+				open--
+			}
+
+			if open < 0 {
+				l.Rewind()
+				break
+			}
+		}
+		l.Emit(token)
+
+		// remove closing ')'
+		mover(1, true)
+		l.Ignore()
+
+		return JqState
+	}
+
+	// only rewind to jdxJ, if there was no j in the runes, we can skip rewind all together
+	if jdxJ > 0 {
+		mover((3 - jdxJ), false)
+	}
+
+	return JqState
+}
+
 func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 
-	var out []interface{}
-	var offset int
+	out := make([]interface{}, 0)
 
-	query := s
 	if TrimWhitespaceOnQueryStrings {
-		query = strings.TrimSpace(query)
-		offset = strings.Index(s, query)
+		s = strings.TrimSpace(s)
 	}
 
-	if !SearchInStrings {
-		if strings.HasPrefix(query, WrappingBegin+WrappingIncrement) && strings.HasSuffix(query, WrappingDecrement) {
-			query = query[len(WrappingBegin)+len(WrappingIncrement) : len(query)-len(WrappingDecrement)]
-			return jq(data, query)
-		}
-		out = append(out, s)
-		return out, nil
-	}
-
-	// search in string
-	var foundQueries bool
-	var stringParts []interface{}
-	begin := WrappingBegin + WrappingIncrement
+	l := lexer.New(s, JqState)
+	l.Start()
 
 	for {
-		idx := strings.Index(query, begin)
-		if idx < 0 {
-			if len(query) > 0 {
-				stringParts = append(stringParts, query)
-			}
+		tok, done := l.NextToken()
+		if done {
 			break
 		}
 
-		if idx > 0 {
-			stringParts = append(stringParts, query[:idx])
-			offset += idx
-			query = query[idx:]
-			idx = 0
-		}
-
-		counter := 1
-		var i int
-
-		for i = len(begin); counter > 0; i++ {
-
-			if i >= len(query) {
-				break
+		switch tok.Type {
+		case ErrorToken:
+			return nil, fmt.Errorf("jq/js script missing bracket")
+		case JqStartToken:
+			x, err := jq(data, tok.Value)
+			if err != nil {
+				return nil, fmt.Errorf("error executing jq query %s: %v", tok.Value, err)
 			}
 
-			if len(query) >= i+len(WrappingIncrement) {
+			if len(x) == 0 || len(x) > 0 && x[0] == nil {
+				return nil, fmt.Errorf("error in jq query %s: no results", tok.Value)
+			}
 
-				c := query[i : i+len(WrappingIncrement)]
+			if len(x) == 1 {
+				out = append(out, x[0])
+			} else {
+				return nil, fmt.Errorf("jq query produced multiple outputs")
+			}
 
-				if c == WrappingIncrement {
-					counter++
-					i += len(WrappingIncrement) - 1
-					continue
+		case JsStartToken:
+
+			vm := goja.New()
+
+			fn := fmt.Sprintf("function fn(data) {\n %s \n}", tok.Value)
+			_, err := vm.RunString(fn)
+			if err != nil {
+				return nil, fmt.Errorf("error loading js query %s: %v", tok.Value, err)
+			}
+
+			fnExe, ok := goja.AssertFunction(vm.Get("fn"))
+			if !ok {
+				return nil, fmt.Errorf("error getting js query %s: %v", tok.Value, err)
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+			defer cancel()
+			done := make(chan bool, 1)
+
+			go func(ctx context.Context, rt *goja.Runtime, b chan bool) {
+				select {
+				case <-b:
+					return
+				case <-ctx.Done():
+					rt.Interrupt("timeout")
 				}
+			}(ctx, vm, done)
 
+			defer func(b chan bool) {
+				b <- true
+			}(done)
+
+			// execute and get results
+			v, err := fnExe(goja.Undefined(), vm.ToValue(data))
+			if err != nil {
+				return nil, fmt.Errorf("error running js query %s: %v", tok.Value, err)
 			}
 
-			if len(query) >= i+len(WrappingDecrement) {
-
-				c := query[i : i+len(WrappingDecrement)]
-
-				if c == WrappingDecrement {
-					counter--
-					i += len(WrappingDecrement) - 1
-					continue
-				}
-
+			ret := v.Export()
+			if ret == nil {
+				return nil, fmt.Errorf("error in js query %s: no results", tok.Value)
 			}
+			out = append(out, ret)
 
+		default:
+			out = append(out, tok.Value)
 		}
-
-		if counter > 0 {
-			return nil, fmt.Errorf("unterminated jq query beginning at offset %v", offset)
-		}
-
-		var x []interface{}
-		qstr := query[len(begin) : i-1]
-		var err error
-		foundQueries = true
-		x, err = jq(data, qstr)
-		if err != nil {
-			return nil, fmt.Errorf("error running jq query beginning at offset %v: %v", offset, err)
-		}
-		out = x
-
-		if len(x) == 0 {
-			return nil, fmt.Errorf("error in jq query beginning at offset %v: no results", offset)
-		}
-		if len(x) > 1 && len(stringParts) > 0 {
-			return nil, fmt.Errorf("error in jq query beginning at offset %v: more than one result", offset)
-		}
-
-		stringParts = append(stringParts, x[0])
-
-		offset += i
-		query = query[i:]
 
 	}
 
-	if !foundQueries {
-		out = append(out, s)
+	if len(out) == 1 {
 		return out, nil
 	}
 
-	if len(stringParts) == 1 {
-		return out, nil
-	}
-
-	var x []string
-	for i := range stringParts {
-		if _, ok := stringParts[i].(string); ok {
-			x = append(x, fmt.Sprintf("%v", stringParts[i]))
+	x := make([]string, len(out))
+	for i := range out {
+		part := out[i]
+		if _, ok := part.(string); ok {
+			x = append(x, fmt.Sprintf("%v", part))
 		} else {
-			data, err := json.Marshal(stringParts[i])
+			data, err := json.Marshal(part)
 			if err != nil {
 				return nil, err
 			}
-			x = append(x, fmt.Sprintf("%s", data))
+			x = append(x, string(data))
 		}
 	}
 
