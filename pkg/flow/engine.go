@@ -105,6 +105,21 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
+	var wf model.Workflow
+	err = wf.Load(d.rev().Source)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(wf.GetStartDefinition().GetEvents()) > 0 {
+		if args.Caller == "API" {
+			return nil, errors.New("cannot manually invoke event-based workflow")
+		}
+		if args.Caller == "workflow" {
+			return nil, errors.New("cannot invoke event-based workflow as a subflow")
+		}
+	}
+
 	inc := tx.Instance
 	rtc := tx.InstanceRuntime
 
