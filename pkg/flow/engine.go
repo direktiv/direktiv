@@ -764,17 +764,6 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 
 	// TODO: should this ctx be modified with a shorter deadline?
 	switch ar.Container.Type {
-	case model.IsolatedContainerFunctionType:
-		hostname, ip, err := engine.addPodFunction(ctx, engine.actions.client, ar)
-		if err != nil {
-			return NewInternalError(err)
-		}
-
-		go func(ar *functionRequest) {
-			// post data
-			engine.doPodHTTPRequest(ctx, ar, hostname, ip)
-		}(ar)
-
 	case model.DefaultFunctionType:
 		fallthrough
 	case model.NamespacedKnativeFunctionType:

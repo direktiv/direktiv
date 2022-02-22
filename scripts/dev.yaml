@@ -25,6 +25,12 @@ functions:
   tag: "latest"
   sidecar: "sidecar"
   initPodImage: "init-pod"
+  # knativeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #             nodeSelectorTerms:
+  #             - matchExpressions:
+  #               - key: direktiv.io/namespace
+
 
 # opentelemetry:
 #   enabled: true
@@ -66,12 +72,15 @@ functions:
 #           receivers: [otlp]
 #           processors: [memory_limiter, batch]
 #           exporters: [logging, otlp]
-
 database:
   host: "direktiv-primary.postgres.svc"
   port: 5432
   user: "direktiv"
-  password: "bo*BzUu+bnoeF*+/msNY8SP="
+  password: "Y|{7PS}[ev@*b14TNN.XL:9|"
   name: "direktiv"
   sslmode: require
 
+
+ingress-nginx:
+  tcp:
+    2525: default/smtp-listener-service:2525

@@ -16,13 +16,12 @@ type FunctionType int
 const (
 	DefaultFunctionType           FunctionType = iota
 	ReusableContainerFunctionType              // Old school knative
-	IsolatedContainerFunctionType              // isolated (scale field not needed)
 	NamespacedKnativeFunctionType
 	GlobalKnativeFunctionType
 	SubflowFunctionType
 )
 
-var FunctionTypeStrings = []string{"unknown", "knative-workflow" /*"reusable"*/, "kubernetes-job" /*"isolated"*/, "knative-namespace", "knative-global", "subflow"}
+var FunctionTypeStrings = []string{"unknown", "knative-workflow" /*"reusable"*/, "knative-namespace", "knative-global", "subflow"}
 
 func (a FunctionType) String() string {
 	return FunctionTypeStrings[a]
@@ -42,10 +41,6 @@ func ParseFunctionType(s string) (FunctionType, error) {
 
 	if s == "reusable" {
 		return FunctionType(ReusableContainerFunctionType), nil
-	}
-
-	if s == "isolated" {
-		return FunctionType(IsolatedContainerFunctionType), nil
 	}
 
 unknown:
@@ -161,10 +156,6 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 		fallthrough
 	case ReusableContainerFunctionType.String():
 		f = new(ReusableFunctionDefinition)
-	case "isolated":
-		fallthrough
-	case IsolatedContainerFunctionType.String():
-		f = new(IsolatedFunctionDefinition)
 	case NamespacedKnativeFunctionType.String():
 		f = new(NamespacedFunctionDefinition)
 	case GlobalKnativeFunctionType.String():
@@ -172,9 +163,9 @@ func getFunctionDefFromType(ftype string) (FunctionDefinition, error) {
 	case SubflowFunctionType.String():
 		f = new(SubflowFunctionDefinition)
 	case "":
-		err = errors.New("type required(reusable, isolated, knative-namespace, knative-global, subflow)")
+		err = errors.New("type required(reusable, knative-namespace, knative-global, subflow)")
 	default:
-		err = errors.New("type unrecognized(reusable, isolated, knative-namespace, knative-global, subflow)")
+		err = errors.New("type unrecognized(reusable, knative-namespace, knative-global, subflow)")
 	}
 
 	return f, err

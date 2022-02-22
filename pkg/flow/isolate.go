@@ -72,52 +72,6 @@ type functionWorkflow struct {
 	Timeout       int
 }
 
-func (engine *engine) cancelJob(ctx context.Context, client igrpc.FunctionsServiceClient,
-	actionID string) {
-
-	engine.sugar.Debugf("cancelling job %v", actionID)
-
-	cr := igrpc.CancelPodRequest{
-		ActionID: &actionID,
-	}
-
-	_, err := client.CancelFunctionsPod(ctx, &cr)
-	if err != nil {
-		engine.sugar.Errorf("can not cancel job %s: %v", actionID, err)
-	}
-
-}
-
-func (engine *engine) addPodFunction(ctx context.Context,
-	client igrpc.FunctionsServiceClient, ir *functionRequest) (string, string, error) {
-
-	sz := int32(ir.Container.Size)
-	scale := int32(ir.Container.Scale)
-	step := int64(ir.Workflow.Step)
-
-	cr := igrpc.CreatePodRequest{
-		Info: &igrpc.BaseInfo{
-			Name:          &ir.Container.ID,
-			Namespace:     &ir.Workflow.NamespaceID,
-			Workflow:      &ir.Workflow.WorkflowID,
-			Image:         &ir.Container.Image,
-			Cmd:           &ir.Container.Cmd,
-			Size:          &sz,
-			MinScale:      &scale,
-			NamespaceName: &ir.Workflow.NamespaceName,
-			Path:          &ir.Workflow.Path,
-			Revision:      &ir.Workflow.Revision,
-		},
-		ActionID:   &ir.ActionID,
-		InstanceID: &ir.Workflow.InstanceID,
-		Step:       &step,
-	}
-
-	r, err := client.CreateFunctionsPod(ctx, &cr)
-	return r.GetHostname(), r.GetIp(), err
-
-}
-
 func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClient,
 	serviceName string) bool {
 

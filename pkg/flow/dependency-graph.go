@@ -143,8 +143,6 @@ func (srv *server) scrapeWorkflows() (*dependencyGraph, error) {
 					case *model.NamespacedFunctionDefinition:
 						nfd := fn.(*model.NamespacedFunctionDefinition)
 						wdg.NSFunctions[nfd.KnativeService] = false
-					case *model.IsolatedFunctionDefinition:
-						// ifd := fn.(*model.IsolatedFunctionDefinition)
 						// TODO
 					case *model.GlobalFunctionDefinition:
 						gfd := fn.(*model.GlobalFunctionDefinition)
