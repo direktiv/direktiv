@@ -49,7 +49,6 @@ These are the currently available function types:
 * [`knative-namespace`](#NamespaceKnativeFunctionDefinition)
 * [`knative-workflow`](#WorkflowKnativeFunctionDefinition)
 * [`subflow`](#SubflowFunctionDefinition)
-* [`kubernetes-job`](#KubernetesJobFunctionDefinition)
 
 The following example demonstrate how to define and reference a function within a workflow:
 
@@ -150,22 +149,6 @@ This function type does not support [`files`](#FunctionFileDefinition).
 | `id` | A unique identifier for the function within the workflow definition. | string | yes |
 | `workflow` | URI to a workflow within the same namespace. | string | yes |
 
-### KubernetesJobFunctionDefinition
-
-A `kubernetes-job` refers to a function that uses a container created to operate according to the requirements outlined [here](#TODO). 
-
-> Historically this was called `isolated`, but this keyword has been deprecated.
-
-This function type supports [`files`](#FunctionFileDefinition).
-
-| Parameter | Description | Type | Required |
-| --- | --- | --- | --- |
-| `type` | Identifies which kind of [FunctionDefinition](#FunctionDefintion) is being used. In this case it must be set to `kubernetes-job`. | string | yes | 
-| `id` | A unique identifier for the function within the workflow definition. | string | yes |
-| `image` | URI to a `kubernetes-job` compliant container. | string | yes |
-| `size` | Specifies the container size. | [ContainerSizeDefinition](#ContainerSizeDefinition) | no |
-| `cmd` | Custom command to execute within the container. | string | no |
-
 ## StartDefinition
 
 A `StartDefinition` may be defined using one of the following, depending on the desired behaviour:
@@ -177,8 +160,6 @@ A `StartDefinition` may be defined using one of the following, depending on the 
 * [`eventsAnd`](#EventsAndStartDefinition)
 
 If omitted from the workflow definition the [DefaultStartDefinition](#DefaultStartDefinition) will be used, which means the workflow will only be executed when called.
-
-Regardless of which start definiton is used, all workflows can be called like a [DefaultStartDefinition](#DefaultStartDefinition). This is to make testing and debugging easier. To test properly the caller will need to simulate the start type's input data.
 
 ### DefaultStartDefinition
 
@@ -193,7 +174,7 @@ The default start definition is used for workflows that should only execute when
 
 The scheduled start definition is used for workflows that should execute at regularly defined times. 
 
-Scheduled workflows never have input data, so accurate testing should use `{}` as input. 
+Scheduled workflow can be manually triggered for convenience and testing. They never have input data, so accurate testing should use `{}` as input. 
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
