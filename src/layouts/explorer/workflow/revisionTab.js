@@ -574,22 +574,42 @@ export function RevisionSelectorTab(props) {
                                             }
                                             {obj.node.name !== "latest" ? 
                                             <>
-                                            <Button className="small light bold" onClick={async()=>{
-                                                let data = await getWorkflowRevisionData(obj.node.name)
-                                                await updateWorkflow(atob(data.revision.source))
-                                                navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
-                                            }}>
-                                                Revert To
-                                            </Button>
+                                            <Modal
+                                                    escapeToCancel
+                                                    style={{
+                                                        flexDirection: "row-reverse",
+                                                    }}
+                                                    title={`Revert to ${obj.node.name}`}
+                                                    button={(
+                                                        <Button className="small light bold" >
+                                                            Revert To
+                                                        </Button>
+                                                    )}
+                                                    actionButtons={
+                                                        [
+                                                            ButtonDefinition("Revert", async () => {
+                                                                let data = await getWorkflowRevisionData(obj.node.name)
+                                                                await updateWorkflow(atob(data.revision.source))
+                                                                navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
+                                                            }, "small red", ()=>{}, true, false),
+                                                            ButtonDefinition("Cancel", () => {
+                                                            }, "small light", ()=>{}, true, false)
+                                                        ]
+                                                    }
+                                                >
+                                                    <FlexBox className="col gap">
+                                                        <FlexBox >
+                                                            Are you sure you want to revert to '{obj.node.name}'?
+                                                        </FlexBox>
+                                                    </FlexBox>
+                                            </Modal>
                                             <Button className="small light bold" onClick={()=>{
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
                                                 Open Revision
-                                            </Button></>: <><div style={{visibility:"hidden"}}>
+                                            </Button></>: <>
+                                            <div style={{visibility:"hidden"}}>
                                             <Button className="small light bold" onClick={async()=>{
-                                                let data = await getWorkflowRevisionData(obj.node.name)
-                                                await updateWorkflow(atob(data.revision.source))
-                                                navigate(`/n/${namespace}/explorer/${filepath.substring(1)}?tab=2`)
                                             }}>
                                                 Revert To
                                             </Button>
@@ -599,7 +619,8 @@ export function RevisionSelectorTab(props) {
                                                 setSearchParams({tab: 1, revision: obj.node.name})
                                             }}>
                                                 Open Revision
-                                            </Button></div></>}
+                                            </Button></div>
+                                            </>}
                                         </FlexBox>
                                     </div>
                                 </FlexBox>
