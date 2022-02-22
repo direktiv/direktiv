@@ -53,10 +53,6 @@ func Evaluate(data, query interface{}) ([]interface{}, error) {
 		return out, nil
 	}
 
-	if s, ok := query.(string); ok && !StringQueryRequiresWrappings {
-		return jq(data, s)
-	}
-
 	return recursiveEvaluate(data, query)
 
 }
@@ -223,16 +219,12 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			if len(x) == 1 {
 				out = append(out, x[0])
 			} else {
-				out = append(out, x)
+				return nil, fmt.Errorf("jq query produced multiple outputs")
 			}
 
 		case JsStartToken:
 
 			vm := goja.New()
-
-			// vm.Set("sleep", func(ms int) {
-			// 	time.Sleep(time.Millisecond * time.Duration(ms))
-			// })
 
 			fn := fmt.Sprintf("function fn(data) {\n %s \n}", tok.Value)
 			_, err := vm.RunString(fn)
@@ -302,140 +294,6 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	out = make([]interface{}, 1)
 	out[0] = s
 	return out, nil
-
-	// OLD!!!!!!!!!!!!!!!!!!!!!
-
-	// var out []interface{}
-	// var offset int
-
-	// query := s
-	// if TrimWhitespaceOnQueryStrings {
-	// 	query = strings.TrimSpace(query)
-	// 	offset = strings.Index(s, query)
-	// }
-
-	// if !SearchInStrings {
-	// 	if strings.HasPrefix(query, WrappingBegin+WrappingIncrement) && strings.HasSuffix(query, WrappingDecrement) {
-	// 		query = query[len(WrappingBegin)+len(WrappingIncrement) : len(query)-len(WrappingDecrement)]
-	// 		return jq(data, query)
-	// 	}
-	// 	out = append(out, s)
-	// 	return out, nil
-	// }
-
-	// // search in string
-	// var foundQueries bool
-	// var stringParts []interface{}
-	// begin := WrappingBegin + WrappingIncrement
-
-	// for {
-	// 	idx := strings.Index(query, begin)
-	// 	if idx < 0 {
-	// 		if len(query) > 0 {
-	// 			stringParts = append(stringParts, query)
-	// 		}
-	// 		break
-	// 	}
-
-	// 	if idx > 0 {
-	// 		stringParts = append(stringParts, query[:idx])
-	// 		offset += idx
-	// 		query = query[idx:]
-	// 		idx = 0
-	// 	}
-
-	// 	counter := 1
-	// 	var i int
-
-	// 	for i = len(begin); counter > 0; i++ {
-
-	// 		if i >= len(query) {
-	// 			break
-	// 		}
-
-	// 		if len(query) >= i+len(WrappingIncrement) {
-
-	// 			c := query[i : i+len(WrappingIncrement)]
-
-	// 			if c == WrappingIncrement {
-	// 				counter++
-	// 				i += len(WrappingIncrement) - 1
-	// 				continue
-	// 			}
-
-	// 		}
-
-	// 		if len(query) >= i+len(WrappingDecrement) {
-
-	// 			c := query[i : i+len(WrappingDecrement)]
-
-	// 			if c == WrappingDecrement {
-	// 				counter--
-	// 				i += len(WrappingDecrement) - 1
-	// 				continue
-	// 			}
-
-	// 		}
-
-	// 	}
-
-	// 	if counter > 0 {
-	// 		return nil, fmt.Errorf("unterminated jq query beginning at offset %v", offset)
-	// 	}
-
-	// 	var x []interface{}
-	// 	qstr := query[len(begin) : i-1]
-	// 	var err error
-	// 	foundQueries = true
-	// 	x, err = jq(data, qstr)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("error running jq query beginning at offset %v: %v", offset, err)
-	// 	}
-	// 	out = x
-
-	// 	if len(x) == 0 {
-	// 		return nil, fmt.Errorf("error in jq query beginning at offset %v: no results", offset)
-	// 	}
-	// 	if len(x) > 1 && len(stringParts) > 0 {
-	// 		return nil, fmt.Errorf("error in jq query beginning at offset %v: more than one result", offset)
-	// 	}
-
-	// 	stringParts = append(stringParts, x[0])
-
-	// 	offset += i
-	// 	query = query[i:]
-
-	// }
-
-	// if !foundQueries {
-	// 	log.Println("RETURN2")
-	// 	out = append(out, s)
-	// 	return out, nil
-	// }
-
-	// if len(stringParts) == 1 {
-	// 	log.Println("RETURN1")
-	// 	return out, nil
-	// }
-
-	// var x []string
-	// for i := range stringParts {
-	// 	if _, ok := stringParts[i].(string); ok {
-	// 		x = append(x, fmt.Sprintf("%v", stringParts[i]))
-	// 	} else {
-	// 		data, err := json.Marshal(stringParts[i])
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 		x = append(x, fmt.Sprintf("%s", data))
-	// 	}
-	// }
-
-	// s = strings.Join(x, "")
-	// out = make([]interface{}, 1)
-	// out[0] = s
-	// log.Println("RETURN3")
-	// return out, nil
 
 }
 
