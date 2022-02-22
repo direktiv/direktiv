@@ -344,6 +344,25 @@ out:
 
 }
 
+func (engine *engine) StoreMetadata(ctx context.Context, im *instanceMemory, data string) {
+
+	var err error
+
+	rt := im.in.Edges.Runtime
+	rte := rt.Edges
+	rt, err = rt.Update().SetMetadata(data).Save(ctx)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+	rt.Edges = rte
+	im.in.Edges.Runtime = rt
+
+	rt.Edges = im.in.Edges.Runtime.Edges
+	im.in.Edges.Runtime = rt
+
+}
+
 func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 
 	engine.freeResources(im)

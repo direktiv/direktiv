@@ -30,6 +30,7 @@ func (InstanceRuntime) Fields() []ent.Field {
 		field.String("caller_data").Optional(),
 		field.String("instanceContext").Optional(),
 		field.String("stateContext").Optional(),
+		field.String("metadata").Optional(),
 	}
 }
 

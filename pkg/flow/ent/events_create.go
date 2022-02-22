@@ -83,6 +83,14 @@ func (ec *EventsCreate) SetID(u uuid.UUID) *EventsCreate {
 	return ec
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ec *EventsCreate) SetNillableID(u *uuid.UUID) *EventsCreate {
+	if u != nil {
+		ec.SetID(*u)
+	}
+	return ec
+}
+
 // SetWorkflowID sets the "workflow" edge to the Workflow entity by ID.
 func (ec *EventsCreate) SetWorkflowID(id uuid.UUID) *EventsCreate {
 	ec.mutation.SetWorkflowID(id)
@@ -227,25 +235,25 @@ func (ec *EventsCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ec *EventsCreate) check() error {
 	if _, ok := ec.mutation.Events(); !ok {
-		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "events"`)}
+		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "Events.events"`)}
 	}
 	if _, ok := ec.mutation.Correlations(); !ok {
-		return &ValidationError{Name: "correlations", err: errors.New(`ent: missing required field "correlations"`)}
+		return &ValidationError{Name: "correlations", err: errors.New(`ent: missing required field "Events.correlations"`)}
 	}
 	if _, ok := ec.mutation.Count(); !ok {
-		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "count"`)}
+		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "Events.count"`)}
 	}
 	if _, ok := ec.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Events.created_at"`)}
 	}
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Events.updated_at"`)}
 	}
 	if _, ok := ec.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Events.workflow"`)}
 	}
 	if _, ok := ec.mutation.NamespaceID(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Events.namespace"`)}
 	}
 	return nil
 }
@@ -259,7 +267,11 @@ func (ec *EventsCreate) sqlSave(ctx context.Context) (*Events, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -277,7 +289,7 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := ec.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := ec.mutation.Events(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

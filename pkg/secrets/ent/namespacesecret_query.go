@@ -336,6 +336,10 @@ func (nsq *NamespaceSecretQuery) sqlAll(ctx context.Context) ([]*NamespaceSecret
 
 func (nsq *NamespaceSecretQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := nsq.querySpec()
+	_spec.Node.Columns = nsq.fields
+	if len(nsq.fields) > 0 {
+		_spec.Unique = nsq.unique != nil && *nsq.unique
+	}
 	return sqlgraph.CountNodes(ctx, nsq.driver, _spec)
 }
 
@@ -406,6 +410,9 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if nsq.sql != nil {
 		selector = nsq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if nsq.unique != nil && *nsq.unique {
+		selector.Distinct()
 	}
 	for _, p := range nsq.predicates {
 		p(selector)
@@ -685,9 +692,7 @@ func (nsgb *NamespaceSecretGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range nsgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(nsgb.fields...)...)

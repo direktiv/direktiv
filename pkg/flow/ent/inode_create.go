@@ -83,6 +83,14 @@ func (ic *InodeCreate) SetID(u uuid.UUID) *InodeCreate {
 	return ic
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ic *InodeCreate) SetNillableID(u *uuid.UUID) *InodeCreate {
+	if u != nil {
+		ic.SetID(*u)
+	}
+	return ic
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (ic *InodeCreate) SetNamespaceID(id uuid.UUID) *InodeCreate {
 	ic.mutation.SetNamespaceID(id)
@@ -235,21 +243,21 @@ func (ic *InodeCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ic *InodeCreate) check() error {
 	if _, ok := ic.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Inode.created_at"`)}
 	}
 	if _, ok := ic.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Inode.updated_at"`)}
 	}
 	if v, ok := ic.mutation.Name(); ok {
 		if err := inode.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "name": %w`, err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Inode.name": %w`, err)}
 		}
 	}
 	if _, ok := ic.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Inode.type"`)}
 	}
 	if _, ok := ic.mutation.NamespaceID(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Inode.namespace"`)}
 	}
 	return nil
 }
@@ -263,7 +271,11 @@ func (ic *InodeCreate) sqlSave(ctx context.Context) (*Inode, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -281,7 +293,7 @@ func (ic *InodeCreate) createSpec() (*Inode, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := ic.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := ic.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

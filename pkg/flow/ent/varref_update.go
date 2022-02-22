@@ -233,11 +233,11 @@ func (vru *VarRefUpdate) ExecX(ctx context.Context) {
 func (vru *VarRefUpdate) check() error {
 	if v, ok := vru.mutation.Name(); ok {
 		if err := varref.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "VarRef.name": %w`, err)}
 		}
 	}
 	if _, ok := vru.mutation.VardataID(); vru.mutation.VardataCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"vardata\"")
+		return errors.New(`ent: clearing a required unique edge "VarRef.vardata"`)
 	}
 	return nil
 }
@@ -653,11 +653,11 @@ func (vruo *VarRefUpdateOne) ExecX(ctx context.Context) {
 func (vruo *VarRefUpdateOne) check() error {
 	if v, ok := vruo.mutation.Name(); ok {
 		if err := varref.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "VarRef.name": %w`, err)}
 		}
 	}
 	if _, ok := vruo.mutation.VardataID(); vruo.mutation.VardataCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"vardata\"")
+		return errors.New(`ent: clearing a required unique edge "VarRef.vardata"`)
 	}
 	return nil
 }
@@ -675,7 +675,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 	}
 	id, ok := vruo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing VarRef.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "VarRef.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := vruo.fields; len(fields) > 0 {

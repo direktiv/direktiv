@@ -101,10 +101,11 @@ func (o *ProduceEventDefinition) Validate() error {
 
 // StateCommon defines the common attributes of a state
 type StateCommon struct {
-	ID    string            `yaml:"id"`
-	Type  StateType         `yaml:"type"`
-	Log   interface{}       `yaml:"log,omitempty"`
-	Catch []ErrorDefinition `yaml:"catch,omitempty"`
+	ID       string            `yaml:"id"`
+	Type     StateType         `yaml:"type"`
+	Log      interface{}       `yaml:"log,omitempty"`
+	Metadata interface{}       `yaml:"metadata,omitempty"`
+	Catch    []ErrorDefinition `yaml:"catch,omitempty"`
 }
 
 // GetType returns the type of a state common
@@ -163,8 +164,12 @@ func getStateFromType(stype string) (State, error) {
 		s = new(ConsumeEventState)
 	case StateTypeDelay.String():
 		s = new(DelayState)
+	case "eventAnd":
+		fallthrough
 	case StateTypeEventsAnd.String():
 		s = new(EventsAndState)
+	case "eventXor":
+		fallthrough
 	case StateTypeEventsXor.String():
 		s = new(EventsXorState)
 	case StateTypeError.String():

@@ -127,7 +127,7 @@ func (ceu *CloudEventsUpdate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ceu *CloudEventsUpdate) check() error {
 	if _, ok := ceu.mutation.NamespaceID(); ceu.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "CloudEvents.namespace"`)
 	}
 	return nil
 }
@@ -322,7 +322,7 @@ func (ceuo *CloudEventsUpdateOne) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ceuo *CloudEventsUpdateOne) check() error {
 	if _, ok := ceuo.mutation.NamespaceID(); ceuo.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "CloudEvents.namespace"`)
 	}
 	return nil
 }
@@ -340,7 +340,7 @@ func (ceuo *CloudEventsUpdateOne) sqlSave(ctx context.Context) (_node *CloudEven
 	}
 	id, ok := ceuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing CloudEvents.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "CloudEvents.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := ceuo.fields; len(fields) > 0 {

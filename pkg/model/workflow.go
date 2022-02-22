@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/util"
 	"gopkg.in/yaml.v3"
 )
 
@@ -13,15 +12,16 @@ const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
 // Workflow global object defining the fields for a workflow
 type Workflow struct {
-	ID          string               `yaml:"id" json:"id"`
-	Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
-	Description string               `yaml:"description,omitempty" json:"description,omitempty"`
-	Version     string               `yaml:"version,omitempty" json:"version,omitempty"`
-	Exclusive   bool                 `yaml:"singular,omitempty" json:"singular,omitempty"`
-	Functions   []FunctionDefinition `yaml:"functions,omitempty" json:"functions,omitempty"`
-	States      []State              `yaml:"states,omitempty" json:"states,omitempty"`
-	Timeouts    *TimeoutDefinition   `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
-	Start       StartDefinition      `yaml:"start,omitempty" json:"start,omitempty"`
+	// ID          string               `yaml:"id" json:"id"`
+	// Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
+	URL         string `yaml:"url" json:"url"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
+	// Version     string               `yaml:"version,omitempty" json:"version,omitempty"`
+	// Exclusive   bool                 `yaml:"singular,omitempty" json:"singular,omitempty"`
+	Functions []FunctionDefinition `yaml:"functions,omitempty" json:"functions,omitempty"`
+	States    []State              `yaml:"states,omitempty" json:"states,omitempty"`
+	Timeouts  *TimeoutDefinition   `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
+	Start     StartDefinition      `yaml:"start,omitempty" json:"start,omitempty"`
 }
 
 func (o *Workflow) unmarshal(m map[string]interface{}) error {
@@ -233,14 +233,14 @@ func (o *Workflow) validate() error {
 }
 
 func (o *Workflow) regexValidateID() error {
-	if o.ID == "" {
-		return fmt.Errorf("workflow id required")
-	}
+	// if o.ID == "" {
+	// 	return fmt.Errorf("workflow id required")
+	// }
 
-	// ensure workflow id complies with regex pattern
-	if ok := util.MatchesRegex(o.ID); !ok {
-		return fmt.Errorf("workflow id must match regex pattern `%s`", util.RegexPattern)
-	}
+	// // ensure workflow id complies with regex pattern
+	// if ok := util.MatchesRegex(o.ID); !ok {
+	// 	return fmt.Errorf("workflow id must match regex pattern `%s`", util.RegexPattern)
+	// }
 
 	return nil
 }

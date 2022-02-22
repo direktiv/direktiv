@@ -42,6 +42,14 @@ func (lmc *LogMsgCreate) SetID(u uuid.UUID) *LogMsgCreate {
 	return lmc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableID(u *uuid.UUID) *LogMsgCreate {
+	if u != nil {
+		lmc.SetID(*u)
+	}
+	return lmc
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (lmc *LogMsgCreate) SetNamespaceID(id uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetNamespaceID(id)
@@ -179,10 +187,10 @@ func (lmc *LogMsgCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (lmc *LogMsgCreate) check() error {
 	if _, ok := lmc.mutation.T(); !ok {
-		return &ValidationError{Name: "t", err: errors.New(`ent: missing required field "t"`)}
+		return &ValidationError{Name: "t", err: errors.New(`ent: missing required field "LogMsg.t"`)}
 	}
 	if _, ok := lmc.mutation.Msg(); !ok {
-		return &ValidationError{Name: "msg", err: errors.New(`ent: missing required field "msg"`)}
+		return &ValidationError{Name: "msg", err: errors.New(`ent: missing required field "LogMsg.msg"`)}
 	}
 	return nil
 }
@@ -196,7 +204,11 @@ func (lmc *LogMsgCreate) sqlSave(ctx context.Context) (*LogMsg, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -214,7 +226,7 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := lmc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := lmc.mutation.T(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

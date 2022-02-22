@@ -116,6 +116,14 @@ func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	return ic
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ic *InstanceCreate) SetNillableID(u *uuid.UUID) *InstanceCreate {
+	if u != nil {
+		ic.SetID(*u)
+	}
+	return ic
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (ic *InstanceCreate) SetNamespaceID(id uuid.UUID) *InstanceCreate {
 	ic.mutation.SetNamespaceID(id)
@@ -308,28 +316,28 @@ func (ic *InstanceCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ic *InstanceCreate) check() error {
 	if _, ok := ic.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Instance.created_at"`)}
 	}
 	if _, ok := ic.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Instance.updated_at"`)}
 	}
 	if _, ok := ic.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "status"`)}
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Instance.status"`)}
 	}
 	if _, ok := ic.mutation.As(); !ok {
-		return &ValidationError{Name: "as", err: errors.New(`ent: missing required field "as"`)}
+		return &ValidationError{Name: "as", err: errors.New(`ent: missing required field "Instance.as"`)}
 	}
 	if _, ok := ic.mutation.NamespaceID(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New("ent: missing required edge \"namespace\"")}
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Instance.namespace"`)}
 	}
 	if _, ok := ic.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New("ent: missing required edge \"workflow\"")}
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Instance.workflow"`)}
 	}
 	if _, ok := ic.mutation.RevisionID(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required edge \"revision\"")}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required edge "Instance.revision"`)}
 	}
 	if _, ok := ic.mutation.RuntimeID(); !ok {
-		return &ValidationError{Name: "runtime", err: errors.New("ent: missing required edge \"runtime\"")}
+		return &ValidationError{Name: "runtime", err: errors.New(`ent: missing required edge "Instance.runtime"`)}
 	}
 	return nil
 }
@@ -343,7 +351,11 @@ func (ic *InstanceCreate) sqlSave(ctx context.Context) (*Instance, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -361,7 +373,7 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := ic.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := ic.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

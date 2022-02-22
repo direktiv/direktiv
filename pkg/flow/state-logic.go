@@ -46,6 +46,7 @@ type stateLogic interface {
 	Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error)
 	LivingChildren(ctx context.Context, engine *engine, im *instanceMemory) []stateChild
 	LogJQ() interface{}
+	MetadataJQ() interface{}
 }
 
 //

@@ -82,6 +82,14 @@ func (nc *NamespaceCreate) SetID(u uuid.UUID) *NamespaceCreate {
 	return nc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (nc *NamespaceCreate) SetNillableID(u *uuid.UUID) *NamespaceCreate {
+	if u != nil {
+		nc.SetID(*u)
+	}
+	return nc
+}
+
 // AddInodeIDs adds the "inodes" edge to the Inode entity by IDs.
 func (nc *NamespaceCreate) AddInodeIDs(ids ...uuid.UUID) *NamespaceCreate {
 	nc.mutation.AddInodeIDs(ids...)
@@ -279,20 +287,20 @@ func (nc *NamespaceCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (nc *NamespaceCreate) check() error {
 	if _, ok := nc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Namespace.created_at"`)}
 	}
 	if _, ok := nc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Namespace.updated_at"`)}
 	}
 	if _, ok := nc.mutation.Config(); !ok {
-		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "config"`)}
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Namespace.config"`)}
 	}
 	if _, ok := nc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Namespace.name"`)}
 	}
 	if v, ok := nc.mutation.Name(); ok {
 		if err := namespace.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "name": %w`, err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Namespace.name": %w`, err)}
 		}
 	}
 	return nil
@@ -307,7 +315,11 @@ func (nc *NamespaceCreate) sqlSave(ctx context.Context) (*Namespace, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -325,7 +337,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := nc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := nc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

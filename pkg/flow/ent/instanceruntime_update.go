@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -231,6 +232,26 @@ func (iru *InstanceRuntimeUpdate) SetNillableStateContext(s *string) *InstanceRu
 // ClearStateContext clears the value of the "stateContext" field.
 func (iru *InstanceRuntimeUpdate) ClearStateContext() *InstanceRuntimeUpdate {
 	iru.mutation.ClearStateContext()
+	return iru
+}
+
+// SetMetadata sets the "metadata" field.
+func (iru *InstanceRuntimeUpdate) SetMetadata(s string) *InstanceRuntimeUpdate {
+	iru.mutation.SetMetadata(s)
+	return iru
+}
+
+// SetNillableMetadata sets the "metadata" field if the given value is not nil.
+func (iru *InstanceRuntimeUpdate) SetNillableMetadata(s *string) *InstanceRuntimeUpdate {
+	if s != nil {
+		iru.SetMetadata(*s)
+	}
+	return iru
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (iru *InstanceRuntimeUpdate) ClearMetadata() *InstanceRuntimeUpdate {
+	iru.mutation.ClearMetadata()
 	return iru
 }
 
@@ -503,6 +524,19 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instanceruntime.FieldStateContext,
+		})
+	}
+	if value, ok := iru.mutation.Metadata(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldMetadata,
+		})
+	}
+	if iru.mutation.MetadataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instanceruntime.FieldMetadata,
 		})
 	}
 	if iru.mutation.InstanceCleared() {
@@ -799,6 +833,26 @@ func (iruo *InstanceRuntimeUpdateOne) ClearStateContext() *InstanceRuntimeUpdate
 	return iruo
 }
 
+// SetMetadata sets the "metadata" field.
+func (iruo *InstanceRuntimeUpdateOne) SetMetadata(s string) *InstanceRuntimeUpdateOne {
+	iruo.mutation.SetMetadata(s)
+	return iruo
+}
+
+// SetNillableMetadata sets the "metadata" field if the given value is not nil.
+func (iruo *InstanceRuntimeUpdateOne) SetNillableMetadata(s *string) *InstanceRuntimeUpdateOne {
+	if s != nil {
+		iruo.SetMetadata(*s)
+	}
+	return iruo
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (iruo *InstanceRuntimeUpdateOne) ClearMetadata() *InstanceRuntimeUpdateOne {
+	iruo.mutation.ClearMetadata()
+	return iruo
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (iruo *InstanceRuntimeUpdateOne) SetInstanceID(id uuid.UUID) *InstanceRuntimeUpdateOne {
 	iruo.mutation.SetInstanceID(id)
@@ -928,7 +982,7 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 	}
 	id, ok := iruo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing InstanceRuntime.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "InstanceRuntime.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := iruo.fields; len(fields) > 0 {
@@ -1092,6 +1146,19 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instanceruntime.FieldStateContext,
+		})
+	}
+	if value, ok := iruo.mutation.Metadata(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instanceruntime.FieldMetadata,
+		})
+	}
+	if iruo.mutation.MetadataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instanceruntime.FieldMetadata,
 		})
 	}
 	if iruo.mutation.InstanceCleared() {

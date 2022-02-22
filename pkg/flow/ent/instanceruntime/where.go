@@ -171,6 +171,13 @@ func StateContext(v string) predicate.InstanceRuntime {
 	})
 }
 
+// Metadata applies equality check predicate on the "metadata" field. It's identical to MetadataEQ.
+func Metadata(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMetadata), v))
+	})
+}
+
 // InputEQ applies the EQ predicate on the "input" field.
 func InputEQ(v []byte) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
@@ -1389,6 +1396,131 @@ func StateContextEqualFold(v string) predicate.InstanceRuntime {
 func StateContextContainsFold(v string) predicate.InstanceRuntime {
 	return predicate.InstanceRuntime(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldStateContext), v))
+	})
+}
+
+// MetadataEQ applies the EQ predicate on the "metadata" field.
+func MetadataEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataNEQ applies the NEQ predicate on the "metadata" field.
+func MetadataNEQ(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataIn applies the In predicate on the "metadata" field.
+func MetadataIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldMetadata), v...))
+	})
+}
+
+// MetadataNotIn applies the NotIn predicate on the "metadata" field.
+func MetadataNotIn(vs ...string) predicate.InstanceRuntime {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldMetadata), v...))
+	})
+}
+
+// MetadataGT applies the GT predicate on the "metadata" field.
+func MetadataGT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataGTE applies the GTE predicate on the "metadata" field.
+func MetadataGTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataLT applies the LT predicate on the "metadata" field.
+func MetadataLT(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataLTE applies the LTE predicate on the "metadata" field.
+func MetadataLTE(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataContains applies the Contains predicate on the "metadata" field.
+func MetadataContains(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataHasPrefix applies the HasPrefix predicate on the "metadata" field.
+func MetadataHasPrefix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataHasSuffix applies the HasSuffix predicate on the "metadata" field.
+func MetadataHasSuffix(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldMetadata)))
+	})
+}
+
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldMetadata)))
+	})
+}
+
+// MetadataEqualFold applies the EqualFold predicate on the "metadata" field.
+func MetadataEqualFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldMetadata), v))
+	})
+}
+
+// MetadataContainsFold applies the ContainsFold predicate on the "metadata" field.
+func MetadataContainsFold(v string) predicate.InstanceRuntime {
+	return predicate.InstanceRuntime(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldMetadata), v))
 	})
 }
 

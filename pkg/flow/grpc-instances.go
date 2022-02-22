@@ -60,6 +60,31 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 }
 
+func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetadataRequest) (*grpc.InstanceMetadataResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	nsc := flow.db.Namespace
+
+	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), true)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp grpc.InstanceMetadataResponse
+
+	err = atob(d.in, &resp.Instance)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Data = []byte(d.in.Edges.Runtime.Metadata)
+	resp.Namespace = d.namespace()
+
+	return &resp, nil
+
+}
+
 func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*grpc.InstancesResponse, error) {
 
 	flow.sugar.Debugf("Handling gRPC request: %s", this())

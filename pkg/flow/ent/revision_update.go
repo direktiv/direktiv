@@ -194,7 +194,7 @@ func (ru *RevisionUpdate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ru *RevisionUpdate) check() error {
 	if _, ok := ru.mutation.WorkflowID(); ru.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Revision.workflow"`)
 	}
 	return nil
 }
@@ -556,7 +556,7 @@ func (ruo *RevisionUpdateOne) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ruo *RevisionUpdateOne) check() error {
 	if _, ok := ruo.mutation.WorkflowID(); ruo.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Revision.workflow"`)
 	}
 	return nil
 }
@@ -574,7 +574,7 @@ func (ruo *RevisionUpdateOne) sqlSave(ctx context.Context) (_node *Revision, err
 	}
 	id, ok := ruo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Revision.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Revision.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := ruo.fields; len(fields) > 0 {

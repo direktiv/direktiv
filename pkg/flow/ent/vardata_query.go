@@ -409,6 +409,10 @@ func (vdq *VarDataQuery) sqlAll(ctx context.Context) ([]*VarData, error) {
 
 func (vdq *VarDataQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := vdq.querySpec()
+	_spec.Node.Columns = vdq.fields
+	if len(vdq.fields) > 0 {
+		_spec.Unique = vdq.unique != nil && *vdq.unique
+	}
 	return sqlgraph.CountNodes(ctx, vdq.driver, _spec)
 }
 
@@ -479,6 +483,9 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if vdq.sql != nil {
 		selector = vdq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if vdq.unique != nil && *vdq.unique {
+		selector.Distinct()
 	}
 	for _, p := range vdq.predicates {
 		p(selector)
@@ -758,9 +765,7 @@ func (vdgb *VarDataGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range vdgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(vdgb.fields...)...)

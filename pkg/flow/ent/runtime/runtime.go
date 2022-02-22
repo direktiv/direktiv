@@ -5,5 +5,6 @@ package runtime
 // The schema-stitching logic is generated in github.com/direktiv/direktiv/pkg/flow/ent/runtime.go
 
 const (
-	Version = "(devel)" // Version of ent codegen.
+	Version = "v0.10.0"                                         // Version of ent codegen.
+	Sum     = "h1:9cBomE1fh+WX34DPYQL7tDNAIvhKa3tXvwxuLyhYCMo=" // Sum of ent codegen.
 )

@@ -34,3 +34,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// SecretValidator is a validator for the "secret" field. It is called by the builders before save.
+	SecretValidator func([]byte) error
+)

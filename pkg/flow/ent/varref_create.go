@@ -58,6 +58,14 @@ func (vrc *VarRefCreate) SetID(u uuid.UUID) *VarRefCreate {
 	return vrc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (vrc *VarRefCreate) SetNillableID(u *uuid.UUID) *VarRefCreate {
+	if u != nil {
+		vrc.SetID(*u)
+	}
+	return vrc
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vrc *VarRefCreate) SetVardataID(id uuid.UUID) *VarRefCreate {
 	vrc.mutation.SetVardataID(id)
@@ -207,11 +215,11 @@ func (vrc *VarRefCreate) defaults() {
 func (vrc *VarRefCreate) check() error {
 	if v, ok := vrc.mutation.Name(); ok {
 		if err := varref.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "name": %w`, err)}
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "VarRef.name": %w`, err)}
 		}
 	}
 	if _, ok := vrc.mutation.VardataID(); !ok {
-		return &ValidationError{Name: "vardata", err: errors.New("ent: missing required edge \"vardata\"")}
+		return &ValidationError{Name: "vardata", err: errors.New(`ent: missing required edge "VarRef.vardata"`)}
 	}
 	return nil
 }
@@ -225,7 +233,11 @@ func (vrc *VarRefCreate) sqlSave(ctx context.Context) (*VarRef, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(uuid.UUID)
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
 	}
 	return _node, nil
 }
@@ -243,7 +255,7 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 	)
 	if id, ok := vrc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := vrc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

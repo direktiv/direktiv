@@ -9,13 +9,13 @@ import (
 
 // ReusableFunctionDefinition defines a reusable function and the fields it requires
 type ReusableFunctionDefinition struct {
-	Type  FunctionType             `yaml:"type" json:"type"`
-	ID    string                   `yaml:"id" json:"id"`
-	Image string                   `yaml:"image" json:"image"`
-	Size  Size                     `yaml:"size,omitempty" json:"size,omitempty"`
-	Cmd   string                   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
-	Scale int                      `yaml:"scale,omitempty" json:"scale,omitempty"`
-	Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
+	Type  FunctionType `yaml:"type" json:"type"`
+	ID    string       `yaml:"id" json:"id"`
+	Image string       `yaml:"image" json:"image"`
+	Size  Size         `yaml:"size,omitempty" json:"size,omitempty"`
+	Cmd   string       `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	Scale int          `yaml:"scale,omitempty" json:"scale,omitempty"`
+	// Files []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 // GetID returns the ID of a reusable function
@@ -46,12 +46,12 @@ func (o *ReusableFunctionDefinition) Validate() error {
 		return errors.New("image required")
 	}
 
-	for i, f := range o.Files {
-		err := f.Validate()
-		if err != nil {
-			return fmt.Errorf("function file %d: %v", i, err)
-		}
-	}
+	// for i, f := range o.Files {
+	// 	err := f.Validate()
+	// 	if err != nil {
+	// 		return fmt.Errorf("function file %d: %v", i, err)
+	// 	}
+	// }
 
 	return nil
 

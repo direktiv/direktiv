@@ -124,6 +124,10 @@ func (sl *actionStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *actionStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 type actionStateSavedata struct {
 	Op       string
 	Id       string
@@ -140,7 +144,7 @@ func (sd *actionStateSavedata) Marshal() []byte {
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool) (*functionRequest, error) {
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition) (*functionRequest, error) {
 
 	wf, err := engine.InstanceWorkflow(ctx, im)
 	if err != nil {
@@ -191,10 +195,9 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		if err != nil {
 			panic(err)
 		}
-		ar.Container.Files = con.Files
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition)
-		ar.Container.Files = con.Files
+		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name:          &con.KnativeService,
@@ -203,7 +206,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		})
 	case model.GlobalKnativeFunctionType:
 		con := fn.(*model.GlobalFunctionDefinition)
-		ar.Container.Files = con.Files
+		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name: &con.KnativeService,
@@ -230,7 +233,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 
 }
 
-func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, attempt int) (transition *stateTransition, err error) {
+func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, attempt int, files []model.FunctionFileDefinition) (transition *stateTransition, err error) {
 
 	var inputData []byte
 	inputData, err = generateActionInput(ctx, engine, im, im.data, sl.state.Action)
@@ -312,7 +315,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, sl.state.Async, files)
 		if err != nil {
 			return
 		}
@@ -356,7 +359,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 			return
 		}
 
-		return sl.do(ctx, engine, im, 0)
+		return sl.do(ctx, engine, im, 0, sl.state.Action.Files)
 
 	}
 
@@ -367,7 +370,7 @@ func (sl *actionStateLogic) Run(ctx context.Context, engine *engine, im *instanc
 	err = dec.Decode(retryData)
 	if err == nil && retryData.Op == "retry" {
 		engine.logToInstance(ctx, time.Now(), im.in, "Retrying...")
-		return sl.do(ctx, engine, im, retryData.Attempts)
+		return sl.do(ctx, engine, im, retryData.Attempts, sl.state.Action.Files)
 	}
 
 	// second part

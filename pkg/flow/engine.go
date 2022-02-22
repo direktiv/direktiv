@@ -444,6 +444,25 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		engine.UserLog(ctx, im, string(data))
 	}
 
+	if md := im.logic.MetadataJQ(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
+
+		var object interface{}
+		object, err = jqOne(im.data, md)
+		if err != nil {
+			goto failure
+		}
+
+		var data []byte
+		data, err = json.MarshalIndent(object, "", "  ")
+		if err != nil {
+			err = NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
+			goto failure
+		}
+
+		engine.StoreMetadata(ctx, im, string(data))
+
+	}
+
 	transition, err = im.logic.Run(ctx, engine, im, wakedata)
 	if err != nil {
 		goto failure

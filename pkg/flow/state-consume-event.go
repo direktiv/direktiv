@@ -54,6 +54,10 @@ func (sl *consumeEventStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *consumeEventStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 func (sl *consumeEventStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if len(wakedata) == 0 {

@@ -433,7 +433,7 @@ func (wu *WorkflowUpdate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (wu *WorkflowUpdate) check() error {
 	if _, ok := wu.mutation.NamespaceID(); wu.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Workflow.namespace"`)
 	}
 	return nil
 }
@@ -1346,7 +1346,7 @@ func (wuo *WorkflowUpdateOne) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (wuo *WorkflowUpdateOne) check() error {
 	if _, ok := wuo.mutation.NamespaceID(); wuo.mutation.NamespaceCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"namespace\"")
+		return errors.New(`ent: clearing a required unique edge "Workflow.namespace"`)
 	}
 	return nil
 }
@@ -1364,7 +1364,7 @@ func (wuo *WorkflowUpdateOne) sqlSave(ctx context.Context) (_node *Workflow, err
 	}
 	id, ok := wuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Workflow.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Workflow.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := wuo.fields; len(fields) > 0 {

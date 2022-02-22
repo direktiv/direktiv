@@ -481,6 +481,10 @@ func (irq *InstanceRuntimeQuery) sqlAll(ctx context.Context) ([]*InstanceRuntime
 
 func (irq *InstanceRuntimeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := irq.querySpec()
+	_spec.Node.Columns = irq.fields
+	if len(irq.fields) > 0 {
+		_spec.Unique = irq.unique != nil && *irq.unique
+	}
 	return sqlgraph.CountNodes(ctx, irq.driver, _spec)
 }
 
@@ -551,6 +555,9 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if irq.sql != nil {
 		selector = irq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if irq.unique != nil && *irq.unique {
+		selector.Distinct()
 	}
 	for _, p := range irq.predicates {
 		p(selector)
@@ -830,9 +837,7 @@ func (irgb *InstanceRuntimeGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range irgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(irgb.fields...)...)

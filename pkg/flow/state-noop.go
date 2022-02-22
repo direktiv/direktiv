@@ -50,6 +50,10 @@ func (sl *noopStateLogic) LogJQ() interface{} {
 	return sl.state.Log
 }
 
+func (sl *noopStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
+}
+
 func (sl *noopStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {
 
 	if im.GetMemory() != nil {

@@ -120,7 +120,7 @@ func (ewu *EventsWaitUpdate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ewu *EventsWaitUpdate) check() error {
 	if _, ok := ewu.mutation.WorkfloweventID(); ewu.mutation.WorkfloweventCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflowevent\"")
+		return errors.New(`ent: clearing a required unique edge "EventsWait.workflowevent"`)
 	}
 	return nil
 }
@@ -302,7 +302,7 @@ func (ewuo *EventsWaitUpdateOne) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ewuo *EventsWaitUpdateOne) check() error {
 	if _, ok := ewuo.mutation.WorkfloweventID(); ewuo.mutation.WorkfloweventCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflowevent\"")
+		return errors.New(`ent: clearing a required unique edge "EventsWait.workflowevent"`)
 	}
 	return nil
 }
@@ -320,7 +320,7 @@ func (ewuo *EventsWaitUpdateOne) sqlSave(ctx context.Context) (_node *EventsWait
 	}
 	id, ok := ewuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing EventsWait.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "EventsWait.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := ewuo.fields; len(fields) > 0 {

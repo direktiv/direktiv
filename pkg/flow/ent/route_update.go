@@ -132,10 +132,10 @@ func (ru *RouteUpdate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ru *RouteUpdate) check() error {
 	if _, ok := ru.mutation.WorkflowID(); ru.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Route.workflow"`)
 	}
 	if _, ok := ru.mutation.RefID(); ru.mutation.RefCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"ref\"")
+		return errors.New(`ent: clearing a required unique edge "Route.ref"`)
 	}
 	return nil
 }
@@ -356,10 +356,10 @@ func (ruo *RouteUpdateOne) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (ruo *RouteUpdateOne) check() error {
 	if _, ok := ruo.mutation.WorkflowID(); ruo.mutation.WorkflowCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"workflow\"")
+		return errors.New(`ent: clearing a required unique edge "Route.workflow"`)
 	}
 	if _, ok := ruo.mutation.RefID(); ruo.mutation.RefCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"ref\"")
+		return errors.New(`ent: clearing a required unique edge "Route.ref"`)
 	}
 	return nil
 }
@@ -377,7 +377,7 @@ func (ruo *RouteUpdateOne) sqlSave(ctx context.Context) (_node *Route, err error
 	}
 	id, ok := ruo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Route.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Route.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := ruo.fields; len(fields) > 0 {

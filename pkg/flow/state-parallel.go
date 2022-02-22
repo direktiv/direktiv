@@ -127,7 +127,7 @@ func (sl *parallelStateLogic) dispatchAction(ctx context.Context, engine *engine
 		}
 
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, action.Files)
 		if err != nil {
 			return
 		}
@@ -202,6 +202,10 @@ func (sl *parallelStateLogic) doSpecific(ctx context.Context, engine *engine, im
 
 func (sl *parallelStateLogic) LogJQ() interface{} {
 	return sl.state.Log
+}
+
+func (sl *parallelStateLogic) MetadataJQ() interface{} {
+	return sl.state.Metadata
 }
 
 func (sl *parallelStateLogic) Run(ctx context.Context, engine *engine, im *instanceMemory, wakedata []byte) (transition *stateTransition, err error) {

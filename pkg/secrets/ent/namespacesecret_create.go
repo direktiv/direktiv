@@ -108,13 +108,18 @@ func (nsc *NamespaceSecretCreate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (nsc *NamespaceSecretCreate) check() error {
 	if _, ok := nsc.mutation.Ns(); !ok {
-		return &ValidationError{Name: "ns", err: errors.New(`ent: missing required field "ns"`)}
+		return &ValidationError{Name: "ns", err: errors.New(`ent: missing required field "NamespaceSecret.ns"`)}
 	}
 	if _, ok := nsc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "NamespaceSecret.name"`)}
 	}
 	if _, ok := nsc.mutation.Secret(); !ok {
-		return &ValidationError{Name: "secret", err: errors.New(`ent: missing required field "secret"`)}
+		return &ValidationError{Name: "secret", err: errors.New(`ent: missing required field "NamespaceSecret.secret"`)}
+	}
+	if v, ok := nsc.mutation.Secret(); ok {
+		if err := namespacesecret.SecretValidator(v); err != nil {
+			return &ValidationError{Name: "secret", err: fmt.Errorf(`ent: validator failed for field "NamespaceSecret.secret": %w`, err)}
+		}
 	}
 	return nil
 }
