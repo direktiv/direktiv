@@ -24,7 +24,7 @@ export default function JQPlayground() {
     const executeAndSave = useCallback((...args)=>{
         localStorage.setItem('jqInput', input)
         localStorage.setItem('jqFilter', filter)
-        executeJQ(...args)
+        return executeJQ(...args)
     }, [executeJQ, filter, input])
 
     // Save state every 2 seconds
@@ -64,7 +64,7 @@ export default function JQPlayground() {
             <FlexBox className="gap col" >
                 <FlexBox className="gap box-wrap">
                     <HowToJQ />
-                    <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeAndSave}/>
+                    <ExamplesJQ cheatSheet={cheatSheet} setFilter={setFilter} setInput={setInput} executeJQ={executeAndSave} setError={setError}/>
                 </FlexBox>
             </FlexBox>
         </FlexBox>
@@ -116,9 +116,10 @@ function HowToJQ(){
 }
 
 function ExamplesJQ(props){
-    const {cheatSheet, setFilter, setInput, executeJQ} = props
+    const {cheatSheet, setFilter, setInput, executeJQ, setError} = props
 
     async function loadJQ(f, i) {
+        setError(null)
         setFilter(f)
         setInput(JSON.stringify(JSON.parse(i), null, 2))
         await executeJQ(f, btoa(i))

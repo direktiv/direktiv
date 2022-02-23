@@ -14,7 +14,7 @@
 
 .error-message span {
     padding: 0px 5px 0px 0px;
-    color: black;
+    font-weight: bold;
     font-size: 16px;
 }
 
