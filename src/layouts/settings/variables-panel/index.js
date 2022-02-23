@@ -330,10 +330,10 @@ function Variable(props) {
 
                         const variableData = await getNamespaceVariableBuffer(obj.node.name)
                         const extension = MimeTypeFileExtension(variableData.contentType)
-                        const bitArray = btoa(String.fromCharCode.apply(null, new Uint8Array(variableData.data)))
+                        let buf = Buffer.from(variableData.data, 'base64')
 
                         const a = document.createElement('a')
-                        a.href = `data:${variableData.contentType};base64,` + bitArray
+                        a.href = `data:${variableData.contentType};base64,` + buf.toString('base64')
                         a.download = obj.node.name + `${extension ? `.${extension}`: ""}`
                         a.click()
 
