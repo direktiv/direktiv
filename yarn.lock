@@ -2177,10 +2177,10 @@
     prop-types "^15.7.2"
     tslib "^2.1.0"
 
-"@rjsf/core@^3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@rjsf/core/-/core-3.2.1.tgz#8a7b24c9a6f01f0ecb093fdfc777172c12b1b009"
-  integrity sha512-dk8ihvxFbcuIwU7G+HiJbFgwyIvaumPt5g5zfnuC26mwTUPlaDGFXKK2yITp8tJ3+hcwS5zEXtAN9wUkfuM4jA==
+"@rjsf/core@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@rjsf/core/-/core-4.0.1.tgz#3363aadbaf40f7086f8669c4a645ed0cddd6c2da"
+  integrity sha512-3HZ5Udy/Yvtixjn/dOcVm4IBoF/HM/LmUAPZt98elSAISga3vhzGc3zv7Fi3IbDNrvL6ZdJbfIj+BtR0q4Rnrg==
   dependencies:
     "@types/json-schema" "^7.0.7"
     ajv "^6.7.0"

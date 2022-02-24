@@ -411,6 +411,7 @@ function ExplorerList(props) {
                         <FlexBox className="center">
                             <select onChange={(e)=>{
                                 setOrderFieldKey(e.target.value)
+                                setQueryParams([`first=${PAGE_SIZE}`])
                                 }} value={orderFieldKey} className="dropdown-select" style={{paddingBottom: "0px", paddingTop: "0px", height:"27px"}}>
                                 <option value="">{orderFieldKey}</option>
                                 {orderFieldKeys.map((key)=>{
