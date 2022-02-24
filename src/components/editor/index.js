@@ -309,6 +309,12 @@ export default function DirektivEditor(props) {
     }
 
     if (ed) { 
+      ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_J, ()=>{
+        ed.trigger('fold', 'editor.foldAll')
+      })
+      ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_K, ()=>{
+        ed.trigger('unfold', 'editor.unfoldAll')
+      })
       if (saveFn) {
         ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
       }
