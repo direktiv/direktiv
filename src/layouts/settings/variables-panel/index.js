@@ -317,7 +317,7 @@ function Variable(props) {
                         </FlexBox>
                     </FlexBox>
                 </Modal>:
-                "Cannot show filesize greater than 2.5MiB"
+                <div style={{textAlign:"center"}}>Cannot show filesize greater than 2.5MiB</div>
                 }
         </td>
         <td style={{ width: "80px", maxWidth: "80px", textAlign: "center" }}>{fileSize(obj.node.size)}</td>
