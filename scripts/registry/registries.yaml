@@ -5,6 +5,7 @@ mirrors:
 configs:
   "HOSTNAME:5443":
     tls:
-      cert_file: PATH/share/out/jensg-ms-7d25.crt
-      key_file:  PATH/share/out/jensg-ms-7d25.key
+      cert_file: PATH/share/out/HOSTNAME.crt
+      key_file:  PATH/share/out/HOSTNAME.key
       ca_file:   PATH/share/out/ca.cert.pem
+      insecure_skip_verify: true
