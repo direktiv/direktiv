@@ -79,9 +79,6 @@ function VariablesPanel(props){
                                     if(keyValue.trim() === "") {
                                         throw new Error("Variable key name needs to be provided.")
                                     }
-                                    if(dValue.trim() === "") {
-                                        throw new Error("Variable value needs to be provided.")
-                                    }
                                     if (mimeType === "") {
                                         throw new Error("Variable mimetype needs to be provided.")
                                     }
