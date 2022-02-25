@@ -2,6 +2,11 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+# check if with docker registry
+if [[ $1 == "registry" ]]; then
+  $dir/registry/setup.sh
+fi
+
 sudo -s source  $dir/resetk3s.sh
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
