@@ -35,7 +35,7 @@ help: ## Prints usage information.
 
 .PHONY: binaries
 binaries: ## Builds all Direktiv binaries. Useful only to check that code compiles.
-binaries: build/flow-binary build/api-binary build/init-pod-binary build/secrets-binary build/sidecar-binary build/functions-binary build/flow-dbinit
+binaries: build/flow-binary build/api-binary build/secrets-binary build/sidecar-binary build/functions-binary build/flow-dbinit
 
 .PHONY: clean
 clean: ## Deletes all build artifacts and tears down existing cluster.
@@ -44,7 +44,6 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	rm -f build/*-binary
 	rm -f build/flow
 	rm -f build/api
-	rm -f build/init-pod
 	rm -f build/secrets
 	rm -f build/sidecar
 	rm -f build/functions
@@ -54,15 +53,15 @@ clean: ## Deletes all build artifacts and tears down existing cluster.
 	kubectl delete --all jobs -n direktiv-services-direktiv
 
 .PHONY: images
-images: image-api image-flow image-init-pod image-secrets image-sidecar image-functions image-flow-dbinit
+images: image-api image-flow image-secrets image-sidecar image-functions image-flow-dbinit
 
 .PHONY: scan
 scan: ## Builds and scans all Docker images
-scan: scan-api scan-flow scan-init-pod scan-secrets scan-sidecar scan-functions
+scan: scan-api scan-flow scan-secrets scan-sidecar scan-functions
 
 .PHONY: push
 push: ## Builds all Docker images and pushes them to $DOCKER_REPO.
-push: push-api push-flow push-init-pod push-secrets push-sidecar push-functions push-flow-dbinit
+push: push-api push-flow push-secrets push-sidecar push-functions push-flow-dbinit
 
 HELM_CONFIG := "scripts/dev.yaml"
 

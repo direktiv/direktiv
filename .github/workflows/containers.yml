@@ -1,4 +1,4 @@
-name: Build Container Components
+name: "Build Container Components"
 on:
   workflow_dispatch:
     inputs:
@@ -7,7 +7,7 @@ on:
     tags:
       - v*
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
