@@ -35,6 +35,8 @@ const (
 	EdgeCloudevents = "cloudevents"
 	// EdgeNamespacelisteners holds the string denoting the namespacelisteners edge name in mutations.
 	EdgeNamespacelisteners = "namespacelisteners"
+	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
+	EdgeAnnotations = "annotations"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
 	// InodesTable is the table that holds the inodes relation/edge.
@@ -86,6 +88,13 @@ const (
 	NamespacelistenersInverseTable = "events"
 	// NamespacelistenersColumn is the table column denoting the namespacelisteners relation/edge.
 	NamespacelistenersColumn = "namespace_namespacelisteners"
+	// AnnotationsTable is the table that holds the annotations relation/edge.
+	AnnotationsTable = "annotations"
+	// AnnotationsInverseTable is the table name for the Annotation entity.
+	// It exists in this package in order to avoid circular dependency with the "annotation" package.
+	AnnotationsInverseTable = "annotations"
+	// AnnotationsColumn is the table column denoting the annotations relation/edge.
+	AnnotationsColumn = "namespace_annotations"
 )
 
 // Columns holds all SQL columns for namespace fields.

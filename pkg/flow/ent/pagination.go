@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -245,6 +246,276 @@ const (
 	pageInfoField   = "pageInfo"
 	totalCountField = "totalCount"
 )
+
+// AnnotationEdge is the edge representation of Annotation.
+type AnnotationEdge struct {
+	Node   *Annotation `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// AnnotationConnection is the connection containing edges to Annotation.
+type AnnotationConnection struct {
+	Edges      []*AnnotationEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+// AnnotationPaginateOption enables pagination customization.
+type AnnotationPaginateOption func(*annotationPager) error
+
+// WithAnnotationOrder configures pagination ordering.
+func WithAnnotationOrder(order *AnnotationOrder) AnnotationPaginateOption {
+	if order == nil {
+		order = DefaultAnnotationOrder
+	}
+	o := *order
+	return func(pager *annotationPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAnnotationOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAnnotationFilter configures pagination filter.
+func WithAnnotationFilter(filter func(*AnnotationQuery) (*AnnotationQuery, error)) AnnotationPaginateOption {
+	return func(pager *annotationPager) error {
+		if filter == nil {
+			return errors.New("AnnotationQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type annotationPager struct {
+	order  *AnnotationOrder
+	filter func(*AnnotationQuery) (*AnnotationQuery, error)
+}
+
+func newAnnotationPager(opts []AnnotationPaginateOption) (*annotationPager, error) {
+	pager := &annotationPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAnnotationOrder
+	}
+	return pager, nil
+}
+
+func (p *annotationPager) applyFilter(query *AnnotationQuery) (*AnnotationQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *annotationPager) toCursor(a *Annotation) Cursor {
+	return p.order.Field.toCursor(a)
+}
+
+func (p *annotationPager) applyCursors(query *AnnotationQuery, after, before *Cursor) *AnnotationQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultAnnotationOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *annotationPager) applyOrder(query *AnnotationQuery, reverse bool) *AnnotationQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultAnnotationOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultAnnotationOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Annotation.
+func (a *AnnotationQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AnnotationPaginateOption,
+) (*AnnotationConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAnnotationPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if a, err = pager.applyFilter(a); err != nil {
+		return nil, err
+	}
+
+	conn := &AnnotationConnection{Edges: []*AnnotationEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := a.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := a.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	a = pager.applyCursors(a, after, before)
+	a = pager.applyOrder(a, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		a = a.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		a = a.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := a.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Annotation
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Annotation {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Annotation {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*AnnotationEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &AnnotationEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// AnnotationOrderFieldName orders Annotation by name.
+	AnnotationOrderFieldName = &AnnotationOrderField{
+		field: annotation.FieldName,
+		toCursor: func(a *Annotation) Cursor {
+			return Cursor{
+				ID:    a.ID,
+				Value: a.Name,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f AnnotationOrderField) String() string {
+	var str string
+	switch f.field {
+	case annotation.FieldName:
+		str = "NAME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f AnnotationOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *AnnotationOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("AnnotationOrderField %T must be a string", v)
+	}
+	switch str {
+	case "NAME":
+		*f = *AnnotationOrderFieldName
+	default:
+		return fmt.Errorf("%s is not a valid AnnotationOrderField", str)
+	}
+	return nil
+}
+
+// AnnotationOrderField defines the ordering field of Annotation.
+type AnnotationOrderField struct {
+	field    string
+	toCursor func(*Annotation) Cursor
+}
+
+// AnnotationOrder defines the ordering of Annotation.
+type AnnotationOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *AnnotationOrderField `json:"field"`
+}
+
+// DefaultAnnotationOrder is the default ordering of Annotation.
+var DefaultAnnotationOrder = &AnnotationOrder{
+	Direction: OrderDirectionAsc,
+	Field: &AnnotationOrderField{
+		field: annotation.FieldID,
+		toCursor: func(a *Annotation) Cursor {
+			return Cursor{ID: a.ID}
+		},
+	},
+}
+
+// ToEdge converts Annotation into AnnotationEdge.
+func (a *Annotation) ToEdge(order *AnnotationOrder) *AnnotationEdge {
+	if order == nil {
+		order = DefaultAnnotationOrder
+	}
+	return &AnnotationEdge{
+		Node:   a,
+		Cursor: order.Field.toCursor(a),
+	}
+}
 
 // CloudEventsEdge is the edge representation of CloudEvents.
 type CloudEventsEdge struct {

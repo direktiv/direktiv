@@ -33,6 +33,8 @@ const (
 	EdgeVars = "vars"
 	// EdgeWfevents holds the string denoting the wfevents edge name in mutations.
 	EdgeWfevents = "wfevents"
+	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
+	EdgeAnnotations = "annotations"
 	// Table holds the table name of the workflow in the database.
 	Table = "workflows"
 	// InodeTable is the table that holds the inode relation/edge.
@@ -98,6 +100,13 @@ const (
 	WfeventsInverseTable = "events"
 	// WfeventsColumn is the table column denoting the wfevents relation/edge.
 	WfeventsColumn = "workflow_wfevents"
+	// AnnotationsTable is the table that holds the annotations relation/edge.
+	AnnotationsTable = "annotations"
+	// AnnotationsInverseTable is the table name for the Annotation entity.
+	// It exists in this package in order to avoid circular dependency with the "annotation" package.
+	AnnotationsInverseTable = "annotations"
+	// AnnotationsColumn is the table column denoting the annotations relation/edge.
+	AnnotationsColumn = "workflow_annotations"
 )
 
 // Columns holds all SQL columns for workflow fields.

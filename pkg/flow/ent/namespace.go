@@ -46,9 +46,11 @@ type NamespaceEdges struct {
 	Cloudevents []*CloudEvents `json:"cloudevents,omitempty"`
 	// Namespacelisteners holds the value of the namespacelisteners edge.
 	Namespacelisteners []*Events `json:"namespacelisteners,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // InodesOrErr returns the Inodes value or an error if the edge
@@ -112,6 +114,15 @@ func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
 		return e.Namespacelisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "namespacelisteners"}
+}
+
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e NamespaceEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[7] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -208,6 +219,11 @@ func (n *Namespace) QueryCloudevents() *CloudEventsQuery {
 // QueryNamespacelisteners queries the "namespacelisteners" edge of the Namespace entity.
 func (n *Namespace) QueryNamespacelisteners() *EventsQuery {
 	return (&NamespaceClient{config: n.config}).QueryNamespacelisteners(n)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Namespace entity.
+func (n *Namespace) QueryAnnotations() *AnnotationQuery {
+	return (&NamespaceClient{config: n.config}).QueryAnnotations(n)
 }
 
 // Update returns a builder for updating this Namespace.

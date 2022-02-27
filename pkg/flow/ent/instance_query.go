@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -42,6 +43,7 @@ type InstanceQuery struct {
 	withRuntime        *InstanceRuntimeQuery
 	withChildren       *InstanceRuntimeQuery
 	withEventlisteners *EventsQuery
+	withAnnotations    *AnnotationQuery
 	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -255,6 +257,28 @@ func (iq *InstanceQuery) QueryEventlisteners() *EventsQuery {
 	return query
 }
 
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (iq *InstanceQuery) QueryAnnotations() *AnnotationQuery {
+	query := &AnnotationQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, selector),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, instance.AnnotationsTable, instance.AnnotationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Instance entity from the query.
 // Returns a *NotFoundError when no Instance was found.
 func (iq *InstanceQuery) First(ctx context.Context) (*Instance, error) {
@@ -444,6 +468,7 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		withRuntime:        iq.withRuntime.Clone(),
 		withChildren:       iq.withChildren.Clone(),
 		withEventlisteners: iq.withEventlisteners.Clone(),
+		withAnnotations:    iq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:  iq.sql.Clone(),
 		path: iq.path,
@@ -538,6 +563,17 @@ func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *Instanc
 	return iq
 }
 
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InstanceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *InstanceQuery {
+	query := &AnnotationQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withAnnotations = query
+	return iq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -604,7 +640,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context) ([]*Instance, error) {
 		nodes       = []*Instance{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			iq.withNamespace != nil,
 			iq.withWorkflow != nil,
 			iq.withRevision != nil,
@@ -613,6 +649,7 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context) ([]*Instance, error) {
 			iq.withRuntime != nil,
 			iq.withChildren != nil,
 			iq.withEventlisteners != nil,
+			iq.withAnnotations != nil,
 		}
 	)
 	if iq.withNamespace != nil || iq.withWorkflow != nil || iq.withRevision != nil {
@@ -869,6 +906,35 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context) ([]*Instance, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Eventlisteners = append(node.Edges.Eventlisteners, n)
+		}
+	}
+
+	if query := iq.withAnnotations; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Instance)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Annotations = []*Annotation{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Annotation(func(s *sql.Selector) {
+			s.Where(sql.InValues(instance.AnnotationsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.instance_annotations
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "instance_annotations" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "instance_annotations" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Annotations = append(node.Edges.Annotations, n)
 		}
 	}
 

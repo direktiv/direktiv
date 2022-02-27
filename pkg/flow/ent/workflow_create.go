@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
@@ -204,6 +205,21 @@ func (wc *WorkflowCreate) AddWfevents(e ...*Events) *WorkflowCreate {
 		ids[i] = e[i].ID
 	}
 	return wc.AddWfeventIDs(ids...)
+}
+
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
+func (wc *WorkflowCreate) AddAnnotationIDs(ids ...uuid.UUID) *WorkflowCreate {
+	wc.mutation.AddAnnotationIDs(ids...)
+	return wc
+}
+
+// AddAnnotations adds the "annotations" edges to the Annotation entity.
+func (wc *WorkflowCreate) AddAnnotations(a ...*Annotation) *WorkflowCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return wc.AddAnnotationIDs(ids...)
 }
 
 // Mutation returns the WorkflowMutation object of the builder.
@@ -512,6 +528,25 @@ func (wc *WorkflowCreate) createSpec() (*Workflow, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: events.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := wc.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflow.AnnotationsTable,
+			Columns: []string{workflow.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: annotation.FieldID,
 				},
 			},
 		}

@@ -4,6 +4,30 @@ package ent
 
 import "context"
 
+func (a *Annotation) Namespace(ctx context.Context) (*Namespace, error) {
+	result, err := a.Edges.NamespaceOrErr()
+	if IsNotLoaded(err) {
+		result, err = a.QueryNamespace().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (a *Annotation) Workflow(ctx context.Context) (*Workflow, error) {
+	result, err := a.Edges.WorkflowOrErr()
+	if IsNotLoaded(err) {
+		result, err = a.QueryWorkflow().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (a *Annotation) Instance(ctx context.Context) (*Instance, error) {
+	result, err := a.Edges.InstanceOrErr()
+	if IsNotLoaded(err) {
+		result, err = a.QueryInstance().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (ce *CloudEvents) Namespace(ctx context.Context) (*Namespace, error) {
 	result, err := ce.Edges.NamespaceOrErr()
 	if IsNotLoaded(err) {
@@ -148,6 +172,14 @@ func (i *Instance) Eventlisteners(ctx context.Context) ([]*Events, error) {
 	return result, err
 }
 
+func (i *Instance) Annotations(ctx context.Context) ([]*Annotation, error) {
+	result, err := i.Edges.AnnotationsOrErr()
+	if IsNotLoaded(err) {
+		result, err = i.QueryAnnotations().All(ctx)
+	}
+	return result, err
+}
+
 func (ir *InstanceRuntime) Instance(ctx context.Context) (*Instance, error) {
 	result, err := ir.Edges.InstanceOrErr()
 	if IsNotLoaded(err) {
@@ -240,6 +272,14 @@ func (n *Namespace) Namespacelisteners(ctx context.Context) ([]*Events, error) {
 	result, err := n.Edges.NamespacelistenersOrErr()
 	if IsNotLoaded(err) {
 		result, err = n.QueryNamespacelisteners().All(ctx)
+	}
+	return result, err
+}
+
+func (n *Namespace) Annotations(ctx context.Context) ([]*Annotation, error) {
+	result, err := n.Edges.AnnotationsOrErr()
+	if IsNotLoaded(err) {
+		result, err = n.QueryAnnotations().All(ctx)
 	}
 	return result, err
 }
@@ -416,6 +456,14 @@ func (w *Workflow) Wfevents(ctx context.Context) ([]*Events, error) {
 	result, err := w.Edges.WfeventsOrErr()
 	if IsNotLoaded(err) {
 		result, err = w.QueryWfevents().All(ctx)
+	}
+	return result, err
+}
+
+func (w *Workflow) Annotations(ctx context.Context) ([]*Annotation, error) {
+	result, err := w.Edges.AnnotationsOrErr()
+	if IsNotLoaded(err) {
+		result, err = w.QueryAnnotations().All(ctx)
 	}
 	return result, err
 }

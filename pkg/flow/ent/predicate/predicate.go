@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Annotation is the predicate function for annotation builders.
+type Annotation func(*sql.Selector)
+
 // CloudEvents is the predicate function for cloudevents builders.
 type CloudEvents func(*sql.Selector)
 

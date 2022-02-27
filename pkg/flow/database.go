@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	entino "github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
@@ -886,5 +887,100 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 	im.in.Edges.Runtime = ir
 
 	return nil
+
+}
+
+type nsAnnotationData struct {
+	annotation *ent.Annotation
+}
+
+func (d *nsAnnotationData) ns() *ent.Namespace {
+	return d.annotation.Edges.Namespace
+}
+
+func (srv *server) traverseToNamespaceAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, key string) (*nsAnnotationData, error) {
+
+	ns, err := srv.getNamespace(ctx, nsc, namespace)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve namespace: %v", parent(), err)
+		return nil, err
+	}
+
+	query := ns.QueryAnnotations().Where(entnote.NameEQ(key))
+
+	annotation, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query annotation: %v", parent(), err)
+		return nil, err
+	}
+
+	annotation.Edges.Namespace = ns
+
+	d := new(nsAnnotationData)
+	d.annotation = annotation
+
+	return d, nil
+
+}
+
+type wfAnnotationData struct {
+	*wfData
+	annotation *ent.Annotation
+}
+
+func (srv *server) traverseToWorkflowAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, key string) (*wfAnnotationData, error) {
+
+	wd, err := srv.traverseToWorkflow(ctx, nsc, namespace, path)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve workflow: %v", parent(), err)
+		return nil, err
+	}
+
+	query := wd.wf.QueryAnnotations().Where(entnote.NameEQ(key))
+
+	annotation, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query annotation: %v", parent(), err)
+		return nil, err
+	}
+
+	annotation.Edges.Workflow = wd.wf
+
+	d := new(wfAnnotationData)
+	d.wfData = wd
+	d.annotation = annotation
+
+	return d, nil
+
+}
+
+type instAnnotationData struct {
+	*instData
+	annotation *ent.Annotation
+}
+
+func (srv *server) traverseToInstanceAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, instance, key string) (*instAnnotationData, error) {
+
+	wd, err := srv.getInstance(ctx, nsc, namespace, instance, false)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
+		return nil, err
+	}
+
+	query := wd.in.QueryAnnotations().Where(entnote.NameEQ(key))
+
+	annotation, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query annotation: %v", parent(), err)
+		return nil, err
+	}
+
+	annotation.Edges.Instance = wd.in
+
+	d := new(instAnnotationData)
+	d.instData = wd
+	d.annotation = annotation
+
+	return d, nil
 
 }

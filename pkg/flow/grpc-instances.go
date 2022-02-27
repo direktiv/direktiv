@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -335,9 +336,39 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		return nil, err
 	}
 
-	flow.engine.queue(im)
+	if !req.GetHold() {
+		flow.engine.queue(im)
+	}
 
 	var resp grpc.StartWorkflowResponse
+
+	resp.Namespace = req.GetNamespace()
+	resp.Instance = im.ID().String()
+
+	return &resp, nil
+
+}
+
+func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstanceRequest) (*grpc.ReleaseInstanceResponse, error) {
+
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	im, err := flow.engine.getInstanceMemory(ctx, flow.db.Instance, req.GetInstance())
+	if err != nil {
+		return nil, err
+	}
+
+	if im.in.Edges.Namespace.Name != req.GetNamespace() {
+		return nil, errors.New("instance not found")
+	}
+
+	if im.in.Status != StatusPending {
+		return nil, errors.New("instance already released")
+	}
+
+	flow.engine.queue(im)
+
+	var resp grpc.ReleaseInstanceResponse
 
 	resp.Namespace = req.GetNamespace()
 	resp.Instance = im.ID().String()

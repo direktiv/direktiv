@@ -547,6 +547,28 @@ func (pubsub *pubsub) NotifyWorkflowVariables(wf *ent.Workflow) {
 
 }
 
+func (pubsub *pubsub) workflowAnnotations(wf *ent.Workflow) string {
+
+	return fmt.Sprintf("wfnotes:%s", wf.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeWorkflowAnnotations(wf *ent.Workflow) *subscription {
+
+	keys := pubsub.walkInodeKeys(wf.Edges.Inode)
+
+	keys = append(keys, wf.ID.String(), pubsub.workflowAnnotations(wf))
+
+	return pubsub.Subscribe(keys...)
+
+}
+
+func (pubsub *pubsub) NotifyWorkflowAnnotations(wf *ent.Workflow) {
+
+	pubsub.publish(pubsubNotify(pubsub.workflowAnnotations(wf)))
+
+}
+
 func (pubsub *pubsub) workflowLogs(wf *ent.Workflow) string {
 
 	return fmt.Sprintf("wflogs:%s", wf.ID.String())
@@ -606,6 +628,24 @@ func (pubsub *pubsub) SubscribeNamespaceVariables(ns *ent.Namespace) *subscripti
 func (pubsub *pubsub) NotifyNamespaceVariables(ns *ent.Namespace) {
 
 	pubsub.publish(pubsubNotify(pubsub.namespaceVars(ns)))
+
+}
+
+func (pubsub *pubsub) namespaceAnnotations(ns *ent.Namespace) string {
+
+	return fmt.Sprintf("nsnote:%s", ns.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeNamespaceAnnotations(ns *ent.Namespace) *subscription {
+
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceAnnotations(ns))
+
+}
+
+func (pubsub *pubsub) NotifyNamespaceAnnotations(ns *ent.Namespace) {
+
+	pubsub.publish(pubsubNotify(pubsub.namespaceAnnotations(ns)))
 
 }
 
@@ -682,6 +722,24 @@ func (pubsub *pubsub) SubscribeInstanceVariables(in *ent.Instance) *subscription
 func (pubsub *pubsub) NotifyInstanceVariables(in *ent.Instance) {
 
 	pubsub.publish(pubsubNotify(pubsub.instanceVars(in)))
+
+}
+
+func (pubsub *pubsub) instanceAnnotations(in *ent.Instance) string {
+
+	return fmt.Sprintf("instnote:%s", in.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeInstanceAnnotations(in *ent.Instance) *subscription {
+
+	return pubsub.Subscribe(in.Edges.Namespace.ID.String(), pubsub.instanceAnnotations(in))
+
+}
+
+func (pubsub *pubsub) NotifyInstanceAnnotations(in *ent.Instance) {
+
+	pubsub.publish(pubsubNotify(pubsub.instanceAnnotations(in)))
 
 }
 

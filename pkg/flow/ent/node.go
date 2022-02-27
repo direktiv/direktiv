@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
@@ -52,6 +53,95 @@ type Edge struct {
 	Type string      `json:"type,omitempty"` // edge type.
 	Name string      `json:"name,omitempty"` // edge name.
 	IDs  []uuid.UUID `json:"ids,omitempty"`  // node ids (where this edge point to).
+}
+
+func (a *Annotation) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     a.ID,
+		Type:   "Annotation",
+		Fields: make([]*Field, 6),
+		Edges:  make([]*Edge, 3),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(a.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.Size); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "int",
+		Name:  "size",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.Hash); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "hash",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.Data); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "[]byte",
+		Name:  "data",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Namespace",
+		Name: "namespace",
+	}
+	err = a.QueryNamespace().
+		Select(namespace.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Workflow",
+		Name: "workflow",
+	}
+	err = a.QueryWorkflow().
+		Select(workflow.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Instance",
+		Name: "instance",
+	}
+	err = a.QueryInstance().
+		Select(instance.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 func (ce *CloudEvents) Node(ctx context.Context) (node *Node, err error) {
@@ -339,7 +429,7 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 		ID:     i.ID,
 		Type:   "Instance",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 8),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(i.CreatedAt); err != nil {
@@ -475,6 +565,16 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 	err = i.QueryEventlisteners().
 		Select(events.FieldID).
 		Scan(ctx, &node.Edges[7].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[8] = &Edge{
+		Type: "Annotation",
+		Name: "annotations",
+	}
+	err = i.QueryAnnotations().
+		Select(annotation.FieldID).
+		Scan(ctx, &node.Edges[8].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -678,7 +778,7 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 		ID:     n.ID,
 		Type:   "Namespace",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(n.CreatedAt); err != nil {
@@ -780,6 +880,16 @@ func (n *Namespace) Node(ctx context.Context) (node *Node, err error) {
 	err = n.QueryNamespacelisteners().
 		Select(events.FieldID).
 		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "Annotation",
+		Name: "annotations",
+	}
+	err = n.QueryAnnotations().
+		Select(annotation.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -1104,7 +1214,7 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 		ID:     w.ID,
 		Type:   "Workflow",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 9),
+		Edges:  make([]*Edge, 10),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(w.Live); err != nil {
@@ -1213,6 +1323,16 @@ func (w *Workflow) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[9] = &Edge{
+		Type: "Annotation",
+		Name: "annotations",
+	}
+	err = w.QueryAnnotations().
+		Select(annotation.FieldID).
+		Scan(ctx, &node.Edges[9].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -1283,6 +1403,15 @@ func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_
 
 func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, error) {
 	switch table {
+	case annotation.Table:
+		n, err := c.Annotation.Query().
+			Where(annotation.ID(id)).
+			CollectFields(ctx, "Annotation").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case cloudevents.Table:
 		n, err := c.CloudEvents.Query().
 			Where(cloudevents.ID(id)).
@@ -1482,6 +1611,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case annotation.Table:
+		nodes, err := c.Annotation.Query().
+			Where(annotation.IDIn(ids...)).
+			CollectFields(ctx, "Annotation").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case cloudevents.Table:
 		nodes, err := c.CloudEvents.Query().
 			Where(cloudevents.IDIn(ids...)).

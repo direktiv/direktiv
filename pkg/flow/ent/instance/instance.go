@@ -43,6 +43,8 @@ const (
 	EdgeChildren = "children"
 	// EdgeEventlisteners holds the string denoting the eventlisteners edge name in mutations.
 	EdgeEventlisteners = "eventlisteners"
+	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
+	EdgeAnnotations = "annotations"
 	// Table holds the table name of the instance in the database.
 	Table = "instances"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -101,6 +103,13 @@ const (
 	EventlistenersInverseTable = "events"
 	// EventlistenersColumn is the table column denoting the eventlisteners relation/edge.
 	EventlistenersColumn = "instance_eventlisteners"
+	// AnnotationsTable is the table that holds the annotations relation/edge.
+	AnnotationsTable = "annotations"
+	// AnnotationsInverseTable is the table name for the Annotation entity.
+	// It exists in this package in order to avoid circular dependency with the "annotation" package.
+	AnnotationsInverseTable = "annotations"
+	// AnnotationsColumn is the table column denoting the annotations relation/edge.
+	AnnotationsColumn = "instance_annotations"
 )
 
 // Columns holds all SQL columns for instance fields.

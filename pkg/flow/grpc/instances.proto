@@ -102,9 +102,20 @@ message StartWorkflowRequest {
 	string path = 2;
 	string ref = 3;
 	bytes input = 4;
+	bool hold = 5;
 }
 
 message StartWorkflowResponse {
+	string namespace = 1;
+	string instance = 2;
+}
+
+message ReleaseInstanceRequest {
+	string namespace = 1;
+	string instance = 2;
+}
+
+message ReleaseInstanceResponse {
 	string namespace = 1;
 	string instance = 2;
 }

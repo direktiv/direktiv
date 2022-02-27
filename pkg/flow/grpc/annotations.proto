@@ -1,0 +1,238 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
+
+import "google/protobuf/timestamp.proto";
+
+import "pkg/flow/grpc/pagination.proto";
+
+message Annotation {
+	string name = 1;
+	google.protobuf.Timestamp created_at = 2;
+	google.protobuf.Timestamp updated_at = 3;
+	string checksum = 4;
+	int64 size = 5;
+}
+
+message AnnotationEdge {
+	Annotation node = 1;
+	string cursor = 2;
+}
+
+message Annotations {
+	int32 totalCount = 1;
+	PageInfo pageInfo = 2;
+	repeated AnnotationEdge edges = 3;
+}
+
+message NamespaceAnnotationRequest {
+	string namespace = 1;
+	string key = 2;
+}
+
+message NamespaceAnnotationResponse {
+	string namespace = 1;
+	string key = 2;
+	google.protobuf.Timestamp created_at = 3;
+	google.protobuf.Timestamp updated_at = 4;
+	string checksum = 5;
+	int64 totalSize = 6;
+	bytes data = 7;
+}
+
+message NamespaceAnnotationsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+}
+
+message NamespaceAnnotationsResponse {
+    string namespace = 1;
+	Annotations annotations = 2;
+}
+
+message SetNamespaceAnnotationRequest {
+	string namespace = 1;
+	string key = 2;
+	int64 totalSize = 3;
+	bytes data = 4;
+}
+
+message SetNamespaceAnnotationResponse {
+	string namespace = 1;
+	string key = 2;
+	google.protobuf.Timestamp created_at = 3;
+	google.protobuf.Timestamp updated_at = 4;
+	string checksum = 5;
+	int64 totalSize = 6;
+}
+
+message DeleteNamespaceAnnotationRequest {
+	string namespace = 1;
+	string key = 2;
+}
+
+message RenameNamespaceAnnotationRequest {
+	string namespace = 1;
+	string old = 2;
+	string new = 3;
+}
+
+message RenameNamespaceAnnotationResponse {
+	string namespace = 1;
+	string key = 2;
+	google.protobuf.Timestamp created_at = 3;
+	google.protobuf.Timestamp updated_at = 4;
+	string checksum = 5;
+	int64 totalSize = 6;
+	string mimeType = 7;
+}
+
+message WorkflowAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+}
+
+message WorkflowAnnotationResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	bytes data = 8;
+	string mimeType = 9;
+}
+
+message WorkflowAnnotationsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string path = 3;
+}
+
+message WorkflowAnnotationsResponse {
+	string namespace = 1;
+	string path = 2;
+	Annotations annotations = 3;
+}
+
+message SetWorkflowAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	int64 totalSize = 4;
+	bytes data = 5;
+	string mimeType = 6;
+}
+
+message SetWorkflowAnnotationResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	string mimeType = 8;
+}
+
+message DeleteWorkflowAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+}
+
+message RenameWorkflowAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string old = 3;
+	string new = 4;
+}
+
+message RenameWorkflowAnnotationResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	string mimeType = 8;
+}
+
+message InstanceAnnotationRequest {
+	string namespace = 1;
+	string instance = 2;
+	string key = 3;
+}
+
+message InstanceAnnotationResponse {
+	string namespace = 1;
+	string instance = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	bytes data = 8;
+	string mimeType = 9;
+}
+
+message InstanceAnnotationsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string instance = 3;
+}
+
+message InstanceAnnotationsResponse {
+	string namespace = 1;
+	string instance = 2;
+	Annotations annotations = 3;
+}
+
+message SetInstanceAnnotationRequest {
+	string namespace = 1;
+	string instance = 2;
+	string key = 3;
+	int64 totalSize = 4;
+	bytes data = 5;
+	string mimeType = 6;
+}
+
+message SetInstanceAnnotationResponse {
+	string namespace = 1;
+	string instance = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	string mimeType = 8;
+}
+
+message DeleteInstanceAnnotationRequest {
+	string namespace = 1;
+	string instance = 2;
+	string key = 3;
+}
+
+message RenameInstanceAnnotationRequest {
+	string namespace = 1;
+	string instance = 2;
+	string old = 3;
+	string new = 4;
+}
+
+message RenameInstanceAnnotationResponse {
+	string namespace = 1;
+	string instance = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	string mimeType = 8;
+}

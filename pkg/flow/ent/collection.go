@@ -9,6 +9,18 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (a *AnnotationQuery) CollectFields(ctx context.Context, satisfies ...string) *AnnotationQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		a = a.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return a
+}
+
+func (a *AnnotationQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *AnnotationQuery {
+	return a
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (ce *CloudEventsQuery) CollectFields(ctx context.Context, satisfies ...string) *CloudEventsQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		ce = ce.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
