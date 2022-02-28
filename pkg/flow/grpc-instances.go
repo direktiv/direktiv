@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -28,7 +29,15 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 		return nil, err
 	}
 
-	resp.Data = []byte(d.in.Edges.Runtime.Input)
+	m := make(map[string]interface{})
+	err = json.Unmarshal(d.in.Edges.Runtime.Input, &m)
+	if err != nil {
+		return nil, err
+	}
+	delete(m, "private")
+	input := marshal(m)
+
+	resp.Data = []byte(input)
 	resp.Namespace = d.namespace()
 
 	return &resp, nil
@@ -53,7 +62,15 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 		return nil, err
 	}
 
-	resp.Data = []byte(d.in.Edges.Runtime.Output)
+	m := make(map[string]interface{})
+	err = json.Unmarshal([]byte(d.in.Edges.Runtime.Output), &m)
+	if err != nil {
+		return nil, err
+	}
+	delete(m, "private")
+	output := marshal(m)
+
+	resp.Data = []byte(output)
 	resp.Namespace = d.namespace()
 
 	return &resp, nil
