@@ -197,6 +197,8 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	l := lexer.New(s, JqState)
 	l.Start()
 
+	var multi, text bool
+
 	for {
 		tok, done := l.NextToken()
 		if done {
@@ -219,7 +221,8 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			if len(x) == 1 {
 				out = append(out, x[0])
 			} else {
-				return nil, fmt.Errorf("jq query produced multiple outputs")
+				multi = true
+				out = x
 			}
 
 		case JsStartToken:
@@ -267,12 +270,17 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			out = append(out, ret)
 
 		default:
+			text = true
 			out = append(out, tok.Value)
 		}
 
 	}
 
-	if len(out) == 1 {
+	if text && multi {
+		return nil, fmt.Errorf("jq query produced multiple outputs")
+	}
+
+	if len(out) == 1 || !text {
 		return out, nil
 	}
 
