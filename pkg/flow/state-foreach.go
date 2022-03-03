@@ -161,10 +161,15 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 
 func (sl *foreachStateLogic) doAll(ctx context.Context, engine *engine, im *instanceMemory) (err error) {
 
-	var array []interface{}
-	array, err = jq(im.data, sl.state.Array)
+	x, err := jqOne(im.data, sl.state.Array)
 	if err != nil {
 		return
+	}
+
+	var array []interface{}
+	array, ok := x.([]interface{})
+	if !ok {
+		return NewCatchableError(ErrCodeNotArray, "jq produced non-array output")
 	}
 
 	engine.logToInstance(ctx, time.Now(), im.in, "Generated %d objects to loop over.", len(array))

@@ -21,6 +21,7 @@ var (
 	ErrCodeJQBadQuery             = "direktiv.jq.badCommand"
 	ErrCodeJQNotObject            = "direktiv.jq.notObject"
 	ErrCodeAllBranchesFailed      = "direktiv.parallel.allFailed"
+	ErrCodeNotArray               = "direktiv.foreach.badArray"
 	ErrCodeFailedSchemaValidation = "direktiv.schema.failed"
 )
 
