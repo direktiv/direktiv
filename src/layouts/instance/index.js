@@ -58,7 +58,7 @@ function InstancePage(props) {
             setWFPath(split[0])
             if (workflow.revision === latestRevision) {
                 setRef("latest")
-            } else {
+            } else if(split[1] !== "latest"){
                 setRef(split[1])
             }
             setRev(workflow.revision)
@@ -125,7 +125,7 @@ function InstancePage(props) {
                                     <>
                                     </>
                                     :
-                                    <Link to={`/n/${namespace}/explorer/${wfName}?tab=1&revision=${ref==="latest" ? ref : rev}&revtab=0`}>
+                                    <Link to={`/n/${namespace}/explorer/${wfName}?${ref==="latest" ? `tab=2` : `tab=1&revision=${rev}&revtab=0` }`}>
                                         <Button className="small light">
                                             <span className="hide-on-small">View</span> Workflow
                                         </Button>
