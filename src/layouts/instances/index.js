@@ -104,10 +104,10 @@ function InstancesTable(props) {
                                     state={obj.node.status} 
                                     name={obj.node.as} 
                                     id={obj.node.id}
-                                    started={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
-                                    startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                                    finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")}
-                                    finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
+                                    startedDate={dayjs.utc(obj.node.createdAt).local().format("DD MMM YY")} 
+                                    startedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                                    finishedDate={dayjs.utc(obj.node.updatedAt).local().format("DD MMM YY")}
+                                    finishedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
                                 />
                             )
                             })}</>
@@ -135,7 +135,7 @@ const cancelled = "cancelled";
 const running = "pending";
 
 export function InstanceRow(props) {
-    let {state, name, wf, started,  finished,  id, namespace} = props;
+    let {state, name, wf, startedDate,  finishedDate, startedTime, finishedTime,  id, namespace} = props;
     const navigate = useNavigate()
 
     let label;
@@ -183,12 +183,12 @@ export function InstanceRow(props) {
             {revStr !== undefined ? revStr : "ROUTER"}
         </td>
         <td className="center-align">
-            {started}
-            {/* <span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({startedFrom})</span> */}
+            <span className="hide-on-800">{startedDate}, </span>
+            {startedTime}
         </td>
         <td className="center-align">
-            {finished}
-            {/* <span style={{fontSize:"12px", marginLeft:"3px"}} className="grey-text hide-on-med">({finishedFrom})</span> */}
+            <span className="hide-on-800">{finishedDate}, </span>
+            {finishedTime}
         </td>
     </tr>
     )

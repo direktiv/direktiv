@@ -10,6 +10,12 @@
     }
 }
 
+@media screen and (max-width: 800px) {
+    .hide-on-800 {
+        display: none !important;
+    }
+}
+
 @media screen and (max-width: 1050px) {
     .hide-on-med {
         display: none !important;
