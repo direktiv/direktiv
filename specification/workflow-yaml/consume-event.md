@@ -69,3 +69,4 @@ The received data of an event-triggered workflow is a JSON representation of all
 		"data" : "<much wow=\"xml\"/>"
 	}
 }
+```
