@@ -5,6 +5,9 @@ index:
   - "Triggers / Starts": "workflow-yaml/starts.md"
   - "Timeouts": "workflow-yaml/timeouts.md"
   - "Actions": "workflow-yaml/actions.md"
+  - "Errors": "workflow-yaml/errors.md"
+  - "Logging": "workflow-yaml/logging.md"
+  - "Instance Metadata": "workflow-yaml/metadata.md"
   - "States":
     - "States": "workflow-yaml/states.md"
     - "action": "workflow-yaml/action.md"
