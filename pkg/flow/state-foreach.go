@@ -139,8 +139,15 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 			Attempts: attempt,
 		}
 
+		// set the timeout to the max of the state
+		var wfto int
+		wfto, err = ISO8601StringtoSecs(sl.state.Timeout)
+		if err != nil {
+			return
+		}
+
 		var ar *functionRequest
-		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), 0, fn, inputData, uid, false, sl.state.Action.Files)
+		ar, err = engine.newIsolateRequest(ctx, im, sl.state.GetID(), wfto, fn, inputData, uid, false, sl.state.Action.Files)
 		if err != nil {
 			return
 		}
