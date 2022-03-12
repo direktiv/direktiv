@@ -32,9 +32,9 @@ FROM gcr.io/distroless/static
 
 USER nonroot:nonroot
 
-COPY --from=build /flow-dbinit /flow-dbinit
+COPY --from=build /flow-dbinit /bin/flow-dbinit
 
 EXPOSE 6666
 EXPOSE 7777
 
-CMD ["/flow-dbinit"]
+CMD ["/bin/flow-dbinit"]
