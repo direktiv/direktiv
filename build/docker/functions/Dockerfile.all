@@ -20,7 +20,7 @@ FROM gcr.io/distroless/static
 
 USER nonroot:nonroot
 
-COPY --from=build /functions /bin/flow-dbinit
+COPY --from=build /functions /bin/functions
 
 EXPOSE 5555
 
