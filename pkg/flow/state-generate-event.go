@@ -91,9 +91,10 @@ func (sl *generateEventStateLogic) Run(ctx context.Context, engine *engine, im *
 	if s, ok := x.(string); ok && ctype != "" && ctype != "application/json" {
 		data, err = base64.StdEncoding.DecodeString(s)
 		if err != nil {
-			engine.logToInstance(ctx, time.Now(), im.in, "Unable to decode results as a base64 encoded string. Reverting to JSON.")
+			engine.logToInstance(ctx, time.Now(), im.in, "Unable to decode results as a base64 encoded string.")
 		}
-		err = event.SetData(ctype, data)
+
+		err = event.SetData(ctype, s)
 		if err != nil {
 			engine.logToInstance(ctx, time.Now(), im.in, "Unable to set event data: %v", err)
 		}
