@@ -624,10 +624,10 @@ function WorkflowInstances(props) {
                             state={state} 
                             name={obj.node.as} 
                             id={obj.node.id}
-                            started={dayjs.utc(obj.node.createdAt).local().format("HH:mm:ss a")} 
-                            startedFrom={dayjs.utc(obj.node.createdAt).local().fromNow()}
-                            finished={dayjs.utc(obj.node.updatedAt).local().format("HH:mm:ss a")}
-                            finishedFrom={dayjs.utc(obj.node.updatedAt).local().fromNow()}
+                            startedDate={dayjs.utc(obj.node.createdAt).local().format("DD MMM YY")} 
+                            startedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                            finishedDate={dayjs.utc(obj.node.updatedAt).local().format("DD MMM YY")}
+                            finishedTime={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")} 
                         />
                     )
                     })}</>

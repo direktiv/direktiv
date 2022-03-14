@@ -107,7 +107,7 @@ function InstancesTable(props) {
                                     startedDate={dayjs.utc(obj.node.createdAt).local().format("DD MMM YY")} 
                                     startedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
                                     finishedDate={dayjs.utc(obj.node.updatedAt).local().format("DD MMM YY")}
-                                    finishedTime={dayjs.utc(obj.node.createdAt).local().format("HH:mm a")} 
+                                    finishedTime={dayjs.utc(obj.node.updatedAt).local().format("HH:mm a")} 
                                 />
                             )
                             })}</>
