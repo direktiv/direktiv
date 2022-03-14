@@ -10,12 +10,11 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/bbuck/go-lexer v1.0.0 // indirect
+	github.com/bbuck/go-lexer v1.0.0
 	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.6.1
 	github.com/cloudevents/sdk-go/v2 v2.6.1
-	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f // indirect
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/dop251/goja v0.0.0-20220214123719-b09a6bfa842f
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-openapi/analysis v0.20.1 // indirect
 	github.com/go-openapi/errors v0.20.1
@@ -40,15 +39,16 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.1
-	github.com/nxadm/tail v1.4.4
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect
 	github.com/prometheus/client_golang v1.11.0
 	github.com/qri-io/jsonschema v0.2.0
+	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/spf13/cobra v1.3.0
+	github.com/spf13/viper v1.10.1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -62,7 +62,7 @@ require (
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
 	golang.org/x/sys v0.0.0-20220207234003-57398862261d
 	golang.org/x/tools v0.1.9 // indirect
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
