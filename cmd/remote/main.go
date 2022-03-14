@@ -23,12 +23,15 @@ var (
 	addr       string
 	path       string
 	input      string
+	inputType  string
 	outputFlag string
 	namespace  string
 
 	apiKey    string
 	authToken string
 	insecure  bool
+
+	maxSize int64 = 1073741824
 
 	configPath string
 )
@@ -69,6 +72,66 @@ func configBindFlag(configKey string, required bool) {
 	}
 }
 
+func addAuthHeaders(req *http.Request) {
+	req.Header.Add("apikey", apiKey)
+	req.Header.Add("Direktiv-Token", authToken)
+}
+
+func safeLoadFile(filePath string) (*bytes.Buffer, error) {
+	buf := new(bytes.Buffer)
+
+	if filePath == "" {
+		// skip if filePath is empty
+		return buf, nil
+	}
+
+	fStat, err := os.Stat(filePath)
+	if err != nil {
+		return buf, err
+	}
+
+	if fStat.Size() > maxSize {
+		return buf, fmt.Errorf("file is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
+	}
+
+	fData, err := os.ReadFile(filePath)
+	if err != nil {
+		return buf, err
+	}
+
+	buf = bytes.NewBuffer(fData)
+
+	return buf, nil
+}
+
+func safeLoadStdIn() (*bytes.Buffer, error) {
+	buf := new(bytes.Buffer)
+
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		fmt.Println("hello?")
+		return buf, err
+	}
+
+	if fi.Mode()&os.ModeNamedPipe == 0 {
+		// No stdin
+		return buf, nil
+	}
+
+	if fi.Size() > maxSize {
+		return buf, fmt.Errorf("stdin is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
+	}
+
+	fData, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		return buf, err
+	}
+
+	buf = bytes.NewBuffer(fData)
+
+	return buf, nil
+}
+
 func main() {
 
 	var err error
@@ -82,7 +145,8 @@ func main() {
 	rootCmd.Flags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
 	rootCmd.Flags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. "+configFlagHelpTextLoader("path", false))
 	rootCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
-	rootCmd.Flags().StringVarP(&input, "input", "i", "", "Path to JSON file to be used as input data for executed workflow. If unset, workflow will execute without input data")
+	rootCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input date if available, otherwise no data is used.")
+	rootCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 	rootCmd.Flags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
 	rootCmd.Flags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
 	rootCmd.Flags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
@@ -104,24 +168,21 @@ func main() {
 
 func executeWorkflow(url string) (executeResponse, error) {
 	var instanceDetails executeResponse
-	var inputData = new(bytes.Buffer)
 
-	if input != "" {
-		inputFile, err := os.Open(input)
+	inputData, err := safeLoadFile(input)
+	if err != nil {
+		log.Fatalf("Failed to load input file: %v", err)
+	}
+
+	if inputData.Len() == 0 {
+		inputData, err = safeLoadStdIn()
 		if err != nil {
-			return instanceDetails, fmt.Errorf("failed to open input file: %v", err)
+			log.Fatalf("Failed to load stdin: %v", err)
 		}
-
-		inputBytes, err := ioutil.ReadAll(inputFile)
-		if err != nil {
-			return instanceDetails, fmt.Errorf("failed to read input file: %v", err)
-		}
-
-		inputData = bytes.NewBuffer(inputBytes)
 	}
 
 	req, err := http.NewRequest(
-		"POST",
+		http.MethodPost,
 		url,
 		inputData,
 	)
@@ -129,13 +190,8 @@ func executeWorkflow(url string) (executeResponse, error) {
 		return instanceDetails, err
 	}
 
-	req.Header.Add("Content-Type", "application/json")
-
-	if apiKey != "" {
-		req.Header.Add("apikey", apiKey)
-	} else if authToken != "" {
-		req.Header.Add("Direktiv-Token", authToken)
-	}
+	req.Header.Add("Content-Type", inputType)
+	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -156,7 +212,7 @@ func getOutput(url string) ([]byte, error) {
 	var output instanceOutput
 
 	req, err := http.NewRequest(
-		"GET",
+		http.MethodGet,
 		url,
 		nil,
 	)
@@ -164,11 +220,7 @@ func getOutput(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	if apiKey != "" {
-		req.Header.Add("apikey", apiKey)
-	} else if authToken != "" {
-		req.Header.Add("Direktiv-Token", authToken)
-	}
+	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -191,33 +243,21 @@ func getOutput(url string) ([]byte, error) {
 }
 
 func updateRemoteWorkflow(url string, localPath string) error {
-	localWorkflowFile, err := os.Open(localPath)
+	wfData, err := safeLoadFile(localPath)
 	if err != nil {
-		return fmt.Errorf("failed to open input file: %v", err)
+		log.Fatalf("Failed to load workflow file: %v", err)
 	}
-
-	localWorkflowBytes, err := ioutil.ReadAll(localWorkflowFile)
-	if err != nil {
-		return fmt.Errorf("failed to read input file: %v", err)
-	}
-
-	localWorkflowData := bytes.NewBuffer(localWorkflowBytes)
 
 	req, err := http.NewRequest(
-		"POST",
+		http.MethodPost,
 		url,
-		localWorkflowData,
+		wfData,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create request file: %v", err)
 	}
 
-	req.Header.Add("Content-Type", "application/json")
-	if apiKey != "" {
-		req.Header.Add("apikey", apiKey)
-	} else if authToken != "" {
-		req.Header.Add("Direktiv-Token", authToken)
-	}
+	addAuthHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -232,11 +272,11 @@ func updateRemoteWorkflow(url string, localPath string) error {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "dre WORKFLOW_PATH",
+	Use:   "exec WORKFLOW_PATH",
 	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
 	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
 
-EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld`,
+EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load Config From flags / config
@@ -245,6 +285,9 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 		namespace = viper.GetString("namespace")
 		apiKey = viper.GetString("api-key")
 		authToken = viper.GetString("auth-token")
+		if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
+			maxSize = cfgMaxSize
+		}
 
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
 
@@ -252,7 +295,7 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 		urlPrefix := fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
 		urlUpdateWorkflow := fmt.Sprintf("%s/tree/%s?op=update-workflow", urlPrefix, strings.TrimPrefix(path, "/"))
 
-		cmd.Printf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
+		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
 		err := updateRemoteWorkflow(urlUpdateWorkflow, args[0])
 		if err != nil {
 			log.Fatalf("Failed to update remote workflow: %v\n", err)
@@ -264,19 +307,16 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 			log.Fatalf("Failed to execute workflow: %v\n", err)
 		}
 
-		cmd.Printf("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		cmd.Println("-------INSTANCE LOGS-------")
+		cmd.PrintErrf("Successfully Executed Instance: %s\n", instanceDetails.Instance)
+		cmd.PrintErrln("-------INSTANCE LOGS-------")
 		urlLogs := fmt.Sprintf("%s/instances/%s/logs", urlPrefix, instanceDetails.Instance)
 		clientLogs := sse.NewClient(urlLogs)
 		clientLogs.Connection.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
 		}
 
-		if apiKey != "" {
-			clientLogs.Headers["apikey"] = apiKey
-		} else if authToken != "" {
-			clientLogs.Headers["Direktiv-Token"] = authToken
-		}
+		clientLogs.Headers["apikey"] = apiKey
+		clientLogs.Headers["Direktiv-Token"] = authToken
 
 		logsChannel := make(chan *sse.Event)
 		clientLogs.SubscribeChan("messages", logsChannel)
@@ -302,7 +342,7 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 
 				if len(logResp.Edges) > 0 {
 					for _, edge := range logResp.Edges {
-						cmd.Printf("%v: %s\n", edge.Node.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Node.Msg)
+						cmd.PrintErrf("%v: %s\n", edge.Node.T.In(time.Local).Format("02 Jan 06 15:04 MST"), edge.Node.Msg)
 					}
 				}
 			}
@@ -314,11 +354,8 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
 		}
 
-		if apiKey != "" {
-			clientInstance.Headers["apikey"] = apiKey
-		} else if authToken != "" {
-			clientInstance.Headers["Direktiv-Token"] = authToken
-		}
+		clientLogs.Headers["apikey"] = apiKey
+		clientLogs.Headers["Direktiv-Token"] = authToken
 
 		channelInstance := make(chan *sse.Event)
 		clientInstance.SubscribeChan("messages", channelInstance)
@@ -340,6 +377,7 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 			}
 
 			if instanceResp.Instance.Status != instanceStatus {
+				time.Sleep(500 * time.Millisecond)
 				instanceStatus = instanceResp.Instance.Status
 				clientLogs.Unsubscribe(logsChannel)
 				clientInstance.Unsubscribe(channelInstance)
@@ -348,7 +386,7 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 			}
 		}
 
-		cmd.Printf("Instance Completed With Status: %s\n", instanceStatus)
+		cmd.PrintErrf("Instance Completed With Status: %s\n", instanceStatus)
 		urlOutput := fmt.Sprintf("%s/instances/%s/output", urlPrefix, instanceDetails.Instance)
 
 		output, err := getOutput(urlOutput)
@@ -358,8 +396,8 @@ EXAMPLE: dre helloworld.yaml --addr http://192.168.1.1 --namespace admin --path 
 				log.Fatalf("Failed to write output file: %v\n", err)
 			}
 		} else {
-			cmd.Println("------INSTANCE OUTPUT------")
-			cmd.Println(string(output))
+			cmd.PrintErrln("------INSTANCE OUTPUT------")
+			fmt.Println(string(output))
 		}
 	},
 }
