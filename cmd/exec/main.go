@@ -145,7 +145,7 @@ func main() {
 	rootCmd.Flags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
 	rootCmd.Flags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. "+configFlagHelpTextLoader("path", false))
 	rootCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
-	rootCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input date if available, otherwise no data is used.")
+	rootCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
 	rootCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 	rootCmd.Flags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
 	rootCmd.Flags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
@@ -169,16 +169,23 @@ func main() {
 func executeWorkflow(url string) (executeResponse, error) {
 	var instanceDetails executeResponse
 
+	// Read input data from flag file
 	inputData, err := safeLoadFile(input)
 	if err != nil {
 		log.Fatalf("Failed to load input file: %v", err)
 	}
 
+	// If inputData is empty attempt to read from stdin
 	if inputData.Len() == 0 {
 		inputData, err = safeLoadStdIn()
 		if err != nil {
 			log.Fatalf("Failed to load stdin: %v", err)
 		}
+	}
+
+	// If no file or stdin input data was provided, set data to {}
+	if inputData.Len() == 0 && inputType == "application/json" {
+		inputData = bytes.NewBufferString("{}")
 	}
 
 	req, err := http.NewRequest(
