@@ -7,4 +7,4 @@ COPY flow /bin/direktiv
 EXPOSE 6666
 EXPOSE 7777
 
-CMD ["/app"]
+CMD ["/bin/direktiv"]

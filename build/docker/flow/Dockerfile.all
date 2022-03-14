@@ -20,9 +20,9 @@ FROM gcr.io/distroless/static
 
 USER nonroot:nonroot
 
-COPY --from=build /flow /flow
+COPY --from=build /flow /bin/direktiv
 
 EXPOSE 6666
 EXPOSE 7777
 
-CMD ["/flow"]
+CMD ["/bin/direktiv"]
