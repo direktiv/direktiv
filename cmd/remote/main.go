@@ -39,7 +39,7 @@ var (
 func initDefaultConfigPath() string {
 	dirname, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Printf("Warning: Failed to get home directory. Could not establish config file for defaults: %s\n", err.Error())
+		os.Stderr.WriteString(fmt.Sprintf("Warning: Failed to get home directory. Could not establish config file for defaults: %s\n", err.Error()))
 		return ""
 	}
 	configHome := dirname
