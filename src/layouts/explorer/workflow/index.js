@@ -396,11 +396,7 @@ function WorkingRevision(props) {
                                                 return
                                             }
                                             let r = ""
-                                            if(input === "{\n\t\n}"){
-                                                r = await executeWorkflow()
-                                            } else {
-                                                r = await executeWorkflow(input)
-                                            }
+                                            r = await executeWorkflow(input)
                                             if(r.includes("execute workflow")){
                                                 // is an error
                                                 throw new Error(r)

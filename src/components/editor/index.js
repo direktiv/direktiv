@@ -1,5 +1,5 @@
 import Editor, {useMonaco, loader } from "@monaco-editor/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import './style.css'
 // import * as cobalt from './cobalt.json'
 
@@ -267,7 +267,7 @@ export default function DirektivEditor(props) {
     const {saveFn, style, noBorderRadius, options, dvalue, dlang, value, height, width, setDValue, readonly, validate, minimap} = props
     const monaco = useMonaco()
 
-    const [ed, setEditor] = useState(null);
+    // const [ed, setEditor] = useState(null);
 
     useEffect(()=>{
         // console.log(monaco)
@@ -294,29 +294,32 @@ export default function DirektivEditor(props) {
       setDValue(value)
     }
 
+    function setCommonEditorTriggers(editor, monaco) {
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_J, ()=>{
+        editor.trigger('fold', 'editor.foldAll')
+      })
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_K, ()=>{
+        editor.trigger('unfold', 'editor.unfoldAll')
+      })
+    }
+
 
     let handleEditorDidMount = function(editor, monaco) {
-      setEditor(editor)
+      if (saveFn) {
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
+      }
+
+      setCommonEditorTriggers(editor, monaco)
+      // setEditor(editor)
     }
 
     if (readonly) {
       handleEditorDidMount = function(editor, monaco) {
+        setCommonEditorTriggers(editor, monaco)
         let messageContribution = editor.getContribution('editor.contrib.messageController');
         editor.onDidAttemptReadOnlyEdit(() => {
           messageContribution.dispose();
         })
-      }
-    }
-
-    if (ed) { 
-      ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_J, ()=>{
-        ed.trigger('fold', 'editor.foldAll')
-      })
-      ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_K, ()=>{
-        ed.trigger('unfold', 'editor.unfoldAll')
-      })
-      if (saveFn) {
-        ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, saveFn)
       }
     }
 
@@ -329,6 +332,7 @@ export default function DirektivEditor(props) {
                 readOnly: readonly,
                 scrollBeyondLastLine: false,
                 cursorBlinking: "smooth",
+                quickSuggestions: false,
                 minimap: {
                   enabled: minimap === undefined ? false : minimap,
                 },

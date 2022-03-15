@@ -112,11 +112,7 @@ function RevisionTab(props) {
                                                         return
                                                     }
                                                     let r = ""
-                                                    if(input === "{\n\t\n}"){
-                                                        r = await executeWorkflow("", revision)
-                                                    } else {
-                                                        r = await executeWorkflow(input, revision)
-                                                    }
+                                                    r = await executeWorkflow(input, revision)
                                                     if(r.includes("execute workflow")){
                                                         // is an error
                                                         throw new Error(r)
