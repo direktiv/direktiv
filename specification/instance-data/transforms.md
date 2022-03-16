@@ -2,7 +2,7 @@
 
 Whenever an instance finishes executing a state there is an opportunity to perform a Transform. Usually with a field called `transform`, but sometimes in other forms. The `switch` state also has a `defaultTransform`, for example. 
 
-All transforms use [structured jx](./structured-jx.md), giving you powerful options to enrich, sanitize, or modify instance data. All transforms must produce output that remains valid [instance data](./instance-data.md), otherwise an error will be thrown. // TODO: what error, specifically?
+All transforms use [structured jx](./structured-jx.md), giving you powerful options to enrich, sanitize, or modify instance data. All transforms must produce output that remains valid [instance data](./instance-data.md), otherwise an error will be thrown: `direktiv.jq.notObject`.
 
 ## Examples
 

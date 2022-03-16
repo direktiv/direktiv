@@ -54,7 +54,7 @@ states:
 
 ### GlobalKnativeFunctionDefinition
 
-A `knative-global` refers to a function that is implemented according to the [requirements](#TODO) for a direktiv knative service. Specifically, in this case referring to a service configured to be available "globally" (to all namespaces on the Direktiv servers).
+A `knative-global` refers to a function that is implemented according to the requirements for a direktiv knative service. Specifically, in this case referring to a service configured to be available "globally" (to all namespaces on the Direktiv servers).
 
 This function type supports [`files`](#FunctionFileDefinition).
 
@@ -66,7 +66,7 @@ This function type supports [`files`](#FunctionFileDefinition).
 
 ### NamespacedKnativeFunctionDefinition
 
-A `knative-namespace` refers to a function that is implemented according to the [requirements](#TODO) for a direktiv knative service. Specifically, in this case referring to a service configured to be available on the namespace.
+A `knative-namespace` refers to a function that is implemented according to the requirements for a direktiv knative service. Specifically, in this case referring to a service configured to be available on the namespace.
 
 This function type supports [`files`](#FunctionFileDefinition).
 
@@ -78,7 +78,7 @@ This function type supports [`files`](#FunctionFileDefinition).
 
 ### WorkflowKnativeFunctionDefinition
 
-A `knative-workflow` refers to a function that is implemented according to the [requirements](#TODO) for a direktiv knative service. Specifically, in this case referring to a service that Direktiv can create on-demand for the exclusive use by this workflow.
+A `knative-workflow` refers to a function that is implemented according to the requirements for a direktiv knative service. Specifically, in this case referring to a service that Direktiv can create on-demand for the exclusive use by this workflow.
 
 > Historically this was called `reusable`, but this keyword has been deprecated.
 
@@ -95,7 +95,7 @@ This function type supports [`files`](#FunctionFileDefinition).
 
 #### ContainerSizeDefinition
 
-When functions use containers you may be able to specify what size the container should be. This is done using one of three keywords, each representing a different [size preset](#TODO):
+When functions use containers you may be able to specify what size the container should be. This is done using one of three keywords, each representing a different size preset defined in Direktiv's configuration files:
 
 * `small`
 * `medium`
