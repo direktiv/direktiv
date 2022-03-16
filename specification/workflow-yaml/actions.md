@@ -26,11 +26,11 @@
   action:
     function: myfunc
     input: 'jq(.x)'
-	retries:
-	- codes: [".*"]
-	  max_attempts: 3
-	  delay: PT3S
-	  multiplier: 1.5
+  retries:
+  - codes: [".*"]
+    max_attempts: 3
+    delay: PT3S
+    multiplier: 1.5
 ```
 
 | Parameter | Description | Type | Required |
@@ -48,10 +48,10 @@
   action:
     function: myfunc
     input: 'jq(.x)'
-	files:
-	- key: VAR_A 
-	  scope: namespace
-	  as: a
+  files:
+  - key: VAR_A 
+    scope: namespace
+    as: a
 ```
 
 Some function types support loading variable directly from storage onto their file-systems. This object defines what variable to load and what to save it as.

@@ -7,12 +7,12 @@ Functions refer to anything executable by Direktiv as a unit of logic within a s
 These are the currently available function types:
 
 - [Functions](#functions)
-	- [FunctionDefinition](#functiondefinition)
-		- [GlobalKnativeFunctionDefinition](#globalknativefunctiondefinition)
-		- [NamespacedKnativeFunctionDefinition](#namespacedknativefunctiondefinition)
-		- [WorkflowKnativeFunctionDefinition](#workflowknativefunctiondefinition)
-			- [ContainerSizeDefinition](#containersizedefinition)
-		- [SubflowFunctionDefinition](#subflowfunctiondefinition)
+  - [FunctionDefinition](#functiondefinition)
+    - [GlobalKnativeFunctionDefinition](#globalknativefunctiondefinition)
+    - [NamespacedKnativeFunctionDefinition](#namespacedknativefunctiondefinition)
+    - [WorkflowKnativeFunctionDefinition](#workflowknativefunctiondefinition)
+      - [ContainerSizeDefinition](#containersizedefinition)
+    - [SubflowFunctionDefinition](#subflowfunctiondefinition)
 
 The following example demonstrate how to define and reference a function within a workflow:
 

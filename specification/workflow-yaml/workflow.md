@@ -22,7 +22,7 @@ states:
 **Output**
 ```json
 {
-	"msg": "Hello, world!"
+  "msg": "Hello, world!"
 }
 ```
 

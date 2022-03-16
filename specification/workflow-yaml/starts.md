@@ -5,13 +5,13 @@
 A `StartDefinition` may be defined using one of the following, depending on the desired behaviour:
 
 - [Starts](#starts)
-	- [StartDefinition](#startdefinition)
-		- [DefaultStartDefinition](#defaultstartdefinition)
-		- [ScheduledStartDefinition](#scheduledstartdefinition)
-		- [EventStartDefinition](#eventstartdefinition)
-		- [EventsXorStartDefinition](#eventsxorstartdefinition)
-		- [EventsAndStartDefinition](#eventsandstartdefinition)
-		- [StartEventDefinition](#starteventdefinition)
+  - [StartDefinition](#startdefinition)
+    - [DefaultStartDefinition](#defaultstartdefinition)
+    - [ScheduledStartDefinition](#scheduledstartdefinition)
+    - [EventStartDefinition](#eventstartdefinition)
+    - [EventsXorStartDefinition](#eventsxorstartdefinition)
+    - [EventsAndStartDefinition](#eventsandstartdefinition)
+    - [StartEventDefinition](#starteventdefinition)
 
 If omitted from the workflow definition the [DefaultStartDefinition](#DefaultStartDefinition) will be used, which means the workflow will only be executed when called.
 
@@ -111,17 +111,17 @@ The input data of an event-triggered workflow is a JSON representation of all th
 **Input Data**
 ```json
 {
-	"com.github.pull.create": {
-		"specversion" : "1.0",
-		"type" : "com.github.pull.create",
-		"source" : "https://github.com/cloudevents/spec/pull",
-		"subject" : "123",
-		"id" : "A234-1234-1234",
-		"time" : "2018-04-05T17:31:00Z",
-		"comexampleextension1" : "value",
-		"comexampleothervalue" : 5,
-		"datacontenttype" : "text/xml",
-		"data" : "<much wow=\"xml\"/>"
-	}
+  "com.github.pull.create": {
+    "specversion" : "1.0",
+    "type" : "com.github.pull.create",
+    "source" : "https://github.com/cloudevents/spec/pull",
+    "subject" : "123",
+    "id" : "A234-1234-1234",
+    "time" : "2018-04-05T17:31:00Z",
+    "comexampleextension1" : "value",
+    "comexampleothervalue" : 5,
+    "datacontenttype" : "text/xml",
+    "data" : "<much wow=\"xml\"/>"
+  }
 }
 ```

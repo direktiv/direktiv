@@ -6,8 +6,8 @@
   timeout: PT15M
   event:
     type: com.github.pull.create
-	context:
-	  subject: '123'
+  context:
+    subject: '123'
 ```
 
 ## ConsumeEventStateDefinition
@@ -56,17 +56,17 @@ The received data of an event-triggered workflow is a JSON representation of all
 **Input Data**
 ```json
 {
-	"com.github.pull.create": {
-		"specversion" : "1.0",
-		"type" : "com.github.pull.create",
-		"source" : "https://github.com/cloudevents/spec/pull",
-		"subject" : "123",
-		"id" : "A234-1234-1234",
-		"time" : "2018-04-05T17:31:00Z",
-		"comexampleextension1" : "value",
-		"comexampleothervalue" : 5,
-		"datacontenttype" : "text/xml",
-		"data" : "<much wow=\"xml\"/>"
-	}
+  "com.github.pull.create": {
+    "specversion" : "1.0",
+    "type" : "com.github.pull.create",
+    "source" : "https://github.com/cloudevents/spec/pull",
+    "subject" : "123",
+    "id" : "A234-1234-1234",
+    "time" : "2018-04-05T17:31:00Z",
+    "comexampleextension1" : "value",
+    "comexampleothervalue" : 5,
+    "datacontenttype" : "text/xml",
+    "data" : "<much wow=\"xml\"/>"
+  }
 }
 ```

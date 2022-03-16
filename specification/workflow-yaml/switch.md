@@ -8,10 +8,10 @@
   conditions:
   - condition: 'jq(.y == true)'
     transform: 'jq(.x)'
-	transition: c
+  transition: c
   - condition: 'jq(.z == true)'
     transform: 'jq(.x)'
-	transition: d
+  transition: d
 ```
 
 ## SwitchStateDefinition

@@ -20,7 +20,7 @@ The one exception to this rule is if the returned data type is a string, in whic
 
 ```json
 {
-	"a": [1, 2, 3]
+  "a": [1, 2, 3]
 }
 ```
 
@@ -42,7 +42,7 @@ The one exception to this rule is if the returned data type is a string, in whic
 
 ```json
 {
-	"a": [1, 2, 3]
+  "a": [1, 2, 3]
 }
 ```
 
@@ -64,7 +64,7 @@ The one exception to this rule is if the returned data type is a string, in whic
 
 ```json
 {
-	"a": "hello"
+  "a": "hello"
 }
 ```
 
@@ -138,7 +138,7 @@ The "Structured" part of Structured JX is so named because you don't have to pro
 
 ```json
 {
-	"a": [1, 2, 3]
+  "a": [1, 2, 3]
 }
 ```
 
@@ -149,9 +149,9 @@ tranform:
   x: 'jq(.a)'
   y: |
     js(
-	  var output = data['a'].map((x) => {return ++x;})
+    var output = data['a'].map((x) => {return ++x;})
       return output
-	)
+  )
   z: 5
   listA: ["a", "b", "c"]
   listB:
@@ -160,21 +160,21 @@ tranform:
   - f
   obj:
     i: 10
-	j: 'jq(.a[2])'
+  j: 'jq(.a[2])'
 ```
 
 **Evaluated Result**
 
 ```json
 {
-	"listA": ["a", "b", "c"],
-	"listB": ["d", "e", "f"],
-	"obj": {
-		"i": 10,
-		"j": 3
-	},
-	"x": [1, 2, 3],
-	"y": [2, 3, 4],
-	"z": 5
+  "listA": ["a", "b", "c"],
+  "listB": ["d", "e", "f"],
+  "obj": {
+    "i": 10,
+    "j": 3
+  },
+  "x": [1, 2, 3],
+  "y": [2, 3, 4],
+  "z": 5
 }
 ```

@@ -6,4 +6,4 @@ In addition to the standard scopes, there is a special `system` scope. This scop
 | --- | --- |
 | instance | Returns the instance ID of the running instance. |
 | uuid | Returns a randomly generated UUID. |
-| epoch	| Returns the current time in unix/epoch format. |
+| epoch  | Returns the current time in unix/epoch format. |

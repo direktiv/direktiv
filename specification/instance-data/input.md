@@ -10,7 +10,7 @@ So if you call the workflow with the following input:
 
 ```json
 {
-	"msg": "Hello, world!"
+  "msg": "Hello, world!"
 }
 ```
 
@@ -18,7 +18,7 @@ Then the instance data for the workflow will, be the same:
 
 ```json
 {
-	"msg": "Hello, world!"
+  "msg": "Hello, world!"
 }
 ```
 
@@ -34,7 +34,7 @@ Becomes:
 
 ```json
 {
-	"input": [1, 2, 3]
+  "input": [1, 2, 3]
 }
 ```
 
@@ -50,7 +50,7 @@ Becomes:
 
 ```json
 {
-	"input": "SGVsbG8sIHdvcmxkIQo="
+  "input": "SGVsbG8sIHdvcmxkIQo="
 }
 ```
 
@@ -65,7 +65,7 @@ Becomes:
 
 ```json
 {
-	"input": ""
+  "input": ""
 }
 ```
 
@@ -106,18 +106,18 @@ The instance input data becomes:
 
 ```json
 {
-	"com.github.pull.create": {
-		"specversion" : "1.0",
-		"type" : "com.github.pull.create",
-		"source" : "https://github.com/cloudevents/spec/pull",
-		"subject" : "123",
-		"id" : "A234-1234-1234",
-		"time" : "2018-04-05T17:31:00Z",
-		"comexampleextension1" : "value",
-		"comexampleothervalue" : 5,
-		"datacontenttype" : "text/xml",
-		"data" : "<much wow=\"xml\"/>"
-	}
+  "com.github.pull.create": {
+    "specversion" : "1.0",
+    "type" : "com.github.pull.create",
+    "source" : "https://github.com/cloudevents/spec/pull",
+    "subject" : "123",
+    "id" : "A234-1234-1234",
+    "time" : "2018-04-05T17:31:00Z",
+    "comexampleextension1" : "value",
+    "comexampleothervalue" : 5,
+    "datacontenttype" : "text/xml",
+    "data" : "<much wow=\"xml\"/>"
+  }
 }
 ```
 

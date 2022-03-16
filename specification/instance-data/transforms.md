@@ -14,7 +14,7 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"msg": "Hello, world!
+  "msg": "Hello, world!
 }
 ```
 
@@ -31,7 +31,7 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"x": 5
+  "x": 5
 }
 ```
 
@@ -41,9 +41,9 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"a": 1,
-	"b": 2,
-	"c": 3
+  "a": 1,
+  "b": 2,
+  "c": 3
 }
 ```
 
@@ -59,9 +59,9 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"a": 5,
-	"b": 6,
-	"c": 3
+  "a": 5,
+  "b": 6,
+  "c": 3
 }
 ```
 
@@ -71,9 +71,9 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"a": 1,
-	"b": 2,
-	"c": 3
+  "a": 1,
+  "b": 2,
+  "c": 3
 }
 ```
 
@@ -89,7 +89,7 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"c": 3
+  "c": 3
 }
 ```
 
@@ -99,7 +99,7 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"a": 1
+  "a": 1
 }
 ```
 
@@ -115,8 +115,8 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"a": 1,
-	"b": 2
+  "a": 1,
+  "b": 2
 }
 ```
 
@@ -126,9 +126,9 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"a": 1,
-	"b": 2,
-	"c": 3
+  "a": 1,
+  "b": 2,
+  "c": 3
 }
 ```
 
@@ -144,8 +144,8 @@ Here are some common use-case helpful examples of transforms.
 
 ```json
 {
-	"b": 2,
-	"c": 3,
-	"x": 1
+  "b": 2,
+  "c": 3,
+  "x": 1
 }
 ```

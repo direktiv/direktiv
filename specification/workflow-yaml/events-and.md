@@ -6,11 +6,11 @@
   timeout: PT15M
   events:
   - type: com.github.pull.create
-	context:
-	  subject: '123'
+  context:
+    subject: '123'
   - type: com.github.pull.delete
-	context:
-	  subject: '123'
+  context:
+    subject: '123'
 ```
 
 ## EventsAndStateDefinition 
