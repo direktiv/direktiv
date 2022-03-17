@@ -157,7 +157,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Workflow.WorkflowID = wf.ID.String()
 	ar.Workflow.Timeout = timeout
 	ar.Workflow.Revision = im.in.Edges.Revision.Hash
-
 	ar.Workflow.NamespaceName = im.in.Edges.Namespace.Name
 	ar.Workflow.Path = im.in.As
 
@@ -184,6 +183,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
 		ar.Container.Scale = con.Scale
+		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
 			Name:          &con.ID,
@@ -233,6 +233,21 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 
 }
 
+func ISO8601StringtoSecs(timeout string) (int, error) {
+	// default 15 mins timeout
+	wfto := 15 * 60
+	if len(timeout) > 0 {
+		var to duration.Duration
+		to, err := duration.ParseISO8601(timeout)
+		if err != nil {
+			return wfto, err
+		}
+		dur := to.Shift(time.Now()).Sub(time.Now())
+		wfto = int(dur.Seconds())
+	}
+	return wfto, nil
+}
+
 func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instanceMemory, attempt int, files []model.FunctionFileDefinition) (transition *stateTransition, err error) {
 
 	var inputData []byte
@@ -241,16 +256,10 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 		return
 	}
 
-	// default 15 mins timeout
-	wfto := 15 * 60
-	if len(sl.state.Timeout) > 0 {
-		var to duration.Duration
-		to, err = duration.ParseISO8601(sl.state.Timeout)
-		if err != nil {
-			return
-		}
-		dur := to.Shift(time.Now()).Sub(time.Now())
-		wfto = int(dur.Seconds())
+	var wfto int
+	wfto, err = ISO8601StringtoSecs(sl.state.Timeout)
+	if err != nil {
+		return
 	}
 
 	fn, err := sl.workflow.GetFunction(sl.state.Action.Function)

@@ -478,6 +478,8 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	var rev *ent.Revision
 	var prevrev []*ent.Revision
 
+	rev = d.rev()
+
 	if revcount == 1 || refcount > 1 {
 		// already saved, or not discardable, gracefully back out
 		rollback(tx)

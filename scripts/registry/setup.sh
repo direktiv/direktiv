@@ -3,7 +3,7 @@
 SCRIPT="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 HOSTNAME=$(echo $(hostname) | awk '{print tolower($0)}')
 
-echo "crating registry for ${HOSTNAME}"
+echo "creating registry for ${HOSTNAME}"
 
 docker run --user 0:1000 -v $SCRIPT/share:/share flat/ubuntu-dev /share/run.sh ${HOSTNAME}
 
@@ -22,7 +22,6 @@ docker run -d \
   --restart=always \
   --name registry-secure \
   -v $SCRIPT/share/out:/certs \
-  -v /var/lib/registry:/var/lib/registry \
   -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
   -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/${HOSTNAME}.crt \
   -e REGISTRY_HTTP_TLS_KEY=/certs/${HOSTNAME}.key \

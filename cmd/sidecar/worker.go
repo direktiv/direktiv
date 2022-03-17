@@ -124,7 +124,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 		return out, nil
 	}
 
-	cap := int64(0x400000) // 4 MiB
+	cap := int64(33554432) // 4 MiB (changed to same value as API)
 	if resp.ContentLength > cap {
 		return nil, errors.New("service response is too large")
 	}
@@ -671,7 +671,7 @@ func (worker *inboundWorker) validateTimeHeader(req *inboundRequest, x *time.Tim
 
 func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
 
-	cap := int64(0x400000) // 4 MiB
+	cap := int64(33554432) // 4 MiB (cahnged to API value)
 	if req.r.ContentLength == 0 {
 		code := http.StatusLengthRequired
 		worker.reportValidationError(req, code, errors.New(http.StatusText(code)))
