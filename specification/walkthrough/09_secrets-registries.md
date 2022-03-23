@@ -1,3 +1,0 @@
-# Secrets & Registries
-
-TODO
