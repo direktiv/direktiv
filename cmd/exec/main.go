@@ -16,6 +16,7 @@ import (
 
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -109,7 +110,6 @@ func safeLoadStdIn() (*bytes.Buffer, error) {
 
 	fi, err := os.Stdin.Stat()
 	if err != nil {
-		fmt.Println("hello?")
 		return buf, err
 	}
 
@@ -138,6 +138,13 @@ func main() {
 
 	// Read Config
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", initDefaultConfigPath(), "Loads flag values from YAML config if file is found.")
+
+	// Load config flag early
+	cfgFlag := pflag.StringP("config", "c", "", "")
+	if pflag.Parse(); cfgFlag != nil && *cfgFlag != "" {
+		configPath = *cfgFlag
+	}
+
 	viper.SetConfigFile(configPath)
 	viper.ReadInConfig()
 
@@ -272,7 +279,12 @@ func updateRemoteWorkflow(url string, localPath string) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("failed to update workflow, server responsed with %s", resp.Status)
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
 	return err
