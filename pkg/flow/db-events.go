@@ -192,7 +192,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 			em := make(map[string]interface{})
 			em[eventTypeString] = e.Type
 
-			for kf, vf := range e.Filters {
+			for kf, vf := range e.Context {
 				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
 			}
 			ev = append(ev, em)

@@ -88,7 +88,7 @@ The StartEventDefinition is a structure shared by various start definitions invo
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
 | `type` | Identifies which CloudEvents events can trigger the workflow by requiring an exact match to the event's own `type` context value. | string | yes | 
-| `filters` | Optional key-value pairs to further restrict what events can trigger the workflow. For each pair, incoming CloudEvents context values will be checked for a match. All pairs must find a match for the event to be accepted. The "keys" are strings that match exactly to specific context keys, but the "values" can be "glob" patterns allowing them to match a range of possible context values. | object | no |
+| `context` | Optional key-value pairs to further restrict what events can trigger the workflow. For each pair, incoming CloudEvents context values will be checked for a match. All pairs must find a match for the event to be accepted. The "keys" are strings that match exactly to specific context keys, but the "values" can be "glob" patterns allowing them to match a range of possible context values. | object | no |
 
 The input data of an event-triggered workflow is a JSON representation of all the received events stored under keys matching the events' respective type. For example, this CloudEvents event will result in the following input data in a workflow triggered by a single event:
 
