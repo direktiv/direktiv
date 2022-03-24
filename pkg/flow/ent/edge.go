@@ -89,7 +89,7 @@ func (i *Instance) Namespace(ctx context.Context) (*Namespace, error) {
 	if IsNotLoaded(err) {
 		result, err = i.QueryNamespace().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (i *Instance) Workflow(ctx context.Context) (*Workflow, error) {
@@ -97,7 +97,7 @@ func (i *Instance) Workflow(ctx context.Context) (*Workflow, error) {
 	if IsNotLoaded(err) {
 		result, err = i.QueryWorkflow().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (i *Instance) Revision(ctx context.Context) (*Revision, error) {
@@ -105,7 +105,7 @@ func (i *Instance) Revision(ctx context.Context) (*Revision, error) {
 	if IsNotLoaded(err) {
 		result, err = i.QueryRevision().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (i *Instance) Logs(ctx context.Context) ([]*LogMsg, error) {

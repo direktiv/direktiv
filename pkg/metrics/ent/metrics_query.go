@@ -106,7 +106,7 @@ func (mq *MetricsQuery) FirstIDX(ctx context.Context) int {
 }
 
 // Only returns a single Metrics entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Metrics entity is not found.
+// Returns a *NotSingularError when more than one Metrics entity is found.
 // Returns a *NotFoundError when no Metrics entities are found.
 func (mq *MetricsQuery) Only(ctx context.Context) (*Metrics, error) {
 	nodes, err := mq.Limit(2).All(ctx)
@@ -133,7 +133,7 @@ func (mq *MetricsQuery) OnlyX(ctx context.Context) *Metrics {
 }
 
 // OnlyID is like Only, but returns the only Metrics ID in the query.
-// Returns a *NotSingularError when exactly one Metrics ID is not found.
+// Returns a *NotSingularError when more than one Metrics ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (mq *MetricsQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
@@ -242,8 +242,9 @@ func (mq *MetricsQuery) Clone() *MetricsQuery {
 		order:      append([]OrderFunc{}, mq.order...),
 		predicates: append([]predicate.Metrics{}, mq.predicates...),
 		// clone intermediate query.
-		sql:  mq.sql.Clone(),
-		path: mq.path,
+		sql:    mq.sql.Clone(),
+		path:   mq.path,
+		unique: mq.unique,
 	}
 }
 
