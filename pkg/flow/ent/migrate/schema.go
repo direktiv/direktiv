@@ -147,8 +147,8 @@ var (
 		{Name: "error_code", Type: field.TypeString, Nullable: true},
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
 		{Name: "namespace_instances", Type: field.TypeUUID},
-		{Name: "revision_instances", Type: field.TypeUUID},
-		{Name: "workflow_instances", Type: field.TypeUUID},
+		{Name: "revision_instances", Type: field.TypeUUID, Nullable: true},
+		{Name: "workflow_instances", Type: field.TypeUUID, Nullable: true},
 	}
 	// InstancesTable holds the schema information for the "instances" table.
 	InstancesTable = &schema.Table{
@@ -166,13 +166,13 @@ var (
 				Symbol:     "instances_revisions_instances",
 				Columns:    []*schema.Column{InstancesColumns[9]},
 				RefColumns: []*schema.Column{RevisionsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "instances_workflows_instances",
 				Columns:    []*schema.Column{InstancesColumns[10]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
