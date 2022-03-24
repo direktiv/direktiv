@@ -114,14 +114,6 @@ func (iu *InstanceUpdate) SetNamespaceID(id uuid.UUID) *InstanceUpdate {
 	return iu
 }
 
-// SetNillableNamespaceID sets the "namespace" edge to the Namespace entity by ID if the given value is not nil.
-func (iu *InstanceUpdate) SetNillableNamespaceID(id *uuid.UUID) *InstanceUpdate {
-	if id != nil {
-		iu = iu.SetNamespaceID(*id)
-	}
-	return iu
-}
-
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (iu *InstanceUpdate) SetNamespace(n *Namespace) *InstanceUpdate {
 	return iu.SetNamespaceID(n.ID)
@@ -420,6 +412,9 @@ func (iu *InstanceUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (iu *InstanceUpdate) check() error {
+	if _, ok := iu.mutation.NamespaceID(); iu.mutation.NamespaceCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
+	}
 	if _, ok := iu.mutation.RuntimeID(); iu.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
@@ -950,14 +945,6 @@ func (iuo *InstanceUpdateOne) SetNamespaceID(id uuid.UUID) *InstanceUpdateOne {
 	return iuo
 }
 
-// SetNillableNamespaceID sets the "namespace" edge to the Namespace entity by ID if the given value is not nil.
-func (iuo *InstanceUpdateOne) SetNillableNamespaceID(id *uuid.UUID) *InstanceUpdateOne {
-	if id != nil {
-		iuo = iuo.SetNamespaceID(*id)
-	}
-	return iuo
-}
-
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (iuo *InstanceUpdateOne) SetNamespace(n *Namespace) *InstanceUpdateOne {
 	return iuo.SetNamespaceID(n.ID)
@@ -1263,6 +1250,9 @@ func (iuo *InstanceUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (iuo *InstanceUpdateOne) check() error {
+	if _, ok := iuo.mutation.NamespaceID(); iuo.mutation.NamespaceCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
+	}
 	if _, ok := iuo.mutation.RuntimeID(); iuo.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}

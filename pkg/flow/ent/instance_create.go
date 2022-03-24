@@ -130,14 +130,6 @@ func (ic *InstanceCreate) SetNamespaceID(id uuid.UUID) *InstanceCreate {
 	return ic
 }
 
-// SetNillableNamespaceID sets the "namespace" edge to the Namespace entity by ID if the given value is not nil.
-func (ic *InstanceCreate) SetNillableNamespaceID(id *uuid.UUID) *InstanceCreate {
-	if id != nil {
-		ic = ic.SetNamespaceID(*id)
-	}
-	return ic
-}
-
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (ic *InstanceCreate) SetNamespace(n *Namespace) *InstanceCreate {
 	return ic.SetNamespaceID(n.ID)
@@ -350,6 +342,9 @@ func (ic *InstanceCreate) check() error {
 	}
 	if _, ok := ic.mutation.As(); !ok {
 		return &ValidationError{Name: "as", err: errors.New(`ent: missing required field "Instance.as"`)}
+	}
+	if _, ok := ic.mutation.NamespaceID(); !ok {
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Instance.namespace"`)}
 	}
 	if _, ok := ic.mutation.RuntimeID(); !ok {
 		return &ValidationError{Name: "runtime", err: errors.New(`ent: missing required edge "Instance.runtime"`)}

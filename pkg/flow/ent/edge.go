@@ -89,7 +89,7 @@ func (i *Instance) Namespace(ctx context.Context) (*Namespace, error) {
 	if IsNotLoaded(err) {
 		result, err = i.QueryNamespace().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (i *Instance) Workflow(ctx context.Context) (*Workflow, error) {

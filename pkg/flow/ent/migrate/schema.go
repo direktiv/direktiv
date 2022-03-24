@@ -146,7 +146,7 @@ var (
 		{Name: "as", Type: field.TypeString},
 		{Name: "error_code", Type: field.TypeString, Nullable: true},
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
-		{Name: "namespace_instances", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_instances", Type: field.TypeUUID},
 		{Name: "revision_instances", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_instances", Type: field.TypeUUID, Nullable: true},
 	}
