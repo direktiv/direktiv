@@ -181,7 +181,7 @@ func (lmq *LogMsgQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single LogMsg entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one LogMsg entity is not found.
+// Returns a *NotSingularError when more than one LogMsg entity is found.
 // Returns a *NotFoundError when no LogMsg entities are found.
 func (lmq *LogMsgQuery) Only(ctx context.Context) (*LogMsg, error) {
 	nodes, err := lmq.Limit(2).All(ctx)
@@ -208,7 +208,7 @@ func (lmq *LogMsgQuery) OnlyX(ctx context.Context) *LogMsg {
 }
 
 // OnlyID is like Only, but returns the only LogMsg ID in the query.
-// Returns a *NotSingularError when exactly one LogMsg ID is not found.
+// Returns a *NotSingularError when more than one LogMsg ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (lmq *LogMsgQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -320,8 +320,9 @@ func (lmq *LogMsgQuery) Clone() *LogMsgQuery {
 		withWorkflow:  lmq.withWorkflow.Clone(),
 		withInstance:  lmq.withInstance.Clone(),
 		// clone intermediate query.
-		sql:  lmq.sql.Clone(),
-		path: lmq.path,
+		sql:    lmq.sql.Clone(),
+		path:   lmq.path,
+		unique: lmq.unique,
 	}
 }
 

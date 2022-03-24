@@ -277,7 +277,7 @@ func (nq *NamespaceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Namespace entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Namespace entity is not found.
+// Returns a *NotSingularError when more than one Namespace entity is found.
 // Returns a *NotFoundError when no Namespace entities are found.
 func (nq *NamespaceQuery) Only(ctx context.Context) (*Namespace, error) {
 	nodes, err := nq.Limit(2).All(ctx)
@@ -304,7 +304,7 @@ func (nq *NamespaceQuery) OnlyX(ctx context.Context) *Namespace {
 }
 
 // OnlyID is like Only, but returns the only Namespace ID in the query.
-// Returns a *NotSingularError when exactly one Namespace ID is not found.
+// Returns a *NotSingularError when more than one Namespace ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (nq *NamespaceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -420,8 +420,9 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		withCloudevents:        nq.withCloudevents.Clone(),
 		withNamespacelisteners: nq.withNamespacelisteners.Clone(),
 		// clone intermediate query.
-		sql:  nq.sql.Clone(),
-		path: nq.path,
+		sql:    nq.sql.Clone(),
+		path:   nq.path,
+		unique: nq.unique,
 	}
 }
 

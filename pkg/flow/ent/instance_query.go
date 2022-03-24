@@ -301,7 +301,7 @@ func (iq *InstanceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Instance entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Instance entity is not found.
+// Returns a *NotSingularError when more than one Instance entity is found.
 // Returns a *NotFoundError when no Instance entities are found.
 func (iq *InstanceQuery) Only(ctx context.Context) (*Instance, error) {
 	nodes, err := iq.Limit(2).All(ctx)
@@ -328,7 +328,7 @@ func (iq *InstanceQuery) OnlyX(ctx context.Context) *Instance {
 }
 
 // OnlyID is like Only, but returns the only Instance ID in the query.
-// Returns a *NotSingularError when exactly one Instance ID is not found.
+// Returns a *NotSingularError when more than one Instance ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (iq *InstanceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -445,8 +445,9 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		withChildren:       iq.withChildren.Clone(),
 		withEventlisteners: iq.withEventlisteners.Clone(),
 		// clone intermediate query.
-		sql:  iq.sql.Clone(),
-		path: iq.path,
+		sql:    iq.sql.Clone(),
+		path:   iq.path,
+		unique: iq.unique,
 	}
 }
 

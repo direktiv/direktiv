@@ -16,7 +16,7 @@ var (
 		{Name: "fire", Type: field.TypeTime},
 		{Name: "created", Type: field.TypeTime},
 		{Name: "processed", Type: field.TypeBool},
-		{Name: "namespace_cloudevents", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_cloudevents", Type: field.TypeUUID},
 	}
 	// CloudEventsTable holds the schema information for the "cloud_events" table.
 	CloudEventsTable = &schema.Table{
@@ -49,8 +49,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "instance_eventlisteners", Type: field.TypeUUID, Nullable: true},
-		{Name: "namespace_namespacelisteners", Type: field.TypeUUID, Nullable: true},
-		{Name: "workflow_wfevents", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_namespacelisteners", Type: field.TypeUUID},
+		{Name: "workflow_wfevents", Type: field.TypeUUID},
 	}
 	// EventsTable holds the schema information for the "events" table.
 	EventsTable = &schema.Table{
@@ -82,7 +82,7 @@ var (
 	EventsWaitsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "events", Type: field.TypeJSON},
-		{Name: "events_wfeventswait", Type: field.TypeUUID, Nullable: true},
+		{Name: "events_wfeventswait", Type: field.TypeUUID},
 	}
 	// EventsWaitsTable holds the schema information for the "events_waits" table.
 	EventsWaitsTable = &schema.Table{
@@ -107,7 +107,7 @@ var (
 		{Name: "type", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeJSON, Nullable: true},
 		{Name: "inode_children", Type: field.TypeUUID, Nullable: true},
-		{Name: "namespace_inodes", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_inodes", Type: field.TypeUUID},
 	}
 	// InodesTable holds the schema information for the "inodes" table.
 	InodesTable = &schema.Table{
@@ -146,7 +146,7 @@ var (
 		{Name: "as", Type: field.TypeString},
 		{Name: "error_code", Type: field.TypeString, Nullable: true},
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
-		{Name: "namespace_instances", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_instances", Type: field.TypeUUID},
 		{Name: "revision_instances", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_instances", Type: field.TypeUUID, Nullable: true},
 	}
@@ -270,8 +270,8 @@ var (
 		{Name: "immutable", Type: field.TypeBool, Default: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "revision_refs", Type: field.TypeUUID, Nullable: true},
-		{Name: "workflow_refs", Type: field.TypeUUID, Nullable: true},
+		{Name: "revision_refs", Type: field.TypeUUID},
+		{Name: "workflow_refs", Type: field.TypeUUID},
 	}
 	// RefsTable holds the schema information for the "refs" table.
 	RefsTable = &schema.Table{
@@ -307,7 +307,7 @@ var (
 		{Name: "hash", Type: field.TypeString},
 		{Name: "source", Type: field.TypeBytes},
 		{Name: "metadata", Type: field.TypeJSON},
-		{Name: "workflow_revisions", Type: field.TypeUUID, Nullable: true},
+		{Name: "workflow_revisions", Type: field.TypeUUID},
 	}
 	// RevisionsTable holds the schema information for the "revisions" table.
 	RevisionsTable = &schema.Table{
@@ -327,8 +327,8 @@ var (
 	RoutesColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
 		{Name: "weight", Type: field.TypeInt},
-		{Name: "ref_routes", Type: field.TypeUUID, Nullable: true},
-		{Name: "workflow_routes", Type: field.TypeUUID, Nullable: true},
+		{Name: "ref_routes", Type: field.TypeUUID},
+		{Name: "workflow_routes", Type: field.TypeUUID},
 	}
 	// RoutesTable holds the schema information for the "routes" table.
 	RoutesTable = &schema.Table{
@@ -373,7 +373,7 @@ var (
 		{Name: "behaviour", Type: field.TypeString, Nullable: true},
 		{Name: "instance_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_vars", Type: field.TypeUUID, Nullable: true},
-		{Name: "var_data_varrefs", Type: field.TypeUUID, Nullable: true},
+		{Name: "var_data_varrefs", Type: field.TypeUUID},
 		{Name: "workflow_vars", Type: field.TypeUUID, Nullable: true},
 	}
 	// VarRefsTable holds the schema information for the "var_refs" table.
@@ -398,7 +398,7 @@ var (
 				Symbol:     "var_refs_var_data_varrefs",
 				Columns:    []*schema.Column{VarRefsColumns[5]},
 				RefColumns: []*schema.Column{VarDataColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "var_refs_workflows_vars",
@@ -414,7 +414,7 @@ var (
 		{Name: "live", Type: field.TypeBool, Default: true},
 		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
 		{Name: "inode_workflow", Type: field.TypeUUID, Unique: true, Nullable: true},
-		{Name: "namespace_workflows", Type: field.TypeUUID, Nullable: true},
+		{Name: "namespace_workflows", Type: field.TypeUUID},
 	}
 	// WorkflowsTable holds the schema information for the "workflows" table.
 	WorkflowsTable = &schema.Table{

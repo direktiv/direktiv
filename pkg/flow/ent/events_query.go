@@ -206,7 +206,7 @@ func (eq *EventsQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Events entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Events entity is not found.
+// Returns a *NotSingularError when more than one Events entity is found.
 // Returns a *NotFoundError when no Events entities are found.
 func (eq *EventsQuery) Only(ctx context.Context) (*Events, error) {
 	nodes, err := eq.Limit(2).All(ctx)
@@ -233,7 +233,7 @@ func (eq *EventsQuery) OnlyX(ctx context.Context) *Events {
 }
 
 // OnlyID is like Only, but returns the only Events ID in the query.
-// Returns a *NotSingularError when exactly one Events ID is not found.
+// Returns a *NotSingularError when more than one Events ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (eq *EventsQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -346,8 +346,9 @@ func (eq *EventsQuery) Clone() *EventsQuery {
 		withInstance:     eq.withInstance.Clone(),
 		withNamespace:    eq.withNamespace.Clone(),
 		// clone intermediate query.
-		sql:  eq.sql.Clone(),
-		path: eq.path,
+		sql:    eq.sql.Clone(),
+		path:   eq.path,
+		unique: eq.unique,
 	}
 }
 

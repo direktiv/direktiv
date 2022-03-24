@@ -125,6 +125,14 @@ func (iu *InstanceUpdate) SetWorkflowID(id uuid.UUID) *InstanceUpdate {
 	return iu
 }
 
+// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableWorkflowID(id *uuid.UUID) *InstanceUpdate {
+	if id != nil {
+		iu = iu.SetWorkflowID(*id)
+	}
+	return iu
+}
+
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (iu *InstanceUpdate) SetWorkflow(w *Workflow) *InstanceUpdate {
 	return iu.SetWorkflowID(w.ID)
@@ -133,6 +141,14 @@ func (iu *InstanceUpdate) SetWorkflow(w *Workflow) *InstanceUpdate {
 // SetRevisionID sets the "revision" edge to the Revision entity by ID.
 func (iu *InstanceUpdate) SetRevisionID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetRevisionID(id)
+	return iu
+}
+
+// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableRevisionID(id *uuid.UUID) *InstanceUpdate {
+	if id != nil {
+		iu = iu.SetRevisionID(*id)
+	}
 	return iu
 }
 
@@ -398,12 +414,6 @@ func (iu *InstanceUpdate) defaults() {
 func (iu *InstanceUpdate) check() error {
 	if _, ok := iu.mutation.NamespaceID(); iu.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
-	}
-	if _, ok := iu.mutation.WorkflowID(); iu.mutation.WorkflowCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.workflow"`)
-	}
-	if _, ok := iu.mutation.RevisionID(); iu.mutation.RevisionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.revision"`)
 	}
 	if _, ok := iu.mutation.RuntimeID(); iu.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
@@ -946,6 +956,14 @@ func (iuo *InstanceUpdateOne) SetWorkflowID(id uuid.UUID) *InstanceUpdateOne {
 	return iuo
 }
 
+// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableWorkflowID(id *uuid.UUID) *InstanceUpdateOne {
+	if id != nil {
+		iuo = iuo.SetWorkflowID(*id)
+	}
+	return iuo
+}
+
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (iuo *InstanceUpdateOne) SetWorkflow(w *Workflow) *InstanceUpdateOne {
 	return iuo.SetWorkflowID(w.ID)
@@ -954,6 +972,14 @@ func (iuo *InstanceUpdateOne) SetWorkflow(w *Workflow) *InstanceUpdateOne {
 // SetRevisionID sets the "revision" edge to the Revision entity by ID.
 func (iuo *InstanceUpdateOne) SetRevisionID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetRevisionID(id)
+	return iuo
+}
+
+// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableRevisionID(id *uuid.UUID) *InstanceUpdateOne {
+	if id != nil {
+		iuo = iuo.SetRevisionID(*id)
+	}
 	return iuo
 }
 
@@ -1226,12 +1252,6 @@ func (iuo *InstanceUpdateOne) defaults() {
 func (iuo *InstanceUpdateOne) check() error {
 	if _, ok := iuo.mutation.NamespaceID(); iuo.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
-	}
-	if _, ok := iuo.mutation.WorkflowID(); iuo.mutation.WorkflowCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.workflow"`)
-	}
-	if _, ok := iuo.mutation.RevisionID(); iuo.mutation.RevisionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.revision"`)
 	}
 	if _, ok := iuo.mutation.RuntimeID(); iuo.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)

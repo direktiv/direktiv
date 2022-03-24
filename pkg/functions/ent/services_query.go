@@ -106,7 +106,7 @@ func (sq *ServicesQuery) FirstIDX(ctx context.Context) int {
 }
 
 // Only returns a single Services entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Services entity is not found.
+// Returns a *NotSingularError when more than one Services entity is found.
 // Returns a *NotFoundError when no Services entities are found.
 func (sq *ServicesQuery) Only(ctx context.Context) (*Services, error) {
 	nodes, err := sq.Limit(2).All(ctx)
@@ -133,7 +133,7 @@ func (sq *ServicesQuery) OnlyX(ctx context.Context) *Services {
 }
 
 // OnlyID is like Only, but returns the only Services ID in the query.
-// Returns a *NotSingularError when exactly one Services ID is not found.
+// Returns a *NotSingularError when more than one Services ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (sq *ServicesQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
@@ -242,8 +242,9 @@ func (sq *ServicesQuery) Clone() *ServicesQuery {
 		order:      append([]OrderFunc{}, sq.order...),
 		predicates: append([]predicate.Services{}, sq.predicates...),
 		// clone intermediate query.
-		sql:  sq.sql.Clone(),
-		path: sq.path,
+		sql:    sq.sql.Clone(),
+		path:   sq.path,
+		unique: sq.unique,
 	}
 }
 
