@@ -157,7 +157,7 @@ func (rq *RouteQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Route entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Route entity is not found.
+// Returns a *NotSingularError when more than one Route entity is found.
 // Returns a *NotFoundError when no Route entities are found.
 func (rq *RouteQuery) Only(ctx context.Context) (*Route, error) {
 	nodes, err := rq.Limit(2).All(ctx)
@@ -184,7 +184,7 @@ func (rq *RouteQuery) OnlyX(ctx context.Context) *Route {
 }
 
 // OnlyID is like Only, but returns the only Route ID in the query.
-// Returns a *NotSingularError when exactly one Route ID is not found.
+// Returns a *NotSingularError when more than one Route ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (rq *RouteQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -295,8 +295,9 @@ func (rq *RouteQuery) Clone() *RouteQuery {
 		withWorkflow: rq.withWorkflow.Clone(),
 		withRef:      rq.withRef.Clone(),
 		// clone intermediate query.
-		sql:  rq.sql.Clone(),
-		path: rq.path,
+		sql:    rq.sql.Clone(),
+		path:   rq.path,
+		unique: rq.unique,
 	}
 }
 

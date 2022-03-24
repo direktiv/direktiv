@@ -204,7 +204,7 @@ func (iq *InodeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Inode entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Inode entity is not found.
+// Returns a *NotSingularError when more than one Inode entity is found.
 // Returns a *NotFoundError when no Inode entities are found.
 func (iq *InodeQuery) Only(ctx context.Context) (*Inode, error) {
 	nodes, err := iq.Limit(2).All(ctx)
@@ -231,7 +231,7 @@ func (iq *InodeQuery) OnlyX(ctx context.Context) *Inode {
 }
 
 // OnlyID is like Only, but returns the only Inode ID in the query.
-// Returns a *NotSingularError when exactly one Inode ID is not found.
+// Returns a *NotSingularError when more than one Inode ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (iq *InodeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -344,8 +344,9 @@ func (iq *InodeQuery) Clone() *InodeQuery {
 		withParent:    iq.withParent.Clone(),
 		withWorkflow:  iq.withWorkflow.Clone(),
 		// clone intermediate query.
-		sql:  iq.sql.Clone(),
-		path: iq.path,
+		sql:    iq.sql.Clone(),
+		path:   iq.path,
+		unique: iq.unique,
 	}
 }
 

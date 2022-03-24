@@ -3,9 +3,8 @@ module github.com/direktiv/direktiv
 go 1.15
 
 require (
-	ariga.io/atlas v0.3.3 // indirect
 	entgo.io/contrib v0.1.0
-	entgo.io/ent v0.10.0
+	entgo.io/ent v0.10.1
 	github.com/99designs/gqlgen v0.13.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/agext/levenshtein v1.2.3 // indirect

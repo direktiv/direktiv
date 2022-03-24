@@ -182,7 +182,7 @@ func (rq *RevisionQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Revision entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Revision entity is not found.
+// Returns a *NotSingularError when more than one Revision entity is found.
 // Returns a *NotFoundError when no Revision entities are found.
 func (rq *RevisionQuery) Only(ctx context.Context) (*Revision, error) {
 	nodes, err := rq.Limit(2).All(ctx)
@@ -209,7 +209,7 @@ func (rq *RevisionQuery) OnlyX(ctx context.Context) *Revision {
 }
 
 // OnlyID is like Only, but returns the only Revision ID in the query.
-// Returns a *NotSingularError when exactly one Revision ID is not found.
+// Returns a *NotSingularError when more than one Revision ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (rq *RevisionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -321,8 +321,9 @@ func (rq *RevisionQuery) Clone() *RevisionQuery {
 		withRefs:      rq.withRefs.Clone(),
 		withInstances: rq.withInstances.Clone(),
 		// clone intermediate query.
-		sql:  rq.sql.Clone(),
-		path: rq.path,
+		sql:    rq.sql.Clone(),
+		path:   rq.path,
+		unique: rq.unique,
 	}
 }
 

@@ -133,7 +133,7 @@ func (ceq *CloudEventsQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single CloudEvents entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one CloudEvents entity is not found.
+// Returns a *NotSingularError when more than one CloudEvents entity is found.
 // Returns a *NotFoundError when no CloudEvents entities are found.
 func (ceq *CloudEventsQuery) Only(ctx context.Context) (*CloudEvents, error) {
 	nodes, err := ceq.Limit(2).All(ctx)
@@ -160,7 +160,7 @@ func (ceq *CloudEventsQuery) OnlyX(ctx context.Context) *CloudEvents {
 }
 
 // OnlyID is like Only, but returns the only CloudEvents ID in the query.
-// Returns a *NotSingularError when exactly one CloudEvents ID is not found.
+// Returns a *NotSingularError when more than one CloudEvents ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (ceq *CloudEventsQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -270,8 +270,9 @@ func (ceq *CloudEventsQuery) Clone() *CloudEventsQuery {
 		predicates:    append([]predicate.CloudEvents{}, ceq.predicates...),
 		withNamespace: ceq.withNamespace.Clone(),
 		// clone intermediate query.
-		sql:  ceq.sql.Clone(),
-		path: ceq.path,
+		sql:    ceq.sql.Clone(),
+		path:   ceq.path,
+		unique: ceq.unique,
 	}
 }
 
