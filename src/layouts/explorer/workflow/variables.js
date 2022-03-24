@@ -1,7 +1,7 @@
 import { useWorkflowVariables } from 'direktiv-react-hooks';
 import React, { useState } from 'react';
 
-import { VscVariableGroup, VscCloudDownload, VscCloudUpload,  VscEye, VscTrash } from 'react-icons/vsc';
+import { VscVariableGroup, VscCloudDownload, VscCloudUpload,  VscEye, VscTrash, VscLoading } from 'react-icons/vsc';
 
 import AddValueButton from '../../../components/add-button';
 import Button from '../../../components/button';
@@ -14,6 +14,7 @@ import { Config, CanPreviewMimeType, MimeTypeFileExtension } from '../../../util
 import { VariableFilePicker } from '../../settings/variables-panel';
 import { AutoSizer } from 'react-virtualized';
 import HelpIcon from "../../../components/help";
+import { saveAs } from 'file-saver'
 
 
 function AddWorkflowVariablePanel(props) {
@@ -27,7 +28,7 @@ function AddWorkflowVariablePanel(props) {
 
     let wfVar = workflow.substring(1)
 
-    const {data, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBuffer, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
+    const {data, setWorkflowVariable, getWorkflowVariable, getWorkflowVariableBlob, deleteWorkflowVariable} = useWorkflowVariables(Config.url, true, namespace, wfVar, localStorage.getItem("apikey"))
 
     if (data === null) {
         return <></>
@@ -83,7 +84,7 @@ function AddWorkflowVariablePanel(props) {
                     </Modal>
             </ContentPanelTitle>
             <ContentPanelBody>
-            <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} getWorkflowVariableBuffer={getWorkflowVariableBuffer} variables={data}/>
+            <Variables namespace={namespace} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable} getWorkflowVariable={getWorkflowVariable} getWorkflowVariableBlob={getWorkflowVariableBlob} variables={data}/>
             </ContentPanelBody>
         </ContentPanel>
     )
@@ -162,7 +163,7 @@ function AddVariablePanel(props) {
 
 function Variables(props) {
 
-    const {variables, namespace, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable, getWorkflowVariableBuffer} = props;
+    const {variables, namespace, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable, getWorkflowVariableBlob} = props;
 
     return(
         <FlexBox>
@@ -172,7 +173,7 @@ function Variables(props) {
                     <tbody>
                         {variables.map((obj)=>{
                             return(
-                                <Variable namespace={namespace} obj={obj} getWorkflowVariableBuffer={getWorkflowVariableBuffer} getWorkflowVariable={getWorkflowVariable} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable}/>
+                                <Variable namespace={namespace} obj={obj} getWorkflowVariableBlob={getWorkflowVariableBlob} getWorkflowVariable={getWorkflowVariable} deleteWorkflowVariable={deleteWorkflowVariable} setWorkflowVariable={setWorkflowVariable}/>
                             )
                         })}
                     </tbody>
@@ -184,7 +185,7 @@ function Variables(props) {
 }
 
 function Variable(props) {
-    const {obj, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable, getWorkflowVariableBuffer} = props
+    const {obj, getWorkflowVariable, setWorkflowVariable, deleteWorkflowVariable, getWorkflowVariableBlob} = props
     const [val, setValue] = useState("")
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)
@@ -281,14 +282,10 @@ function Variable(props) {
                     <VariablesDownloadButton onClick={async()=>{
                         setDownloading(true)
 
-                        const variableData = await getWorkflowVariableBuffer(obj.node.name)
+                        const variableData = await getWorkflowVariableBlob(obj.node.name)
                         const extension = MimeTypeFileExtension(variableData.contentType)
-                        let buf = Buffer.from(variableData.data, 'base64')
+                        saveAs(variableData.data, obj.node.name + `${extension ? `.${extension}`: ""}`)
 
-                        const a = document.createElement('a')
-                        a.href = `data:${variableData.contentType};base64,` + buf.toString('base64')
-                        a.download = obj.node.name + `${extension ? `.${extension}`: ""}`
-                        a.click()
                         setDownloading(false)
                     }}/>:<VariablesDownloadingButton />}
                 </FlexBox>
@@ -378,7 +375,7 @@ function VariablesDownloadingButton(props) {
 
     return (
         <div className="secrets-delete-btn grey-text auto-margin" style={{display: "flex", alignItems: "center", height: "100%"}}>
-            <VscCloudUpload style={{animation: "spin 2s linear infinite"}}/>
+            <VscLoading style={{animation: "spin 2s linear infinite"}}/>
         </div>
     )
 }

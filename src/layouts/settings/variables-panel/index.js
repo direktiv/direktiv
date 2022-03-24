@@ -13,6 +13,7 @@ import Tabs from '../../../components/tabs';
 import HelpIcon from '../../../components/help';
 import { VscCloudDownload, VscCloudUpload, VscEye, VscLoading, VscTrash, VscVariableGroup } from 'react-icons/vsc';
 import { AutoSizer } from 'react-virtualized';
+import { saveAs } from 'file-saver'
 
 function VariablesPanel(props){
 
@@ -23,7 +24,7 @@ function VariablesPanel(props){
     const [uploading, setUploading] = useState(false)
     const [mimeType, setMimeType] = useState("application/json")
 
-    const {data, err, setNamespaceVariable, getNamespaceVariable, getNamespaceVariableBuffer, deleteNamespaceVariable} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
+    const {data, err, setNamespaceVariable, getNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = useNamespaceVariables(Config.url, true, namespace, localStorage.getItem("apikey"))
 
     // something went wrong with error listing for variables
     if(err !== null){
@@ -96,7 +97,7 @@ function VariablesPanel(props){
             <ContentPanelBody style={{minHeight:"180px"}}>
                 {data !== null ?
                 <div>
-                    <Variables namespace={namespace} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} getNamespaceVariableBuffer={getNamespaceVariableBuffer} variables={data}/>
+                    <Variables namespace={namespace} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariable={getNamespaceVariable} variables={data} getNamespaceVariableBlob={getNamespaceVariableBlob}/>
                 </div>:""}
             </ContentPanelBody>
         </ContentPanel>
@@ -208,7 +209,7 @@ function AddVariablePanel(props) {
 }
 
 function Variables(props) {
-    const {variables, namespace, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBuffer} = props
+    const {variables, namespace, getNamespaceVariable, setNamespaceVariable, deleteNamespaceVariable, getNamespaceVariableBlob} = props
 
     return(
         <FlexBox>
@@ -218,7 +219,7 @@ function Variables(props) {
                  
                     {variables.map((obj)=>{
                         return(
-                            <Variable namespace={namespace} obj={obj} getNamespaceVariable={getNamespaceVariable} getNamespaceVariableBuffer={getNamespaceVariableBuffer} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable}/>
+                            <Variable namespace={namespace} obj={obj} getNamespaceVariable={getNamespaceVariable} deleteNamespaceVariable={deleteNamespaceVariable} setNamespaceVariable={setNamespaceVariable} getNamespaceVariableBlob={getNamespaceVariableBlob}/>
                         )
                     })}
                 </tbody>
@@ -228,7 +229,7 @@ function Variables(props) {
 }
 
 function Variable(props) {
-    const {obj, getNamespaceVariable, getNamespaceVariableBuffer, setNamespaceVariable, deleteNamespaceVariable} = props
+    const {obj, getNamespaceVariable, getNamespaceVariableBlob, setNamespaceVariable, deleteNamespaceVariable, namespace} = props
     const [val, setValue] = useState("")
     const [mimeType, setType] = useState("")
     const [file, setFile] = useState(null)
@@ -322,18 +323,13 @@ function Variable(props) {
             <FlexBox style={{gap: "2px"}}>
                 <FlexBox>
                     {!downloading?
-                    <VariablesDownloadButton onClick={async()=>{
+                    <VariablesDownloadButton varURL={`${Config.url}namespaces/${namespace}/vars/${obj.node.name}`} varName={`${obj.node.name}}`} onClick={async()=>{
                         setDownloading(true)
 
-                        const variableData = await getNamespaceVariableBuffer(obj.node.name)
+                        const variableData = await getNamespaceVariableBlob(obj.node.name)
                         const extension = MimeTypeFileExtension(variableData.contentType)
-                        let buf = Buffer.from(variableData.data, 'base64')
-
-                        const a = document.createElement('a')
-                        a.href = `data:${variableData.contentType};base64,` + buf.toString('base64')
-                        a.download = obj.node.name + `${extension ? `.${extension}`: ""}`
-                        a.click()
-
+                        saveAs(variableData.data, obj.node.name + `${extension ? `.${extension}`: ""}`)
+                        
                         setDownloading(false)
                     }}/>:<VariablesDownloadingButton />}
                 </FlexBox>
