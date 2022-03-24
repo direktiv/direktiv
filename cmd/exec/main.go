@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -35,6 +36,33 @@ var (
 
 	configPath string
 )
+
+// Manually load config flag
+func loadCfgFlag() {
+	flag.Parse()
+	var foundFlag bool
+	for _, arg := range flag.Args() {
+		if foundFlag {
+			configPath = arg
+			break
+		}
+
+		if arg == "--config" || arg == "-c" {
+			foundFlag = true
+			continue
+		}
+
+		if strings.HasPrefix(arg, "-c=") {
+			configPath = strings.TrimPrefix(arg, "-c=")
+			break
+		}
+
+		if strings.HasPrefix(arg, "--config=") {
+			configPath = strings.TrimPrefix(arg, "--config=")
+			break
+		}
+	}
+}
 
 func initDefaultConfigPath() string {
 	dirname, err := os.UserHomeDir()
@@ -109,7 +137,6 @@ func safeLoadStdIn() (*bytes.Buffer, error) {
 
 	fi, err := os.Stdin.Stat()
 	if err != nil {
-		fmt.Println("hello?")
 		return buf, err
 	}
 
@@ -138,6 +165,10 @@ func main() {
 
 	// Read Config
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", initDefaultConfigPath(), "Loads flag values from YAML config if file is found.")
+
+	// Load config flag early
+	loadCfgFlag()
+
 	viper.SetConfigFile(configPath)
 	viper.ReadInConfig()
 
@@ -249,6 +280,63 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
+func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
+	varData, err := safeLoadFile(varPath)
+	if err != nil {
+		return fmt.Errorf("failed to load variable file: %v", err)
+	}
+
+	url := wfURL + "?op=set-var&var=" + varName
+	fmt.Println(url)
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		url,
+		varData,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
+
+	return err
+}
+
+func getLocalWorkflowVariables(absPath string) ([]string, error) {
+	varFiles := make([]string, 0)
+	wfFileName := filepath.Base(absPath)
+	dirPath := filepath.Dir(absPath)
+	files, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return varFiles, fmt.Errorf("failed to read dir: %v", err)
+	}
+
+	// Find all var files: {LOCAL_PATH}/{WF_FILE}.{VAR}
+	for _, file := range files {
+		fName := file.Name()
+		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, wfFileName) {
+			varFiles = append(varFiles, filepath.Join(dirPath, fName))
+		}
+	}
+
+	return varFiles, nil
+}
+
 func updateRemoteWorkflow(url string, localPath string) error {
 	wfData, err := safeLoadFile(localPath)
 	if err != nil {
@@ -272,7 +360,12 @@ func updateRemoteWorkflow(url string, localPath string) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("failed to update workflow, server responsed with %s", resp.Status)
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
 	}
 
 	return err
@@ -283,7 +376,16 @@ var rootCmd = &cobra.Command{
 	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
 	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
 
-EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld`,
+EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+
+Variables will also be uploaded if they are prefixed with your local workflow name
+EXMAPLE:  
+  dir: /pwd
+        /helloworld.yaml
+        /helloworld.yaml.data.json
+Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load Config From flags / config
@@ -300,12 +402,37 @@ EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path
 
 		instanceStatus := "pending"
 		urlPrefix := fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
-		urlUpdateWorkflow := fmt.Sprintf("%s/tree/%s?op=update-workflow", urlPrefix, strings.TrimPrefix(path, "/"))
+		urlWorkflow := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+		urlUpdateWorkflow := fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+
+		// Get ABS Path
+		localAbsPath, err := filepath.Abs(args[0])
+		if err != nil {
+			log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
+		}
 
 		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
-		err := updateRemoteWorkflow(urlUpdateWorkflow, args[0])
+		err = updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
 		if err != nil {
 			log.Fatalf("Failed to update remote workflow: %v\n", err)
+		}
+
+		localVars, err := getLocalWorkflowVariables(localAbsPath)
+		if err != nil {
+			log.Fatalf("Failed to get local variable files: %v\n", err)
+		}
+		if len(localVars) > 0 {
+			cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+		}
+
+		// Set Remote Vars
+		for _, v := range localVars {
+			varName := strings.TrimPrefix(v, localAbsPath+".")
+			cmd.PrintErrf("Updating Remote Workflow Variable: '%s'\n", varName)
+			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
+			if err != nil {
+				log.Fatalf("Failed to set remote variable file: %v\n", err)
+			}
 		}
 
 		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", urlPrefix, strings.TrimPrefix(path, "/"))
@@ -361,8 +488,8 @@ EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
 		}
 
-		clientLogs.Headers["apikey"] = apiKey
-		clientLogs.Headers["Direktiv-Token"] = authToken
+		clientInstance.Headers["apikey"] = apiKey
+		clientInstance.Headers["Direktiv-Token"] = authToken
 
 		channelInstance := make(chan *sse.Event)
 		clientInstance.SubscribeChan("messages", channelInstance)
