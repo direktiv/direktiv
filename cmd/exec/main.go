@@ -280,6 +280,63 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
+func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
+	varData, err := safeLoadFile(varPath)
+	if err != nil {
+		return fmt.Errorf("failed to load variable file: %v", err)
+	}
+
+	url := wfURL + "?op=set-var&var=" + varName
+	fmt.Println(url)
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		url,
+		varData,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	addAuthHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		errBody, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
+		}
+
+		return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
+	}
+
+	return err
+}
+
+func getLocalWorkflowVariables(absPath string) ([]string, error) {
+	varFiles := make([]string, 0)
+	wfFileName := filepath.Base(absPath)
+	dirPath := filepath.Dir(absPath)
+	files, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return varFiles, fmt.Errorf("failed to read dir: %v", err)
+	}
+
+	// Find all var files: {LOCAL_PATH}/{WF_FILE}.{VAR}
+	for _, file := range files {
+		fName := file.Name()
+		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, wfFileName) {
+			varFiles = append(varFiles, filepath.Join(dirPath, fName))
+		}
+	}
+
+	return varFiles, nil
+}
+
 func updateRemoteWorkflow(url string, localPath string) error {
 	wfData, err := safeLoadFile(localPath)
 	if err != nil {
@@ -336,12 +393,37 @@ EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path
 
 		instanceStatus := "pending"
 		urlPrefix := fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
-		urlUpdateWorkflow := fmt.Sprintf("%s/tree/%s?op=update-workflow", urlPrefix, strings.TrimPrefix(path, "/"))
+		urlWorkflow := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+		urlUpdateWorkflow := fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+
+		// Get ABS Path
+		localAbsPath, err := filepath.Abs(args[0])
+		if err != nil {
+			log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
+		}
 
 		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
-		err := updateRemoteWorkflow(urlUpdateWorkflow, args[0])
+		err = updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
 		if err != nil {
 			log.Fatalf("Failed to update remote workflow: %v\n", err)
+		}
+
+		localVars, err := getLocalWorkflowVariables(localAbsPath)
+		if err != nil {
+			log.Fatalf("Failed to get local variable files: %v\n", err)
+		}
+		if len(localVars) > 0 {
+			cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+		}
+
+		// Set Remote Vars
+		for _, v := range localVars {
+			varName := strings.TrimPrefix(v, localAbsPath+".")
+			cmd.PrintErrf("Updating Remote Workflow Variable: '%s'\n", varName)
+			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
+			if err != nil {
+				log.Fatalf("Failed to set remote variable file: %v\n", err)
+			}
 		}
 
 		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", urlPrefix, strings.TrimPrefix(path, "/"))
