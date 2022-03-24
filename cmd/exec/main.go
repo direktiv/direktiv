@@ -376,7 +376,16 @@ var rootCmd = &cobra.Command{
 	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
 	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
 
-EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld`,
+EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+
+Variables will also be uploaded if they are prefixed with your local workflow name
+EXMAPLE:  
+  dir: /pwd
+        /helloworld.yaml
+        /helloworld.yaml.data.json
+Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load Config From flags / config
