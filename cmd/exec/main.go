@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -36,6 +36,33 @@ var (
 
 	configPath string
 )
+
+// Manually load config flag
+func loadCfgFlag() {
+	flag.Parse()
+	var foundFlag bool
+	for _, arg := range flag.Args() {
+		if foundFlag {
+			configPath = arg
+			break
+		}
+
+		if arg == "--config" || arg == "-c" {
+			foundFlag = true
+			continue
+		}
+
+		if strings.HasPrefix(arg, "-c=") {
+			configPath = strings.TrimPrefix(arg, "-c=")
+			break
+		}
+
+		if strings.HasPrefix(arg, "--config=") {
+			configPath = strings.TrimPrefix(arg, "--config=")
+			break
+		}
+	}
+}
 
 func initDefaultConfigPath() string {
 	dirname, err := os.UserHomeDir()
@@ -140,10 +167,7 @@ func main() {
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", initDefaultConfigPath(), "Loads flag values from YAML config if file is found.")
 
 	// Load config flag early
-	cfgFlag := pflag.StringP("config", "c", "", "")
-	if pflag.Parse(); cfgFlag != nil && *cfgFlag != "" {
-		configPath = *cfgFlag
-	}
+	loadCfgFlag()
 
 	viper.SetConfigFile(configPath)
 	viper.ReadInConfig()
@@ -373,8 +397,8 @@ EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
 		}
 
-		clientLogs.Headers["apikey"] = apiKey
-		clientLogs.Headers["Direktiv-Token"] = authToken
+		clientInstance.Headers["apikey"] = apiKey
+		clientInstance.Headers["Direktiv-Token"] = authToken
 
 		channelInstance := make(chan *sse.Event)
 		clientInstance.SubscribeChan("messages", channelInstance)
