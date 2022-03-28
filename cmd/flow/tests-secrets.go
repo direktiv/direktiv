@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -183,7 +183,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -193,7 +193,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 

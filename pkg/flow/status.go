@@ -3,19 +3,14 @@ package flow
 import (
 	"context"
 	"fmt"
-)
 
-const (
-	StatusPending  = "pending"
-	StatusFailed   = "failed"
-	StatusCrashed  = "crashed"
-	StatusComplete = "complete"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory, err error) error {
 
 	var status, code, message string
-	status = StatusFailed
+	status = util.InstanceStatusFailed
 	code = ErrCodeInternal
 
 	if uerr, ok := err.(*UncatchableError); ok {
@@ -26,7 +21,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		message = cerr.Message
 	} else if _, ok := err.(*InternalError); ok {
 		engine.sugar.Error(fmt.Errorf("internal error: %v", err))
-		status = StatusCrashed
+		status = util.InstanceStatusCrashed
 		message = "an internal error occurred"
 	} else {
 		engine.sugar.Error(fmt.Errorf("Unhandled error: %v", err))
@@ -54,7 +49,7 @@ func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cer
 
 	if im.ErrorCode() == "" {
 
-		in, err := im.in.Update().SetStatus(StatusFailed).SetErrorCode(cerr.Code).SetErrorMessage(cerr.Message).Save(ctx)
+		in, err := im.in.Update().SetStatus(util.InstanceStatusFailed).SetErrorCode(cerr.Code).SetErrorMessage(cerr.Message).Save(ctx)
 		if err != nil {
 			return NewInternalError(err)
 		}

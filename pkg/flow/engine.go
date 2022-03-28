@@ -136,7 +136,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(StatusPending).SetAs(util.SanitizeAsField(as)).Save(ctx)
+	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetAs(util.SanitizeAsField(as)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -571,9 +571,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		return
 	}
 
-	status := StatusComplete
+	status := util.InstanceStatusComplete
 	if im.ErrorCode() != "" {
-		status = StatusFailed
+		status = util.InstanceStatusFailed
 		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
 		engine.logToInstance(ctx, time.Now(), im.in, "Workflow failed with error '%s': %s", im.ErrorCode(), im.in.ErrorMessage)
 	}

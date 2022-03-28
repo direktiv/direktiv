@@ -107,9 +107,7 @@ func (srv *server) getNamespace(ctx context.Context, nsc *ent.NamespaceClient, n
 
 // GetInodePath returns the exact path to a inode
 func GetInodePath(path string) string {
-	if strings.HasSuffix(path, "/") {
-		path = strings.TrimSuffix(path, "/")
-	}
+	path = strings.TrimSuffix(path, "/")
 	if !strings.HasPrefix(path, "/") {
 		return "/" + path
 	}

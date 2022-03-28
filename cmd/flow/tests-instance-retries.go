@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/google/uuid"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 func testInstanceLongRetry(ctx context.Context, c grpc.FlowClient, namespace string) error {
@@ -110,7 +110,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -120,7 +120,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -228,7 +228,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -238,7 +238,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -312,7 +312,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -322,7 +322,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -420,7 +420,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -430,7 +430,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -514,7 +514,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -524,7 +524,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 

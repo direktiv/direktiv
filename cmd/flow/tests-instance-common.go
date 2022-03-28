@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -61,7 +62,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string)
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -71,7 +72,7 @@ func testStartWorkflow(ctx context.Context, c grpc.FlowClient, namespace string)
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -175,7 +176,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -185,7 +186,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -268,7 +269,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -278,7 +279,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -361,7 +362,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -371,7 +372,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -456,7 +457,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -466,7 +467,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -729,7 +730,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -740,7 +741,7 @@ states:
 	}
 
 	// if workflow thats meant to be successful fails
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("parallel instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -760,7 +761,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -771,7 +772,7 @@ states:
 	}
 
 	// if workflow thats meant to be successful fails
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("parallel instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -791,7 +792,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -802,7 +803,7 @@ states:
 	}
 
 	// if workflow thats meant to fail fails
-	if iresp.Instance.Status == flow.StatusFailed {
+	if iresp.Instance.Status == util.InstanceStatusFailed {
 		return nil
 	}
 
@@ -887,7 +888,7 @@ func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string)
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -917,7 +918,7 @@ func testInstanceError(ctx context.Context, c grpc.FlowClient, namespace string)
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -992,7 +993,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1002,7 +1003,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("foreach instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1297,7 +1298,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1307,7 +1308,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1382,7 +1383,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1392,7 +1393,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1479,7 +1480,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1489,7 +1490,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1585,7 +1586,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1595,7 +1596,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1685,7 +1686,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1695,7 +1696,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1721,8 +1722,8 @@ states:
 		return errors.New("testwf-timeout-subflow instance not found")
 	}
 
-	if inst.Status != flow.StatusFailed {
-		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	if inst.Status != util.InstanceStatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", util.InstanceStatusFailed, inst.Status)
 	}
 
 	if inst.ErrorCode != flow.ErrCodeHardTimeout {
@@ -1811,7 +1812,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1821,7 +1822,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1847,8 +1848,8 @@ states:
 		return errors.New("testwf-timeout-subflow instance not found")
 	}
 
-	if inst.Status != flow.StatusFailed {
-		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	if inst.Status != util.InstanceStatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", util.InstanceStatusFailed, inst.Status)
 	}
 
 	if inst.ErrorCode != flow.ErrCodeHardTimeout {
@@ -1937,7 +1938,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -1947,7 +1948,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -1973,8 +1974,8 @@ states:
 		return errors.New("testwf-timeout-subflow instance not found")
 	}
 
-	if inst.Status != flow.StatusFailed {
-		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	if inst.Status != util.InstanceStatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", util.InstanceStatusFailed, inst.Status)
 	}
 
 	if inst.ErrorCode != flow.ErrCodeSoftTimeout {
@@ -2063,7 +2064,7 @@ states:
 		}
 		iresp = x
 
-		if iresp.Instance.Status != flow.StatusPending {
+		if iresp.Instance.Status != util.InstanceStatusPending {
 			break
 		}
 	}
@@ -2073,7 +2074,7 @@ states:
 		return err
 	}
 
-	if iresp.Instance.Status != flow.StatusComplete {
+	if iresp.Instance.Status != util.InstanceStatusComplete {
 		return fmt.Errorf("instance failed: %s : %s", iresp.Instance.ErrorCode, iresp.Instance.ErrorMessage)
 	}
 
@@ -2099,8 +2100,8 @@ states:
 		return errors.New("testwf-timeout-subflow instance not found")
 	}
 
-	if inst.Status != flow.StatusFailed {
-		return fmt.Errorf("instance expected to be %s but was %s", flow.StatusFailed, inst.Status)
+	if inst.Status != util.InstanceStatusFailed {
+		return fmt.Errorf("instance expected to be %s but was %s", util.InstanceStatusFailed, inst.Status)
 	}
 
 	if inst.ErrorCode != flow.ErrCodeSoftTimeout {

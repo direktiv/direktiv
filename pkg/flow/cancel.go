@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
 func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
@@ -35,7 +37,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	if im.in.Status != StatusPending {
+	if im.in.Status != util.InstanceStatusPending {
 		return
 	}
 

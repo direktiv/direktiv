@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -268,7 +269,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 		return
 	}
 
-	// if im.Status() != StatusPending {
+	// if im.Status() != util.InstanceStatusPending {
 	// 	return
 	// }
 
@@ -330,7 +331,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 	now := time.Now()
 	empty := time.Time{}
 
-	if im.Status() == StatusFailed || im.Status() == StatusCrashed {
+	if im.Status() == util.InstanceStatusFailed || im.Status() == util.InstanceStatusCrashed {
 		metricsWfFail.WithLabelValues(namespace, workflow, namespace).Inc()
 	} else {
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()
