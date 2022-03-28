@@ -198,9 +198,13 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 		pathsToUpdate := make([]string, 0)
 		pathStat, err := os.Stat(localAbsPath)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Could not access path: %v", err)
 		}
 		if pathStat.IsDir() {
+			if configPathFromFlag {
+				log.Fatal("Config file must be automatically found when push directory")
+			}
+
 			err = filepath.Walk(localAbsPath,
 				func(localPath string, info os.FileInfo, err error) error {
 					if err != nil {
@@ -213,13 +217,13 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 				})
 
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("Recursive search could not access path: %v", err)
 			}
 		} else {
 			pathsToUpdate = append(pathsToUpdate, localAbsPath)
 		}
 
-		cmd.PrintErrf("Found %v Local Workflows to update\n", len(pathsToUpdate))
+		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
 			path = strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml")
 			urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
