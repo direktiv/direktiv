@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -47,152 +46,6 @@ var (
 	urlWorkflow        string
 	urlUpdateWorkflow  string
 )
-
-// Manually load config flag
-func loadCfgFlag() {
-	// flag.Parse()
-	var foundFlag bool
-	for _, arg := range os.Args {
-		if foundFlag {
-			configPath = arg
-			break
-		}
-
-		if arg == "--config" || arg == "-c" {
-			foundFlag = true
-			continue
-		}
-
-		if strings.HasPrefix(arg, "-c=") {
-			configPath = strings.TrimPrefix(arg, "-c=")
-			break
-		}
-
-		if strings.HasPrefix(arg, "--config=") {
-			configPath = strings.TrimPrefix(arg, "--config=")
-			break
-		}
-	}
-}
-
-// configFlagHelpTextLoader : Generate suffix for flag help text to show set config value.
-func configFlagHelpTextLoader(configKey string, sensitive bool) (flagHelpText string) {
-	configValue := viper.GetString(configKey)
-
-	if configValue != "" {
-		if sensitive {
-			flagHelpText = "(config \"***************\")"
-		} else {
-			flagHelpText = fmt.Sprintf("(config \"%s\")", configValue)
-		}
-	}
-
-	return
-}
-
-//	configBindFlag : Binds cli flag for config value. If flag value is set, will be used instead of config value.
-//	If config value is not set, mark flag as required.
-func configBindFlag(cmd *cobra.Command, configKey string, required bool) {
-	viper.BindPFlag(configKey, cmd.Flags().Lookup(configKey))
-	if required && viper.GetString(configKey) == "" {
-		cmd.MarkFlagRequired(configKey)
-	}
-}
-
-func addAuthHeaders(req *http.Request) {
-	req.Header.Add("apikey", apiKey)
-	req.Header.Add("Direktiv-Token", authToken)
-}
-
-func safeLoadFile(filePath string) (*bytes.Buffer, error) {
-	buf := new(bytes.Buffer)
-
-	if filePath == "" {
-		// skip if filePath is empty
-		return buf, nil
-	}
-
-	fStat, err := os.Stat(filePath)
-	if err != nil {
-		return buf, err
-	}
-
-	if fStat.Size() > maxSize {
-		return buf, fmt.Errorf("file is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
-	}
-
-	fData, err := os.ReadFile(filePath)
-	if err != nil {
-		return buf, err
-	}
-
-	buf = bytes.NewBuffer(fData)
-
-	return buf, nil
-}
-
-func safeLoadStdIn() (*bytes.Buffer, error) {
-	buf := new(bytes.Buffer)
-
-	fi, err := os.Stdin.Stat()
-	if err != nil {
-		return buf, err
-	}
-
-	if fi.Mode()&os.ModeNamedPipe == 0 {
-		// No stdin
-		return buf, nil
-	}
-
-	if fi.Size() > maxSize {
-		return buf, fmt.Errorf("stdin is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
-	}
-
-	fData, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		return buf, err
-	}
-
-	buf = bytes.NewBuffer(fData)
-
-	return buf, nil
-}
-
-// autoConfigPathFinder : Walk through parent directories of local workflow yaml until config file is found.
-func autoConfigPathFinder() {
-	var pathArg string
-	var currentDir string
-
-	// Find path is cmd args
-	for i := 2; i < len(os.Args); i++ {
-		if !strings.HasPrefix(os.Args[i-1], "-") && !strings.HasPrefix(os.Args[i], "-") {
-			pathArg = os.Args[i]
-			break
-		}
-	}
-
-	wfWD, err := filepath.Abs(pathArg)
-	if err != nil {
-		log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
-	}
-
-	if fStat, err := os.Stat(wfWD); err == nil && fStat.IsDir() {
-		currentDir = wfWD
-	} else {
-		// Get parent dir if target local path is a file
-		currentDir = filepath.Dir(wfWD)
-	}
-
-	for previousDir := ""; currentDir != previousDir; currentDir = filepath.Dir(currentDir) {
-		cfgPath := filepath.Join(currentDir, DefaultConfigName)
-		if _, err := os.Stat(cfgPath); err == nil {
-			configPath = cfgPath
-			configPathFromFlag = false
-			break
-		}
-		previousDir = currentDir
-	}
-}
 
 func main() {
 
@@ -246,55 +99,6 @@ func main() {
 
 }
 
-func executeWorkflow(url string) (executeResponse, error) {
-	var instanceDetails executeResponse
-
-	// Read input data from flag file
-	inputData, err := safeLoadFile(input)
-	if err != nil {
-		log.Fatalf("Failed to load input file: %v", err)
-	}
-
-	// If inputData is empty attempt to read from stdin
-	if inputData.Len() == 0 {
-		inputData, err = safeLoadStdIn()
-		if err != nil {
-			log.Fatalf("Failed to load stdin: %v", err)
-		}
-	}
-
-	// If no file or stdin input data was provided, set data to {}
-	if inputData.Len() == 0 && inputType == "application/json" {
-		inputData = bytes.NewBufferString("{}")
-	}
-
-	req, err := http.NewRequest(
-		http.MethodPost,
-		url,
-		inputData,
-	)
-	if err != nil {
-		return instanceDetails, err
-	}
-
-	req.Header.Add("Content-Type", inputType)
-	addAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return instanceDetails, err
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return instanceDetails, err
-	}
-
-	err = json.Unmarshal(body, &instanceDetails)
-	return instanceDetails, err
-
-}
-
 func getOutput(url string) ([]byte, error) {
 	var output instanceOutput
 
@@ -329,97 +133,7 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
-func setRemoteWorkflowVariable(wfURL string, varName string, varPath string) error {
-	varData, err := safeLoadFile(varPath)
-	if err != nil {
-		return fmt.Errorf("failed to load variable file: %v", err)
-	}
-
-	url := wfURL + "?op=set-var&var=" + varName
-
-	req, err := http.NewRequest(
-		http.MethodPut,
-		url,
-		varData,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
-	}
-
-	addAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		errBody, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
-		}
-
-		return fmt.Errorf("failed to set workflow var, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
-	}
-
-	return err
-}
-
-func getLocalWorkflowVariables(absPath string) ([]string, error) {
-	varFiles := make([]string, 0)
-	wfFileName := filepath.Base(absPath)
-	dirPath := filepath.Dir(absPath)
-	files, err := ioutil.ReadDir(dirPath)
-	if err != nil {
-		return varFiles, fmt.Errorf("failed to read dir: %v", err)
-	}
-
-	// Find all var files: {LOCAL_PATH}/{WF_FILE}.{VAR}
-	for _, file := range files {
-		fName := file.Name()
-		if !file.IsDir() && fName != wfFileName && strings.HasPrefix(fName, wfFileName) {
-			varFiles = append(varFiles, filepath.Join(dirPath, fName))
-		}
-	}
-
-	return varFiles, nil
-}
-
-func updateRemoteWorkflow(url string, localPath string) error {
-	wfData, err := safeLoadFile(localPath)
-	if err != nil {
-		log.Fatalf("Failed to load workflow file: %v", err)
-	}
-
-	req, err := http.NewRequest(
-		http.MethodPost,
-		url,
-		wfData,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create request file: %v", err)
-	}
-
-	addAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		errBody, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\n%s", resp.Status, string(errBody))
-		}
-
-		return fmt.Errorf("failed to update workflow, server responsed with %s\n------DUMPING ERROR BODY ------\nCould read response body", resp.Status)
-	}
-
-	return err
-}
-
-func workflowPrepare(wfPath string) {
+func cmdPrepareWorkflow(wfPath string) {
 	var err error
 
 	// Load Config From flags / config
@@ -478,7 +192,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 `,
 	Args: cobra.ExactArgs(1),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		workflowPrepare(args[0])
+		cmdPrepareWorkflow(args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		pathsToUpdate := make([]string, 0)
@@ -557,7 +271,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 `,
 	Args: cobra.ExactArgs(1),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		workflowPrepare(args[0])
+		cmdPrepareWorkflow(args[0])
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		instanceStatus := "pending"
