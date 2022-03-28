@@ -21,6 +21,7 @@ import (
 
 const DefaultConfigName = ".direktiv.conf"
 
+// Flags
 var (
 	addr       string
 	path       string
@@ -35,8 +36,16 @@ var (
 
 	maxSize int64 = 1073741824
 
-	configPath         string
+	configPath string
+)
+
+// Shared Vars
+var (
 	configPathFromFlag bool = true
+	localAbsPath       string
+	urlPrefix          string
+	urlWorkflow        string
+	urlUpdateWorkflow  string
 )
 
 // Manually load config flag
@@ -66,18 +75,6 @@ func loadCfgFlag() {
 	}
 }
 
-func initDefaultConfigPath() string {
-	dirname, err := os.UserHomeDir()
-	if err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("Warning: Failed to get home directory. Could not establish config file for defaults: %s\n", err.Error()))
-		return ""
-	}
-	configHome := dirname
-	configName := ".dre-config"
-	configType := "yml"
-	return filepath.Join(configHome, configName+"."+configType)
-}
-
 // configFlagHelpTextLoader : Generate suffix for flag help text to show set config value.
 func configFlagHelpTextLoader(configKey string, sensitive bool) (flagHelpText string) {
 	configValue := viper.GetString(configKey)
@@ -95,10 +92,10 @@ func configFlagHelpTextLoader(configKey string, sensitive bool) (flagHelpText st
 
 //	configBindFlag : Binds cli flag for config value. If flag value is set, will be used instead of config value.
 //	If config value is not set, mark flag as required.
-func configBindFlag(configKey string, required bool) {
-	viper.BindPFlag(configKey, rootCmd.Flags().Lookup(configKey))
+func configBindFlag(cmd *cobra.Command, configKey string, required bool) {
+	viper.BindPFlag(configKey, cmd.Flags().Lookup(configKey))
 	if required && viper.GetString(configKey) == "" {
-		rootCmd.MarkFlagRequired(configKey)
+		cmd.MarkFlagRequired(configKey)
 	}
 }
 
@@ -164,9 +161,10 @@ func safeLoadStdIn() (*bytes.Buffer, error) {
 // autoConfigPathFinder : Walk through parent directories of local workflow yaml until config file is found.
 func autoConfigPathFinder() {
 	var pathArg string
+	var currentDir string
 
 	// Find path is cmd args
-	for i := 1; i < len(os.Args); i++ {
+	for i := 2; i < len(os.Args); i++ {
 		if !strings.HasPrefix(os.Args[i-1], "-") && !strings.HasPrefix(os.Args[i], "-") {
 			pathArg = os.Args[i]
 			break
@@ -178,7 +176,12 @@ func autoConfigPathFinder() {
 		log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
 	}
 
-	currentDir := filepath.Dir(wfWD)
+	if fStat, err := os.Stat(wfWD); err == nil && fStat.IsDir() {
+		currentDir = wfWD
+	} else {
+		// Get parent dir if target local path is a file
+		currentDir = filepath.Dir(wfWD)
+	}
 
 	for previousDir := ""; currentDir != previousDir; currentDir = filepath.Dir(currentDir) {
 		cfgPath := filepath.Join(currentDir, DefaultConfigName)
@@ -196,6 +199,8 @@ func main() {
 	var err error
 
 	// Read Config
+	rootCmd.AddCommand(execCmd)
+	rootCmd.AddCommand(pushCmd)
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories")
 
 	// Load config flag early
@@ -212,23 +217,27 @@ func main() {
 
 	// Set Flags
 	rootCmd.Flags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
-	rootCmd.Flags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set"+configFlagHelpTextLoader("path", false))
-	rootCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
-	rootCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
-	rootCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
+
+	execCmd.Flags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set. "+configFlagHelpTextLoader("path", false))
+	pushCmd.Flags().StringP("path", "p", "", "Target remote path. e.g. '/dir/workflow'. Automatically set if config file was auto-set. If pushing local dir config flag cannot be used. "+configFlagHelpTextLoader("path", false))
+
+	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
+	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
+	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
 	rootCmd.Flags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
 	rootCmd.Flags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
 	rootCmd.Flags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
 	rootCmd.Flags().BoolVar(&insecure, "insecure", true, "Accept insecure https connections")
 
 	// Bing CLI flags to viper
-	configBindFlag("addr", true)
+	configBindFlag(rootCmd, "addr", true)
 
 	// If config was automatically found, path is no longer required
-	configBindFlag("path", configPathFromFlag)
-	configBindFlag("namespace", true)
-	configBindFlag("api-key", false)
-	configBindFlag("auth-token", false)
+	configBindFlag(execCmd, "path", configPathFromFlag)
+	configBindFlag(pushCmd, "path", configPathFromFlag)
+	configBindFlag(rootCmd, "namespace", true)
+	configBindFlag(rootCmd, "api-key", false)
+	configBindFlag(rootCmd, "auth-token", false)
 
 	err = rootCmd.Execute()
 	if err != nil {
@@ -410,7 +419,128 @@ func updateRemoteWorkflow(url string, localPath string) error {
 	return err
 }
 
+func workflowPrepare(wfPath string) {
+	var err error
+
+	// Load Config From flags / config
+	addr = viper.GetString("addr")
+	path = viper.GetString("path")
+	namespace = viper.GetString("namespace")
+	apiKey = viper.GetString("api-key")
+	authToken = viper.GetString("auth-token")
+	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
+		maxSize = cfgMaxSize
+	}
+
+	// Get ABS Path
+	localAbsPath, err = filepath.Abs(wfPath)
+	if err != nil {
+		log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
+	}
+
+	// If config file was found automatically, generate path relative to config dir
+	if !configPathFromFlag {
+		os.Stderr.WriteString(fmt.Sprintf("Using config file: '%s'\n", configPath))
+		path = strings.TrimSuffix(strings.TrimPrefix(localAbsPath, filepath.Dir(configPath)), ".yaml")
+	} else {
+		os.Stderr.WriteString(fmt.Sprintf("Using flag config file: '%s'\n", configPath))
+	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
+
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+	urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+}
+
 var rootCmd = &cobra.Command{
+	Use: "exec",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+
+	},
+}
+
+var pushCmd = &cobra.Command{
+	Use:   "push WORKFLOW_PATH|DIR_PATH",
+	Short: "Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file",
+	Long: `"Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file.
+Pushing local directory cannot be used with config flag. Config must be found automatically to determine folder structure.
+
+EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
+
+Variables will also be uploaded if they are prefixed with your local workflow name
+EXMAPLE:  
+  dir: /pwd
+        /helloworld.yaml
+        /helloworld.yaml.data.json
+Executing: push helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+`,
+	Args: cobra.ExactArgs(1),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		workflowPrepare(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		pathsToUpdate := make([]string, 0)
+		pathStat, err := os.Stat(localAbsPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if pathStat.IsDir() {
+			err = filepath.Walk(localAbsPath,
+				func(localPath string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if strings.HasSuffix(localPath, ".yaml") {
+						pathsToUpdate = append(pathsToUpdate, localPath)
+					}
+					return nil
+				})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			pathsToUpdate = append(pathsToUpdate, localAbsPath)
+		}
+
+		cmd.PrintErrf("Found %v Local Workflows to update\n", len(pathsToUpdate))
+		for i, localPath := range pathsToUpdate {
+			path = strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml")
+			urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+			urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), namespace, path)
+			err = updateRemoteWorkflow(urlUpdateWorkflow, localPath)
+			if err != nil {
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+
+			localVars, err := getLocalWorkflowVariables(localPath)
+			if err != nil {
+				log.Fatalf("Failed to get local variable files: %v\n", err)
+			}
+			if len(localVars) > 0 {
+				cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+			}
+
+			// Set Remote Vars
+			for _, v := range localVars {
+				varName := strings.TrimPrefix(v, localPath+".")
+				cmd.PrintErrf("      Updating Remote Workflow Variable: '%s'\n", varName)
+				err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
+				if err != nil {
+					log.Fatalf("Failed to set remote variable file: %v\n", err)
+				}
+			}
+
+			cmd.PrintErrf("      Successfully updated remote workflow\n")
+		}
+	},
+}
+
+var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
 	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
 	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
@@ -426,40 +556,14 @@ Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --pa
 Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
 `,
 	Args: cobra.ExactArgs(1),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		workflowPrepare(args[0])
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// Load Config From flags / config
-		addr = viper.GetString("addr")
-		path = viper.GetString("path")
-		namespace = viper.GetString("namespace")
-		apiKey = viper.GetString("api-key")
-		authToken = viper.GetString("auth-token")
-		if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
-			maxSize = cfgMaxSize
-		}
-
-		// Get ABS Path
-		localAbsPath, err := filepath.Abs(args[0])
-		if err != nil {
-			log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
-		}
-
-		// If config file was found automatically, generate path relative to config dir
-		if !configPathFromFlag {
-			cmd.PrintErrf("Using config file: '%s'\n", configPath)
-			path = strings.TrimSuffix(strings.TrimPrefix(localAbsPath, filepath.Dir(configPath)), ".yaml")
-		} else {
-			cmd.PrintErrf("Using flag config file: '%s'\n", configPath)
-		}
-
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-
 		instanceStatus := "pending"
-		urlPrefix := fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
-		urlWorkflow := fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
-		urlUpdateWorkflow := fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 
 		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
-		err = updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
+		err := updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
 		if err != nil {
 			log.Fatalf("Failed to update remote workflow: %v\n", err)
 		}
