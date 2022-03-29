@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel/trace"
@@ -558,7 +557,7 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s, exists := v["path"]; exists {
-		annotations = append(annotations, "workflow", flow.GetInodePath(s))
+		annotations = append(annotations, "workflow", GetInodePath(s))
 	}
 
 	if s, exists := v["var"]; exists {

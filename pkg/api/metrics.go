@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -15,12 +16,11 @@ import (
 
 // GetInodePath returns the path without the first slash
 func GetInodePath(path string) string {
-	if strings.HasSuffix(path, "/") {
-		path = strings.TrimSuffix(path, "/")
-	}
+	path = strings.TrimSuffix(path, "/")
 	if !strings.HasPrefix(path, "/") {
 		return "/" + path
 	}
+	path = filepath.Clean(path)
 	return path
 }
 

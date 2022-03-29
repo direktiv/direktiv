@@ -14,7 +14,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
-	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gabriel-vasile/mimetype"
@@ -3586,7 +3585,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if s := status.Instance.GetStatus(); s == flow.StatusComplete {
+		if s := status.Instance.GetStatus(); s == util.InstanceStatusComplete {
 
 			_ = c.CloseSend()
 
@@ -3654,13 +3653,13 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			_, _ = io.Copy(w, bytes.NewReader(data))
 			return
 
-		} else if s == flow.StatusFailed {
+		} else if s == util.InstanceStatusFailed {
 			w.Header().Set("Direktiv-Instance-Error-Code", status.Instance.ErrorCode)
 			w.Header().Set("Direktiv-Instance-Error-Message", status.Instance.ErrorMessage)
 			code := http.StatusInternalServerError
 			http.Error(w, fmt.Sprintf("An error occurred executing instance %s: %s: %s", resp.Instance, status.Instance.ErrorCode, status.Instance.ErrorMessage), code)
 			return
-		} else if s == flow.StatusCrashed {
+		} else if s == util.InstanceStatusCrashed {
 			code := http.StatusInternalServerError
 			http.Error(w, fmt.Sprintf("An internal error occurred executing instance: %s", resp.Instance), code)
 			return
