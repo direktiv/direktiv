@@ -159,9 +159,40 @@ func (srv *server) logToInstanceRaw(ctx context.Context, t time.Time, in *ent.In
 		wfid = in.Edges.Workflow.ID.String()
 	}
 
-	srv.sugar.Infow(msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", GetInodePath(in.As), "instance", in.ID.String())
+	as := GetInodePath(in.As)
+
+	srv.sugar.Infow(msg, "trace", tid, "namespace", nsname, "namespace-id", nsid, "workflow-id", wfid, "workflow", as, "instance", in.ID.String())
 
 	srv.pubsub.NotifyInstanceLogs(in)
+
+	// ancestors
+	caller, err := srv.engine.InstanceCallerFromEntInstance(ctx, in)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+	if caller == nil {
+		return
+	}
+
+	ancestors := append([]subflowAncestor{{ID: caller.InstanceID, As: caller.As}}, caller.Ancestors...)
+	for _, ancestor := range ancestors {
+		prefix := fmt.Sprintf("[%s %s] ", in.ID.String(), as)
+		amsg := prefix + msg
+		uid, err := uuid.Parse(ancestor.ID)
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+		pin := &ent.Instance{ID: uid}
+		_, err = logc.Create().SetMsg(amsg).SetInstance(pin).SetT(t).Save(ctx)
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+		srv.pubsub.NotifyInstanceLogs(pin)
+	}
+
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {

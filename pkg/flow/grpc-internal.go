@@ -101,7 +101,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 
 	inc := internal.db.Instance
 
-	d, err := internal.getInstance(ctx, inc, req.GetInstanceId(), false)
+	d, err := internal.getInstance(ctx, inc, req.GetInstanceId(), true)
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err

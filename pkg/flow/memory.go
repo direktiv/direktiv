@@ -274,23 +274,37 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 
 }
 
-func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *subflowCaller {
+func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) (*subflowCaller, error) {
+
+	return engine.InstanceCallerFromEntInstance(ctx, im.in)
+
+}
+
+func (engine *engine) InstanceCallerFromEntInstance(ctx context.Context, in *ent.Instance) (*subflowCaller, error) {
 
 	var err error
+	var rt *ent.InstanceRuntime
 
-	str := im.in.Edges.Runtime.CallerData
+	if in.Edges.Runtime == nil {
+		rt, err = in.Runtime(ctx)
+		if err != nil {
+			return nil, err
+		}
+		in.Edges.Runtime = rt
+	}
+
+	str := in.Edges.Runtime.CallerData
 	if str == "" || str == "cron" {
-		return nil
+		return nil, nil
 	}
 
 	output := new(subflowCaller)
 	err = json.Unmarshal([]byte(str), output)
 	if err != nil {
-		engine.sugar.Error(err)
-		return nil
+		return nil, err
 	}
 
-	return output
+	return output, nil
 
 }
 

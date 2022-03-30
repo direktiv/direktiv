@@ -22,7 +22,11 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 
 func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory) {
 
-	caller := engine.InstanceCaller(ctx, im)
+	caller, err := engine.InstanceCaller(ctx, im)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
 
 	if caller != nil {
 

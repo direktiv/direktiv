@@ -108,9 +108,21 @@ func (sl *foreachStateLogic) do(ctx context.Context, engine *engine, im *instanc
 		// subflow
 
 		caller := new(subflowCaller)
+		caller.As = im.in.As
 		caller.InstanceID = im.ID().String()
 		caller.State = sl.state.GetID()
 		caller.Step = im.Step()
+
+		caller.Ancestors = make([]subflowAncestor, 0)
+		var ancestor *subflowCaller
+		ancestor, err = engine.InstanceCaller(ctx, im)
+		if err != nil {
+			err = NewInternalError(err)
+			return
+		}
+		if ancestor != nil {
+			caller.Ancestors = append([]subflowAncestor{{ID: ancestor.InstanceID, As: ancestor.As}}, ancestor.Ancestors...)
+		}
 
 		var subflowID string
 

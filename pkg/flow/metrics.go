@@ -280,7 +280,11 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 	args.Revision = im.in.Edges.Revision.ID.String()
 	args.Instance = im.ID().String()
 
-	caller := engine.InstanceCaller(ctx, im)
+	caller, err := engine.InstanceCaller(ctx, im)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
 	if caller != nil {
 		args.Invoker = caller.InstanceID
 	}

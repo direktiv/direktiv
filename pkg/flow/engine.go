@@ -83,11 +83,18 @@ type newInstanceArgs struct {
 	CallerData string
 }
 
+type subflowAncestor struct {
+	ID string
+	As string
+}
+
 type subflowCaller struct {
 	InstanceID string
 	State      string
 	Step       int
 	Depth      int
+	As         string
+	Ancestors  []subflowAncestor
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {

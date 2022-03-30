@@ -604,7 +604,9 @@ func (internal *internal) getInstance(ctx context.Context, inc *ent.InstanceClie
 		q.WithInode()
 	})
 	if load {
-		query = query.WithRuntime()
+		query = query.WithRuntime(func(q *ent.InstanceRuntimeQuery) {
+			q.Select(entirt.FieldCallerData)
+		})
 	}
 	in, err := query.Only(ctx)
 	if err != nil {
