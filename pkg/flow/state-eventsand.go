@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -117,13 +118,27 @@ func (sl *eventsAndStateLogic) Run(ctx context.Context, engine *engine, im *inst
 		return
 	}
 
-	for _, event := range events {
+	inMap := make(map[string]*cloudevents.Event)
 
-		err = im.StoreData(event.Type(), event)
+	for a := range events {
+
+		_, ok := inMap[events[a].Type()]
+		k := events[a].Type()
+
+		// duplicate, add a counter of the index on
+		if ok {
+			k = fmt.Sprintf("%s.%d", events[a].Type(), a)
+		}
+		inMap[k] = events[a]
+
+	}
+
+	// now stroe it
+	for k, v := range inMap {
+		err = im.StoreData(k, v)
 		if err != nil {
 			return
 		}
-
 	}
 
 	transition = &stateTransition{
