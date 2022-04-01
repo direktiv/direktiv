@@ -15,7 +15,7 @@
 
 ## EventsAndStateDefinition 
 
-To pause the workflow and wait until multiple CloudEvents events are received before proceeding, the `eventsAnd` is used. Every listed event must be received for the state to complete.
+To pause the workflow and wait until multiple CloudEvents events are received before proceeding, the `eventsAnd` is used. Every listed event must be received for the state to complete. If there are multiple events of the same type a index number will be added to the duplicate cloudevent types.
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
