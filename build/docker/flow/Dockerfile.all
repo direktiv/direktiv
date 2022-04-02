@@ -8,6 +8,9 @@ COPY pkg src/pkg/
 COPY cmd src/cmd/
 COPY .git .git
 
+ARG RELEASE_VERSION
+ENV RELEASE=$RELEASE_VERSION
+
 RUN cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \
     export GIT_DIRTY=`git diff --quiet || echo '-dirty'` && \
