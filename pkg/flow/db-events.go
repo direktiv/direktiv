@@ -219,7 +219,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 		count := 1
 
 		if ms.Type == model.StartTypeEventsAnd.String() {
-			correlations = append(correlations, ms.Correlate...)
 			count = len(ms.Events)
 		}
 
