@@ -78,7 +78,6 @@ See [StartEventDefinition](#StartEventDefinition) for an explanation of the inpu
 | `type` | Identifies which kind of [StartDefinition](#StartDefintion) is being used. In this case it must be set to `eventsAnd`. | string | yes | 
 | `state` | References a defined state's `id`. This state will be used as the entrypoint into the workflow. If left undefined, it defaults to the first state defined in the `states` list.  | string | no |
 | `lifespan` | An ISO8601 duration string. Sets the maximum duration an event can be stored before being discarded while waiting for other events. | string | no |
-| `correlate` | CloudEvents event context keys can must exist on every event and have matching values to be grouped together. | []string | no |
 | `events` | Defines what events can trigger the workflow.  | [[]StartEventDefinition](#StartEventDefinition) | yes |
 
 ### StartEventDefinition

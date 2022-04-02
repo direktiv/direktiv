@@ -199,13 +199,19 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 	if len(ms.Events) > 0 && ms.Enabled {
 
 		var ev []map[string]interface{}
-		for _, e := range ms.Events {
+		for i, e := range ms.Events {
 			em := make(map[string]interface{})
 			em[eventTypeString] = e.Type
 
 			for kf, vf := range e.Context {
 				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
 			}
+
+			// these value are set when a matching event comes in
+			em["time"] = 0
+			em["value"] = ""
+			em["idx"] = i
+
 			ev = append(ev, em)
 		}
 
