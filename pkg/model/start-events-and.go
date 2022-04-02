@@ -7,7 +7,6 @@ import (
 type EventsAndStart struct {
 	StartCommon `yaml:",inline"`
 	LifeSpan    string                 `yaml:"lifespan,omitempty"`
-	Correlate   []string               `yaml:"correlate,omitempty"`
 	Events      []StartEventDefinition `yaml:"events"`
 }
 
