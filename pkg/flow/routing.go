@@ -17,12 +17,11 @@ import (
 )
 
 type muxStart struct {
-	Enabled   bool                         `json:"enabled"`
-	Type      string                       `json:"type"`
-	Cron      string                       `json:"cron"`
-	Events    []model.StartEventDefinition `json:"events"`
-	Correlate []string                     `json:"correlate"`
-	Lifespan  string                       `json:"lifespan"`
+	Enabled  bool                         `json:"enabled"`
+	Type     string                       `json:"type"`
+	Cron     string                       `json:"cron"`
+	Events   []model.StartEventDefinition `json:"events"`
+	Lifespan string                       `json:"lifespan"`
 }
 
 func newMuxStart(workflow *model.Workflow) *muxStart {
@@ -39,7 +38,6 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	case model.StartTypeEvent:
 	case model.StartTypeEventsAnd:
 		x := def.(*model.EventsAndStart)
-		ms.Correlate = x.Correlate
 		ms.Lifespan = x.LifeSpan
 	case model.StartTypeEventsXor:
 	case model.StartTypeScheduled:
