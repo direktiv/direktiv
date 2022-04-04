@@ -23,6 +23,7 @@ message Instance {
 	string status = 5;
 	string errorCode = 6;
 	string errorMessage = 7;
+	string invoker = 8;
 }
 
 message InstancesEdge {

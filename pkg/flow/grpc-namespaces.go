@@ -12,66 +12,94 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func namespaceOrder(p *pagination) ent.NamespacePaginateOption {
+func namespaceOrder(p *pagination) []ent.NamespacePaginateOption {
 
-	field := ent.NamespaceOrderFieldName
-	direction := ent.OrderDirectionAsc
+	var opts []ent.NamespacePaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
 
-		if x := p.order.Field; x != "" && x == "NAME" {
+		if o == nil {
+			continue
+		}
+
+		field := ent.NamespaceOrderFieldName
+		direction := ent.OrderDirectionAsc
+
+		if x := o.Field; x != "" && x == "NAME" {
 			field = ent.NamespaceOrderFieldName
 		}
 
-		if x := p.order.Direction; x != "" && x == "DESC" {
+		if x := o.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
+		opts = append(opts, ent.WithNamespaceOrder(&ent.NamespaceOrder{
+			Direction: direction,
+			Field:     field,
+		}))
 	}
 
-	return ent.WithNamespaceOrder(&ent.NamespaceOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithNamespaceOrder(&ent.NamespaceOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.NamespaceOrderFieldName,
+		}))
+	}
+
+	return opts
 
 }
 
-func namespaceFilter(p *pagination) ent.NamespacePaginateOption {
+func namespaceFilter(p *pagination) []ent.NamespacePaginateOption {
+
+	var opts []ent.NamespacePaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithNamespaceFilter(func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
-			return query, nil
-		}
+		filter := f.Val
 
-		switch field {
-		case "NAME":
+		opts = append(opts, ent.WithNamespaceFilter(func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
 
-			ftype := p.filter.Type
-			if ftype == "" {
+			if filter == "" {
 				return query, nil
 			}
 
-			switch ftype {
-			case "CONTAINS":
-				return query.Where(entns.NameContains(filter)), nil
+			field := f.Field
+			if field == "" {
+				return query, nil
 			}
-		}
 
-		return query, nil
+			switch field {
+			case "NAME":
 
-	})
+				ftype := f.Type
+				if ftype == "" {
+					return query, nil
+				}
+
+				switch ftype {
+				case "CONTAINS":
+					return query.Where(entns.NameContains(filter)), nil
+				}
+			}
+
+			return query, nil
+
+		}))
+
+	}
+
+	return opts
 
 }
 
@@ -189,11 +217,8 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	}
 
 	opts := []ent.NamespacePaginateOption{}
-	opts = append(opts, namespaceOrder(p))
-	filter := namespaceFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, namespaceOrder(p)...)
+	opts = append(opts, namespaceFilter(p)...)
 
 	nsc := flow.db.Namespace
 	query := nsc.Query()
@@ -227,11 +252,8 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 	}
 
 	opts := []ent.NamespacePaginateOption{}
-	opts = append(opts, namespaceOrder(p))
-	filter := namespaceFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, namespaceOrder(p)...)
+	opts = append(opts, namespaceFilter(p)...)
 
 	sub := flow.pubsub.SubscribeNamespaces()
 	defer flow.cleanup(sub.Close)

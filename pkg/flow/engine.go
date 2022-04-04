@@ -112,10 +112,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
-		if args.Caller == "API" {
+		if strings.ToLower(args.Caller) == "api" {
 			return nil, errors.New("cannot manually invoke event-based workflow")
 		}
-		if args.Caller == "workflow" {
+		if strings.HasPrefix(args.Caller, "workflow") {
 			return nil, errors.New("cannot invoke event-based workflow as a subflow")
 		}
 	}
@@ -136,7 +136,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		return nil, err
 	}
 
-	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetAs(util.SanitizeAsField(as)).Save(ctx)
+	in, err := inc.Create().SetNamespace(d.ns()).SetWorkflow(d.wf).SetRevision(d.rev()).SetRuntime(rt).SetStatus(util.InstanceStatusPending).SetInvoker(args.Caller).SetAs(util.SanitizeAsField(as)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -639,7 +639,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.Input = input
-	args.Caller = "workflow" // TODO: human readable
+	args.Caller = fmt.Sprintf("workflow:%v", caller.InstanceID) // TODO: human readable
 
 	var threadVars []*ent.VarRef
 

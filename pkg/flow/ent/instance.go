@@ -35,6 +35,8 @@ type Instance struct {
 	ErrorCode string `json:"errorCode,omitempty"`
 	// ErrorMessage holds the value of the "errorMessage" field.
 	ErrorMessage string `json:"errorMessage,omitempty"`
+	// Invoker holds the value of the "invoker" field.
+	Invoker string `json:"invoker,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InstanceQuery when eager-loading is set.
 	Edges               InstanceEdges `json:"edges"`
@@ -163,7 +165,7 @@ func (*Instance) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage:
+		case instance.FieldStatus, instance.FieldAs, instance.FieldErrorCode, instance.FieldErrorMessage, instance.FieldInvoker:
 			values[i] = new(sql.NullString)
 		case instance.FieldCreatedAt, instance.FieldUpdatedAt, instance.FieldEndAt:
 			values[i] = new(sql.NullTime)
@@ -237,6 +239,12 @@ func (i *Instance) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field errorMessage", values[j])
 			} else if value.Valid {
 				i.ErrorMessage = value.String
+			}
+		case instance.FieldInvoker:
+			if value, ok := values[j].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field invoker", values[j])
+			} else if value.Valid {
+				i.Invoker = value.String
 			}
 		case instance.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -341,6 +349,8 @@ func (i *Instance) String() string {
 	builder.WriteString(i.ErrorCode)
 	builder.WriteString(", errorMessage=")
 	builder.WriteString(i.ErrorMessage)
+	builder.WriteString(", invoker=")
+	builder.WriteString(i.Invoker)
 	builder.WriteByte(')')
 	return builder.String()
 }

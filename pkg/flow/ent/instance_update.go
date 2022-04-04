@@ -108,6 +108,26 @@ func (iu *InstanceUpdate) ClearErrorMessage() *InstanceUpdate {
 	return iu
 }
 
+// SetInvoker sets the "invoker" field.
+func (iu *InstanceUpdate) SetInvoker(s string) *InstanceUpdate {
+	iu.mutation.SetInvoker(s)
+	return iu
+}
+
+// SetNillableInvoker sets the "invoker" field if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableInvoker(s *string) *InstanceUpdate {
+	if s != nil {
+		iu.SetInvoker(*s)
+	}
+	return iu
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (iu *InstanceUpdate) ClearInvoker() *InstanceUpdate {
+	iu.mutation.ClearInvoker()
+	return iu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iu *InstanceUpdate) SetNamespaceID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetNamespaceID(id)
@@ -490,6 +510,19 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instance.FieldErrorMessage,
+		})
+	}
+	if value, ok := iu.mutation.Invoker(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instance.FieldInvoker,
+		})
+	}
+	if iu.mutation.InvokerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instance.FieldInvoker,
 		})
 	}
 	if iu.mutation.NamespaceCleared() {
@@ -939,6 +972,26 @@ func (iuo *InstanceUpdateOne) ClearErrorMessage() *InstanceUpdateOne {
 	return iuo
 }
 
+// SetInvoker sets the "invoker" field.
+func (iuo *InstanceUpdateOne) SetInvoker(s string) *InstanceUpdateOne {
+	iuo.mutation.SetInvoker(s)
+	return iuo
+}
+
+// SetNillableInvoker sets the "invoker" field if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableInvoker(s *string) *InstanceUpdateOne {
+	if s != nil {
+		iuo.SetInvoker(*s)
+	}
+	return iuo
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (iuo *InstanceUpdateOne) ClearInvoker() *InstanceUpdateOne {
+	iuo.mutation.ClearInvoker()
+	return iuo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iuo *InstanceUpdateOne) SetNamespaceID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetNamespaceID(id)
@@ -1345,6 +1398,19 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instance.FieldErrorMessage,
+		})
+	}
+	if value, ok := iuo.mutation.Invoker(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instance.FieldInvoker,
+		})
+	}
+	if iuo.mutation.InvokerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instance.FieldInvoker,
 		})
 	}
 	if iuo.mutation.NamespaceCleared() {

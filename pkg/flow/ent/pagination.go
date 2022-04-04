@@ -1308,6 +1308,16 @@ var (
 			}
 		},
 	}
+	// InodeOrderFieldType orders Inode by type.
+	InodeOrderFieldType = &InodeOrderField{
+		field: inode.FieldType,
+		toCursor: func(i *Inode) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.Type,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
@@ -1320,6 +1330,8 @@ func (f InodeOrderField) String() string {
 		str = "UPDATED"
 	case inode.FieldName:
 		str = "NAME"
+	case inode.FieldType:
+		str = "TYPE"
 	}
 	return str
 }
@@ -1342,6 +1354,8 @@ func (f *InodeOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *InodeOrderFieldUpdatedAt
 	case "NAME":
 		*f = *InodeOrderFieldName
+	case "TYPE":
+		*f = *InodeOrderFieldType
 	default:
 		return fmt.Errorf("%s is not a valid InodeOrderField", str)
 	}

@@ -27,6 +27,8 @@ const (
 	FieldErrorCode = "error_code"
 	// FieldErrorMessage holds the string denoting the errormessage field in the database.
 	FieldErrorMessage = "error_message"
+	// FieldInvoker holds the string denoting the invoker field in the database.
+	FieldInvoker = "invoker"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// EdgeWorkflow holds the string denoting the workflow edge name in mutations.
@@ -113,6 +115,7 @@ var Columns = []string{
 	FieldAs,
 	FieldErrorCode,
 	FieldErrorMessage,
+	FieldInvoker,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "instances"

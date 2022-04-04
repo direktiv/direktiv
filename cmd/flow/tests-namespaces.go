@@ -62,11 +62,11 @@ func testCreateNamespaceDuplicate(ctx context.Context, c grpc.FlowClient, namesp
 
 	resp, err := c.Namespaces(ctx, &grpc.NamespacesRequest{
 		Pagination: &grpc.Pagination{
-			Filter: &grpc.PageFilter{
+			Filter: []*grpc.PageFilter{{
 				Field: "NAME",
 				Type:  "CONTAINS",
 				Val:   namespace,
-			},
+			}},
 		},
 	})
 	if err != nil {
@@ -240,11 +240,11 @@ func testNamespacesStream(ctx context.Context, c grpc.FlowClient, namespace stri
 
 	client, err := c.NamespacesStream(ctx, &grpc.NamespacesRequest{
 		Pagination: &grpc.Pagination{
-			Filter: &grpc.PageFilter{
+			Filter: []*grpc.PageFilter{{
 				Field: "NAME",
 				Type:  "CONTAINS",
 				Val:   namespace,
-			},
+			}},
 		},
 	})
 	if err != nil {

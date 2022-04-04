@@ -338,7 +338,7 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     i.ID,
 		Type:   "Instance",
-		Fields: make([]*Field, 7),
+		Fields: make([]*Field, 8),
 		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
@@ -396,6 +396,14 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[6] = &Field{
 		Type:  "string",
 		Name:  "errorMessage",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Invoker); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "string",
+		Name:  "invoker",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

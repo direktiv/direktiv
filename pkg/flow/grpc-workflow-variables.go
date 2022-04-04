@@ -208,11 +208,8 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	}
 
 	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p))
-	filter := variablesFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, variablesOrder(p)...)
+	opts = append(opts, variablesFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -274,11 +271,8 @@ func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, sr
 	}
 
 	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p))
-	filter := variablesFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, variablesOrder(p)...)
+	opts = append(opts, variablesFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())

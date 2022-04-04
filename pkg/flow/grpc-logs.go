@@ -18,11 +18,8 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	}
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	logc := flow.db.LogMsg
 	query := logc.Query()
@@ -59,11 +56,8 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 	pfilter := p.filter
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	sub := flow.pubsub.SubscribeServerLogs()
 	defer flow.cleanup(sub.Close)
@@ -120,11 +114,8 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	}
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -169,11 +160,8 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	pfilter := p.filter
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -238,11 +226,8 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	}
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
@@ -285,11 +270,8 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 	pfilter := p.filter
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
@@ -352,11 +334,8 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	}
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
@@ -399,11 +378,8 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	pfilter := p.filter
 
 	opts := []ent.LogMsgPaginateOption{}
-	opts = append(opts, logsOrder(p))
-	filter := logsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, logsOrder(p)...)
+	opts = append(opts, logsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)
