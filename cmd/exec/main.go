@@ -54,7 +54,7 @@ func main() {
 	// Read Config
 	rootCmd.AddCommand(execCmd)
 	rootCmd.AddCommand(pushCmd)
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories. Config file name should be '.direktiv.conf'")
 
 	// Load config flag early
 	loadCfgFlag()
