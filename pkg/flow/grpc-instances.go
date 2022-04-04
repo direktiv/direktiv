@@ -407,6 +407,7 @@ func instancesOrder(p *pagination) []ent.InstancePaginateOption {
 
 func instancesFilter(p *pagination) []ent.InstancePaginateOption {
 
+	var filters []func(query *ent.InstanceQuery) (*ent.InstanceQuery, error)
 	var opts []ent.InstancePaginateOption
 
 	if p.filter == nil {
@@ -423,7 +424,7 @@ func instancesFilter(p *pagination) []ent.InstancePaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithInstanceFilter(func(query *ent.InstanceQuery) (*ent.InstanceQuery, error) {
+		filters = append(filters, func(query *ent.InstanceQuery) (*ent.InstanceQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -503,8 +504,21 @@ func instancesFilter(p *pagination) []ent.InstancePaginateOption {
 
 			}
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithInstanceFilter(func(query *ent.InstanceQuery) (*ent.InstanceQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts
