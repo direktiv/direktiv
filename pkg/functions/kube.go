@@ -1153,6 +1153,10 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		c float64
 	)
 
+	baseCPU, _ := resource.ParseQuantity("0.1")
+	baseMem, _ := resource.ParseQuantity("64M")
+	baseDisk, _ := resource.ParseQuantity("64M")
+
 	switch size {
 	case 1:
 		m = functionsConfig.Memory.Medium
@@ -1165,47 +1169,38 @@ func generateResourceLimits(size int) (corev1.ResourceRequirements, error) {
 		c = functionsConfig.CPU.Small
 	}
 
-	qcpu, err := resource.ParseQuantity(fmt.Sprintf("%v", c))
+	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage))
 	if err != nil {
 		return corev1.ResourceRequirements{}, err
 	}
 
-	qcpuHigh, err := resource.ParseQuantity(fmt.Sprintf("%v", c*2))
-	if err != nil {
-		return corev1.ResourceRequirements{}, err
+	rl := corev1.ResourceList{
+		"ephemeral-storage": ephemeralHigh,
 	}
 
-	qmem, err := resource.ParseQuantity(fmt.Sprintf("%vM", m))
-	if err != nil {
-		return corev1.ResourceRequirements{}, err
+	if m != 0 {
+		qmem, err := resource.ParseQuantity(fmt.Sprintf("%dM", m))
+		if err != nil {
+			return corev1.ResourceRequirements{}, err
+		}
+		rl["memory"] = qmem
 	}
 
-	qmemHigh, err := resource.ParseQuantity(fmt.Sprintf("%vM", m*2))
-	if err != nil {
-		return corev1.ResourceRequirements{}, err
-	}
-
-	ephemeral, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage))
-	if err != nil {
-		return corev1.ResourceRequirements{}, err
-	}
-
-	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", functionsConfig.Storage*2))
-	if err != nil {
-		return corev1.ResourceRequirements{}, err
+	if c != 0.0 {
+		qcpu, err := resource.ParseQuantity(fmt.Sprintf("%f", c))
+		if err != nil {
+			return corev1.ResourceRequirements{}, err
+		}
+		rl["cpu"] = qcpu
 	}
 
 	return corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{
-			"cpu":               qcpu,
-			"memory":            qmem,
-			"ephemeral-storage": ephemeral,
+			"cpu":               baseCPU,
+			"memory":            baseMem,
+			"ephemeral-storage": baseDisk,
 		},
-		Limits: corev1.ResourceList{
-			"cpu":               qcpuHigh,
-			"memory":            qmemHigh,
-			"ephemeral-storage": ephemeralHigh,
-		},
+		Limits: rl,
 	}, nil
 
 }
@@ -1217,6 +1212,8 @@ func makeContainers(img, cmd string, size int) ([]corev1.Container, error) {
 		logger.Errorf("can not parse requests limits")
 		return []corev1.Container{}, err
 	}
+
+	logger.Debugf("resource limits: %+v", res)
 
 	// user container
 	uc := corev1.Container{
