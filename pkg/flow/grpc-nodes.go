@@ -74,6 +74,7 @@ func directoryOrder(p *pagination) []ent.InodePaginateOption {
 
 func directoryFilter(p *pagination) []ent.InodePaginateOption {
 
+	var filters []func(query *ent.InodeQuery) (*ent.InodeQuery, error)
 	var opts []ent.InodePaginateOption
 
 	if p.filter == nil {
@@ -90,7 +91,7 @@ func directoryFilter(p *pagination) []ent.InodePaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithInodeFilter(func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
+		filters = append(filters, func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -117,8 +118,21 @@ func directoryFilter(p *pagination) []ent.InodePaginateOption {
 
 			return query, nil
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithInodeFilter(func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts

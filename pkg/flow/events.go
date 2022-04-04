@@ -455,6 +455,7 @@ func eventListenersOrder(p *pagination) []ent.EventsPaginateOption {
 
 func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
 
+	var filters []func(query *ent.EventsQuery) (*ent.EventsQuery, error)
 	var opts []ent.EventsPaginateOption
 
 	if p.filter == nil {
@@ -471,7 +472,7 @@ func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+		filters = append(filters, func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -498,8 +499,21 @@ func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
 
 			return query, nil
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts
@@ -876,6 +890,7 @@ func cloudeventsOrder(p *pagination) []ent.CloudEventsPaginateOption {
 
 func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
 
+	var filters []func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error)
 	var opts []ent.CloudEventsPaginateOption
 
 	if p.filter == nil {
@@ -892,7 +907,7 @@ func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+		filters = append(filters, func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -919,8 +934,21 @@ func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
 
 			return query, nil
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts
