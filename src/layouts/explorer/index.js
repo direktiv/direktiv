@@ -479,8 +479,8 @@ function DirListItem(props) {
 
     return(
         <div style={{cursor:"pointer"}} onClick={(e)=>{
-            navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
             resetQueryParams()
+            navigate(`/n/${namespace}/explorer/${path.substring(1)}`)
         }} className="explorer-item">
             <FlexBox className="col">
                 <FlexBox className="explorer-item-container gap wrap">

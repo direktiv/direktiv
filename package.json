@@ -17,7 +17,7 @@
     "d3-sankey-circular": "^0.34.0",
     "dagre": "^0.8.5",
     "dayjs": "^1.10.7",
-    "direktiv-react-hooks": "^0.0.246",
+    "direktiv-react-hooks": "^0.0.255",
     "file-saver": "^2.0.5",
     "js-yaml": "^4.1.0",
     "monaco": "^1.201704190613.0",
