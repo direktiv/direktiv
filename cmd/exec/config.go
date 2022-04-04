@@ -91,8 +91,13 @@ func configFlagHelpTextLoader(configKey string, sensitive bool) (flagHelpText st
 
 //	configBindFlag : Binds cli flag for config value. If flag value is set, will be used instead of config value.
 //	If config value is not set, mark flag as required.
-func configBindFlag(cmd *cobra.Command, configKey string, required bool) {
-	viper.BindPFlag(configKey, cmd.Flags().Lookup(configKey))
+func configBindFlag(cmd *cobra.Command, configKey string, required bool, persistent bool) {
+
+	if persistent {
+		viper.BindPFlag(configKey, cmd.PersistentFlags().Lookup(configKey))
+	} else {
+		viper.BindPFlag(configKey, cmd.Flags().Lookup(configKey))
+	}
 	if required && viper.GetString(configKey) == "" {
 		cmd.MarkFlagRequired(configKey)
 	}

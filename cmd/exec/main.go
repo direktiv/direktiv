@@ -54,7 +54,7 @@ func main() {
 	// Read Config
 	rootCmd.AddCommand(execCmd)
 	rootCmd.AddCommand(pushCmd)
-	rootCmd.Flags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories")
 
 	// Load config flag early
 	loadCfgFlag()
@@ -69,28 +69,25 @@ func main() {
 	viper.ReadInConfig()
 
 	// Set Flags
-	rootCmd.Flags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
+	rootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
 
-	execCmd.Flags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set. "+configFlagHelpTextLoader("path", false))
-	pushCmd.Flags().StringP("path", "p", "", "Target remote path. e.g. '/dir/workflow'. Automatically set if config file was auto-set. If pushing local dir config flag cannot be used. "+configFlagHelpTextLoader("path", false))
-
+	rootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set. "+configFlagHelpTextLoader("path", false))
 	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
 	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
 	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
-	rootCmd.Flags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
-	rootCmd.Flags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
-	rootCmd.Flags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
-	rootCmd.Flags().BoolVar(&insecure, "insecure", true, "Accept insecure https connections")
+	rootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
+	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
+	rootCmd.PersistentFlags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
+	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", true, "Accept insecure https connections")
 
 	// Bing CLI flags to viper
-	configBindFlag(rootCmd, "addr", true)
+	configBindFlag(rootCmd, "addr", true, true)
 
 	// If config was automatically found, path is no longer required
-	configBindFlag(execCmd, "path", configPathFromFlag)
-	configBindFlag(pushCmd, "path", configPathFromFlag)
-	configBindFlag(rootCmd, "namespace", true)
-	configBindFlag(rootCmd, "api-key", false)
-	configBindFlag(rootCmd, "auth-token", false)
+	configBindFlag(rootCmd, "path", configPathFromFlag, true)
+	configBindFlag(rootCmd, "namespace", true, true)
+	configBindFlag(rootCmd, "api-key", false, true)
+	configBindFlag(rootCmd, "auth-token", false, true)
 
 	err = rootCmd.Execute()
 	if err != nil {
@@ -155,7 +152,7 @@ func cmdPrepareWorkflow(wfPath string) {
 	// If config file was found automatically, generate path relative to config dir
 	if !configPathFromFlag {
 		os.Stderr.WriteString(fmt.Sprintf("Using config file: '%s'\n", configPath))
-		path = strings.TrimSuffix(strings.TrimPrefix(localAbsPath, filepath.Dir(configPath)), ".yaml")
+		path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localAbsPath, filepath.Dir(configPath)), ".yaml"))
 	} else {
 		os.Stderr.WriteString(fmt.Sprintf("Using flag config file: '%s'\n", configPath))
 	}
@@ -225,7 +222,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
 		for i, localPath := range pathsToUpdate {
-			path = strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml")
+			path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml"))
 			urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
 			urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 
@@ -245,7 +242,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 			// Set Remote Vars
 			for _, v := range localVars {
-				varName := strings.TrimPrefix(v, localPath+".")
+				varName := filepath.ToSlash(strings.TrimPrefix(v, localPath+"."))
 				cmd.PrintErrf("      Updating Remote Workflow Variable: '%s'\n", varName)
 				err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
 				if err != nil {
@@ -296,7 +293,7 @@ Will update the helloworld workflow and set the remote workflow variable 'data.j
 
 		// Set Remote Vars
 		for _, v := range localVars {
-			varName := strings.TrimPrefix(v, localAbsPath+".")
+			varName := filepath.ToSlash(strings.TrimPrefix(v, localAbsPath+"."))
 			cmd.PrintErrf("Updating Remote Workflow Variable: '%s'\n", varName)
 			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
 			if err != nil {
