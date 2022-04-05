@@ -454,7 +454,7 @@ func instancesFilter(p *pagination) []ent.InstancePaginateOption {
 			case "CREATED":
 
 				ftype := f.Type
-				t, err := time.Parse(time.RFC822, filter)
+				t, err := time.Parse(time.RFC3339, filter)
 				if err != nil {
 					return nil, err
 				}
@@ -462,9 +462,9 @@ func instancesFilter(p *pagination) []ent.InstancePaginateOption {
 				switch ftype {
 
 				case "AFTER":
-					return query.Where(entinst.CreatedAtLTE(t)), nil
-				case "BEFORE":
 					return query.Where(entinst.CreatedAtGTE(t)), nil
+				case "BEFORE":
+					return query.Where(entinst.CreatedAtLTE(t)), nil
 				case "":
 					fallthrough
 				default:
