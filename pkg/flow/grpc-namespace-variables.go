@@ -229,6 +229,7 @@ func variablesOrder(p *pagination) []ent.VarRefPaginateOption {
 
 func variablesFilter(p *pagination) []ent.VarRefPaginateOption {
 
+	var filters []func(query *ent.VarRefQuery) (*ent.VarRefQuery, error)
 	var opts []ent.VarRefPaginateOption
 
 	if p.filter == nil {
@@ -245,7 +246,7 @@ func variablesFilter(p *pagination) []ent.VarRefPaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithVarRefFilter(func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
+		filters = append(filters, func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -272,8 +273,21 @@ func variablesFilter(p *pagination) []ent.VarRefPaginateOption {
 
 			return query, nil
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithVarRefFilter(func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts

@@ -60,6 +60,7 @@ func refOrder(p *pagination) []ent.RefPaginateOption {
 
 func refFilter(p *pagination) []ent.RefPaginateOption {
 
+	var filters []func(query *ent.RefQuery) (*ent.RefQuery, error)
 	var opts []ent.RefPaginateOption
 
 	if p.filter == nil {
@@ -76,7 +77,7 @@ func refFilter(p *pagination) []ent.RefPaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithRefFilter(func(query *ent.RefQuery) (*ent.RefQuery, error) {
+		filters = append(filters, func(query *ent.RefQuery) (*ent.RefQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -103,8 +104,21 @@ func refFilter(p *pagination) []ent.RefPaginateOption {
 
 			return query, nil
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithRefFilter(func(query *ent.RefQuery) (*ent.RefQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts

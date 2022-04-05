@@ -52,6 +52,7 @@ func namespaceOrder(p *pagination) []ent.NamespacePaginateOption {
 
 func namespaceFilter(p *pagination) []ent.NamespacePaginateOption {
 
+	var filters []func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error)
 	var opts []ent.NamespacePaginateOption
 
 	if p.filter == nil {
@@ -68,7 +69,7 @@ func namespaceFilter(p *pagination) []ent.NamespacePaginateOption {
 
 		filter := f.Val
 
-		opts = append(opts, ent.WithNamespaceFilter(func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
+		filters = append(filters, func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
 
 			if filter == "" {
 				return query, nil
@@ -95,8 +96,21 @@ func namespaceFilter(p *pagination) []ent.NamespacePaginateOption {
 
 			return query, nil
 
-		}))
+		})
 
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithNamespaceFilter(func(query *ent.NamespaceQuery) (*ent.NamespaceQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
 	}
 
 	return opts
