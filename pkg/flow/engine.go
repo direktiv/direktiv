@@ -115,7 +115,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		if strings.ToLower(args.Caller) == "api" {
 			return nil, errors.New("cannot manually invoke event-based workflow")
 		}
-		if strings.HasPrefix(args.Caller, "workflow") {
+		if strings.HasPrefix(args.Caller, "instance") {
 			return nil, errors.New("cannot invoke event-based workflow as a subflow")
 		}
 	}
@@ -639,7 +639,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	}
 
 	args.Input = input
-	args.Caller = fmt.Sprintf("workflow:%v", caller.InstanceID) // TODO: human readable
+	args.Caller = fmt.Sprintf("instance:%v", caller.InstanceID) // TODO: human readable
 
 	var threadVars []*ent.VarRef
 
