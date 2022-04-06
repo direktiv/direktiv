@@ -493,6 +493,8 @@ func instancesFilter(p *pagination) []ent.InstancePaginateOption {
 				switch ftype {
 				case "MATCH":
 					return query.Where(entinst.InvokerEQ(filter)), nil
+				case "CONTAINS":
+					return query.Where(entinst.InvokerContains(filter)), nil
 				case "":
 					fallthrough
 				default:
