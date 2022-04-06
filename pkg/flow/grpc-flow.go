@@ -113,7 +113,7 @@ func (flow *flow) kickExpiredInstances() {
 
 	list, err := flow.db.InstanceRuntime.Query().
 		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
-		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(StatusPending))).
+		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(util.InstanceStatusPending))).
 		WithInstance().
 		All(ctx)
 	if err != nil {

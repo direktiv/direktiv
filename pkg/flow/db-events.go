@@ -110,6 +110,32 @@ func (events *events) getWorkflowEventByWorkflowUID(ctx context.Context, evc *en
 
 }
 
+func (events *events) deleteEventListeners(ctx context.Context, evc *ent.EventsClient,
+	wf *ent.Workflow, id uuid.UUID) error {
+
+	var err error
+	ns := wf.Edges.Namespace
+	if ns == nil {
+		ns, err = wf.Namespace(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = evc.
+		Delete().
+		Where(entev.IDEQ(id)).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	events.pubsub.NotifyEventListeners(ns)
+
+	return nil
+
+}
+
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow) error {
 
 	var err error
@@ -153,21 +179,6 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, in *ent.
 
 }
 
-func (events *events) addWorkflowEventWait(ctx context.Context, ewc *ent.EventsWaitClient, ev map[string]interface{}, count int, id uuid.UUID) error {
-
-	_, err := ewc.Create().
-		SetEvents(ev).
-		SetWorkfloweventID(id).
-		Save(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
 // called by add workflow, adds event listeners if required
 func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.EventsClient,
 	wf *ent.Workflow, ms *muxStart) error {
@@ -188,13 +199,19 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 	if len(ms.Events) > 0 && ms.Enabled {
 
 		var ev []map[string]interface{}
-		for _, e := range ms.Events {
+		for i, e := range ms.Events {
 			em := make(map[string]interface{})
 			em[eventTypeString] = e.Type
 
-			for kf, vf := range e.Filters {
+			for kf, vf := range e.Context {
 				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
 			}
+
+			// these value are set when a matching event comes in
+			em["time"] = 0
+			em["value"] = ""
+			em["idx"] = i
+
 			ev = append(ev, em)
 		}
 
@@ -202,7 +219,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 		count := 1
 
 		if ms.Type == model.StartTypeEventsAnd.String() {
-			correlations = append(correlations, ms.Correlate...)
 			count = len(ms.Events)
 		}
 
@@ -226,18 +242,34 @@ func (events *events) processWorkflowEvents(ctx context.Context, evc *ent.Events
 
 }
 
+func (events *events) updateInstanceEventListener(ctx context.Context, evc *ent.EventsClient, id uuid.UUID,
+	ev []map[string]interface{}) error {
+
+	_, err := evc.UpdateOneID(id).SetEvents(ev).Save(ctx)
+	return err
+
+}
+
 // called from workflow instances to create event listeners
-func (events *events) addInstanceEventListener(ctx context.Context, evc *ent.EventsClient, wf *ent.Workflow, in *ent.Instance,
+func (events *events) addInstanceEventListener(ctx context.Context, evc *ent.EventsClient,
+	wf *ent.Workflow, in *ent.Instance,
 	sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {
 
+	// add
 	var ev []map[string]interface{}
-	for _, e := range sevents {
+	for i, e := range sevents {
 		em := make(map[string]interface{})
 		em[eventTypeString] = e.Type
 
 		for kf, vf := range e.Context {
 			em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
 		}
+
+		// these value are set when a matching event comes in
+		em["time"] = 0
+		em["value"] = ""
+		em["idx"] = i
+
 		ev = append(ev, em)
 	}
 

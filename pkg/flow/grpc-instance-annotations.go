@@ -113,11 +113,8 @@ func (flow *flow) InstanceAnnotations(ctx context.Context, req *grpc.InstanceAnn
 	}
 
 	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p))
-	filter := annotationsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, annotationsOrder(p)...)
+	opts = append(opts, annotationsFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -173,11 +170,8 @@ func (flow *flow) InstanceAnnotationsStream(req *grpc.InstanceAnnotationsRequest
 	}
 
 	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p))
-	filter := annotationsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, annotationsOrder(p)...)
+	opts = append(opts, annotationsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)

@@ -350,7 +350,7 @@ func (wq *WorkflowQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Workflow entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Workflow entity is not found.
+// Returns a *NotSingularError when more than one Workflow entity is found.
 // Returns a *NotFoundError when no Workflow entities are found.
 func (wq *WorkflowQuery) Only(ctx context.Context) (*Workflow, error) {
 	nodes, err := wq.Limit(2).All(ctx)
@@ -377,7 +377,7 @@ func (wq *WorkflowQuery) OnlyX(ctx context.Context) *Workflow {
 }
 
 // OnlyID is like Only, but returns the only Workflow ID in the query.
-// Returns a *NotSingularError when exactly one Workflow ID is not found.
+// Returns a *NotSingularError when more than one Workflow ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (wq *WorkflowQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -496,8 +496,9 @@ func (wq *WorkflowQuery) Clone() *WorkflowQuery {
 		withWfevents:    wq.withWfevents.Clone(),
 		withAnnotations: wq.withAnnotations.Clone(),
 		// clone intermediate query.
-		sql:  wq.sql.Clone(),
-		path: wq.path,
+		sql:    wq.sql.Clone(),
+		path:   wq.path,
+		unique: wq.unique,
 	}
 }
 

@@ -1,12 +1,16 @@
 FROM golang:1.17.7-buster as build
 
-COPY pkg src/pkg/
-COPY cmd src/cmd/
+
 COPY go.mod src/go.mod
 COPY go.sum src/go.sum
 RUN cd src/ && go mod download
 
+COPY pkg src/pkg/
+COPY cmd src/cmd/
 COPY .git .git
+
+ARG RELEASE_VERSION
+ENV RELEASE=$RELEASE_VERSION
 
 RUN cd src && \
     export GIT_HASH=`git rev-parse --short HEAD` && \

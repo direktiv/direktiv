@@ -16,8 +16,8 @@ type pagination struct {
 	first  int32
 	before string
 	last   int32
-	order  *grpc.PageOrder
-	filter *grpc.PageFilter
+	order  []*grpc.PageOrder
+	filter []*grpc.PageFilter
 }
 
 func (p *pagination) Before() *ent.Cursor {
@@ -128,22 +128,32 @@ func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {
 
 	o := new(cpdOutput)
 
-	filter := req.filter
-	if filter == nil {
-		filter = new(grpc.PageFilter)
+	for _, f := range req.filter {
+
+		if f == nil {
+			f = new(grpc.PageFilter)
+		}
+
+		err := cp.data.Filter(f)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
-	err := cp.data.Filter(filter)
-	if err != nil {
-		return nil, err
+	if len(req.order) > 1 {
+		return nil, errors.New("cannot perform multiple ordering")
 	}
 
-	order := req.order
-	if order == nil {
+	var order *grpc.PageOrder
+
+	if len(req.order) == 0 {
 		order = new(grpc.PageOrder)
+	} else {
+		order = req.order[0]
 	}
 
-	err = cp.data.Order(order)
+	err := cp.data.Order(order)
 	if err != nil {
 		return nil, err
 	}

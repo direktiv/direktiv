@@ -16,6 +16,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
+
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -83,21 +84,6 @@ func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
 	}
 
 	return true
-
-}
-
-func hasEventInList(ev *cloudevents.Event, evl []*cloudevents.Event) bool {
-
-	for _, e := range evl {
-
-		if ev.Context.GetID() == e.Context.GetID() &&
-			ev.Context.GetSource() == e.Context.GetSource() {
-			return true
-		}
-
-	}
-
-	return false
 
 }
 
@@ -216,121 +202,29 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *ent.Na
 
 }
 
-func (events *events) updateMultipleEvents(ce *cloudevents.Event, id uuid.UUID,
-	correlations []string) ([]*cloudevents.Event, error) {
-
-	var retEvents []*cloudevents.Event
-	db := events.db.DB()
-
-	chash := generateCorrelationHash(ce, ce.Type(), correlations)
-
-	data, err := eventToBytes(*ce)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := db.Query(`update events_waits
-	set events = jsonb_set(events, $1, $2, true)
-	WHERE events::jsonb ? $3 and events_wfeventswait = $4
-	returning *`, fmt.Sprintf("{%s}", chash), fmt.Sprintf(`"%s"`, base64.StdEncoding.EncodeToString(data)), chash, id)
-	if err != nil {
-		return retEvents, err
-	}
-
-	rc := 0
-
-	ctx := context.Background()
-
-	for rows.Next() {
-		rc++
-
-		var (
-			id         uuid.UUID
-			eventID    string
-			eventsData []byte
-		)
-
-		err := rows.Scan(&id, &eventsData, &eventID)
-		if err != nil {
-			events.sugar.Errorf("can not scan result: %v", err)
-			continue
-		}
-
-		var eventsIn map[string]interface{}
-		err = json.Unmarshal(eventsData, &eventsIn)
-		if err != nil {
-			events.sugar.Errorf("can not unmarshal existing events")
-			return retEvents, err
-		}
-
-		counter := len(eventsIn)
-
-		for _, v := range eventsIn {
-			if v != nil {
-				counter--
-			}
-		}
-
-		// all events have values so we can start the workflow
-		if counter == 0 {
-
-			err := events.db.EventsWait.DeleteOneID(id).Exec(ctx)
-			if err != nil {
-				events.sugar.Error(err)
-				continue
-			}
-
-			// get data for all events
-			var e map[string]string
-			json.Unmarshal(eventsData, &e)
-
-			for _, g := range e {
-				b, err := base64.StdEncoding.DecodeString(g)
-				if err != nil {
-					events.sugar.Errorf("event data corrupt: %v", err)
-					continue
-				}
-
-				ev, err := bytesToEvent(b)
-				if err != nil {
-					events.sugar.Errorf("event data corrupt: %v", err)
-					continue
-				}
-
-				if !hasEventInList(ev, retEvents) {
-					retEvents = append(retEvents, ev)
-				}
-			}
-
-		}
-
-	}
-
-	return retEvents, nil
-
-}
-
 func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) error {
 
 	var (
-		id                                          uuid.UUID
-		count                                       int
-		singleEvent, corBytes, allEvents, signature []byte
-		wf                                          string
-		captured                                    bool
+		id                                uuid.UUID
+		count                             int
+		singleEvent, allEvents, signature []byte
+		wf                                string
 	)
 
 	db := events.db.DB()
 
+	// we have to select first because of the glob feature
+	// this gives a basic list of eligible workflow instances waiting
+	// we get all
 	rows, err := db.Query(`select
-	we.oid, signature, count, correlations, we.events, workflow_wfevents, v
+	we.oid, signature, count, we.events, workflow_wfevents, v
 	from events we
 	inner join workflows w
 		on w.oid = workflow_wfevents
 	inner join namespaces n
 		on n.oid = w.namespace_workflows,
 	jsonb_array_elements(events) as v
-	where v::json->>'type' = $1
+	where v::json->>'type' = $1 and v::json->>'value' = ''
 	and n.oid = $2`, ce.Type(), ns.ID.String())
 	if err != nil {
 		return err
@@ -339,10 +233,13 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 	ctx := context.Background()
 
+	// collecting the matching events to delete them when
+	// deleteEventListener := []uuid.UUID{}
+
 	var conn *sql.Conn
 	for rows.Next() {
 
-		err := rows.Scan(&id, &signature, &count, &corBytes, &allEvents, &wf, &singleEvent)
+		err := rows.Scan(&id, &signature, &count, &allEvents, &wf, &singleEvent)
 		if err != nil {
 			events.sugar.Errorf("process row error: %v", err)
 			continue
@@ -355,6 +252,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 				events.locks.unlockDB(hash, conn)
 			}
 		}
+		unlock()
 
 		conn, err = events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
 		if err != nil {
@@ -384,12 +282,12 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		// check filters
 		if !matchesExtensions(eventMap, m) {
-			events.sugar.Debugf("event listener %d does not match", id)
+			events.sugar.Debugf("event listener %s does not match", id.String())
 			unlock()
 			continue
 		}
 
-		captured = true
+		// deleteEventListener = append(deleteEventListener, id)
 
 		var ae []map[string]interface{}
 		json.Unmarshal(allEvents, &ae)
@@ -402,44 +300,57 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 		} else {
 
-			var correlations []string
+			var eventMapAll []map[string]interface{}
+			json.Unmarshal(allEvents, &eventMapAll)
 
-			// get correlations
-			if len(corBytes) > 0 {
-				json.Unmarshal(corBytes, &correlations)
-			}
+			// set value
+			updateItem := eventMapAll[int(eventMap["idx"].(float64))]
 
-			es, err := events.updateMultipleEvents(ce, id, correlations)
+			data, err := eventToBytes(*ce)
 			if err != nil {
-				events.sugar.Errorf("can not handle multi event: %v", err)
+				events.sugar.Errorf("can not update convert event: %v", err)
 				unlock()
 				continue
 			}
 
-			retEvents = append(retEvents, es...)
+			updateItem["time"] = time.Now().Unix()
+			updateItem["value"] = base64.StdEncoding.EncodeToString(data)
 
-			// no update executed, means we have a candidate but no existing events
-			// for a multi event workflow
-			if len(retEvents) == 0 {
+			needsUpdate := false
+			for _, v := range eventMapAll {
+				// if there is one entry without value we can skip this instance
+				// won't fire anyways
+				if v["value"] == "" {
+					needsUpdate = true
+					break
+				} else {
 
-				events.sugar.Debugf("no events waiting")
-
-				// get event types
-				var eventTypes []string
-				for _, g := range ae {
-					eventTypes = append(eventTypes, g[eventTypeString].(string))
-				}
-
-				// only add if the correlation id exists
-				if generateCorrelationHash(ce, ce.Type(), correlations) != "" {
-					err := events.addEventListenerWait(ctx, ce, id, correlations, eventTypes)
+					d, err := base64.StdEncoding.DecodeString(v["value"].(string))
 					if err != nil {
-						events.sugar.Errorf("can not create workflow event wait: %v", err)
 						unlock()
 						continue
 					}
+
+					ce, err := bytesToEvent(d)
+					if err != nil {
+						unlock()
+						continue
+					}
+
+					retEvents = append(retEvents, ce)
+
 				}
 
+			}
+
+			if needsUpdate {
+				err = events.updateInstanceEventListener(ctx, events.db.Events, id,
+					eventMapAll)
+				if err != nil {
+					events.sugar.Errorf("can not update multi event: %v", err)
+				}
+				unlock()
+				continue
 			}
 
 		}
@@ -461,7 +372,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 					return nil
 				}
 
-				err = events.deleteWorkflowEventListeners(ctx, events.db.Events, d.wf)
+				err = events.deleteEventListeners(ctx, events.db.Events, d.wf, id)
 				if err != nil {
 					events.engine.sugar.Error(err)
 					return nil
@@ -475,56 +386,7 @@ func (events *events) handleEvent(ns *ent.Namespace, ce *cloudevents.Event) erro
 
 	}
 
-	if captured {
-		metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
-	}
-
-	return nil
-
-}
-
-func generateCorrelationHash(cevent *cloudevents.Event,
-	ets string, correlations []string) string {
-
-	hashBase := make(map[string]interface{})
-
-	// check if the correlation id exists and generate the struct for the correlation hash
-	for _, k := range correlations {
-		if cevent.Extensions()[strings.ToLower(k)] != nil {
-			hashBase[k] = fmt.Sprintf("%v", cevent.Extensions()[strings.ToLower(k)])
-		} else {
-			return ""
-		}
-	}
-
-	hashBase[eventTypeString] = ets
-	h, _ := hash.Hash(hashBase, hash.FormatV2, nil)
-
-	return fmt.Sprintf("%d", h)
-
-}
-
-func (events *events) addEventListenerWait(ctx context.Context, cevent *cloudevents.Event, id uuid.UUID,
-	correlations, eventTypes []string) error {
-
-	sevents := make(map[string]interface{})
-
-	for _, v := range eventTypes {
-		if v == cevent.Type() {
-			data, err := eventToBytes(*cevent)
-			if err != nil {
-				return err
-			}
-			sevents[generateCorrelationHash(cevent, v, correlations)] = base64.StdEncoding.EncodeToString(data)
-		} else {
-			sevents[generateCorrelationHash(cevent, v, correlations)] = nil
-		}
-	}
-
-	err := events.addWorkflowEventWait(ctx, events.db.EventsWait, sevents, 1, id)
-	if err != nil {
-		return err
-	}
+	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
 
 	return nil
 
@@ -557,62 +419,104 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
-func eventListenersOrder(p *pagination) ent.EventsPaginateOption {
+func eventListenersOrder(p *pagination) []ent.EventsPaginateOption {
 
-	field := ent.EventsOrderFieldUpdatedAt
-	direction := ent.OrderDirectionAsc
+	var opts []ent.EventsPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
+		field := ent.EventsOrderFieldUpdatedAt
+		direction := ent.OrderDirectionAsc
 
-		if x := p.order.Field; x != "" && x == "UPDATED" {
+		if o == nil {
+			continue
+		}
+
+		if x := o.Field; x != "" && x == "UPDATED" {
 			field = ent.EventsOrderFieldUpdatedAt
 		}
 
+		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
+			Direction: direction,
+			Field:     field,
+		}))
+
 	}
 
-	return ent.WithEventsOrder(&ent.EventsOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.EventsOrderFieldUpdatedAt,
+		}))
+	}
+
+	return opts
 
 }
 
-func eventListenersFilter(p *pagination) ent.EventsPaginateOption {
+func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
+
+	var filters []func(query *ent.EventsQuery) (*ent.EventsQuery, error)
+	var opts []ent.EventsPaginateOption
 
 	if p.filter == nil {
-		return nil
+		return opts
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
+		filter := f.Val
+
+		filters = append(filters, func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+
+			if filter == "" {
+				return query, nil
+			}
+
+			field := f.Field
+			if field == "" {
+				return query, nil
+			}
+
+			// switch field {
+			// case "NAME":
+
+			// 	ftype := p.filter.Type
+			// 	if ftype == "" {
+			// 		return query, nil
+			// 	}
+
+			// 	switch ftype {
+			// 	case "CONTAINS":
+			// 		return query.Where(entns.NameContains(filter)), nil
+			// 	}
+			// }
+
 			return query, nil
-		}
 
-		// switch field {
-		// case "NAME":
+		})
 
-		// 	ftype := p.filter.Type
-		// 	if ftype == "" {
-		// 		return query, nil
-		// 	}
+	}
 
-		// 	switch ftype {
-		// 	case "CONTAINS":
-		// 		return query.Where(entns.NameContains(filter)), nil
-		// 	}
-		// }
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
 
-		return query, nil
-
-	})
+	return opts
 
 }
 
@@ -628,11 +532,8 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	}
 
 	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p))
-	filter := eventListenersFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, eventListenersOrder(p)...)
+	opts = append(opts, eventListenersFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -742,11 +643,8 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	}
 
 	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p))
-	filter := eventListenersFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, eventListenersOrder(p)...)
+	opts = append(opts, eventListenersFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -943,74 +841,117 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 
 }
 
-func cloudeventsOrder(p *pagination) ent.CloudEventsPaginateOption {
+func cloudeventsOrder(p *pagination) []ent.CloudEventsPaginateOption {
 
-	field := ent.CloudEventsOrderFieldCreated
-	direction := ent.OrderDirectionDesc
+	var opts []ent.CloudEventsPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
 
-		if x := p.order.Field; x != "" && x == "ID" {
+		if o == nil {
+			continue
+		}
+
+		field := ent.CloudEventsOrderFieldCreated
+		direction := ent.OrderDirectionDesc
+
+		if x := o.Field; x != "" && x == "ID" {
 			field = ent.CloudEventsOrderFieldID
 		}
 
-		if x := p.order.Field; x != "" && x == "RECEIVED" {
+		if x := o.Field; x != "" && x == "RECEIVED" {
 			field = ent.CloudEventsOrderFieldCreated
 		}
 
-		if x := p.order.Direction; x != "" && x == "DESC" {
+		if x := o.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
-		if x := p.order.Direction; x != "" && x == "ASC" {
+		if x := o.Direction; x != "" && x == "ASC" {
 			direction = ent.OrderDirectionAsc
 		}
 
+		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
+			Direction: direction,
+			Field:     field,
+		}))
+
 	}
 
-	return ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
+			Direction: ent.OrderDirectionDesc,
+			Field:     ent.CloudEventsOrderFieldCreated,
+		}))
+	}
+
+	return opts
 
 }
 
-func cloudeventsFilter(p *pagination) ent.CloudEventsPaginateOption {
+func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
+
+	var filters []func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error)
+	var opts []ent.CloudEventsPaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
+		filter := f.Val
+
+		filters = append(filters, func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+
+			if filter == "" {
+				return query, nil
+			}
+
+			field := f.Field
+			if field == "" {
+				return query, nil
+			}
+
+			// switch field {
+			// case "AS":
+
+			// 	ftype := p.filter.Type
+			// 	if ftype == "" {
+			// 		return query, nil
+			// 	}
+
+			// 	switch ftype {
+			// 	case "CONTAINS":
+			// 		return query.Where(entcevents.AsContains(filter)), nil
+			// 	}
+			// }
+
 			return query, nil
-		}
 
-		// switch field {
-		// case "AS":
+		})
 
-		// 	ftype := p.filter.Type
-		// 	if ftype == "" {
-		// 		return query, nil
-		// 	}
+	}
 
-		// 	switch ftype {
-		// 	case "CONTAINS":
-		// 		return query.Where(entcevents.AsContains(filter)), nil
-		// 	}
-		// }
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
 
-		return query, nil
-
-	})
+	return opts
 
 }
 
@@ -1024,11 +965,8 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	}
 
 	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p))
-	filter := cloudeventsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, cloudeventsOrder(p)...)
+	opts = append(opts, cloudeventsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
@@ -1091,11 +1029,8 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	}
 
 	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p))
-	filter := cloudeventsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, cloudeventsOrder(p)...)
+	opts = append(opts, cloudeventsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
@@ -1261,13 +1196,6 @@ func (events *events) updateEventDelaysHandler(req *PubsubUpdate) {
 type eventsWaiterSignature struct {
 	InstanceID string
 	Step       int
-}
-
-type eventsResultMessage struct {
-	InstanceID string
-	State      string
-	Step       int
-	Payloads   []*cloudevents.Event
 }
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {

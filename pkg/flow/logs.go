@@ -14,43 +14,72 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func logsOrder(p *pagination) ent.LogMsgPaginateOption {
+func logsOrder(p *pagination) []ent.LogMsgPaginateOption {
 
-	field := ent.LogMsgOrderFieldT
-	direction := ent.OrderDirectionAsc
+	var opts []ent.LogMsgPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
 
-		if x := p.order.Field; x != "" && x == "TIMESTAMP" {
-			field = ent.LogMsgOrderFieldT
+		if o == nil {
+			continue
 		}
 
-		if x := p.order.Direction; x != "" && x == "DESC" {
-			direction = ent.OrderDirectionDesc
+		field := ent.LogMsgOrderFieldT
+		direction := ent.OrderDirectionAsc
+
+		if o != nil {
+
+			if x := o.Field; x != "" && x == "TIMESTAMP" {
+				field = ent.LogMsgOrderFieldT
+			}
+
+			if x := o.Direction; x != "" && x == "DESC" {
+				direction = ent.OrderDirectionDesc
+			}
+
 		}
+
+		opts = append(opts, ent.WithLogMsgOrder(&ent.LogMsgOrder{
+			Direction: direction,
+			Field:     field,
+		}))
 
 	}
 
-	return ent.WithLogMsgOrder(&ent.LogMsgOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithLogMsgOrder(&ent.LogMsgOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.LogMsgOrderFieldT,
+		}))
+	}
+
+	return opts
 
 }
 
-func logsFilter(p *pagination) ent.LogMsgPaginateOption {
+func logsFilter(p *pagination) []ent.LogMsgPaginateOption {
+
+	var opts []ent.LogMsgPaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	// TODO
+	for range /*i :=*/ p.filter {
 
-	return ent.WithLogMsgFilter(func(query *ent.LogMsgQuery) (*ent.LogMsgQuery, error) {
+		// f := p.filter[i]
 
-		return query, nil
+		// TODO
 
-	})
+		opts = append(opts, ent.WithLogMsgFilter(func(query *ent.LogMsgQuery) (*ent.LogMsgQuery, error) {
+
+			return query, nil
+
+		}))
+
+	}
+
+	return opts
 
 }
 

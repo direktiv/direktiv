@@ -279,11 +279,8 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	}
 
 	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p))
-	filter := variablesFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, variablesOrder(p)...)
+	opts = append(opts, variablesFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -345,11 +342,8 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 	}
 
 	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p))
-	filter := variablesFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, variablesOrder(p)...)
+	opts = append(opts, variablesFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.getInstance(ctx, nsc, req.GetNamespace(), req.GetInstance(), false)

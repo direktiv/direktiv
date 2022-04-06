@@ -143,6 +143,13 @@ func ErrorMessage(v string) predicate.Instance {
 	})
 }
 
+// Invoker applies equality check predicate on the "invoker" field. It's identical to InvokerEQ.
+func Invoker(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInvoker), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
@@ -854,6 +861,131 @@ func ErrorMessageEqualFold(v string) predicate.Instance {
 func ErrorMessageContainsFold(v string) predicate.Instance {
 	return predicate.Instance(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldErrorMessage), v))
+	})
+}
+
+// InvokerEQ applies the EQ predicate on the "invoker" field.
+func InvokerEQ(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerNEQ applies the NEQ predicate on the "invoker" field.
+func InvokerNEQ(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerIn applies the In predicate on the "invoker" field.
+func InvokerIn(vs ...string) predicate.Instance {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldInvoker), v...))
+	})
+}
+
+// InvokerNotIn applies the NotIn predicate on the "invoker" field.
+func InvokerNotIn(vs ...string) predicate.Instance {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Instance(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldInvoker), v...))
+	})
+}
+
+// InvokerGT applies the GT predicate on the "invoker" field.
+func InvokerGT(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerGTE applies the GTE predicate on the "invoker" field.
+func InvokerGTE(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerLT applies the LT predicate on the "invoker" field.
+func InvokerLT(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerLTE applies the LTE predicate on the "invoker" field.
+func InvokerLTE(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerContains applies the Contains predicate on the "invoker" field.
+func InvokerContains(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerHasPrefix applies the HasPrefix predicate on the "invoker" field.
+func InvokerHasPrefix(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerHasSuffix applies the HasSuffix predicate on the "invoker" field.
+func InvokerHasSuffix(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerIsNil applies the IsNil predicate on the "invoker" field.
+func InvokerIsNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldInvoker)))
+	})
+}
+
+// InvokerNotNil applies the NotNil predicate on the "invoker" field.
+func InvokerNotNil() predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldInvoker)))
+	})
+}
+
+// InvokerEqualFold applies the EqualFold predicate on the "invoker" field.
+func InvokerEqualFold(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldInvoker), v))
+	})
+}
+
+// InvokerContainsFold applies the ContainsFold predicate on the "invoker" field.
+func InvokerContainsFold(v string) predicate.Instance {
+	return predicate.Instance(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldInvoker), v))
 	})
 }
 

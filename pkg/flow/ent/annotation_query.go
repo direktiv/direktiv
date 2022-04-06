@@ -181,7 +181,7 @@ func (aq *AnnotationQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single Annotation entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Annotation entity is not found.
+// Returns a *NotSingularError when more than one Annotation entity is found.
 // Returns a *NotFoundError when no Annotation entities are found.
 func (aq *AnnotationQuery) Only(ctx context.Context) (*Annotation, error) {
 	nodes, err := aq.Limit(2).All(ctx)
@@ -208,7 +208,7 @@ func (aq *AnnotationQuery) OnlyX(ctx context.Context) *Annotation {
 }
 
 // OnlyID is like Only, but returns the only Annotation ID in the query.
-// Returns a *NotSingularError when exactly one Annotation ID is not found.
+// Returns a *NotSingularError when more than one Annotation ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (aq *AnnotationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -320,8 +320,9 @@ func (aq *AnnotationQuery) Clone() *AnnotationQuery {
 		withWorkflow:  aq.withWorkflow.Clone(),
 		withInstance:  aq.withInstance.Clone(),
 		// clone intermediate query.
-		sql:  aq.sql.Clone(),
-		path: aq.path,
+		sql:    aq.sql.Clone(),
+		path:   aq.path,
+		unique: aq.unique,
 	}
 }
 

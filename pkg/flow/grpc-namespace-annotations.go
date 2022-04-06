@@ -108,66 +108,109 @@ func (flow *flow) NamespaceAnnotationParcels(req *grpc.NamespaceAnnotationReques
 
 }
 
-func annotationsOrder(p *pagination) ent.AnnotationPaginateOption {
+func annotationsOrder(p *pagination) []ent.AnnotationPaginateOption {
 
-	field := ent.AnnotationOrderFieldName
-	direction := ent.OrderDirectionAsc
+	var opts []ent.AnnotationPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
 
-		if x := p.order.Field; x != "" && x == "NAME" {
+		if o == nil {
+			continue
+		}
+
+		field := ent.AnnotationOrderFieldName
+		direction := ent.OrderDirectionAsc
+
+		if x := o.Field; x != "" && x == "NAME" {
 			field = ent.AnnotationOrderFieldName
 		}
 
-		if x := p.order.Direction; x != "" && x == "DESC" {
+		if x := o.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
+		opts = append(opts, ent.WithAnnotationOrder(&ent.AnnotationOrder{
+			Direction: direction,
+			Field:     field,
+		}))
+
 	}
 
-	return ent.WithAnnotationOrder(&ent.AnnotationOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithAnnotationOrder(&ent.AnnotationOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.AnnotationOrderFieldName,
+		}))
+	}
+
+	return opts
 
 }
 
-func annotationsFilter(p *pagination) ent.AnnotationPaginateOption {
+func annotationsFilter(p *pagination) []ent.AnnotationPaginateOption {
+
+	var filters []func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error)
+	var opts []ent.AnnotationPaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithAnnotationFilter(func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
-			return query, nil
-		}
+		filter := f.Val
 
-		switch field {
-		case "NAME":
+		filters = append(filters, func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error) {
 
-			ftype := p.filter.Type
-			if ftype == "" {
+			if filter == "" {
 				return query, nil
 			}
 
-			switch ftype {
-			case "CONTAINS":
-				return query.Where(entnote.NameContains(filter)), nil
+			field := f.Field
+			if field == "" {
+				return query, nil
 			}
-		}
 
-		return query, nil
+			switch field {
+			case "NAME":
 
-	})
+				ftype := f.Type
+				if ftype == "" {
+					return query, nil
+				}
+
+				switch ftype {
+				case "CONTAINS":
+					return query.Where(entnote.NameContains(filter)), nil
+				}
+			}
+
+			return query, nil
+
+		})
+
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithAnnotationFilter(func(query *ent.AnnotationQuery) (*ent.AnnotationQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
+
+	return opts
 
 }
 
@@ -181,11 +224,8 @@ func (flow *flow) NamespaceAnnotations(ctx context.Context, req *grpc.NamespaceA
 	}
 
 	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p))
-	filter := annotationsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, annotationsOrder(p)...)
+	opts = append(opts, annotationsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
@@ -239,11 +279,8 @@ func (flow *flow) NamespaceAnnotationsStream(req *grpc.NamespaceAnnotationsReque
 	}
 
 	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p))
-	filter := annotationsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, annotationsOrder(p)...)
+	opts = append(opts, annotationsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())

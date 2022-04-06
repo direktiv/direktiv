@@ -156,7 +156,7 @@ func (irq *InstanceRuntimeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 }
 
 // Only returns a single InstanceRuntime entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one InstanceRuntime entity is not found.
+// Returns a *NotSingularError when more than one InstanceRuntime entity is found.
 // Returns a *NotFoundError when no InstanceRuntime entities are found.
 func (irq *InstanceRuntimeQuery) Only(ctx context.Context) (*InstanceRuntime, error) {
 	nodes, err := irq.Limit(2).All(ctx)
@@ -183,7 +183,7 @@ func (irq *InstanceRuntimeQuery) OnlyX(ctx context.Context) *InstanceRuntime {
 }
 
 // OnlyID is like Only, but returns the only InstanceRuntime ID in the query.
-// Returns a *NotSingularError when exactly one InstanceRuntime ID is not found.
+// Returns a *NotSingularError when more than one InstanceRuntime ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (irq *InstanceRuntimeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
@@ -294,8 +294,9 @@ func (irq *InstanceRuntimeQuery) Clone() *InstanceRuntimeQuery {
 		withInstance: irq.withInstance.Clone(),
 		withCaller:   irq.withCaller.Clone(),
 		// clone intermediate query.
-		sql:  irq.sql.Clone(),
-		path: irq.path,
+		sql:    irq.sql.Clone(),
+		path:   irq.path,
+		unique: irq.unique,
 	}
 }
 

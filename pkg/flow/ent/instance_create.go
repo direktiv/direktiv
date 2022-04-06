@@ -111,6 +111,20 @@ func (ic *InstanceCreate) SetNillableErrorMessage(s *string) *InstanceCreate {
 	return ic
 }
 
+// SetInvoker sets the "invoker" field.
+func (ic *InstanceCreate) SetInvoker(s string) *InstanceCreate {
+	ic.mutation.SetInvoker(s)
+	return ic
+}
+
+// SetNillableInvoker sets the "invoker" field if the given value is not nil.
+func (ic *InstanceCreate) SetNillableInvoker(s *string) *InstanceCreate {
+	if s != nil {
+		ic.SetInvoker(*s)
+	}
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	ic.mutation.SetID(u)
@@ -142,6 +156,14 @@ func (ic *InstanceCreate) SetWorkflowID(id uuid.UUID) *InstanceCreate {
 	return ic
 }
 
+// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
+func (ic *InstanceCreate) SetNillableWorkflowID(id *uuid.UUID) *InstanceCreate {
+	if id != nil {
+		ic = ic.SetWorkflowID(*id)
+	}
+	return ic
+}
+
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (ic *InstanceCreate) SetWorkflow(w *Workflow) *InstanceCreate {
 	return ic.SetWorkflowID(w.ID)
@@ -150,6 +172,14 @@ func (ic *InstanceCreate) SetWorkflow(w *Workflow) *InstanceCreate {
 // SetRevisionID sets the "revision" edge to the Revision entity by ID.
 func (ic *InstanceCreate) SetRevisionID(id uuid.UUID) *InstanceCreate {
 	ic.mutation.SetRevisionID(id)
+	return ic
+}
+
+// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
+func (ic *InstanceCreate) SetNillableRevisionID(id *uuid.UUID) *InstanceCreate {
+	if id != nil {
+		ic = ic.SetRevisionID(*id)
+	}
 	return ic
 }
 
@@ -346,12 +376,6 @@ func (ic *InstanceCreate) check() error {
 	if _, ok := ic.mutation.NamespaceID(); !ok {
 		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required edge "Instance.namespace"`)}
 	}
-	if _, ok := ic.mutation.WorkflowID(); !ok {
-		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required edge "Instance.workflow"`)}
-	}
-	if _, ok := ic.mutation.RevisionID(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required edge "Instance.revision"`)}
-	}
 	if _, ok := ic.mutation.RuntimeID(); !ok {
 		return &ValidationError{Name: "runtime", err: errors.New(`ent: missing required edge "Instance.runtime"`)}
 	}
@@ -446,6 +470,14 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 			Column: instance.FieldErrorMessage,
 		})
 		_node.ErrorMessage = value
+	}
+	if value, ok := ic.mutation.Invoker(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instance.FieldInvoker,
+		})
+		_node.Invoker = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

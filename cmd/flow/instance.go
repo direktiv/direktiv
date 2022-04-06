@@ -100,15 +100,15 @@ var instancesCmd = &cobra.Command{
 				First:  first,
 				Before: before,
 				Last:   last,
-				Order: &grpc.PageOrder{
+				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
-				},
-				Filter: &grpc.PageFilter{
+				}},
+				Filter: []*grpc.PageFilter{{
 					Field: filterField,
 					Type:  filterType,
 					Val:   filterVal,
-				},
+				}},
 			},
 			Namespace: namespace,
 		}

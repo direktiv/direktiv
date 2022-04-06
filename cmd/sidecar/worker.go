@@ -384,7 +384,7 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 
 	subDirs := []string{"namespace", "workflow", "instance"}
 	for _, d := range subDirs {
-		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0750)
+		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0777)
 		if err != nil {
 			return fmt.Errorf("failed to prepare function output dirs: %v", err)
 		}

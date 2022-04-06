@@ -109,6 +109,26 @@ func (iu *InstanceUpdate) ClearErrorMessage() *InstanceUpdate {
 	return iu
 }
 
+// SetInvoker sets the "invoker" field.
+func (iu *InstanceUpdate) SetInvoker(s string) *InstanceUpdate {
+	iu.mutation.SetInvoker(s)
+	return iu
+}
+
+// SetNillableInvoker sets the "invoker" field if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableInvoker(s *string) *InstanceUpdate {
+	if s != nil {
+		iu.SetInvoker(*s)
+	}
+	return iu
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (iu *InstanceUpdate) ClearInvoker() *InstanceUpdate {
+	iu.mutation.ClearInvoker()
+	return iu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iu *InstanceUpdate) SetNamespaceID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetNamespaceID(id)
@@ -126,6 +146,14 @@ func (iu *InstanceUpdate) SetWorkflowID(id uuid.UUID) *InstanceUpdate {
 	return iu
 }
 
+// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableWorkflowID(id *uuid.UUID) *InstanceUpdate {
+	if id != nil {
+		iu = iu.SetWorkflowID(*id)
+	}
+	return iu
+}
+
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (iu *InstanceUpdate) SetWorkflow(w *Workflow) *InstanceUpdate {
 	return iu.SetWorkflowID(w.ID)
@@ -134,6 +162,14 @@ func (iu *InstanceUpdate) SetWorkflow(w *Workflow) *InstanceUpdate {
 // SetRevisionID sets the "revision" edge to the Revision entity by ID.
 func (iu *InstanceUpdate) SetRevisionID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetRevisionID(id)
+	return iu
+}
+
+// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
+func (iu *InstanceUpdate) SetNillableRevisionID(id *uuid.UUID) *InstanceUpdate {
+	if id != nil {
+		iu = iu.SetRevisionID(*id)
+	}
 	return iu
 }
 
@@ -436,12 +472,6 @@ func (iu *InstanceUpdate) check() error {
 	if _, ok := iu.mutation.NamespaceID(); iu.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
 	}
-	if _, ok := iu.mutation.WorkflowID(); iu.mutation.WorkflowCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.workflow"`)
-	}
-	if _, ok := iu.mutation.RevisionID(); iu.mutation.RevisionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.revision"`)
-	}
 	if _, ok := iu.mutation.RuntimeID(); iu.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
@@ -517,6 +547,19 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instance.FieldErrorMessage,
+		})
+	}
+	if value, ok := iu.mutation.Invoker(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instance.FieldInvoker,
+		})
+	}
+	if iu.mutation.InvokerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instance.FieldInvoker,
 		})
 	}
 	if iu.mutation.NamespaceCleared() {
@@ -1020,6 +1063,26 @@ func (iuo *InstanceUpdateOne) ClearErrorMessage() *InstanceUpdateOne {
 	return iuo
 }
 
+// SetInvoker sets the "invoker" field.
+func (iuo *InstanceUpdateOne) SetInvoker(s string) *InstanceUpdateOne {
+	iuo.mutation.SetInvoker(s)
+	return iuo
+}
+
+// SetNillableInvoker sets the "invoker" field if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableInvoker(s *string) *InstanceUpdateOne {
+	if s != nil {
+		iuo.SetInvoker(*s)
+	}
+	return iuo
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (iuo *InstanceUpdateOne) ClearInvoker() *InstanceUpdateOne {
+	iuo.mutation.ClearInvoker()
+	return iuo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (iuo *InstanceUpdateOne) SetNamespaceID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetNamespaceID(id)
@@ -1037,6 +1100,14 @@ func (iuo *InstanceUpdateOne) SetWorkflowID(id uuid.UUID) *InstanceUpdateOne {
 	return iuo
 }
 
+// SetNillableWorkflowID sets the "workflow" edge to the Workflow entity by ID if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableWorkflowID(id *uuid.UUID) *InstanceUpdateOne {
+	if id != nil {
+		iuo = iuo.SetWorkflowID(*id)
+	}
+	return iuo
+}
+
 // SetWorkflow sets the "workflow" edge to the Workflow entity.
 func (iuo *InstanceUpdateOne) SetWorkflow(w *Workflow) *InstanceUpdateOne {
 	return iuo.SetWorkflowID(w.ID)
@@ -1045,6 +1116,14 @@ func (iuo *InstanceUpdateOne) SetWorkflow(w *Workflow) *InstanceUpdateOne {
 // SetRevisionID sets the "revision" edge to the Revision entity by ID.
 func (iuo *InstanceUpdateOne) SetRevisionID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetRevisionID(id)
+	return iuo
+}
+
+// SetNillableRevisionID sets the "revision" edge to the Revision entity by ID if the given value is not nil.
+func (iuo *InstanceUpdateOne) SetNillableRevisionID(id *uuid.UUID) *InstanceUpdateOne {
+	if id != nil {
+		iuo = iuo.SetRevisionID(*id)
+	}
 	return iuo
 }
 
@@ -1354,12 +1433,6 @@ func (iuo *InstanceUpdateOne) check() error {
 	if _, ok := iuo.mutation.NamespaceID(); iuo.mutation.NamespaceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.namespace"`)
 	}
-	if _, ok := iuo.mutation.WorkflowID(); iuo.mutation.WorkflowCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.workflow"`)
-	}
-	if _, ok := iuo.mutation.RevisionID(); iuo.mutation.RevisionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Instance.revision"`)
-	}
 	if _, ok := iuo.mutation.RuntimeID(); iuo.mutation.RuntimeCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Instance.runtime"`)
 	}
@@ -1452,6 +1525,19 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: instance.FieldErrorMessage,
+		})
+	}
+	if value, ok := iuo.mutation.Invoker(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instance.FieldInvoker,
+		})
+	}
+	if iuo.mutation.InvokerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: instance.FieldInvoker,
 		})
 	}
 	if iuo.mutation.NamespaceCleared() {

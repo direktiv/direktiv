@@ -24,7 +24,7 @@ func (o *Workflow) GetStartDefinition() StartDefinition {
 // FIXME: Going to be renamed later
 type StartEventDefinition struct {
 	Type    string                 `yaml:"type"`
-	Filters map[string]interface{} `yaml:"filters,omitempty"`
+	Context map[string]interface{} `yaml:"context,omitempty"`
 }
 
 func (o *StartEventDefinition) Validate() error {

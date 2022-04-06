@@ -119,11 +119,8 @@ func (flow *flow) WorkflowAnnotations(ctx context.Context, req *grpc.WorkflowAnn
 	}
 
 	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p))
-	filter := annotationsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, annotationsOrder(p)...)
+	opts = append(opts, annotationsFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -179,11 +176,8 @@ func (flow *flow) WorkflowAnnotationsStream(req *grpc.WorkflowAnnotationsRequest
 	}
 
 	opts := []ent.AnnotationPaginateOption{}
-	opts = append(opts, annotationsOrder(p))
-	filter := annotationsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, annotationsOrder(p)...)
+	opts = append(opts, annotationsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())

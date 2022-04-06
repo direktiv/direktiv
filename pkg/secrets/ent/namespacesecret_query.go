@@ -106,7 +106,7 @@ func (nsq *NamespaceSecretQuery) FirstIDX(ctx context.Context) int {
 }
 
 // Only returns a single NamespaceSecret entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one NamespaceSecret entity is not found.
+// Returns a *NotSingularError when more than one NamespaceSecret entity is found.
 // Returns a *NotFoundError when no NamespaceSecret entities are found.
 func (nsq *NamespaceSecretQuery) Only(ctx context.Context) (*NamespaceSecret, error) {
 	nodes, err := nsq.Limit(2).All(ctx)
@@ -133,7 +133,7 @@ func (nsq *NamespaceSecretQuery) OnlyX(ctx context.Context) *NamespaceSecret {
 }
 
 // OnlyID is like Only, but returns the only NamespaceSecret ID in the query.
-// Returns a *NotSingularError when exactly one NamespaceSecret ID is not found.
+// Returns a *NotSingularError when more than one NamespaceSecret ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (nsq *NamespaceSecretQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
@@ -242,8 +242,9 @@ func (nsq *NamespaceSecretQuery) Clone() *NamespaceSecretQuery {
 		order:      append([]OrderFunc{}, nsq.order...),
 		predicates: append([]predicate.NamespaceSecret{}, nsq.predicates...),
 		// clone intermediate query.
-		sql:  nsq.sql.Clone(),
-		path: nsq.path,
+		sql:    nsq.sql.Clone(),
+		path:   nsq.path,
+		unique: nsq.unique,
 	}
 }
 

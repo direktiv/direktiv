@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -19,6 +18,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+const DefaultConfigName = ".direktiv.conf"
+
+// Flags
 var (
 	addr       string
 	path       string
@@ -36,182 +38,61 @@ var (
 	configPath string
 )
 
-func initDefaultConfigPath() string {
-	dirname, err := os.UserHomeDir()
-	if err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("Warning: Failed to get home directory. Could not establish config file for defaults: %s\n", err.Error()))
-		return ""
-	}
-	configHome := dirname
-	configName := ".dre-config"
-	configType := "yml"
-	return filepath.Join(configHome, configName+"."+configType)
-}
-
-// configFlagHelpTextLoader : Generate suffix for flag help text to show set config value.
-func configFlagHelpTextLoader(configKey string, sensitive bool) (flagHelpText string) {
-	configValue := viper.GetString(configKey)
-
-	if configValue != "" {
-		if sensitive {
-			flagHelpText = "(config \"***************\")"
-		} else {
-			flagHelpText = fmt.Sprintf("(config \"%s\")", configValue)
-		}
-	}
-
-	return
-}
-
-//	configBindFlag : Binds cli flag for config value. If flag value is set, will be used instead of config value.
-//	If config value is not set, mark flag as required.
-func configBindFlag(configKey string, required bool) {
-	viper.BindPFlag(configKey, rootCmd.Flags().Lookup(configKey))
-	if required && viper.GetString(configKey) == "" {
-		rootCmd.MarkFlagRequired(configKey)
-	}
-}
-
-func addAuthHeaders(req *http.Request) {
-	req.Header.Add("apikey", apiKey)
-	req.Header.Add("Direktiv-Token", authToken)
-}
-
-func safeLoadFile(filePath string) (*bytes.Buffer, error) {
-	buf := new(bytes.Buffer)
-
-	if filePath == "" {
-		// skip if filePath is empty
-		return buf, nil
-	}
-
-	fStat, err := os.Stat(filePath)
-	if err != nil {
-		return buf, err
-	}
-
-	if fStat.Size() > maxSize {
-		return buf, fmt.Errorf("file is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
-	}
-
-	fData, err := os.ReadFile(filePath)
-	if err != nil {
-		return buf, err
-	}
-
-	buf = bytes.NewBuffer(fData)
-
-	return buf, nil
-}
-
-func safeLoadStdIn() (*bytes.Buffer, error) {
-	buf := new(bytes.Buffer)
-
-	fi, err := os.Stdin.Stat()
-	if err != nil {
-		fmt.Println("hello?")
-		return buf, err
-	}
-
-	if fi.Mode()&os.ModeNamedPipe == 0 {
-		// No stdin
-		return buf, nil
-	}
-
-	if fi.Size() > maxSize {
-		return buf, fmt.Errorf("stdin is larger than maximum allowed size: %v. Set configfile 'max-size' to change", maxSize)
-	}
-
-	fData, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		return buf, err
-	}
-
-	buf = bytes.NewBuffer(fData)
-
-	return buf, nil
-}
+// Shared Vars
+var (
+	configPathFromFlag bool = true
+	localAbsPath       string
+	urlPrefix          string
+	urlWorkflow        string
+	urlUpdateWorkflow  string
+)
 
 func main() {
 
 	var err error
 
 	// Read Config
-	rootCmd.Flags().StringVarP(&configPath, "config", "c", initDefaultConfigPath(), "Loads flag values from YAML config if file is found.")
+	rootCmd.AddCommand(execCmd)
+	rootCmd.AddCommand(pushCmd)
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "Loads flag values from YAML config if file is found. If unset will automtically look for config file in workflow yaml and parent directories. Config file name should be '.direktiv.conf'")
+
+	// Load config flag early
+	loadCfgFlag()
+
+	// Walk Up to search for config
+	if configPath == "" {
+		autoConfigPathFinder()
+	}
+
+	viper.SetConfigType("yml")
 	viper.SetConfigFile(configPath)
 	viper.ReadInConfig()
 
 	// Set Flags
-	rootCmd.Flags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
-	rootCmd.Flags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. "+configFlagHelpTextLoader("path", false))
-	rootCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
-	rootCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
-	rootCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
-	rootCmd.Flags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
-	rootCmd.Flags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
-	rootCmd.Flags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
-	rootCmd.Flags().BoolVar(&insecure, "insecure", true, "Accept insecure https connections")
+	rootCmd.PersistentFlags().StringP("addr", "a", "", "Target direktiv api address. "+configFlagHelpTextLoader("addr", false))
+
+	rootCmd.PersistentFlags().StringP("path", "p", "", "Target remote workflow path .e.g. '/dir/workflow'. Automatically set if config file was auto-set. "+configFlagHelpTextLoader("path", false))
+	execCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path where to write instance output. If unset output will be written to screen")
+	execCmd.Flags().StringVarP(&input, "input", "i", "", "Path to file to be used as input data for executed workflow. If unset, stdin will be used as input data if available.")
+	execCmd.Flags().StringVar(&inputType, "input-type", "application/json", "Content Type of input data")
+	rootCmd.PersistentFlags().StringP("namespace", "n", "", "Target namespace to execute workflow on. "+configFlagHelpTextLoader("namespace", false))
+	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Authenticate request with apikey. "+configFlagHelpTextLoader("api-key", true))
+	rootCmd.PersistentFlags().StringP("auth-token", "t", "", "Authenticate request with token. "+configFlagHelpTextLoader("auth-token", true))
+	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", true, "Accept insecure https connections")
 
 	// Bing CLI flags to viper
-	configBindFlag("addr", true)
-	configBindFlag("path", true)
-	configBindFlag("namespace", true)
-	configBindFlag("api-key", false)
-	configBindFlag("auth-token", false)
+	configBindFlag(rootCmd, "addr", true, true)
+
+	// If config was automatically found, path is no longer required
+	configBindFlag(rootCmd, "path", configPathFromFlag, true)
+	configBindFlag(rootCmd, "namespace", true, true)
+	configBindFlag(rootCmd, "api-key", false, true)
+	configBindFlag(rootCmd, "auth-token", false, true)
 
 	err = rootCmd.Execute()
 	if err != nil {
 		log.Fatalf("Command Failed: %v", err)
 	}
-
-}
-
-func executeWorkflow(url string) (executeResponse, error) {
-	var instanceDetails executeResponse
-
-	// Read input data from flag file
-	inputData, err := safeLoadFile(input)
-	if err != nil {
-		log.Fatalf("Failed to load input file: %v", err)
-	}
-
-	// If inputData is empty attempt to read from stdin
-	if inputData.Len() == 0 {
-		inputData, err = safeLoadStdIn()
-		if err != nil {
-			log.Fatalf("Failed to load stdin: %v", err)
-		}
-	}
-
-	// If no file or stdin input data was provided, set data to {}
-	if inputData.Len() == 0 && inputType == "application/json" {
-		inputData = bytes.NewBufferString("{}")
-	}
-
-	req, err := http.NewRequest(
-		http.MethodPost,
-		url,
-		inputData,
-	)
-	if err != nil {
-		return instanceDetails, err
-	}
-
-	req.Header.Add("Content-Type", inputType)
-	addAuthHeaders(req)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return instanceDetails, err
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return instanceDetails, err
-	}
-
-	err = json.Unmarshal(body, &instanceDetails)
-	return instanceDetails, err
 
 }
 
@@ -249,63 +130,175 @@ func getOutput(url string) ([]byte, error) {
 
 }
 
-func updateRemoteWorkflow(url string, localPath string) error {
-	wfData, err := safeLoadFile(localPath)
+func cmdPrepareWorkflow(wfPath string) {
+	var err error
+
+	// Load Config From flags / config
+	addr = viper.GetString("addr")
+	path = viper.GetString("path")
+	namespace = viper.GetString("namespace")
+	apiKey = viper.GetString("api-key")
+	authToken = viper.GetString("auth-token")
+	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
+		maxSize = cfgMaxSize
+	}
+
+	// Get ABS Path
+	localAbsPath, err = filepath.Abs(wfPath)
 	if err != nil {
-		log.Fatalf("Failed to load workflow file: %v", err)
+		log.Fatalf("Failed to locate workflow file in filesystem: %v\n", err)
 	}
 
-	req, err := http.NewRequest(
-		http.MethodPost,
-		url,
-		wfData,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create request file: %v", err)
+	// If config file was found automatically, generate path relative to config dir
+	if !configPathFromFlag {
+		os.Stderr.WriteString(fmt.Sprintf("Using config file: '%s'\n", configPath))
+		path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localAbsPath, filepath.Dir(configPath)), ".yaml"))
+	} else {
+		os.Stderr.WriteString(fmt.Sprintf("Using flag config file: '%s'\n", configPath))
 	}
 
-	addAuthHeaders(req)
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("failed to update workflow, server responsed with %s", resp.Status)
-	}
-
-	return err
+	urlPrefix = fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
+	urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+	urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
 }
 
 var rootCmd = &cobra.Command{
+	Use: "exec",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+
+	},
+}
+
+var pushCmd = &cobra.Command{
+	Use:   "push WORKFLOW_PATH|DIR_PATH",
+	Short: "Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file",
+	Long: `"Pushes local workflow or dir to remote direktiv server. This process will update your latest remote resource to your local WORKFLOW_PATH|DIR_PATH file.
+Pushing local directory cannot be used with config flag. Config must be found automatically to determine folder structure.
+
+EXAMPLE: push helloworld.yaml --addr http://192.168.1.1 --namespace admin
+
+Variables will also be uploaded if they are prefixed with your local workflow name
+EXMAPLE:  
+  dir: /pwd
+        /helloworld.yaml
+        /helloworld.yaml.data.json
+Executing: push helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+`,
+	Args: cobra.ExactArgs(1),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareWorkflow(args[0])
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		pathsToUpdate := make([]string, 0)
+		pathStat, err := os.Stat(localAbsPath)
+		if err != nil {
+			log.Fatalf("Could not access path: %v", err)
+		}
+		if pathStat.IsDir() {
+			if configPathFromFlag {
+				log.Fatal("Config file must be automatically found when push directory")
+			}
+
+			err = filepath.Walk(localAbsPath,
+				func(localPath string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if strings.HasSuffix(localPath, ".yaml") {
+						pathsToUpdate = append(pathsToUpdate, localPath)
+					}
+					return nil
+				})
+
+			if err != nil {
+				log.Fatalf("Recursive search could not access path: %v", err)
+			}
+		} else {
+			pathsToUpdate = append(pathsToUpdate, localAbsPath)
+		}
+
+		cmd.PrintErrf("Found %v Local Workflow/s to update\n", len(pathsToUpdate))
+		for i, localPath := range pathsToUpdate {
+			path = filepath.ToSlash(strings.TrimSuffix(strings.TrimPrefix(localPath, filepath.Dir(configPath)), ".yaml"))
+			urlWorkflow = fmt.Sprintf("%s/tree/%s", urlPrefix, strings.TrimPrefix(path, "/"))
+			urlUpdateWorkflow = fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
+
+			cmd.PrintErrf("[%v/%v] Updating Namespace: '%s' Workflow: '%s'\n", i+1, len(pathsToUpdate), namespace, path)
+			err = updateRemoteWorkflow(urlUpdateWorkflow, localPath)
+			if err != nil {
+				log.Fatalf("Failed to update remote workflow: %v\n", err)
+			}
+
+			localVars, err := getLocalWorkflowVariables(localPath)
+			if err != nil {
+				log.Fatalf("Failed to get local variable files: %v\n", err)
+			}
+			if len(localVars) > 0 {
+				cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+			}
+
+			// Set Remote Vars
+			for _, v := range localVars {
+				varName := filepath.ToSlash(strings.TrimPrefix(v, localPath+"."))
+				cmd.PrintErrf("      Updating Remote Workflow Variable: '%s'\n", varName)
+				err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
+				if err != nil {
+					log.Fatalf("Failed to set remote variable file: %v\n", err)
+				}
+			}
+
+			cmd.PrintErrf("      Successfully updated remote workflow\n")
+		}
+	},
+}
+
+var execCmd = &cobra.Command{
 	Use:   "exec WORKFLOW_PATH",
 	Short: "Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file",
 	Long: `Remotely execute direktiv workflows with local files. This process will update your latest remote workflow to your local WORKFLOW_PATH file.
 
-EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld`,
+EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+
+Variables will also be uploaded if they are prefixed with your local workflow name
+EXMAPLE:  
+  dir: /pwd
+        /helloworld.yaml
+        /helloworld.yaml.data.json
+Executing: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path helloworld
+Will update the helloworld workflow and set the remote workflow variable 'data.json' to the contents of '/helloworld.yaml.data.json'
+`,
 	Args: cobra.ExactArgs(1),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		cmdPrepareWorkflow(args[0])
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// Load Config From flags / config
-		addr = viper.GetString("addr")
-		path = viper.GetString("path")
-		namespace = viper.GetString("namespace")
-		apiKey = viper.GetString("api-key")
-		authToken = viper.GetString("auth-token")
-		if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
-			maxSize = cfgMaxSize
-		}
-
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-
 		instanceStatus := "pending"
-		urlPrefix := fmt.Sprintf("%s/api/namespaces/%s", addr, namespace)
-		urlUpdateWorkflow := fmt.Sprintf("%s/tree/%s?op=update-workflow", urlPrefix, strings.TrimPrefix(path, "/"))
 
 		cmd.PrintErrf("Updating Namespace: '%s' Workflow: '%s'\n", namespace, path)
-		err := updateRemoteWorkflow(urlUpdateWorkflow, args[0])
+		err := updateRemoteWorkflow(urlUpdateWorkflow, localAbsPath)
 		if err != nil {
 			log.Fatalf("Failed to update remote workflow: %v\n", err)
+		}
+
+		localVars, err := getLocalWorkflowVariables(localAbsPath)
+		if err != nil {
+			log.Fatalf("Failed to get local variable files: %v\n", err)
+		}
+		if len(localVars) > 0 {
+			cmd.PrintErrf("Found %v Local Variables to push to remote\n", len(localVars))
+		}
+
+		// Set Remote Vars
+		for _, v := range localVars {
+			varName := filepath.ToSlash(strings.TrimPrefix(v, localAbsPath+"."))
+			cmd.PrintErrf("Updating Remote Workflow Variable: '%s'\n", varName)
+			err = setRemoteWorkflowVariable(urlWorkflow, varName, v)
+			if err != nil {
+				log.Fatalf("Failed to set remote variable file: %v\n", err)
+			}
 		}
 
 		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", urlPrefix, strings.TrimPrefix(path, "/"))
@@ -361,8 +354,8 @@ EXAMPLE: exec helloworld.yaml --addr http://192.168.1.1 --namespace admin --path
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
 		}
 
-		clientLogs.Headers["apikey"] = apiKey
-		clientLogs.Headers["Direktiv-Token"] = authToken
+		clientInstance.Headers["apikey"] = apiKey
+		clientInstance.Headers["Direktiv-Token"] = authToken
 
 		channelInstance := make(chan *sse.Event)
 		clientInstance.SubscribeChan("messages", channelInstance)
