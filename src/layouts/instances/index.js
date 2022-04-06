@@ -36,7 +36,7 @@ function InstancesPage(props) {
 export default InstancesPage;
 
 export function InstancesTable(props) {
-    const {namespace, mini, hideTitle, panelStyle, bodyStyle, filter} = props
+    const {namespace, mini, hideTitle, panelStyle, bodyStyle, filter, placeholder} = props
     const [load, setLoad] = useState(true)
     
     const [queryParams, setQueryParams] = useState([`first=${PAGE_SIZE}`])
@@ -178,7 +178,7 @@ export function InstancesTable(props) {
         <ContentPanelBody style={{...bodyStyle}}>
         {
             data !== null && data.length === 0 ? 
-                <div style={{paddingLeft:"10px", fontSize:"10pt"}}>No instances have been recently executed. Recent instances will appear here.</div>
+                <div style={{paddingLeft:"10px", fontSize:"10pt"}}>{`${placeholder ? placeholder : "No instances have been recently executed. Recent instances will appear here."}`}</div>
             :
                 <table className="instances-table" style={{width: "100%"}}>
                     <thead>

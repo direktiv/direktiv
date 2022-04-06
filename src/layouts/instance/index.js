@@ -281,7 +281,7 @@ function InstancePage(props) {
                             </FlexBox>
                         </ContentPanelTitle>
                         {tabBtn === 0 ?<ContentPanelBody><InstanceDiagram status={data.status} namespace={namespace} wfpath={wfpath} rev={rev} instRef={ref} flow={data.flow}/></ContentPanelBody>:<></>}
-                        {tabBtn === 1 ?<InstancesTable namespace={namespace} mini={true} hideTitle={true} panelStyle={{border: "unset"}} filter={[`filter.field=TRIGGER&filter.type=MATCH&filter.val=instance:${instanceID}`]}/>:<></>}
+                        {tabBtn === 1 ?<InstancesTable placeholder={"No child instances have executed from this instance. Child instances will appear here."} namespace={namespace} mini={true} hideTitle={true} panelStyle={{border: "unset"}} filter={[`filter.field=TRIGGER&filter.type=MATCH&filter.val=instance:${instanceID}`]}/>:<></>}
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox style={{minWidth: "300px", flex: "2"}}>
