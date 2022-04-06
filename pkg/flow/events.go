@@ -419,62 +419,104 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
-func eventListenersOrder(p *pagination) ent.EventsPaginateOption {
+func eventListenersOrder(p *pagination) []ent.EventsPaginateOption {
 
-	field := ent.EventsOrderFieldUpdatedAt
-	direction := ent.OrderDirectionAsc
+	var opts []ent.EventsPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
+		field := ent.EventsOrderFieldUpdatedAt
+		direction := ent.OrderDirectionAsc
 
-		if x := p.order.Field; x != "" && x == "UPDATED" {
+		if o == nil {
+			continue
+		}
+
+		if x := o.Field; x != "" && x == "UPDATED" {
 			field = ent.EventsOrderFieldUpdatedAt
 		}
 
+		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
+			Direction: direction,
+			Field:     field,
+		}))
+
 	}
 
-	return ent.WithEventsOrder(&ent.EventsOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithEventsOrder(&ent.EventsOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.EventsOrderFieldUpdatedAt,
+		}))
+	}
+
+	return opts
 
 }
 
-func eventListenersFilter(p *pagination) ent.EventsPaginateOption {
+func eventListenersFilter(p *pagination) []ent.EventsPaginateOption {
+
+	var filters []func(query *ent.EventsQuery) (*ent.EventsQuery, error)
+	var opts []ent.EventsPaginateOption
 
 	if p.filter == nil {
-		return nil
+		return opts
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
+		filter := f.Val
+
+		filters = append(filters, func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+
+			if filter == "" {
+				return query, nil
+			}
+
+			field := f.Field
+			if field == "" {
+				return query, nil
+			}
+
+			// switch field {
+			// case "NAME":
+
+			// 	ftype := p.filter.Type
+			// 	if ftype == "" {
+			// 		return query, nil
+			// 	}
+
+			// 	switch ftype {
+			// 	case "CONTAINS":
+			// 		return query.Where(entns.NameContains(filter)), nil
+			// 	}
+			// }
+
 			return query, nil
-		}
 
-		// switch field {
-		// case "NAME":
+		})
 
-		// 	ftype := p.filter.Type
-		// 	if ftype == "" {
-		// 		return query, nil
-		// 	}
+	}
 
-		// 	switch ftype {
-		// 	case "CONTAINS":
-		// 		return query.Where(entns.NameContains(filter)), nil
-		// 	}
-		// }
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithEventsFilter(func(query *ent.EventsQuery) (*ent.EventsQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
 
-		return query, nil
-
-	})
+	return opts
 
 }
 
@@ -490,11 +532,8 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	}
 
 	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p))
-	filter := eventListenersFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, eventListenersOrder(p)...)
+	opts = append(opts, eventListenersFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -604,11 +643,8 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	}
 
 	opts := []ent.EventsPaginateOption{}
-	opts = append(opts, eventListenersOrder(p))
-	filter := eventListenersFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, eventListenersOrder(p)...)
+	opts = append(opts, eventListenersFilter(p)...)
 
 	nsc := flow.db.Namespace
 
@@ -805,74 +841,117 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 
 }
 
-func cloudeventsOrder(p *pagination) ent.CloudEventsPaginateOption {
+func cloudeventsOrder(p *pagination) []ent.CloudEventsPaginateOption {
 
-	field := ent.CloudEventsOrderFieldCreated
-	direction := ent.OrderDirectionDesc
+	var opts []ent.CloudEventsPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
 
-		if x := p.order.Field; x != "" && x == "ID" {
+		if o == nil {
+			continue
+		}
+
+		field := ent.CloudEventsOrderFieldCreated
+		direction := ent.OrderDirectionDesc
+
+		if x := o.Field; x != "" && x == "ID" {
 			field = ent.CloudEventsOrderFieldID
 		}
 
-		if x := p.order.Field; x != "" && x == "RECEIVED" {
+		if x := o.Field; x != "" && x == "RECEIVED" {
 			field = ent.CloudEventsOrderFieldCreated
 		}
 
-		if x := p.order.Direction; x != "" && x == "DESC" {
+		if x := o.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
-		if x := p.order.Direction; x != "" && x == "ASC" {
+		if x := o.Direction; x != "" && x == "ASC" {
 			direction = ent.OrderDirectionAsc
 		}
 
+		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
+			Direction: direction,
+			Field:     field,
+		}))
+
 	}
 
-	return ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithCloudEventsOrder(&ent.CloudEventsOrder{
+			Direction: ent.OrderDirectionDesc,
+			Field:     ent.CloudEventsOrderFieldCreated,
+		}))
+	}
+
+	return opts
 
 }
 
-func cloudeventsFilter(p *pagination) ent.CloudEventsPaginateOption {
+func cloudeventsFilter(p *pagination) []ent.CloudEventsPaginateOption {
+
+	var filters []func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error)
+	var opts []ent.CloudEventsPaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
+		filter := f.Val
+
+		filters = append(filters, func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+
+			if filter == "" {
+				return query, nil
+			}
+
+			field := f.Field
+			if field == "" {
+				return query, nil
+			}
+
+			// switch field {
+			// case "AS":
+
+			// 	ftype := p.filter.Type
+			// 	if ftype == "" {
+			// 		return query, nil
+			// 	}
+
+			// 	switch ftype {
+			// 	case "CONTAINS":
+			// 		return query.Where(entcevents.AsContains(filter)), nil
+			// 	}
+			// }
+
 			return query, nil
-		}
 
-		// switch field {
-		// case "AS":
+		})
 
-		// 	ftype := p.filter.Type
-		// 	if ftype == "" {
-		// 		return query, nil
-		// 	}
+	}
 
-		// 	switch ftype {
-		// 	case "CONTAINS":
-		// 		return query.Where(entcevents.AsContains(filter)), nil
-		// 	}
-		// }
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithCloudEventsFilter(func(query *ent.CloudEventsQuery) (*ent.CloudEventsQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
 
-		return query, nil
-
-	})
+	return opts
 
 }
 
@@ -886,11 +965,8 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	}
 
 	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p))
-	filter := cloudeventsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, cloudeventsOrder(p)...)
+	opts = append(opts, cloudeventsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
@@ -953,11 +1029,8 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	}
 
 	opts := []ent.CloudEventsPaginateOption{}
-	opts = append(opts, cloudeventsOrder(p))
-	filter := cloudeventsFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, cloudeventsOrder(p)...)
+	opts = append(opts, cloudeventsFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())

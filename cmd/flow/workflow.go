@@ -313,15 +313,15 @@ var tagsCmd = &cobra.Command{
 				First:  first,
 				Before: before,
 				Last:   last,
-				Order: &grpc.PageOrder{
+				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
-				},
-				Filter: &grpc.PageFilter{
+				}},
+				Filter: []*grpc.PageFilter{{
 					Field: filterField,
 					Type:  filterType,
 					Val:   filterVal,
-				},
+				}},
 			},
 			Namespace: namespace,
 			Path:      path,
@@ -379,15 +379,15 @@ var refsCmd = &cobra.Command{
 				First:  first,
 				Before: before,
 				Last:   last,
-				Order: &grpc.PageOrder{
+				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
-				},
-				Filter: &grpc.PageFilter{
+				}},
+				Filter: []*grpc.PageFilter{{
 					Field: filterField,
 					Type:  filterType,
 					Val:   filterVal,
-				},
+				}},
 			},
 			Namespace: namespace,
 			Path:      path,
@@ -445,15 +445,15 @@ var revisionsCmd = &cobra.Command{
 				First:  first,
 				Before: before,
 				Last:   last,
-				Order: &grpc.PageOrder{
+				Order: []*grpc.PageOrder{{
 					Field:     orderField,
 					Direction: orderDirection,
-				},
-				Filter: &grpc.PageFilter{
+				}},
+				Filter: []*grpc.PageFilter{{
 					Field: filterField,
 					Type:  filterType,
 					Val:   filterVal,
-				},
+				}},
 			},
 			Namespace: namespace,
 			Path:      path,

@@ -189,66 +189,108 @@ func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, s
 
 }
 
-func variablesOrder(p *pagination) ent.VarRefPaginateOption {
+func variablesOrder(p *pagination) []ent.VarRefPaginateOption {
 
-	field := ent.VarRefOrderFieldName
-	direction := ent.OrderDirectionAsc
+	var opts []ent.VarRefPaginateOption
 
-	if p.order != nil {
+	for _, o := range p.order {
 
-		if x := p.order.Field; x != "" && x == "NAME" {
+		if o == nil {
+			continue
+		}
+
+		field := ent.VarRefOrderFieldName
+		direction := ent.OrderDirectionAsc
+
+		if x := o.Field; x != "" && x == "NAME" {
 			field = ent.VarRefOrderFieldName
 		}
 
-		if x := p.order.Direction; x != "" && x == "DESC" {
+		if x := o.Direction; x != "" && x == "DESC" {
 			direction = ent.OrderDirectionDesc
 		}
 
+		opts = append(opts, ent.WithVarRefOrder(&ent.VarRefOrder{
+			Direction: direction,
+			Field:     field,
+		}))
 	}
 
-	return ent.WithVarRefOrder(&ent.VarRefOrder{
-		Direction: direction,
-		Field:     field,
-	})
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithVarRefOrder(&ent.VarRefOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.VarRefOrderFieldName,
+		}))
+	}
+
+	return opts
 
 }
 
-func variablesFilter(p *pagination) ent.VarRefPaginateOption {
+func variablesFilter(p *pagination) []ent.VarRefPaginateOption {
+
+	var filters []func(query *ent.VarRefQuery) (*ent.VarRefQuery, error)
+	var opts []ent.VarRefPaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithVarRefFilter(func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
-			return query, nil
-		}
+		filter := f.Val
 
-		switch field {
-		case "NAME":
+		filters = append(filters, func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
 
-			ftype := p.filter.Type
-			if ftype == "" {
+			if filter == "" {
 				return query, nil
 			}
 
-			switch ftype {
-			case "CONTAINS":
-				return query.Where(entvar.NameContains(filter)), nil
+			field := f.Field
+			if field == "" {
+				return query, nil
 			}
-		}
 
-		return query, nil
+			switch field {
+			case "NAME":
 
-	})
+				ftype := f.Type
+				if ftype == "" {
+					return query, nil
+				}
+
+				switch ftype {
+				case "CONTAINS":
+					return query.Where(entvar.NameContains(filter)), nil
+				}
+			}
+
+			return query, nil
+
+		})
+
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithVarRefFilter(func(query *ent.VarRefQuery) (*ent.VarRefQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
+
+	return opts
 
 }
 
@@ -262,11 +304,8 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 	}
 
 	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p))
-	filter := variablesFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, variablesOrder(p)...)
+	opts = append(opts, variablesFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())
@@ -326,11 +365,8 @@ func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, 
 	}
 
 	opts := []ent.VarRefPaginateOption{}
-	opts = append(opts, variablesOrder(p))
-	filter := variablesFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, variablesOrder(p)...)
+	opts = append(opts, variablesFilter(p)...)
 
 	nsc := flow.db.Namespace
 	ns, err := flow.getNamespace(ctx, nsc, req.GetNamespace())

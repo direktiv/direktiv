@@ -294,7 +294,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			}
 			return
 		}
-		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns.", subflowID)
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until subflow '%s' returns (%s).", subflowID, sl.state.Action.Function)
 		sd := &actionStateSavedata{
 			Op:       "do",
 			Id:       subflowID,
@@ -343,7 +343,7 @@ func (sl *actionStateLogic) do(ctx context.Context, engine *engine, im *instance
 			}
 			return
 		}
-		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns.", fn.GetID())
+		engine.logToInstance(ctx, time.Now(), im.in, "Sleeping until function '%s' returns (%s).", fn.GetID(), sl.state.Action.Function)
 		err = engine.doActionRequest(ctx, ar)
 		if err != nil {
 			return

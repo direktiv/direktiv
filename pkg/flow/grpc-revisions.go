@@ -22,11 +22,8 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 	}
 
 	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p))
-	filter := refFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, refOrder(p)...)
+	opts = append(opts, refFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())
@@ -75,11 +72,8 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 	}
 
 	opts := []ent.RefPaginateOption{}
-	opts = append(opts, refOrder(p))
-	filter := refFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, refOrder(p)...)
+	opts = append(opts, refFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToWorkflow(ctx, nsc, req.GetNamespace(), req.GetPath())

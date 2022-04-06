@@ -27,6 +27,7 @@ func (Instance) Fields() []ent.Field {
 		field.String("as").Immutable(),
 		field.String("errorCode").Optional(),
 		field.String("errorMessage").Optional(),
+		field.String("invoker").Optional(),
 	}
 }
 

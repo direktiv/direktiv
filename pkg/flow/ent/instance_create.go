@@ -110,6 +110,20 @@ func (ic *InstanceCreate) SetNillableErrorMessage(s *string) *InstanceCreate {
 	return ic
 }
 
+// SetInvoker sets the "invoker" field.
+func (ic *InstanceCreate) SetInvoker(s string) *InstanceCreate {
+	ic.mutation.SetInvoker(s)
+	return ic
+}
+
+// SetNillableInvoker sets the "invoker" field if the given value is not nil.
+func (ic *InstanceCreate) SetNillableInvoker(s *string) *InstanceCreate {
+	if s != nil {
+		ic.SetInvoker(*s)
+	}
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *InstanceCreate) SetID(u uuid.UUID) *InstanceCreate {
 	ic.mutation.SetID(u)
@@ -440,6 +454,14 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 			Column: instance.FieldErrorMessage,
 		})
 		_node.ErrorMessage = value
+	}
+	if value, ok := ic.mutation.Invoker(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: instance.FieldInvoker,
+		})
+		_node.Invoker = value
 	}
 	if nodes := ic.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

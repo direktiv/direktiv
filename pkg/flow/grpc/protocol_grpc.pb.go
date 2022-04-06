@@ -4,10 +4,10 @@ package grpc
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,7 +23,7 @@ type FlowClient interface {
 	Namespaces(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (*NamespacesResponse, error)
 	NamespacesStream(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (Flow_NamespacesStreamClient, error)
 	CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
-	DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameNamespace(ctx context.Context, in *RenameNamespaceRequest, opts ...grpc.CallOption) (*RenameNamespaceResponse, error)
 	ServerLogs(ctx context.Context, in *ServerLogsRequest, opts ...grpc.CallOption) (*ServerLogsResponse, error)
 	ServerLogsParcels(ctx context.Context, in *ServerLogsRequest, opts ...grpc.CallOption) (Flow_ServerLogsParcelsClient, error)
@@ -34,7 +34,7 @@ type FlowClient interface {
 	Directory(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (*DirectoryResponse, error)
 	DirectoryStream(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (Flow_DirectoryStreamClient, error)
 	CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
-	DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error)
 	Node(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error)
 	Workflow(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
@@ -49,10 +49,10 @@ type FlowClient interface {
 	RefsStream(ctx context.Context, in *RefsRequest, opts ...grpc.CallOption) (Flow_RefsStreamClient, error)
 	Revisions(ctx context.Context, in *RevisionsRequest, opts ...grpc.CallOption) (*RevisionsResponse, error)
 	RevisionsStream(ctx context.Context, in *RevisionsRequest, opts ...grpc.CallOption) (Flow_RevisionsStreamClient, error)
-	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Untag(ctx context.Context, in *UntagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Retag(ctx context.Context, in *RetagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Untag(ctx context.Context, in *UntagRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Retag(ctx context.Context, in *RetagRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	Router(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (*RouterResponse, error)
 	RouterStream(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (Flow_RouterStreamClient, error)
 	EditRouter(ctx context.Context, in *EditRouterRequest, opts ...grpc.CallOption) (*EditRouterResponse, error)
@@ -61,7 +61,7 @@ type FlowClient interface {
 	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
 	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
 	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
-	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
 	Instances(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (*InstancesResponse, error)
@@ -72,15 +72,15 @@ type FlowClient interface {
 	InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error)
 	StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error)
 	RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error)
-	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error)
 	NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error)
 	NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error)
 	SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*SetNamespaceVariableResponse, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error)
-	DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameNamespaceVariable(ctx context.Context, in *RenameNamespaceVariableRequest, opts ...grpc.CallOption) (*RenameNamespaceVariableResponse, error)
 	WorkflowVariable(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (*WorkflowVariableResponse, error)
 	WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error)
@@ -88,7 +88,7 @@ type FlowClient interface {
 	WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error)
 	SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*SetWorkflowVariableResponse, error)
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error)
-	DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameWorkflowVariable(ctx context.Context, in *RenameWorkflowVariableRequest, opts ...grpc.CallOption) (*RenameWorkflowVariableResponse, error)
 	InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error)
 	InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error)
@@ -96,13 +96,13 @@ type FlowClient interface {
 	InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error)
 	SetInstanceVariable(ctx context.Context, in *SetInstanceVariableRequest, opts ...grpc.CallOption) (*SetInstanceVariableResponse, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
-	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
-	GlobalDependencyGraph(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DependencyGraphResponse, error)
+	GlobalDependencyGraph(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*DependencyGraphResponse, error)
 	NamespacedDependencyGraph(ctx context.Context, in *NamespacedDependencyGraphRequest, opts ...grpc.CallOption) (*DependencyGraphResponse, error)
-	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	// COMING SOON:
 	//
@@ -115,14 +115,14 @@ type FlowClient interface {
 	EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error)
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
-	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 	SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error)
 	GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error)
-	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
+	Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
 	InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error)
 }
 
@@ -193,8 +193,8 @@ func (c *flowClient) CreateNamespace(ctx context.Context, in *CreateNamespaceReq
 	return out, nil
 }
 
-func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -384,8 +384,8 @@ func (c *flowClient) CreateDirectory(ctx context.Context, in *CreateDirectoryReq
 	return out, nil
 }
 
-func (c *flowClient) DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNode", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -611,8 +611,8 @@ func (x *flowRevisionsStreamClient) Recv() (*RevisionsResponse, error) {
 	return m, nil
 }
 
-func (c *flowClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteRevision", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -620,8 +620,8 @@ func (c *flowClient) DeleteRevision(ctx context.Context, in *DeleteRevisionReque
 	return out, nil
 }
 
-func (c *flowClient) Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Tag", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -629,8 +629,8 @@ func (c *flowClient) Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *flowClient) Untag(ctx context.Context, in *UntagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) Untag(ctx context.Context, in *UntagRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Untag", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -638,8 +638,8 @@ func (c *flowClient) Untag(ctx context.Context, in *UntagRequest, opts ...grpc.C
 	return out, nil
 }
 
-func (c *flowClient) Retag(ctx context.Context, in *RetagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) Retag(ctx context.Context, in *RetagRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Retag", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -765,8 +765,8 @@ func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts .
 	return out, nil
 }
 
-func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -956,8 +956,8 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 	return m, nil
 }
 
-func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CancelInstance", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -965,8 +965,8 @@ func (c *flowClient) CancelInstance(ctx context.Context, in *CancelInstanceReque
 	return out, nil
 }
 
-func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/BroadcastCloudevent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1099,8 +1099,8 @@ func (x *flowSetNamespaceVariableParcelsClient) CloseAndRecv() (*SetNamespaceVar
 	return m, nil
 }
 
-func (c *flowClient) DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNamespaceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1242,8 +1242,8 @@ func (x *flowSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetWorkflowVaria
 	return m, nil
 }
 
-func (c *flowClient) DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteWorkflowVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1385,8 +1385,8 @@ func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVaria
 	return m, nil
 }
 
-func (c *flowClient) DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteInstanceVariable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1412,7 +1412,7 @@ func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *flowClient) GlobalDependencyGraph(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DependencyGraphResponse, error) {
+func (c *flowClient) GlobalDependencyGraph(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*DependencyGraphResponse, error) {
 	out := new(DependencyGraphResponse)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/GlobalDependencyGraph", in, out, opts...)
 	if err != nil {
@@ -1430,8 +1430,8 @@ func (c *flowClient) NamespacedDependencyGraph(ctx context.Context, in *Namespac
 	return out, nil
 }
 
-func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/CreateNodeAttributes", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1439,8 +1439,8 @@ func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAtt
 	return out, nil
 }
 
-func (c *flowClient) DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/DeleteNodeAttributes", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1548,8 +1548,8 @@ func (c *flowClient) HistoricalEvent(ctx context.Context, in *HistoricalEventReq
 	return out, nil
 }
 
-func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ReplayEvent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1557,8 +1557,8 @@ func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, op
 	return out, nil
 }
 
-func (c *flowClient) ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/ToggleWorkflow", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1566,8 +1566,8 @@ func (c *flowClient) ToggleWorkflow(ctx context.Context, in *ToggleWorkflowReque
 	return out, nil
 }
 
-func (c *flowClient) SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *flowClient) SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/SetWorkflowEventLogging", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1611,7 +1611,7 @@ func (c *flowClient) GetNamespaceConfig(ctx context.Context, in *GetNamespaceCon
 	return out, nil
 }
 
-func (c *flowClient) Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
+func (c *flowClient) Build(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
 	out := new(BuildResponse)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Flow/Build", in, out, opts...)
 	if err != nil {
@@ -1637,7 +1637,7 @@ type FlowServer interface {
 	Namespaces(context.Context, *NamespacesRequest) (*NamespacesResponse, error)
 	NamespacesStream(*NamespacesRequest, Flow_NamespacesStreamServer) error
 	CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error)
-	DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error)
+	DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*empty.Empty, error)
 	RenameNamespace(context.Context, *RenameNamespaceRequest) (*RenameNamespaceResponse, error)
 	ServerLogs(context.Context, *ServerLogsRequest) (*ServerLogsResponse, error)
 	ServerLogsParcels(*ServerLogsRequest, Flow_ServerLogsParcelsServer) error
@@ -1648,7 +1648,7 @@ type FlowServer interface {
 	Directory(context.Context, *DirectoryRequest) (*DirectoryResponse, error)
 	DirectoryStream(*DirectoryRequest, Flow_DirectoryStreamServer) error
 	CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error)
-	DeleteNode(context.Context, *DeleteNodeRequest) (*emptypb.Empty, error)
+	DeleteNode(context.Context, *DeleteNodeRequest) (*empty.Empty, error)
 	RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error)
 	Node(context.Context, *NodeRequest) (*NodeResponse, error)
 	Workflow(context.Context, *WorkflowRequest) (*WorkflowResponse, error)
@@ -1663,10 +1663,10 @@ type FlowServer interface {
 	RefsStream(*RefsRequest, Flow_RefsStreamServer) error
 	Revisions(context.Context, *RevisionsRequest) (*RevisionsResponse, error)
 	RevisionsStream(*RevisionsRequest, Flow_RevisionsStreamServer) error
-	DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error)
-	Tag(context.Context, *TagRequest) (*emptypb.Empty, error)
-	Untag(context.Context, *UntagRequest) (*emptypb.Empty, error)
-	Retag(context.Context, *RetagRequest) (*emptypb.Empty, error)
+	DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error)
+	Tag(context.Context, *TagRequest) (*empty.Empty, error)
+	Untag(context.Context, *UntagRequest) (*empty.Empty, error)
+	Retag(context.Context, *RetagRequest) (*empty.Empty, error)
 	Router(context.Context, *RouterRequest) (*RouterResponse, error)
 	RouterStream(*RouterRequest, Flow_RouterStreamServer) error
 	EditRouter(context.Context, *EditRouterRequest) (*EditRouterResponse, error)
@@ -1675,7 +1675,7 @@ type FlowServer interface {
 	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
 	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
 	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
-	DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error)
+	DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error)
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
 	Instances(context.Context, *InstancesRequest) (*InstancesResponse, error)
@@ -1686,15 +1686,15 @@ type FlowServer interface {
 	InstanceLogsParcels(*InstanceLogsRequest, Flow_InstanceLogsParcelsServer) error
 	StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error)
 	RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error
-	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
-	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
+	CancelInstance(context.Context, *CancelInstanceRequest) (*empty.Empty, error)
+	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*empty.Empty, error)
 	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(*NamespaceVariableRequest, Flow_NamespaceVariableParcelsServer) error
 	NamespaceVariables(context.Context, *NamespaceVariablesRequest) (*NamespaceVariablesResponse, error)
 	NamespaceVariablesStream(*NamespaceVariablesRequest, Flow_NamespaceVariablesStreamServer) error
 	SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*SetNamespaceVariableResponse, error)
 	SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error
-	DeleteNamespaceVariable(context.Context, *DeleteNamespaceVariableRequest) (*emptypb.Empty, error)
+	DeleteNamespaceVariable(context.Context, *DeleteNamespaceVariableRequest) (*empty.Empty, error)
 	RenameNamespaceVariable(context.Context, *RenameNamespaceVariableRequest) (*RenameNamespaceVariableResponse, error)
 	WorkflowVariable(context.Context, *WorkflowVariableRequest) (*WorkflowVariableResponse, error)
 	WorkflowVariableParcels(*WorkflowVariableRequest, Flow_WorkflowVariableParcelsServer) error
@@ -1702,7 +1702,7 @@ type FlowServer interface {
 	WorkflowVariablesStream(*WorkflowVariablesRequest, Flow_WorkflowVariablesStreamServer) error
 	SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*SetWorkflowVariableResponse, error)
 	SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error
-	DeleteWorkflowVariable(context.Context, *DeleteWorkflowVariableRequest) (*emptypb.Empty, error)
+	DeleteWorkflowVariable(context.Context, *DeleteWorkflowVariableRequest) (*empty.Empty, error)
 	RenameWorkflowVariable(context.Context, *RenameWorkflowVariableRequest) (*RenameWorkflowVariableResponse, error)
 	InstanceVariable(context.Context, *InstanceVariableRequest) (*InstanceVariableResponse, error)
 	InstanceVariableParcels(*InstanceVariableRequest, Flow_InstanceVariableParcelsServer) error
@@ -1710,13 +1710,13 @@ type FlowServer interface {
 	InstanceVariablesStream(*InstanceVariablesRequest, Flow_InstanceVariablesStreamServer) error
 	SetInstanceVariable(context.Context, *SetInstanceVariableRequest) (*SetInstanceVariableResponse, error)
 	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
-	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*emptypb.Empty, error)
+	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*empty.Empty, error)
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
-	GlobalDependencyGraph(context.Context, *emptypb.Empty) (*DependencyGraphResponse, error)
+	GlobalDependencyGraph(context.Context, *empty.Empty) (*DependencyGraphResponse, error)
 	NamespacedDependencyGraph(context.Context, *NamespacedDependencyGraphRequest) (*DependencyGraphResponse, error)
-	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*emptypb.Empty, error)
-	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*emptypb.Empty, error)
+	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error)
+	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	// COMING SOON:
 	//
@@ -1729,14 +1729,14 @@ type FlowServer interface {
 	EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error)
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
-	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
-	ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*emptypb.Empty, error)
-	SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*emptypb.Empty, error)
+	ReplayEvent(context.Context, *ReplayEventRequest) (*empty.Empty, error)
+	ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error)
+	SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*empty.Empty, error)
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
 	ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error)
 	SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error)
 	GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error)
-	Build(context.Context, *emptypb.Empty) (*BuildResponse, error)
+	Build(context.Context, *empty.Empty) (*BuildResponse, error)
 	InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
@@ -1757,7 +1757,7 @@ func (UnimplementedFlowServer) NamespacesStream(*NamespacesRequest, Flow_Namespa
 func (UnimplementedFlowServer) CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespace not implemented")
 }
-func (UnimplementedFlowServer) DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespace not implemented")
 }
 func (UnimplementedFlowServer) RenameNamespace(context.Context, *RenameNamespaceRequest) (*RenameNamespaceResponse, error) {
@@ -1790,7 +1790,7 @@ func (UnimplementedFlowServer) DirectoryStream(*DirectoryRequest, Flow_Directory
 func (UnimplementedFlowServer) CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDirectory not implemented")
 }
-func (UnimplementedFlowServer) DeleteNode(context.Context, *DeleteNodeRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteNode(context.Context, *DeleteNodeRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNode not implemented")
 }
 func (UnimplementedFlowServer) RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error) {
@@ -1835,16 +1835,16 @@ func (UnimplementedFlowServer) Revisions(context.Context, *RevisionsRequest) (*R
 func (UnimplementedFlowServer) RevisionsStream(*RevisionsRequest, Flow_RevisionsStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method RevisionsStream not implemented")
 }
-func (UnimplementedFlowServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRevision not implemented")
 }
-func (UnimplementedFlowServer) Tag(context.Context, *TagRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) Tag(context.Context, *TagRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Tag not implemented")
 }
-func (UnimplementedFlowServer) Untag(context.Context, *UntagRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) Untag(context.Context, *UntagRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Untag not implemented")
 }
-func (UnimplementedFlowServer) Retag(context.Context, *RetagRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) Retag(context.Context, *RetagRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Retag not implemented")
 }
 func (UnimplementedFlowServer) Router(context.Context, *RouterRequest) (*RouterResponse, error) {
@@ -1871,7 +1871,7 @@ func (UnimplementedFlowServer) SecretsStream(*SecretsRequest, Flow_SecretsStream
 func (UnimplementedFlowServer) SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetSecret not implemented")
 }
-func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
 }
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
@@ -1904,10 +1904,10 @@ func (UnimplementedFlowServer) StartWorkflow(context.Context, *StartWorkflowRequ
 func (UnimplementedFlowServer) RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error {
 	return status.Errorf(codes.Unimplemented, "method RunWorkflow not implemented")
 }
-func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelInstance not implemented")
 }
-func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BroadcastCloudevent not implemented")
 }
 func (UnimplementedFlowServer) NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error) {
@@ -1928,7 +1928,7 @@ func (UnimplementedFlowServer) SetNamespaceVariable(context.Context, *SetNamespa
 func (UnimplementedFlowServer) SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetNamespaceVariableParcels not implemented")
 }
-func (UnimplementedFlowServer) DeleteNamespaceVariable(context.Context, *DeleteNamespaceVariableRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteNamespaceVariable(context.Context, *DeleteNamespaceVariableRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespaceVariable not implemented")
 }
 func (UnimplementedFlowServer) RenameNamespaceVariable(context.Context, *RenameNamespaceVariableRequest) (*RenameNamespaceVariableResponse, error) {
@@ -1952,7 +1952,7 @@ func (UnimplementedFlowServer) SetWorkflowVariable(context.Context, *SetWorkflow
 func (UnimplementedFlowServer) SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetWorkflowVariableParcels not implemented")
 }
-func (UnimplementedFlowServer) DeleteWorkflowVariable(context.Context, *DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteWorkflowVariable(context.Context, *DeleteWorkflowVariableRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteWorkflowVariable not implemented")
 }
 func (UnimplementedFlowServer) RenameWorkflowVariable(context.Context, *RenameWorkflowVariableRequest) (*RenameWorkflowVariableResponse, error) {
@@ -1976,7 +1976,7 @@ func (UnimplementedFlowServer) SetInstanceVariable(context.Context, *SetInstance
 func (UnimplementedFlowServer) SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetInstanceVariableParcels not implemented")
 }
-func (UnimplementedFlowServer) DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteInstanceVariable not implemented")
 }
 func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error) {
@@ -1985,16 +1985,16 @@ func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameIn
 func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
 }
-func (UnimplementedFlowServer) GlobalDependencyGraph(context.Context, *emptypb.Empty) (*DependencyGraphResponse, error) {
+func (UnimplementedFlowServer) GlobalDependencyGraph(context.Context, *empty.Empty) (*DependencyGraphResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GlobalDependencyGraph not implemented")
 }
 func (UnimplementedFlowServer) NamespacedDependencyGraph(context.Context, *NamespacedDependencyGraphRequest) (*DependencyGraphResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NamespacedDependencyGraph not implemented")
 }
-func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNodeAttributes not implemented")
 }
-func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNodeAttributes not implemented")
 }
 func (UnimplementedFlowServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
@@ -2015,13 +2015,13 @@ func (UnimplementedFlowServer) EventHistoryStream(*EventHistoryRequest, Flow_Eve
 func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HistoricalEvent not implemented")
 }
-func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
 }
-func (UnimplementedFlowServer) ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleWorkflow not implemented")
 }
-func (UnimplementedFlowServer) SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
+func (UnimplementedFlowServer) SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowEventLogging not implemented")
 }
 func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error) {
@@ -2036,7 +2036,7 @@ func (UnimplementedFlowServer) SetNamespaceConfig(context.Context, *SetNamespace
 func (UnimplementedFlowServer) GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceConfig not implemented")
 }
-func (UnimplementedFlowServer) Build(context.Context, *emptypb.Empty) (*BuildResponse, error) {
+func (UnimplementedFlowServer) Build(context.Context, *empty.Empty) (*BuildResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
 }
 func (UnimplementedFlowServer) InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error) {
@@ -3583,7 +3583,7 @@ func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 }
 
 func _Flow_GlobalDependencyGraph_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3595,7 +3595,7 @@ func _Flow_GlobalDependencyGraph_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/direktiv_flow.Flow/GlobalDependencyGraph",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).GlobalDependencyGraph(ctx, req.(*emptypb.Empty))
+		return srv.(FlowServer).GlobalDependencyGraph(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3895,7 +3895,7 @@ func _Flow_GetNamespaceConfig_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _Flow_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3907,7 +3907,7 @@ func _Flow_Build_Handler(srv interface{}, ctx context.Context, dec func(interfac
 		FullMethod: "/direktiv_flow.Flow/Build",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Build(ctx, req.(*emptypb.Empty))
+		return srv.(FlowServer).Build(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4369,8 +4369,8 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InternalClient interface {
-	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_NamespaceVariableParcelsClient, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
 	WorkflowVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_WorkflowVariableParcelsClient, error)
@@ -4389,8 +4389,8 @@ func NewInternalClient(cc grpc.ClientConnInterface) InternalClient {
 	return &internalClient{cc}
 }
 
-func (c *internalClient) ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *internalClient) ReportActionResults(ctx context.Context, in *ReportActionResultsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Internal/ReportActionResults", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -4398,8 +4398,8 @@ func (c *internalClient) ReportActionResults(ctx context.Context, in *ReportActi
 	return out, nil
 }
 
-func (c *internalClient) ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *internalClient) ActionLog(ctx context.Context, in *ActionLogRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Internal/ActionLog", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -4675,8 +4675,8 @@ func (x *internalSetInstanceVariableParcelsClient) CloseAndRecv() (*SetVariableI
 // All implementations must embed UnimplementedInternalServer
 // for forward compatibility
 type InternalServer interface {
-	ReportActionResults(context.Context, *ReportActionResultsRequest) (*emptypb.Empty, error)
-	ActionLog(context.Context, *ActionLogRequest) (*emptypb.Empty, error)
+	ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error)
+	ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error)
 	NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error
 	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error
 	WorkflowVariableParcels(*VariableInternalRequest, Internal_WorkflowVariableParcelsServer) error
@@ -4692,10 +4692,10 @@ type InternalServer interface {
 type UnimplementedInternalServer struct {
 }
 
-func (UnimplementedInternalServer) ReportActionResults(context.Context, *ReportActionResultsRequest) (*emptypb.Empty, error) {
+func (UnimplementedInternalServer) ReportActionResults(context.Context, *ReportActionResultsRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReportActionResults not implemented")
 }
-func (UnimplementedInternalServer) ActionLog(context.Context, *ActionLogRequest) (*emptypb.Empty, error) {
+func (UnimplementedInternalServer) ActionLog(context.Context, *ActionLogRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActionLog not implemented")
 }
 func (UnimplementedInternalServer) NamespaceVariableParcels(*VariableInternalRequest, Internal_NamespaceVariableParcelsServer) error {
@@ -5024,8 +5024,8 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ActionsClient interface {
-	SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	NamespaceRegistries(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (*NamespaceRegistriesResponse, error)
 	NamespaceRegistriesStream(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (Actions_NamespaceRegistriesStreamClient, error)
 }
@@ -5038,8 +5038,8 @@ func NewActionsClient(cc grpc.ClientConnInterface) ActionsClient {
 	return &actionsClient{cc}
 }
 
-func (c *actionsClient) SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *actionsClient) SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Actions/SetNamespaceRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -5047,8 +5047,8 @@ func (c *actionsClient) SetNamespaceRegistry(ctx context.Context, in *SetNamespa
 	return out, nil
 }
 
-func (c *actionsClient) DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *actionsClient) DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/direktiv_flow.Actions/DeleteNamespaceRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -5101,8 +5101,8 @@ func (x *actionsNamespaceRegistriesStreamClient) Recv() (*NamespaceRegistriesRes
 // All implementations must embed UnimplementedActionsServer
 // for forward compatibility
 type ActionsServer interface {
-	SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*emptypb.Empty, error)
-	DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*emptypb.Empty, error)
+	SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*empty.Empty, error)
+	DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*empty.Empty, error)
 	NamespaceRegistries(context.Context, *NamespaceRegistriesRequest) (*NamespaceRegistriesResponse, error)
 	NamespaceRegistriesStream(*NamespaceRegistriesRequest, Actions_NamespaceRegistriesStreamServer) error
 	mustEmbedUnimplementedActionsServer()
@@ -5112,10 +5112,10 @@ type ActionsServer interface {
 type UnimplementedActionsServer struct {
 }
 
-func (UnimplementedActionsServer) SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*emptypb.Empty, error) {
+func (UnimplementedActionsServer) SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceRegistry not implemented")
 }
-func (UnimplementedActionsServer) DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*emptypb.Empty, error) {
+func (UnimplementedActionsServer) DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespaceRegistry not implemented")
 }
 func (UnimplementedActionsServer) NamespaceRegistries(context.Context, *NamespaceRegistriesRequest) (*NamespaceRegistriesResponse, error) {

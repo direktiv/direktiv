@@ -302,28 +302,28 @@ func (sl *foreachStateLogic) Run(ctx context.Context, engine *engine, im *instan
 	if results.ErrorCode != "" {
 
 		err = NewCatchableError(results.ErrorCode, results.ErrorMessage)
-		engine.logToInstance(ctx, time.Now(), im.in, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
+		engine.logToInstance(ctx, time.Now(), im.in, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
 		var d time.Duration
 		d, err = preprocessRetry(sl.state.Action.Retries, logics[idx].Attempts, err)
 		if err != nil {
 			return
 		}
 
-		engine.logToInstance(ctx, time.Now(), im.in, "Scheduling retry attempt in: %v.", d)
+		engine.logToInstance(ctx, time.Now(), im.in, "[%v] Scheduling retry attempt in: %v.", idx, d)
 		err = sl.scheduleRetry(ctx, engine, im, logics, idx, d)
 		return
 
 	}
 
 	if results.ErrorMessage != "" {
-		engine.logToInstance(ctx, time.Now(), im.in, "Action crashed due to an internal error: %v", results.ErrorMessage)
+		engine.logToInstance(ctx, time.Now(), im.in, "[%v] Action crashed due to an internal error: %v", idx, results.ErrorMessage)
 		err = NewInternalError(errors.New(results.ErrorMessage))
 		return
 	}
 
 	logics[idx].Complete = true
 	completed++
-	engine.logToInstance(ctx, time.Now(), im.in, "Action returned. (%d/%d)", completed, len(logics))
+	engine.logToInstance(ctx, time.Now(), im.in, "[%v] Action returned. (%d/%d)", idx, completed, len(logics))
 
 	var x interface{}
 	err = json.Unmarshal(results.Output, &x)

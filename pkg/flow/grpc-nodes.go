@@ -17,26 +17,35 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func directoryOrder(p *pagination) ent.InodePaginateOption {
+func directoryOrder(p *pagination) []ent.InodePaginateOption {
 
-	order := ent.InodeOrder{
-		Direction: ent.OrderDirectionAsc,
-		Field:     ent.InodeOrderFieldName,
-	}
+	var opts []ent.InodePaginateOption
 
-	if p.order != nil {
-		switch p.order.GetField() {
+	for _, o := range p.order {
+
+		if o == nil {
+			continue
+		}
+
+		order := ent.InodeOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.InodeOrderFieldName,
+		}
+
+		switch o.GetField() {
 		case "UPDATED":
 			order.Field = ent.InodeOrderFieldUpdatedAt
 		case "CREATED":
 			order.Field = ent.InodeOrderFieldCreatedAt
 		case "NAME":
 			order.Field = ent.InodeOrderFieldName
+		case "TYPE":
+			order.Field = ent.InodeOrderFieldType
 		default:
 			break
 		}
 
-		switch p.order.GetDirection() {
+		switch o.GetDirection() {
 		case "DESC":
 			order.Direction = ent.OrderDirectionDesc
 		case "ASC":
@@ -44,48 +53,89 @@ func directoryOrder(p *pagination) ent.InodePaginateOption {
 		default:
 			break
 		}
+
+		opts = append(opts, ent.WithInodeOrder(&order))
+
 	}
 
-	return ent.WithInodeOrder(&order)
+	if len(opts) == 0 {
+		opts = append(opts, ent.WithInodeOrder(&ent.InodeOrder{
+			Direction: ent.OrderDirectionDesc,
+			Field:     ent.InodeOrderFieldType,
+		}), ent.WithInodeOrder(&ent.InodeOrder{
+			Direction: ent.OrderDirectionAsc,
+			Field:     ent.InodeOrderFieldName,
+		}))
+	}
+
+	return opts
 
 }
 
-func directoryFilter(p *pagination) ent.InodePaginateOption {
+func directoryFilter(p *pagination) []ent.InodePaginateOption {
+
+	var filters []func(query *ent.InodeQuery) (*ent.InodeQuery, error)
+	var opts []ent.InodePaginateOption
 
 	if p.filter == nil {
 		return nil
 	}
 
-	filter := p.filter.Val
+	for i := range p.filter {
 
-	return ent.WithInodeFilter(func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
+		f := p.filter[i]
 
-		if filter == "" {
-			return query, nil
+		if f == nil {
+			continue
 		}
 
-		field := p.filter.Field
-		if field == "" {
-			return query, nil
-		}
+		filter := f.Val
 
-		switch field {
-		case "NAME":
+		filters = append(filters, func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
 
-			ftype := p.filter.Type
-			if ftype == "" {
+			if filter == "" {
 				return query, nil
 			}
 
-			switch ftype {
-			case "CONTAINS":
-				return query.Where(entino.NameContains(filter)), nil
+			field := f.Field
+			if field == "" {
+				return query, nil
 			}
-		}
 
-		return query, nil
+			switch field {
+			case "NAME":
 
-	})
+				ftype := f.Type
+				if ftype == "" {
+					return query, nil
+				}
+
+				switch ftype {
+				case "CONTAINS":
+					return query.Where(entino.NameContains(filter)), nil
+				}
+			}
+
+			return query, nil
+
+		})
+
+	}
+
+	if len(filters) > 0 {
+		opts = append(opts, ent.WithInodeFilter(func(query *ent.InodeQuery) (*ent.InodeQuery, error) {
+			var err error
+			for _, filter := range filters {
+				query, err = filter(query)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return query, nil
+		}))
+	}
+
+	return opts
 
 }
 
@@ -125,11 +175,8 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	}
 
 	opts := []ent.InodePaginateOption{}
-	opts = append(opts, directoryOrder(p))
-	filter := directoryFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, directoryOrder(p)...)
+	opts = append(opts, directoryFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())
@@ -187,11 +234,8 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 	}
 
 	opts := []ent.InodePaginateOption{}
-	opts = append(opts, directoryOrder(p))
-	filter := directoryFilter(p)
-	if filter != nil {
-		opts = append(opts, filter)
-	}
+	opts = append(opts, directoryOrder(p)...)
+	opts = append(opts, directoryFilter(p)...)
 
 	nsc := flow.db.Namespace
 	d, err := flow.traverseToInode(ctx, nsc, req.GetNamespace(), req.GetPath())

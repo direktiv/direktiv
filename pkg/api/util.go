@@ -123,27 +123,76 @@ func pagination(r *http.Request) (*grpc.Pagination, error) {
 		return nil, err
 	}
 
-	ofield := r.URL.Query().Get("order.field")
-	direction := r.URL.Query().Get("order.direction")
+	var l1, l2, l3 int
+	var ok bool
+	var orderfields []string
+	var orderdirection []string
+	var orderings []*grpc.PageOrder
+	if orderfields, ok = r.URL.Query()["order.field"]; ok {
+		l1 = len(orderfields)
+	}
+	if orderdirection, ok = r.URL.Query()["order.direction"]; ok {
+		l2 = len(orderdirection)
+	}
+	if l1 == 1 && l2 == 0 {
+		ofield := orderfields[0]
+		orderings = append(orderings, &grpc.PageOrder{
+			Field: ofield,
+		})
+	} else {
+		if l1 != l2 {
+			return nil, errors.New("bad ordering arguments")
+		}
+		if l1 > 0 {
+			for i := range orderfields {
+				ofield := orderfields[i]
+				direction := orderdirection[i]
+				orderings = append(orderings, &grpc.PageOrder{
+					Field:     ofield,
+					Direction: direction,
+				})
+			}
+		}
+	}
 
-	ffield := r.URL.Query().Get("filter.field")
-	ftype := r.URL.Query().Get("filter.type")
-	val := r.URL.Query().Get("filter.val")
+	l1 = 0
+	l2 = 0
+	var filterfields []string
+	var filtertypes []string
+	var filtervals []string
+	var filters []*grpc.PageFilter
+	if filterfields, ok = r.URL.Query()["filter.field"]; ok {
+		l1 = len(filterfields)
+	}
+	if filtertypes, ok = r.URL.Query()["filter.type"]; ok {
+		l2 = len(filtertypes)
+	}
+	if filtervals, ok = r.URL.Query()["filter.val"]; ok {
+		l3 = len(filtervals)
+	}
+	if l1 != l2 || l1 != l3 {
+		return nil, errors.New("bad filtering arguments")
+	}
+	if l1 > 0 {
+		for i := range filterfields {
+			ffield := filterfields[i]
+			ftype := filtertypes[i]
+			fval := filtervals[i]
+			filters = append(filters, &grpc.PageFilter{
+				Field: ffield,
+				Type:  ftype,
+				Val:   fval,
+			})
+		}
+	}
 
 	p := &grpc.Pagination{
 		After:  after,
 		First:  first,
 		Before: before,
 		Last:   last,
-		Order: &grpc.PageOrder{
-			Field:     ofield,
-			Direction: direction,
-		},
-		Filter: &grpc.PageFilter{
-			Field: ffield,
-			Type:  ftype,
-			Val:   val,
-		},
+		Order:  orderings,
+		Filter: filters,
 	}
 
 	return p, nil

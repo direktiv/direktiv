@@ -334,11 +334,11 @@ func testsFullReset() error {
 
 	namespaces, err := c.Namespaces(ctx, &grpc.NamespacesRequest{
 		Pagination: &grpc.Pagination{
-			Filter: &grpc.PageFilter{
+			Filter: []*grpc.PageFilter{{
 				Field: "NAME",
 				Type:  "CONTAINS",
 				Val:   prefix,
-			},
+			}},
 		},
 	})
 	if err != nil {

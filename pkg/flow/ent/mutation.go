@@ -2815,6 +2815,7 @@ type InstanceMutation struct {
 	as                    *string
 	errorCode             *string
 	errorMessage          *string
+	invoker               *string
 	clearedFields         map[string]struct{}
 	namespace             *uuid.UUID
 	clearednamespace      bool
@@ -3236,6 +3237,55 @@ func (m *InstanceMutation) ResetErrorMessage() {
 	delete(m.clearedFields, instance.FieldErrorMessage)
 }
 
+// SetInvoker sets the "invoker" field.
+func (m *InstanceMutation) SetInvoker(s string) {
+	m.invoker = &s
+}
+
+// Invoker returns the value of the "invoker" field in the mutation.
+func (m *InstanceMutation) Invoker() (r string, exists bool) {
+	v := m.invoker
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInvoker returns the old "invoker" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldInvoker(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInvoker is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInvoker requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInvoker: %w", err)
+	}
+	return oldValue.Invoker, nil
+}
+
+// ClearInvoker clears the value of the "invoker" field.
+func (m *InstanceMutation) ClearInvoker() {
+	m.invoker = nil
+	m.clearedFields[instance.FieldInvoker] = struct{}{}
+}
+
+// InvokerCleared returns if the "invoker" field was cleared in this mutation.
+func (m *InstanceMutation) InvokerCleared() bool {
+	_, ok := m.clearedFields[instance.FieldInvoker]
+	return ok
+}
+
+// ResetInvoker resets all changes to the "invoker" field.
+func (m *InstanceMutation) ResetInvoker() {
+	m.invoker = nil
+	delete(m.clearedFields, instance.FieldInvoker)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *InstanceMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -3627,7 +3677,7 @@ func (m *InstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InstanceMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, instance.FieldCreatedAt)
 	}
@@ -3648,6 +3698,9 @@ func (m *InstanceMutation) Fields() []string {
 	}
 	if m.errorMessage != nil {
 		fields = append(fields, instance.FieldErrorMessage)
+	}
+	if m.invoker != nil {
+		fields = append(fields, instance.FieldInvoker)
 	}
 	return fields
 }
@@ -3671,6 +3724,8 @@ func (m *InstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.ErrorCode()
 	case instance.FieldErrorMessage:
 		return m.ErrorMessage()
+	case instance.FieldInvoker:
+		return m.Invoker()
 	}
 	return nil, false
 }
@@ -3694,6 +3749,8 @@ func (m *InstanceMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldErrorCode(ctx)
 	case instance.FieldErrorMessage:
 		return m.OldErrorMessage(ctx)
+	case instance.FieldInvoker:
+		return m.OldInvoker(ctx)
 	}
 	return nil, fmt.Errorf("unknown Instance field %s", name)
 }
@@ -3752,6 +3809,13 @@ func (m *InstanceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetErrorMessage(v)
 		return nil
+	case instance.FieldInvoker:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInvoker(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
 }
@@ -3791,6 +3855,9 @@ func (m *InstanceMutation) ClearedFields() []string {
 	if m.FieldCleared(instance.FieldErrorMessage) {
 		fields = append(fields, instance.FieldErrorMessage)
 	}
+	if m.FieldCleared(instance.FieldInvoker) {
+		fields = append(fields, instance.FieldInvoker)
+	}
 	return fields
 }
 
@@ -3813,6 +3880,9 @@ func (m *InstanceMutation) ClearField(name string) error {
 		return nil
 	case instance.FieldErrorMessage:
 		m.ClearErrorMessage()
+		return nil
+	case instance.FieldInvoker:
+		m.ClearInvoker()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance nullable field %s", name)
@@ -3842,6 +3912,9 @@ func (m *InstanceMutation) ResetField(name string) error {
 		return nil
 	case instance.FieldErrorMessage:
 		m.ResetErrorMessage()
+		return nil
+	case instance.FieldInvoker:
+		m.ResetInvoker()
 		return nil
 	}
 	return fmt.Errorf("unknown Instance field %s", name)
