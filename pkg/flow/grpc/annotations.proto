@@ -236,3 +236,83 @@ message RenameInstanceAnnotationResponse {
 	int64 totalSize = 7;
 	string mimeType = 8;
 }
+
+
+
+
+
+
+
+
+
+
+message NodeAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+}
+
+message NodeAnnotationResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	bytes data = 8;
+}
+
+message NodeAnnotationsRequest {
+	Pagination pagination = 1;
+	string namespace = 2;
+	string path = 3;
+}
+
+message NodeAnnotationsResponse {
+    string namespace = 1;
+	string path = 2;
+	Annotations annotations = 3;
+}
+
+message SetNodeAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	int64 totalSize = 4;
+	bytes data = 5;
+}
+
+message SetNodeAnnotationResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+}
+
+message DeleteNodeAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+}
+
+message RenameNodeAnnotationRequest {
+	string namespace = 1;
+	string path = 2;
+	string old = 3;
+	string new = 4;
+}
+
+message RenameNodeAnnotationResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	string mimeType = 8;
+}

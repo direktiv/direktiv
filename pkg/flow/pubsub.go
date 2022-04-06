@@ -525,6 +525,28 @@ func (pubsub *pubsub) CloseInode(ino *ent.Inode) {
 
 }
 
+func (pubsub *pubsub) inodeAnnotations(ino *ent.Inode) string {
+
+	return fmt.Sprintf("inonotes:%s", ino.ID.String())
+
+}
+
+func (pubsub *pubsub) SubscribeInodeAnnotations(ino *ent.Inode) *subscription {
+
+	keys := pubsub.walkInodeKeys(ino)
+
+	keys = append(keys, pubsub.inodeAnnotations(ino))
+
+	return pubsub.Subscribe(keys...)
+
+}
+
+func (pubsub *pubsub) NotifyInodeAnnotations(ino *ent.Inode) {
+
+	pubsub.publish(pubsubNotify(pubsub.inodeAnnotations(ino)))
+
+}
+
 func (pubsub *pubsub) workflowVars(wf *ent.Workflow) string {
 
 	return fmt.Sprintf("wfvars:%s", wf.ID.String())

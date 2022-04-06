@@ -77,6 +77,8 @@ type AnnotationMutation struct {
 	clearedworkflow  bool
 	instance         *uuid.UUID
 	clearedinstance  bool
+	inode            *uuid.UUID
+	clearedinode     bool
 	done             bool
 	oldValue         func(context.Context) (*Annotation, error)
 	predicates       []predicate.Annotation
@@ -539,6 +541,45 @@ func (m *AnnotationMutation) ResetInstance() {
 	m.clearedinstance = false
 }
 
+// SetInodeID sets the "inode" edge to the Inode entity by id.
+func (m *AnnotationMutation) SetInodeID(id uuid.UUID) {
+	m.inode = &id
+}
+
+// ClearInode clears the "inode" edge to the Inode entity.
+func (m *AnnotationMutation) ClearInode() {
+	m.clearedinode = true
+}
+
+// InodeCleared reports if the "inode" edge to the Inode entity was cleared.
+func (m *AnnotationMutation) InodeCleared() bool {
+	return m.clearedinode
+}
+
+// InodeID returns the "inode" edge ID in the mutation.
+func (m *AnnotationMutation) InodeID() (id uuid.UUID, exists bool) {
+	if m.inode != nil {
+		return *m.inode, true
+	}
+	return
+}
+
+// InodeIDs returns the "inode" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InodeID instead. It exists only for internal usage by the builders.
+func (m *AnnotationMutation) InodeIDs() (ids []uuid.UUID) {
+	if id := m.inode; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInode resets all changes to the "inode" edge.
+func (m *AnnotationMutation) ResetInode() {
+	m.inode = nil
+	m.clearedinode = false
+}
+
 // Where appends a list predicates to the AnnotationMutation builder.
 func (m *AnnotationMutation) Where(ps ...predicate.Annotation) {
 	m.predicates = append(m.predicates, ps...)
@@ -757,7 +798,7 @@ func (m *AnnotationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AnnotationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.namespace != nil {
 		edges = append(edges, annotation.EdgeNamespace)
 	}
@@ -766,6 +807,9 @@ func (m *AnnotationMutation) AddedEdges() []string {
 	}
 	if m.instance != nil {
 		edges = append(edges, annotation.EdgeInstance)
+	}
+	if m.inode != nil {
+		edges = append(edges, annotation.EdgeInode)
 	}
 	return edges
 }
@@ -786,13 +830,17 @@ func (m *AnnotationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.instance; id != nil {
 			return []ent.Value{*id}
 		}
+	case annotation.EdgeInode:
+		if id := m.inode; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AnnotationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -806,7 +854,7 @@ func (m *AnnotationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AnnotationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearednamespace {
 		edges = append(edges, annotation.EdgeNamespace)
 	}
@@ -815,6 +863,9 @@ func (m *AnnotationMutation) ClearedEdges() []string {
 	}
 	if m.clearedinstance {
 		edges = append(edges, annotation.EdgeInstance)
+	}
+	if m.clearedinode {
+		edges = append(edges, annotation.EdgeInode)
 	}
 	return edges
 }
@@ -829,6 +880,8 @@ func (m *AnnotationMutation) EdgeCleared(name string) bool {
 		return m.clearedworkflow
 	case annotation.EdgeInstance:
 		return m.clearedinstance
+	case annotation.EdgeInode:
+		return m.clearedinode
 	}
 	return false
 }
@@ -846,6 +899,9 @@ func (m *AnnotationMutation) ClearEdge(name string) error {
 	case annotation.EdgeInstance:
 		m.ClearInstance()
 		return nil
+	case annotation.EdgeInode:
+		m.ClearInode()
+		return nil
 	}
 	return fmt.Errorf("unknown Annotation unique edge %s", name)
 }
@@ -862,6 +918,9 @@ func (m *AnnotationMutation) ResetEdge(name string) error {
 		return nil
 	case annotation.EdgeInstance:
 		m.ResetInstance()
+		return nil
+	case annotation.EdgeInode:
+		m.ResetInode()
 		return nil
 	}
 	return fmt.Errorf("unknown Annotation edge %s", name)
@@ -2773,27 +2832,30 @@ func (m *EventsWaitMutation) ResetEdge(name string) error {
 // InodeMutation represents an operation that mutates the Inode nodes in the graph.
 type InodeMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	created_at       *time.Time
-	updated_at       *time.Time
-	name             *string
-	_type            *string
-	attributes       *[]string
-	clearedFields    map[string]struct{}
-	namespace        *uuid.UUID
-	clearednamespace bool
-	children         map[uuid.UUID]struct{}
-	removedchildren  map[uuid.UUID]struct{}
-	clearedchildren  bool
-	parent           *uuid.UUID
-	clearedparent    bool
-	workflow         *uuid.UUID
-	clearedworkflow  bool
-	done             bool
-	oldValue         func(context.Context) (*Inode, error)
-	predicates       []predicate.Inode
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	created_at         *time.Time
+	updated_at         *time.Time
+	name               *string
+	_type              *string
+	attributes         *[]string
+	clearedFields      map[string]struct{}
+	namespace          *uuid.UUID
+	clearednamespace   bool
+	children           map[uuid.UUID]struct{}
+	removedchildren    map[uuid.UUID]struct{}
+	clearedchildren    bool
+	parent             *uuid.UUID
+	clearedparent      bool
+	workflow           *uuid.UUID
+	clearedworkflow    bool
+	annotations        map[uuid.UUID]struct{}
+	removedannotations map[uuid.UUID]struct{}
+	clearedannotations bool
+	done               bool
+	oldValue           func(context.Context) (*Inode, error)
+	predicates         []predicate.Inode
 }
 
 var _ ent.Mutation = (*InodeMutation)(nil)
@@ -3277,6 +3339,60 @@ func (m *InodeMutation) ResetWorkflow() {
 	m.clearedworkflow = false
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by ids.
+func (m *InodeMutation) AddAnnotationIDs(ids ...uuid.UUID) {
+	if m.annotations == nil {
+		m.annotations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.annotations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAnnotations clears the "annotations" edge to the Annotation entity.
+func (m *InodeMutation) ClearAnnotations() {
+	m.clearedannotations = true
+}
+
+// AnnotationsCleared reports if the "annotations" edge to the Annotation entity was cleared.
+func (m *InodeMutation) AnnotationsCleared() bool {
+	return m.clearedannotations
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to the Annotation entity by IDs.
+func (m *InodeMutation) RemoveAnnotationIDs(ids ...uuid.UUID) {
+	if m.removedannotations == nil {
+		m.removedannotations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.annotations, ids[i])
+		m.removedannotations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAnnotations returns the removed IDs of the "annotations" edge to the Annotation entity.
+func (m *InodeMutation) RemovedAnnotationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedannotations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AnnotationsIDs returns the "annotations" edge IDs in the mutation.
+func (m *InodeMutation) AnnotationsIDs() (ids []uuid.UUID) {
+	for id := range m.annotations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAnnotations resets all changes to the "annotations" edge.
+func (m *InodeMutation) ResetAnnotations() {
+	m.annotations = nil
+	m.clearedannotations = false
+	m.removedannotations = nil
+}
+
 // Where appends a list predicates to the InodeMutation builder.
 func (m *InodeMutation) Where(ps ...predicate.Inode) {
 	m.predicates = append(m.predicates, ps...)
@@ -3478,7 +3594,7 @@ func (m *InodeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.namespace != nil {
 		edges = append(edges, inode.EdgeNamespace)
 	}
@@ -3490,6 +3606,9 @@ func (m *InodeMutation) AddedEdges() []string {
 	}
 	if m.workflow != nil {
 		edges = append(edges, inode.EdgeWorkflow)
+	}
+	if m.annotations != nil {
+		edges = append(edges, inode.EdgeAnnotations)
 	}
 	return edges
 }
@@ -3516,15 +3635,24 @@ func (m *InodeMutation) AddedIDs(name string) []ent.Value {
 		if id := m.workflow; id != nil {
 			return []ent.Value{*id}
 		}
+	case inode.EdgeAnnotations:
+		ids := make([]ent.Value, 0, len(m.annotations))
+		for id := range m.annotations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedchildren != nil {
 		edges = append(edges, inode.EdgeChildren)
+	}
+	if m.removedannotations != nil {
+		edges = append(edges, inode.EdgeAnnotations)
 	}
 	return edges
 }
@@ -3539,13 +3667,19 @@ func (m *InodeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case inode.EdgeAnnotations:
+		ids := make([]ent.Value, 0, len(m.removedannotations))
+		for id := range m.removedannotations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearednamespace {
 		edges = append(edges, inode.EdgeNamespace)
 	}
@@ -3557,6 +3691,9 @@ func (m *InodeMutation) ClearedEdges() []string {
 	}
 	if m.clearedworkflow {
 		edges = append(edges, inode.EdgeWorkflow)
+	}
+	if m.clearedannotations {
+		edges = append(edges, inode.EdgeAnnotations)
 	}
 	return edges
 }
@@ -3573,6 +3710,8 @@ func (m *InodeMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case inode.EdgeWorkflow:
 		return m.clearedworkflow
+	case inode.EdgeAnnotations:
+		return m.clearedannotations
 	}
 	return false
 }
@@ -3609,6 +3748,9 @@ func (m *InodeMutation) ResetEdge(name string) error {
 		return nil
 	case inode.EdgeWorkflow:
 		m.ResetWorkflow()
+		return nil
+	case inode.EdgeAnnotations:
+		m.ResetAnnotations()
 		return nil
 	}
 	return fmt.Errorf("unknown Inode edge %s", name)

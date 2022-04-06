@@ -212,6 +212,19 @@ service Flow {
 
 	rpc ReleaseInstance (ReleaseInstanceRequest) returns (ReleaseInstanceResponse) {}
 
+	rpc NodeAnnotation (NodeAnnotationRequest) returns (NodeAnnotationResponse) {}
+	rpc NodeAnnotationParcels (NodeAnnotationRequest) returns (stream NodeAnnotationResponse) {}
+
+	rpc NodeAnnotations (NodeAnnotationsRequest) returns (NodeAnnotationsResponse) {}
+	rpc NodeAnnotationsStream (NodeAnnotationsRequest) returns (stream NodeAnnotationsResponse) {}
+
+	rpc SetNodeAnnotation (SetNodeAnnotationRequest) returns (SetNodeAnnotationResponse) {}
+	rpc SetNodeAnnotationParcels (stream SetNodeAnnotationRequest) returns (SetNodeAnnotationResponse) {}
+
+	rpc DeleteNodeAnnotation (DeleteNodeAnnotationRequest) returns (google.protobuf.Empty) {}
+
+	rpc RenameNodeAnnotation (RenameNodeAnnotationRequest) returns (RenameNodeAnnotationResponse) {}
+
 }
 
 service Internal {

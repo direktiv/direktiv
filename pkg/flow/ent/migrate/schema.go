@@ -17,6 +17,7 @@ var (
 		{Name: "size", Type: field.TypeInt},
 		{Name: "hash", Type: field.TypeString},
 		{Name: "data", Type: field.TypeBytes},
+		{Name: "inode_annotations", Type: field.TypeUUID, Nullable: true},
 		{Name: "instance_annotations", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_annotations", Type: field.TypeUUID, Nullable: true},
 		{Name: "workflow_annotations", Type: field.TypeUUID, Nullable: true},
@@ -28,20 +29,26 @@ var (
 		PrimaryKey: []*schema.Column{AnnotationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "annotations_instances_annotations",
+				Symbol:     "annotations_inodes_annotations",
 				Columns:    []*schema.Column{AnnotationsColumns[7]},
+				RefColumns: []*schema.Column{InodesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "annotations_instances_annotations",
+				Columns:    []*schema.Column{AnnotationsColumns[8]},
 				RefColumns: []*schema.Column{InstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "annotations_namespaces_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[8]},
+				Columns:    []*schema.Column{AnnotationsColumns[9]},
 				RefColumns: []*schema.Column{NamespacesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "annotations_workflows_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[9]},
+				Columns:    []*schema.Column{AnnotationsColumns[10]},
 				RefColumns: []*schema.Column{WorkflowsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -497,9 +504,10 @@ var (
 )
 
 func init() {
-	AnnotationsTable.ForeignKeys[0].RefTable = InstancesTable
-	AnnotationsTable.ForeignKeys[1].RefTable = NamespacesTable
-	AnnotationsTable.ForeignKeys[2].RefTable = WorkflowsTable
+	AnnotationsTable.ForeignKeys[0].RefTable = InodesTable
+	AnnotationsTable.ForeignKeys[1].RefTable = InstancesTable
+	AnnotationsTable.ForeignKeys[2].RefTable = NamespacesTable
+	AnnotationsTable.ForeignKeys[3].RefTable = WorkflowsTable
 	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsTable.ForeignKeys[0].RefTable = InstancesTable
 	EventsTable.ForeignKeys[1].RefTable = NamespacesTable

@@ -746,6 +746,34 @@ func HasInstanceWith(preds ...predicate.Instance) predicate.Annotation {
 	})
 }
 
+// HasInode applies the HasEdge predicate on the "inode" edge.
+func HasInode() predicate.Annotation {
+	return predicate.Annotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InodeTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InodeTable, InodeColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInodeWith applies the HasEdge predicate on the "inode" edge with a given conditions (other predicates).
+func HasInodeWith(preds ...predicate.Inode) predicate.Annotation {
+	return predicate.Annotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InodeInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InodeTable, InodeColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Annotation) predicate.Annotation {
 	return predicate.Annotation(func(s *sql.Selector) {

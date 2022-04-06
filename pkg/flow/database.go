@@ -982,3 +982,34 @@ func (srv *server) traverseToInstanceAnnotation(ctx context.Context, nsc *ent.Na
 	return d, nil
 
 }
+
+type inodeAnnotationData struct {
+	*nodeData
+	annotation *ent.Annotation
+}
+
+func (srv *server) traverseToInodeAnnotation(ctx context.Context, nsc *ent.NamespaceClient, namespace, path, key string) (*inodeAnnotationData, error) {
+
+	d, err := srv.traverseToInode(ctx, nsc, namespace, path)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to resolve inode: %v", parent(), err)
+		return nil, err
+	}
+
+	query := d.ino.QueryAnnotations().Where(entnote.NameEQ(key))
+
+	annotation, err := query.Only(ctx)
+	if err != nil {
+		srv.sugar.Debugf("%s failed to query annotation: %v", parent(), err)
+		return nil, err
+	}
+
+	annotation.Edges.Inode = d.ino
+
+	ad := new(inodeAnnotationData)
+	ad.nodeData = d
+	ad.annotation = annotation
+
+	return ad, nil
+
+}

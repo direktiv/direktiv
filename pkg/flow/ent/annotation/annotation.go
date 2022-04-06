@@ -31,6 +31,8 @@ const (
 	EdgeWorkflow = "workflow"
 	// EdgeInstance holds the string denoting the instance edge name in mutations.
 	EdgeInstance = "instance"
+	// EdgeInode holds the string denoting the inode edge name in mutations.
+	EdgeInode = "inode"
 	// Table holds the table name of the annotation in the database.
 	Table = "annotations"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -54,6 +56,13 @@ const (
 	InstanceInverseTable = "instances"
 	// InstanceColumn is the table column denoting the instance relation/edge.
 	InstanceColumn = "instance_annotations"
+	// InodeTable is the table that holds the inode relation/edge.
+	InodeTable = "annotations"
+	// InodeInverseTable is the table name for the Inode entity.
+	// It exists in this package in order to avoid circular dependency with the "inode" package.
+	InodeInverseTable = "inodes"
+	// InodeColumn is the table column denoting the inode relation/edge.
+	InodeColumn = "inode_annotations"
 )
 
 // Columns holds all SQL columns for annotation fields.
@@ -70,6 +79,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "annotations"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"inode_annotations",
 	"instance_annotations",
 	"namespace_annotations",
 	"workflow_annotations",

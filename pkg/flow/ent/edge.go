@@ -28,6 +28,14 @@ func (a *Annotation) Instance(ctx context.Context) (*Instance, error) {
 	return result, MaskNotFound(err)
 }
 
+func (a *Annotation) Inode(ctx context.Context) (*Inode, error) {
+	result, err := a.Edges.InodeOrErr()
+	if IsNotLoaded(err) {
+		result, err = a.QueryInode().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (ce *CloudEvents) Namespace(ctx context.Context) (*Namespace, error) {
 	result, err := ce.Edges.NamespaceOrErr()
 	if IsNotLoaded(err) {
@@ -106,6 +114,14 @@ func (i *Inode) Workflow(ctx context.Context) (*Workflow, error) {
 		result, err = i.QueryWorkflow().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (i *Inode) Annotations(ctx context.Context) ([]*Annotation, error) {
+	result, err := i.Edges.AnnotationsOrErr()
+	if IsNotLoaded(err) {
+		result, err = i.QueryAnnotations().All(ctx)
+	}
+	return result, err
 }
 
 func (i *Instance) Namespace(ctx context.Context) (*Namespace, error) {

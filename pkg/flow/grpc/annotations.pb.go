@@ -2303,6 +2303,709 @@ func (x *RenameInstanceAnnotationResponse) GetMimeType() string {
 	return ""
 }
 
+type NodeAnnotationRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Key       string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *NodeAnnotationRequest) Reset() {
+	*x = NodeAnnotationRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[30]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeAnnotationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeAnnotationRequest) ProtoMessage() {}
+
+func (x *NodeAnnotationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[30]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeAnnotationRequest.ProtoReflect.Descriptor instead.
+func (*NodeAnnotationRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *NodeAnnotationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *NodeAnnotationRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *NodeAnnotationRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type NodeAnnotationResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string                 `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Key       string                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Checksum  string                 `protobuf:"bytes,6,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	TotalSize int64                  `protobuf:"varint,7,opt,name=totalSize,proto3" json:"totalSize,omitempty"`
+	Data      []byte                 `protobuf:"bytes,8,opt,name=data,proto3" json:"data,omitempty"`
+}
+
+func (x *NodeAnnotationResponse) Reset() {
+	*x = NodeAnnotationResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[31]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeAnnotationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeAnnotationResponse) ProtoMessage() {}
+
+func (x *NodeAnnotationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[31]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeAnnotationResponse.ProtoReflect.Descriptor instead.
+func (*NodeAnnotationResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *NodeAnnotationResponse) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *NodeAnnotationResponse) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *NodeAnnotationResponse) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *NodeAnnotationResponse) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *NodeAnnotationResponse) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *NodeAnnotationResponse) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+func (x *NodeAnnotationResponse) GetTotalSize() int64 {
+	if x != nil {
+		return x.TotalSize
+	}
+	return 0
+}
+
+func (x *NodeAnnotationResponse) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type NodeAnnotationsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Pagination *Pagination `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Namespace  string      `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path       string      `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
+}
+
+func (x *NodeAnnotationsRequest) Reset() {
+	*x = NodeAnnotationsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[32]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeAnnotationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeAnnotationsRequest) ProtoMessage() {}
+
+func (x *NodeAnnotationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[32]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeAnnotationsRequest.ProtoReflect.Descriptor instead.
+func (*NodeAnnotationsRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *NodeAnnotationsRequest) GetPagination() *Pagination {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+func (x *NodeAnnotationsRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *NodeAnnotationsRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+type NodeAnnotationsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace   string       `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path        string       `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Annotations *Annotations `protobuf:"bytes,3,opt,name=annotations,proto3" json:"annotations,omitempty"`
+}
+
+func (x *NodeAnnotationsResponse) Reset() {
+	*x = NodeAnnotationsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[33]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeAnnotationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeAnnotationsResponse) ProtoMessage() {}
+
+func (x *NodeAnnotationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[33]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeAnnotationsResponse.ProtoReflect.Descriptor instead.
+func (*NodeAnnotationsResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *NodeAnnotationsResponse) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *NodeAnnotationsResponse) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *NodeAnnotationsResponse) GetAnnotations() *Annotations {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
+}
+
+type SetNodeAnnotationRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Key       string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	TotalSize int64  `protobuf:"varint,4,opt,name=totalSize,proto3" json:"totalSize,omitempty"`
+	Data      []byte `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`
+}
+
+func (x *SetNodeAnnotationRequest) Reset() {
+	*x = SetNodeAnnotationRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[34]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetNodeAnnotationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetNodeAnnotationRequest) ProtoMessage() {}
+
+func (x *SetNodeAnnotationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[34]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetNodeAnnotationRequest.ProtoReflect.Descriptor instead.
+func (*SetNodeAnnotationRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *SetNodeAnnotationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationRequest) GetTotalSize() int64 {
+	if x != nil {
+		return x.TotalSize
+	}
+	return 0
+}
+
+func (x *SetNodeAnnotationRequest) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type SetNodeAnnotationResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string                 `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Key       string                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Checksum  string                 `protobuf:"bytes,6,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	TotalSize int64                  `protobuf:"varint,7,opt,name=totalSize,proto3" json:"totalSize,omitempty"`
+}
+
+func (x *SetNodeAnnotationResponse) Reset() {
+	*x = SetNodeAnnotationResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[35]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetNodeAnnotationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetNodeAnnotationResponse) ProtoMessage() {}
+
+func (x *SetNodeAnnotationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[35]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetNodeAnnotationResponse.ProtoReflect.Descriptor instead.
+func (*SetNodeAnnotationResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *SetNodeAnnotationResponse) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationResponse) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationResponse) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationResponse) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *SetNodeAnnotationResponse) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *SetNodeAnnotationResponse) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+func (x *SetNodeAnnotationResponse) GetTotalSize() int64 {
+	if x != nil {
+		return x.TotalSize
+	}
+	return 0
+}
+
+type DeleteNodeAnnotationRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Key       string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *DeleteNodeAnnotationRequest) Reset() {
+	*x = DeleteNodeAnnotationRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[36]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteNodeAnnotationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteNodeAnnotationRequest) ProtoMessage() {}
+
+func (x *DeleteNodeAnnotationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[36]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteNodeAnnotationRequest.ProtoReflect.Descriptor instead.
+func (*DeleteNodeAnnotationRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *DeleteNodeAnnotationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *DeleteNodeAnnotationRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *DeleteNodeAnnotationRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type RenameNodeAnnotationRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Old       string `protobuf:"bytes,3,opt,name=old,proto3" json:"old,omitempty"`
+	New       string `protobuf:"bytes,4,opt,name=new,proto3" json:"new,omitempty"`
+}
+
+func (x *RenameNodeAnnotationRequest) Reset() {
+	*x = RenameNodeAnnotationRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[37]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RenameNodeAnnotationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenameNodeAnnotationRequest) ProtoMessage() {}
+
+func (x *RenameNodeAnnotationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[37]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenameNodeAnnotationRequest.ProtoReflect.Descriptor instead.
+func (*RenameNodeAnnotationRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *RenameNodeAnnotationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationRequest) GetOld() string {
+	if x != nil {
+		return x.Old
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationRequest) GetNew() string {
+	if x != nil {
+		return x.New
+	}
+	return ""
+}
+
+type RenameNodeAnnotationResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Namespace string                 `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Path      string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Key       string                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Checksum  string                 `protobuf:"bytes,6,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	TotalSize int64                  `protobuf:"varint,7,opt,name=totalSize,proto3" json:"totalSize,omitempty"`
+	MimeType  string                 `protobuf:"bytes,8,opt,name=mimeType,proto3" json:"mimeType,omitempty"`
+}
+
+func (x *RenameNodeAnnotationResponse) Reset() {
+	*x = RenameNodeAnnotationResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[38]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RenameNodeAnnotationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenameNodeAnnotationResponse) ProtoMessage() {}
+
+func (x *RenameNodeAnnotationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_flow_grpc_annotations_proto_msgTypes[38]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenameNodeAnnotationResponse.ProtoReflect.Descriptor instead.
+func (*RenameNodeAnnotationResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_flow_grpc_annotations_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *RenameNodeAnnotationResponse) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationResponse) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationResponse) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationResponse) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *RenameNodeAnnotationResponse) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *RenameNodeAnnotationResponse) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+func (x *RenameNodeAnnotationResponse) GetTotalSize() int64 {
+	if x != nil {
+		return x.TotalSize
+	}
+	return 0
+}
+
+func (x *RenameNodeAnnotationResponse) GetMimeType() string {
+	if x != nil {
+		return x.MimeType
+	}
+	return ""
+}
+
 var File_pkg_flow_grpc_annotations_proto protoreflect.FileDescriptor
 
 var file_pkg_flow_grpc_annotations_proto_rawDesc = []byte{
@@ -2652,10 +3355,110 @@ var file_pkg_flow_grpc_annotations_proto_rawDesc = []byte{
 	0x6c, 0x53, 0x69, 0x7a, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x6f, 0x74,
 	0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x69, 0x6d, 0x65, 0x54, 0x79,
 	0x70, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x69, 0x6d, 0x65, 0x54, 0x79,
-	0x70, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74,
-	0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x70, 0x65, 0x22, 0x5b, 0x0a, 0x15, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
+	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74,
+	0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a,
+	0x03, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22,
+	0xa0, 0x02, 0x0a, 0x16, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61,
+	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x39,
+	0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09,
+	0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x75, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
+	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x64, 0x41, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d,
+	0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d,
+	0x12, 0x1c, 0x0a, 0x09, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x18, 0x07, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x12,
+	0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61,
+	0x74, 0x61, 0x22, 0x85, 0x01, 0x0a, 0x16, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x39, 0x0a,
+	0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x19, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f,
+	0x77, 0x2e, 0x50, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x70, 0x61,
+	0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0x89, 0x01, 0x0a, 0x17, 0x4e,
+	0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
+	0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
+	0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x3c, 0x0a, 0x0b, 0x61, 0x6e, 0x6e, 0x6f,
+	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
+	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x41, 0x6e,
+	0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x0b, 0x61, 0x6e, 0x6e, 0x6f, 0x74,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0x90, 0x01, 0x0a, 0x18, 0x53, 0x65, 0x74, 0x4e, 0x6f,
+	0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x6f, 0x74, 0x61, 0x6c,
+	0x53, 0x69, 0x7a, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x6f, 0x74, 0x61,
+	0x6c, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x8f, 0x02, 0x0a, 0x19, 0x53, 0x65,
+	0x74, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
+	0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x39, 0x0a, 0x0a, 0x63,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x63, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x64, 0x5f, 0x61, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d,
+	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41,
+	0x74, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d, 0x18, 0x06, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d, 0x12, 0x1c, 0x0a,
+	0x09, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x09, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x22, 0x61, 0x0a, 0x1b, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61,
+	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x73,
+	0x0a, 0x1b, 0x52, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f,
+	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a,
+	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70,
+	0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12,
+	0x10, 0x0a, 0x03, 0x6f, 0x6c, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6f, 0x6c,
+	0x64, 0x12, 0x10, 0x0a, 0x03, 0x6e, 0x65, 0x77, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
+	0x6e, 0x65, 0x77, 0x22, 0xae, 0x02, 0x0a, 0x1c, 0x52, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x4e, 0x6f,
+	0x64, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x39, 0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61,
+	0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67,
+	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54,
+	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65,
+	0x64, 0x41, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61,
+	0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x1a,
+	0x0a, 0x08, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x6f,
+	0x74, 0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x69, 0x6d, 0x65,
+	0x54, 0x79, 0x70, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x69, 0x6d, 0x65,
+	0x54, 0x79, 0x70, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65,
+	0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72,
+	0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2670,7 +3473,7 @@ func file_pkg_flow_grpc_annotations_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_annotations_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_annotations_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_pkg_flow_grpc_annotations_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
 var file_pkg_flow_grpc_annotations_proto_goTypes = []interface{}{
 	(*Annotation)(nil),                        // 0: direktiv_flow.Annotation
 	(*AnnotationEdge)(nil),                    // 1: direktiv_flow.AnnotationEdge
@@ -2702,45 +3505,62 @@ var file_pkg_flow_grpc_annotations_proto_goTypes = []interface{}{
 	(*DeleteInstanceAnnotationRequest)(nil),   // 27: direktiv_flow.DeleteInstanceAnnotationRequest
 	(*RenameInstanceAnnotationRequest)(nil),   // 28: direktiv_flow.RenameInstanceAnnotationRequest
 	(*RenameInstanceAnnotationResponse)(nil),  // 29: direktiv_flow.RenameInstanceAnnotationResponse
-	(*timestamppb.Timestamp)(nil),             // 30: google.protobuf.Timestamp
-	(*PageInfo)(nil),                          // 31: direktiv_flow.PageInfo
-	(*Pagination)(nil),                        // 32: direktiv_flow.Pagination
+	(*NodeAnnotationRequest)(nil),             // 30: direktiv_flow.NodeAnnotationRequest
+	(*NodeAnnotationResponse)(nil),            // 31: direktiv_flow.NodeAnnotationResponse
+	(*NodeAnnotationsRequest)(nil),            // 32: direktiv_flow.NodeAnnotationsRequest
+	(*NodeAnnotationsResponse)(nil),           // 33: direktiv_flow.NodeAnnotationsResponse
+	(*SetNodeAnnotationRequest)(nil),          // 34: direktiv_flow.SetNodeAnnotationRequest
+	(*SetNodeAnnotationResponse)(nil),         // 35: direktiv_flow.SetNodeAnnotationResponse
+	(*DeleteNodeAnnotationRequest)(nil),       // 36: direktiv_flow.DeleteNodeAnnotationRequest
+	(*RenameNodeAnnotationRequest)(nil),       // 37: direktiv_flow.RenameNodeAnnotationRequest
+	(*RenameNodeAnnotationResponse)(nil),      // 38: direktiv_flow.RenameNodeAnnotationResponse
+	(*timestamppb.Timestamp)(nil),             // 39: google.protobuf.Timestamp
+	(*PageInfo)(nil),                          // 40: direktiv_flow.PageInfo
+	(*Pagination)(nil),                        // 41: direktiv_flow.Pagination
 }
 var file_pkg_flow_grpc_annotations_proto_depIdxs = []int32{
-	30, // 0: direktiv_flow.Annotation.created_at:type_name -> google.protobuf.Timestamp
-	30, // 1: direktiv_flow.Annotation.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 0: direktiv_flow.Annotation.created_at:type_name -> google.protobuf.Timestamp
+	39, // 1: direktiv_flow.Annotation.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: direktiv_flow.AnnotationEdge.node:type_name -> direktiv_flow.Annotation
-	31, // 3: direktiv_flow.Annotations.pageInfo:type_name -> direktiv_flow.PageInfo
+	40, // 3: direktiv_flow.Annotations.pageInfo:type_name -> direktiv_flow.PageInfo
 	1,  // 4: direktiv_flow.Annotations.edges:type_name -> direktiv_flow.AnnotationEdge
-	30, // 5: direktiv_flow.NamespaceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 6: direktiv_flow.NamespaceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	32, // 7: direktiv_flow.NamespaceAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
+	39, // 5: direktiv_flow.NamespaceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 6: direktiv_flow.NamespaceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	41, // 7: direktiv_flow.NamespaceAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
 	2,  // 8: direktiv_flow.NamespaceAnnotationsResponse.annotations:type_name -> direktiv_flow.Annotations
-	30, // 9: direktiv_flow.SetNamespaceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 10: direktiv_flow.SetNamespaceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	30, // 11: direktiv_flow.RenameNamespaceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 12: direktiv_flow.RenameNamespaceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	30, // 13: direktiv_flow.WorkflowAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 14: direktiv_flow.WorkflowAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	32, // 15: direktiv_flow.WorkflowAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
+	39, // 9: direktiv_flow.SetNamespaceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 10: direktiv_flow.SetNamespaceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 11: direktiv_flow.RenameNamespaceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 12: direktiv_flow.RenameNamespaceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 13: direktiv_flow.WorkflowAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 14: direktiv_flow.WorkflowAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	41, // 15: direktiv_flow.WorkflowAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
 	2,  // 16: direktiv_flow.WorkflowAnnotationsResponse.annotations:type_name -> direktiv_flow.Annotations
-	30, // 17: direktiv_flow.SetWorkflowAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 18: direktiv_flow.SetWorkflowAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	30, // 19: direktiv_flow.RenameWorkflowAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 20: direktiv_flow.RenameWorkflowAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	30, // 21: direktiv_flow.InstanceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 22: direktiv_flow.InstanceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	32, // 23: direktiv_flow.InstanceAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
+	39, // 17: direktiv_flow.SetWorkflowAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 18: direktiv_flow.SetWorkflowAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 19: direktiv_flow.RenameWorkflowAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 20: direktiv_flow.RenameWorkflowAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 21: direktiv_flow.InstanceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 22: direktiv_flow.InstanceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	41, // 23: direktiv_flow.InstanceAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
 	2,  // 24: direktiv_flow.InstanceAnnotationsResponse.annotations:type_name -> direktiv_flow.Annotations
-	30, // 25: direktiv_flow.SetInstanceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 26: direktiv_flow.SetInstanceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	30, // 27: direktiv_flow.RenameInstanceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
-	30, // 28: direktiv_flow.RenameInstanceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	29, // [29:29] is the sub-list for method output_type
-	29, // [29:29] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	39, // 25: direktiv_flow.SetInstanceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 26: direktiv_flow.SetInstanceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 27: direktiv_flow.RenameInstanceAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 28: direktiv_flow.RenameInstanceAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 29: direktiv_flow.NodeAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 30: direktiv_flow.NodeAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	41, // 31: direktiv_flow.NodeAnnotationsRequest.pagination:type_name -> direktiv_flow.Pagination
+	2,  // 32: direktiv_flow.NodeAnnotationsResponse.annotations:type_name -> direktiv_flow.Annotations
+	39, // 33: direktiv_flow.SetNodeAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 34: direktiv_flow.SetNodeAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 35: direktiv_flow.RenameNodeAnnotationResponse.created_at:type_name -> google.protobuf.Timestamp
+	39, // 36: direktiv_flow.RenameNodeAnnotationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	37, // [37:37] is the sub-list for method output_type
+	37, // [37:37] is the sub-list for method input_type
+	37, // [37:37] is the sub-list for extension type_name
+	37, // [37:37] is the sub-list for extension extendee
+	0,  // [0:37] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_annotations_proto_init() }
@@ -3110,6 +3930,114 @@ func file_pkg_flow_grpc_annotations_proto_init() {
 				return nil
 			}
 		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeAnnotationRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeAnnotationResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeAnnotationsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeAnnotationsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetNodeAnnotationRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetNodeAnnotationResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteNodeAnnotationRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RenameNodeAnnotationRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_flow_grpc_annotations_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RenameNodeAnnotationResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -3117,7 +4045,7 @@ func file_pkg_flow_grpc_annotations_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_annotations_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   30,
+			NumMessages:   39,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

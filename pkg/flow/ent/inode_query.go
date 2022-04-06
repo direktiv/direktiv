@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -29,11 +30,12 @@ type InodeQuery struct {
 	fields     []string
 	predicates []predicate.Inode
 	// eager-loading edges.
-	withNamespace *NamespaceQuery
-	withChildren  *InodeQuery
-	withParent    *InodeQuery
-	withWorkflow  *WorkflowQuery
-	withFKs       bool
+	withNamespace   *NamespaceQuery
+	withChildren    *InodeQuery
+	withParent      *InodeQuery
+	withWorkflow    *WorkflowQuery
+	withAnnotations *AnnotationQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -151,6 +153,28 @@ func (iq *InodeQuery) QueryWorkflow() *WorkflowQuery {
 			sqlgraph.From(inode.Table, inode.FieldID, selector),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, inode.WorkflowTable, inode.WorkflowColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (iq *InodeQuery) QueryAnnotations() *AnnotationQuery {
+	query := &AnnotationQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inode.Table, inode.FieldID, selector),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, inode.AnnotationsTable, inode.AnnotationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -334,15 +358,16 @@ func (iq *InodeQuery) Clone() *InodeQuery {
 		return nil
 	}
 	return &InodeQuery{
-		config:        iq.config,
-		limit:         iq.limit,
-		offset:        iq.offset,
-		order:         append([]OrderFunc{}, iq.order...),
-		predicates:    append([]predicate.Inode{}, iq.predicates...),
-		withNamespace: iq.withNamespace.Clone(),
-		withChildren:  iq.withChildren.Clone(),
-		withParent:    iq.withParent.Clone(),
-		withWorkflow:  iq.withWorkflow.Clone(),
+		config:          iq.config,
+		limit:           iq.limit,
+		offset:          iq.offset,
+		order:           append([]OrderFunc{}, iq.order...),
+		predicates:      append([]predicate.Inode{}, iq.predicates...),
+		withNamespace:   iq.withNamespace.Clone(),
+		withChildren:    iq.withChildren.Clone(),
+		withParent:      iq.withParent.Clone(),
+		withWorkflow:    iq.withWorkflow.Clone(),
+		withAnnotations: iq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:    iq.sql.Clone(),
 		path:   iq.path,
@@ -391,6 +416,17 @@ func (iq *InodeQuery) WithWorkflow(opts ...func(*WorkflowQuery)) *InodeQuery {
 		opt(query)
 	}
 	iq.withWorkflow = query
+	return iq
+}
+
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InodeQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *InodeQuery {
+	query := &AnnotationQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withAnnotations = query
 	return iq
 }
 
@@ -460,11 +496,12 @@ func (iq *InodeQuery) sqlAll(ctx context.Context) ([]*Inode, error) {
 		nodes       = []*Inode{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			iq.withNamespace != nil,
 			iq.withChildren != nil,
 			iq.withParent != nil,
 			iq.withWorkflow != nil,
+			iq.withAnnotations != nil,
 		}
 	)
 	if iq.withNamespace != nil || iq.withParent != nil {
@@ -605,6 +642,35 @@ func (iq *InodeQuery) sqlAll(ctx context.Context) ([]*Inode, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "inode_workflow" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Workflow = n
+		}
+	}
+
+	if query := iq.withAnnotations; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Inode)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Annotations = []*Annotation{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Annotation(func(s *sql.Selector) {
+			s.Where(sql.InValues(inode.AnnotationsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.inode_annotations
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "inode_annotations" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "inode_annotations" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Annotations = append(node.Edges.Annotations, n)
 		}
 	}
 

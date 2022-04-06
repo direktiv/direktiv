@@ -60,7 +60,7 @@ func (a *Annotation) Node(ctx context.Context) (node *Node, err error) {
 		ID:     a.ID,
 		Type:   "Annotation",
 		Fields: make([]*Field, 6),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(a.Name); err != nil {
@@ -138,6 +138,16 @@ func (a *Annotation) Node(ctx context.Context) (node *Node, err error) {
 	err = a.QueryInstance().
 		Select(instance.FieldID).
 		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Inode",
+		Name: "inode",
+	}
+	err = a.QueryInode().
+		Select(inode.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +348,7 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 		ID:     i.ID,
 		Type:   "Inode",
 		Fields: make([]*Field, 5),
-		Edges:  make([]*Edge, 4),
+		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(i.CreatedAt); err != nil {
@@ -418,6 +428,16 @@ func (i *Inode) Node(ctx context.Context) (node *Node, err error) {
 	err = i.QueryWorkflow().
 		Select(workflow.FieldID).
 		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "Annotation",
+		Name: "annotations",
+	}
+	err = i.QueryAnnotations().
+		Select(annotation.FieldID).
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}

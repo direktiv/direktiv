@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
+	"github.com/direktiv/direktiv/pkg/flow/ent/inode"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -32,6 +33,7 @@ type AnnotationQuery struct {
 	withNamespace *NamespaceQuery
 	withWorkflow  *WorkflowQuery
 	withInstance  *InstanceQuery
+	withInode     *InodeQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -128,6 +130,28 @@ func (aq *AnnotationQuery) QueryInstance() *InstanceQuery {
 			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
 			sqlgraph.To(instance.Table, instance.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInode chains the current query on the "inode" edge.
+func (aq *AnnotationQuery) QueryInode() *InodeQuery {
+	query := &InodeQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
+			sqlgraph.To(inode.Table, inode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InodeTable, annotation.InodeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -319,6 +343,7 @@ func (aq *AnnotationQuery) Clone() *AnnotationQuery {
 		withNamespace: aq.withNamespace.Clone(),
 		withWorkflow:  aq.withWorkflow.Clone(),
 		withInstance:  aq.withInstance.Clone(),
+		withInode:     aq.withInode.Clone(),
 		// clone intermediate query.
 		sql:    aq.sql.Clone(),
 		path:   aq.path,
@@ -356,6 +381,17 @@ func (aq *AnnotationQuery) WithInstance(opts ...func(*InstanceQuery)) *Annotatio
 		opt(query)
 	}
 	aq.withInstance = query
+	return aq
+}
+
+// WithInode tells the query-builder to eager-load the nodes that are connected to
+// the "inode" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AnnotationQuery) WithInode(opts ...func(*InodeQuery)) *AnnotationQuery {
+	query := &InodeQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withInode = query
 	return aq
 }
 
@@ -425,13 +461,14 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context) ([]*Annotation, error) {
 		nodes       = []*Annotation{}
 		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			aq.withNamespace != nil,
 			aq.withWorkflow != nil,
 			aq.withInstance != nil,
+			aq.withInode != nil,
 		}
 	)
-	if aq.withNamespace != nil || aq.withWorkflow != nil || aq.withInstance != nil {
+	if aq.withNamespace != nil || aq.withWorkflow != nil || aq.withInstance != nil || aq.withInode != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -540,6 +577,35 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context) ([]*Annotation, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.Instance = n
+			}
+		}
+	}
+
+	if query := aq.withInode; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Annotation)
+		for i := range nodes {
+			if nodes[i].inode_annotations == nil {
+				continue
+			}
+			fk := *nodes[i].inode_annotations
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(inode.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "inode_annotations" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Inode = n
 			}
 		}
 	}

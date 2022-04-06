@@ -355,6 +355,22 @@ func (c *AnnotationClient) QueryInstance(a *Annotation) *InstanceQuery {
 	return query
 }
 
+// QueryInode queries the inode edge of a Annotation.
+func (c *AnnotationClient) QueryInode(a *Annotation) *InodeQuery {
+	query := &InodeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(annotation.Table, annotation.FieldID, id),
+			sqlgraph.To(inode.Table, inode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InodeTable, annotation.InodeColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AnnotationClient) Hooks() []Hook {
 	return c.hooks.Annotation
@@ -868,6 +884,22 @@ func (c *InodeClient) QueryWorkflow(i *Inode) *WorkflowQuery {
 			sqlgraph.From(inode.Table, inode.FieldID, id),
 			sqlgraph.To(workflow.Table, workflow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, inode.WorkflowTable, inode.WorkflowColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnnotations queries the annotations edge of a Inode.
+func (c *InodeClient) QueryAnnotations(i *Inode) *AnnotationQuery {
+	query := &AnnotationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inode.Table, inode.FieldID, id),
+			sqlgraph.To(annotation.Table, annotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, inode.AnnotationsTable, inode.AnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

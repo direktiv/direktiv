@@ -47,9 +47,11 @@ type InodeEdges struct {
 	Parent *Inode `json:"parent,omitempty"`
 	// Workflow holds the value of the workflow edge.
 	Workflow *Workflow `json:"workflow,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -101,6 +103,15 @@ func (e InodeEdges) WorkflowOrErr() (*Workflow, error) {
 		return e.Workflow, nil
 	}
 	return nil, &NotLoadedError{edge: "workflow"}
+}
+
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e InodeEdges) AnnotationsOrErr() ([]*Annotation, error) {
+	if e.loadedTypes[4] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -210,6 +221,11 @@ func (i *Inode) QueryParent() *InodeQuery {
 // QueryWorkflow queries the "workflow" edge of the Inode entity.
 func (i *Inode) QueryWorkflow() *WorkflowQuery {
 	return (&InodeClient{config: i.config}).QueryWorkflow(i)
+}
+
+// QueryAnnotations queries the "annotations" edge of the Inode entity.
+func (i *Inode) QueryAnnotations() *AnnotationQuery {
+	return (&InodeClient{config: i.config}).QueryAnnotations(i)
 }
 
 // Update returns a builder for updating this Inode.
