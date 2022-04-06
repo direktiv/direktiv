@@ -49,3 +49,51 @@
         margin: auto;
     }
 }
+
+.instance-filter {
+    padding-left: 1px;
+    padding-right: 1px;
+    flex-wrap: wrap;
+}
+
+.instance-filter > div {
+    font-weight: bold;
+    flex: 1;
+    white-space: nowrap;
+}
+
+.instance-filter > div > input, select{
+    background: #FFFFFF;
+    border: 1px solid #D6DCE2;
+    box-sizing: border-box;
+    box-shadow: 2px 2px 6px rgba(44, 57, 75, 0.04);
+    border-radius: 4px;
+    height: 41px;
+}
+
+.instance-filter .filter-close-btn {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--theme-dark-gray-text);
+    
+    border-radius: 14px;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.instance-filter .filter-close-btn {
+    cursor: pointer;
+}
+
+.instance-filter .filter-close-btn:hover {
+    color: var(--theme-red);
+    background-color: rgba(0, 0, 0, 0.2);
+    
+}
+
+
+select > option {
+    color: #082032;
+}

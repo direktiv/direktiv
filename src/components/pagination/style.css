@@ -11,6 +11,10 @@
     width: 20px;
 }
 
+.pagination-btn.disabled {
+    pointer-events: none;
+}
+
 .pagination-btn > div {
     width: 100%;
 }

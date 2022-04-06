@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import './style.css'
-import { Config, copyTextToClipboard } from '../../util';
+import { Config, copyTextToClipboard, GenerateRandomKey } from '../../util';
 import Button from '../../components/button';
 import { useParams } from 'react-router';
 import ContentPanel, { ContentPanelBody, ContentPanelHeaderButton, ContentPanelHeaderButtonIcon, ContentPanelTitle, ContentPanelTitleIcon } from '../../components/content-panel';
 import FlexBox from '../../components/flexbox';
 import {useInstance, useInstanceLogs, useWorkflow} from 'direktiv-react-hooks';
-import { CancelledState, FailState, RunningState, SuccessState } from '../instances';
+import { CancelledState, FailState, InstancesTable, RunningState, SuccessState } from '../instances';
 
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import { VscCopy, VscEye, VscEyeClosed, VscSourceControl, VscScreenFull, VscTerminal } from 'react-icons/vsc';
 
@@ -20,6 +20,7 @@ import WorkflowDiagram from '../../components/diagram';
 
 import Modal, { ButtonDefinition } from '../../components/modal';
 import Alert from '../../components/alert';
+import Loader from '../../components/loader';
 
 function InstancePageWrapper(props) {
 
@@ -34,9 +35,48 @@ function InstancePageWrapper(props) {
 
 export default InstancePageWrapper;
 
+function TabbedButtons(props) {
+
+    let {tabBtn, setTabBtn, setSearchParams} = props;
+
+    let tabBtns = [];
+    let tabBtnLabels = ["Flow Graph", "Child Instances"];
+
+    for (let i = 0; i < tabBtnLabels.length; i++) {
+        let key = GenerateRandomKey();
+        let classes = "tab-btn";
+        if (i === tabBtn) {
+            classes += " active-tab-btn"
+        }
+
+        tabBtns.push(<FlexBox key={key} className={classes}>
+            <div onClick={() => {
+                setTabBtn(i)
+                setSearchParams({
+                    tab: i
+                })
+            }}>
+                {tabBtnLabels[i]}
+            </div>
+        </FlexBox>)
+    }
+
+    return(
+            <FlexBox className="tabbed-btns-container" style={{flexShrink:"1", flexGrow: "0"}}>
+                <FlexBox className="tabbed-btns" >
+                    {tabBtns}
+                </FlexBox>
+            </FlexBox>
+    )
+}
+
 function InstancePage(props) {
 
     let {namespace} = props;
+    const { id } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams()
+    const navigate = useNavigate()
+
     const [load, setLoad] = useState(true)
     const [wfpath, setWFPath] = useState("")
     const [ref, setRef] = useState("")
@@ -44,11 +84,15 @@ function InstancePage(props) {
     const [follow, setFollow] = useState(true)
     const [width,] = useState(window.innerWidth);
     const [clipData, setClipData] = useState(null)
-    const params = useParams()
-    const navigate = useNavigate()
+    const [instanceID, setInstanceID] = useState(id)
+    const [tabBtn, setTabBtn] = useState(searchParams.get('tab') !== null ? parseInt(searchParams.get('tab')): 0);
 
 
-    let instanceID = params["id"];
+    // let instanceID = params["id"];
+    React.useEffect(() => {
+        setLoad(true)
+        setInstanceID(id)
+    }, [id]);
 
     let {data, err, workflow, latestRevision, getInput, getOutput, cancelInstance} = useInstance(Config.url, true, namespace, instanceID, localStorage.getItem("apikey"));
 
@@ -95,7 +139,8 @@ function InstancePage(props) {
 
     let wfName = data.as.split(":")[0]
 
-    return (<>
+    return (
+    <Loader load={load} timer={3000}>
         <FlexBox className="col gap" style={{paddingRight: "8px"}}>
             <FlexBox className="gap wrap" style={{minHeight: "50%", flex: "1"}}>
                 <FlexBox style={{minWidth: "340px", flex: "5", }}>
@@ -131,7 +176,6 @@ function InstancePage(props) {
                                         </Button>
                                     </Link>
                                     }
-                                    
                                     <Modal
                                     escapeToCancel
                                     activeOverlay
@@ -221,14 +265,23 @@ function InstancePage(props) {
                                 <VscSourceControl />
                             </ContentPanelTitleIcon>
                             <FlexBox className="gap" style={{alignItems:"center"}}>
-                                <div>
-                                    Logical Flow Graph
+                                <div style={{flex: "1", whiteSpace: "nowrap"}}>
+                                    {`${tabBtn === 0 ? "Flow Graph" : "Child Instances"}`}
                                 </div>
+                                {tabBtn === 1 && data.invoker.startsWith("instance:") ?
+                                    <Link to={`/n/${namespace}/instances/${data.invoker.replace("instance:", "")}`} reloadDocument>
+                                    <Button className="small light">
+                                        <span className="hide-on-small">View</span> Parent
+                                    </Button>
+                                    </Link>
+                                    :
+                                    <></>
+                                }
+                                <TabbedButtons setSearchParams={setSearchParams} searchParams={searchParams} tabBtn={tabBtn} setTabBtn={setTabBtn} />
                             </FlexBox>
                         </ContentPanelTitle>
-                        <ContentPanelBody>
-                            <InstanceDiagram status={data.status} namespace={namespace} wfpath={wfpath} rev={rev} instRef={ref} flow={data.flow}/>
-                        </ContentPanelBody>
+                        {tabBtn === 0 ?<ContentPanelBody><InstanceDiagram status={data.status} namespace={namespace} wfpath={wfpath} rev={rev} instRef={ref} flow={data.flow}/></ContentPanelBody>:<></>}
+                        {tabBtn === 1 ?<InstancesTable namespace={namespace} mini={true} hideTitle={true} panelStyle={{border: "unset"}} filter={[`filter.field=TRIGGER&filter.type=MATCH&filter.val=instance:${instanceID}`]}/>:<></>}
                     </ContentPanel>
                 </FlexBox>
                 <FlexBox style={{minWidth: "300px", flex: "2"}}>
@@ -276,8 +329,7 @@ function InstancePage(props) {
                 </FlexBox>
             </FlexBox>
         </FlexBox>
-
-    </>)
+    </Loader>)
 }
 
 function InstanceLogs(props) {
@@ -466,8 +518,7 @@ function Logs(props){
         }
 
         if(data !== null) {
-            // console.log("clipData = ", clipData)
-            if(clipData === null) {
+            if(clipData === null || logLength === 0) {
 
                 let cd = ""
                 for(let i=0; i < data.length; i++) {
