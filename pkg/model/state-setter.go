@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
@@ -98,7 +97,7 @@ func (o *SetterDefinition) Validate() error {
 		return errors.New(`key required`)
 	}
 
-	if !schema.VarNameRegex.MatchString(o.Key) {
+	if !util.VarNameRegex.MatchString(o.Key) {
 		return fmt.Errorf("key is invalid: must start with a letter and only contain letters, numbers and '_'")
 	}
 

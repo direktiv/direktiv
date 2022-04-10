@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +25,7 @@ func (Inode) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid"),
 		field.Time("created_at").Default(time.Now).Immutable().Annotations(entgql.OrderField("CREATED")),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED")),
-		field.String("name").Match(NameRegex).Optional().Annotations(entgql.OrderField("NAME")),
+		field.String("name").Match(util.NameRegex).Optional().Annotations(entgql.OrderField("NAME")),
 		field.String("type").Immutable().Annotations(entgql.OrderField("TYPE")),
 		field.Strings("attributes").Optional(),
 	}

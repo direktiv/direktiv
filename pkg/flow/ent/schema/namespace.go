@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -48,7 +49,7 @@ func (Namespace) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("config").Default(DefaultNamespaceConfig),
-		field.String("name").Match(NameRegex).Annotations(entgql.OrderField("NAME")).Unique().NotEmpty().MaxLen(64).MinLen(1),
+		field.String("name").Match(util.NameRegex).Annotations(entgql.OrderField("NAME")).Unique().NotEmpty().MaxLen(64).MinLen(1),
 	}
 }
 
