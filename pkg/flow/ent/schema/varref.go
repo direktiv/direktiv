@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -18,7 +19,7 @@ type VarRef struct {
 func (VarRef) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable().StorageKey("oid").StructTag(`json:"-"`),
-		field.String("name").Match(VarNameRegex).Optional().Annotations(entgql.OrderField("NAME")),
+		field.String("name").Match(util.VarNameRegex).Optional().Annotations(entgql.OrderField("NAME")),
 		field.String("behaviour").Optional(),
 	}
 }
