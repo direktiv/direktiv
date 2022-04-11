@@ -121,7 +121,7 @@ export function InstancesTable(props) {
                     <option value="" disabled selected hidden>Choose State</option>
                     <option value="complete">Complete</option>
                     <option value="failed">Failed</option>
-                    <option value="running">Running</option>
+                    <option value="pending">Running</option>
                     <option value="cancelled">Cancelled</option>
                 </select>
             </FlexBox>
